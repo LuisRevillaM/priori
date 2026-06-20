@@ -226,6 +226,45 @@ def default_primitives() -> list[CatalogEntry]:
             limitations=["Does not infer intent, optimality, or missed opportunity."],
         ),
         primitive(
+            name="relation_destination_entry_classification",
+            version="0.1.0",
+            purpose=(
+                "Classify whether the ball later enters the destination region of a "
+                "previously evaluated relation episode."
+            ),
+            outputs=[
+                output(
+                    name="classification",
+                    temporal_type=TemporalContainer.FRAME_SIGNAL,
+                    payload_type=PayloadType.ENUM,
+                    cardinality=Cardinality.SINGLE,
+                    entity_scope=EntityScope.RELATION,
+                    evidence_fields=[
+                        "classification",
+                        "base_result_id",
+                        "relation_id",
+                        "destination_entry_frame_id",
+                        "destination_region",
+                        "destination_side",
+                        "destination_lane",
+                    ],
+                )
+            ],
+            evidence_fields=[
+                "classification",
+                "base_result_id",
+                "relation_id",
+                "destination_entry_frame_id",
+                "destination_region",
+                "destination_side",
+                "destination_lane",
+            ],
+            limitations=[
+                "Requires an upstream relation episode set.",
+                "No pass probability, optimality, decision-quality, intent, or missed-opportunity claim.",
+            ],
+        ),
+        primitive(
             name="robust_team_width",
             version="0.1.0",
             purpose="Describe team structure with robust lateral spread.",

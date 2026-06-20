@@ -11,6 +11,7 @@ from tqe.verification.m1_1_gate_a import build_report as build_gate_a_report
 from tqe.verification.m1_1_gate_b import build_report as build_gate_b_report
 from tqe.verification.m1_1_gate_c import build_report as build_gate_c_report
 from tqe.verification.m1_1_gate_d import build_report as build_gate_d_report
+from tqe.verification.m1_1_gate_e import build_report as build_gate_e_report
 
 REPORT_PATH = Path("artifacts/m1.1/verification-report.json")
 
@@ -37,11 +38,18 @@ def main() -> int:
     gate_b = build_gate_b_report()
     gate_c = build_gate_c_report(gate_b)
     gate_d = build_gate_d_report(gate_c)
+    gate_e = build_gate_e_report(gate_d)
     downstream = {
-        "gate_e": not_ready_report("gate_e", "No-code composition depends on relation proof."),
         "gate_f": not_ready_report("gate_f", "Inspector work depends on prior runtime artifacts."),
     }
-    gate_reports = {"gate_a": gate_a, "gate_b": gate_b, "gate_c": gate_c, "gate_d": gate_d, **downstream}
+    gate_reports = {
+        "gate_a": gate_a,
+        "gate_b": gate_b,
+        "gate_c": gate_c,
+        "gate_d": gate_d,
+        "gate_e": gate_e,
+        **downstream,
+    }
     summary = {
         "pass": sum(report["summary"]["pass"] for report in gate_reports.values()),
         "fail": sum(report["summary"]["fail"] for report in gate_reports.values()),
@@ -58,7 +66,7 @@ def main() -> int:
             for name, report in gate_reports.items()
         },
         "next_required": [
-            "Complete Gate E-F before claiming full M1.1 verification.",
+            "Complete Gate F before claiming full M1.1 verification.",
         ],
     }
     write_json(REPORT_PATH, aggregate)

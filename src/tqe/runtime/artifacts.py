@@ -194,6 +194,7 @@ def typescript_types_payload(schema: dict[str, Any] | None = None) -> str:
             "  schema_version: '1.0';",
             "  plan_id: string;",
             "  plan_version: string;",
+            "  plan_status: PlanStatus;",
             "  recipe_id: string;",
             "  recipe_version: string;",
             "  invocation_id: string;",

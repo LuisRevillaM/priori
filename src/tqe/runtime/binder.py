@@ -114,6 +114,7 @@ class Binder:
             "schema_version": "1.0",
             "plan_id": draft_plan.plan_id,
             "plan_version": draft_plan.plan_version,
+            "plan_status": draft_plan.status,
             "recipe_id": recipe.recipe_id,
             "recipe_version": recipe.recipe_version,
             "invocation_id": invocation.invocation_id,

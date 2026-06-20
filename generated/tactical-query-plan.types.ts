@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from Pydantic TacticalQuerySchemaBundle.
-// schema_sha256: ef11b20622bd5446e25d2becebc263f76b673f7cea4f08f16bb3c3e1b5f606d4
+// schema_sha256: e0c3d1f4c51578bc84ec36a5b83b9cc9d0f25b4ab103598dd73557b72130276a
 
 export type TemporalContainer = 'scalar' | 'frame_signal' | 'episode_set' | 'relation_episode_set';
 export type PayloadType = 'boolean' | 'number' | 'enum' | 'entity_ref' | 'team_ref' | 'region_ref' | 'point' | 'entity_set' | 'relation_ref';
@@ -147,6 +147,7 @@ export interface BoundQueryPlan {
   schema_version: '1.0';
   plan_id: string;
   plan_version: string;
+  plan_status: PlanStatus;
   recipe_id: string;
   recipe_version: string;
   invocation_id: string;

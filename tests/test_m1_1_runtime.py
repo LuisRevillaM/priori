@@ -7,12 +7,13 @@ from pathlib import Path
 
 from tqe.runtime.executor import (
     TacticalQueryExecutor,
+    execute_plan_from_path,
     execution_result_rows,
     execute_default_plan,
     runtime_parameters,
     select_proof_results,
 )
-from tqe.runtime.ir import EvaluationTarget
+from tqe.runtime.ir import EvaluationTarget, PlanStatus
 from tqe.runtime.relations import evaluate_geometric_progressive_corridors
 
 
@@ -20,6 +21,9 @@ class M11RuntimeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.bound, cls.execution = execute_default_plan()
+        cls.experimental_bound, cls.experimental_execution = execute_plan_from_path(
+            Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json")
+        )
 
     def test_runtime_selected_results_match_frozen_baseline(self) -> None:
         rows = execution_result_rows(self.execution)
@@ -109,6 +113,25 @@ class M11RuntimeTests(unittest.TestCase):
             }.issubset({item["case_type"] for item in report["visual_review_cases"]})
         )
 
+    def test_experimental_plan_executes_from_external_file(self) -> None:
+        rows = execution_result_rows(self.experimental_execution)
+        classifications = {row["classification"] for row in rows}
+        matches = {row["match_id"] for row in rows}
+
+        self.assertEqual(PlanStatus.EXPERIMENTAL, self.experimental_bound.plan_status)
+        self.assertEqual("experimental", self.experimental_execution.provenance["plan_status"])
+        self.assertGreaterEqual(len(rows), 20)
+        self.assertGreaterEqual(len(matches), 3)
+        self.assertTrue(
+            {
+                "DESTINATION_ENTERED",
+                "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+            }.issubset(classifications)
+        )
+        self.assertTrue(all(row["plan_status"] == "experimental" for row in rows))
+        self.assertTrue(all(row["destination_side"] != row["ball_side"] for row in rows))
+        self.assertTrue(all(float(row["relation_duration_seconds"]) >= 0.8 for row in rows))
+
     def test_executor_does_not_branch_on_query_recipe_or_plan_identity(self) -> None:
         tree = ast.parse(Path("src/tqe/runtime/executor.py").read_text(encoding="utf-8"))
         guarded_names = {"query_id", "recipe_id", "plan_id"}
@@ -120,6 +143,21 @@ class M11RuntimeTests(unittest.TestCase):
                 hit = sorted((names | attrs) & guarded_names)
                 if hit:
                     hits.append((node.lineno, hit))
+
+        self.assertEqual([], hits)
+
+    def test_executor_does_not_import_recipe_modules(self) -> None:
+        tree = ast.parse(Path("src/tqe/runtime/executor.py").read_text(encoding="utf-8"))
+        hits = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name.startswith("tqe.query"):
+                        hits.append((node.lineno, alias.name))
+            elif isinstance(node, ast.ImportFrom):
+                module = node.module or ""
+                if module.startswith("tqe.query"):
+                    hits.append((node.lineno, module))
 
         self.assertEqual([], hits)
 

@@ -407,6 +407,7 @@ class BoundQueryPlan(StrictModel):
     schema_version: Literal["1.0"] = "1.0"
     plan_id: str
     plan_version: str
+    plan_status: PlanStatus
     recipe_id: str
     recipe_version: str
     invocation_id: str

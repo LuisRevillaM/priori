@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -28,6 +28,7 @@ from tqe.runtime.ir import (
     BoundQueryPlan,
     EvaluationTarget,
     ExecutionStatus,
+    NodeKind,
     PayloadType,
     PredicateTrace,
     QueryExecution,
@@ -35,6 +36,12 @@ from tqe.runtime.ir import (
     TypedValue,
     Unit,
     stable_hash,
+)
+from tqe.runtime.relations import (
+    CorridorConfig,
+    destination_lane,
+    destination_side,
+    evaluate_geometric_progressive_corridors,
 )
 
 PERIODS = ("firstHalf", "secondHalf")
@@ -79,6 +86,7 @@ class PeriodState:
     perspective_team_id: str
     defending_team_role: str
     defending_team_id: str
+    canonical_root: Path
     raw_tracking: Path
     positions: pd.DataFrame
     frame_ids: np.ndarray
@@ -91,9 +99,11 @@ class PeriodState:
     candidates: list[dict[str, Any]] = field(default_factory=list)
     accepted: list[dict[str, Any]] = field(default_factory=list)
     near_misses: list[dict[str, Any]] = field(default_factory=list)
+    predicate_traces: list[PredicateTrace] = field(default_factory=list)
 
 
 PrimitiveImplementation = Callable[[PeriodState, BoundCatalogNode], None]
+RelationImplementation = Callable[[PeriodState, BoundCatalogNode], None]
 PredicateImplementation = Callable[[PeriodState, BoundPredicateNode], None]
 
 
@@ -112,10 +122,14 @@ class TacticalQueryExecutor:
             "defensive_outfield_centroid": primitive_defensive_outfield_centroid,
             "signed_lateral_shift": primitive_signed_lateral_shift,
             "outcome_classification": primitive_outcome_classification,
+            "relation_destination_entry_classification": primitive_relation_destination_entry_classification,
             "wide_channel_dwell": primitive_noop,
             "shift_persistence": primitive_noop,
             "robust_team_width": primitive_noop,
             "analysis_rate": primitive_noop,
+        }
+        self.relations: dict[str, RelationImplementation] = {
+            "geometric_progressive_corridor": relation_geometric_progressive_corridor,
         }
         self.predicates: dict[str, PredicateImplementation] = {
             "gt": predicate_gt,
@@ -124,8 +138,8 @@ class TacticalQueryExecutor:
             "eq": predicate_eq,
             "neq": predicate_neq,
             "persists_for": predicate_persists_for,
-            "exists": predicate_noop,
-            "count_at_least": predicate_noop,
+            "exists": predicate_exists,
+            "count_at_least": predicate_count_at_least,
         }
 
     def execute(self, bound_plan: BoundQueryPlan) -> QueryExecution:
@@ -149,7 +163,10 @@ class TacticalQueryExecutor:
                 match_id=result["match_id"],
                 period=result["period"],
                 anchor_frame_id=result["anchor_frame_id"],
-                evidence={key: value for key, value in result.items() if key != "result_id"},
+                evidence={
+                    **{key: value for key, value in result.items() if key != "result_id"},
+                    "plan_status": bound_plan.plan_status.value,
+                },
             )
             for result in results
         ]
@@ -177,6 +194,8 @@ class TacticalQueryExecutor:
                 "generated_at": utc_now_iso(),
                 "canonical_root": str(self.canonical_root),
                 "raw_root": str(self.raw_root),
+                "plan_id": bound_plan.plan_id,
+                "plan_status": bound_plan.plan_status.value,
                 "runtime_result_count": len(query_results),
                 "runtime_trace_hash": stable_hash(trace_payload),
             },
@@ -301,9 +320,14 @@ class TacticalQueryExecutor:
         )
         for node in bound_plan.nodes:
             if isinstance(node, BoundCatalogNode):
-                implementation = self.primitives.get(node.catalog_ref)
-                if implementation is None:
-                    raise RuntimeError(f"No primitive implementation for {node.catalog_ref}")
+                if node.kind == NodeKind.RELATION:
+                    implementation = self.relations.get(node.catalog_ref)
+                    if implementation is None:
+                        raise RuntimeError(f"No relation implementation for {node.catalog_ref}")
+                else:
+                    implementation = self.primitives.get(node.catalog_ref)
+                    if implementation is None:
+                        raise RuntimeError(f"No primitive implementation for {node.catalog_ref}")
                 implementation(state, node)
             elif isinstance(node, BoundPredicateNode):
                 implementation = self.predicates.get(node.operator.name)
@@ -362,6 +386,7 @@ class TacticalQueryExecutor:
             perspective_team_id=team_id(self.canonical_root, match_id, perspective_team_role),
             defending_team_role=defending_role,
             defending_team_id=team_id(self.canonical_root, match_id, defending_role),
+            canonical_root=self.canonical_root,
             raw_tracking=raw_tracking,
             positions=positions,
             frame_ids=frame_ids,
@@ -541,6 +566,181 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
     state.signals[node.node_id] = {"classification": accepted + near_misses}
 
 
+def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatalogNode) -> None:
+    source_results = list(state.accepted)
+    if not source_results:
+        state.signals[node.node_id] = {
+            "episodes": [],
+            "source_results": [],
+            "summary": {"episode_count": 0, "result_count_with_episode": 0},
+        }
+        return
+
+    config = CorridorConfig(
+        analysis_rate_hz=state.params.integer("analysis_rate_hz"),
+        max_window_seconds=node_parameter_number(node, "max_window_seconds", 4.0),
+        minimum_progression_m=node_parameter_number(node, "minimum_progression_m", 8.0),
+        minimum_segment_length_m=node_parameter_number(node, "minimum_segment_length_m", 8.0),
+        maximum_segment_length_m=node_parameter_number(node, "maximum_segment_length_m", 45.0),
+        minimum_clearance_m=node_parameter_number(node, "minimum_clearance_m", 5.0),
+        open_after_frames=node_parameter_integer(node, "open_after_frames", 2),
+        close_after_frames=node_parameter_integer(node, "close_after_frames", 2),
+    )
+    relation_report = evaluate_geometric_progressive_corridors(
+        results=source_results,
+        canonical_root=state.canonical_root,
+        config=config,
+    )
+    episodes = relation_report["episodes"]
+    side_filter = node_parameter_text(node, "side_filter", "any")
+    minimum_duration_seconds = node_parameter_number(node, "minimum_duration_seconds", 0.0)
+    source_by_result_id = {str(result["result_id"]): result for result in source_results}
+    filtered = [
+        episode
+        for episode in episodes
+        if float(episode["duration_seconds"]) >= minimum_duration_seconds
+        and relation_side_matches(
+            episode=episode,
+            source_result=source_by_result_id.get(str(episode["result_id"])),
+            side_filter=side_filter,
+        )
+    ]
+    filtered.sort(
+        key=lambda item: (
+            item["result_id"],
+            -float(item["duration_seconds"]),
+            -float(item["minimum_clearance_m"]),
+            int(item["open_frame_id"]),
+            item["relation_id"],
+        )
+    )
+    state.signals[node.node_id] = {
+        "episodes": filtered,
+        "source_results": source_results,
+        "summary": {
+            **relation_report["summary"],
+            "filtered_episode_count": len(filtered),
+            "filtered_result_count_with_episode": len({item["result_id"] for item in filtered}),
+            "side_filter": side_filter,
+            "minimum_duration_seconds": minimum_duration_seconds,
+        },
+        "config": relation_report["config"],
+        "artifact_hash": relation_report["artifact_hash"],
+    }
+
+
+def primitive_relation_destination_entry_classification(
+    state: PeriodState,
+    node: BoundCatalogNode,
+) -> None:
+    relation_node_id = node_parameter_text(node, "relation_node_id", "")
+    if not relation_node_id:
+        raise RuntimeError(f"{node.node_id} requires relation_node_id")
+    relation_signal = state.signals.get(relation_node_id)
+    if relation_signal is None:
+        raise RuntimeError(f"{node.node_id} references unknown relation node {relation_node_id}")
+
+    source_results = list(relation_signal.get("source_results", state.accepted))
+    episodes_by_result: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for episode in relation_signal.get("episodes", []):
+        episodes_by_result[str(episode["result_id"])].append(episode)
+
+    horizon_seconds = node_parameter_number(node, "destination_entry_horizon_seconds", 6.0)
+    seed = node_parameter_text(node, "result_id_seed", state.params.text("result_id_seed_hash"))
+    candidate_by_result_id = {
+        str(candidate["_runtime_result"]["result_id"]): candidate
+        for candidate in state.candidates
+        if isinstance(candidate.get("_runtime_result"), dict)
+        and "result_id" in candidate["_runtime_result"]
+    }
+
+    final_results: list[dict[str, Any]] = []
+    final_traces: list[PredicateTrace] = []
+    for source_result in source_results:
+        source_result_id = str(source_result["result_id"])
+        relation_candidates = episodes_by_result.get(source_result_id, [])
+        if not relation_candidates:
+            continue
+        episode = relation_candidates[0]
+        entry = first_ball_entry_into_destination_region(
+            state=state,
+            episode=episode,
+            horizon_seconds=horizon_seconds,
+        )
+        destination_entered = entry is not None
+        result_id = hashlib.sha256(
+            (
+                f"{seed}:relation_destination_entry:"
+                f"{source_result_id}:{episode['relation_id']}"
+            ).encode("utf-8")
+        ).hexdigest()[:16]
+        classification = (
+            "DESTINATION_ENTERED"
+            if destination_entered
+            else "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY"
+        )
+        replay_end_frame_id = max(
+            int(source_result["replay_end_frame_id"]),
+            int(episode["close_frame_id"]) + FRAME_RATE_HZ * 2,
+            int(entry["frame_id"]) + FRAME_RATE_HZ * 2 if entry else int(episode["close_frame_id"]),
+        )
+        final_result = {
+            **source_result,
+            "result_id": result_id,
+            "classification": classification,
+            "source_classification": source_result["classification"],
+            "base_result_id": source_result_id,
+            "relation_node_id": relation_node_id,
+            "relation_id": episode["relation_id"],
+            "relation_version": episode["relation_version"],
+            "relation_open_frame_id": int(episode["open_frame_id"]),
+            "relation_open_confirm_frame_id": int(episode["open_confirm_frame_id"]),
+            "relation_close_frame_id": int(episode["close_frame_id"]),
+            "relation_duration_seconds": float(episode["duration_seconds"]),
+            "relation_target_player_id": episode["target_player_id"],
+            "relation_minimum_clearance_m": float(episode["minimum_clearance_m"]),
+            "relation_limiting_defender_id": episode["limiting_defender_id"],
+            "destination_side": episode["destination_side"],
+            "destination_lane": episode["destination_lane"],
+            "destination_region": episode["destination_region"],
+            "destination_entry_frame_id": int(entry["frame_id"]) if entry else None,
+            "destination_entry_point": entry["point"] if entry else None,
+            "destination_entry_horizon_seconds": horizon_seconds,
+            "source_open_point": episode["source_open_point"],
+            "target_open_point": episode["target_open_point"],
+            "source_close_point": episode["source_close_point"],
+            "target_close_point": episode["target_close_point"],
+            "accepted": True,
+            "replay_end_frame_id": min(int(state.frame_ids[-1]), replay_end_frame_id),
+        }
+        final_results.append(final_result)
+        candidate = candidate_by_result_id.get(source_result_id)
+        if candidate is not None:
+            final_traces.extend(
+                experimental_predicate_traces_for_result(
+                    state=state,
+                    candidate=candidate,
+                    source_result=source_result,
+                    result=final_result,
+                    episode=episode,
+                    destination_entered=destination_entered,
+                )
+            )
+
+    final_results.sort(
+        key=lambda item: (
+            -float(item["block_shift_score"]),
+            item["match_id"],
+            item["period"],
+            int(item["wide_entry_frame_id"]),
+            item["relation_id"],
+        )
+    )
+    state.accepted = final_results
+    state.predicate_traces = final_traces
+    state.signals[node.node_id] = {"classification": final_results}
+
+
 def predicate_gte(state: PeriodState, node: BoundPredicateNode) -> None:
     source = state.signals[node.input.source_node_id][node.input.output_name]
     threshold = float(node.compare.value) if isinstance(node.compare, TypedValue) else None
@@ -645,6 +845,26 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
 
 def predicate_noop(state: PeriodState, node: BoundPredicateNode) -> None:
     state.signals.setdefault(node.node_id, {})
+
+
+def predicate_exists(state: PeriodState, node: BoundPredicateNode) -> None:
+    source = state.signals[node.input.source_node_id][node.input.output_name]
+    if isinstance(source, list):
+        state.signals[node.node_id] = {"predicate": bool(source), "episodes": source}
+        return
+    raise RuntimeError(f"Unsupported exists source for {node.node_id}")
+
+
+def predicate_count_at_least(state: PeriodState, node: BoundPredicateNode) -> None:
+    source = state.signals[node.input.source_node_id][node.input.output_name]
+    threshold = int(round(float(node.compare.value))) if isinstance(node.compare, TypedValue) else None
+    if threshold is None or not isinstance(source, list):
+        raise RuntimeError(f"Unsupported count_at_least source for {node.node_id}")
+    state.signals[node.node_id] = {
+        "predicate": len(source) >= threshold,
+        "count": len(source),
+        "episodes": source,
+    }
 
 
 def wide_entry_candidates(
@@ -772,6 +992,8 @@ def select_proof_results(candidates: list[dict[str, Any]], params: RuntimeParame
 
 
 def accepted_predicate_traces(state: PeriodState) -> list[PredicateTrace]:
+    if state.predicate_traces:
+        return state.predicate_traces
     traces: list[PredicateTrace] = []
     for candidate in state.candidates:
         result = candidate.get("_runtime_result")
@@ -946,6 +1168,161 @@ def typed_enum(value: str) -> TypedValue:
     return TypedValue(payload_type=PayloadType.ENUM, value=value, unit=Unit.NONE)
 
 
+def node_parameter_number(node: BoundCatalogNode, name: str, default: float) -> float:
+    value = node.resolved_parameters.get(name)
+    if value is None:
+        return default
+    if value.payload_type != PayloadType.NUMBER:
+        raise RuntimeError(f"{node.node_id}.{name} must be numeric")
+    return float(value.value)
+
+
+def node_parameter_integer(node: BoundCatalogNode, name: str, default: int) -> int:
+    return int(round(node_parameter_number(node, name, float(default))))
+
+
+def node_parameter_text(node: BoundCatalogNode, name: str, default: str) -> str:
+    value = node.resolved_parameters.get(name)
+    if value is None:
+        return default
+    if value.payload_type not in {PayloadType.ENUM, PayloadType.RELATION_REF}:
+        raise RuntimeError(f"{node.node_id}.{name} must be textual")
+    return str(value.value)
+
+
+def relation_side_matches(
+    *,
+    episode: dict[str, Any],
+    source_result: dict[str, Any] | None,
+    side_filter: str,
+) -> bool:
+    if side_filter == "any":
+        return True
+    if source_result is None:
+        return False
+    ball_side = str(source_result.get("ball_side"))
+    destination = str(episode.get("destination_side"))
+    if side_filter == "opposite_ball_side":
+        return destination == opposite_side(ball_side)
+    if side_filter == "same_ball_side":
+        return destination == ball_side
+    raise RuntimeError(f"Unsupported relation side_filter {side_filter}")
+
+
+def opposite_side(side: str) -> str:
+    if side == "left":
+        return "right"
+    if side == "right":
+        return "left"
+    return "central"
+
+
+def first_ball_entry_into_destination_region(
+    *,
+    state: PeriodState,
+    episode: dict[str, Any],
+    horizon_seconds: float,
+) -> dict[str, Any] | None:
+    start_frame_id = int(episode["open_frame_id"])
+    end_frame_id = min(
+        int(state.frame_ids[-1]),
+        start_frame_id + int(round(horizon_seconds * FRAME_RATE_HZ)),
+    )
+    ball = state.positions[
+        (state.positions.entity_type == "ball")
+        & (state.positions.frame_id >= start_frame_id)
+        & (state.positions.frame_id <= end_frame_id)
+    ].sort_values("frame_id")
+    for row in ball.itertuples(index=False):
+        y_m = float(row.y_m)
+        if (
+            destination_side(y_m) == episode["destination_side"]
+            and destination_lane(y_m) == episode["destination_lane"]
+        ):
+            return {
+                "frame_id": int(row.frame_id),
+                "point": {"x_m": round(float(row.x_m), 3), "y_m": round(y_m, 3)},
+                "region": episode["destination_region"],
+            }
+    return None
+
+
+def experimental_predicate_traces_for_result(
+    *,
+    state: PeriodState,
+    candidate: dict[str, Any],
+    source_result: dict[str, Any],
+    result: dict[str, Any],
+    episode: dict[str, Any],
+    destination_entered: bool,
+) -> list[PredicateTrace]:
+    rewritten: list[PredicateTrace] = []
+    for trace in predicate_traces_for_candidate(state, candidate, source_result):
+        payload = trace.model_dump(mode="python", exclude_none=True)
+        payload["source_evidence"] = {
+            **payload.get("source_evidence", {}),
+            "result_id": result["result_id"],
+            "base_result_id": source_result["result_id"],
+            "experimental_plan_status": "experimental",
+        }
+        rewritten.append(PredicateTrace.model_validate(payload))
+
+    rewritten.append(
+        PredicateTrace(
+            predicate_id="has_opposite_corridor",
+            status="PASS",
+            value=typed_number(1, Unit.COUNT),
+            threshold=typed_number(1, Unit.COUNT),
+            unit=Unit.COUNT,
+            frame_id=int(episode["open_confirm_frame_id"]),
+            window={
+                "start_frame_id": int(episode["open_frame_id"]),
+                "end_frame_id": int(episode["close_frame_id"]),
+            },
+            source_evidence={
+                "result_id": result["result_id"],
+                "base_result_id": source_result["result_id"],
+                "relation_id": episode["relation_id"],
+                "source_node_id": result["relation_node_id"],
+                "destination_region": episode["destination_region"],
+                "experimental_plan_status": "experimental",
+            },
+        )
+    )
+    rewritten.append(
+        PredicateTrace(
+            predicate_id="destination_region_entered",
+            status="PASS" if destination_entered else "FAIL",
+            value=typed_enum(
+                result["destination_region"] if destination_entered else "NO_ENTRY"
+            ),
+            threshold=typed_enum(result["destination_region"]),
+            unit=Unit.NONE,
+            frame_id=result["destination_entry_frame_id"],
+            window={
+                "start_frame_id": int(episode["open_frame_id"]),
+                "end_frame_id": min(
+                    int(state.frame_ids[-1]),
+                    int(
+                        int(episode["open_frame_id"])
+                        + round(result["destination_entry_horizon_seconds"] * FRAME_RATE_HZ)
+                    ),
+                ),
+            },
+            source_evidence={
+                "result_id": result["result_id"],
+                "base_result_id": source_result["result_id"],
+                "relation_id": episode["relation_id"],
+                "destination_region": result["destination_region"],
+                "destination_entry_point": result["destination_entry_point"],
+                "source_node_id": "relation_destination_entry_classification",
+                "experimental_plan_status": "experimental",
+            },
+        )
+    )
+    return rewritten
+
+
 def is_nan_number(value: Any) -> bool:
     return isinstance(value, int | float) and math.isnan(float(value))
 
@@ -972,6 +1349,17 @@ def execute_default_plan(
     canonical_root: Path = DEFAULT_CANONICAL_ROOT,
     raw_root: Path = DEFAULT_RAW_ROOT,
     plan_path: Path = DEFAULT_PLAN_PATH,
+) -> tuple[BoundQueryPlan, QueryExecution]:
+    bound = bind_document_from_path(plan_path)
+    execution = TacticalQueryExecutor(canonical_root=canonical_root, raw_root=raw_root).execute(bound)
+    return bound, execution
+
+
+def execute_plan_from_path(
+    plan_path: Path,
+    *,
+    canonical_root: Path = DEFAULT_CANONICAL_ROOT,
+    raw_root: Path = DEFAULT_RAW_ROOT,
 ) -> tuple[BoundQueryPlan, QueryExecution]:
     bound = bind_document_from_path(plan_path)
     execution = TacticalQueryExecutor(canonical_root=canonical_root, raw_root=raw_root).execute(bound)
