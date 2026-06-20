@@ -63,8 +63,17 @@ class M11RuntimeTests(unittest.TestCase):
         _bound, execution = execute_plan_from_path(
             Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json")
         )
+        rows = execution_result_rows(execution)
 
         self.assertEqual("generic", execution.provenance["compatibility_profile"])
+        self.assertGreater(len(rows), 0)
+        self.assertEqual(
+            {"CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY", "DESTINATION_ENTERED"},
+            {row["classification"] for row in rows},
+        )
+        self.assertFalse(
+            {"block_shift_score", "wide_entry_frame_id", "signed_shift_metres"}.intersection(rows[0])
+        )
 
     def test_max_results_is_honored_deterministically(self) -> None:
         executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)

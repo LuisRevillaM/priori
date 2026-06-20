@@ -218,6 +218,23 @@ Acceptance:
 - frame-signal frame-ID/value length mismatch is a hard error;
 - `persists_for` consumes tri-state Boolean signals and emits episodes without shift-specific fields;
 - generic anchor/target code contains no `wide_entry_*`, `block_shift_*`, or `shift_gate_*` assumptions;
+
+### Gate S4 - Rule-Driven Result Emission
+
+Acceptance:
+
+- a generic plan produces at least one real `QueryResult` from canonical match data;
+- classification rules control both result inclusion and labels;
+- changing a required predicate changes inclusion while preserving labels for still-matching rules;
+- PASS, FAIL, and UNKNOWN traces obey the plan's `unknown_evidence_policy`;
+- requested evidence resolves from declared runtime outputs, not flat result sidecars;
+- generic result envelopes do not require `block_shift_score`, `wide_entry_frame_id`, or `signed_shift_metres`;
+- every generic execution proves `compatibility_profile = generic` and no legacy adapter use;
+- result IDs and ordering are deterministic;
+- `max_results`, `bind_only`, and `dry_run` are honored;
+- frozen M1 parity remains exact only through explicit legacy helpers.
+
+S4 is intentionally narrow. It must not add Hermes, UI work, new primitives, a second tactical family, a ranking language, or visualization grammar.
 - node execution returns an explicit result containing resolved inputs, parameters, outputs, runtime values, warnings, and provenance.
 
 External review rejected the first S3R packet as insufficient. The strengthened S3R acceptance additionally requires:

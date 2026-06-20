@@ -27,6 +27,7 @@ from tqe.runtime.ir import (
     BoundPredicateNode,
     BoundQueryPlan,
     BoundPlanNode,
+    ClassificationRule,
     EvaluationTarget,
     ExecutionMode,
     ExecutionStatus,
@@ -292,7 +293,9 @@ class TacticalQueryExecutor:
                         for key, value in result.items()
                         if key != "result_id" and not key.startswith("_")
                     },
-                    "requested_evidence": project_requested_evidence(result, bound_plan),
+                    "requested_evidence": result.get("requested_evidence")
+                    if isinstance(result.get("requested_evidence"), dict)
+                    else project_requested_evidence(result, bound_plan),
                     "plan_status": bound_plan.plan_status.value,
                 },
             )
@@ -354,17 +357,37 @@ class TacticalQueryExecutor:
                 params=params,
                 compatibility_profile=compatibility_profile,
             )
-            accepted.extend(state.accepted)
-            traces.extend(accepted_predicate_traces(state, compatibility_profile=compatibility_profile))
+            if compatibility_profile == LEGACY_M1_PARITY_PROFILE:
+                accepted.extend(state.accepted)
+                traces.extend(accepted_predicate_traces(state, compatibility_profile=compatibility_profile))
+            else:
+                period_results, period_traces = emit_generic_results_from_rules(
+                    state=state,
+                    bound_plan=bound_plan,
+                    compatibility_profile=compatibility_profile,
+                )
+                accepted.extend(period_results)
+                traces.extend(period_traces)
             runtime_value_count += sum(len(outputs) for outputs in state.runtime_values.values())
-        accepted.sort(
-            key=lambda item: (
-                -float(item["block_shift_score"]),
-                item["match_id"],
-                item["period"],
-                item["wide_entry_frame_id"],
+        if compatibility_profile == LEGACY_M1_PARITY_PROFILE:
+            accepted.sort(
+                key=lambda item: (
+                    -float(item["block_shift_score"]),
+                    item["match_id"],
+                    item["period"],
+                    item["wide_entry_frame_id"],
+                )
             )
-        )
+        else:
+            accepted.sort(
+                key=lambda item: (
+                    item["match_id"],
+                    item["period"],
+                    int(item["anchor_frame_id"]),
+                    item["classification"],
+                    item["result_id"],
+                )
+            )
         return accepted, traces, runtime_value_count
 
     def evaluate_target(
@@ -680,6 +703,124 @@ def apply_result_semantics(
     return filtered, filtered_traces, ExecutionStatus.PASS
 
 
+def emit_generic_results_from_rules(
+    *,
+    state: PeriodState,
+    bound_plan: BoundQueryPlan,
+    compatibility_profile: str,
+) -> tuple[list[dict[str, Any]], list[PredicateTrace]]:
+    anchors = runtime_anchors(state, bound_plan.anchor_source)
+    emitted: list[dict[str, Any]] = []
+    traces: list[PredicateTrace] = []
+    for anchor in anchors:
+        base_result = generic_result_base(
+            state=state,
+            bound_plan=bound_plan,
+            anchor=anchor,
+        )
+        anchor_traces = predicate_traces_for_anchor(
+            state,
+            anchor,
+            base_result,
+            bound_plan=bound_plan,
+            compatibility_profile=compatibility_profile,
+        )
+        anchor_traces.extend(
+            missing_target_predicate_traces(
+                bound_plan=bound_plan,
+                state=state,
+                anchor=anchor,
+                result=base_result,
+                existing_predicate_ids={trace.predicate_id for trace in anchor_traces},
+            )
+        )
+        labels = rule_labels_for_traces(
+            traces=anchor_traces,
+            bound_plan=bound_plan,
+        )
+        if not labels:
+            continue
+        classification = labels[0]
+        result = {
+            **base_result,
+            "classification": classification,
+            "accepted": True,
+            "matched_classification_rules": labels,
+            "requested_evidence": project_requested_evidence_from_runtime(
+                state=state,
+                anchor=anchor,
+                bound_plan=bound_plan,
+            ),
+            "provenance": {
+                "emitter": "generic_rule_emitter",
+                "anchor_source": f"{bound_plan.anchor_source.source_node_id}.{bound_plan.anchor_source.output_name}"
+                if bound_plan.anchor_source is not None
+                else None,
+                "compatibility_profile": compatibility_profile,
+            },
+        }
+        emitted.append(result)
+        traces.extend(
+            [
+                trace.model_copy(
+                    update={
+                        "source_evidence": {
+                            **trace.source_evidence,
+                            "result_id": result["result_id"],
+                        }
+                    }
+                )
+                for trace in anchor_traces
+            ]
+        )
+    return emitted, traces
+
+
+def generic_result_base(
+    *,
+    state: PeriodState,
+    bound_plan: BoundQueryPlan,
+    anchor: RuntimeAnchor,
+) -> dict[str, Any]:
+    result_id = hashlib.sha256(
+        (
+            f"{bound_plan.bound_plan_hash}:generic:"
+            f"{anchor.match_id}:{anchor.period}:{anchor.anchor_id}"
+        ).encode("utf-8")
+    ).hexdigest()[:16]
+    return {
+        "result_id": result_id,
+        "classification": None,
+        "match_id": anchor.match_id,
+        "period": anchor.period,
+        "anchor_frame_id": anchor.anchor_frame_id,
+        "anchor_id": anchor.anchor_id,
+        "accepted": False,
+        "perspective_team_role": state.perspective_team_role,
+        "defending_team_role": state.defending_team_role,
+    }
+
+
+def rule_labels_for_traces(
+    *,
+    traces: list[PredicateTrace],
+    bound_plan: BoundQueryPlan,
+) -> list[str]:
+    status_by_predicate = {trace.predicate_id: trace.status for trace in traces}
+    matching: list[ClassificationRule] = []
+    for rule in bound_plan.classification_rules:
+        statuses = [status_by_predicate.get(predicate_id, "UNKNOWN") for predicate_id in rule.predicate_ids]
+        if any(status == "FAIL" for status in statuses):
+            continue
+        if any(status == "UNKNOWN" for status in statuses):
+            if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INCLUDE_WITH_WARNING:
+                matching.append(rule)
+            continue
+        matching.append(rule)
+    matching.sort(key=lambda rule: (-len(rule.predicate_ids), rule.label))
+    return [rule.label for rule in matching]
+
+
 def matching_classification_rules(
     *,
     result: dict[str, Any],
@@ -705,6 +846,61 @@ def project_requested_evidence(
         key = f"{request.source.source_node_id}.{request.field}"
         projected[key] = result.get(request.field)
     return projected
+
+
+def project_requested_evidence_from_runtime(
+    *,
+    state: PeriodState,
+    anchor: RuntimeAnchor,
+    bound_plan: BoundQueryPlan,
+) -> dict[str, Any]:
+    projected: dict[str, Any] = {}
+    for request in bound_plan.requested_evidence:
+        key = f"{request.source.source_node_id}.{request.field}"
+        runtime_value = state.runtime_values.get(request.source.source_node_id, {}).get(request.source.output_name)
+        projected[key] = evidence_value_for_anchor(
+            runtime_value=runtime_value,
+            anchor=anchor,
+            field=request.field,
+        )
+    return projected
+
+
+def evidence_value_for_anchor(
+    *,
+    runtime_value: RuntimeValue | None,
+    anchor: RuntimeAnchor,
+    field: str,
+) -> Any:
+    if runtime_value is None:
+        return None
+    for record in runtime_records(runtime_value):
+        if record_matches_anchor(record, anchor):
+            return record.get(field)
+    if isinstance(runtime_value.value, FrameSignal):
+        try:
+            index = runtime_value.value.frame_ids.index(anchor.anchor_frame_id)
+        except ValueError:
+            return None
+        if field == runtime_value.output.name or field in {"value", "classification"}:
+            return runtime_value.value.values[index]
+    return None
+
+
+def record_matches_anchor(record: dict[str, Any], anchor: RuntimeAnchor) -> bool:
+    if not isinstance(record, dict):
+        return False
+    if str(record.get("anchor_id") or "") == anchor.anchor_id:
+        return True
+    if optional_int(record.get("anchor_frame_id")) == anchor.anchor_frame_id:
+        return True
+    source = record.get("source_result")
+    if isinstance(source, dict) and record_matches_anchor(source, anchor):
+        return True
+    for source_record in record.get("source_records") or []:
+        if isinstance(source_record, dict) and record_matches_anchor(source_record, anchor):
+            return True
+    return False
 
 
 def catalog_input_value(
@@ -1109,7 +1305,7 @@ def execute_predicate_with_resolved_inputs(
                         },
                     )
             output["items"] = [record for record, status in zip(records, passed, strict=False) if status]
-            output["predicate_records"] = output["items"]
+            output["predicate_records"] = records
         return output
     if node.operator.name == "persists_for":
         duration = parameters.get("duration")
@@ -1122,15 +1318,41 @@ def execute_predicate_with_resolved_inputs(
             duration=duration,
             analysis_rate_hz=context.params.integer("analysis_rate_hz"),
         )
+        records = attach_source_records_to_temporal_records(
+            temporal.output_records(),
+            source_records=runtime_records(runtime_value),
+        )
         return {
-            "predicate": temporal.output_records(),
-            "episodes": temporal.output_records(),
+            "predicate": records,
+            "episodes": records,
             "passing_episodes": temporal.episodes,
             "unknown_intervals": temporal.unknown_intervals,
         }
     if node.operator.name == "exists":
         source = runtime_value.value
         if isinstance(source, list):
+            records = [record for record in source if isinstance(record, dict)]
+            frame_ids = [
+                source_record_frame_id(record)
+                for record in records
+            ]
+            usable = [
+                (record, int(frame_id))
+                for record, frame_id in zip(records, frame_ids, strict=False)
+                if frame_id is not None
+            ]
+            if usable:
+                return {
+                    "predicate": FrameSignal(
+                        frame_ids=[frame_id for _record, frame_id in usable],
+                        values=[True for _record, _frame_id in usable],
+                        unknown_mask=[False for _record, _frame_id in usable],
+                        unit=node.output.unit,
+                        entity_scope=node.output.entity_scope,
+                    ),
+                    "predicate_records": [record for record, _frame_id in usable],
+                    "episodes": source,
+                }
             return {"predicate": bool(source), "episodes": source}
         raise RuntimeError(f"Unsupported exists source for {node.node_id}")
     if node.operator.name == "count_at_least":
@@ -1446,6 +1668,7 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
     accepted_shift_records = catalog_input_value(state, node, "accepted_shift_episodes").value
     if not isinstance(accepted_shift_records, list):
         raise RuntimeError(f"{node.node_id} requires accepted shift episode records")
+    accepted_shift_records = expanded_pass_source_records(accepted_shift_records)
     query_hash = state.params.text("result_id_seed_hash")
     analysis_rate_hz = state.params.integer("analysis_rate_hz")
     dedupe_source_frames = int(round(state.params.number("dedupe_window_seconds") * FRAME_RATE_HZ))
@@ -1526,6 +1749,25 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
         ),
         "classification_records": classification_records,
     }
+
+
+def expanded_pass_source_records(records: list[Any]) -> list[dict[str, Any]]:
+    expanded: list[dict[str, Any]] = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        if record.get("temporal_status") not in {None, "PASS"}:
+            continue
+        source_records = [
+            item
+            for item in record.get("source_records") or []
+            if isinstance(item, dict) and "possession_start_frame_id" in item
+        ]
+        if source_records:
+            expanded.extend(source_records)
+        elif "possession_start_frame_id" in record:
+            expanded.append(record)
+    return expanded
 
 
 def relation_anchor_source(node: BoundCatalogNode) -> str:
@@ -2031,9 +2273,12 @@ def wide_entry_candidates_from_episodes(
 ) -> list[dict[str, Any]]:
     wide_mask = np.zeros(len(state.frame_ids), dtype=bool)
     structured_episodes: list[dict[str, Any]] = []
+    frame_index = {int(frame_id): index for index, frame_id in enumerate(state.frame_ids)}
     for episode in entry_episodes:
-        start_index = episode_start_index(episode)
-        end_index = episode_end_index(episode)
+        if isinstance(episode, dict) and episode.get("temporal_status") not in {None, "PASS"}:
+            continue
+        start_index = episode_start_index(episode, frame_index=frame_index)
+        end_index = episode_end_index(episode, frame_index=frame_index)
         if start_index is None or end_index is None:
             continue
         wide_mask[start_index : end_index + 1] = True
@@ -2065,17 +2310,62 @@ def wide_entry_candidates_from_episodes(
     return candidates
 
 
-def episode_start_index(episode: Any) -> int | None:
+def attach_source_records_to_temporal_records(
+    records: list[dict[str, Any]],
+    *,
+    source_records: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if not source_records:
+        return records
+    enriched: list[dict[str, Any]] = []
+    for record in records:
+        start = optional_int(record.get("start_frame_id"))
+        end = optional_int(record.get("end_frame_id"))
+        if start is None or end is None:
+            enriched.append(record)
+            continue
+        matches = [
+            source
+            for source in source_records
+            if source_record_frame_id(source) is not None
+            and start <= int(source_record_frame_id(source)) <= end
+        ]
+        enriched.append({**record, "source_records": matches} if matches else record)
+    return enriched
+
+
+def source_record_frame_id(record: dict[str, Any]) -> int | None:
+    for key in ("anchor_frame_id", "frame_id", "wide_entry_frame_id", "start_frame_id"):
+        frame_id = optional_int(record.get(key))
+        if frame_id is not None:
+            return frame_id
+    source = record.get("source_result")
+    if isinstance(source, dict):
+        frame_id = source_record_frame_id(source)
+        if frame_id is not None:
+            return frame_id
+    return None
+
+
+def episode_start_index(episode: Any, *, frame_index: dict[int, int] | None = None) -> int | None:
     if isinstance(episode, dict):
-        return int(episode["start_index"]) if "start_index" in episode else None
+        if "start_index" in episode:
+            return int(episode["start_index"])
+        if frame_index is not None and "start_frame_id" in episode:
+            return frame_index.get(int(episode["start_frame_id"]))
+        return None
     if isinstance(episode, tuple | list) and len(episode) >= 1:
         return int(episode[0])
     return None
 
 
-def episode_end_index(episode: Any) -> int | None:
+def episode_end_index(episode: Any, *, frame_index: dict[int, int] | None = None) -> int | None:
     if isinstance(episode, dict):
-        return int(episode["end_index"]) if "end_index" in episode else None
+        if "end_index" in episode:
+            return int(episode["end_index"])
+        if frame_index is not None and "end_frame_id" in episode:
+            return frame_index.get(int(episode["end_frame_id"]))
+        return None
     if isinstance(episode, tuple | list) and len(episode) >= 2:
         return int(episode[1])
     return None
@@ -2432,6 +2722,14 @@ def predicate_trace_from_runtime_value(
         "source_output_name": node.input.output_name,
         "trace_source": f"{node.node_id}.{node.output.name}",
     }
+    record_trace = predicate_trace_from_runtime_record(
+        node=node,
+        runtime_value=runtime_value,
+        anchor=anchor,
+        source_evidence=source_evidence,
+    )
+    if record_trace is not None:
+        return record_trace
     if isinstance(runtime_value.value, FrameSignal):
         try:
             index = runtime_value.value.frame_ids.index(anchor.anchor_frame_id)
@@ -2503,6 +2801,45 @@ def predicate_trace_from_runtime_value(
             if isinstance(matched_window, dict)
             else None,
             source_evidence=source_evidence,
+        )
+    return None
+
+
+def predicate_trace_from_runtime_record(
+    *,
+    node: BoundPredicateNode,
+    runtime_value: RuntimeValue,
+    anchor: RuntimeAnchor,
+    source_evidence: dict[str, Any],
+) -> PredicateTrace | None:
+    for record in runtime_records(runtime_value):
+        if not record_matches_anchor(record, anchor):
+            continue
+        status_record = None
+        if isinstance(record.get("_predicate_status"), dict):
+            status_record = record["_predicate_status"].get(node.node_id)
+        if not isinstance(status_record, dict):
+            continue
+        return PredicateTrace(
+            predicate_id=node.node_id,
+            status=status_record["status"],
+            value=TypedValue.model_validate(status_record["value"])
+            if status_record.get("value") is not None
+            else None,
+            threshold=TypedValue.model_validate(status_record["threshold"])
+            if status_record.get("threshold") is not None
+            else None,
+            unit=Unit(status_record.get("unit", Unit.NONE.value)),
+            frame_id=optional_int(status_record.get("frame_id")) or anchor.anchor_frame_id,
+            window=status_record.get("window"),
+            source_evidence={
+                **source_evidence,
+                **{
+                    key: value
+                    for key, value in dict(status_record.get("source_evidence") or {}).items()
+                    if value is not None
+                },
+            },
         )
     return None
 
