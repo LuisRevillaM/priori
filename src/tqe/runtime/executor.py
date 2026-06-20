@@ -106,6 +106,19 @@ class PeriodState:
     predicate_traces: list[PredicateTrace] = field(default_factory=list)
 
 
+@dataclass(frozen=True)
+class RuntimeAnchor:
+    anchor_id: str
+    match_id: str
+    period: str
+    anchor_frame_id: int
+    source_node_id: str
+    output_name: str
+    start_frame_id: int | None
+    end_frame_id: int | None
+    attributes: dict[str, Any]
+
+
 PrimitiveImplementation = Callable[[PeriodState, BoundCatalogNode], None]
 RelationImplementation = Callable[[PeriodState, BoundCatalogNode], None]
 PredicateImplementation = Callable[[PeriodState, BoundPredicateNode], None]
@@ -317,10 +330,11 @@ class TacticalQueryExecutor:
         )
         target_frame_id = int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
         radius_frames = int(round(target.search_radius_ms / 1000.0 * FRAME_RATE_HZ))
+        anchors = runtime_anchors(state)
         compatible = [
-            candidate
-            for candidate in state.candidates
-            if abs(int(candidate["anchor_frame_id"]) - target_frame_id) <= radius_frames
+            anchor
+            for anchor in anchors
+            if abs(anchor.anchor_frame_id - target_frame_id) <= radius_frames
         ]
         if not compatible:
             return {
@@ -336,20 +350,21 @@ class TacticalQueryExecutor:
 
         closest = min(
             compatible,
-            key=lambda candidate: abs(int(candidate["anchor_frame_id"]) - target_frame_id),
+            key=lambda anchor: abs(anchor.anchor_frame_id - target_frame_id),
         )
-        result = closest.get("_runtime_result") or base_result_fields(
+        anchor_record = closest.attributes
+        result = anchor_record.get("_runtime_result") or base_result_fields(
             state,
-            closest,
+            anchor_record,
             state.params.text("result_id_seed_hash"),
             state.params.integer("analysis_rate_hz"),
         )
-        traces = predicate_traces_for_candidate(state, closest, result)
+        traces = predicate_traces_for_anchor(state, closest, result)
         traces.extend(
             missing_target_predicate_traces(
                 bound_plan=bound_plan,
                 state=state,
-                candidate=closest,
+                anchor=closest,
                 result=result,
                 existing_predicate_ids={trace.predicate_id for trace in traces},
             )
@@ -368,10 +383,11 @@ class TacticalQueryExecutor:
             "search_radius_frames": radius_frames,
             "candidate_count": len(compatible),
             "closest_candidate": {
-                "candidate_key": candidate_key(state, closest),
-                "wide_entry_frame_id": int(closest["wide_entry_frame_id"]),
-                "anchor_frame_id": int(closest["anchor_frame_id"]),
-                "frame_distance": abs(int(closest["anchor_frame_id"]) - target_frame_id),
+                "candidate_key": closest.anchor_id,
+                "anchor_id": closest.anchor_id,
+                "wide_entry_frame_id": int(anchor_record["wide_entry_frame_id"]),
+                "anchor_frame_id": closest.anchor_frame_id,
+                "frame_distance": abs(closest.anchor_frame_id - target_frame_id),
                 "accepted": accepted,
                 "rejection_reason": result.get("near_miss_reason"),
                 "classification": result.get("classification"),
@@ -1160,7 +1176,7 @@ def primitive_relation_destination_entry_classification(
         final_traces.extend(
             experimental_predicate_traces_for_result(
                 state=state,
-                candidate=source_result,
+                anchor_record=source_result,
                 source_result=source_result,
                 result=final_result,
                 episode=episode,
@@ -1607,6 +1623,87 @@ def execution_result_rows(execution: QueryExecution) -> list[dict[str, Any]]:
     return rows
 
 
+def runtime_anchors(state: PeriodState) -> list[RuntimeAnchor]:
+    anchors: list[RuntimeAnchor] = []
+    seen: set[str] = set()
+    for node_id, outputs in state.runtime_values.items():
+        for output_name, runtime_value in outputs.items():
+            for index, record in enumerate(runtime_records(runtime_value)):
+                anchor = runtime_anchor_from_record(
+                    state=state,
+                    node_id=node_id,
+                    output_name=output_name,
+                    index=index,
+                    record=record,
+                )
+                if anchor is None or anchor.anchor_id in seen:
+                    continue
+                seen.add(anchor.anchor_id)
+                anchors.append(anchor)
+    anchors.sort(
+        key=lambda item: (
+            item.match_id,
+            item.period,
+            item.anchor_frame_id,
+            item.source_node_id,
+            item.output_name,
+            item.anchor_id,
+        )
+    )
+    return anchors
+
+
+def runtime_anchor_from_record(
+    *,
+    state: PeriodState,
+    node_id: str,
+    output_name: str,
+    index: int,
+    record: dict[str, Any],
+) -> RuntimeAnchor | None:
+    if not isinstance(record, dict) or "anchor_frame_id" not in record:
+        return None
+    try:
+        anchor_frame_id = int(record["anchor_frame_id"])
+    except (TypeError, ValueError):
+        return None
+    match_id = str(record.get("match_id") or state.match_id)
+    period = str(record.get("period") or state.period)
+    anchor_id = record.get("anchor_id")
+    if not isinstance(anchor_id, str) or not anchor_id:
+        anchor_id = stable_hash(
+            {
+                "match_id": match_id,
+                "period": period,
+                "anchor_frame_id": anchor_frame_id,
+                "source_node_id": node_id,
+                "output_name": output_name,
+                "index": index,
+                "wide_entry_frame_id": record.get("wide_entry_frame_id"),
+            }
+        )[:16]
+    return RuntimeAnchor(
+        anchor_id=anchor_id,
+        match_id=match_id,
+        period=period,
+        anchor_frame_id=anchor_frame_id,
+        source_node_id=node_id,
+        output_name=output_name,
+        start_frame_id=optional_int(record.get("start_frame_id") or record.get("possession_start_frame_id")),
+        end_frame_id=optional_int(record.get("end_frame_id") or record.get("possession_end_frame_id")),
+        attributes=record,
+    )
+
+
+def optional_int(value: Any) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def select_proof_results(candidates: list[dict[str, Any]], params: RuntimeParameters) -> list[dict[str, Any]]:
     selected: list[dict[str, Any]] = []
     per_match: dict[str, int] = {}
@@ -1643,30 +1740,38 @@ def accepted_predicate_traces(state: PeriodState) -> list[PredicateTrace]:
     if state.predicate_traces:
         return state.predicate_traces
     traces: list[PredicateTrace] = []
-    for candidate in state.candidates:
-        result = candidate.get("_runtime_result")
-        if result and result.get("accepted"):
-            traces.extend(predicate_traces_for_candidate(state, candidate, result))
+    for result in state.accepted:
+        anchor = runtime_anchor_from_record(
+            state=state,
+            node_id="accepted_results",
+            output_name="result",
+            index=len(traces),
+            record=result,
+        )
+        if anchor is not None:
+            traces.extend(predicate_traces_for_anchor(state, anchor, result))
     return traces
 
 
 def predicate_traces_from_status_records(
     *,
     state: PeriodState,
-    candidate: dict[str, Any],
+    anchor: RuntimeAnchor,
     result: dict[str, Any],
 ) -> list[PredicateTrace]:
-    records = candidate.get("_predicate_status") or result.get("_predicate_status") or {}
+    anchor_record = anchor.attributes
+    records = anchor_record.get("_predicate_status") or result.get("_predicate_status") or {}
     if not isinstance(records, dict) or not records:
         return []
-    result_id = str(result.get("result_id") or candidate_key(state, candidate))
+    result_id = str(result.get("result_id") or anchor.anchor_id)
     common = {
         "result_id": result_id,
-        "candidate_key": candidate_key(state, candidate),
-        "match_id": state.match_id,
-        "period": state.period,
-        "wide_entry_frame_id": int(candidate["wide_entry_frame_id"]),
-        "anchor_frame_id": int(candidate["anchor_frame_id"]),
+        "candidate_key": anchor.anchor_id,
+        "anchor_id": anchor.anchor_id,
+        "match_id": anchor.match_id,
+        "period": anchor.period,
+        "wide_entry_frame_id": int(anchor_record["wide_entry_frame_id"]),
+        "anchor_frame_id": anchor.anchor_frame_id,
     }
     traces: list[PredicateTrace] = []
     for predicate_id, record in records.items():
@@ -1699,14 +1804,14 @@ def predicate_traces_from_status_records(
     return traces
 
 
-def predicate_traces_for_candidate(
+def predicate_traces_for_anchor(
     state: PeriodState,
-    candidate: dict[str, Any],
+    anchor: RuntimeAnchor,
     result: dict[str, Any],
 ) -> list[PredicateTrace]:
     return predicate_traces_from_status_records(
         state=state,
-        candidate=candidate,
+        anchor=anchor,
         result=result,
     )
 
@@ -1715,11 +1820,12 @@ def missing_target_predicate_traces(
     *,
     bound_plan: BoundQueryPlan,
     state: PeriodState,
-    candidate: dict[str, Any],
+    anchor: RuntimeAnchor,
     result: dict[str, Any],
     existing_predicate_ids: set[str],
 ) -> list[PredicateTrace]:
     traces: list[PredicateTrace] = []
+    anchor_record = anchor.attributes
     for node in bound_plan.nodes:
         if not isinstance(node, BoundPredicateNode) or node.node_id in existing_predicate_ids:
             continue
@@ -1730,15 +1836,16 @@ def missing_target_predicate_traces(
                 value=None,
                 threshold=node.compare if isinstance(node.compare, TypedValue) else None,
                 unit=node.output.unit,
-                frame_id=int(candidate["anchor_frame_id"]),
+                frame_id=anchor.anchor_frame_id,
                 source_evidence={
                     "reason": "source_output_unavailable_for_target_candidate",
-                    "result_id": str(result.get("result_id") or candidate_key(state, candidate)),
-                    "candidate_key": candidate_key(state, candidate),
-                    "match_id": state.match_id,
-                    "period": state.period,
-                    "wide_entry_frame_id": int(candidate["wide_entry_frame_id"]),
-                    "anchor_frame_id": int(candidate["anchor_frame_id"]),
+                    "result_id": str(result.get("result_id") or anchor.anchor_id),
+                    "candidate_key": anchor.anchor_id,
+                    "anchor_id": anchor.anchor_id,
+                    "match_id": anchor.match_id,
+                    "period": anchor.period,
+                    "wide_entry_frame_id": int(anchor_record["wide_entry_frame_id"]),
+                    "anchor_frame_id": anchor.anchor_frame_id,
                     "source_node_id": node.input.source_node_id,
                     "source_output_name": node.input.output_name,
                 },
@@ -1852,14 +1959,26 @@ def first_ball_entry_into_destination_region(
 def experimental_predicate_traces_for_result(
     *,
     state: PeriodState,
-    candidate: dict[str, Any],
+    anchor_record: dict[str, Any],
     source_result: dict[str, Any],
     result: dict[str, Any],
     episode: dict[str, Any],
     destination_entered: bool,
 ) -> list[PredicateTrace]:
     rewritten: list[PredicateTrace] = []
-    for trace in predicate_traces_for_candidate(state, candidate, source_result):
+    anchor = runtime_anchor_from_record(
+        state=state,
+        node_id="relation_source",
+        output_name="anchor",
+        index=0,
+        record=anchor_record,
+    )
+    source_traces = (
+        predicate_traces_for_anchor(state, anchor, source_result)
+        if anchor is not None
+        else []
+    )
+    for trace in source_traces:
         payload = trace.model_dump(mode="python", exclude_none=True)
         payload["source_evidence"] = {
             **payload.get("source_evidence", {}),
