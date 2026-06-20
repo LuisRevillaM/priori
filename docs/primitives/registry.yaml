@@ -1,0 +1,39 @@
+schema_version: "1.0"
+milestone: M1
+principle: "Every primitive must participate in the detector, replay evidence, or quality gates."
+primitives:
+  possession_segment:
+    version: "0.1.0"
+    purpose: "Identify active-ball possessions for the query perspective team."
+    required_for: ["eligibility", "outcome_classification"]
+  ball_lateral_fraction:
+    version: "0.1.0"
+    purpose: "Normalize ball distance from pitch centerline toward either touchline."
+    formula: "abs(2 * ball_y / pitch_width)"
+    required_for: ["wide_entry", "opposite_side_entry"]
+  wide_channel_dwell:
+    version: "0.1.0"
+    purpose: "Require ball to remain in a wide region long enough to avoid one-frame noise."
+    required_for: ["wide_entry"]
+  defensive_outfield_centroid:
+    version: "0.1.0"
+    purpose: "Measure defending team block movement without goalkeeper bias."
+    excludes: ["goalkeeper"]
+    required_for: ["baseline", "anchor", "signed_shift"]
+  robust_team_width:
+    version: "0.1.0"
+    purpose: "Describe team structure using y_95 - y_05 instead of raw extrema."
+    required_for: ["replay_evidence", "quality_context"]
+  robust_team_length:
+    version: "0.1.0"
+    purpose: "Describe team structure using x_95 - x_05 instead of raw extrema."
+    required_for: ["replay_evidence", "quality_context"]
+  signed_lateral_shift:
+    version: "0.1.0"
+    purpose: "Measure defensive centroid movement toward the ball side."
+    formula: "entry_side * (defensive_centroid_y_anchor - defensive_centroid_y_baseline)"
+    required_for: ["block_shift_gate", "ranking"]
+  shift_persistence:
+    version: "0.1.0"
+    purpose: "Ensure the block shift is sustained rather than one noisy frame."
+    required_for: ["block_shift_gate"]

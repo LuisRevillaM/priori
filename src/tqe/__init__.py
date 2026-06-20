@@ -1,0 +1,1 @@
+"""Tactical query evidence spine."""

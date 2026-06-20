@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+node_modules/
+.DS_Store
+
+# Generated evidence and large local data.
+artifacts/
+data/raw/
+data/canonical/
+data/features/

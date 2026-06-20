@@ -1,0 +1,36 @@
+milestone: M1
+name: "Verified Ball-Side Block-Shift Evidence Spine"
+state: VERIFIED_CONTROLLER_ONLY
+source_of_truth: delivery/m1/SPEC.md
+last_updated: "2026-06-19"
+slices:
+  S0_lock_charter_query_semantics_gates_non_goals: DONE
+  S1_provision_j03woh_source_provenance: DONE
+  S2_parse_j03woh_floodlight_adapter: DONE
+  S3_canonicalize_raw_xml_spot_check: DONE
+  S4_validate_quality_orientation: DONE
+  S5_render_30_second_canonical_replay: DONE
+  S6_remaining_six_matches: DONE
+  S7_corpus_integrity_portability: DONE
+  S8_required_tactical_primitives: DONE
+  S9_calibrate_and_freeze_query: DONE
+  S10_evaluate_frozen_query: DONE
+  S11_results_and_near_misses: DONE
+  S12_evidence_bundles: DONE
+  S13_typescript_replay_proof: DONE
+  S14_independent_numerical_visual_review: DONE_WITH_CONCERNS
+promotion_gates:
+  Gate_A_one_match_viability: ACCEPTED_CONTROLLER_ONLY
+  Gate_B_corpus_proof: ACCEPTED_CONTROLLER_ONLY
+  Gate_C_tactical_proof: ACCEPTED_CONTROLLER_ONLY
+consultation_gates:
+  G0_SPEC_FREEZE: COMPLETED
+  G1_DATA_SOURCE_LOCK: DONE
+  G2_QUERY_FREEZE: DONE
+  G3_PROOF_PACK_REVIEW: DONE_CONTROLLER_ONLY
+  G4_NEXT_MILESTONE_SELECTION: NOT_STARTED
+verification:
+  automated: M1_PASSING
+  independent_review: WAIVED_BY_OWNER_FOR_GATE_A_GATE_B_AND_GATE_C
+  controller_review: GATE_A_GATE_B_AND_GATE_C_ACCEPTED
+  owner_acceptance: PENDING_FINAL_M1_ACCEPTANCE

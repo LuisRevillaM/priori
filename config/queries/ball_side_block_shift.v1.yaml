@@ -1,0 +1,30 @@
+schema_version: "1.0"
+query_id: "ball_side_block_shift_v1"
+query_version: "1.0.0"
+analysis_rate_hz: 5
+minimum_possession_seconds: 8.0
+wide_entry_fraction: 0.60
+prior_central_fraction: 0.45
+minimum_wide_dwell_seconds: 1.20
+baseline_window_seconds: 0.80
+shift_search_window_seconds: 4.00
+minimum_shift_metres: 5.00
+minimum_shift_persistence_seconds: 0.60
+outcome_horizon_seconds: 6.00
+opposite_side_fraction: 0.35
+retained_after_switch_seconds: 1.00
+maximum_analysis_gap_ms: 250
+minimum_outfield_players_per_team: 9
+ranking_metric: "block_shift_score"
+ranking_direction: "descending"
+dedupe_window_seconds: 8.0
+accepted_result_limit: 16
+accepted_per_match_limit: 5
+near_miss_limit: 8
+perspective_team_role: "home"
+calibration_match_id: "J03WOH"
+evaluation_match_ids:
+  - "J03WOY"
+  - "J03WPY"
+  - "J03WQQ"
+  - "J03WR9"

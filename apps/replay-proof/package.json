@@ -1,0 +1,14 @@
+{
+  "name": "priori-replay-proof",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "verify": "node dist/verifyBundles.js ../../artifacts/m1/gate-c/proof-pack-manifest.json ../../artifacts/m1/gate-c/replay-proof-report.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}
