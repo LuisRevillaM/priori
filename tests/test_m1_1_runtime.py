@@ -8,6 +8,7 @@ from pathlib import Path
 from tqe.runtime.executor import (
     LEGACY_M1_PARITY_PROFILE,
     TacticalQueryExecutor,
+    execute_legacy_m1_plan_from_path,
     execute_plan_from_path,
     execution_result_rows,
     execute_default_plan,
@@ -22,7 +23,7 @@ class M11RuntimeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.bound, cls.execution = execute_default_plan()
-        cls.experimental_bound, cls.experimental_execution = execute_plan_from_path(
+        cls.experimental_bound, cls.experimental_execution = execute_legacy_m1_plan_from_path(
             Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json")
         )
 
@@ -57,6 +58,13 @@ class M11RuntimeTests(unittest.TestCase):
         self.assertEqual(ExecutionStatus.PASS, dry_run.status)
         self.assertEqual([], dry_run.results)
         self.assertEqual("dry_run", dry_run.provenance["execution_mode"])
+
+    def test_plan_path_helper_defaults_to_generic_execution(self) -> None:
+        _bound, execution = execute_plan_from_path(
+            Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json")
+        )
+
+        self.assertEqual("generic", execution.provenance["compatibility_profile"])
 
     def test_max_results_is_honored_deterministically(self) -> None:
         executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)

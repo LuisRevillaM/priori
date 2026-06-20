@@ -12,7 +12,7 @@ from tqe.runtime.binder import bind_document_from_path
 from tqe.runtime.executor import (
     DEFAULT_PLAN_PATH,
     execute_default_plan,
-    execute_plan_from_path,
+    execute_legacy_m1_plan_from_path,
     execution_result_rows,
     runtime_parameters,
     select_proof_results,
@@ -182,7 +182,7 @@ def build_approved_plan_inspector() -> dict[str, Any]:
 
 
 def build_experimental_plan_inspector() -> dict[str, Any]:
-    bound, execution = execute_plan_from_path(EXPERIMENTAL_PLAN_PATH)
+    bound, execution = execute_legacy_m1_plan_from_path(EXPERIMENTAL_PLAN_PATH)
     rows = execution_result_rows(execution)
     traces = traces_by_result(
         [trace.model_dump(mode="json", exclude_none=True) for trace in execution.predicate_traces]

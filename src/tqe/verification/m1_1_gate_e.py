@@ -15,7 +15,7 @@ import pyarrow.parquet as pq
 from tqe.runtime.executor import (
     DEFAULT_CANONICAL_ROOT,
     FRAME_RATE_HZ,
-    execute_plan_from_path,
+    execute_legacy_m1_plan_from_path,
     execution_result_rows,
     summarize_results,
 )
@@ -74,7 +74,7 @@ def build_report(gate_d_report: dict[str, Any] | None = None) -> dict[str, Any]:
         else fail_check("gate_d.precondition", "Gate D must pass before Gate E")
     )
 
-    bound, execution = execute_plan_from_path(PLAN_PATH)
+    bound, execution = execute_legacy_m1_plan_from_path(PLAN_PATH)
     rows = execution_result_rows(execution)
     trace_payload = [
         trace.model_dump(mode="json", exclude_none=True) for trace in execution.predicate_traces

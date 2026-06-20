@@ -223,6 +223,7 @@ class TacticalQueryExecutor:
                     "plan_id": bound_plan.plan_id,
                     "plan_status": bound_plan.plan_status.value,
                     "execution_mode": bound_plan.execution_mode.value,
+                    "compatibility_profile": self.compatibility_profile,
                     "runtime_result_count": 0,
                     "runtime_value_count": 0,
                     "skipped_reason": "bind_only",
@@ -241,6 +242,7 @@ class TacticalQueryExecutor:
                     "plan_id": bound_plan.plan_id,
                     "plan_status": bound_plan.plan_status.value,
                     "execution_mode": bound_plan.execution_mode.value,
+                    "compatibility_profile": self.compatibility_profile,
                     "runtime_result_count": 0,
                     "runtime_value_count": 0,
                     "skipped_reason": "dry_run",
@@ -323,6 +325,7 @@ class TacticalQueryExecutor:
                 "plan_id": bound_plan.plan_id,
                 "plan_status": bound_plan.plan_status.value,
                 "execution_mode": bound_plan.execution_mode.value,
+                "compatibility_profile": self.compatibility_profile,
                 "max_results": bound_plan.max_results,
                 "runtime_result_count": len(query_results),
                 "runtime_value_count": runtime_value_count,
@@ -2768,6 +2771,20 @@ def execute_default_plan(
 
 
 def execute_plan_from_path(
+    plan_path: Path,
+    *,
+    canonical_root: Path = DEFAULT_CANONICAL_ROOT,
+    raw_root: Path = DEFAULT_RAW_ROOT,
+) -> tuple[BoundQueryPlan, QueryExecution]:
+    bound = bind_document_from_path(plan_path)
+    execution = TacticalQueryExecutor(
+        canonical_root=canonical_root,
+        raw_root=raw_root,
+    ).execute(bound)
+    return bound, execution
+
+
+def execute_legacy_m1_plan_from_path(
     plan_path: Path,
     *,
     canonical_root: Path = DEFAULT_CANONICAL_ROOT,
