@@ -1,8 +1,9 @@
 milestone: M1.1
 name: "Composable Tactical Query Runtime"
-state: M1_1R_VERIFIED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
+state: REJECTED_EXTERNAL_REVIEW_PENDING_M1_1S
 source_of_truth: delivery/m1.1/SPEC.md
 corrective_source_of_truth: delivery/m1.1/CORRECTIVE_SPEC.md
+structural_corrective_source_of_truth: delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
 last_updated: "2026-06-20"
 preconditions:
   M1_valid_git_baseline: SATISFIED_BY_BASELINE_COMMIT_CONTAINING_THIS_STATUS
@@ -26,6 +27,14 @@ slices:
   S10_m1_1r_generic_predicate_classification_evidence_unknown: DONE
   S11_m1_1r_relation_anchor_decoupling_experimental_repair: DONE
   S12_m1_1r_architecture_proof_and_parity: DONE
+  S13_m1_1s_external_rejection_integration: DONE
+  S14_m1_1s_runtime_value_result_type_hardening: NOT_STARTED
+  S15_m1_1s_node_execution_contract: NOT_STARTED
+  S16_m1_1s_anchor_predicate_trace_core: NOT_STARTED
+  S17_m1_1s_rule_driven_result_emission: NOT_STARTED
+  S18_m1_1s_alias_based_evidence_projection: NOT_STARTED
+  S19_m1_1s_second_real_plan_relation_proof: NOT_STARTED
+  S20_m1_1s_parity_adapter_final_architecture_proof: NOT_STARTED
 promotion_gates:
   Gate_0_M1_baseline_and_gold_set: DONE
   Gate_A_type_system_and_binder: ACCEPTED_CONTROLLER_ONLY
@@ -40,10 +49,18 @@ promotion_gates:
   Gate_R3_generic_predicate_classification_evidence_unknown: ACCEPTED_CONTROLLER_ONLY
   Gate_R4_relation_anchor_decoupling_experimental_repair: ACCEPTED_CONTROLLER_ONLY
   Gate_R5_architecture_proof_and_parity: ACCEPTED_CONTROLLER_ONLY
+  Gate_S0_external_rejection_integration: DONE
+  Gate_S1_runtime_value_result_type_hardening: NOT_STARTED
+  Gate_S2_node_execution_contract: NOT_STARTED
+  Gate_S3_anchor_predicate_trace_core: NOT_STARTED
+  Gate_S4_rule_driven_result_emission: NOT_STARTED
+  Gate_S5_alias_based_evidence_projection: NOT_STARTED
+  Gate_S6_second_real_plan_relation_proof: NOT_STARTED
+  Gate_S7_parity_adapter_final_architecture_proof: NOT_STARTED
 verification:
-  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS
+  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
-  independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19
+  independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19_REJECTED_M1_1R_GATE_R5_REVIEW_2026_06_20
   controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_ACCEPTED_CONTROLLER_ONLY
   owner_acceptance: NOT_STARTED
-  m1_2_blocked_until: M1_1R_EXTERNAL_APPROVAL_OR_REQUIRED_CHANGES_INTEGRATED
+  m1_2_blocked_until: M1_1S_EXTERNAL_APPROVAL_OR_REQUIRED_CHANGES_INTEGRATED
