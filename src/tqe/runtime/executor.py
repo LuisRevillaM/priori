@@ -198,6 +198,7 @@ class TacticalQueryExecutor:
         }
         self.relations: dict[str, RelationImplementation] = {
             "geometric_progressive_corridor": relation_geometric_progressive_corridor,
+            "geometric_progressive_corridor_from_anchor_set": relation_geometric_progressive_corridor,
         }
         self.predicates: dict[str, PredicateImplementation] = {
             "gt": predicate_gt,
@@ -1850,11 +1851,13 @@ def relation_anchor_source(node: BoundCatalogNode) -> str:
 
 def relation_anchor_results(state: PeriodState, node: BoundCatalogNode) -> list[dict[str, Any]]:
     raw_anchors = runtime_records(catalog_input_value(state, node, "anchors"))
-    anchor_results = [
-        anchor
-        for anchor in raw_anchors
-        if isinstance(anchor, dict) and relation_anchor_has_required_fields(anchor)
-    ]
+    anchor_results: list[dict[str, Any]] = []
+    for anchor in raw_anchors:
+        if not isinstance(anchor, dict):
+            continue
+        normalized = normalized_relation_anchor(state, anchor)
+        if normalized is not None:
+            anchor_results.append(normalized)
     anchor_results.sort(
         key=lambda item: (
             str(item["match_id"]),
@@ -1866,17 +1869,41 @@ def relation_anchor_results(state: PeriodState, node: BoundCatalogNode) -> list[
     return anchor_results
 
 
+def normalized_relation_anchor(state: PeriodState, anchor: dict[str, Any]) -> dict[str, Any] | None:
+    if not relation_anchor_has_required_fields(anchor):
+        return None
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    result_id = str(anchor.get("result_id") or anchor.get("anchor_id") or "")
+    if not result_id:
+        return None
+    return {
+        **anchor,
+        "result_id": result_id,
+        "match_id": str(anchor.get("match_id") or state.match_id),
+        "period": str(anchor.get("period") or state.period),
+        "perspective_team_role": str(anchor.get("perspective_team_role") or state.perspective_team_role),
+        "defending_team_role": str(anchor.get("defending_team_role") or state.defending_team_role),
+        "anchor_frame_id": anchor_frame_id,
+        "outcome_frame_id": optional_int(anchor.get("outcome_frame_id"))
+        or optional_int(anchor.get("end_frame_id"))
+        or min(int(state.frame_ids[-1]), anchor_frame_id + FRAME_RATE_HZ * 4),
+        "replay_start_frame_id": optional_int(anchor.get("replay_start_frame_id"))
+        or max(int(state.frame_ids[0]), anchor_frame_id - FRAME_RATE_HZ * 2),
+        "replay_end_frame_id": optional_int(anchor.get("replay_end_frame_id"))
+        or min(int(state.frame_ids[-1]), anchor_frame_id + FRAME_RATE_HZ * 6),
+    }
+
+
 def relation_anchor_has_required_fields(anchor: dict[str, Any]) -> bool:
     required_fields = {
-        "result_id",
         "match_id",
         "period",
-        "perspective_team_role",
-        "defending_team_role",
         "anchor_frame_id",
-        "outcome_frame_id",
     }
-    return required_fields.issubset(anchor)
+    has_identity = "result_id" in anchor or "anchor_id" in anchor
+    return has_identity and required_fields.issubset(anchor)
 
 
 def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatalogNode) -> None:
