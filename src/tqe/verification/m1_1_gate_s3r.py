@@ -16,15 +16,19 @@ from tqe.runtime.catalog import output
 from tqe.runtime.executor import (
     FRAME_RATE_HZ,
     PeriodState,
+    RuntimeAnchor,
     RuntimeParameters,
     TacticalQueryExecutor,
     GENERIC_EXECUTION_PROFILE,
+    LEGACY_M1_PARITY_PROFILE,
     anchor_record_id,
+    duration_to_frames,
     evaluate_target_in_state,
     execute_persists_for,
     execute_predicate_with_resolved_inputs,
     execution_result_rows,
     predicate_persists_for,
+    predicate_trace_from_runtime_value,
     runtime_anchors,
     runtime_parameters,
     typed_number,
@@ -35,6 +39,7 @@ from tqe.runtime.ir import (
     EntityScope,
     EvaluationTarget,
     PayloadType,
+    PredicateTrace,
     SignalRef,
     TacticalQueryDocument,
     TemporalContainer,
@@ -67,7 +72,7 @@ def fail_check(check_id: str, message: str, details: dict[str, Any] | None = Non
 def build_report() -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     bound = bind_document_from_path(APPROVED_PLAN_PATH)
-    executor = TacticalQueryExecutor()
+    executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
     state = executor._execute_period(  # noqa: SLF001 - verifier inspects runtime contract.
         bound_plan=bound,
         match_id="J03WOY",
@@ -81,6 +86,7 @@ def build_report() -> dict[str, Any]:
     checks.extend(validate_invalid_anchor_id_rejected())
     checks.extend(validate_non_m1_anchor_target_and_trace(bound))
     checks.extend(validate_generic_temporal_semantics(bound))
+    checks.extend(validate_duration_unit_equivalence())
     checks.extend(validate_generic_profile_rejects_legacy_shape(bound))
     checks.extend(validate_frame_length_mismatch_rejected())
     checks.extend(validate_generic_source_no_forbidden_assumptions())
@@ -303,7 +309,13 @@ def validate_non_m1_anchor_target_and_trace(bound: Any) -> list[dict[str, Any]]:
     )
     state.candidates = [{"_predicate_status": {"fake": {"status": "PASS"}}}]
     state.accepted = [{"_runtime_result": {"accepted": True}}]
-    state.predicate_traces = []
+    state.predicate_traces = [
+        PredicateTrace(
+            predicate_id=pass_node.node_id,
+            status="FAIL",
+            source_evidence={"result_id": "contradictory_side_channel"},
+        )
+    ]
     record["_runtime_result"] = {"accepted": True, "classification": "SIDE_CHANNEL"}
     record["_predicate_status"] = {"fake": {"status": "PASS"}}
     perturbed = evaluate_target_in_state(
@@ -374,6 +386,46 @@ def validate_generic_temporal_semantics(bound: Any) -> list[dict[str, Any]]:
         (episode["temporal_status"], episode["start_frame_id"], episode["end_frame_id"])
         for episode in episodes
     ]
+    indeterminate = execute_persists_for(
+        signal=FrameSignal(
+            frame_ids=[200, 201, 202],
+            values=[True, True, None],
+            unknown_mask=[False, False, True],
+            unit=node.input_type.unit,
+            entity_scope=node.input_type.entity_scope,
+        ),
+        duration=typed_number(3, Unit.FRAME),
+        analysis_rate_hz=5,
+    ).output_records()
+    definitive_fail = execute_persists_for(
+        signal=FrameSignal(
+            frame_ids=[300, 301, 302],
+            values=[True, True, False],
+            unknown_mask=[False, False, False],
+            unit=node.input_type.unit,
+            entity_scope=node.input_type.entity_scope,
+        ),
+        duration=typed_number(3, Unit.FRAME),
+        analysis_rate_hz=5,
+    ).output_records()
+    outside_coverage_trace = predicate_trace_from_runtime_value(
+        node=node,
+        runtime_value=RuntimeValue(output=node.output, value=indeterminate),
+        anchor=RuntimeAnchor(
+            anchor_id="outside_coverage",
+            semantic_key="outside_coverage",
+            match_id="synthetic",
+            period="firstHalf",
+            anchor_frame_id=250,
+            source_node_id="anchor_node",
+            output_name="anchors",
+            start_frame_id=250,
+            end_frame_id=250,
+            attributes={},
+        ),
+        result_id="outside_coverage",
+        common_evidence={},
+    )
     source = inspect.getsource(predicate_persists_for)
     shared_source = inspect.getsource(execute_persists_for)
     forbidden = ["wide_entry", "block_shift", "shift_gate", "persistence_series", "quality_status", "runtime_records", "_predicate_status", "truth_series"]
@@ -382,15 +434,70 @@ def validate_generic_temporal_semantics(bound: Any) -> list[dict[str, Any]]:
         pass_check(
             "temporal.persists_for_generic_tri_state",
             "persists_for uses one generic temporal implementation, ignores arbitrary records, and preserves UNKNOWN intervals",
-            {"windows": windows, "provenance": result.provenance},
+            {
+                "windows": windows,
+                "indeterminate": indeterminate,
+                "definitive_fail": definitive_fail,
+                "outside_coverage": outside_coverage_trace.status if outside_coverage_trace else None,
+                "provenance": result.provenance,
+            },
         )
-        if windows == [("PASS", 100, 101), ("PASS", 103, 105), ("UNKNOWN", 102, 102)]
+        if windows == [("PASS", 100, 101), ("PASS", 103, 105), ("UNKNOWN", 102, 102), ("FAIL", 106, 107)]
+        and [(item["temporal_status"], item["start_frame_id"], item["end_frame_id"]) for item in indeterminate] == [("UNKNOWN", 200, 202)]
+        and [(item["temporal_status"], item["start_frame_id"], item["end_frame_id"]) for item in definitive_fail] == [("FAIL", 300, 302)]
+        and outside_coverage_trace is not None
+        and outside_coverage_trace.status == "UNKNOWN"
         and result.provenance.get("adapter") is None
         and not hits
         else fail_check(
             "temporal.persists_for_generic_tri_state",
             "generic persists_for semantics failed",
             {"windows": windows, "forbidden_hits": hits},
+        )
+    ]
+
+
+def validate_duration_unit_equivalence() -> list[dict[str, Any]]:
+    signal = FrameSignal(
+        frame_ids=[10, 11, 12],
+        values=[True, True, False],
+        unknown_mask=[False, False, False],
+        unit=Unit.NONE,
+        entity_scope=EntityScope.FRAME,
+    )
+    durations = [
+        typed_number(0.4, Unit.SECOND),
+        typed_number(400, Unit.MILLISECOND),
+        typed_number(2, Unit.FRAME),
+    ]
+    outputs = [
+        execute_persists_for(
+            signal=signal,
+            duration=duration,
+            analysis_rate_hz=5,
+        ).output_records()
+        for duration in durations
+    ]
+    frame_counts = [duration_to_frames(duration, 5) for duration in durations]
+    try:
+        duration_to_frames(typed_number(0, Unit.SECOND), 5)
+    except RuntimeError as error:
+        non_positive_rejected = str(error)
+    else:
+        non_positive_rejected = ""
+    return [
+        pass_check(
+            "temporal.duration_units_equivalent_and_positive",
+            "seconds, milliseconds, and frames normalize to identical frame counts and temporal output",
+            {"frame_counts": frame_counts, "outputs": outputs, "non_positive_error": non_positive_rejected},
+        )
+        if frame_counts == [2, 2, 2]
+        and outputs[0] == outputs[1] == outputs[2]
+        and non_positive_rejected
+        else fail_check(
+            "temporal.duration_units_equivalent_and_positive",
+            "duration unit normalization failed",
+            {"frame_counts": frame_counts, "outputs": outputs, "non_positive_error": non_positive_rejected},
         )
     ]
 
@@ -433,6 +540,7 @@ def validate_generic_profile_rejects_legacy_shape(bound: Any) -> list[dict[str, 
             {"windows": windows, "provenance": result.provenance},
         )
         if windows == [("PASS", 100, 102)] and result.provenance.get("adapter") is None
+        and TacticalQueryExecutor().compatibility_profile == GENERIC_EXECUTION_PROFILE
         else fail_check(
             "temporal.generic_profile_never_shape_selects_legacy_adapter",
             "generic execution changed under legacy-shaped records",

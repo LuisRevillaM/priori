@@ -14,6 +14,7 @@ from tqe.runtime.binder import BindError, bind_document
 from tqe.runtime.executor import (
     DEFAULT_CANONICAL_ROOT,
     DEFAULT_PLAN_PATH,
+    LEGACY_M1_PARITY_PROFILE,
     TacticalQueryExecutor,
     execution_result_rows,
     execute_default_plan,
@@ -77,7 +78,7 @@ def build_report(gate_b_report: dict[str, Any] | None = None) -> dict[str, Any]:
     }
     write_json(PREDICATE_TRACE_REPORT, predicate_report)
 
-    executor = TacticalQueryExecutor()
+    executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
     targets = default_evaluation_targets()
     evaluations = [executor.evaluate_target(bound, target) for target in targets]
     non_match_report = {

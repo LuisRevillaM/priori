@@ -17,6 +17,7 @@ from tqe.runtime.binder import (
 )
 from tqe.runtime.catalog import default_catalog
 from tqe.runtime.executor import (
+    LEGACY_M1_PARITY_PROFILE,
     TacticalQueryExecutor,
     apply_result_semantics,
     execution_result_rows,
@@ -55,7 +56,9 @@ def fail_check(check_id: str, message: str, details: dict[str, Any] | None = Non
 def build_report() -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     approved_bound = bind_document_from_path(APPROVED_PLAN_PATH)
-    approved_execution = TacticalQueryExecutor().execute(approved_bound)
+    approved_execution = TacticalQueryExecutor(
+        compatibility_profile=LEGACY_M1_PARITY_PROFILE
+    ).execute(approved_bound)
     approved_rows = execution_result_rows(approved_execution)
 
     checks.extend(validate_node_id_opacity(approved_rows))
@@ -87,7 +90,9 @@ def build_report() -> dict[str, Any]:
 def validate_node_id_opacity(approved_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     payload = renamed_node_payload(clone_plan_payload(APPROVED_PLAN_PATH))
     bound = bind_document(TacticalQueryDocument.model_validate(payload))
-    execution = TacticalQueryExecutor().execute(bound)
+    execution = TacticalQueryExecutor(
+        compatibility_profile=LEGACY_M1_PARITY_PROFILE
+    ).execute(bound)
     renamed_rows = execution_result_rows(execution)
     original_normalized = [normalize_result_for_node_rename(row) for row in approved_rows]
     renamed_normalized = [normalize_result_for_node_rename(row) for row in renamed_rows]
@@ -149,7 +154,7 @@ def validate_capability_execution() -> list[dict[str, Any]]:
     approved_bound = bind_document_from_path(APPROVED_PLAN_PATH)
     experimental_bound = bind_document_from_path(EXPERIMENTAL_PLAN_PATH)
     simple_bound = bind_document(TacticalQueryDocument.model_validate(simple_non_block_shift_payload()))
-    executor = TacticalQueryExecutor()
+    executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
     executions = {
         "approved": executor.execute(approved_bound),
         "experimental": executor.execute(experimental_bound),
@@ -231,7 +236,7 @@ def validate_capability_execution() -> list[dict[str, Any]]:
 
 
 def validate_plan_driven_semantics() -> list[dict[str, Any]]:
-    executor = TacticalQueryExecutor()
+    executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
     classification_payload = clone_plan_payload(APPROVED_PLAN_PATH)
     switched_rule = next(
         rule
@@ -427,7 +432,9 @@ def validate_m1_parity() -> list[dict[str, Any]]:
 
 def run_approved_plan() -> tuple[Any, Any]:
     bound = bind_document_from_path(APPROVED_PLAN_PATH)
-    execution = TacticalQueryExecutor().execute(bound)
+    execution = TacticalQueryExecutor(
+        compatibility_profile=LEGACY_M1_PARITY_PROFILE
+    ).execute(bound)
     return bound, execution
 
 

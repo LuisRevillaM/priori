@@ -22,6 +22,9 @@ class FrameSignal:
     def __post_init__(self) -> None:
         if not (len(self.frame_ids) == len(self.values) == len(self.unknown_mask)):
             raise RuntimeError("frame signal frame_ids, values, and unknown_mask lengths must match")
+        expected_unknown = [value is None for value in self.values]
+        if self.unknown_mask != expected_unknown:
+            raise RuntimeError("frame signal unknown_mask must match None-valued frames")
 
 
 @dataclass(frozen=True)

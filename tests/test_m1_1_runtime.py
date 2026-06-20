@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 
 from tqe.runtime.executor import (
+    LEGACY_M1_PARITY_PROFILE,
     TacticalQueryExecutor,
     execute_plan_from_path,
     execution_result_rows,
@@ -58,7 +59,7 @@ class M11RuntimeTests(unittest.TestCase):
         self.assertEqual("dry_run", dry_run.provenance["execution_mode"])
 
     def test_max_results_is_honored_deterministically(self) -> None:
-        executor = TacticalQueryExecutor()
+        executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
         limited_bound = self.bound.model_copy(update={"max_results": 1})
         first = executor.execute(limited_bound)
         second = executor.execute(limited_bound)
@@ -96,7 +97,7 @@ class M11RuntimeTests(unittest.TestCase):
             self.assertEqual(expected_predicates, predicates)
 
     def test_evaluation_target_returns_failures_and_no_anchor(self) -> None:
-        executor = TacticalQueryExecutor()
+        executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
         threshold = executor.evaluate_target(
             self.bound,
             EvaluationTarget(

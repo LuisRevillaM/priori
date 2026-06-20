@@ -137,6 +137,7 @@ class NodeExecutionResult:
 class TemporalPredicateResult:
     episodes: list[dict[str, Any]]
     unknown_intervals: list[dict[str, Any]]
+    fail_intervals: list[dict[str, Any]]
     evaluated_frame_ids: list[int]
 
     def output_records(self) -> list[dict[str, Any]]:
@@ -148,6 +149,10 @@ class TemporalPredicateResult:
             *[
                 {**interval, "temporal_status": "UNKNOWN"}
                 for interval in self.unknown_intervals
+            ],
+            *[
+                {**interval, "temporal_status": "FAIL"}
+                for interval in self.fail_intervals
             ],
         ]
 
@@ -171,7 +176,7 @@ class TacticalQueryExecutor:
         *,
         canonical_root: Path = DEFAULT_CANONICAL_ROOT,
         raw_root: Path = DEFAULT_RAW_ROOT,
-        compatibility_profile: str = LEGACY_M1_PARITY_PROFILE,
+        compatibility_profile: str = GENERIC_EXECUTION_PROFILE,
     ) -> None:
         self.canonical_root = canonical_root
         self.raw_root = raw_root
@@ -1111,7 +1116,7 @@ def execute_predicate_with_resolved_inputs(
             raise RuntimeError(f"Unsupported persists_for source for {node.node_id}")
         temporal = execute_persists_for(
             signal=runtime_value.value,
-            duration_seconds=float(duration.value),
+            duration=duration,
             analysis_rate_hz=context.params.integer("analysis_rate_hz"),
         )
         return {
@@ -1207,28 +1212,79 @@ def episode_records_from_frame_ids_and_mask(
 def execute_persists_for(
     *,
     signal: FrameSignal,
-    duration_seconds: float,
+    duration: TypedValue,
     analysis_rate_hz: int,
 ) -> TemporalPredicateResult:
     values = signal.values
     if not all(value is None or isinstance(value, bool) for value in values):
         raise RuntimeError("persists_for requires a Boolean frame signal")
-    minimum_frames = int(round(duration_seconds * analysis_rate_hz))
+    minimum_frames = duration_to_frames(duration, analysis_rate_hz)
     pass_episodes = episode_records_from_frame_ids_and_mask(
         frame_ids=signal.frame_ids,
         mask=np.asarray([value is True for value in values], dtype=bool),
         minimum_frames=minimum_frames,
     )
+    pass_mask = np.zeros(len(values), dtype=bool)
+    for episode in pass_episodes:
+        pass_mask[int(episode["start_index"]) : int(episode["end_index"]) + 1] = True
+    unknown_mask = np.asarray(
+        [
+            not bool(pass_mask[index]) and persistence_status_at_index(values, index, minimum_frames) == "UNKNOWN"
+            for index in range(len(values))
+        ],
+        dtype=bool,
+    )
     unknown_intervals = episode_records_from_frame_ids_and_mask(
         frame_ids=signal.frame_ids,
-        mask=np.asarray([value is None for value in values], dtype=bool),
+        mask=unknown_mask,
+        minimum_frames=1,
+    )
+    fail_intervals = episode_records_from_frame_ids_and_mask(
+        frame_ids=signal.frame_ids,
+        mask=~pass_mask & ~unknown_mask,
         minimum_frames=1,
     )
     return TemporalPredicateResult(
         episodes=pass_episodes,
         unknown_intervals=unknown_intervals,
+        fail_intervals=fail_intervals,
         evaluated_frame_ids=[int(frame_id) for frame_id in signal.frame_ids],
     )
+
+
+def duration_to_frames(duration: TypedValue, analysis_rate_hz: int) -> int:
+    value = float(duration.value)
+    if value <= 0:
+        raise RuntimeError("persists_for duration must be positive")
+    if duration.unit == Unit.SECOND:
+        frames = math.ceil(value * analysis_rate_hz)
+    elif duration.unit == Unit.MILLISECOND:
+        frames = math.ceil(value / 1000.0 * analysis_rate_hz)
+    elif duration.unit == Unit.FRAME:
+        frames = math.ceil(value)
+    else:
+        raise RuntimeError(f"Unsupported persists_for duration unit {duration.unit.value}")
+    if frames <= 0:
+        raise RuntimeError("persists_for duration must cover at least one frame")
+    return frames
+
+
+def persistence_status_at_index(
+    values: list[Any],
+    index: int,
+    minimum_frames: int,
+) -> str:
+    start_min = max(0, index - minimum_frames + 1)
+    start_max = min(index, len(values) - minimum_frames)
+    for start in range(start_min, start_max + 1):
+        window = values[start : start + minimum_frames]
+        if all(value is True for value in window):
+            return "PASS"
+    for start in range(start_min, start_max + 1):
+        window = values[start : start + minimum_frames]
+        if all(value is not False for value in window) and any(value is None for value in window):
+            return "UNKNOWN"
+    return "FAIL"
 
 
 def primitive_noop(state: PeriodState, node: BoundCatalogNode) -> None:
@@ -1862,7 +1918,7 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
         raise RuntimeError(f"Unsupported persists_for source for {node.node_id}")
     temporal = execute_persists_for(
         signal=runtime_value.value,
-        duration_seconds=duration_seconds,
+        duration=node.duration,
         analysis_rate_hz=state.params.integer("analysis_rate_hz"),
     )
     state.signals[node.node_id] = {
@@ -2141,7 +2197,6 @@ def generic_target_result(anchor_record: dict[str, Any]) -> dict[str, Any]:
         "classification": anchor_record.get("classification"),
         "accepted": False,
         "anchor_frame_id": anchor_record.get("anchor_frame_id"),
-        "_predicate_status": anchor_record.get("_predicate_status", {}),
     }
 
 
@@ -2408,25 +2463,32 @@ def predicate_trace_from_runtime_value(
         )
     if isinstance(runtime_value.value, list):
         matched = None
-        matched_unknown = None
+        has_temporal_status = False
         for episode in runtime_value.value:
             if not isinstance(episode, dict):
                 continue
+            if "temporal_status" in episode:
+                has_temporal_status = True
             start = optional_int(episode.get("start_frame_id"))
             end = optional_int(episode.get("end_frame_id"))
             if start is not None and end is not None and start <= anchor.anchor_frame_id <= end:
-                if episode.get("temporal_status") == "UNKNOWN":
-                    matched_unknown = episode
-                    break
                 matched = episode
                 break
-        status = "UNKNOWN" if matched_unknown is not None else "PASS" if matched is not None else "FAIL"
-        matched_window = matched_unknown or matched
+        if has_temporal_status:
+            if matched is None:
+                status = "UNKNOWN"
+                matched_window = None
+            else:
+                status = str(matched.get("temporal_status") or "PASS")
+                matched_window = matched
+        else:
+            status = "PASS" if matched is not None else "FAIL"
+            matched_window = matched
         return PredicateTrace(
             predicate_id=node.node_id,
             status=status,
-            value=TypedValue(payload_type=PayloadType.BOOLEAN, value=matched is not None, unit=Unit.NONE)
-            if status != "UNKNOWN"
+            value=TypedValue(payload_type=PayloadType.BOOLEAN, value=status == "PASS", unit=Unit.NONE)
+            if status in {"PASS", "FAIL"}
             else None,
             threshold=node.compare if isinstance(node.compare, TypedValue) else node.duration,
             unit=node.output.unit,
@@ -2697,7 +2759,11 @@ def execute_default_plan(
     plan_path: Path = DEFAULT_PLAN_PATH,
 ) -> tuple[BoundQueryPlan, QueryExecution]:
     bound = bind_document_from_path(plan_path)
-    execution = TacticalQueryExecutor(canonical_root=canonical_root, raw_root=raw_root).execute(bound)
+    execution = TacticalQueryExecutor(
+        canonical_root=canonical_root,
+        raw_root=raw_root,
+        compatibility_profile=LEGACY_M1_PARITY_PROFILE,
+    ).execute(bound)
     return bound, execution
 
 
@@ -2708,7 +2774,11 @@ def execute_plan_from_path(
     raw_root: Path = DEFAULT_RAW_ROOT,
 ) -> tuple[BoundQueryPlan, QueryExecution]:
     bound = bind_document_from_path(plan_path)
-    execution = TacticalQueryExecutor(canonical_root=canonical_root, raw_root=raw_root).execute(bound)
+    execution = TacticalQueryExecutor(
+        canonical_root=canonical_root,
+        raw_root=raw_root,
+        compatibility_profile=LEGACY_M1_PARITY_PROFILE,
+    ).execute(bound)
     return bound, execution
 
 

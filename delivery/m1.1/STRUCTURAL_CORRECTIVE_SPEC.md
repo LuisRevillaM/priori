@@ -240,6 +240,16 @@ S3R2 external review conditionally approved the direction but required S3R3 befo
 - a non-M1 proof executes actual predicate nodes and produces PASS, FAIL, and UNKNOWN traces;
 - perturbing candidates, accepted results, predicate traces, `_runtime_result`, and `_predicate_status` does not change generic target traces.
 
+S3R3 external review conditionally approved the architecture but required S3R4 temporal correctness before S4. Additional acceptance:
+
+- generic execution is the default compatibility profile;
+- frozen M1 parity explicitly opts into legacy compatibility;
+- typed persistence durations normalize `second`, `millisecond`, and `frame` units to equivalent frame counts;
+- zero or negative persistence durations fail;
+- `persists_for` distinguishes PASS, FAIL, and UNKNOWN intervals;
+- anchors outside evaluated temporal coverage trace as UNKNOWN;
+- `FrameSignal.unknown_mask` must agree with `None` values.
+
 ### Gate S4 - Rule-Driven Result Emission
 
 Acceptance:
