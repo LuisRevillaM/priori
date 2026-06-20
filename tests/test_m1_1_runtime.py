@@ -13,6 +13,7 @@ from tqe.runtime.executor import (
     select_proof_results,
 )
 from tqe.runtime.ir import EvaluationTarget
+from tqe.runtime.relations import evaluate_geometric_progressive_corridors
 
 
 class M11RuntimeTests(unittest.TestCase):
@@ -90,6 +91,23 @@ class M11RuntimeTests(unittest.TestCase):
             ]["status"],
         )
         self.assertEqual("NO_COMPATIBLE_ANCHOR", quiet["status"])
+
+    def test_geometric_progressive_corridor_relation_has_real_episode_breadth(self) -> None:
+        report = evaluate_geometric_progressive_corridors(
+            results=execution_result_rows(self.execution)
+        )
+
+        self.assertGreaterEqual(report["summary"]["episode_count"], 20)
+        self.assertGreaterEqual(report["summary"]["match_count_with_episode"], 3)
+        self.assertIn("UNKNOWN", {item["state"]["status"] for item in report["unknown_invalid_controls"]})
+        self.assertIn("INVALID", {item["state"]["status"] for item in report["unknown_invalid_controls"]})
+        self.assertTrue(
+            {
+                "positive",
+                "negative",
+                "flicker_boundary",
+            }.issubset({item["case_type"] for item in report["visual_review_cases"]})
+        )
 
     def test_executor_does_not_branch_on_query_recipe_or_plan_identity(self) -> None:
         tree = ast.parse(Path("src/tqe/runtime/executor.py").read_text(encoding="utf-8"))
