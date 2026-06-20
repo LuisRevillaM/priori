@@ -239,6 +239,7 @@ TypedArgument = Annotated[TypedValue | ParameterRef, Field(union_mode="left_to_r
 class EvidenceRequest(StrictModel):
     source: SignalRef
     field: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    alias: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]*$")
 
 
 class DraftCatalogNode(StrictModel):

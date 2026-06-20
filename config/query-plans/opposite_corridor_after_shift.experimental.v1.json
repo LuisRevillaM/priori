@@ -642,35 +642,40 @@
           "source_node_id": "opposite_corridor",
           "output_name": "episodes"
         },
-        "field": "relation_id"
+        "field": "relation_id",
+        "alias": "relation_id"
       },
       {
         "source": {
           "source_node_id": "opposite_corridor",
           "output_name": "episodes"
         },
-        "field": "destination_region"
+        "field": "destination_region",
+        "alias": "destination_region"
       },
       {
         "source": {
           "source_node_id": "opposite_corridor",
           "output_name": "episodes"
         },
-        "field": "duration_seconds"
+        "field": "duration_seconds",
+        "alias": "relation_duration_seconds"
       },
       {
         "source": {
           "source_node_id": "destination_entry",
           "output_name": "classification"
         },
-        "field": "classification"
+        "field": "classification",
+        "alias": "destination_classification"
       },
       {
         "source": {
           "source_node_id": "destination_entry",
           "output_name": "classification"
         },
-        "field": "destination_entry_frame_id"
+        "field": "destination_entry_frame_id",
+        "alias": "destination_entry_frame_id"
       }
     ],
     "anchor_source": {

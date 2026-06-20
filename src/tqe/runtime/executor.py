@@ -359,7 +359,13 @@ class TacticalQueryExecutor:
             )
             if compatibility_profile == LEGACY_M1_PARITY_PROFILE:
                 accepted.extend(state.accepted)
-                traces.extend(accepted_predicate_traces(state, compatibility_profile=compatibility_profile))
+                traces.extend(
+                    accepted_predicate_traces(
+                        state,
+                        bound_plan=bound_plan,
+                        compatibility_profile=compatibility_profile,
+                    )
+                )
             else:
                 period_results, period_traces = emit_generic_results_from_rules(
                     state=state,
@@ -686,12 +692,12 @@ def apply_result_semantics(
         )
 
     if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INVALIDATE_EXECUTION:
-        if any(trace.status == "UNKNOWN" for trace in filtered_traces):
-            return filtered, filtered_traces, ExecutionStatus.INCOMPLETE
+        if any(trace.status == "UNKNOWN" for trace in trace_records):
+            return filtered, trace_records, ExecutionStatus.INCOMPLETE
     if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.EXCLUDE_CANDIDATE:
         unknown_ids = {
             str(trace.source_evidence.get("result_id"))
-            for trace in filtered_traces
+            for trace in trace_records
             if trace.status == "UNKNOWN"
         }
         if unknown_ids:
@@ -700,6 +706,14 @@ def apply_result_semantics(
             filtered_traces = [
                 trace for trace in filtered_traces if str(trace.source_evidence.get("result_id")) in kept_ids
             ]
+            filtered_traces.extend(
+                [
+                    trace
+                    for trace in trace_records
+                    if trace.status == "UNKNOWN"
+                    and str(trace.source_evidence.get("result_id")) not in kept_ids
+                ]
+            )
     return filtered, filtered_traces, ExecutionStatus.PASS
 
 
@@ -737,6 +751,21 @@ def emit_generic_results_from_rules(
         labels = rule_labels_for_traces(
             traces=anchor_traces,
             bound_plan=bound_plan,
+        )
+        traces.extend(
+            [
+                trace.model_copy(
+                    update={
+                        "source_evidence": {
+                            **trace.source_evidence,
+                            "result_id": base_result["result_id"],
+                            "emitted_result": bool(labels),
+                        }
+                    }
+                )
+                for trace in anchor_traces
+                if trace.status == "UNKNOWN"
+            ]
         )
         if not labels:
             continue
@@ -807,18 +836,19 @@ def rule_labels_for_traces(
     bound_plan: BoundQueryPlan,
 ) -> list[str]:
     status_by_predicate = {trace.predicate_id: trace.status for trace in traces}
-    matching: list[ClassificationRule] = []
+    matching: list[tuple[int, int, ClassificationRule]] = []
+    rule_order = {id(rule): index for index, rule in enumerate(bound_plan.classification_rules)}
     for rule in bound_plan.classification_rules:
         statuses = [status_by_predicate.get(predicate_id, "UNKNOWN") for predicate_id in rule.predicate_ids]
         if any(status == "FAIL" for status in statuses):
             continue
         if any(status == "UNKNOWN" for status in statuses):
             if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INCLUDE_WITH_WARNING:
-                matching.append(rule)
+                matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule))
             continue
-        matching.append(rule)
-    matching.sort(key=lambda rule: (-len(rule.predicate_ids), rule.label))
-    return [rule.label for rule in matching]
+        matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule))
+    matching.sort(key=lambda item: (-item[0], item[1]))
+    return [rule.label for _specificity, _order, rule in matching]
 
 
 def matching_classification_rules(
@@ -843,7 +873,7 @@ def project_requested_evidence(
 ) -> dict[str, Any]:
     projected: dict[str, Any] = {}
     for request in bound_plan.requested_evidence:
-        key = f"{request.source.source_node_id}.{request.field}"
+        key = request.alias or f"{request.source.source_node_id}.{request.field}"
         projected[key] = result.get(request.field)
     return projected
 
@@ -855,15 +885,32 @@ def project_requested_evidence_from_runtime(
     bound_plan: BoundQueryPlan,
 ) -> dict[str, Any]:
     projected: dict[str, Any] = {}
+    selected_relation_id = selected_relation_id_for_anchor(state=state, anchor=anchor)
     for request in bound_plan.requested_evidence:
-        key = f"{request.source.source_node_id}.{request.field}"
+        key = request.alias or f"{request.source.source_node_id}.{request.field}"
         runtime_value = state.runtime_values.get(request.source.source_node_id, {}).get(request.source.output_name)
         projected[key] = evidence_value_for_anchor(
             runtime_value=runtime_value,
             anchor=anchor,
             field=request.field,
+            selected_relation_id=selected_relation_id,
         )
     return projected
+
+
+def selected_relation_id_for_anchor(
+    *,
+    state: PeriodState,
+    anchor: RuntimeAnchor,
+) -> str | None:
+    for outputs in state.runtime_values.values():
+        runtime_value = outputs.get("classification")
+        if runtime_value is None:
+            continue
+        for record in runtime_records(runtime_value):
+            if record_matches_anchor(record, anchor) and record.get("relation_id") is not None:
+                return str(record["relation_id"])
+    return None
 
 
 def evidence_value_for_anchor(
@@ -871,10 +918,17 @@ def evidence_value_for_anchor(
     runtime_value: RuntimeValue | None,
     anchor: RuntimeAnchor,
     field: str,
+    selected_relation_id: str | None = None,
 ) -> Any:
     if runtime_value is None:
         return None
     for record in runtime_records(runtime_value):
+        if (
+            selected_relation_id is not None
+            and record.get("relation_id") is not None
+            and str(record["relation_id"]) != selected_relation_id
+        ):
+            continue
         if record_matches_anchor(record, anchor):
             return record.get(field)
     if isinstance(runtime_value.value, FrameSignal):
@@ -1288,24 +1342,26 @@ def execute_predicate_with_resolved_inputs(
         }
         records = runtime_records(runtime_value)
         if node.operator.name == "neq" and records and len(records) == len(passed):
+            predicate_records: list[dict[str, Any]] = []
             for record, status, value in zip(records, passed, values, strict=False):
-                if "_predicate_status" in record:
-                    record_candidate_predicate(
-                        candidate=record,
+                predicate_records.append(
+                    predicate_record_for_source_record(
+                        source_record=record,
                         node=node,
                         status=predicate_status_label(status),
                         value=typed_enum(str(value)) if value is not None else None,
                         threshold=typed_enum(str(compare_value)),
                         unit=Unit.NONE,
-                        frame_id=int(record["outcome_frame_id"]) if record.get("outcome_frame_id") is not None else None,
+                        frame_id=optional_int(record.get("outcome_frame_id")),
                         source_evidence={
                             "source_node_id": node.input.source_node_id,
                             "source_output_name": node.input.output_name,
                             "reason": "outcome_not_evaluated" if value is None else None,
                         },
                     )
+                )
             output["items"] = [record for record, status in zip(records, passed, strict=False) if status]
-            output["predicate_records"] = records
+            output["predicate_records"] = predicate_records
         return output
     if node.operator.name == "persists_for":
         duration = parameters.get("duration")
@@ -1350,7 +1406,22 @@ def execute_predicate_with_resolved_inputs(
                         unit=node.output.unit,
                         entity_scope=node.output.entity_scope,
                     ),
-                    "predicate_records": [record for record, _frame_id in usable],
+                    "predicate_records": [
+                        predicate_record_for_source_record(
+                            source_record=record,
+                            node=node,
+                            status="PASS",
+                            value=TypedValue(payload_type=PayloadType.BOOLEAN, value=True, unit=Unit.NONE),
+                            threshold=None,
+                            unit=Unit.NONE,
+                            frame_id=frame_id,
+                            source_evidence={
+                                "source_node_id": node.input.source_node_id,
+                                "source_output_name": node.input.output_name,
+                            },
+                        )
+                        for record, frame_id in usable
+                    ],
                     "episodes": source,
                 }
             return {"predicate": bool(source), "episodes": source}
@@ -2558,6 +2629,7 @@ def select_proof_results(candidates: list[dict[str, Any]], params: RuntimeParame
 def accepted_predicate_traces(
     state: PeriodState,
     *,
+    bound_plan: BoundQueryPlan | None = None,
     compatibility_profile: str = LEGACY_M1_PARITY_PROFILE,
 ) -> list[PredicateTrace]:
     if state.predicate_traces:
@@ -2577,6 +2649,7 @@ def accepted_predicate_traces(
                     state,
                     anchor,
                     result,
+                    bound_plan=bound_plan,
                     compatibility_profile=compatibility_profile,
                 )
             )
@@ -2664,7 +2737,9 @@ def predicate_traces_for_anchor(
         merged: list[PredicateTrace] = []
         for trace in runtime_traces:
             legacy = legacy_by_id.pop(trace.predicate_id, None)
-            if legacy is not None and trace.status == "UNKNOWN":
+            if legacy is not None and compatibility_profile == LEGACY_M1_PARITY_PROFILE:
+                merged.append(legacy)
+            elif legacy is not None and trace.status == "UNKNOWN":
                 merged.append(legacy)
             else:
                 merged.append(trace)
@@ -2706,6 +2781,30 @@ def predicate_traces_from_declared_runtime_outputs(
         if trace is not None:
             traces.append(trace)
     return traces
+
+
+def predicate_record_for_source_record(
+    *,
+    source_record: dict[str, Any],
+    node: BoundPredicateNode,
+    status: str,
+    value: TypedValue | None,
+    threshold: TypedValue | None,
+    unit: Unit,
+    frame_id: int | None,
+    source_evidence: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "predicate_id": node.node_id,
+        "status": status,
+        "value": value.model_dump(mode="json") if value is not None else None,
+        "threshold": threshold.model_dump(mode="json") if threshold is not None else None,
+        "unit": unit.value,
+        "frame_id": frame_id,
+        "window": None,
+        "source_evidence": {key: item for key, item in source_evidence.items() if item is not None},
+        "source_record": source_record,
+    }
 
 
 def predicate_trace_from_runtime_value(
@@ -2813,30 +2912,28 @@ def predicate_trace_from_runtime_record(
     source_evidence: dict[str, Any],
 ) -> PredicateTrace | None:
     for record in runtime_records(runtime_value):
-        if not record_matches_anchor(record, anchor):
+        if record.get("predicate_id") != node.node_id:
             continue
-        status_record = None
-        if isinstance(record.get("_predicate_status"), dict):
-            status_record = record["_predicate_status"].get(node.node_id)
-        if not isinstance(status_record, dict):
+        source_record = record.get("source_record") if isinstance(record.get("source_record"), dict) else record
+        if not record_matches_anchor(source_record, anchor):
             continue
         return PredicateTrace(
             predicate_id=node.node_id,
-            status=status_record["status"],
-            value=TypedValue.model_validate(status_record["value"])
-            if status_record.get("value") is not None
+            status=record["status"],
+            value=TypedValue.model_validate(record["value"])
+            if record.get("value") is not None
             else None,
-            threshold=TypedValue.model_validate(status_record["threshold"])
-            if status_record.get("threshold") is not None
+            threshold=TypedValue.model_validate(record["threshold"])
+            if record.get("threshold") is not None
             else None,
-            unit=Unit(status_record.get("unit", Unit.NONE.value)),
-            frame_id=optional_int(status_record.get("frame_id")) or anchor.anchor_frame_id,
-            window=status_record.get("window"),
+            unit=Unit(record.get("unit", Unit.NONE.value)),
+            frame_id=optional_int(record.get("frame_id")) or anchor.anchor_frame_id,
+            window=record.get("window"),
             source_evidence={
                 **source_evidence,
                 **{
                     key: value
-                    for key, value in dict(status_record.get("source_evidence") or {}).items()
+                    for key, value in dict(record.get("source_evidence") or {}).items()
                     if value is not None
                 },
             },

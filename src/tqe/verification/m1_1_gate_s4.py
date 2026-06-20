@@ -12,9 +12,11 @@ from typing import Any
 from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import (
     TacticalQueryExecutor,
+    emit_generic_results_from_rules,
     execute_default_plan,
     execute_plan_from_path,
     execution_result_rows,
+    runtime_parameters,
     rule_labels_for_traces,
 )
 from tqe.runtime.ir import (
@@ -54,9 +56,11 @@ def build_report() -> dict[str, Any]:
 
     checks.extend(validate_real_generic_rows(execution, rows))
     checks.extend(validate_classification_rules_control_labels(rows))
+    checks.extend(validate_classification_conflict_semantics(bound))
     checks.extend(validate_required_predicate_changes_inclusion())
     checks.extend(validate_unknown_policy_semantics(bound))
     checks.extend(validate_evidence_projection(rows))
+    checks.extend(validate_side_channel_perturbation_independence(bound))
     checks.extend(validate_no_required_m1_fields(rows))
     checks.extend(validate_generic_profile_and_no_legacy_adapter(execution))
     checks.extend(validate_determinism())
@@ -135,93 +139,263 @@ def validate_classification_rules_control_labels(rows: list[dict[str, Any]]) -> 
     ]
 
 
+def validate_classification_conflict_semantics(bound: Any) -> list[dict[str, Any]]:
+    corridor = ClassificationRule(
+        label="CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+        predicate_ids=["p1"],
+        description="Equal-specificity first rule.",
+    )
+    destination = ClassificationRule(
+        label="DESTINATION_ENTERED",
+        predicate_ids=["p1"],
+        description="Equal-specificity second rule.",
+    )
+    destination_specific = ClassificationRule(
+        label="DESTINATION_ENTERED",
+        predicate_ids=["p1", "p2"],
+        description="More-specific rule.",
+    )
+    traces = [
+        PredicateTrace(predicate_id="p1", status="PASS"),
+        PredicateTrace(predicate_id="p2", status="PASS"),
+    ]
+    equal_forward = rule_labels_for_traces(
+        traces=traces,
+        bound_plan=bound.model_copy(update={"classification_rules": [corridor, destination]}),
+    )
+    equal_reverse = rule_labels_for_traces(
+        traces=traces,
+        bound_plan=bound.model_copy(update={"classification_rules": [destination, corridor]}),
+    )
+    specific_first = rule_labels_for_traces(
+        traces=traces,
+        bound_plan=bound.model_copy(update={"classification_rules": [corridor, destination_specific]}),
+    )
+    return [
+        pass_check(
+            "rules.conflict_semantics",
+            "classification conflict resolution is explicit: specificity first, then plan order",
+            {
+                "equal_forward": equal_forward,
+                "equal_reverse": equal_reverse,
+                "specific_first": specific_first,
+            },
+        )
+        if equal_forward[:2]
+        == ["CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY", "DESTINATION_ENTERED"]
+        and equal_reverse[:2] == ["DESTINATION_ENTERED", "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY"]
+        and specific_first[0] == "DESTINATION_ENTERED"
+        else fail_check(
+            "rules.conflict_semantics",
+            "classification conflict resolution did not follow specificity and plan-order semantics",
+            {
+                "equal_forward": equal_forward,
+                "equal_reverse": equal_reverse,
+                "specific_first": specific_first,
+            },
+        )
+    ]
+
+
 def validate_required_predicate_changes_inclusion() -> list[dict[str, Any]]:
-    baseline_rows = execution_result_rows(execute_plan_from_path(PLAN_PATH)[1])
     payload = plan_payload()
-    for rule in payload["draft_plan"]["classification_rules"]:
-        if rule["label"] == "DESTINATION_ENTERED":
-            rule["predicate_ids"] = [
-                predicate_id
-                for predicate_id in rule["predicate_ids"]
-                if predicate_id != "destination_region_entered"
-            ]
+    payload["draft_plan"]["classification_rules"] = [
+        rule
+        for rule in payload["draft_plan"]["classification_rules"]
+        if rule["label"] == "DESTINATION_ENTERED"
+    ]
+    baseline = bind_document(TacticalQueryDocument.model_validate(payload))
+    baseline_rows = execution_result_rows(TacticalQueryExecutor().execute(baseline))
+    for node in payload["draft_plan"]["nodes"]:
+        if node["node_id"] == "destination_region_entered":
+            node["operator"] = {"name": "eq", "version": "1.0.0"}
     mutated = bind_document(TacticalQueryDocument.model_validate(payload))
     mutated_execution = TacticalQueryExecutor().execute(mutated)
     mutated_rows = execution_result_rows(mutated_execution)
     before = Counter(str(row["classification"]) for row in baseline_rows)
     after = Counter(str(row["classification"]) for row in mutated_rows)
+    before_anchor_frames = {row["anchor_frame_id"] for row in baseline_rows}
+    after_anchor_frames = {row["anchor_frame_id"] for row in mutated_rows}
     return [
         pass_check(
             "rules.required_predicate_changes_inclusion",
-            "changing a required predicate changes inclusion while retaining declared labels",
-            {"before": dict(sorted(before.items())), "after": dict(sorted(after.items()))},
+            "changing a required predicate from PASS to FAIL changes inclusion while retaining declared label",
+            {
+                "before": dict(sorted(before.items())),
+                "after": dict(sorted(after.items())),
+                "retained_anchor_count": len(before_anchor_frames.intersection(after_anchor_frames)),
+            },
         )
-        if after != before and set(after).issubset(set(before))
+        if after["DESTINATION_ENTERED"] < before["DESTINATION_ENTERED"]
+        and set(after).issubset({"DESTINATION_ENTERED"})
+        and not before_anchor_frames.intersection(after_anchor_frames)
         else fail_check(
             "rules.required_predicate_changes_inclusion",
             "predicate mutation did not change inclusion as expected",
-            {"before": dict(sorted(before.items())), "after": dict(sorted(after.items()))},
+            {
+                "before": dict(sorted(before.items())),
+                "after": dict(sorted(after.items())),
+                "retained_anchor_count": len(before_anchor_frames.intersection(after_anchor_frames)),
+            },
         )
     ]
 
 
 def validate_unknown_policy_semantics(bound: Any) -> list[dict[str, Any]]:
-    traces = [
-        PredicateTrace(predicate_id="p1", status="PASS"),
-        PredicateTrace(predicate_id="p2", status="UNKNOWN"),
-        PredicateTrace(predicate_id="p3", status="FAIL"),
-    ]
-    rules = [
-        ClassificationRule(label="A_PASS_UNKNOWN", predicate_ids=["p1", "p2"], description="probe"),
-        ClassificationRule(label="B_PASS_FAIL", predicate_ids=["p1", "p3"], description="probe"),
-    ]
     checks: list[dict[str, Any]] = []
-    for policy, expected in [
-        (UnknownEvidencePolicy.EXCLUDE_CANDIDATE, []),
-        (UnknownEvidencePolicy.INCLUDE_WITH_WARNING, ["A_PASS_UNKNOWN"]),
+    for policy, expected_status, expect_results in [
+        (UnknownEvidencePolicy.EXCLUDE_CANDIDATE, ExecutionStatus.PASS, False),
+        (UnknownEvidencePolicy.INCLUDE_WITH_WARNING, ExecutionStatus.PASS, True),
+        (UnknownEvidencePolicy.INVALIDATE_EXECUTION, ExecutionStatus.INCOMPLETE, False),
     ]:
-        policy_bound = bound.model_copy(
-            update={"unknown_evidence_policy": policy, "classification_rules": rules}
-        )
-        labels = rule_labels_for_traces(traces=traces, bound_plan=policy_bound)
+        policy_bound = unknown_policy_probe_bound(policy)
+        execution = TacticalQueryExecutor().execute(policy_bound)
+        rows = execution_result_rows(execution)
+        unknown_traces = [trace for trace in execution.predicate_traces if trace.status == "UNKNOWN"]
         checks.append(
             pass_check(
                 f"unknown_policy.{policy.value}",
-                "unknown evidence policy controls rule labels",
-                {"labels": labels},
+                "unknown evidence policy controls generic result emission end to end",
+                {
+                    "status": execution.status.value,
+                    "result_count": len(rows),
+                    "unknown_trace_count": len(unknown_traces),
+                },
             )
-            if labels == expected
+            if execution.status == expected_status
+            and bool(rows) is expect_results
+            and bool(unknown_traces)
             else fail_check(
                 f"unknown_policy.{policy.value}",
-                "unknown evidence policy did not control labels",
-                {"expected": expected, "actual": labels},
+                "unknown evidence policy did not control generic execution end to end",
+                {
+                    "expected_status": expected_status.value,
+                    "actual_status": execution.status.value,
+                    "result_count": len(rows),
+                    "unknown_trace_count": len(unknown_traces),
+                },
             )
         )
     return checks
+
+
+def unknown_policy_probe_bound(policy: UnknownEvidencePolicy) -> Any:
+    payload = plan_payload()
+    payload["draft_plan"]["unknown_evidence_policy"] = policy.value
+    payload["draft_plan"]["anchor_source"] = {"source_node_id": "possession", "output_name": "anchors"}
+    payload["draft_plan"]["classification_rules"] = [
+        {
+            "label": "DESTINATION_ENTERED",
+            "predicate_ids": ["destination_region_entered"],
+            "description": "Probe anchors whose required destination predicate is unknown.",
+        }
+    ]
+    return bind_document(TacticalQueryDocument.model_validate(payload))
 
 
 def validate_evidence_projection(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     failures = [
         row["result_id"]
         for row in rows
-        if not row.get("requested_evidence", {}).get("opposite_corridor.relation_id")
-        or row.get("requested_evidence", {}).get("opposite_corridor.destination_region") is None
-        or row.get("requested_evidence", {}).get("opposite_corridor.duration_seconds") is None
-        or row.get("requested_evidence", {}).get("destination_entry.classification") != row["classification"]
+        if not row.get("requested_evidence", {}).get("relation_id")
+        or row.get("requested_evidence", {}).get("destination_region") is None
+        or row.get("requested_evidence", {}).get("relation_duration_seconds") is None
+        or row.get("requested_evidence", {}).get("destination_classification") != row["classification"]
+    ]
+    node_id_keys = [
+        key
+        for row in rows
+        for key in row.get("requested_evidence", {})
+        if "." in key
     ]
     return [
         pass_check(
             "evidence.declared_runtime_outputs",
-            "requested evidence resolves from declared runtime outputs",
+            "requested evidence resolves through stable aliases from declared runtime outputs",
             {"result_count": len(rows)},
         )
-        if not failures and rows
+        if not failures and not node_id_keys and rows
         else fail_check(
             "evidence.declared_runtime_outputs",
-            "one or more rows lack declared requested evidence",
-            {"failure_sample": failures[:10], "result_count": len(rows)},
+            "one or more rows lack declared requested evidence or expose node-ID keys",
+            {"failure_sample": failures[:10], "node_id_keys": sorted(set(node_id_keys)), "result_count": len(rows)},
         )
     ]
+
+
+def validate_side_channel_perturbation_independence(bound: Any) -> list[dict[str, Any]]:
+    executor = TacticalQueryExecutor()
+    params = runtime_parameters(bound)
+    state = executor._execute_period(  # noqa: SLF001 - verifier intentionally inspects generic state.
+        bound_plan=bound,
+        match_id=bound.match_ids[0],
+        period=bound.periods[0],
+        params=params,
+    )
+    before_results, before_traces = emit_generic_results_from_rules(
+        state=state,
+        bound_plan=bound,
+        compatibility_profile="generic",
+    )
+    state.candidates = [{"result_id": "poison_candidate"}]
+    state.accepted = [{"result_id": "poison_accepted"}]
+    state.predicate_traces = [PredicateTrace(predicate_id="poison", status="FAIL")]
+    for outputs in state.runtime_values.values():
+        for runtime_value in outputs.values():
+            for record in runtime_value.records:
+                record["_runtime_result"] = {"classification": "POISON"}
+                record["_predicate_status"] = {"poison": {"status": "PASS"}}
+            if isinstance(runtime_value.value, list):
+                for item in runtime_value.value:
+                    if isinstance(item, dict):
+                        item["_runtime_result"] = {"classification": "POISON"}
+                        item["_predicate_status"] = {"poison": {"status": "PASS"}}
+    after_results, after_traces = emit_generic_results_from_rules(
+        state=state,
+        bound_plan=bound,
+        compatibility_profile="generic",
+    )
+    before = normalized_generic_emission(before_results, before_traces)
+    after = normalized_generic_emission(after_results, after_traces)
+    return [
+        pass_check(
+            "generic.side_channels_ignored",
+            "generic emitted rows, classifications, and traces ignore legacy side channels",
+            {"result_count": len(before_results), "trace_count": len(before_traces)},
+        )
+        if before == after and before_results
+        else fail_check(
+            "generic.side_channels_ignored",
+            "generic emission changed after side-channel perturbation",
+            {"before_result_count": len(before_results), "after_result_count": len(after_results)},
+        )
+    ]
+
+
+def normalized_generic_emission(
+    results: list[dict[str, Any]],
+    traces: list[PredicateTrace],
+) -> dict[str, Any]:
+    return {
+        "results": [
+            {
+                "result_id": result["result_id"],
+                "classification": result["classification"],
+                "anchor_frame_id": result["anchor_frame_id"],
+                "requested_evidence": result.get("requested_evidence"),
+            }
+            for result in results
+        ],
+        "traces": [
+            {
+                "predicate_id": trace.predicate_id,
+                "status": trace.status,
+                "frame_id": trace.frame_id,
+                "result_id": trace.source_evidence.get("result_id"),
+            }
+            for trace in traces
+        ],
+    }
 
 
 def validate_no_required_m1_fields(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:

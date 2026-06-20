@@ -235,7 +235,15 @@ Acceptance:
 - frozen M1 parity remains exact only through explicit legacy helpers.
 
 S4 is intentionally narrow. It must not add Hermes, UI work, new primitives, a second tactical family, a ranking language, or visualization grammar.
-- node execution returns an explicit result containing resolved inputs, parameters, outputs, runtime values, warnings, and provenance.
+
+S4 external review approved the core result emission architecture but requires one correction before the second tactical pattern:
+
+- `EXCLUDE_CANDIDATE`, `INCLUDE_WITH_WARNING`, and `INVALIDATE_EXECUTION` all work end to end for real generic execution with required-predicate UNKNOWN evidence;
+- generic trace generation consumes declared runtime outputs and explicit predicate records, not `_predicate_status`;
+- perturbing `_runtime_result`, `_predicate_status`, `state.candidates`, `state.accepted`, and `state.predicate_traces` does not change generic emitted rows, classifications, or traces;
+- classification conflict resolution is explicit: more-specific matching rules win, and equal-specificity ties use plan order rather than lexical label order;
+- the inclusion verifier proves a required predicate changes emitted count for the same label, with no overlapping rule absorbing the anchors;
+- requested evidence uses stable aliases and selected-relation correlation.
 
 External review rejected the first S3R packet as insufficient. The strengthened S3R acceptance additionally requires:
 
