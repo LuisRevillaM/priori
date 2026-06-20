@@ -26,6 +26,8 @@ class M11BinderTests(unittest.TestCase):
         self.assertEqual("ball_side_block_shift_v1", bound.recipe_id)
         self.assertEqual(10, len(bound.nodes))
         self.assertEqual(19, len(bound.resolved_parameters))
+        self.assertEqual(16, bound.max_results)
+        self.assertEqual("bind_only", bound.execution_mode.value)
         self.assertEqual(bound.plan_hash, rebound.plan_hash)
         self.assertEqual(bound.bound_plan_hash, rebound.bound_plan_hash)
 
@@ -74,19 +76,19 @@ class M11BinderTests(unittest.TestCase):
 
         self.assertBindError(payload, "operator_cardinality_mismatch")
 
-    def test_persists_for_scalar_number_fails_at_bind_time(self) -> None:
+    def test_persists_for_non_frame_signal_fails_at_bind_time(self) -> None:
         payload = load_payload()
         payload["draft_plan"]["nodes"] = [
             {
                 "kind": "primitive",
-                "node_id": "rate",
-                "catalog_ref": "analysis_rate",
+                "node_id": "possession",
+                "catalog_ref": "possession_segment",
                 "version": "0.1.0",
             },
             {
                 "kind": "predicate",
-                "node_id": "rate_persists",
-                "input": {"source_node_id": "rate", "output_name": "hz"},
+                "node_id": "possession_persists",
+                "input": {"source_node_id": "possession", "output_name": "episodes"},
                 "operator": {"name": "persists_for", "version": "1.0.0"},
                 "duration": {"payload_type": "number", "unit": "second", "value": 1.0},
             },
@@ -94,13 +96,53 @@ class M11BinderTests(unittest.TestCase):
         payload["draft_plan"]["classification_rules"] = [
             {
                 "label": "BAD",
-                "predicate_ids": ["rate_persists"],
-                "description": "Invalid scalar-number persistence fixture.",
+                "predicate_ids": ["possession_persists"],
+                "description": "Invalid episode-set persistence fixture.",
             }
         ]
         payload["draft_plan"]["requested_evidence"] = []
 
         self.assertBindError(payload, "operator_temporal_mismatch")
+
+    def test_unknown_node_parameter_fails_at_bind_time(self) -> None:
+        payload = load_payload()
+        payload["draft_plan"]["nodes"][5]["parameters"] = {
+            "totally_unknown_knob": {"payload_type": "number", "unit": "metre", "value": 99}
+        }
+
+        self.assertBindError(payload, "unknown_node_parameter")
+
+    def test_missing_required_node_input_fails_at_bind_time(self) -> None:
+        payload = load_payload()
+        del payload["draft_plan"]["nodes"][5]["inputs"]["entry_episodes"]
+
+        self.assertBindError(payload, "missing_node_input")
+
+    def test_invalid_node_parameter_range_fails_at_bind_time(self) -> None:
+        payload = json.loads(
+            Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        payload["draft_plan"]["nodes"][10]["parameters"]["minimum_clearance_m"] = {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": -3.0,
+        }
+
+        self.assertBindError(payload, "parameter_below_minimum")
+
+    def test_classification_labels_must_match_recipe(self) -> None:
+        payload = load_payload()
+        payload["draft_plan"]["classification_rules"] = [
+            {
+                "label": "NONSENSE",
+                "predicate_ids": ["wide_entry_persists"],
+                "description": "Invalid label outside recipe outputs.",
+            }
+        ]
+
+        self.assertBindError(payload, "classification_label_mismatch")
 
     def test_team_signal_as_player_relation_fails_at_bind_time(self) -> None:
         payload = load_payload()

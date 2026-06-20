@@ -187,6 +187,25 @@ def check_catalog_metadata() -> list[dict[str, Any]]:
                         "output declares type, unit, cardinality, scope, and missing-data semantics",
                     )
                 )
+        if not entry.executable:
+            checks.append(fail_check(f"catalog.{entry.name}.executable", "entry is not executable"))
+        else:
+            checks.append(pass_check(f"catalog.{entry.name}.executable", "entry is executable"))
+        for parameter in entry.parameters:
+            if parameter.required and parameter.default is not None:
+                checks.append(
+                    fail_check(
+                        f"catalog.{entry.name}.{parameter.name}.parameter",
+                        "required catalog parameter should not declare a default",
+                    )
+                )
+            else:
+                checks.append(
+                    pass_check(
+                        f"catalog.{entry.name}.{parameter.name}.parameter",
+                        "catalog parameter declares type, unit, bounds, and required/default policy",
+                    )
+                )
 
     for operator in catalog.operators:
         if operator.version:
@@ -296,14 +315,14 @@ def check_invalid_plans() -> list[dict[str, Any]]:
     payload["draft_plan"]["nodes"] = [
         {
             "kind": "primitive",
-            "node_id": "rate",
-            "catalog_ref": "analysis_rate",
+            "node_id": "possession",
+            "catalog_ref": "possession_segment",
             "version": "0.1.0",
         },
         {
             "kind": "predicate",
-            "node_id": "rate_persists",
-            "input": {"source_node_id": "rate", "output_name": "hz"},
+            "node_id": "possession_persists",
+            "input": {"source_node_id": "possession", "output_name": "episodes"},
             "operator": {"name": "persists_for", "version": "1.0.0"},
             "duration": {"payload_type": "number", "unit": "second", "value": 1.0},
         },
@@ -311,8 +330,8 @@ def check_invalid_plans() -> list[dict[str, Any]]:
     payload["draft_plan"]["classification_rules"] = [
         {
             "label": "BAD",
-            "predicate_ids": ["rate_persists"],
-            "description": "Invalid scalar-number persistence fixture.",
+            "predicate_ids": ["possession_persists"],
+            "description": "Invalid episode-set persistence fixture.",
         }
     ]
     payload["draft_plan"]["requested_evidence"] = []
@@ -364,6 +383,44 @@ def check_invalid_plans() -> list[dict[str, Any]]:
             check_id="binder.rejects_unresolved_temporal_reference",
             document_payload=payload,
             expected_code="unresolved_temporal_reference",
+        )
+    )
+
+    payload = clone_plan_payload()
+    payload["draft_plan"]["nodes"][5]["parameters"] = {
+        "totally_unknown_knob": {"payload_type": "number", "unit": "metre", "value": 99}
+    }
+    checks.append(
+        expect_bind_error(
+            check_id="binder.rejects_unknown_node_parameter",
+            document_payload=payload,
+            expected_code="unknown_node_parameter",
+        )
+    )
+
+    payload = clone_plan_payload()
+    del payload["draft_plan"]["nodes"][5]["inputs"]["entry_episodes"]
+    checks.append(
+        expect_bind_error(
+            check_id="binder.rejects_missing_node_input",
+            document_payload=payload,
+            expected_code="missing_node_input",
+        )
+    )
+
+    payload = clone_plan_payload()
+    payload["draft_plan"]["classification_rules"] = [
+        {
+            "label": "NONSENSE",
+            "predicate_ids": ["wide_entry_persists"],
+            "description": "Invalid label outside recipe outputs.",
+        }
+    ]
+    checks.append(
+        expect_bind_error(
+            check_id="binder.rejects_classification_label_mismatch",
+            document_payload=payload,
+            expected_code="classification_label_mismatch",
         )
     )
 

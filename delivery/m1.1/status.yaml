@@ -21,7 +21,7 @@ slices:
   S5_no_code_experimental_composition: DONE
   S6_developer_inspector_and_reports: DONE
   S7_m1_1r_state_correction_review_integration: DONE
-  S8_m1_1r_explicit_plan_graph_binder_contracts: NOT_STARTED
+  S8_m1_1r_explicit_plan_graph_binder_contracts: DONE
   S9_m1_1r_typed_runtime_values_invocation_semantics: NOT_STARTED
   S10_m1_1r_generic_predicate_classification_evidence_unknown: NOT_STARTED
   S11_m1_1r_relation_anchor_decoupling_experimental_repair: NOT_STARTED
@@ -35,15 +35,15 @@ promotion_gates:
   Gate_E_no_code_composition: ACCEPTED_CONTROLLER_ONLY
   Gate_F_developer_inspector_reports: ACCEPTED_CONTROLLER_ONLY
   Gate_R0_state_correction_review_integration: DONE
-  Gate_R1_explicit_plan_graph_binder_contracts: NOT_STARTED
+  Gate_R1_explicit_plan_graph_binder_contracts: ACCEPTED_CONTROLLER_ONLY
   Gate_R2_typed_runtime_values_invocation_semantics: NOT_STARTED
   Gate_R3_generic_predicate_classification_evidence_unknown: NOT_STARTED
   Gate_R4_relation_anchor_decoupling_experimental_repair: NOT_STARTED
   Gate_R5_architecture_proof_and_parity: NOT_STARTED
 verification:
-  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE
+  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_PASS
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
   independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19
-  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY
+  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_ACCEPTED_CONTROLLER_ONLY
   owner_acceptance: NOT_STARTED
   m1_2_blocked_until: M1_1R_EXTERNAL_APPROVAL_OR_REQUIRED_CHANGES_INTEGRATED

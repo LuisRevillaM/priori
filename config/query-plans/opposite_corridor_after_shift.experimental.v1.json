@@ -424,7 +424,17 @@
         "kind": "primitive",
         "node_id": "signed_shift",
         "catalog_ref": "signed_lateral_shift",
-        "version": "0.1.0"
+        "version": "0.1.0",
+        "inputs": {
+          "entry_episodes": {
+            "source_node_id": "wide_entry_persists",
+            "output_name": "predicate"
+          },
+          "defensive_centroid": {
+            "source_node_id": "defensive_centroid",
+            "output_name": "centroid_y"
+          }
+        }
       },
       {
         "kind": "predicate",
@@ -463,6 +473,16 @@
         "node_id": "outcome",
         "catalog_ref": "outcome_classification",
         "version": "0.1.0",
+        "inputs": {
+          "accepted_shift_episodes": {
+            "source_node_id": "shift_persists",
+            "output_name": "predicate"
+          },
+          "signed_shift": {
+            "source_node_id": "signed_shift",
+            "output_name": "signed_shift"
+          }
+        },
         "parameters": {
           "horizon": {
             "kind": "parameter",
@@ -492,6 +512,12 @@
         "node_id": "opposite_corridor",
         "catalog_ref": "geometric_progressive_corridor",
         "version": "0.1.0",
+        "inputs": {
+          "anchors": {
+            "source_node_id": "outcome",
+            "output_name": "classification"
+          }
+        },
         "parameters": {
           "max_window_seconds": {
             "kind": "parameter",
@@ -549,6 +575,12 @@
         "node_id": "destination_entry",
         "catalog_ref": "relation_destination_entry_classification",
         "version": "0.1.0",
+        "inputs": {
+          "relation_episodes": {
+            "source_node_id": "opposite_corridor",
+            "output_name": "episodes"
+          }
+        },
         "parameters": {
           "relation_node_id": {
             "payload_type": "enum",

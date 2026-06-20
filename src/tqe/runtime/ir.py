@@ -158,10 +158,17 @@ class ParameterDefinition(StrictModel):
     unit: Unit = Unit.NONE
     required: bool = False
     default: TypedValue | None = None
+    minimum: float | None = None
+    maximum: float | None = None
+    allowed_values: list[str] | None = None
     description: str
 
     @model_validator(mode="after")
     def validate_default_matches_definition(self) -> "ParameterDefinition":
+        if self.minimum is not None and self.maximum is not None and self.minimum > self.maximum:
+            raise ValueError("parameter minimum cannot exceed maximum")
+        if self.allowed_values is not None and self.payload_type != PayloadType.ENUM:
+            raise ValueError("allowed_values can only be declared for enum parameters")
         if self.default is None:
             if not self.required:
                 raise ValueError("non-required parameters must declare a default")
@@ -170,6 +177,14 @@ class ParameterDefinition(StrictModel):
             raise ValueError("parameter default payload_type must match definition")
         if self.default.unit != self.unit:
             raise ValueError("parameter default unit must match definition")
+        if self.default.payload_type == PayloadType.NUMBER:
+            numeric = float(self.default.value)
+            if self.minimum is not None and numeric < self.minimum:
+                raise ValueError("parameter default is below minimum")
+            if self.maximum is not None and numeric > self.maximum:
+                raise ValueError("parameter default is above maximum")
+        if self.allowed_values is not None and str(self.default.value) not in set(self.allowed_values):
+            raise ValueError("parameter default is not in allowed_values")
         return self
 
 
@@ -228,6 +243,7 @@ class DraftCatalogNode(StrictModel):
     node_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     catalog_ref: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     version: str
+    inputs: dict[str, SignalRef] = Field(default_factory=dict)
     parameters: dict[str, TypedArgument] = Field(default_factory=dict)
 
 
@@ -342,9 +358,37 @@ class CatalogEntry(StrictModel):
     purpose: str
     inputs: list[CatalogInput] = Field(default_factory=list)
     outputs: list[CatalogOutput] = Field(min_length=1)
+    parameters: list[ParameterDefinition] = Field(default_factory=list)
+    executable: bool = True
     limitations: list[str] = Field(default_factory=list)
     missing_data_semantics: MissingDataSemantics
     evidence_fields: list[str] = Field(default_factory=list)
+
+    @field_validator("inputs")
+    @classmethod
+    def input_names_are_unique(cls, inputs: list[CatalogInput]) -> list[CatalogInput]:
+        names = [item.name for item in inputs]
+        if len(set(names)) != len(names):
+            raise ValueError("catalog input names must be unique")
+        return inputs
+
+    @field_validator("outputs")
+    @classmethod
+    def output_names_are_unique(cls, outputs: list[CatalogOutput]) -> list[CatalogOutput]:
+        names = [item.name for item in outputs]
+        if len(set(names)) != len(names):
+            raise ValueError("catalog output names must be unique")
+        return outputs
+
+    @field_validator("parameters")
+    @classmethod
+    def catalog_parameter_names_are_unique(
+        cls, parameters: list[ParameterDefinition]
+    ) -> list[ParameterDefinition]:
+        names = [parameter.name for parameter in parameters]
+        if len(set(names)) != len(names):
+            raise ValueError("catalog parameter names must be unique")
+        return parameters
 
 
 class OperatorSignature(StrictModel):
@@ -384,6 +428,8 @@ class BoundCatalogNode(StrictModel):
     node_id: str
     catalog_ref: str
     version: str
+    inputs: dict[str, SignalRef] = Field(default_factory=dict)
+    input_types: dict[str, CatalogOutput] = Field(default_factory=dict)
     outputs: list[CatalogOutput]
     resolved_parameters: dict[str, TypedValue] = Field(default_factory=dict)
 
@@ -414,6 +460,8 @@ class BoundQueryPlan(StrictModel):
     match_ids: list[str]
     periods: list[Literal["firstHalf", "secondHalf"]]
     perspective_team_role: Literal["home", "away"]
+    max_results: int
+    execution_mode: ExecutionMode
     unknown_evidence_policy: UnknownEvidencePolicy
     classification_mode: ClassificationMode
     classification_rules: list[ClassificationRule]

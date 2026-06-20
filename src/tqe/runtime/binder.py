@@ -19,6 +19,7 @@ from tqe.runtime.ir import (
     CapabilityCatalog,
     Cardinality,
     CatalogEntry,
+    CatalogInput,
     CatalogOutput,
     ClassificationMode,
     DraftCatalogNode,
@@ -98,7 +99,7 @@ class Binder:
         self._validate_complexity(invocation, draft_plan)
         resolved_parameters = self._resolve_parameters(recipe, invocation)
         self._bind_nodes(draft_plan, resolved_parameters)
-        self._validate_classifications(draft_plan)
+        self._validate_classifications(recipe, draft_plan)
         self._validate_evidence_requests(draft_plan)
 
         if self.issues:
@@ -121,6 +122,8 @@ class Binder:
             "match_ids": invocation.match_ids,
             "periods": invocation.periods,
             "perspective_team_role": invocation.perspective_team_role,
+            "max_results": invocation.max_results,
+            "execution_mode": invocation.execution_mode,
             "unknown_evidence_policy": draft_plan.unknown_evidence_policy,
             "classification_mode": draft_plan.classification_mode,
             "classification_rules": draft_plan.classification_rules,
@@ -247,6 +250,29 @@ class Binder:
                 f"parameter {parameter.name} expects {parameter.unit.value}, got {value.unit.value}",
                 path,
             )
+        if value.payload_type == PayloadType.NUMBER:
+            numeric = float(value.value)
+            if parameter.minimum is not None and numeric < parameter.minimum:
+                self._issue(
+                    "parameter_below_minimum",
+                    f"parameter {parameter.name} must be >= {parameter.minimum}, got {numeric}",
+                    path,
+                )
+            if parameter.maximum is not None and numeric > parameter.maximum:
+                self._issue(
+                    "parameter_above_maximum",
+                    f"parameter {parameter.name} must be <= {parameter.maximum}, got {numeric}",
+                    path,
+                )
+        if parameter.allowed_values is not None and str(value.value) not in set(parameter.allowed_values):
+            self._issue(
+                "parameter_value_not_allowed",
+                (
+                    f"parameter {parameter.name} must be one of "
+                    f"{sorted(parameter.allowed_values)}, got {value.value}"
+                ),
+                path,
+            )
 
     def _bind_nodes(
         self,
@@ -284,11 +310,40 @@ class Binder:
                 f"{path}.catalog_ref",
             )
             return
+        if not entry.executable:
+            self._issue(
+                "catalog_entry_not_executable",
+                f"{node.catalog_ref}@{node.version} is not executable",
+                f"{path}.catalog_ref",
+            )
+            return
 
+        bound_inputs = self._bind_catalog_inputs(node=node, entry=entry, path=path)
         resolved_node_parameters: dict[str, TypedValue] = {}
-        for name, argument in sorted(node.parameters.items()):
-            value = self._resolve_argument(argument, parameter_values, f"{path}.parameters.{name}")
+        parameter_defs = {parameter.name: parameter for parameter in entry.parameters}
+        for name in sorted(node.parameters):
+            if name not in parameter_defs:
+                self._issue(
+                    "unknown_node_parameter",
+                    f"{node.catalog_ref}@{node.version} does not accept parameter {name}",
+                    f"{path}.parameters.{name}",
+                )
+        for name, parameter in sorted(parameter_defs.items()):
+            argument = node.parameters.get(name)
+            if argument is None:
+                if parameter.default is None:
+                    if parameter.required:
+                        self._issue(
+                            "missing_node_parameter",
+                            f"{node.catalog_ref}@{node.version} requires parameter {name}",
+                            f"{path}.parameters.{name}",
+                        )
+                    continue
+                value = parameter.default
+            else:
+                value = self._resolve_argument(argument, parameter_values, f"{path}.parameters.{name}")
             if value is not None:
+                self._validate_parameter_value(parameter, value, f"{path}.parameters.{name}")
                 resolved_node_parameters[name] = value
 
         bound = BoundCatalogNode(
@@ -296,6 +351,8 @@ class Binder:
             node_id=node.node_id,
             catalog_ref=node.catalog_ref,
             version=node.version,
+            inputs={name: reference for name, (reference, _) in bound_inputs.items()},
+            input_types={name: output for name, (_, output) in bound_inputs.items()},
             outputs=deepcopy(entry.outputs),
             resolved_parameters=resolved_node_parameters,
         )
@@ -364,6 +421,96 @@ class Binder:
         )
         self.bound_nodes.append(bound)
         self.catalog_outputs[f"{node.node_id}.{output.name}"] = (None, output)
+
+    def _bind_catalog_inputs(
+        self,
+        *,
+        node: DraftCatalogNode,
+        entry: CatalogEntry,
+        path: str,
+    ) -> dict[str, tuple[SignalRef, CatalogOutput]]:
+        bound_inputs: dict[str, tuple[SignalRef, CatalogOutput]] = {}
+        input_defs = {item.name: item for item in entry.inputs}
+
+        for name in sorted(node.inputs):
+            if name not in input_defs:
+                self._issue(
+                    "unknown_node_input",
+                    f"{entry.name}@{entry.version} does not accept input {name}",
+                    f"{path}.inputs.{name}",
+                )
+
+        for name, input_def in sorted(input_defs.items()):
+            reference = node.inputs.get(name)
+            if reference is None:
+                if input_def.required:
+                    self._issue(
+                        "missing_node_input",
+                        f"{entry.name}@{entry.version} requires input {name}",
+                        f"{path}.inputs.{name}",
+                    )
+                continue
+            resolved = self._resolve_signal(reference, f"{path}.inputs.{name}")
+            if resolved is None:
+                continue
+            _, output = resolved
+            self._validate_catalog_input(
+                input_def=input_def,
+                output=output,
+                path=f"{path}.inputs.{name}",
+            )
+            bound_inputs[name] = (reference, output)
+        return bound_inputs
+
+    def _validate_catalog_input(
+        self,
+        *,
+        input_def: CatalogInput,
+        output: CatalogOutput,
+        path: str,
+    ) -> None:
+        if output.temporal_type != input_def.temporal_type:
+            self._issue(
+                "input_temporal_mismatch",
+                (
+                    f"input {input_def.name} expects {input_def.temporal_type.value}, "
+                    f"got {output.temporal_type.value}"
+                ),
+                path,
+            )
+        if output.payload_type != input_def.payload_type:
+            self._issue(
+                "input_payload_mismatch",
+                (
+                    f"input {input_def.name} expects {input_def.payload_type.value}, "
+                    f"got {output.payload_type.value}"
+                ),
+                path,
+            )
+        if output.cardinality != input_def.cardinality:
+            self._issue(
+                "input_cardinality_mismatch",
+                (
+                    f"input {input_def.name} expects {input_def.cardinality.value}, "
+                    f"got {output.cardinality.value}"
+                ),
+                path,
+            )
+        if output.unit != input_def.unit:
+            self._issue(
+                "input_unit_mismatch",
+                f"input {input_def.name} expects {input_def.unit.value}, got {output.unit.value}",
+                path,
+            )
+        if output.entity_scope != input_def.entity_scope:
+            self._issue(
+                "input_entity_scope_mismatch",
+                (
+                    f"input {input_def.name} expects {input_def.entity_scope.value}, "
+                    f"got {output.entity_scope.value}"
+                ),
+                path,
+            )
 
     def _validate_operator_application(
         self,
@@ -477,11 +624,28 @@ class Binder:
                     f"{path}.duration.unit",
                 )
 
-    def _validate_classifications(self, draft_plan: DraftQueryPlan) -> None:
+    def _validate_classifications(
+        self, recipe: RecipeDefinition, draft_plan: DraftQueryPlan
+    ) -> None:
         predicate_ids = {
             node.node_id for node in draft_plan.nodes if isinstance(node, DraftPredicateNode)
         }
         labels = [rule.label for rule in draft_plan.classification_rules]
+        recipe_labels = set(recipe.output_classifications)
+        plan_labels = set(labels)
+        if draft_plan.classification_mode == ClassificationMode.EXHAUSTIVE:
+            if plan_labels != recipe_labels:
+                self._issue(
+                    "classification_label_mismatch",
+                    "exhaustive plan classification labels must equal recipe output classifications",
+                    "draft_plan.classification_rules",
+                )
+        elif not plan_labels.issubset(recipe_labels):
+            self._issue(
+                "classification_label_mismatch",
+                "partial plan classification labels must be a subset of recipe output classifications",
+                "draft_plan.classification_rules",
+            )
         if len(set(labels)) != len(labels):
             self._issue(
                 "duplicate_classification_label",

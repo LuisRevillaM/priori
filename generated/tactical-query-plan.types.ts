@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from Pydantic TacticalQuerySchemaBundle.
-// schema_sha256: e0c3d1f4c51578bc84ec36a5b83b9cc9d0f25b4ab103598dd73557b72130276a
+// schema_sha256: 3ae97077c50d3380e4dd86bf53b593a5309576de264b4bb19a020505b43c3ae9
 
 export type TemporalContainer = 'scalar' | 'frame_signal' | 'episode_set' | 'relation_episode_set';
 export type PayloadType = 'boolean' | 'number' | 'enum' | 'entity_ref' | 'team_ref' | 'region_ref' | 'point' | 'entity_set' | 'relation_ref';
@@ -33,6 +33,9 @@ export interface ParameterDefinition {
   unit?: Unit;
   required?: boolean;
   default?: TypedValue;
+  minimum?: number;
+  maximum?: number;
+  allowed_values?: string[];
   description: string;
 }
 
@@ -76,6 +79,7 @@ export interface DraftCatalogNode {
   node_id: string;
   catalog_ref: string;
   version: string;
+  inputs?: Record<string, SignalRef>;
   parameters?: Record<string, TypedArgument>;
 }
 
@@ -154,6 +158,8 @@ export interface BoundQueryPlan {
   match_ids: string[];
   periods: Array<'firstHalf' | 'secondHalf'>;
   perspective_team_role: 'home' | 'away';
+  max_results: number;
+  execution_mode: ExecutionMode;
   unknown_evidence_policy: UnknownEvidencePolicy;
   plan_hash: string;
   bound_plan_hash: string;

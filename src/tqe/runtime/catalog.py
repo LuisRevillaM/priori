@@ -6,14 +6,17 @@ from tqe.runtime.ir import (
     CapabilityCatalog,
     Cardinality,
     CatalogEntry,
+    CatalogInput,
     CatalogOutput,
     ComplexityLimits,
     EntityScope,
     MissingDataSemantics,
     NodeKind,
     OperatorSignature,
+    ParameterDefinition,
     PayloadType,
     TemporalContainer,
+    TypedValue,
     Unit,
 )
 
@@ -41,6 +44,60 @@ def output(
     )
 
 
+def input_ref(
+    *,
+    name: str,
+    temporal_type: TemporalContainer,
+    payload_type: PayloadType,
+    cardinality: Cardinality,
+    unit: Unit = Unit.NONE,
+    entity_scope: EntityScope = EntityScope.NONE,
+    required: bool = True,
+) -> CatalogInput:
+    return CatalogInput(
+        name=name,
+        temporal_type=temporal_type,
+        payload_type=payload_type,
+        cardinality=cardinality,
+        unit=unit,
+        entity_scope=entity_scope,
+        required=required,
+    )
+
+
+def parameter(
+    *,
+    name: str,
+    payload_type: PayloadType,
+    description: str,
+    unit: Unit = Unit.NONE,
+    required: bool = False,
+    default: TypedValue | None = None,
+    minimum: float | None = None,
+    maximum: float | None = None,
+    allowed_values: list[str] | None = None,
+) -> ParameterDefinition:
+    return ParameterDefinition(
+        name=name,
+        payload_type=payload_type,
+        unit=unit,
+        required=required,
+        default=default,
+        minimum=minimum,
+        maximum=maximum,
+        allowed_values=allowed_values,
+        description=description,
+    )
+
+
+def typed_number(value: float, unit: Unit) -> TypedValue:
+    return TypedValue(payload_type=PayloadType.NUMBER, unit=unit, value=value)
+
+
+def typed_enum(value: str) -> TypedValue:
+    return TypedValue(payload_type=PayloadType.ENUM, unit=Unit.NONE, value=value)
+
+
 def primitive(
     *,
     name: str,
@@ -48,6 +105,8 @@ def primitive(
     purpose: str,
     outputs: list[CatalogOutput],
     evidence_fields: list[str],
+    inputs: list[CatalogInput] | None = None,
+    parameters: list[ParameterDefinition] | None = None,
     limitations: list[str] | None = None,
     missing_data_semantics: MissingDataSemantics = MissingDataSemantics.UNKNOWN,
 ) -> CatalogEntry:
@@ -56,7 +115,9 @@ def primitive(
         version=version,
         kind=NodeKind.PRIMITIVE,
         purpose=purpose,
+        inputs=inputs or [],
         outputs=outputs,
+        parameters=parameters or [],
         limitations=limitations or [],
         missing_data_semantics=missing_data_semantics,
         evidence_fields=evidence_fields,
@@ -70,6 +131,8 @@ def relation(
     purpose: str,
     outputs: list[CatalogOutput],
     evidence_fields: list[str],
+    inputs: list[CatalogInput] | None = None,
+    parameters: list[ParameterDefinition] | None = None,
     limitations: list[str],
     missing_data_semantics: MissingDataSemantics = MissingDataSemantics.UNKNOWN,
 ) -> CatalogEntry:
@@ -78,7 +141,9 @@ def relation(
         version=version,
         kind=NodeKind.RELATION,
         purpose=purpose,
+        inputs=inputs or [],
         outputs=outputs,
+        parameters=parameters or [],
         limitations=limitations,
         missing_data_semantics=missing_data_semantics,
         evidence_fields=evidence_fields,
@@ -130,22 +195,6 @@ def default_primitives() -> list[CatalogEntry]:
             limitations=["Depends on canonical pitch coordinates and known pitch width."],
         ),
         primitive(
-            name="wide_channel_dwell",
-            version="0.1.0",
-            purpose="Require ball to remain in a configured wide region long enough to avoid noise.",
-            outputs=[
-                output(
-                    name="episodes",
-                    temporal_type=TemporalContainer.EPISODE_SET,
-                    payload_type=PayloadType.BOOLEAN,
-                    cardinality=Cardinality.COLLECTION,
-                    entity_scope=EntityScope.BALL,
-                    evidence_fields=["wide_entry_frame_id", "wide_entry_y_m", "ball_side"],
-                )
-            ],
-            evidence_fields=["wide_entry_frame_id", "wide_entry_y_m", "ball_side"],
-        ),
-        primitive(
             name="defensive_outfield_centroid",
             version="0.1.0",
             purpose="Measure defending outfield team centroid without goalkeeper bias.",
@@ -184,6 +233,23 @@ def default_primitives() -> list[CatalogEntry]:
                     ],
                 )
             ],
+            inputs=[
+                input_ref(
+                    name="entry_episodes",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.BOOLEAN,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.BALL,
+                ),
+                input_ref(
+                    name="defensive_centroid",
+                    temporal_type=TemporalContainer.FRAME_SIGNAL,
+                    payload_type=PayloadType.NUMBER,
+                    cardinality=Cardinality.PER_TEAM,
+                    unit=Unit.METRE,
+                    entity_scope=EntityScope.TEAM,
+                ),
+            ],
             evidence_fields=[
                 "baseline_start_frame_id",
                 "baseline_end_frame_id",
@@ -191,22 +257,6 @@ def default_primitives() -> list[CatalogEntry]:
                 "signed_shift_metres",
                 "block_shift_score",
             ],
-        ),
-        primitive(
-            name="shift_persistence",
-            version="0.1.0",
-            purpose="Ensure the block shift persists rather than spiking for one frame.",
-            outputs=[
-                output(
-                    name="episodes",
-                    temporal_type=TemporalContainer.EPISODE_SET,
-                    payload_type=PayloadType.BOOLEAN,
-                    cardinality=Cardinality.COLLECTION,
-                    entity_scope=EntityScope.TEAM,
-                    evidence_fields=["persistent_shift"],
-                )
-            ],
-            evidence_fields=["persistent_shift"],
         ),
         primitive(
             name="outcome_classification",
@@ -220,6 +270,34 @@ def default_primitives() -> list[CatalogEntry]:
                     cardinality=Cardinality.SINGLE,
                     entity_scope=EntityScope.POSSESSION,
                     evidence_fields=["classification", "outcome_frame_id"],
+                )
+            ],
+            inputs=[
+                input_ref(
+                    name="accepted_shift_episodes",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.BOOLEAN,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.TEAM,
+                ),
+                input_ref(
+                    name="signed_shift",
+                    temporal_type=TemporalContainer.FRAME_SIGNAL,
+                    payload_type=PayloadType.NUMBER,
+                    cardinality=Cardinality.SINGLE,
+                    unit=Unit.METRE,
+                    entity_scope=EntityScope.TEAM,
+                ),
+            ],
+            parameters=[
+                parameter(
+                    name="horizon",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.SECOND,
+                    required=True,
+                    minimum=0.2,
+                    maximum=30.0,
+                    description="Outcome lookahead horizon in seconds.",
                 )
             ],
             evidence_fields=["classification", "outcome_frame_id"],
@@ -250,6 +328,39 @@ def default_primitives() -> list[CatalogEntry]:
                     ],
                 )
             ],
+            inputs=[
+                input_ref(
+                    name="relation_episodes",
+                    temporal_type=TemporalContainer.RELATION_EPISODE_SET,
+                    payload_type=PayloadType.RELATION_REF,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.RELATION,
+                )
+            ],
+            parameters=[
+                parameter(
+                    name="relation_node_id",
+                    payload_type=PayloadType.ENUM,
+                    required=True,
+                    allowed_values=["opposite_corridor"],
+                    description="Compatibility parameter used by the current executor until M1.1R R4 removes node-id coupling.",
+                ),
+                parameter(
+                    name="destination_entry_horizon_seconds",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.SECOND,
+                    required=True,
+                    minimum=0.2,
+                    maximum=30.0,
+                    description="Lookahead horizon for destination lane entry.",
+                ),
+                parameter(
+                    name="result_id_seed",
+                    payload_type=PayloadType.ENUM,
+                    required=True,
+                    description="Seed used to derive deterministic experimental result IDs.",
+                ),
+            ],
             evidence_fields=[
                 "classification",
                 "base_result_id",
@@ -263,42 +374,6 @@ def default_primitives() -> list[CatalogEntry]:
                 "Requires an upstream relation episode set.",
                 "No pass probability, optimality, decision-quality, intent, or missed-opportunity claim.",
             ],
-        ),
-        primitive(
-            name="robust_team_width",
-            version="0.1.0",
-            purpose="Describe team structure with robust lateral spread.",
-            outputs=[
-                output(
-                    name="width",
-                    temporal_type=TemporalContainer.FRAME_SIGNAL,
-                    payload_type=PayloadType.NUMBER,
-                    cardinality=Cardinality.PER_TEAM,
-                    unit=Unit.METRE,
-                    entity_scope=EntityScope.TEAM,
-                    evidence_fields=["team_width_m"],
-                )
-            ],
-            evidence_fields=["team_width_m"],
-        ),
-        primitive(
-            name="analysis_rate",
-            version="0.1.0",
-            purpose="Expose configured analysis cadence as a scalar for validation and provenance.",
-            outputs=[
-                output(
-                    name="hz",
-                    temporal_type=TemporalContainer.SCALAR,
-                    payload_type=PayloadType.NUMBER,
-                    cardinality=Cardinality.SINGLE,
-                    unit=Unit.HERTZ,
-                    entity_scope=EntityScope.MATCH,
-                    evidence_fields=["analysis_rate_hz"],
-                )
-            ],
-            evidence_fields=["analysis_rate_hz"],
-            limitations=["Configuration value only; not an evaluated tactical predicate."],
-            missing_data_semantics=MissingDataSemantics.NOT_APPLICABLE,
         ),
     ]
 
@@ -337,6 +412,96 @@ def default_relations() -> list[CatalogEntry]:
                         "target_close_point",
                     ],
                 )
+            ],
+            inputs=[
+                input_ref(
+                    name="anchors",
+                    temporal_type=TemporalContainer.FRAME_SIGNAL,
+                    payload_type=PayloadType.ENUM,
+                    cardinality=Cardinality.SINGLE,
+                    entity_scope=EntityScope.POSSESSION,
+                )
+            ],
+            parameters=[
+                parameter(
+                    name="max_window_seconds",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.SECOND,
+                    required=True,
+                    minimum=0.2,
+                    maximum=15.0,
+                    description="Maximum relation search window after the anchor.",
+                ),
+                parameter(
+                    name="minimum_progression_m",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.METRE,
+                    required=True,
+                    minimum=0.0,
+                    maximum=80.0,
+                    description="Minimum forward progression from source to target.",
+                ),
+                parameter(
+                    name="minimum_segment_length_m",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.METRE,
+                    required=True,
+                    minimum=0.0,
+                    maximum=80.0,
+                    description="Minimum source-target segment length.",
+                ),
+                parameter(
+                    name="maximum_segment_length_m",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.METRE,
+                    required=True,
+                    minimum=0.0,
+                    maximum=100.0,
+                    description="Maximum source-target segment length.",
+                ),
+                parameter(
+                    name="minimum_clearance_m",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.METRE,
+                    required=True,
+                    minimum=0.0,
+                    maximum=40.0,
+                    description="Minimum defender clearance from the source-target segment.",
+                ),
+                parameter(
+                    name="open_after_frames",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.COUNT,
+                    required=True,
+                    minimum=1.0,
+                    maximum=100.0,
+                    description="Frames required before a corridor is considered open.",
+                ),
+                parameter(
+                    name="close_after_frames",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.COUNT,
+                    required=True,
+                    minimum=1.0,
+                    maximum=100.0,
+                    description="Frames required before a corridor is considered closed.",
+                ),
+                parameter(
+                    name="minimum_duration_seconds",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.SECOND,
+                    required=True,
+                    minimum=0.0,
+                    maximum=15.0,
+                    description="Minimum open duration retained in the relation output.",
+                ),
+                parameter(
+                    name="side_filter",
+                    payload_type=PayloadType.ENUM,
+                    required=True,
+                    allowed_values=["any", "same_ball_side", "opposite_ball_side"],
+                    description="Retain corridors by relation destination side relative to the ball side.",
+                ),
             ],
             evidence_fields=[
                 "relation_id",
