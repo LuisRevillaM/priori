@@ -1,6 +1,6 @@
 milestone: M1.1
 name: "Composable Tactical Query Runtime"
-state: REJECTED_EXTERNAL_REVIEW_PENDING_M1_1R
+state: M1_1R_VERIFIED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
 source_of_truth: delivery/m1.1/SPEC.md
 corrective_source_of_truth: delivery/m1.1/CORRECTIVE_SPEC.md
 last_updated: "2026-06-20"
@@ -25,7 +25,7 @@ slices:
   S9_m1_1r_typed_runtime_values_invocation_semantics: DONE
   S10_m1_1r_generic_predicate_classification_evidence_unknown: DONE
   S11_m1_1r_relation_anchor_decoupling_experimental_repair: DONE
-  S12_m1_1r_architecture_proof_and_parity: NOT_STARTED
+  S12_m1_1r_architecture_proof_and_parity: DONE
 promotion_gates:
   Gate_0_M1_baseline_and_gold_set: DONE
   Gate_A_type_system_and_binder: ACCEPTED_CONTROLLER_ONLY
@@ -39,11 +39,11 @@ promotion_gates:
   Gate_R2_typed_runtime_values_invocation_semantics: ACCEPTED_CONTROLLER_ONLY
   Gate_R3_generic_predicate_classification_evidence_unknown: ACCEPTED_CONTROLLER_ONLY
   Gate_R4_relation_anchor_decoupling_experimental_repair: ACCEPTED_CONTROLLER_ONLY
-  Gate_R5_architecture_proof_and_parity: NOT_STARTED
+  Gate_R5_architecture_proof_and_parity: ACCEPTED_CONTROLLER_ONLY
 verification:
-  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_PASS
+  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
   independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19
-  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_ACCEPTED_CONTROLLER_ONLY
+  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_ACCEPTED_CONTROLLER_ONLY
   owner_acceptance: NOT_STARTED
   m1_2_blocked_until: M1_1R_EXTERNAL_APPROVAL_OR_REQUIRED_CHANGES_INTEGRATED

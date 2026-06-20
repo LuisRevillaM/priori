@@ -70,13 +70,6 @@ def normalize_value(*, node_id: str, output: CatalogOutput, raw_value: Any) -> A
                 for item in raw_value
                 if isinstance(item, dict)
             ]
-        if output.payload_type == PayloadType.BOOLEAN:
-            key = f"{node_id}_passed"
-            return [
-                bool(item.get(key))
-                for item in raw_value
-                if isinstance(item, dict) and key in item
-            ]
     return raw_value
 
 

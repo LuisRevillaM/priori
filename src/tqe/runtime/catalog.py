@@ -235,6 +235,13 @@ def default_primitives() -> list[CatalogEntry]:
             ],
             inputs=[
                 input_ref(
+                    name="possession_episodes",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.BOOLEAN,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.POSSESSION,
+                ),
+                input_ref(
                     name="entry_episodes",
                     temporal_type=TemporalContainer.EPISODE_SET,
                     payload_type=PayloadType.BOOLEAN,

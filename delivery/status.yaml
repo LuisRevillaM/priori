@@ -17,12 +17,12 @@ milestones:
     status_file: delivery/m1/status.yaml
   M1.1:
     name: "Composable Tactical Query Runtime"
-    state: REJECTED_EXTERNAL_REVIEW_PENDING_M1_1R
+    state: M1_1R_VERIFIED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
     status_file: delivery/m1.1/status.yaml
     depends_on: M1
   M1.2:
     name: "Grounded Tactical Query Workshop"
-    state: BLOCKED_PENDING_M1_1R
+    state: BLOCKED_PENDING_M1_1R_EXTERNAL_REVIEW
     status_file: delivery/m1.2/status.yaml
     depends_on: M1.1
   M2:

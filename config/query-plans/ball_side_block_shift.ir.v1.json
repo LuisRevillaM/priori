@@ -354,6 +354,10 @@
         "catalog_ref": "signed_lateral_shift",
         "version": "0.1.0",
         "inputs": {
+          "possession_episodes": {
+            "source_node_id": "possession",
+            "output_name": "episodes"
+          },
           "entry_episodes": {
             "source_node_id": "wide_entry_persists",
             "output_name": "predicate"

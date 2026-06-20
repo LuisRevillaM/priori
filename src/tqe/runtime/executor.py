@@ -683,12 +683,24 @@ def primitive_defensive_outfield_centroid(state: PeriodState, node: BoundCatalog
 
 
 def primitive_signed_lateral_shift(state: PeriodState, node: BoundCatalogNode) -> None:
+    possession_reference = node.inputs.get("possession_episodes")
+    if possession_reference is None:
+        raise RuntimeError(f"{node.node_id} requires possession_episodes input")
     entry_reference = node.inputs.get("entry_episodes")
     if entry_reference is None:
         raise RuntimeError(f"{node.node_id} requires entry_episodes input")
+    possession_signal = state.signals.get(possession_reference.source_node_id, {})
+    possession_episodes = (
+        possession_signal.get(possession_reference.output_name)
+        or possession_signal.get("episodes", [])
+    )
     entry_signal = state.signals.get(entry_reference.source_node_id, {})
     entry_episodes = entry_signal.get(entry_reference.output_name) or entry_signal.get("episodes", [])
-    candidates = wide_entry_candidates_from_episodes(state, entry_episodes)
+    candidates = wide_entry_candidates_from_episodes(
+        state,
+        entry_episodes=entry_episodes,
+        possession_episodes=possession_episodes,
+    )
     baseline_frames = int(round(state.params.number("baseline_window_seconds") * state.params.integer("analysis_rate_hz")))
     search_frames = int(round(state.params.number("shift_search_window_seconds") * state.params.integer("analysis_rate_hz")))
     shifted: list[dict[str, Any]] = []
@@ -1090,7 +1102,6 @@ def predicate_gte(state: PeriodState, node: BoundPredicateNode) -> None:
     candidates = state.signals.get(node.input.source_node_id, {}).get("candidates")
     if isinstance(candidates, list) and len(candidates) == len(passed):
         for candidate, status, value in zip(candidates, passed, values, strict=True):
-            candidate[f"{node.node_id}_passed"] = bool(status)
             record_candidate_predicate(
                 candidate=candidate,
                 node=node,
@@ -1168,7 +1179,6 @@ def predicate_neq(state: PeriodState, node: BoundPredicateNode) -> None:
     items = state.signals.get(node.input.source_node_id, {}).get(node.input.output_name)
     if isinstance(items, list) and items and all(isinstance(item, dict) for item in items):
         for item, status, value in zip(items, passed, values, strict=False):
-            item[f"{node.node_id}_passed"] = bool(status)
             if "_predicate_status" in item:
                 record_candidate_predicate(
                     candidate=item,
@@ -1199,7 +1209,7 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
     candidates = source_signal.get("candidates")
     if isinstance(candidates, list) and len(candidates) == len(values):
         threshold = state.params.number("minimum_shift_metres")
-        for candidate in candidates:
+        for candidate, source_status in zip(candidates, values, strict=True):
             persistence = shift_persistence_evidence(
                 candidate["signed_shift_series"],
                 threshold,
@@ -1212,7 +1222,7 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
             candidate["shift_persistence_start_frame_id"] = persistence["start_frame_id"]
             candidate["shift_persistence_end_frame_id"] = persistence["end_frame_id"]
             candidate["shift_gate_passed"] = bool(
-                candidate.get(f"{node.input.source_node_id}_passed")
+                source_status is True
                 and persistent
                 and candidate["enough_defenders"]
             )
@@ -1301,9 +1311,9 @@ def wide_entry_candidates(
     state: PeriodState,
     wide_mask: np.ndarray,
     dwell_frames: int,
+    possession_segments: list[Any],
 ) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
-    possession_segments = state.signals.get("possession", {}).get("episodes", [])
     baseline_frames = int(round(state.params.number("baseline_window_seconds") * state.params.integer("analysis_rate_hz")))
     prior_central_threshold_m = state.params.number("prior_central_fraction") * PITCH_HALF_WIDTH_M
 
@@ -1366,11 +1376,13 @@ def episode_records_from_mask(
 
 def wide_entry_candidates_from_episodes(
     state: PeriodState,
-    episodes: list[Any],
+    *,
+    entry_episodes: list[Any],
+    possession_episodes: list[Any],
 ) -> list[dict[str, Any]]:
     wide_mask = np.zeros(len(state.frame_ids), dtype=bool)
     structured_episodes: list[dict[str, Any]] = []
-    for episode in episodes:
+    for episode in entry_episodes:
         start_index = episode_start_index(episode)
         end_index = episode_end_index(episode)
         if start_index is None or end_index is None:
@@ -1381,7 +1393,12 @@ def wide_entry_candidates_from_episodes(
     dwell_frames = int(
         round(state.params.number("minimum_wide_dwell_seconds") * state.params.integer("analysis_rate_hz"))
     )
-    candidates = wide_entry_candidates(state, wide_mask, dwell_frames)
+    candidates = wide_entry_candidates(
+        state,
+        wide_mask,
+        dwell_frames,
+        possession_segments=possession_episodes,
+    )
     for candidate in candidates:
         entry_frame_id = int(candidate["wide_entry_frame_id"])
         source_episode = next(
@@ -1553,155 +1570,11 @@ def predicate_traces_for_candidate(
     candidate: dict[str, Any],
     result: dict[str, Any],
 ) -> list[PredicateTrace]:
-    generated = predicate_traces_from_status_records(
+    return predicate_traces_from_status_records(
         state=state,
         candidate=candidate,
         result=result,
     )
-    if generated:
-        return generated
-
-    result_id = str(result.get("result_id") or candidate_key(state, candidate))
-    common = {
-        "result_id": result_id,
-        "candidate_key": candidate_key(state, candidate),
-        "match_id": state.match_id,
-        "period": state.period,
-        "wide_entry_frame_id": int(candidate["wide_entry_frame_id"]),
-        "anchor_frame_id": int(candidate["anchor_frame_id"]),
-    }
-    wide_fraction = abs(float(candidate["wide_entry_y_m"])) / PITCH_HALF_WIDTH_M
-    wide_threshold = state.params.number("wide_entry_fraction")
-    shift_value = candidate.get("signed_shift_metres")
-    shift_threshold = state.params.number("minimum_shift_metres")
-    shift_status = numeric_trace_status(shift_value, shift_threshold, "gte")
-    persistence_value = candidate.get("shift_persistence_seconds")
-    persistence_threshold = state.params.number("minimum_shift_persistence_seconds")
-    persistence_status = (
-        "PASS"
-        if candidate.get("persistent_shift")
-        else ("UNKNOWN" if persistence_value is None else "FAIL")
-    )
-    classification = result.get("classification")
-    if classification is None:
-        stoppage_status = "UNKNOWN"
-        stoppage_reason = "outcome_not_evaluated_after_failed_shift_gate"
-    elif classification == "STOPPAGE":
-        stoppage_status = "FAIL"
-        stoppage_reason = "classification_is_stoppage"
-    else:
-        stoppage_status = "PASS"
-        stoppage_reason = "classification_is_accepted_outcome"
-
-    return [
-        PredicateTrace(
-            predicate_id="wide_entry_threshold",
-            status="PASS" if wide_fraction > wide_threshold else "FAIL",
-            value=typed_number(round(wide_fraction, 6), Unit.FRACTION),
-            threshold=typed_number(wide_threshold, Unit.FRACTION),
-            unit=Unit.FRACTION,
-            frame_id=int(candidate["wide_entry_frame_id"]),
-            source_evidence={
-                **common,
-                "wide_entry_y_m": float(candidate["wide_entry_y_m"]),
-                "source_node_id": "ball_lateral",
-            },
-        ),
-        PredicateTrace(
-            predicate_id="wide_entry_persists",
-            status=(
-                "PASS"
-                if float(candidate["wide_dwell_seconds"])
-                >= state.params.number("minimum_wide_dwell_seconds")
-                else "FAIL"
-            ),
-            value=typed_number(float(candidate["wide_dwell_seconds"]), Unit.SECOND),
-            threshold=typed_number(state.params.number("minimum_wide_dwell_seconds"), Unit.SECOND),
-            unit=Unit.SECOND,
-            frame_id=int(candidate["wide_entry_frame_id"]),
-            window={
-                "start_frame_id": int(candidate["wide_entry_frame_id"]),
-                "end_frame_id": int(candidate["wide_dwell_end_frame_id"]),
-            },
-            source_evidence={
-                **common,
-                "prior_central_start_frame_id": int(candidate["prior_central_start_frame_id"]),
-                "prior_central_end_frame_id": int(candidate["prior_central_end_frame_id"]),
-                "source_node_id": "wide_entry_persists",
-            },
-        ),
-        PredicateTrace(
-            predicate_id="shift_threshold",
-            status=shift_status,
-            value=(
-                typed_number(float(shift_value), Unit.METRE)
-                if shift_value is not None and not is_nan_number(shift_value)
-                else None
-            ),
-            threshold=typed_number(shift_threshold, Unit.METRE),
-            unit=Unit.METRE,
-            frame_id=int(candidate["anchor_frame_id"]),
-            window={
-                "baseline_start_frame_id": int(candidate["baseline_start_frame_id"]),
-                "baseline_end_frame_id": int(candidate["baseline_end_frame_id"]),
-                "search_start_frame_id": int(candidate["shift_search_start_frame_id"]),
-                "search_end_frame_id": int(candidate["shift_search_end_frame_id"]),
-            },
-            source_evidence={
-                **common,
-                "baseline_defensive_centroid_y_m": float(candidate["baseline_defensive_centroid_y_m"]),
-                "enough_defenders": bool(candidate["enough_defenders"]),
-                "source_node_id": "signed_shift",
-                "unknown_reason": None if shift_status != "UNKNOWN" else "signed_shift_unavailable",
-            },
-        ),
-        PredicateTrace(
-            predicate_id="shift_persists",
-            status=persistence_status,
-            value=(
-                typed_number(float(persistence_value), Unit.SECOND)
-                if persistence_value is not None
-                else None
-            ),
-            threshold=typed_number(persistence_threshold, Unit.SECOND),
-            unit=Unit.SECOND,
-            frame_id=int(candidate["anchor_frame_id"]),
-            window={
-                "start_frame_id": candidate.get("shift_persistence_start_frame_id"),
-                "end_frame_id": candidate.get("shift_persistence_end_frame_id"),
-            },
-            source_evidence={
-                **common,
-                "persistent_shift": bool(candidate.get("persistent_shift", False)),
-                "source_node_id": "shift_persists",
-                "unknown_reason": None
-                if persistence_status != "UNKNOWN"
-                else "shift_series_unavailable",
-            },
-        ),
-        PredicateTrace(
-            predicate_id="not_stoppage",
-            status=stoppage_status,
-            value=typed_enum(str(classification)) if classification is not None else None,
-            threshold=typed_enum("STOPPAGE"),
-            unit=Unit.NONE,
-            frame_id=(
-                int(result["outcome_frame_id"])
-                if result.get("outcome_frame_id") is not None
-                else None
-            ),
-            window={
-                "start_frame_id": int(candidate["anchor_frame_id"]),
-                "end_frame_id": result.get("outcome_frame_id"),
-            },
-            source_evidence={
-                **common,
-                "classification": classification,
-                "source_node_id": "outcome",
-                "reason": stoppage_reason,
-            },
-        ),
-    ]
 
 
 def numeric_trace_status(value: Any, threshold: float, operator: str) -> str:
