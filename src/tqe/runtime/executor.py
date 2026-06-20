@@ -43,8 +43,7 @@ from tqe.runtime.ir import (
 from tqe.runtime.values import RuntimeValue, runtime_value_from_raw
 from tqe.runtime.relations import (
     CorridorConfig,
-    destination_lane,
-    destination_side,
+    destination_region_bounds,
     evaluate_geometric_progressive_corridors,
 )
 
@@ -825,13 +824,68 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
     state.signals[node.node_id] = {"classification": accepted + near_misses}
 
 
+def relation_anchor_source(node: BoundCatalogNode) -> str:
+    anchor_reference = node.inputs.get("anchors")
+    if anchor_reference is None:
+        return "missing"
+    return f"{anchor_reference.source_node_id}.{anchor_reference.output_name}"
+
+
+def relation_anchor_results(state: PeriodState, node: BoundCatalogNode) -> list[dict[str, Any]]:
+    anchor_reference = node.inputs.get("anchors")
+    if anchor_reference is None:
+        raise RuntimeError(f"{node.node_id} requires anchors input")
+    anchor_signal = state.signals.get(anchor_reference.source_node_id)
+    if anchor_signal is None:
+        raise RuntimeError(
+            f"{node.node_id} references unknown anchor node {anchor_reference.source_node_id}"
+        )
+    raw_anchors = anchor_signal.get(anchor_reference.output_name)
+    if not isinstance(raw_anchors, list):
+        raise RuntimeError(
+            f"{node.node_id} expected list-backed anchors from "
+            f"{anchor_reference.source_node_id}.{anchor_reference.output_name}"
+        )
+    anchor_results = [
+        anchor
+        for anchor in raw_anchors
+        if isinstance(anchor, dict) and relation_anchor_has_required_fields(anchor)
+    ]
+    anchor_results.sort(
+        key=lambda item: (
+            str(item["match_id"]),
+            str(item["period"]),
+            int(item["anchor_frame_id"]),
+            str(item["result_id"]),
+        )
+    )
+    return anchor_results
+
+
+def relation_anchor_has_required_fields(anchor: dict[str, Any]) -> bool:
+    required_fields = {
+        "result_id",
+        "match_id",
+        "period",
+        "perspective_team_role",
+        "defending_team_role",
+        "anchor_frame_id",
+        "outcome_frame_id",
+    }
+    return required_fields.issubset(anchor)
+
+
 def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatalogNode) -> None:
-    source_results = list(state.accepted)
+    source_results = relation_anchor_results(state, node)
     if not source_results:
         state.signals[node.node_id] = {
             "episodes": [],
             "source_results": [],
-            "summary": {"episode_count": 0, "result_count_with_episode": 0},
+            "summary": {
+                "episode_count": 0,
+                "result_count_with_episode": 0,
+                "anchor_source": relation_anchor_source(node),
+            },
         }
         return
 
@@ -876,10 +930,12 @@ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatal
     state.signals[node.node_id] = {
         "episodes": filtered,
         "source_results": source_results,
+        "anchor_source": relation_anchor_source(node),
         "summary": {
             **relation_report["summary"],
             "filtered_episode_count": len(filtered),
             "filtered_result_count_with_episode": len({item["result_id"] for item in filtered}),
+            "anchor_source": relation_anchor_source(node),
             "side_filter": side_filter,
             "minimum_duration_seconds": minimum_duration_seconds,
         },
@@ -888,24 +944,44 @@ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatal
     }
 
 
+def select_relation_episode(
+    relation_candidates: list[dict[str, Any]],
+    episode_selection: str,
+) -> dict[str, Any]:
+    if episode_selection != "first_by_duration_clearance":
+        raise RuntimeError(f"Unsupported relation episode selection {episode_selection}")
+    return sorted(
+        relation_candidates,
+        key=lambda item: (
+            -float(item["duration_seconds"]),
+            -float(item["minimum_clearance_m"]),
+            int(item["open_frame_id"]),
+            str(item["relation_id"]),
+        ),
+    )[0]
+
+
 def primitive_relation_destination_entry_classification(
     state: PeriodState,
     node: BoundCatalogNode,
 ) -> None:
-    relation_node_id = node_parameter_text(node, "relation_node_id", "")
-    if not relation_node_id:
-        raise RuntimeError(f"{node.node_id} requires relation_node_id")
-    relation_signal = state.signals.get(relation_node_id)
+    relation_reference = node.inputs.get("relation_episodes")
+    if relation_reference is None:
+        raise RuntimeError(f"{node.node_id} requires relation_episodes input")
+    relation_signal = state.signals.get(relation_reference.source_node_id)
     if relation_signal is None:
-        raise RuntimeError(f"{node.node_id} references unknown relation node {relation_node_id}")
+        raise RuntimeError(
+            f"{node.node_id} references unknown relation node {relation_reference.source_node_id}"
+        )
 
-    source_results = list(relation_signal.get("source_results", state.accepted))
+    source_results = list(relation_signal.get("source_results", []))
     episodes_by_result: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for episode in relation_signal.get("episodes", []):
+    for episode in relation_signal.get(relation_reference.output_name, []):
         episodes_by_result[str(episode["result_id"])].append(episode)
 
     horizon_seconds = node_parameter_number(node, "destination_entry_horizon_seconds", 6.0)
     seed = node_parameter_text(node, "result_id_seed", state.params.text("result_id_seed_hash"))
+    episode_selection = node_parameter_text(node, "episode_selection", "first_by_duration_clearance")
     candidate_by_result_id = {
         str(candidate["_runtime_result"]["result_id"]): candidate
         for candidate in state.candidates
@@ -920,7 +996,7 @@ def primitive_relation_destination_entry_classification(
         relation_candidates = episodes_by_result.get(source_result_id, [])
         if not relation_candidates:
             continue
-        episode = relation_candidates[0]
+        episode = select_relation_episode(relation_candidates, episode_selection)
         entry = first_ball_entry_into_destination_region(
             state=state,
             episode=episode,
@@ -949,7 +1025,9 @@ def primitive_relation_destination_entry_classification(
             "classification": classification,
             "source_classification": source_result["classification"],
             "base_result_id": source_result_id,
-            "relation_node_id": relation_node_id,
+            "relation_node_id": relation_reference.source_node_id,
+            "relation_anchor_source": str(relation_signal.get("anchor_source", "")),
+            "relation_episode_selection": episode_selection,
             "relation_id": episode["relation_id"],
             "relation_version": episode["relation_version"],
             "relation_open_frame_id": int(episode["open_frame_id"]),
@@ -962,6 +1040,8 @@ def primitive_relation_destination_entry_classification(
             "destination_side": episode["destination_side"],
             "destination_lane": episode["destination_lane"],
             "destination_region": episode["destination_region"],
+            "destination_region_type": episode["destination_region_type"],
+            "destination_region_bounds": episode["destination_region_bounds"],
             "destination_entry_frame_id": int(entry["frame_id"]) if entry else None,
             "destination_entry_point": entry["point"] if entry else None,
             "destination_entry_horizon_seconds": horizon_seconds,
@@ -1702,6 +1782,12 @@ def first_ball_entry_into_destination_region(
         int(state.frame_ids[-1]),
         start_frame_id + int(round(horizon_seconds * FRAME_RATE_HZ)),
     )
+    bounds = episode.get("destination_region_bounds") or destination_region_bounds(
+        str(episode["destination_side"]),
+        str(episode["destination_lane"]),
+    )
+    min_y = float(bounds["min_y_m"])
+    max_y = float(bounds["max_y_m"])
     ball = state.positions[
         (state.positions.entity_type == "ball")
         & (state.positions.frame_id >= start_frame_id)
@@ -1709,14 +1795,13 @@ def first_ball_entry_into_destination_region(
     ].sort_values("frame_id")
     for row in ball.itertuples(index=False):
         y_m = float(row.y_m)
-        if (
-            destination_side(y_m) == episode["destination_side"]
-            and destination_lane(y_m) == episode["destination_lane"]
-        ):
+        if min_y <= y_m <= max_y:
             return {
                 "frame_id": int(row.frame_id),
                 "point": {"x_m": round(float(row.x_m), 3), "y_m": round(y_m, 3)},
                 "region": episode["destination_region"],
+                "region_type": episode.get("destination_region_type", "side_lane_band"),
+                "region_bounds": bounds,
             }
     return None
 

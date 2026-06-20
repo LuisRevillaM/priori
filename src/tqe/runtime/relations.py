@@ -243,6 +243,11 @@ def corridor_state(
         "destination_lane": destination_lane(destination["y_m"]),
     }
     payload["destination_region"] = f"{payload['destination_side']}_{payload['destination_lane']}"
+    payload["destination_region_type"] = "side_lane_band"
+    payload["destination_region_bounds"] = destination_region_bounds(
+        payload["destination_side"],
+        payload["destination_lane"],
+    )
     if forward_progression < config.minimum_progression_m:
         return {**payload, "status": "FAIL", "failure_reason": "insufficient_forward_progression"}
     if segment_length < config.minimum_segment_length_m:
@@ -308,6 +313,8 @@ def episodes_from_states(
                 "segment_length_m": open_state["segment_length_m"],
                 "destination_side": open_state["destination_side"],
                 "destination_region": open_state["destination_region"],
+                "destination_region_type": open_state["destination_region_type"],
+                "destination_region_bounds": open_state["destination_region_bounds"],
                 "destination_lane": open_state["destination_lane"],
                 "source_open_point": open_state["source_point"],
                 "target_open_point": open_state["target_point"],
@@ -324,6 +331,8 @@ def episodes_from_states(
                     "target_player_id",
                     "destination_side",
                     "destination_region",
+                    "destination_region_type",
+                    "destination_region_bounds",
                     "destination_lane",
                     "limiting_defender_id",
                     "source_open_point",
@@ -542,6 +551,37 @@ def destination_lane(y_m: float) -> str:
     if absolute_y >= PITCH_HALF_WIDTH_M * 0.33:
         return "half_space"
     return "central"
+
+
+def destination_region_bounds(destination_side: str, destination_lane: str) -> dict[str, float]:
+    if destination_lane == "wide":
+        minimum_abs_y = PITCH_HALF_WIDTH_M * 0.66
+        maximum_abs_y = PITCH_HALF_WIDTH_M
+    elif destination_lane == "half_space":
+        minimum_abs_y = PITCH_HALF_WIDTH_M * 0.33
+        maximum_abs_y = PITCH_HALF_WIDTH_M * 0.66
+    elif destination_lane == "central":
+        minimum_abs_y = 0.0
+        maximum_abs_y = PITCH_HALF_WIDTH_M * 0.33
+    else:
+        raise RuntimeError(f"Unsupported destination lane {destination_lane}")
+
+    if destination_side == "left":
+        return {
+            "min_y_m": round(-maximum_abs_y, 3),
+            "max_y_m": round(-minimum_abs_y, 3),
+        }
+    if destination_side == "right":
+        return {
+            "min_y_m": round(minimum_abs_y, 3),
+            "max_y_m": round(maximum_abs_y, 3),
+        }
+    if destination_side == "central":
+        return {
+            "min_y_m": round(-maximum_abs_y, 3),
+            "max_y_m": round(maximum_abs_y, 3),
+        }
+    raise RuntimeError(f"Unsupported destination side {destination_side}")
 
 
 def load_attack_x_sign(orientation: pd.DataFrame, match_id: str, period: str, team_role: str) -> int:

@@ -582,11 +582,6 @@
           }
         },
         "parameters": {
-          "relation_node_id": {
-            "payload_type": "enum",
-            "unit": "none",
-            "value": "opposite_corridor"
-          },
           "destination_entry_horizon_seconds": {
             "kind": "parameter",
             "name": "destination_entry_horizon_seconds"
@@ -594,6 +589,11 @@
           "result_id_seed": {
             "kind": "parameter",
             "name": "result_id_seed_hash"
+          },
+          "episode_selection": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "first_by_duration_clearance"
           }
         }
       },
