@@ -15,7 +15,7 @@ slices:
   S0_m1_baseline_and_gold_set: DONE
   S1_minimal_ir_type_system_and_binder: DONE
   S2_m1_runtime_execution_and_parity: DONE
-  S3_predicate_trace_and_non_match_evaluation: NOT_STARTED
+  S3_predicate_trace_and_non_match_evaluation: DONE
   S4_geometric_progressive_corridor_relation: NOT_STARTED
   S5_no_code_experimental_composition: NOT_STARTED
   S6_developer_inspector_and_reports: NOT_STARTED
@@ -23,13 +23,13 @@ promotion_gates:
   Gate_0_M1_baseline_and_gold_set: DONE
   Gate_A_type_system_and_binder: ACCEPTED_CONTROLLER_ONLY
   Gate_B_M1_runtime_parity: ACCEPTED_CONTROLLER_ONLY
-  Gate_C_predicate_trace_non_match_evaluation: NOT_STARTED
+  Gate_C_predicate_trace_non_match_evaluation: ACCEPTED_CONTROLLER_ONLY
   Gate_D_dynamic_relation_proof: NOT_STARTED
   Gate_E_no_code_composition: NOT_STARTED
   Gate_F_developer_inspector_reports: NOT_STARTED
 verification:
-  automated: GATE_A_GATE_B_PASS_FULL_M1_1_NOT_READY
+  automated: GATE_A_GATE_B_GATE_C_PASS_FULL_M1_1_NOT_READY
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
   independent_review: NOT_STARTED
-  controller_review: GATE_A_GATE_B_ACCEPTED_CONTROLLER_ONLY
+  controller_review: GATE_A_GATE_B_GATE_C_ACCEPTED_CONTROLLER_ONLY
   owner_acceptance: NOT_STARTED

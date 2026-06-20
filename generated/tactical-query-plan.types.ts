@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from Pydantic TacticalQuerySchemaBundle.
-// schema_sha256: f3d29b43315fdaef216a6105ee8ee1d1f858d9743abda49061db840946f9c361
+// schema_sha256: ef11b20622bd5446e25d2becebc263f76b673f7cea4f08f16bb3c3e1b5f606d4
 
 export type TemporalContainer = 'scalar' | 'frame_signal' | 'episode_set' | 'relation_episode_set';
 export type PayloadType = 'boolean' | 'number' | 'enum' | 'entity_ref' | 'team_ref' | 'region_ref' | 'point' | 'entity_set' | 'relation_ref';
@@ -45,6 +45,15 @@ export interface QueryInvocation {
   parameters?: Record<string, TypedValue>;
   max_results: number;
   execution_mode?: ExecutionMode;
+}
+
+export interface EvaluationTarget {
+  schema_version: '1.0';
+  target_id: string;
+  match_id: string;
+  period: 'firstHalf' | 'secondHalf';
+  approximate_time_ms: number;
+  search_radius_ms: number;
 }
 
 export interface SignalRef {

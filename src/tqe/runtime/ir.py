@@ -191,6 +191,15 @@ class QueryInvocation(StrictModel):
         return match_ids
 
 
+class EvaluationTarget(StrictModel):
+    schema_version: Literal["1.0"] = "1.0"
+    target_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    match_id: str
+    period: Literal["firstHalf", "secondHalf"]
+    approximate_time_ms: int = Field(ge=0)
+    search_radius_ms: int = Field(gt=0)
+
+
 class SignalRef(StrictModel):
     source_node_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     output_name: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
@@ -451,6 +460,7 @@ class TacticalQuerySchemaBundle(StrictModel):
     schema_version: Literal["1.0"] = "1.0"
     recipe_definition: RecipeDefinition
     query_invocation: QueryInvocation
+    evaluation_target: EvaluationTarget
     draft_query_plan: DraftQueryPlan
     bound_query_plan: BoundQueryPlan
     query_execution: QueryExecution

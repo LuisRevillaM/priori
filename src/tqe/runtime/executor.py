@@ -26,10 +26,14 @@ from tqe.runtime.ir import (
     BoundCatalogNode,
     BoundPredicateNode,
     BoundQueryPlan,
+    EvaluationTarget,
     ExecutionStatus,
+    PayloadType,
+    PredicateTrace,
     QueryExecution,
     QueryResult,
     TypedValue,
+    Unit,
     stable_hash,
 )
 
@@ -127,7 +131,7 @@ class TacticalQueryExecutor:
     def execute(self, bound_plan: BoundQueryPlan) -> QueryExecution:
         params = runtime_parameters(bound_plan)
         results: list[dict[str, Any]] = []
-        trace_records: list[dict[str, Any]] = []
+        trace_records: list[PredicateTrace] = []
 
         for match_id in bound_plan.match_ids:
             match_results, match_traces = self._execute_match(
@@ -159,19 +163,22 @@ class TacticalQueryExecutor:
                 separators=(",", ":"),
             ).encode("utf-8")
         ).hexdigest()[:16]
+        trace_payload = [
+            trace.model_dump(mode="json", exclude_none=True) for trace in trace_records
+        ]
         return QueryExecution(
             execution_id=execution_id,
             status=ExecutionStatus.PASS,
             plan_hash=bound_plan.plan_hash,
             bound_plan_hash=bound_plan.bound_plan_hash,
             results=query_results,
-            predicate_traces=[],
+            predicate_traces=trace_records,
             provenance={
                 "generated_at": utc_now_iso(),
                 "canonical_root": str(self.canonical_root),
                 "raw_root": str(self.raw_root),
                 "runtime_result_count": len(query_results),
-                "runtime_trace_hash": stable_hash(trace_records),
+                "runtime_trace_hash": stable_hash(trace_payload),
             },
         )
 
@@ -181,31 +188,18 @@ class TacticalQueryExecutor:
         bound_plan: BoundQueryPlan,
         match_id: str,
         params: RuntimeParameters,
-    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    ) -> tuple[list[dict[str, Any]], list[PredicateTrace]]:
         accepted: list[dict[str, Any]] = []
-        traces: list[dict[str, Any]] = []
+        traces: list[PredicateTrace] = []
         for period in bound_plan.periods:
-            state = self._period_state(
+            state = self._execute_period(
+                bound_plan=bound_plan,
                 match_id=match_id,
                 period=period,
-                perspective_team_role=bound_plan.perspective_team_role,
-                recipe_id=bound_plan.recipe_id,
-                recipe_version=bound_plan.recipe_version,
                 params=params,
             )
-            for node in bound_plan.nodes:
-                if isinstance(node, BoundCatalogNode):
-                    implementation = self.primitives.get(node.catalog_ref)
-                    if implementation is None:
-                        raise RuntimeError(f"No primitive implementation for {node.catalog_ref}")
-                    implementation(state, node)
-                elif isinstance(node, BoundPredicateNode):
-                    implementation = self.predicates.get(node.operator.name)
-                    if implementation is None:
-                        raise RuntimeError(f"No predicate implementation for {node.operator.name}")
-                    implementation(state, node)
             accepted.extend(state.accepted)
-            traces.extend(runtime_trace_rows(state))
+            traces.extend(accepted_predicate_traces(state))
         accepted.sort(
             key=lambda item: (
                 -float(item["block_shift_score"]),
@@ -215,6 +209,108 @@ class TacticalQueryExecutor:
             )
         )
         return accepted, traces
+
+    def evaluate_target(
+        self,
+        bound_plan: BoundQueryPlan,
+        target: EvaluationTarget,
+    ) -> dict[str, Any]:
+        if target.match_id not in bound_plan.match_ids:
+            raise RuntimeError(f"target match {target.match_id} is outside the bound invocation")
+        if target.period not in bound_plan.periods:
+            raise RuntimeError(f"target period {target.period} is outside the bound invocation")
+
+        params = runtime_parameters(bound_plan)
+        state = self._execute_period(
+            bound_plan=bound_plan,
+            match_id=target.match_id,
+            period=target.period,
+            params=params,
+        )
+        target_frame_id = int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
+        radius_frames = int(round(target.search_radius_ms / 1000.0 * FRAME_RATE_HZ))
+        compatible = [
+            candidate
+            for candidate in state.candidates
+            if abs(int(candidate["anchor_frame_id"]) - target_frame_id) <= radius_frames
+        ]
+        if not compatible:
+            return {
+                "target": target.model_dump(mode="json"),
+                "status": "NO_COMPATIBLE_ANCHOR",
+                "target_frame_id": target_frame_id,
+                "search_radius_frames": radius_frames,
+                "candidate_count": 0,
+                "closest_candidate": None,
+                "predicate_traces": [],
+                "failed_predicates": [],
+            }
+
+        closest = min(
+            compatible,
+            key=lambda candidate: abs(int(candidate["anchor_frame_id"]) - target_frame_id),
+        )
+        result = closest.get("_runtime_result") or base_result_fields(
+            state,
+            closest,
+            state.params.text("result_id_seed_hash"),
+            state.params.integer("analysis_rate_hz"),
+        )
+        traces = predicate_traces_for_candidate(state, closest, result)
+        trace_payload = [trace.model_dump(mode="json", exclude_none=True) for trace in traces]
+        failed = [
+            trace
+            for trace in trace_payload
+            if trace["status"] in {"FAIL", "UNKNOWN"}
+        ]
+        accepted = bool(result.get("accepted"))
+        return {
+            "target": target.model_dump(mode="json"),
+            "status": "MATCH" if accepted else "NON_MATCH",
+            "target_frame_id": target_frame_id,
+            "search_radius_frames": radius_frames,
+            "candidate_count": len(compatible),
+            "closest_candidate": {
+                "candidate_key": candidate_key(state, closest),
+                "wide_entry_frame_id": int(closest["wide_entry_frame_id"]),
+                "anchor_frame_id": int(closest["anchor_frame_id"]),
+                "frame_distance": abs(int(closest["anchor_frame_id"]) - target_frame_id),
+                "accepted": accepted,
+                "rejection_reason": result.get("near_miss_reason"),
+                "classification": result.get("classification"),
+            },
+            "predicate_traces": trace_payload,
+            "failed_predicates": failed,
+        }
+
+    def _execute_period(
+        self,
+        *,
+        bound_plan: BoundQueryPlan,
+        match_id: str,
+        period: str,
+        params: RuntimeParameters,
+    ) -> PeriodState:
+        state = self._period_state(
+            match_id=match_id,
+            period=period,
+            perspective_team_role=bound_plan.perspective_team_role,
+            recipe_id=bound_plan.recipe_id,
+            recipe_version=bound_plan.recipe_version,
+            params=params,
+        )
+        for node in bound_plan.nodes:
+            if isinstance(node, BoundCatalogNode):
+                implementation = self.primitives.get(node.catalog_ref)
+                if implementation is None:
+                    raise RuntimeError(f"No primitive implementation for {node.catalog_ref}")
+                implementation(state, node)
+            elif isinstance(node, BoundPredicateNode):
+                implementation = self.predicates.get(node.operator.name)
+                if implementation is None:
+                    raise RuntimeError(f"No predicate implementation for {node.operator.name}")
+                implementation(state, node)
+        return state
 
     def _period_state(
         self,
@@ -354,6 +450,8 @@ def primitive_signed_lateral_shift(state: PeriodState, node: BoundCatalogNode) -
                 **candidate,
                 "baseline_start_frame_id": baseline_start_frame,
                 "baseline_end_frame_id": baseline_end_frame,
+                "shift_search_start_frame_id": int(search_frame_ids[0]),
+                "shift_search_end_frame_id": int(search_frame_ids[-1]),
                 "baseline_defensive_centroid_y_m": round(baseline_centroid_y, 3),
                 "anchor_frame_id": anchor_frame_id,
                 "signed_shift_metres": round(max_shift, 3),
@@ -386,14 +484,14 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
             continue
         if not candidate.get("shift_gate_passed"):
             if candidate["signed_shift_metres"] >= state.params.number("minimum_shift_metres") * 0.70:
-                near_misses.append(
-                    {
-                        **base_result_fields(state, candidate, query_hash, analysis_rate_hz),
-                        "near_miss_reason": "below_shift_or_persistence_threshold",
-                        "persistent_shift": candidate.get("persistent_shift", False),
-                        "enough_defenders": candidate["enough_defenders"],
-                    }
-                )
+                near_miss = {
+                    **base_result_fields(state, candidate, query_hash, analysis_rate_hz),
+                    "near_miss_reason": "below_shift_or_persistence_threshold",
+                    "persistent_shift": candidate.get("persistent_shift", False),
+                    "enough_defenders": candidate["enough_defenders"],
+                }
+                candidate["_runtime_result"] = near_miss
+                near_misses.append(near_miss)
             continue
         try:
             anchor_idx = frame_index[int(candidate["anchor_frame_id"])]
@@ -430,11 +528,14 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
                 outcome_frame_id + FRAME_RATE_HZ * 2,
             ),
         }
+        candidate["_runtime_result"] = result
         if result["accepted"]:
             accepted.append(result)
             last_kept_by_segment[segment_key] = int(candidate["wide_entry_frame_id"])
         else:
-            near_misses.append({**result, "near_miss_reason": "excluded_outcome"})
+            near_miss = {**result, "near_miss_reason": "excluded_outcome"}
+            candidate["_runtime_result"] = near_miss
+            near_misses.append(near_miss)
     state.accepted = accepted
     state.near_misses = near_misses
     state.signals[node.node_id] = {"classification": accepted + near_misses}
@@ -520,12 +621,17 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
     if isinstance(source, list):
         threshold = state.params.number("minimum_shift_metres")
         for candidate in source:
-            persistent = has_persistent_shift(
+            persistence = shift_persistence_evidence(
                 candidate["signed_shift_series"],
                 threshold,
                 minimum_frames,
+                state.params.integer("analysis_rate_hz"),
             )
+            persistent = bool(persistence["persistent"])
             candidate["persistent_shift"] = persistent
+            candidate["shift_persistence_seconds"] = persistence["duration_seconds"]
+            candidate["shift_persistence_start_frame_id"] = persistence["start_frame_id"]
+            candidate["shift_persistence_end_frame_id"] = persistence["end_frame_id"]
             candidate["shift_gate_passed"] = bool(
                 candidate.get("shift_threshold_passed")
                 and persistent
@@ -562,6 +668,9 @@ def wide_entry_candidates(
             prior_start = max(0, i - int(round(2.0 * state.params.integer("analysis_rate_hz"))))
             if not np.any(np.abs(seg_ball_y[prior_start:i]) < prior_central_threshold_m):
                 continue
+            dwell_end = i
+            while dwell_end < len(seg_wide) and bool(seg_wide[dwell_end]):
+                dwell_end += 1
             side_sign = 1 if seg_ball_y[i] >= 0 else -1
             candidates.append(
                 {
@@ -575,6 +684,13 @@ def wide_entry_candidates(
                         3,
                     ),
                     "wide_entry_frame_id": int(seg_frame_ids[i]),
+                    "wide_dwell_seconds": round(
+                        float((dwell_end - i) / state.params.integer("analysis_rate_hz")),
+                        3,
+                    ),
+                    "wide_dwell_end_frame_id": int(seg_frame_ids[dwell_end - 1]),
+                    "prior_central_start_frame_id": int(seg_frame_ids[prior_start]),
+                    "prior_central_end_frame_id": int(seg_frame_ids[i - 1]),
                     "wide_entry_y_m": round(float(seg_ball_y[i]), 3),
                     "ball_side": "right" if side_sign > 0 else "left",
                 }
@@ -655,34 +771,190 @@ def select_proof_results(candidates: list[dict[str, Any]], params: RuntimeParame
     return selected
 
 
-def runtime_trace_rows(state: PeriodState) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
-    for result in state.accepted:
-        rows.append(
-            {
-                "result_id": result["result_id"],
-                "match_id": result["match_id"],
-                "period": result["period"],
-                "wide_entry_frame_id": result["wide_entry_frame_id"],
-                "anchor_frame_id": result["anchor_frame_id"],
-                "predicates": [
-                    {"id": "wide_entry_persists", "status": "PASS"},
-                    {
-                        "id": "shift_persists",
-                        "status": "PASS",
-                        "value": result["signed_shift_metres"],
-                        "threshold": state.params.number("minimum_shift_metres"),
-                        "unit": "metre",
-                    },
-                    {
-                        "id": "not_stoppage",
-                        "status": "PASS",
-                        "value": result["classification"],
-                    },
-                ],
-            }
-        )
-    return rows
+def accepted_predicate_traces(state: PeriodState) -> list[PredicateTrace]:
+    traces: list[PredicateTrace] = []
+    for candidate in state.candidates:
+        result = candidate.get("_runtime_result")
+        if result and result.get("accepted"):
+            traces.extend(predicate_traces_for_candidate(state, candidate, result))
+    return traces
+
+
+def predicate_traces_for_candidate(
+    state: PeriodState,
+    candidate: dict[str, Any],
+    result: dict[str, Any],
+) -> list[PredicateTrace]:
+    result_id = str(result.get("result_id") or candidate_key(state, candidate))
+    common = {
+        "result_id": result_id,
+        "candidate_key": candidate_key(state, candidate),
+        "match_id": state.match_id,
+        "period": state.period,
+        "wide_entry_frame_id": int(candidate["wide_entry_frame_id"]),
+        "anchor_frame_id": int(candidate["anchor_frame_id"]),
+    }
+    wide_fraction = abs(float(candidate["wide_entry_y_m"])) / PITCH_HALF_WIDTH_M
+    wide_threshold = state.params.number("wide_entry_fraction")
+    shift_value = candidate.get("signed_shift_metres")
+    shift_threshold = state.params.number("minimum_shift_metres")
+    shift_status = numeric_trace_status(shift_value, shift_threshold, "gte")
+    persistence_value = candidate.get("shift_persistence_seconds")
+    persistence_threshold = state.params.number("minimum_shift_persistence_seconds")
+    persistence_status = (
+        "PASS"
+        if candidate.get("persistent_shift")
+        else ("UNKNOWN" if persistence_value is None else "FAIL")
+    )
+    classification = result.get("classification")
+    if classification is None:
+        stoppage_status = "UNKNOWN"
+        stoppage_reason = "outcome_not_evaluated_after_failed_shift_gate"
+    elif classification == "STOPPAGE":
+        stoppage_status = "FAIL"
+        stoppage_reason = "classification_is_stoppage"
+    else:
+        stoppage_status = "PASS"
+        stoppage_reason = "classification_is_accepted_outcome"
+
+    return [
+        PredicateTrace(
+            predicate_id="wide_entry_threshold",
+            status="PASS" if wide_fraction > wide_threshold else "FAIL",
+            value=typed_number(round(wide_fraction, 6), Unit.FRACTION),
+            threshold=typed_number(wide_threshold, Unit.FRACTION),
+            unit=Unit.FRACTION,
+            frame_id=int(candidate["wide_entry_frame_id"]),
+            source_evidence={
+                **common,
+                "wide_entry_y_m": float(candidate["wide_entry_y_m"]),
+                "source_node_id": "ball_lateral",
+            },
+        ),
+        PredicateTrace(
+            predicate_id="wide_entry_persists",
+            status=(
+                "PASS"
+                if float(candidate["wide_dwell_seconds"])
+                >= state.params.number("minimum_wide_dwell_seconds")
+                else "FAIL"
+            ),
+            value=typed_number(float(candidate["wide_dwell_seconds"]), Unit.SECOND),
+            threshold=typed_number(state.params.number("minimum_wide_dwell_seconds"), Unit.SECOND),
+            unit=Unit.SECOND,
+            frame_id=int(candidate["wide_entry_frame_id"]),
+            window={
+                "start_frame_id": int(candidate["wide_entry_frame_id"]),
+                "end_frame_id": int(candidate["wide_dwell_end_frame_id"]),
+            },
+            source_evidence={
+                **common,
+                "prior_central_start_frame_id": int(candidate["prior_central_start_frame_id"]),
+                "prior_central_end_frame_id": int(candidate["prior_central_end_frame_id"]),
+                "source_node_id": "wide_entry_persists",
+            },
+        ),
+        PredicateTrace(
+            predicate_id="shift_threshold",
+            status=shift_status,
+            value=(
+                typed_number(float(shift_value), Unit.METRE)
+                if shift_value is not None and not is_nan_number(shift_value)
+                else None
+            ),
+            threshold=typed_number(shift_threshold, Unit.METRE),
+            unit=Unit.METRE,
+            frame_id=int(candidate["anchor_frame_id"]),
+            window={
+                "baseline_start_frame_id": int(candidate["baseline_start_frame_id"]),
+                "baseline_end_frame_id": int(candidate["baseline_end_frame_id"]),
+                "search_start_frame_id": int(candidate["shift_search_start_frame_id"]),
+                "search_end_frame_id": int(candidate["shift_search_end_frame_id"]),
+            },
+            source_evidence={
+                **common,
+                "baseline_defensive_centroid_y_m": float(candidate["baseline_defensive_centroid_y_m"]),
+                "enough_defenders": bool(candidate["enough_defenders"]),
+                "source_node_id": "signed_shift",
+                "unknown_reason": None if shift_status != "UNKNOWN" else "signed_shift_unavailable",
+            },
+        ),
+        PredicateTrace(
+            predicate_id="shift_persists",
+            status=persistence_status,
+            value=(
+                typed_number(float(persistence_value), Unit.SECOND)
+                if persistence_value is not None
+                else None
+            ),
+            threshold=typed_number(persistence_threshold, Unit.SECOND),
+            unit=Unit.SECOND,
+            frame_id=int(candidate["anchor_frame_id"]),
+            window={
+                "start_frame_id": candidate.get("shift_persistence_start_frame_id"),
+                "end_frame_id": candidate.get("shift_persistence_end_frame_id"),
+            },
+            source_evidence={
+                **common,
+                "persistent_shift": bool(candidate.get("persistent_shift", False)),
+                "source_node_id": "shift_persists",
+                "unknown_reason": None
+                if persistence_status != "UNKNOWN"
+                else "shift_series_unavailable",
+            },
+        ),
+        PredicateTrace(
+            predicate_id="not_stoppage",
+            status=stoppage_status,
+            value=typed_enum(str(classification)) if classification is not None else None,
+            threshold=typed_enum("STOPPAGE"),
+            unit=Unit.NONE,
+            frame_id=(
+                int(result["outcome_frame_id"])
+                if result.get("outcome_frame_id") is not None
+                else None
+            ),
+            window={
+                "start_frame_id": int(candidate["anchor_frame_id"]),
+                "end_frame_id": result.get("outcome_frame_id"),
+            },
+            source_evidence={
+                **common,
+                "classification": classification,
+                "source_node_id": "outcome",
+                "reason": stoppage_reason,
+            },
+        ),
+    ]
+
+
+def numeric_trace_status(value: Any, threshold: float, operator: str) -> str:
+    if value is None or is_nan_number(value):
+        return "UNKNOWN"
+    if operator == "gt":
+        return "PASS" if float(value) > threshold else "FAIL"
+    if operator == "gte":
+        return "PASS" if float(value) >= threshold else "FAIL"
+    raise RuntimeError(f"Unsupported trace operator {operator}")
+
+
+def typed_number(value: float, unit: Unit) -> TypedValue:
+    return TypedValue(payload_type=PayloadType.NUMBER, value=value, unit=unit)
+
+
+def typed_enum(value: str) -> TypedValue:
+    return TypedValue(payload_type=PayloadType.ENUM, value=value, unit=Unit.NONE)
+
+
+def is_nan_number(value: Any) -> bool:
+    return isinstance(value, int | float) and math.isnan(float(value))
+
+
+def candidate_key(state: PeriodState, candidate: dict[str, Any]) -> str:
+    return (
+        f"{state.match_id}:{state.period}:"
+        f"{int(candidate['wide_entry_frame_id'])}:{int(candidate['anchor_frame_id'])}"
+    )
 
 
 def summarize_results(results: list[dict[str, Any]]) -> dict[str, Any]:
@@ -764,9 +1036,52 @@ def segment_true(mask: np.ndarray, minimum_frames: int) -> list[tuple[int, int]]
 
 
 def has_persistent_shift(values: pd.Series, threshold: float, persistence_frames: int) -> bool:
-    if len(values) < persistence_frames:
-        return False
-    return bool((values >= threshold).rolling(persistence_frames).sum().max() >= persistence_frames)
+    return bool(shift_persistence_evidence(values, threshold, persistence_frames)["persistent"])
+
+
+def shift_persistence_evidence(
+    values: pd.Series,
+    threshold: float,
+    persistence_frames: int,
+    analysis_rate_hz: int = FRAME_RATE_HZ,
+) -> dict[str, Any]:
+    if len(values) == 0:
+        return {
+            "persistent": False,
+            "duration_seconds": 0.0,
+            "start_frame_id": None,
+            "end_frame_id": None,
+        }
+
+    best_start: int | None = None
+    best_end: int | None = None
+    best_count = 0
+    current_start: int | None = None
+    current_count = 0
+    current_end: int | None = None
+
+    for frame_id, passes in (values >= threshold).items():
+        if bool(passes):
+            if current_start is None:
+                current_start = int(frame_id)
+                current_count = 0
+            current_count += 1
+            current_end = int(frame_id)
+            if current_count > best_count:
+                best_count = current_count
+                best_start = current_start
+                best_end = current_end
+        else:
+            current_start = None
+            current_count = 0
+            current_end = None
+
+    return {
+        "persistent": best_count >= persistence_frames,
+        "duration_seconds": round(best_count / analysis_rate_hz, 3),
+        "start_frame_id": best_start,
+        "end_frame_id": best_end,
+    }
 
 
 def classify_outcome(
