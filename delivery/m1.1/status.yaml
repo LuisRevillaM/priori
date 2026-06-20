@@ -1,6 +1,6 @@
 milestone: M1.1
 name: "Composable Tactical Query Runtime"
-state: IN_PROGRESS
+state: VERIFIED_CONTROLLER_ONLY
 source_of_truth: delivery/m1.1/SPEC.md
 last_updated: "2026-06-19"
 preconditions:
@@ -18,7 +18,7 @@ slices:
   S3_predicate_trace_and_non_match_evaluation: DONE
   S4_geometric_progressive_corridor_relation: DONE
   S5_no_code_experimental_composition: DONE
-  S6_developer_inspector_and_reports: NOT_STARTED
+  S6_developer_inspector_and_reports: DONE
 promotion_gates:
   Gate_0_M1_baseline_and_gold_set: DONE
   Gate_A_type_system_and_binder: ACCEPTED_CONTROLLER_ONLY
@@ -26,10 +26,10 @@ promotion_gates:
   Gate_C_predicate_trace_non_match_evaluation: ACCEPTED_CONTROLLER_ONLY
   Gate_D_dynamic_relation_proof: ACCEPTED_CONTROLLER_ONLY
   Gate_E_no_code_composition: ACCEPTED_CONTROLLER_ONLY
-  Gate_F_developer_inspector_reports: NOT_STARTED
+  Gate_F_developer_inspector_reports: ACCEPTED_CONTROLLER_ONLY
 verification:
-  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_PASS_FULL_M1_1_NOT_READY_GATE_F
+  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_FULL_M1_1_PASS
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
   independent_review: NOT_STARTED
-  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_ACCEPTED_CONTROLLER_ONLY
+  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY
   owner_acceptance: NOT_STARTED

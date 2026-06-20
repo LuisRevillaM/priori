@@ -2,7 +2,7 @@ PYTHON ?= $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python
 PYTHONPATH := $(CURDIR)/src
 export PYTHONPATH
 
-.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-verify test
+.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-verify test
 
 setup:
 	python3.12 -m venv .venv
@@ -62,6 +62,9 @@ m1-1-gate-d-verify:
 
 m1-1-gate-e-verify:
 	$(PYTHON) -m tqe.verification.m1_1_gate_e
+
+m1-1-gate-f-verify:
+	$(PYTHON) -m tqe.verification.m1_1_gate_f
 
 m1-1-verify:
 	$(PYTHON) -m tqe.verification.m1_1
