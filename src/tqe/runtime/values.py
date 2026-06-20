@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from tqe.runtime.ir import Cardinality, CatalogOutput, EntityScope, PayloadType, TemporalContainer, Unit
+from tqe.runtime.ir import Cardinality, CatalogOutput, EntityScope, PayloadType, TemporalContainer, Unit, stable_hash
 
 
 @dataclass(frozen=True)
@@ -136,7 +136,9 @@ def normalize_frame_signal(
                 )
             signal_frame_ids = [int(item) for item in frame_ids]
         else:
-            signal_frame_ids = list(range(len(raw_value)))
+            raise RuntimeError(
+                f"{node_id}.{output.name} frame signal list values require explicit frame_ids"
+            )
         return frame_signal_from_values(output=output, frame_ids=signal_frame_ids, values=raw_value)
     raise RuntimeError(f"{node_id}.{output.name} cannot normalize {type(raw_value).__name__} as frame signal")
 
@@ -220,6 +222,26 @@ def assert_anchor_record(*, node_id: str, output: CatalogOutput, item: dict[str,
             raise RuntimeError(f"{node_id}.{output.name} anchor {field} must be an integer")
     if not isinstance(item.get("anchor_id"), str) or not item["anchor_id"]:
         raise RuntimeError(f"{node_id}.{output.name} anchor_id must be a non-empty string")
+    expected = canonical_anchor_record_id(item)
+    if item["anchor_id"] != expected:
+        raise RuntimeError(
+            f"{node_id}.{output.name} anchor_id {item['anchor_id']} does not match canonical {expected}"
+        )
+
+
+def canonical_anchor_record_id(item: dict[str, Any]) -> str:
+    entity_refs = item.get("entity_refs")
+    entities = sorted(str(entity) for entity in entity_refs) if isinstance(entity_refs, list) else []
+    return stable_hash(
+        {
+            "match_id": str(item["match_id"]),
+            "period": str(item["period"]),
+            "anchor_frame_id": int(item["anchor_frame_id"]),
+            "start_frame_id": int(item["start_frame_id"]) if item.get("start_frame_id") is not None else None,
+            "end_frame_id": int(item["end_frame_id"]) if item.get("end_frame_id") is not None else None,
+            "entity_refs": entities,
+        }
+    )[:16]
 
 
 def assert_relation_episode_record(*, node_id: str, output: CatalogOutput, item: Any) -> None:

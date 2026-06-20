@@ -220,6 +220,16 @@ Acceptance:
 - generic anchor/target code contains no `wide_entry_*`, `block_shift_*`, or `shift_gate_*` assumptions;
 - node execution returns an explicit result containing resolved inputs, parameters, outputs, runtime values, warnings, and provenance.
 
+External review rejected the first S3R packet as insufficient. The strengthened S3R acceptance additionally requires:
+
+- runtime anchor discovery canonicalizes semantic identity and deduplicates by that semantic key;
+- typed anchor outputs reject non-canonical producer-supplied IDs;
+- list-backed frame signals require explicit frame IDs;
+- predicate nodes execute from resolved input and parameter mappings;
+- generic `persists_for` has one Boolean frame-signal path and does not inspect runtime records;
+- legacy M1 persistence behavior is isolated behind named compatibility adapters;
+- a non-M1 anchor produces engine-derived PASS and FAIL traces from declared runtime outputs.
+
 ### Gate S4 - Rule-Driven Result Emission
 
 Acceptance:

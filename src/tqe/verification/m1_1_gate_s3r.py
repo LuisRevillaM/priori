@@ -18,7 +18,9 @@ from tqe.runtime.executor import (
     PeriodState,
     RuntimeParameters,
     TacticalQueryExecutor,
+    anchor_record_id,
     evaluate_target_in_state,
+    execute_predicate_with_resolved_inputs,
     execution_result_rows,
     predicate_persists_for,
     runtime_anchors,
@@ -74,6 +76,7 @@ def build_report() -> dict[str, Any]:
     checks.extend(validate_explicit_anchor_source(bound, state))
     checks.extend(validate_anchor_identity_rename_stability(executor, bound))
     checks.extend(validate_anchor_dedup_and_side_channel_independence(bound))
+    checks.extend(validate_invalid_anchor_id_rejected())
     checks.extend(validate_non_m1_anchor_target_and_trace(bound))
     checks.extend(validate_generic_temporal_semantics(bound))
     checks.extend(validate_frame_length_mismatch_rejected())
@@ -158,8 +161,9 @@ def validate_anchor_identity_rename_stability(
 
 def validate_anchor_dedup_and_side_channel_independence(bound: Any) -> list[dict[str, Any]]:
     state = synthetic_period_state()
-    record = synthetic_anchor_record("anchor_a", 125)
+    record = synthetic_anchor_record(125)
     duplicate = dict(record)
+    duplicate["anchor_id"] = "producer_controlled_conflicting_id"
     duplicate["ignored_extra"] = "same_physical_anchor"
     state.runtime_values["anchor_node"] = {
         "anchors": RuntimeValue(
@@ -176,11 +180,11 @@ def validate_anchor_dedup_and_side_channel_independence(bound: Any) -> list[dict
     return [
         pass_check(
             "anchors.deduplicate_and_ignore_side_channels",
-            "repeated representations of one physical anchor deduplicate and do not depend on state side channels",
+            "semantic duplicates deduplicate and anchor discovery does not depend on state side channels",
             {"before": [anchor.anchor_id for anchor in before], "after": [anchor.anchor_id for anchor in after]},
         )
-        if [anchor.anchor_id for anchor in before] == ["anchor_a"]
-        and [anchor.anchor_id for anchor in after] == ["anchor_a"]
+        if [anchor.anchor_id for anchor in before] == [record["anchor_id"]]
+        and [anchor.anchor_id for anchor in after] == [record["anchor_id"]]
         else fail_check(
             "anchors.deduplicate_and_ignore_side_channels",
             "anchor dedupe or state side-channel independence failed",
@@ -189,11 +193,63 @@ def validate_anchor_dedup_and_side_channel_independence(bound: Any) -> list[dict
     ]
 
 
+def validate_invalid_anchor_id_rejected() -> list[dict[str, Any]]:
+    record = synthetic_anchor_record(125)
+    record["anchor_id"] = "not_the_canonical_id"
+    try:
+        runtime_value_from_raw(
+            node_id="anchor_node",
+            output=anchor_output(),
+            raw_value=[record],
+        )
+    except RuntimeError as error:
+        return [
+            pass_check(
+                "anchors.invalid_supplied_id_rejected",
+                "producer-supplied anchor IDs must match the canonical semantic hash",
+                {"error": str(error)},
+            )
+        ]
+    return [
+        fail_check(
+            "anchors.invalid_supplied_id_rejected",
+            "runtime accepted a producer-controlled non-canonical anchor ID",
+        )
+    ]
+
+
 def validate_non_m1_anchor_target_and_trace(bound: Any) -> list[dict[str, Any]]:
     state = synthetic_period_state()
-    record = synthetic_anchor_record("non_m1_anchor", 125)
+    record = synthetic_anchor_record(125)
     state.runtime_values["anchor_node"] = {
         "anchors": RuntimeValue(output=anchor_output(), value=[record])
+    }
+    predicate_nodes = [node for node in bound.nodes if isinstance(node, BoundPredicateNode)]
+    pass_node = predicate_nodes[0]
+    fail_node = predicate_nodes[1]
+    state.runtime_values[pass_node.node_id] = {
+        pass_node.output.name: RuntimeValue(
+            output=pass_node.output,
+            value=FrameSignal(
+                frame_ids=[125],
+                values=[True],
+                unknown_mask=[False],
+                unit=pass_node.output.unit,
+                entity_scope=pass_node.output.entity_scope,
+            ),
+        )
+    }
+    state.runtime_values[fail_node.node_id] = {
+        fail_node.output.name: RuntimeValue(
+            output=fail_node.output,
+            value=FrameSignal(
+                frame_ids=[125],
+                values=[False],
+                unknown_mask=[False],
+                unit=fail_node.output.unit,
+                entity_scope=fail_node.output.entity_scope,
+            ),
+        )
     }
     synthetic_bound = bound.model_copy(
         update={"anchor_source": SignalRef(source_node_id="anchor_node", output_name="anchors")}
@@ -210,17 +266,19 @@ def validate_non_m1_anchor_target_and_trace(bound: Any) -> list[dict[str, Any]]:
         ),
     )
     traces = result["predicate_traces"]
+    statuses = {trace["predicate_id"]: trace["status"] for trace in traces}
     source_text = inspect.getsource(evaluate_target_in_state)
     return [
         pass_check(
             "anchors.non_m1_anchor_targetable_and_traceable",
-            "a non-M1 anchor with no block-shift fields can be targeted and traced",
-            {"status": result["status"], "trace_count": len(traces), "closest": result["closest_candidate"]},
+            "a non-M1 anchor gets engine-derived PASS and FAIL traces from declared runtime outputs",
+            {"status": result["status"], "statuses": statuses, "closest": result["closest_candidate"]},
         )
         if result["status"] == "NON_MATCH"
-        and result["closest_candidate"]["anchor_id"] == "non_m1_anchor"
+        and result["closest_candidate"]["anchor_id"] == record["anchor_id"]
         and traces
-        and all(trace["status"] == "UNKNOWN" for trace in traces)
+        and statuses.get(pass_node.node_id) == "PASS"
+        and statuses.get(fail_node.node_id) == "FAIL"
         and "wide_entry" not in source_text
         and "base_result_fields" not in source_text
         else fail_check(
@@ -239,19 +297,30 @@ def validate_generic_temporal_semantics(bound: Any) -> list[dict[str, Any]]:
     ).model_copy(update={"duration": typed_number(0.4, Unit.SECOND)})
     state = synthetic_period_state()
     values = [True, True, None, True, True, True, False, True]
+    signal = FrameSignal(
+        frame_ids=[100, 101, 102, 103, 104, 105, 106, 107],
+        values=values,
+        unknown_mask=[value is None for value in values],
+        unit=node.input_type.unit,
+        entity_scope=node.input_type.entity_scope,
+    )
     state.runtime_values[node.input.source_node_id] = {
-        node.input.output_name: RuntimeValue(output=node.input_type, value=values)
+        node.input.output_name: RuntimeValue(
+            output=node.input_type,
+            value=signal,
+            records=[{"truth_series": pd.Series([True, True, True])}],
+        )
     }
     predicate_persists_for(state, node)
     episodes = state.signals[node.node_id]["episodes"]
     windows = [(episode["start_frame_id"], episode["end_frame_id"]) for episode in episodes]
     source = inspect.getsource(predicate_persists_for)
-    forbidden = ["wide_entry", "block_shift", "shift_gate", "persistence_series", "quality_status"]
+    forbidden = ["wide_entry", "block_shift", "shift_gate", "persistence_series", "quality_status", "runtime_records", "_predicate_status", "truth_series"]
     hits = [token for token in forbidden if token in source]
     return [
         pass_check(
             "temporal.persists_for_generic_tri_state",
-            "persists_for consumes tri-state booleans, breaks on UNKNOWN, and has no shift-specific assumptions",
+            "persists_for consumes only tri-state booleans, ignores arbitrary records, and breaks on UNKNOWN",
             {"windows": windows},
         )
         if windows == [(100, 101), (103, 105)] and not hits
@@ -264,6 +333,7 @@ def validate_generic_temporal_semantics(bound: Any) -> list[dict[str, Any]]:
 
 
 def validate_frame_length_mismatch_rejected() -> list[dict[str, Any]]:
+    checks: list[dict[str, Any]] = []
     try:
         runtime_value_from_raw(
             node_id="frame_mismatch_probe",
@@ -278,25 +348,55 @@ def validate_frame_length_mismatch_rejected() -> list[dict[str, Any]]:
             frame_ids=[10, 11, 12],
         )
     except RuntimeError as error:
-        return [
+        checks.append(
             pass_check(
                 "frame_signal.length_mismatch_rejected",
                 "frame-signal values cannot silently fall back to synthetic frame IDs",
                 {"error": str(error)},
             )
-        ]
-    return [
-        fail_check(
-            "frame_signal.length_mismatch_rejected",
-            "frame-signal values with mismatched frame IDs were accepted",
         )
-    ]
+    else:
+        checks.append(
+            fail_check(
+                "frame_signal.length_mismatch_rejected",
+                "frame-signal values with mismatched frame IDs were accepted",
+            )
+        )
+    try:
+        runtime_value_from_raw(
+            node_id="frame_missing_ids_probe",
+            output=output(
+                name="predicate",
+                temporal_type=TemporalContainer.FRAME_SIGNAL,
+                payload_type=PayloadType.BOOLEAN,
+                cardinality=Cardinality.SINGLE,
+                entity_scope=EntityScope.FRAME,
+            ),
+            raw_value=[True, False],
+        )
+    except RuntimeError as error:
+        checks.append(
+            pass_check(
+                "frame_signal.sequence_requires_explicit_frame_ids",
+                "multi-valued frame signals cannot invent synthetic temporal identity",
+                {"error": str(error)},
+            )
+        )
+    else:
+        checks.append(
+            fail_check(
+                "frame_signal.sequence_requires_explicit_frame_ids",
+                "frame-signal sequence without frame IDs was accepted",
+            )
+        )
+    return checks
 
 
 def validate_generic_source_no_forbidden_assumptions() -> list[dict[str, Any]]:
     functions = [
         runtime_anchors,
         evaluate_target_in_state,
+        predicate_persists_for,
     ]
     forbidden = ["wide_entry", "block_shift", "shift_gate"]
     hits: dict[str, list[str]] = {}
@@ -339,18 +439,22 @@ def validate_node_execution_result_contract(
         results.append(result)
     input_counts = {result.node_id: len(result.inputs) for result in results}
     output_counts = {result.node_id: len(result.runtime_values) for result in results}
+    explicit_source = inspect.getsource(execute_predicate_with_resolved_inputs)
+    forbidden = ["state.runtime_values", "state.signals", "state.candidates", "state.accepted"]
+    hits = [token for token in forbidden if token in explicit_source]
     return [
         pass_check(
             "nodes.execution_result_contract",
-            "node execution returns explicit inputs, parameters, outputs, runtime values, and provenance",
+            "predicate execution receives explicit inputs and parameters and returns declared runtime values",
             {"input_counts": input_counts, "output_counts": output_counts},
         )
         if all(isinstance(result.outputs, dict) and result.runtime_values for result in results)
         and input_counts.get("outcome") == 1
+        and not hits
         else fail_check(
             "nodes.execution_result_contract",
             "node execution result contract is incomplete",
-            {"input_counts": input_counts, "output_counts": output_counts},
+            {"input_counts": input_counts, "output_counts": output_counts, "forbidden_hits": hits},
         )
     ]
 
@@ -383,15 +487,25 @@ def anchor_output() -> Any:
     )
 
 
-def synthetic_anchor_record(anchor_id: str, frame_id: int) -> dict[str, Any]:
-    return {
-        "anchor_id": anchor_id,
+def synthetic_anchor_record(frame_id: int) -> dict[str, Any]:
+    payload = {
         "match_id": "synthetic",
         "period": "firstHalf",
         "anchor_frame_id": frame_id,
         "start_frame_id": frame_id - 5,
         "end_frame_id": frame_id + 5,
         "entity_refs": ["synthetic_entity"],
+    }
+    payload["anchor_id"] = anchor_record_id(
+        match_id=str(payload["match_id"]),
+        period=str(payload["period"]),
+        anchor_frame_id=int(payload["anchor_frame_id"]),
+        start_frame_id=int(payload["start_frame_id"]),
+        end_frame_id=int(payload["end_frame_id"]),
+        entity_refs=payload["entity_refs"],
+    )
+    return {
+        **payload,
     }
 
 
