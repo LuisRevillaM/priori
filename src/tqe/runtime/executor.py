@@ -26,7 +26,9 @@ from tqe.runtime.ir import (
     BoundCatalogNode,
     BoundPredicateNode,
     BoundQueryPlan,
+    BoundPlanNode,
     EvaluationTarget,
+    ExecutionMode,
     ExecutionStatus,
     NodeKind,
     PayloadType,
@@ -37,6 +39,7 @@ from tqe.runtime.ir import (
     Unit,
     stable_hash,
 )
+from tqe.runtime.values import RuntimeValue, runtime_value_from_raw
 from tqe.runtime.relations import (
     CorridorConfig,
     destination_lane,
@@ -96,6 +99,7 @@ class PeriodState:
     defender_count: pd.Series
     defender_centroid_y: pd.Series
     signals: dict[str, Any] = field(default_factory=dict)
+    runtime_values: dict[str, dict[str, RuntimeValue]] = field(default_factory=dict)
     candidates: list[dict[str, Any]] = field(default_factory=list)
     accepted: list[dict[str, Any]] = field(default_factory=list)
     near_misses: list[dict[str, Any]] = field(default_factory=list)
@@ -143,18 +147,66 @@ class TacticalQueryExecutor:
         }
 
     def execute(self, bound_plan: BoundQueryPlan) -> QueryExecution:
+        if bound_plan.execution_mode == ExecutionMode.BIND_ONLY:
+            return QueryExecution(
+                execution_id=hashlib.sha256(
+                    f"bind_only:{bound_plan.bound_plan_hash}".encode("utf-8")
+                ).hexdigest()[:16],
+                status=ExecutionStatus.NOT_STARTED,
+                plan_hash=bound_plan.plan_hash,
+                bound_plan_hash=bound_plan.bound_plan_hash,
+                provenance={
+                    "generated_at": utc_now_iso(),
+                    "plan_id": bound_plan.plan_id,
+                    "plan_status": bound_plan.plan_status.value,
+                    "execution_mode": bound_plan.execution_mode.value,
+                    "runtime_result_count": 0,
+                    "runtime_value_count": 0,
+                    "skipped_reason": "bind_only",
+                },
+            )
+        if bound_plan.execution_mode == ExecutionMode.DRY_RUN:
+            return QueryExecution(
+                execution_id=hashlib.sha256(
+                    f"dry_run:{bound_plan.bound_plan_hash}".encode("utf-8")
+                ).hexdigest()[:16],
+                status=ExecutionStatus.PASS,
+                plan_hash=bound_plan.plan_hash,
+                bound_plan_hash=bound_plan.bound_plan_hash,
+                provenance={
+                    "generated_at": utc_now_iso(),
+                    "plan_id": bound_plan.plan_id,
+                    "plan_status": bound_plan.plan_status.value,
+                    "execution_mode": bound_plan.execution_mode.value,
+                    "runtime_result_count": 0,
+                    "runtime_value_count": 0,
+                    "skipped_reason": "dry_run",
+                },
+            )
+
         params = runtime_parameters(bound_plan)
         results: list[dict[str, Any]] = []
         trace_records: list[PredicateTrace] = []
+        runtime_value_count = 0
 
         for match_id in bound_plan.match_ids:
-            match_results, match_traces = self._execute_match(
+            match_results, match_traces, match_runtime_value_count = self._execute_match(
                 bound_plan=bound_plan,
                 match_id=match_id,
                 params=params,
             )
             results.extend(match_results)
             trace_records.extend(match_traces)
+            runtime_value_count += match_runtime_value_count
+
+        if len(results) > bound_plan.max_results:
+            kept_ids = {str(result["result_id"]) for result in results[: bound_plan.max_results]}
+            results = results[: bound_plan.max_results]
+            trace_records = [
+                trace
+                for trace in trace_records
+                if str(trace.source_evidence.get("result_id")) in kept_ids
+            ]
 
         query_results = [
             QueryResult(
@@ -196,7 +248,10 @@ class TacticalQueryExecutor:
                 "raw_root": str(self.raw_root),
                 "plan_id": bound_plan.plan_id,
                 "plan_status": bound_plan.plan_status.value,
+                "execution_mode": bound_plan.execution_mode.value,
+                "max_results": bound_plan.max_results,
                 "runtime_result_count": len(query_results),
+                "runtime_value_count": runtime_value_count,
                 "runtime_trace_hash": stable_hash(trace_payload),
             },
         )
@@ -207,9 +262,10 @@ class TacticalQueryExecutor:
         bound_plan: BoundQueryPlan,
         match_id: str,
         params: RuntimeParameters,
-    ) -> tuple[list[dict[str, Any]], list[PredicateTrace]]:
+    ) -> tuple[list[dict[str, Any]], list[PredicateTrace], int]:
         accepted: list[dict[str, Any]] = []
         traces: list[PredicateTrace] = []
+        runtime_value_count = 0
         for period in bound_plan.periods:
             state = self._execute_period(
                 bound_plan=bound_plan,
@@ -219,6 +275,7 @@ class TacticalQueryExecutor:
             )
             accepted.extend(state.accepted)
             traces.extend(accepted_predicate_traces(state))
+            runtime_value_count += sum(len(outputs) for outputs in state.runtime_values.values())
         accepted.sort(
             key=lambda item: (
                 -float(item["block_shift_score"]),
@@ -227,7 +284,7 @@ class TacticalQueryExecutor:
                 item["wide_entry_frame_id"],
             )
         )
-        return accepted, traces
+        return accepted, traces, runtime_value_count
 
     def evaluate_target(
         self,
@@ -326,14 +383,16 @@ class TacticalQueryExecutor:
                         raise RuntimeError(f"No relation implementation for {node.catalog_ref}")
                 else:
                     implementation = self.primitives.get(node.catalog_ref)
-                    if implementation is None:
-                        raise RuntimeError(f"No primitive implementation for {node.catalog_ref}")
+                if implementation is None:
+                    raise RuntimeError(f"No primitive implementation for {node.catalog_ref}")
                 implementation(state, node)
+                record_runtime_values(state, node)
             elif isinstance(node, BoundPredicateNode):
                 implementation = self.predicates.get(node.operator.name)
                 if implementation is None:
                     raise RuntimeError(f"No predicate implementation for {node.operator.name}")
                 implementation(state, node)
+                record_runtime_values(state, node)
         return state
 
     def _period_state(
@@ -402,6 +461,29 @@ def runtime_parameters(bound_plan: BoundQueryPlan) -> RuntimeParameters:
     return RuntimeParameters(
         values={item.name: item.value.value for item in bound_plan.resolved_parameters}
     )
+
+
+def record_runtime_values(state: PeriodState, node: BoundPlanNode) -> None:
+    raw_outputs = state.signals.get(node.node_id)
+    if raw_outputs is None:
+        raise RuntimeError(f"{node.node_id} did not emit any outputs")
+    if isinstance(node, BoundCatalogNode):
+        outputs = node.outputs
+    else:
+        outputs = [node.output]
+    values: dict[str, RuntimeValue] = {}
+    for output in outputs:
+        raw_value = raw_outputs.get(output.name)
+        if raw_value is None and output.temporal_type.name.endswith("EPISODE_SET"):
+            raw_value = raw_outputs.get("episodes")
+        if raw_value is None:
+            raise RuntimeError(f"{node.node_id} did not emit required output {output.name}")
+        values[output.name] = runtime_value_from_raw(
+            node_id=node.node_id,
+            output=output,
+            raw_value=raw_value,
+        )
+    state.runtime_values[node.node_id] = values
 
 
 def primitive_noop(state: PeriodState, node: BoundCatalogNode) -> None:

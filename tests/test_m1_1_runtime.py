@@ -13,7 +13,7 @@ from tqe.runtime.executor import (
     runtime_parameters,
     select_proof_results,
 )
-from tqe.runtime.ir import EvaluationTarget, PlanStatus
+from tqe.runtime.ir import EvaluationTarget, ExecutionMode, ExecutionStatus, PlanStatus
 from tqe.runtime.relations import evaluate_geometric_progressive_corridors
 
 
@@ -33,11 +33,42 @@ class M11RuntimeTests(unittest.TestCase):
         )
 
         self.assertEqual(180, len(rows))
+        self.assertEqual("execute", self.execution.provenance["execution_mode"])
+        self.assertGreater(self.execution.provenance["runtime_value_count"], 0)
         self.assertEqual(
             baseline["legacy_result_manifest"]["selected_result_ids"],
             [item["result_id"] for item in selected],
         )
         self.assertTrue(self.execution.provenance["runtime_trace_hash"])
+
+    def test_invocation_modes_are_operational(self) -> None:
+        executor = TacticalQueryExecutor()
+        bind_only = executor.execute(
+            self.bound.model_copy(update={"execution_mode": ExecutionMode.BIND_ONLY})
+        )
+        dry_run = executor.execute(
+            self.bound.model_copy(update={"execution_mode": ExecutionMode.DRY_RUN})
+        )
+
+        self.assertEqual(ExecutionStatus.NOT_STARTED, bind_only.status)
+        self.assertEqual([], bind_only.results)
+        self.assertEqual("bind_only", bind_only.provenance["execution_mode"])
+        self.assertEqual(ExecutionStatus.PASS, dry_run.status)
+        self.assertEqual([], dry_run.results)
+        self.assertEqual("dry_run", dry_run.provenance["execution_mode"])
+
+    def test_max_results_is_honored_deterministically(self) -> None:
+        executor = TacticalQueryExecutor()
+        limited_bound = self.bound.model_copy(update={"max_results": 1})
+        first = executor.execute(limited_bound)
+        second = executor.execute(limited_bound)
+
+        self.assertEqual(1, len(first.results))
+        self.assertEqual(
+            [result.result_id for result in first.results],
+            [result.result_id for result in second.results],
+        )
+        self.assertEqual(first.execution_id, second.execution_id)
 
     def test_runtime_emits_full_predicate_traces_for_results(self) -> None:
         result_ids = {result.result_id for result in self.execution.results}

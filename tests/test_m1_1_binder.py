@@ -26,8 +26,8 @@ class M11BinderTests(unittest.TestCase):
         self.assertEqual("ball_side_block_shift_v1", bound.recipe_id)
         self.assertEqual(10, len(bound.nodes))
         self.assertEqual(19, len(bound.resolved_parameters))
-        self.assertEqual(16, bound.max_results)
-        self.assertEqual("bind_only", bound.execution_mode.value)
+        self.assertEqual(180, bound.max_results)
+        self.assertEqual("execute", bound.execution_mode.value)
         self.assertEqual(bound.plan_hash, rebound.plan_hash)
         self.assertEqual(bound.bound_plan_hash, rebound.bound_plan_hash)
 
