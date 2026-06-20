@@ -23,7 +23,7 @@ slices:
   S7_m1_1r_state_correction_review_integration: DONE
   S8_m1_1r_explicit_plan_graph_binder_contracts: DONE
   S9_m1_1r_typed_runtime_values_invocation_semantics: DONE
-  S10_m1_1r_generic_predicate_classification_evidence_unknown: NOT_STARTED
+  S10_m1_1r_generic_predicate_classification_evidence_unknown: IN_PROGRESS
   S11_m1_1r_relation_anchor_decoupling_experimental_repair: NOT_STARTED
   S12_m1_1r_architecture_proof_and_parity: NOT_STARTED
 promotion_gates:
@@ -37,7 +37,7 @@ promotion_gates:
   Gate_R0_state_correction_review_integration: DONE
   Gate_R1_explicit_plan_graph_binder_contracts: ACCEPTED_CONTROLLER_ONLY
   Gate_R2_typed_runtime_values_invocation_semantics: ACCEPTED_CONTROLLER_ONLY
-  Gate_R3_generic_predicate_classification_evidence_unknown: NOT_STARTED
+  Gate_R3_generic_predicate_classification_evidence_unknown: IN_PROGRESS
   Gate_R4_relation_anchor_decoupling_experimental_repair: NOT_STARTED
   Gate_R5_architecture_proof_and_parity: NOT_STARTED
 verification:

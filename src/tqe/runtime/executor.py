@@ -517,7 +517,12 @@ def primitive_defensive_outfield_centroid(state: PeriodState, node: BoundCatalog
 
 
 def primitive_signed_lateral_shift(state: PeriodState, node: BoundCatalogNode) -> None:
-    candidates = state.signals.get("wide_entry_persists", {}).get("candidates", [])
+    entry_reference = node.inputs.get("entry_episodes")
+    if entry_reference is None:
+        raise RuntimeError(f"{node.node_id} requires entry_episodes input")
+    entry_signal = state.signals.get(entry_reference.source_node_id, {})
+    entry_episodes = entry_signal.get(entry_reference.output_name) or entry_signal.get("episodes", [])
+    candidates = wide_entry_candidates_from_episodes(state, entry_episodes)
     baseline_frames = int(round(state.params.number("baseline_window_seconds") * state.params.integer("analysis_rate_hz")))
     search_frames = int(round(state.params.number("shift_search_window_seconds") * state.params.integer("analysis_rate_hz")))
     shifted: list[dict[str, Any]] = []
@@ -893,12 +898,8 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
         raise RuntimeError(f"{node.node_id} requires duration")
     minimum_frames = int(round(duration_seconds * state.params.integer("analysis_rate_hz")))
     if isinstance(source, np.ndarray):
-        if node.input.source_node_id == "wide_entry_threshold":
-            candidates = wide_entry_candidates(state, source, minimum_frames)
-            state.signals[node.node_id] = {"episodes": candidates, "candidates": candidates}
-            return
-        episodes = segment_true(source, minimum_frames)
-        state.signals[node.node_id] = {"episodes": episodes}
+        episodes = episode_records_from_mask(state, source, minimum_frames)
+        state.signals[node.node_id] = {"predicate": episodes, "episodes": episodes}
         return
     if isinstance(source, list):
         threshold = state.params.number("minimum_shift_metres")
@@ -920,7 +921,7 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
                 and candidate["enough_defenders"]
             )
         state.candidates = source
-        state.signals[node.node_id] = {"episodes": source}
+        state.signals[node.node_id] = {"predicate": source, "episodes": source}
         return
     raise RuntimeError(f"Unsupported persists_for source for {node.node_id}")
 
@@ -998,6 +999,55 @@ def wide_entry_candidates(
                 }
             )
     return candidates
+
+
+def episode_records_from_mask(
+    state: PeriodState,
+    mask: np.ndarray,
+    minimum_frames: int,
+) -> list[dict[str, int]]:
+    return [
+        {
+            "start_index": int(start),
+            "end_index": int(end),
+            "start_frame_id": int(state.frame_ids[start]),
+            "end_frame_id": int(state.frame_ids[end]),
+        }
+        for start, end in segment_true(mask, minimum_frames)
+    ]
+
+
+def wide_entry_candidates_from_episodes(
+    state: PeriodState,
+    episodes: list[Any],
+) -> list[dict[str, Any]]:
+    wide_mask = np.zeros(len(state.frame_ids), dtype=bool)
+    for episode in episodes:
+        start_index = episode_start_index(episode)
+        end_index = episode_end_index(episode)
+        if start_index is None or end_index is None:
+            continue
+        wide_mask[start_index : end_index + 1] = True
+    dwell_frames = int(
+        round(state.params.number("minimum_wide_dwell_seconds") * state.params.integer("analysis_rate_hz"))
+    )
+    return wide_entry_candidates(state, wide_mask, dwell_frames)
+
+
+def episode_start_index(episode: Any) -> int | None:
+    if isinstance(episode, dict):
+        return int(episode["start_index"]) if "start_index" in episode else None
+    if isinstance(episode, tuple | list) and len(episode) >= 1:
+        return int(episode[0])
+    return None
+
+
+def episode_end_index(episode: Any) -> int | None:
+    if isinstance(episode, dict):
+        return int(episode["end_index"]) if "end_index" in episode else None
+    if isinstance(episode, tuple | list) and len(episode) >= 2:
+        return int(episode[1])
+    return None
 
 
 def base_result_fields(
