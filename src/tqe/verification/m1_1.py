@@ -1,0 +1,69 @@
+"""Aggregate M1.1 verification state without overclaiming unfinished gates."""
+
+from __future__ import annotations
+
+import json
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+from tqe.verification.m1_1_gate_a import build_report as build_gate_a_report
+
+REPORT_PATH = Path("artifacts/m1.1/verification-report.json")
+
+
+def utc_now_iso() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat()
+
+
+def write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def not_ready_report(gate: str, message: str) -> dict[str, Any]:
+    return {
+        "status": "not_ready",
+        "summary": {"pass": 0, "fail": 0, "not_ready": 1},
+        "checks": [{"id": f"{gate}.active_slice", "status": "not_ready", "message": message}],
+    }
+
+
+def main() -> int:
+    gate_a = build_gate_a_report()
+    downstream = {
+        "gate_b": not_ready_report("gate_b", "M1 runtime parity is blocked until Gate A is accepted."),
+        "gate_c": not_ready_report("gate_c", "Predicate traces depend on Gate B runtime execution."),
+        "gate_d": not_ready_report("gate_d", "Dynamic relation proof depends on Gate C trace support."),
+        "gate_e": not_ready_report("gate_e", "No-code composition depends on relation proof."),
+        "gate_f": not_ready_report("gate_f", "Inspector work depends on prior runtime artifacts."),
+    }
+    gate_reports = {"gate_a": gate_a, **downstream}
+    summary = {
+        "pass": sum(report["summary"]["pass"] for report in gate_reports.values()),
+        "fail": sum(report["summary"]["fail"] for report in gate_reports.values()),
+        "not_ready": sum(report["summary"]["not_ready"] for report in gate_reports.values()),
+    }
+    aggregate = {
+        "schema_version": "1.0",
+        "milestone": "M1.1",
+        "generated_at": utc_now_iso(),
+        "status": "pass" if summary["fail"] == 0 and summary["not_ready"] == 0 else "not_ready",
+        "summary": summary,
+        "gate_reports": {
+            name: {"status": report["status"], "summary": report["summary"]}
+            for name, report in gate_reports.items()
+        },
+        "next_required": [
+            "Accept Gate A before beginning Gate B.",
+            "Complete Gate B-F before claiming full M1.1 verification.",
+        ],
+    }
+    write_json(REPORT_PATH, aggregate)
+    print(f"Wrote {REPORT_PATH}")
+    print(json.dumps({"status": aggregate["status"], "summary": aggregate["summary"]}, sort_keys=True))
+    return 0 if aggregate["status"] == "pass" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
