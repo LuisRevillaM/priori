@@ -1,0 +1,501 @@
+{
+  "schema_version": "1.0",
+  "recipe": {
+    "schema_version": "1.0",
+    "recipe_id": "ball_side_block_shift_v1",
+    "recipe_version": "1.0.0",
+    "display_name": "Ball-Side Block Shift",
+    "description": "Find possessions where the ball enters a wide channel and the defending outfield block shifts toward that side under the frozen M1 semantics.",
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "allowed_claims": [
+      "The ball entered a configured wide area.",
+      "The defending outfield centroid shifted toward the ball side by the configured threshold.",
+      "The subsequent outcome was SWITCHED, RETAINED_NO_SWITCH, LOST_BEFORE_SWITCH, or excluded STOPPAGE under the frozen predicates.",
+      "The replay coordinates come from canonical 25 Hz source frames."
+    ],
+    "disallowed_claims": [
+      "The attack intentionally caused the shift.",
+      "A switch was always available.",
+      "Not switching was a mistake.",
+      "The moment proves an optimal decision or missed opportunity.",
+      "The result is backed by licensed match video."
+    ],
+    "limitations": [
+      "M1.1 Gate A binds this plan only; execution and parity are Gate B.",
+      "The legacy M1 detector remains the read-only oracle through the demo.",
+      "No pass probability, optimality, or player-intent claim is allowed."
+    ],
+    "output_classifications": [
+      "SWITCHED",
+      "RETAINED_NO_SWITCH",
+      "LOST_BEFORE_SWITCH",
+      "STOPPAGE"
+    ],
+    "parameters": [
+      {
+        "name": "result_id_seed_hash",
+        "payload_type": "enum",
+        "unit": "none",
+        "required": false,
+        "default": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "af42853e6a3c8449e023dd98751ababbc7d34640f8751fbffa1c2bbbd0eab523"
+        },
+        "description": "Frozen M1 query hash used only to preserve legacy result IDs during parity."
+      },
+      {
+        "name": "analysis_rate_hz",
+        "payload_type": "number",
+        "unit": "hertz",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "hertz",
+          "value": 5
+        },
+        "description": "Analysis cadence used by the frozen M1 detector."
+      },
+      {
+        "name": "minimum_possession_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 8.0
+        },
+        "description": "Minimum active-ball possession duration."
+      },
+      {
+        "name": "wide_entry_fraction",
+        "payload_type": "number",
+        "unit": "fraction",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "fraction",
+          "value": 0.6
+        },
+        "description": "Ball lateral fraction required for wide entry."
+      },
+      {
+        "name": "prior_central_fraction",
+        "payload_type": "number",
+        "unit": "fraction",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "fraction",
+          "value": 0.45
+        },
+        "description": "Prior central-ball fraction required before a wide entry."
+      },
+      {
+        "name": "minimum_wide_dwell_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 1.2
+        },
+        "description": "Minimum time the ball must dwell in the wide channel."
+      },
+      {
+        "name": "baseline_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.8
+        },
+        "description": "Pre-entry baseline window for defensive centroid measurement."
+      },
+      {
+        "name": "shift_search_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 4.0
+        },
+        "description": "Post-entry search window for the maximum signed defensive shift."
+      },
+      {
+        "name": "minimum_shift_metres",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 5.0
+        },
+        "description": "Minimum signed defending block shift toward the ball side."
+      },
+      {
+        "name": "minimum_shift_persistence_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.6
+        },
+        "description": "Minimum time the block shift must persist."
+      },
+      {
+        "name": "outcome_horizon_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 6.0
+        },
+        "description": "Post-anchor horizon used for outcome classification."
+      },
+      {
+        "name": "opposite_side_fraction",
+        "payload_type": "number",
+        "unit": "fraction",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "fraction",
+          "value": 0.35
+        },
+        "description": "Opposite-side ball lateral fraction used for SWITCHED classification."
+      },
+      {
+        "name": "retained_after_switch_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 1.0
+        },
+        "description": "Minimum retained-possession time after opposite-side entry."
+      },
+      {
+        "name": "maximum_analysis_gap_ms",
+        "payload_type": "number",
+        "unit": "millisecond",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "millisecond",
+          "value": 250
+        },
+        "description": "Maximum permitted gap in the 5 Hz analysis stream."
+      },
+      {
+        "name": "minimum_outfield_players_per_team",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 9
+        },
+        "description": "Minimum defending outfield players required for accepted quality."
+      },
+      {
+        "name": "dedupe_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 8.0
+        },
+        "description": "Minimum source-frame separation between accepted wide-entry candidates."
+      },
+      {
+        "name": "accepted_result_limit",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 16
+        },
+        "description": "Frozen proof result limit from M1."
+      },
+      {
+        "name": "accepted_per_match_limit",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 5
+        },
+        "description": "Frozen proof selection cap per evaluation match."
+      },
+      {
+        "name": "near_miss_limit",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 8
+        },
+        "description": "Frozen selected near-miss cap."
+      }
+    ]
+  },
+  "default_invocation": {
+    "schema_version": "1.0",
+    "invocation_id": "m1_fortuna_evaluation",
+    "match_ids": [
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9"
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "parameters": {},
+    "max_results": 16,
+    "execution_mode": "bind_only"
+  },
+  "draft_plan": {
+    "schema_version": "1.0",
+    "plan_id": "ball_side_block_shift_ir_v1",
+    "plan_version": "1.0.0",
+    "recipe_id": "ball_side_block_shift_v1",
+    "recipe_version": "1.0.0",
+    "status": "approved",
+    "unknown_evidence_policy": "exclude_candidate",
+    "classification_mode": "exhaustive",
+    "complexity_limits": {
+      "max_plan_nodes": 32,
+      "max_nesting_depth": 6,
+      "max_temporal_horizon_seconds": 12.0,
+      "max_returned_moments": 16,
+      "max_relations_per_anchor": 1,
+      "max_execution_cost": 50000
+    },
+    "nodes": [
+      {
+        "kind": "primitive",
+        "node_id": "possession",
+        "catalog_ref": "possession_segment",
+        "version": "0.1.0"
+      },
+      {
+        "kind": "primitive",
+        "node_id": "ball_lateral",
+        "catalog_ref": "ball_lateral_fraction",
+        "version": "0.1.0"
+      },
+      {
+        "kind": "predicate",
+        "node_id": "wide_entry_threshold",
+        "input": {
+          "source_node_id": "ball_lateral",
+          "output_name": "fraction"
+        },
+        "operator": {
+          "name": "gt",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "kind": "parameter",
+          "name": "wide_entry_fraction"
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "wide_entry_persists",
+        "input": {
+          "source_node_id": "wide_entry_threshold",
+          "output_name": "predicate"
+        },
+        "operator": {
+          "name": "persists_for",
+          "version": "1.0.0"
+        },
+        "duration": {
+          "kind": "parameter",
+          "name": "minimum_wide_dwell_seconds"
+        }
+      },
+      {
+        "kind": "primitive",
+        "node_id": "defensive_centroid",
+        "catalog_ref": "defensive_outfield_centroid",
+        "version": "0.1.0"
+      },
+      {
+        "kind": "primitive",
+        "node_id": "signed_shift",
+        "catalog_ref": "signed_lateral_shift",
+        "version": "0.1.0"
+      },
+      {
+        "kind": "predicate",
+        "node_id": "shift_threshold",
+        "input": {
+          "source_node_id": "signed_shift",
+          "output_name": "signed_shift"
+        },
+        "operator": {
+          "name": "gte",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "kind": "parameter",
+          "name": "minimum_shift_metres"
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "shift_persists",
+        "input": {
+          "source_node_id": "shift_threshold",
+          "output_name": "predicate"
+        },
+        "operator": {
+          "name": "persists_for",
+          "version": "1.0.0"
+        },
+        "duration": {
+          "kind": "parameter",
+          "name": "minimum_shift_persistence_seconds"
+        }
+      },
+      {
+        "kind": "primitive",
+        "node_id": "outcome",
+        "catalog_ref": "outcome_classification",
+        "version": "0.1.0",
+        "parameters": {
+          "horizon": {
+            "kind": "parameter",
+            "name": "outcome_horizon_seconds"
+          }
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "not_stoppage",
+        "input": {
+          "source_node_id": "outcome",
+          "output_name": "classification"
+        },
+        "operator": {
+          "name": "neq",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "STOPPAGE"
+        }
+      }
+    ],
+    "classification_rules": [
+      {
+        "label": "SWITCHED",
+        "predicate_ids": [
+          "wide_entry_persists",
+          "shift_persists",
+          "not_stoppage"
+        ],
+        "description": "Frozen M1 switched result classification."
+      },
+      {
+        "label": "RETAINED_NO_SWITCH",
+        "predicate_ids": [
+          "wide_entry_persists",
+          "shift_persists",
+          "not_stoppage"
+        ],
+        "description": "Frozen M1 retained-no-switch result classification."
+      },
+      {
+        "label": "LOST_BEFORE_SWITCH",
+        "predicate_ids": [
+          "wide_entry_persists",
+          "shift_persists",
+          "not_stoppage"
+        ],
+        "description": "Frozen M1 loss-before-switch result classification."
+      },
+      {
+        "label": "STOPPAGE",
+        "predicate_ids": [
+          "wide_entry_persists",
+          "shift_persists"
+        ],
+        "description": "Frozen M1 excluded stoppage classification."
+      }
+    ],
+    "requested_evidence": [
+      {
+        "source": {
+          "source_node_id": "possession",
+          "output_name": "episodes"
+        },
+        "field": "possession_start_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "ball_lateral",
+          "output_name": "fraction"
+        },
+        "field": "wide_entry_y_m"
+      },
+      {
+        "source": {
+          "source_node_id": "signed_shift",
+          "output_name": "signed_shift"
+        },
+        "field": "signed_shift_metres"
+      },
+      {
+        "source": {
+          "source_node_id": "signed_shift",
+          "output_name": "signed_shift"
+        },
+        "field": "anchor_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "outcome",
+          "output_name": "classification"
+        },
+        "field": "classification"
+      },
+      {
+        "source": {
+          "source_node_id": "outcome",
+          "output_name": "classification"
+        },
+        "field": "outcome_frame_id"
+      }
+    ]
+  }
+}

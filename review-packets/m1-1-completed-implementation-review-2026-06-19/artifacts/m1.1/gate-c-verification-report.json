@@ -1,0 +1,88 @@
+{
+  "artifacts": {
+    "non_match_inspection_report": "artifacts/m1.1/non-match-inspection-report.json",
+    "predicate_trace_report": "artifacts/m1.1/predicate-trace-report.json"
+  },
+  "checks": [
+    {
+      "details": {},
+      "id": "gate_b.precondition",
+      "message": "Gate B verifier passes",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "result_count": 180,
+        "trace_count": 900
+      },
+      "id": "predicate_traces.cover_every_result",
+      "message": "every runtime result has one trace for each bound predicate",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "predicate_traces.shape",
+      "message": "predicate traces expose status, value, threshold, unit, frame/window, and source evidence",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "predicate_traces.accepted_pass",
+      "message": "all accepted-result predicate traces pass",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "non_match.threshold_target",
+      "message": "forced threshold near-miss returns engine-authored failed predicates",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "non_match.stoppage_target",
+      "message": "forced stoppage target returns not_stoppage failure",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "non_match.no_compatible_anchor",
+      "message": "quiet forced window returns NO_COMPATIBLE_ANCHOR",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "non_match.unknown_not_false",
+      "message": "UNKNOWN predicates are explicit and carry engine reasons",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "result_count": 180
+      },
+      "id": "trace_sources.canonical_coordinates",
+      "message": "runtime trace evidence recomputes from canonical ball and defender coordinates",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "issue_codes": [
+          "unknown_operator",
+          "unresolved_temporal_reference"
+        ]
+      },
+      "id": "invalid_plan.visible_failure",
+      "message": "unsupported plans fail visibly before execution",
+      "status": "pass"
+    }
+  ],
+  "gate": "Gate_C_predicate_trace_non_match_evaluation",
+  "generated_at": "2026-06-20T03:47:13+00:00",
+  "milestone": "M1.1",
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "not_ready": 0,
+    "pass": 10
+  }
+}

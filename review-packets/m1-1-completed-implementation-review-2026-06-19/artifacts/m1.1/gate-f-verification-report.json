@@ -1,0 +1,116 @@
+{
+  "artifacts": {
+    "inspector_data": "artifacts/m1.1/inspector/inspector-data.json",
+    "inspector_html": "artifacts/m1.1/inspector/index.html",
+    "inspector_manifest": "artifacts/m1.1/inspector/manifest.json"
+  },
+  "checks": [
+    {
+      "details": {},
+      "id": "gate_e.precondition",
+      "message": "Gate E verifier passes",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "paths": [
+          "artifacts/m1.1/inspector/index.html",
+          "artifacts/m1.1/inspector/inspector-data.json",
+          "artifacts/m1.1/inspector/inspector-data.js",
+          "artifacts/m1.1/inspector/manifest.json"
+        ]
+      },
+      "id": "inspector.artifacts",
+      "message": "inspector HTML, data JSON, data JS, and manifest exist",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "inspector.manifest_status",
+      "message": "inspector manifest reports pass",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "inspector.html_controls",
+      "message": "inspector exposes all required developer controls",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "inspector.contract",
+      "message": "inspector data declares every Gate F capability",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "inspector.validation_reports",
+      "message": "validation reports are visible and passing",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "plan_ids": [
+          "ball_side_block_shift_ir_v1",
+          "opposite_corridor_after_shift_experimental_v1"
+        ]
+      },
+      "id": "inspector.plan_selector_data",
+      "message": "approved and experimental plans are both available to the selector",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "inspector.results",
+      "message": "every plan exposes result rows, replay, traces, and raw evidence",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "inspector.non_match_statuses",
+      "message": "non-match tester includes failure and no-anchor cases",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "inspector.non_match_raw",
+      "message": "non-match tester exposes raw engine evaluations",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "families": [
+          "m1_1_experimental_proof_pack",
+          "m1_proof_pack"
+        ]
+      },
+      "id": "inspector.replay_reuse",
+      "message": "inspector reuses existing M1 and M1.1 replay bundles",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "inspector.replay_frames",
+      "message": "coordinate replay frames are present for all results",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "union_key_count": 53
+      },
+      "id": "inspector.generic_result_shape",
+      "message": "inspector carries a raw evidence union instead of fixed result shape panels",
+      "status": "pass"
+    }
+  ],
+  "gate": "Gate_F_developer_inspector_reports",
+  "generated_at": "2026-06-20T03:49:30+00:00",
+  "milestone": "M1.1",
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "not_ready": 0,
+    "pass": 13
+  }
+}

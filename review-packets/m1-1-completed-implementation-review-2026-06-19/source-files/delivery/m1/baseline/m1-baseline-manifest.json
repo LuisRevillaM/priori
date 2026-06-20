@@ -1,0 +1,198 @@
+{
+  "baseline_state": {
+    "baseline_commit": "the commit that contains this manifest",
+    "git_branch": "main",
+    "git_head_at_generation": null,
+    "git_head_note": "null means this manifest was generated before the baseline commit existed",
+    "git_status_short_at_generation": [
+      "?? .gitignore",
+      "?? KNOWN_ISSUES.md",
+      "?? MILESTONES.md",
+      "?? Makefile",
+      "?? PROJECT_CHARTER.md",
+      "?? apps/",
+      "?? config/",
+      "?? delivery/",
+      "?? docs/",
+      "?? pyproject.toml",
+      "?? review-packets/",
+      "?? scripts/",
+      "?? src/",
+      "?? tests/"
+    ]
+  },
+  "evidence_bundle_manifest": {
+    "path": "delivery/m1/baseline/evidence-bundle-manifest.json",
+    "selected_result_count": 16
+  },
+  "generated_at": "2026-06-20T00:46:38+00:00",
+  "legacy_detector_source_hash": {
+    "combined_sha256": "c2dd95f9aa13e08e66b263dde8f12c1f8036474101ca1784c2f88df13652d14e",
+    "files": [
+      {
+        "bytes": 6919,
+        "path": "apps/replay-proof/src/verifyBundles.ts",
+        "sha256": "862824fed95d6210f89420da2e3b69bf4d29fd645e18de4b2578274dd49e4eda"
+      },
+      {
+        "bytes": 817,
+        "path": "config/queries/ball_side_block_shift.v1.yaml",
+        "sha256": "39dba0322391956f2e851080f9509dcaf7a1ddcde829a1430df001c163ac56b4"
+      },
+      {
+        "bytes": 18016,
+        "path": "src/tqe/evidence/gate_c_build.py",
+        "sha256": "e980f8ae988a896ad16525951c3450f6ed96a8af5b6674f7d089b2092120d50c"
+      },
+      {
+        "bytes": 19013,
+        "path": "src/tqe/query/ball_side_block_shift.py",
+        "sha256": "c2ac34fd84de07907bf25f8abd31e9395ae5a37171fd636ce4dac496c042e2bf"
+      },
+      {
+        "bytes": 28907,
+        "path": "src/tqe/verification/gate_c.py",
+        "sha256": "43b396dab3a7172bc9de57877f0f2d3c7b0ffc2ec6b79b7c478f930c36ae0f6c"
+      }
+    ]
+  },
+  "legacy_result_manifest": {
+    "path": "delivery/m1/baseline/legacy-result-manifest.json",
+    "selected_result_count": 16,
+    "selected_result_ids": [
+      "9d7c768b86f9d0b4",
+      "cfc400a14315b990",
+      "98c2a962e70ea64b",
+      "7cd5a46f6988a065",
+      "3647a5fb42d1e723",
+      "da81da08d816757a",
+      "bd290590f1d96120",
+      "a1c44e17966e42dd",
+      "ed54e4362bd8f897",
+      "bee2b05bc41fd5b7",
+      "5a9156590d1f6d18",
+      "5961c8a4471ab8a5",
+      "6a86188f090679fb",
+      "634f3c36480828af",
+      "eb40814a6f4bbb8c",
+      "4cb788e652e0c667"
+    ]
+  },
+  "m1_acceptance_state": {
+    "independent_review": "WAIVED_BY_OWNER_FOR_GATE_A_GATE_B_AND_GATE_C",
+    "m1_1_owner_waiver_required_if_no_final_acceptance": true,
+    "owner_acceptance": "PENDING_FINAL_M1_ACCEPTANCE",
+    "state": "VERIFIED_CONTROLLER_ONLY"
+  },
+  "m1_source_hash": {
+    "combined_sha256": "818e8570c7cbad1452c59c81119593b33326c80e683e50613d8afbe1e9bb343a",
+    "files": [
+      {
+        "bytes": 1394,
+        "path": "Makefile",
+        "sha256": "0c27cf41bbae9415617edf40d5288ab5141112da763e9f38d14082ec3a11b0eb"
+      },
+      {
+        "bytes": 6919,
+        "path": "apps/replay-proof/src/verifyBundles.ts",
+        "sha256": "862824fed95d6210f89420da2e3b69bf4d29fd645e18de4b2578274dd49e4eda"
+      },
+      {
+        "bytes": 817,
+        "path": "config/queries/ball_side_block_shift.v1.yaml",
+        "sha256": "39dba0322391956f2e851080f9509dcaf7a1ddcde829a1430df001c163ac56b4"
+      },
+      {
+        "bytes": 23782,
+        "path": "delivery/m1/SPEC.md",
+        "sha256": "59209dbecfe28ee01c7442ae5dd2d8505fa65b97c86cdfdf3721c90e4334a85a"
+      },
+      {
+        "bytes": 1359,
+        "path": "delivery/m1/status.yaml",
+        "sha256": "5da6ed7ec1163d8b850f33f4958720f7480781c8f3e71955d79855042f001aa6"
+      },
+      {
+        "bytes": 1383,
+        "path": "docs/queries/ball-side-block-shift/calibration-log.md",
+        "sha256": "3f5557ea0f2afc108ead0a80540611e7815ba5f8683cf276825ef33fa6dbbb41"
+      },
+      {
+        "bytes": 2682,
+        "path": "docs/queries/ball-side-block-shift/definition.md",
+        "sha256": "a0a48908acad208efc32d2f573893ecb493df653e40d36102bd259247f1689e6"
+      },
+      {
+        "bytes": 7524,
+        "path": "docs/queries/ball-side-block-shift/semantic-gold-set.v1.json",
+        "sha256": "c38e26f5ecb937f99d79db2c96fb775fc6f0d4b4ab9a1b9f8fa0b929a11c1220"
+      },
+      {
+        "bytes": 496,
+        "path": "pyproject.toml",
+        "sha256": "66c27ff15868bd394c50040a481bb41937a9f17a69a566a06e58ef13ea930ac2"
+      },
+      {
+        "bytes": 18016,
+        "path": "src/tqe/evidence/gate_c_build.py",
+        "sha256": "e980f8ae988a896ad16525951c3450f6ed96a8af5b6674f7d089b2092120d50c"
+      },
+      {
+        "bytes": 19013,
+        "path": "src/tqe/query/ball_side_block_shift.py",
+        "sha256": "c2ac34fd84de07907bf25f8abd31e9395ae5a37171fd636ce4dac496c042e2bf"
+      },
+      {
+        "bytes": 28907,
+        "path": "src/tqe/verification/gate_c.py",
+        "sha256": "43b396dab3a7172bc9de57877f0f2d3c7b0ffc2ec6b79b7c478f930c36ae0f6c"
+      }
+    ]
+  },
+  "m1_verification": {
+    "gate_reports": {
+      "gate_a": {
+        "status": "pass",
+        "summary": {
+          "fail": 0,
+          "not_ready": 0,
+          "pass": 37
+        }
+      },
+      "gate_b": {
+        "status": "pass",
+        "summary": {
+          "fail": 0,
+          "not_ready": 0,
+          "pass": 273
+        }
+      },
+      "gate_c": {
+        "status": "pass",
+        "summary": {
+          "fail": 0,
+          "not_ready": 0,
+          "pass": 304
+        }
+      }
+    },
+    "report_path": "artifacts/m1/verification-report.json",
+    "report_sha256": "93ea79e92d33f8d05e438b892d365e055996cf49c7dbd01c1371b4befa3fdf42",
+    "status": "pass"
+  },
+  "purpose": "Tracked M1 baseline freeze manifest for M1.1 implementation precondition.",
+  "query_freeze": {
+    "config_path": "config/queries/ball_side_block_shift.v1.yaml",
+    "config_sha256": "39dba0322391956f2e851080f9509dcaf7a1ddcde829a1430df001c163ac56b4",
+    "query_freeze_path": "artifacts/m1/gate-c/query-freeze.json",
+    "query_freeze_sha256": "8ba7ba413a2da7ee735a21f28d8456d73a22a646919d6223198cb39a2a574e93",
+    "query_hash": "af42853e6a3c8449e023dd98751ababbc7d34640f8751fbffa1c2bbbd0eab523",
+    "query_id": "ball_side_block_shift_v1",
+    "query_version": "1.0.0"
+  },
+  "schema_version": "1.0",
+  "semantic_gold_set": {
+    "path": "docs/queries/ball-side-block-shift/semantic-gold-set.v1.json",
+    "sha256": "c38e26f5ecb937f99d79db2c96fb775fc6f0d4b4ab9a1b9f8fa0b929a11c1220"
+  }
+}

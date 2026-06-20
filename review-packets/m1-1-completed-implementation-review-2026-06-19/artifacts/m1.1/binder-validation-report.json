@@ -1,0 +1,342 @@
+{
+  "checks": [
+    {
+      "details": {},
+      "id": "baseline.m1-baseline-manifest.json",
+      "message": "delivery/m1/baseline/m1-baseline-manifest.json exists",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "baseline.legacy-result-manifest.json",
+      "message": "delivery/m1/baseline/legacy-result-manifest.json exists",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "baseline.evidence-bundle-manifest.json",
+      "message": "delivery/m1/baseline/evidence-bundle-manifest.json exists",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "sha256": "4875a4d966c9210f06b7fbd071b0d0599708d3c9b3b954e838a70a5304c84529"
+      },
+      "id": "generated.tactical-query-plan.schema.json",
+      "message": "generated/tactical-query-plan.schema.json is current",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "sha256": "64ec58f3f5a9b1a76dccda7695e07a022bce3507465312536ba7df54e8572b72"
+      },
+      "id": "generated.capability-catalog.json",
+      "message": "generated/capability-catalog.json is current",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "sha256": "678ad0e83da59cb8df5139a7ec5edb6f9fa17c5e6c4224accbdecf0fd1e7df7d"
+      },
+      "id": "generated.tactical-query-plan.types.ts",
+      "message": "generated/tactical-query-plan.types.ts is current",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "schema.formal_objects",
+      "message": "schema includes all formal objects",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.schema",
+      "message": "capability catalog validates",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.possession_segment.evidence",
+      "message": "entry declares evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.possession_segment.episodes.metadata",
+      "message": "output declares type, unit, cardinality, scope, and missing-data semantics",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.ball_lateral_fraction.evidence",
+      "message": "entry declares evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.ball_lateral_fraction.fraction.metadata",
+      "message": "output declares type, unit, cardinality, scope, and missing-data semantics",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.wide_channel_dwell.evidence",
+      "message": "entry declares evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.wide_channel_dwell.episodes.metadata",
+      "message": "output declares type, unit, cardinality, scope, and missing-data semantics",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.defensive_outfield_centroid.evidence",
+      "message": "entry declares evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.defensive_outfield_centroid.centroid_y.metadata",
+      "message": "output declares type, unit, cardinality, scope, and missing-data semantics",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.signed_lateral_shift.evidence",
+      "message": "entry declares evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.signed_lateral_shift.signed_shift.metadata",
+      "message": "output declares type, unit, cardinality, scope, and missing-data semantics",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.shift_persistence.evidence",
+      "message": "entry declares evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.shift_persistence.episodes.metadata",
+      "message": "output declares type, unit, cardinality, scope, and missing-data semantics",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.outcome_classification.evidence",
+      "message": "entry declares evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.outcome_classification.classification.metadata",
+      "message": "output declares type, unit, cardinality, scope, and missing-data semantics",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.robust_team_width.evidence",
+      "message": "entry declares evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.robust_team_width.width.metadata",
+      "message": "output declares type, unit, cardinality, scope, and missing-data semantics",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.analysis_rate.evidence",
+      "message": "entry declares evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.analysis_rate.hz.metadata",
+      "message": "output declares type, unit, cardinality, scope, and missing-data semantics",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.geometric_progressive_corridor.evidence",
+      "message": "entry declares evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "catalog.geometric_progressive_corridor.episodes.metadata",
+      "message": "output declares type, unit, cardinality, scope, and missing-data semantics",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "operator.gt.version",
+      "message": "operator is versioned",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "operator.gte.version",
+      "message": "operator is versioned",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "operator.lte.version",
+      "message": "operator is versioned",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "operator.eq.version",
+      "message": "operator is versioned",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "operator.neq.version",
+      "message": "operator is versioned",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "operator.persists_for.version",
+      "message": "operator is versioned",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "operator.exists.version",
+      "message": "operator is versioned",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "operator.count_at_least.version",
+      "message": "operator is versioned",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bound_plan_hash": "8a4f3fde6a6a3c3c53eca61cd15e0d3a96d96fc7c6d1153f4c1652a13a822b25",
+        "node_count": 10,
+        "plan_hash": "63049e73751b9f88a6bf70a3393a5ca089a086365ac2bbb88aee1e3499d2c642"
+      },
+      "id": "binder.valid_plan",
+      "message": "approved M1 plan binds",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "hash.same_process",
+      "message": "plan hashes are stable in-process",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "hash.cross_process",
+      "message": "plan hashes are stable across processes",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "codes": [
+          "unknown_catalog_ref",
+          "unresolved_temporal_reference"
+        ]
+      },
+      "id": "binder.rejects_unknown_primitive",
+      "message": "binder rejected invalid plan with unknown_catalog_ref",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "codes": [
+          "unit_mismatch"
+        ]
+      },
+      "id": "binder.rejects_distance_vs_seconds",
+      "message": "binder rejected invalid plan with unit_mismatch",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "codes": [
+          "operator_cardinality_mismatch",
+          "operator_payload_mismatch",
+          "operator_temporal_mismatch"
+        ]
+      },
+      "id": "binder.rejects_count_on_non_collection",
+      "message": "binder rejected invalid plan with operator_cardinality_mismatch",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "codes": [
+          "operator_payload_mismatch",
+          "operator_temporal_mismatch"
+        ]
+      },
+      "id": "binder.rejects_persists_for_scalar_number",
+      "message": "binder rejected invalid plan with operator_temporal_mismatch",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "codes": [
+          "required_entity_scope_mismatch"
+        ]
+      },
+      "id": "binder.rejects_team_signal_as_player_relation",
+      "message": "binder rejected invalid plan with required_entity_scope_mismatch",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "codes": [
+          "unsupported_evidence_field"
+        ]
+      },
+      "id": "binder.rejects_destination_from_frame_signal",
+      "message": "binder rejected invalid plan with unsupported_evidence_field",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "codes": [
+          "complexity_nodes_exceeded"
+        ]
+      },
+      "id": "binder.rejects_complexity_excess",
+      "message": "binder rejected invalid plan with complexity_nodes_exceeded",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "codes": [
+          "unresolved_temporal_reference"
+        ]
+      },
+      "id": "binder.rejects_unresolved_temporal_reference",
+      "message": "binder rejected invalid plan with unresolved_temporal_reference",
+      "status": "pass"
+    }
+  ],
+  "gate": "Gate_A_type_system_and_binder",
+  "generated_at": "2026-06-20T02:42:12+00:00",
+  "milestone": "M1.1",
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "not_ready": 0,
+    "pass": 47
+  }
+}

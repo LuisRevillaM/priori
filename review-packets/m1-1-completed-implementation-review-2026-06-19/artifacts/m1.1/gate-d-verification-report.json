@@ -1,0 +1,95 @@
+{
+  "artifacts": {
+    "relation_validation_report": "artifacts/m1.1/relation-validation-report.json",
+    "visual_review_dir": "artifacts/m1.1/relation-visual-review"
+  },
+  "checks": [
+    {
+      "details": {},
+      "id": "gate_c.precondition",
+      "message": "Gate C verifier passes",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "relation.catalog_entry",
+      "message": "geometric_progressive_corridor@0.1.0 is cataloged",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "relation.catalog_evidence",
+      "message": "relation catalog exposes required evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "episode_count": 165
+      },
+      "id": "relation.episode_count",
+      "message": "geometric corridor emits several real episodes",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "by_match": {
+          "J03WOY": 28,
+          "J03WPY": 72,
+          "J03WQQ": 41,
+          "J03WR9": 24
+        }
+      },
+      "id": "relation.match_span",
+      "message": "relation episodes span multiple Fortuna evaluation matches",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "relation.episode_shape",
+      "message": "every relation episode has reproducible evidence fields",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "episode_count": 165
+      },
+      "id": "relation.geometry_reconstructable",
+      "message": "all relation episodes reconstruct from canonical positions",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "relation.visual_case_types",
+      "message": "visual review cases include positives, negatives, and flicker boundaries",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "relation.visual_artifacts",
+      "message": "visual review SVG artifacts were generated",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "relation.unknown_invalid_states",
+      "message": "UNKNOWN and INVALID relation states are explicit",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "relation.no_optimality_claims",
+      "message": "relation episodes expose geometry only, not pass quality or optimality claims",
+      "status": "pass"
+    }
+  ],
+  "gate": "Gate_D_dynamic_relation_proof",
+  "generated_at": "2026-06-20T03:47:48+00:00",
+  "milestone": "M1.1",
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "not_ready": 0,
+    "pass": 11
+  }
+}

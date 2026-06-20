@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">
+<title>negative clearance_below_threshold</title>
+<rect x="20" y="20" width="600" height="380" fill="#0b6b43" stroke="#ffffff" stroke-width="2"/>
+<line x1="320" y1="20" x2="320" y2="400" stroke="#ffffff" stroke-width="1"/>
+<line x1="323.89" y1="370.94" x2="241.26" y2="164.51" stroke="#b12a34" stroke-width="5"/>
+<circle cx="323.89" cy="370.94" r="7" fill="#f4d35e"/>
+<circle cx="241.26" cy="164.51" r="7" fill="#ffffff"/>
+<text x="28" y="38" fill="#ffffff" font-size="16">negative clearance_below_threshold</text>
+</svg>

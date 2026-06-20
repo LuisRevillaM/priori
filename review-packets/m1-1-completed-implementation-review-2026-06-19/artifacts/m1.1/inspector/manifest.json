@@ -1,0 +1,24 @@
+{
+  "contract": {
+    "coordinate_replay": true,
+    "generic_result_shape": true,
+    "non_match_tester": true,
+    "plan_selector": true,
+    "predicate_trace": true,
+    "raw_evidence_values": true,
+    "result_list": true,
+    "reuses_existing_replay_bundles": true,
+    "validation_visible": true
+  },
+  "data_hash": "550d4c13bb49f719861d2bc56e551c41c3c5501800a88af70d6bd9cb4544b361",
+  "data_js": "artifacts/m1.1/inspector/inspector-data.js",
+  "data_json": "artifacts/m1.1/inspector/inspector-data.json",
+  "generated_at": "2026-06-20T03:49:29+00:00",
+  "html": "artifacts/m1.1/inspector/index.html",
+  "inspector_root": "artifacts/m1.1/inspector",
+  "non_match_evaluation_count": 3,
+  "plan_count": 2,
+  "result_count": 57,
+  "schema_version": "1.0",
+  "status": "pass"
+}

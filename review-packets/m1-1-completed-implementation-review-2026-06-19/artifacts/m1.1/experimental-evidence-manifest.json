@@ -1,0 +1,378 @@
+{
+  "bundle_count": 41,
+  "evidence_bundles": [
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/d1103b3de0ed902f",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/d1103b3de0ed902f/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WOY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/d1103b3de0ed902f/replay.json",
+      "result_id": "d1103b3de0ed902f"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/8a344ec361730030",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/8a344ec361730030/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WOY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/8a344ec361730030/replay.json",
+      "result_id": "8a344ec361730030"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/cc014fa2f921ecb9",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/cc014fa2f921ecb9/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WOY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/cc014fa2f921ecb9/replay.json",
+      "result_id": "cc014fa2f921ecb9"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/5ab84749b4d39948",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/5ab84749b4d39948/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WOY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/5ab84749b4d39948/replay.json",
+      "result_id": "5ab84749b4d39948"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/793b7f247c20a45c",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/793b7f247c20a45c/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WOY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/793b7f247c20a45c/replay.json",
+      "result_id": "793b7f247c20a45c"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/f1e4c8ee07056cf1",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/f1e4c8ee07056cf1/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WOY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/f1e4c8ee07056cf1/replay.json",
+      "result_id": "f1e4c8ee07056cf1"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/aad3dd18df9bbd7d",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/aad3dd18df9bbd7d/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WOY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/aad3dd18df9bbd7d/replay.json",
+      "result_id": "aad3dd18df9bbd7d"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/2f075fb797de651a",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/2f075fb797de651a/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WOY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/2f075fb797de651a/replay.json",
+      "result_id": "2f075fb797de651a"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/a5fc7ec5719cbbfd",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/a5fc7ec5719cbbfd/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WOY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/a5fc7ec5719cbbfd/replay.json",
+      "result_id": "a5fc7ec5719cbbfd"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/c8ec7c07009ee1bb",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/c8ec7c07009ee1bb/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WOY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/c8ec7c07009ee1bb/replay.json",
+      "result_id": "c8ec7c07009ee1bb"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/321bc6d5a2f03934",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/321bc6d5a2f03934/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/321bc6d5a2f03934/replay.json",
+      "result_id": "321bc6d5a2f03934"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/f1ce915962ebc778",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/f1ce915962ebc778/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/f1ce915962ebc778/replay.json",
+      "result_id": "f1ce915962ebc778"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/bf04d57622170ef2",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/bf04d57622170ef2/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/bf04d57622170ef2/replay.json",
+      "result_id": "bf04d57622170ef2"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/77278e9427373897",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/77278e9427373897/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/77278e9427373897/replay.json",
+      "result_id": "77278e9427373897"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/4911d1f1c8c72a43",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/4911d1f1c8c72a43/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/4911d1f1c8c72a43/replay.json",
+      "result_id": "4911d1f1c8c72a43"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/5f238482494328d6",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/5f238482494328d6/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/5f238482494328d6/replay.json",
+      "result_id": "5f238482494328d6"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/a61070a754c5248b",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/a61070a754c5248b/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/a61070a754c5248b/replay.json",
+      "result_id": "a61070a754c5248b"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/4519cda3763be62b",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/4519cda3763be62b/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/4519cda3763be62b/replay.json",
+      "result_id": "4519cda3763be62b"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/78163cf8c00bb357",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/78163cf8c00bb357/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/78163cf8c00bb357/replay.json",
+      "result_id": "78163cf8c00bb357"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/db28fa675e542003",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/db28fa675e542003/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/db28fa675e542003/replay.json",
+      "result_id": "db28fa675e542003"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/80be26891834c288",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/80be26891834c288/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/80be26891834c288/replay.json",
+      "result_id": "80be26891834c288"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/1fd69eb8c52a1a98",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/1fd69eb8c52a1a98/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/1fd69eb8c52a1a98/replay.json",
+      "result_id": "1fd69eb8c52a1a98"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/1a63c571a745b6dc",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/1a63c571a745b6dc/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/1a63c571a745b6dc/replay.json",
+      "result_id": "1a63c571a745b6dc"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/f653bb629b850b77",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/f653bb629b850b77/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/f653bb629b850b77/replay.json",
+      "result_id": "f653bb629b850b77"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/37f0cffeceaea9d1",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/37f0cffeceaea9d1/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/37f0cffeceaea9d1/replay.json",
+      "result_id": "37f0cffeceaea9d1"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/7f365f52c578b9b8",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/7f365f52c578b9b8/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/7f365f52c578b9b8/replay.json",
+      "result_id": "7f365f52c578b9b8"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/281c5fda5021c830",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/281c5fda5021c830/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/281c5fda5021c830/replay.json",
+      "result_id": "281c5fda5021c830"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/4faff7d27f57a075",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/4faff7d27f57a075/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WPY",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/4faff7d27f57a075/replay.json",
+      "result_id": "4faff7d27f57a075"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/8b2347ab3ced7e6b",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/8b2347ab3ced7e6b/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WQQ",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/8b2347ab3ced7e6b/replay.json",
+      "result_id": "8b2347ab3ced7e6b"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/60892bd8107a19ef",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/60892bd8107a19ef/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WQQ",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/60892bd8107a19ef/replay.json",
+      "result_id": "60892bd8107a19ef"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/dc25e3d1be6835c7",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/dc25e3d1be6835c7/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WQQ",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/dc25e3d1be6835c7/replay.json",
+      "result_id": "dc25e3d1be6835c7"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/9300b2035475d272",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/9300b2035475d272/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WQQ",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/9300b2035475d272/replay.json",
+      "result_id": "9300b2035475d272"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/f1185c012936d3d5",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/f1185c012936d3d5/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WQQ",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/f1185c012936d3d5/replay.json",
+      "result_id": "f1185c012936d3d5"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/561f03aa55712475",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/561f03aa55712475/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WQQ",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/561f03aa55712475/replay.json",
+      "result_id": "561f03aa55712475"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/96dabca8801ab4ea",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/96dabca8801ab4ea/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WR9",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/96dabca8801ab4ea/replay.json",
+      "result_id": "96dabca8801ab4ea"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/b23ceac01ebd5b10",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/b23ceac01ebd5b10/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WR9",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/b23ceac01ebd5b10/replay.json",
+      "result_id": "b23ceac01ebd5b10"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/028553b818011071",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/028553b818011071/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WR9",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/028553b818011071/replay.json",
+      "result_id": "028553b818011071"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/d24e59133f398771",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/d24e59133f398771/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WR9",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/d24e59133f398771/replay.json",
+      "result_id": "d24e59133f398771"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/265140ebb45ff45d",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/265140ebb45ff45d/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WR9",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/265140ebb45ff45d/replay.json",
+      "result_id": "265140ebb45ff45d"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/5f282d822352bd04",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/5f282d822352bd04/bundle.json",
+      "classification": "DESTINATION_ENTERED",
+      "match_id": "J03WR9",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/5f282d822352bd04/replay.json",
+      "result_id": "5f282d822352bd04"
+    },
+    {
+      "bundle_dir": "artifacts/m1.1/experimental-evidence/28e2f810abaea571",
+      "bundle_json": "artifacts/m1.1/experimental-evidence/28e2f810abaea571/bundle.json",
+      "classification": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+      "match_id": "J03WR9",
+      "plan_status": "experimental",
+      "replay_json": "artifacts/m1.1/experimental-evidence/28e2f810abaea571/replay.json",
+      "result_id": "28e2f810abaea571"
+    }
+  ],
+  "generated_at": "2026-06-20T03:48:26+00:00",
+  "plan_status": "experimental",
+  "schema_version": "1.0",
+  "status": "pass"
+}

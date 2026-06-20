@@ -1,0 +1,62 @@
+{
+  "gate_reports": {
+    "gate_a": {
+      "status": "pass",
+      "summary": {
+        "fail": 0,
+        "not_ready": 0,
+        "pass": 49
+      }
+    },
+    "gate_b": {
+      "status": "pass",
+      "summary": {
+        "fail": 0,
+        "not_ready": 0,
+        "pass": 14
+      }
+    },
+    "gate_c": {
+      "status": "pass",
+      "summary": {
+        "fail": 0,
+        "not_ready": 0,
+        "pass": 10
+      }
+    },
+    "gate_d": {
+      "status": "pass",
+      "summary": {
+        "fail": 0,
+        "not_ready": 0,
+        "pass": 11
+      }
+    },
+    "gate_e": {
+      "status": "pass",
+      "summary": {
+        "fail": 0,
+        "not_ready": 0,
+        "pass": 21
+      }
+    },
+    "gate_f": {
+      "status": "pass",
+      "summary": {
+        "fail": 0,
+        "not_ready": 0,
+        "pass": 13
+      }
+    }
+  },
+  "generated_at": "2026-06-20T03:49:30+00:00",
+  "milestone": "M1.1",
+  "next_required": [],
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "not_ready": 0,
+    "pass": 118
+  }
+}

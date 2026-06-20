@@ -1,0 +1,41 @@
+{
+  "bound_plan_hash": "510384883543bb639e639a625899c16b1ec29be1c86f72a2ef0a8972a90a6106",
+  "execution_id": "34267ab23bc2d28c",
+  "generated_at": "2026-06-20T03:46:06+00:00",
+  "plan_hash": "63049e73751b9f88a6bf70a3393a5ca089a086365ac2bbb88aee1e3499d2c642",
+  "result_summary": {
+    "by_classification": {
+      "LOST_BEFORE_SWITCH": 75,
+      "RETAINED_NO_SWITCH": 74,
+      "SWITCHED": 31
+    },
+    "by_match": {
+      "J03WOY": 34,
+      "J03WPY": 64,
+      "J03WQQ": 36,
+      "J03WR9": 46
+    },
+    "count": 180
+  },
+  "runtime_trace_hash": "f57bde5aeb66b53277d5357b7fadea2759e9d40e75aedb81f06b56a0d305eded",
+  "schema_version": "1.0",
+  "selected_result_ids": [
+    "9d7c768b86f9d0b4",
+    "cfc400a14315b990",
+    "98c2a962e70ea64b",
+    "7cd5a46f6988a065",
+    "3647a5fb42d1e723",
+    "da81da08d816757a",
+    "bd290590f1d96120",
+    "a1c44e17966e42dd",
+    "ed54e4362bd8f897",
+    "bee2b05bc41fd5b7",
+    "5a9156590d1f6d18",
+    "5961c8a4471ab8a5",
+    "6a86188f090679fb",
+    "634f3c36480828af",
+    "eb40814a6f4bbb8c",
+    "4cb788e652e0c667"
+  ],
+  "status": "pass"
+}

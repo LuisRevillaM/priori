@@ -1,0 +1,167 @@
+{
+  "artifacts": {
+    "evidence_manifest": "artifacts/m1.1/experimental-evidence-manifest.json",
+    "evidence_root": "artifacts/m1.1/experimental-evidence",
+    "experimental_query_results": "artifacts/m1.1/experimental-query-results.json",
+    "plan": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json"
+  },
+  "checks": [
+    {
+      "details": {},
+      "id": "gate_d.precondition",
+      "message": "Gate D verifier passes",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "path": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json"
+      },
+      "id": "plan.external_file",
+      "message": "experimental plan file exists",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "plan.status",
+      "message": "bound plan status is experimental",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "plan.relation_node",
+      "message": "plan composes geometric_progressive_corridor as a relation node",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "plan.destination_entry_node",
+      "message": "plan composes destination-entry classification as a catalog primitive",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "plan.predicates",
+      "message": "plan declares relation and destination predicates",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "execution_id": "c5ef844ad2a4382c",
+        "plan_path": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json"
+      },
+      "id": "execution.external_plan_loaded",
+      "message": "runtime loaded and executed the external plan file",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "by_match": {
+          "J03WOY": 10,
+          "J03WPY": 18,
+          "J03WQQ": 6,
+          "J03WR9": 7
+        },
+        "count": 41
+      },
+      "id": "execution.result_breadth",
+      "message": "experimental composition yields real results across multiple matches",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "by_classification": {
+          "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY": 17,
+          "DESTINATION_ENTERED": 24
+        }
+      },
+      "id": "execution.classification_breadth",
+      "message": "experimental results classify both destination-entry outcomes",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "execution.result_shape",
+      "message": "every experimental result carries relation and destination evidence",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "execution.opposite_persistent_corridor",
+      "message": "every result uses an opposite-side corridor that persists for the configured minimum",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "execution.result_traces",
+      "message": "experimental predicate traces reference final result IDs",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "architecture.executor_no_recipe_imports",
+      "message": "executor does not import recipe modules",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "architecture.no_query_id_branch",
+      "message": "executor has no query/recipe/plan ID conditionals",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "architecture.no_new_python_detector",
+      "message": "no Python detector was added for the experimental plan",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bundle_count": 41
+      },
+      "id": "evidence.bundles",
+      "message": "every experimental result has a replay and evidence bundle",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "status.result_report",
+      "message": "experimental status is explicit in the result report",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "status.every_result",
+      "message": "experimental status is explicit on every result",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "status.bundle_manifest",
+      "message": "experimental status is explicit in the evidence manifest",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "claims.no_forbidden_fields",
+      "message": "result evidence exposes no optimality/video/probability fields",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "cache_policy.fresh_execution",
+      "message": "verifier ignored precomputed result artifacts",
+      "status": "pass"
+    }
+  ],
+  "gate": "Gate_E_no_code_composition",
+  "generated_at": "2026-06-20T03:48:26+00:00",
+  "milestone": "M1.1",
+  "plan_status": "experimental",
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "not_ready": 0,
+    "pass": 21
+  }
+}
