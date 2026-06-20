@@ -3,7 +3,7 @@ state: IN_PROGRESS
 source_of_truth:
   charter: PROJECT_CHARTER.md
   roadmap: MILESTONES.md
-  current_milestone_spec: delivery/m1.1/SPEC.md
+  current_milestone_spec: delivery/m1.1/CORRECTIVE_SPEC.md
 last_updated: "2026-06-19"
 scope:
   dataset: IDSSE_DFL_PUBLIC
@@ -17,12 +17,12 @@ milestones:
     status_file: delivery/m1/status.yaml
   M1.1:
     name: "Composable Tactical Query Runtime"
-    state: PLANNED
+    state: REJECTED_EXTERNAL_REVIEW_PENDING_M1_1R
     status_file: delivery/m1.1/status.yaml
     depends_on: M1
   M1.2:
     name: "Grounded Tactical Query Workshop"
-    state: PLANNED
+    state: BLOCKED_PENDING_M1_1R
     status_file: delivery/m1.2/status.yaml
     depends_on: M1.1
   M2:

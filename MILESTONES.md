@@ -56,9 +56,11 @@ Current verification note: Gate A, Gate B, and Gate C pass automated verificatio
 
 ## M1.1 - Composable Tactical Query Runtime
 
-Status: `PLANNED`
+Status: `REJECTED_EXTERNAL_REVIEW_PENDING_M1_1R`
 
 Outcome: A developer can add a validated tactical detector plan, bind it against approved primitives and relations, execute it over the real IDSSE corpus through a generic deterministic runtime, inspect every predicate trace, and replay resulting moments without adding query-specific backend code.
+
+Correction note: the first implementation passed controller gates but failed independent external implementation review on 2026-06-19. M1.2 is blocked until the corrective M1.1R gates in `delivery/m1.1/CORRECTIVE_SPEC.md` pass and receive external approval or required changes are integrated.
 
 Scope:
 

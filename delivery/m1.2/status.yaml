@@ -1,10 +1,11 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: PLANNED
+state: BLOCKED_PENDING_M1_1R
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-19"
 preconditions:
-  M1_1_runtime_accepted: REQUIRED_BEFORE_IMPLEMENTATION
+  M1_1_runtime_accepted: BLOCKED_BY_M1_1_EXTERNAL_REJECTION
+  M1_1R_external_approval_or_required_changes_integrated: REQUIRED_BEFORE_IMPLEMENTATION
   M1_2_agent_eval_corpus: REQUIRED_BEFORE_ACCEPTANCE
 slices:
   S0_tool_boundary_and_capability_context: NOT_STARTED
