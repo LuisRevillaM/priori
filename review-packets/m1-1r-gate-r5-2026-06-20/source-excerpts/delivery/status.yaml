@@ -1,0 +1,61 @@
+project: priori_tactical_evidence_demo
+state: IN_PROGRESS
+source_of_truth:
+  charter: PROJECT_CHARTER.md
+  roadmap: MILESTONES.md
+  current_milestone_spec: delivery/m1.1/CORRECTIVE_SPEC.md
+last_updated: "2026-06-20"
+scope:
+  dataset: IDSSE_DFL_PUBLIC
+  integration: none
+  video: none
+  deployment: local_demo
+milestones:
+  M1:
+    name: "Verified Ball-Side Block-Shift Evidence Spine"
+    state: VERIFIED_CONTROLLER_ONLY
+    status_file: delivery/m1/status.yaml
+  M1.1:
+    name: "Composable Tactical Query Runtime"
+    state: M1_1R_VERIFIED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
+    status_file: delivery/m1.1/status.yaml
+    depends_on: M1
+  M1.2:
+    name: "Grounded Tactical Query Workshop"
+    state: BLOCKED_PENDING_M1_1R_EXTERNAL_REVIEW
+    status_file: delivery/m1.2/status.yaml
+    depends_on: M1.1
+  M2:
+    name: "Second Approved Tactical Family and Capability Catalog"
+    state: PLANNED
+    depends_on: M1.2
+  M3:
+    name: "Analyst Workbench v1"
+    state: PLANNED
+    depends_on: M2
+  M4:
+    name: "Agent Reliability and Tactical Lexicon Hardening"
+    state: CONDITIONAL_PLANNED
+    depends_on: M3
+    may_run_parallel_with: M5
+    ship_gate: "SHIP_BEHIND_FEATURE_FLAG_OR_CUT"
+  M5:
+    name: "Demo Experience, Motion, and Visual QA"
+    state: PLANNED
+    depends_on: M3
+    may_run_parallel_with: M4
+  M6:
+    name: "Meeting-Ready Independent Demo Release"
+    state: PLANNED
+    depends_on:
+      - M5
+      - M4_ship_or_cut_decision
+completion_rule: "Project is complete only after M6 is verified, independently reviewed, and owner accepted."
+explicit_out_of_scope:
+  - Priori SDK/API integration
+  - Priori private data
+  - provider adapter readiness
+  - production deployment
+  - match-video ingestion or synchronization
+  - private credentials
+  - production-scale infrastructure

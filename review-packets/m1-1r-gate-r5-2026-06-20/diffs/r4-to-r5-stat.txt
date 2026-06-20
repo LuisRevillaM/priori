@@ -1,0 +1,15 @@
+ Makefile                                           |   5 +-
+ .../query-plans/ball_side_block_shift.ir.v1.json   |   4 +
+ ...osite_corridor_after_shift.experimental.v1.json |   4 +
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/reviews/gate-r5-controller-review.md |  55 ++
+ delivery/m1.1/status.yaml                          |  10 +-
+ delivery/m1.2/status.yaml                          |   6 +-
+ delivery/status.yaml                               |   4 +-
+ .../2026-06-20-m1-1r-gate-r5-architecture-proof.md |  33 ++
+ generated/capability-catalog.json                  |   2 +-
+ src/tqe/runtime/catalog.py                         |   7 +
+ src/tqe/runtime/executor.py                        | 181 +-----
+ src/tqe/runtime/values.py                          |   7 -
+ src/tqe/verification/m1_1_gate_r5.py               | 622 +++++++++++++++++++++
+ 14 files changed, 768 insertions(+), 173 deletions(-)

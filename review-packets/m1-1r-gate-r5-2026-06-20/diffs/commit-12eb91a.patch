@@ -1,0 +1,1192 @@
+commit 12eb91a8d6940cb057efdc2753a2e59f1e847e53
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Sat Jun 20 03:03:18 2026 -0500
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Sat Jun 20 03:03:18 2026 -0500
+
+    Implement M1.1R Gate R5 architecture proof
+---
+ Makefile                                           |   5 +-
+ .../query-plans/ball_side_block_shift.ir.v1.json   |   4 +
+ ...osite_corridor_after_shift.experimental.v1.json |   4 +
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/reviews/gate-r5-controller-review.md |  55 ++
+ delivery/m1.1/status.yaml                          |  10 +-
+ delivery/m1.2/status.yaml                          |   6 +-
+ delivery/status.yaml                               |   4 +-
+ .../2026-06-20-m1-1r-gate-r5-architecture-proof.md |  33 ++
+ generated/capability-catalog.json                  |   2 +-
+ src/tqe/runtime/catalog.py                         |   7 +
+ src/tqe/runtime/executor.py                        | 181 +-----
+ src/tqe/runtime/values.py                          |   7 -
+ src/tqe/verification/m1_1_gate_r5.py               | 622 +++++++++++++++++++++
+ 14 files changed, 768 insertions(+), 173 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index f2802c1..9bb7db8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ PYTHON ?= $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python
+ PYTHONPATH := $(CURDIR)/src
+ export PYTHONPATH
+ 
+-.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-verify test
++.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-verify test
+ 
+ setup:
+ 	python3.12 -m venv .venv
+@@ -78,6 +78,9 @@ m1-1-gate-r3-verify:
+ m1-1-gate-r4-verify:
+ 	$(PYTHON) -m tqe.verification.m1_1_gate_r4
+ 
++m1-1-gate-r5-verify:
++	$(PYTHON) -m tqe.verification.m1_1_gate_r5
++
+ m1-1-verify:
+ 	$(PYTHON) -m tqe.verification.m1_1
+ 
+diff --git a/config/query-plans/ball_side_block_shift.ir.v1.json b/config/query-plans/ball_side_block_shift.ir.v1.json
+index e561dff..efbe559 100644
+--- a/config/query-plans/ball_side_block_shift.ir.v1.json
++++ b/config/query-plans/ball_side_block_shift.ir.v1.json
+@@ -354,6 +354,10 @@
+         "catalog_ref": "signed_lateral_shift",
+         "version": "0.1.0",
+         "inputs": {
++          "possession_episodes": {
++            "source_node_id": "possession",
++            "output_name": "episodes"
++          },
+           "entry_episodes": {
+             "source_node_id": "wide_entry_persists",
+             "output_name": "predicate"
+diff --git a/config/query-plans/opposite_corridor_after_shift.experimental.v1.json b/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
+index a38d12a..dbef39d 100644
+--- a/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
++++ b/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
+@@ -426,6 +426,10 @@
+         "catalog_ref": "signed_lateral_shift",
+         "version": "0.1.0",
+         "inputs": {
++          "possession_episodes": {
++            "source_node_id": "possession",
++            "output_name": "episodes"
++          },
+           "entry_episodes": {
+             "source_node_id": "wide_entry_persists",
+             "output_name": "predicate"
+diff --git a/delivery/ledger.jsonl b/delivery/ledger.jsonl
+index 41dd843..c44f859 100644
+--- a/delivery/ledger.jsonl
++++ b/delivery/ledger.jsonl
+@@ -32,3 +32,4 @@
+ {"timestamp":"2026-06-19T23:44:00-05:00","milestone":"M1.1R","slice":"Gate_R3_generic_predicate_classification_evidence_unknown","from":"NOT_STARTED","to":"IN_PROGRESS","actor":"controller","evidence":["src/tqe/runtime/executor.py","tests/test_m1_1_runtime.py"],"notes":"Started R3 by removing the concrete node-ID branch from predicate_persists_for. persists_for now emits generic episode records for boolean frame signals; the M1-specific wide-entry candidate reconstruction moved into signed_lateral_shift, which owns that tactical primitive semantics. Runtime parity tests pass after the refactor. Gate R3 remains in progress because classification rules, requested evidence, and unknown policy are not yet plan-driven."}
+ {"timestamp":"2026-06-20T00:36:50-05:00","milestone":"M1.1R","slice":"Gate_R3_generic_predicate_classification_evidence_unknown","from":"IN_PROGRESS","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["src/tqe/runtime/executor.py","src/tqe/runtime/values.py","src/tqe/verification/m1_1_gate_r3.py","artifacts/m1.1/gate-r3-verification-report.json","artifacts/m1.1/gate-r2-verification-report.json","delivery/m1.1/reviews/gate-r3-controller-review.md","docs/learnings/2026-06-20-m1-1r-gate-r3-generic-predicate-semantics.md"],"notes":"Implemented R3 generic predicate semantics. Frame-signal runtime values preserve UNKNOWN, predicates consume typed runtime values, persists_for handles tri-state boolean signals, accepted traces serialize predicate-status records emitted during execution, classification rules and requested evidence are plan-driven, and unknown policy include/exclude/invalidate behavior is operational. make m1-1-gate-r3-verify passes 9/0/0, make m1-1-gate-r2-verify passes 4/0/0, and make test passes 26 tests. R4 and R5 remain not started."}
+ {"timestamp":"2026-06-20T02:27:17-05:00","milestone":"M1.1R","slice":"Gate_R4_relation_anchor_decoupling_experimental_repair","from":"NOT_STARTED","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["src/tqe/runtime/executor.py","src/tqe/runtime/catalog.py","src/tqe/runtime/relations.py","config/query-plans/opposite_corridor_after_shift.experimental.v1.json","generated/capability-catalog.json","src/tqe/verification/m1_1_gate_r4.py","artifacts/m1.1/gate-r4-verification-report.json","delivery/m1.1/reviews/gate-r4-controller-review.md","docs/learnings/2026-06-20-m1-1r-gate-r4-relation-anchor-decoupling.md"],"notes":"Implemented R4 relation anchor decoupling. geometric_progressive_corridor now consumes explicit anchors input, destination entry consumes relation_episodes input without relation_node_id parameter, episode selection is explicit as first_by_duration_clearance, and destination lane-band regions expose min/max y bounds. make m1-1-gate-r4-verify passes 8/0/0 including a valid relaxed plan that returns STOPPAGE-sourced results outside the M1 accepted set. Regression checks pass: R1 19/0/0, Gate E 21/0/0, R3 9/0/0, and make test 26 tests. R5 remains not started."}
++{"timestamp":"2026-06-20T03:01:58-05:00","milestone":"M1.1R","slice":"Gate_R5_architecture_proof_and_parity","from":"NOT_STARTED","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["src/tqe/runtime/executor.py","src/tqe/runtime/catalog.py","src/tqe/runtime/values.py","src/tqe/verification/m1_1_gate_r5.py","config/query-plans/ball_side_block_shift.ir.v1.json","config/query-plans/opposite_corridor_after_shift.experimental.v1.json","generated/capability-catalog.json","artifacts/m1.1/gate-r5-verification-report.json","artifacts/m1.1/gate-r4-verification-report.json","artifacts/m1.1/gate-r3-verification-report.json","artifacts/m1.1/gate-r2-verification-report.json","artifacts/m1.1/gate-r1-verification-report.json","artifacts/m1.1/gate-c-verification-report.json","artifacts/m1.1/parity-report.json","artifacts/m1.1/gate-e-verification-report.json","artifacts/m1.1/gate-f-verification-report.json","delivery/m1.1/reviews/gate-r5-controller-review.md","docs/learnings/2026-06-20-m1-1r-gate-r5-architecture-proof.md"],"notes":"Implemented and controller-accepted M1.1R Gate R5. signed_lateral_shift now declares and consumes possession_episodes explicitly, approved and experimental plans bind that dependency, generic executor source no longer contains approved predicate IDs, predicate pass/fail no longer leaks as public node-id-derived result fields, and the R5 verifier proves node-ID rename opacity, missing dependency bind failure, advertised capability execution, plan-driven classification/evidence/unknown behavior, cache-independent reproduction, and corrected M1 parity. make m1-1-gate-r5-verify passes 10/0/0; regressions pass for R4 8/0/0, R3 9/0/0, R2 4/0/0, R1 19/0/0, Gate C 10/0/0, Gate B 14/0/0, Gate E 21/0/0, Gate F 13/0/0, make test 26 tests, and git diff --check. M1.1R is controller-verified pending external review; M1.2 remains blocked until external approval or required changes are integrated and re-reviewed."}
+diff --git a/delivery/m1.1/reviews/gate-r5-controller-review.md b/delivery/m1.1/reviews/gate-r5-controller-review.md
+new file mode 100644
+index 0000000..76e69fc
+--- /dev/null
++++ b/delivery/m1.1/reviews/gate-r5-controller-review.md
+@@ -0,0 +1,55 @@
++# M1.1R Gate R5 Controller Review
++
++Date: 2026-06-20
++
++Decision: ACCEPTED_CONTROLLER_ONLY
++
++## Scope Reviewed
++
++Gate R5 covers architecture proof and M1 parity after the M1.1R corrective runtime changes.
++
++Reviewed paths:
++
++- `src/tqe/runtime/executor.py`
++- `src/tqe/runtime/catalog.py`
++- `src/tqe/runtime/values.py`
++- `src/tqe/verification/m1_1_gate_r5.py`
++- `config/query-plans/ball_side_block_shift.ir.v1.json`
++- `config/query-plans/opposite_corridor_after_shift.experimental.v1.json`
++- `generated/capability-catalog.json`
++- `Makefile`
++
++## Evidence
++
++- `make m1-1-gate-r5-verify` passed with 10 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-r4-verify` passed with 8 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-r3-verify` passed with 9 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-r2-verify` passed with 4 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-r1-verify` passed with 19 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-c-verify` passed with 10 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-b-verify` passed with 14 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-e-verify` passed with 21 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-f-verify` passed with 13 pass, 0 fail, 0 not-ready.
++- `make test` passed 26 tests.
++- `git diff --check` passed.
++
++Gate R5 report highlights:
++
++- renaming every approved-plan node while preserving references returns the same 180 runtime results;
++- removing `signed_lateral_shift.possession_episodes` fails binding with `missing_node_input`;
++- every advertised primitive, relation, and operator executes across approved, experimental, and simple valid plans;
++- classification rules, requested evidence, and unknown policy all change runtime behavior;
++- generic executor source contains none of the approved recipe predicate IDs;
++- the simple non-block-shift plan executes without block-shift result fields;
++- removing generated `artifacts/m1.1` cache still reproduces approved results from canonical data;
++- Gate B full-output parity remains passing after the correction.
++
++## Controller Assessment
++
++Accepted for external review packet preparation.
++
++M1.1R is now controller-verified, but M1.2 remains blocked until external review approves this corrective implementation or required changes are integrated and re-reviewed.
++
++## Residual Risk
++
++The runtime still uses `PeriodState` as an execution context and `state.accepted` as the final per-period result handoff. R5 proves the corrected explicit graph contract, node-ID opacity for approved-plan results, advertised capability execution, and M1 parity; it does not claim a universal graph engine or remove all legacy context plumbing.
+diff --git a/delivery/m1.1/status.yaml b/delivery/m1.1/status.yaml
+index 9a947e4..3c1d638 100644
+--- a/delivery/m1.1/status.yaml
++++ b/delivery/m1.1/status.yaml
+@@ -1,6 +1,6 @@
+ milestone: M1.1
+ name: "Composable Tactical Query Runtime"
+-state: REJECTED_EXTERNAL_REVIEW_PENDING_M1_1R
++state: M1_1R_VERIFIED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
+ source_of_truth: delivery/m1.1/SPEC.md
+ corrective_source_of_truth: delivery/m1.1/CORRECTIVE_SPEC.md
+ last_updated: "2026-06-20"
+@@ -25,7 +25,7 @@ slices:
+   S9_m1_1r_typed_runtime_values_invocation_semantics: DONE
+   S10_m1_1r_generic_predicate_classification_evidence_unknown: DONE
+   S11_m1_1r_relation_anchor_decoupling_experimental_repair: DONE
+-  S12_m1_1r_architecture_proof_and_parity: NOT_STARTED
++  S12_m1_1r_architecture_proof_and_parity: DONE
+ promotion_gates:
+   Gate_0_M1_baseline_and_gold_set: DONE
+   Gate_A_type_system_and_binder: ACCEPTED_CONTROLLER_ONLY
+@@ -39,11 +39,11 @@ promotion_gates:
+   Gate_R2_typed_runtime_values_invocation_semantics: ACCEPTED_CONTROLLER_ONLY
+   Gate_R3_generic_predicate_classification_evidence_unknown: ACCEPTED_CONTROLLER_ONLY
+   Gate_R4_relation_anchor_decoupling_experimental_repair: ACCEPTED_CONTROLLER_ONLY
+-  Gate_R5_architecture_proof_and_parity: NOT_STARTED
++  Gate_R5_architecture_proof_and_parity: ACCEPTED_CONTROLLER_ONLY
+ verification:
+-  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_PASS
++  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS
+   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+   independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19
+-  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_ACCEPTED_CONTROLLER_ONLY
++  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_ACCEPTED_CONTROLLER_ONLY
+   owner_acceptance: NOT_STARTED
+   m1_2_blocked_until: M1_1R_EXTERNAL_APPROVAL_OR_REQUIRED_CHANGES_INTEGRATED
+diff --git a/delivery/m1.2/status.yaml b/delivery/m1.2/status.yaml
+index 6ceb64a..9e7c527 100644
+--- a/delivery/m1.2/status.yaml
++++ b/delivery/m1.2/status.yaml
+@@ -1,10 +1,10 @@
+ milestone: M1.2
+ name: "Grounded Tactical Query Workshop"
+-state: BLOCKED_PENDING_M1_1R
++state: BLOCKED_PENDING_M1_1R_EXTERNAL_REVIEW
+ source_of_truth: delivery/m1.2/SPEC.md
+-last_updated: "2026-06-19"
++last_updated: "2026-06-20"
+ preconditions:
+-  M1_1_runtime_accepted: BLOCKED_BY_M1_1_EXTERNAL_REJECTION
++  M1_1_runtime_accepted: SATISFIED_BY_M1_1R_CONTROLLER_VERIFICATION
+   M1_1R_external_approval_or_required_changes_integrated: REQUIRED_BEFORE_IMPLEMENTATION
+   M1_2_agent_eval_corpus: REQUIRED_BEFORE_ACCEPTANCE
+ slices:
+diff --git a/delivery/status.yaml b/delivery/status.yaml
+index 3e08a35..08aba23 100644
+--- a/delivery/status.yaml
++++ b/delivery/status.yaml
+@@ -17,12 +17,12 @@ milestones:
+     status_file: delivery/m1/status.yaml
+   M1.1:
+     name: "Composable Tactical Query Runtime"
+-    state: REJECTED_EXTERNAL_REVIEW_PENDING_M1_1R
++    state: M1_1R_VERIFIED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
+     status_file: delivery/m1.1/status.yaml
+     depends_on: M1
+   M1.2:
+     name: "Grounded Tactical Query Workshop"
+-    state: BLOCKED_PENDING_M1_1R
++    state: BLOCKED_PENDING_M1_1R_EXTERNAL_REVIEW
+     status_file: delivery/m1.2/status.yaml
+     depends_on: M1.1
+   M2:
+diff --git a/docs/learnings/2026-06-20-m1-1r-gate-r5-architecture-proof.md b/docs/learnings/2026-06-20-m1-1r-gate-r5-architecture-proof.md
+new file mode 100644
+index 0000000..8ced962
+--- /dev/null
++++ b/docs/learnings/2026-06-20-m1-1r-gate-r5-architecture-proof.md
+@@ -0,0 +1,33 @@
++# M1.1R Gate R5 Architecture Proof
++
++Date: 2026-06-20
++
++## Fact
++
++The final R5 proof initially failed because accepted result rows leaked predicate node IDs through fields such as `not_stoppage_passed`. Renaming nodes preserved result count but changed public row shape.
++
++## Decision
++
++Predicate pass/fail state now remains in typed predicate outputs and hidden `_predicate_status` trace records. The runtime no longer adds `{predicate_id}_passed` public fields, and `persists_for` reads the upstream typed boolean values directly.
++
++## Learning
++
++Node-ID opacity needs a full result-shape metamorphic check, not only a source scan for approved predicate IDs. Public evidence fields are part of the contract: if they vary with arbitrary node names, the plan graph is still leaking implementation identity.
++
++## Evidence
++
++- `make m1-1-gate-r5-verify`: 10 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-r4-verify`: 8 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-r3-verify`: 9 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-r2-verify`: 4 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-r1-verify`: 19 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-c-verify`: 10 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-b-verify`: 14 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-e-verify`: 21 pass, 0 fail, 0 not-ready.
++- `make m1-1-gate-f-verify`: 13 pass, 0 fail, 0 not-ready.
++- `make test`: 26 tests passed.
++- `git diff --check`: passed.
++
++## Follow-Up
++
++Prepare an external review packet for M1.1R. Do not start M1.2 implementation until the external decision is approve, or required changes are integrated and re-reviewed.
+diff --git a/generated/capability-catalog.json b/generated/capability-catalog.json
+index 6e76991..12640ea 100644
+--- a/generated/capability-catalog.json
++++ b/generated/capability-catalog.json
+@@ -1 +1 @@
+-{"default_complexity_limits":{"max_execution_cost":100000,"max_nesting_depth":8,"max_plan_nodes":40,"max_relations_per_anchor":1000,"max_returned_moments":100,"max_temporal_horizon_seconds":15.0},"operators":[{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gt","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a strict lower numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"lte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to an upper numeric threshold.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"eq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to an equal typed value.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"neq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to a non-equal typed value.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":true,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean"],"input_temporal_types":["frame_signal"],"limitations":["UNKNOWN remains UNKNOWN; absence is not converted to FALSE."],"name":"persists_for","output_cardinality":"collection","output_payload_type":"boolean","output_temporal_type":"episode_set","output_unit":"none","purpose":"Promote a boolean frame signal to intervals after minimum duration.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["boolean","relation_ref"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"exists","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Test whether an episode or relation collection contains any episode.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["entity_set","relation_ref","boolean"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"count_at_least","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Count a collection and compare to a count threshold.","version":"1.0.0"}],"primitives":[{"evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"executable":true,"inputs":[],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"possession_segment","outputs":[{"cardinality":"collection","entity_scope":"possession","evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"boolean","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Identify active-ball possession intervals for the perspective team.","version":"0.1.0"},{"evidence_fields":["wide_entry_y_m","ball_side"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Depends on canonical pitch coordinates and known pitch width."],"missing_data_semantics":"unknown","name":"ball_lateral_fraction","outputs":[{"cardinality":"single","entity_scope":"ball","evidence_fields":["wide_entry_y_m","ball_side"],"missing_data_semantics":"unknown","name":"fraction","payload_type":"number","temporal_type":"frame_signal","unit":"fraction"}],"parameters":[],"purpose":"Normalize ball distance from pitch centerline toward either touchline.","version":"0.1.0"},{"evidence_fields":["baseline_defensive_centroid_y_m","defending_team_id"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Goalkeepers are excluded from the outfield centroid."],"missing_data_semantics":"unknown","name":"defensive_outfield_centroid","outputs":[{"cardinality":"per_team","entity_scope":"team","evidence_fields":["baseline_defensive_centroid_y_m"],"missing_data_semantics":"unknown","name":"centroid_y","payload_type":"number","temporal_type":"frame_signal","unit":"metre"}],"parameters":[],"purpose":"Measure defending outfield team centroid without goalkeeper bias.","version":"0.1.0"},{"evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"ball","name":"entry_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"per_team","entity_scope":"team","name":"defensive_centroid","payload_type":"number","required":true,"temporal_type":"frame_signal","unit":"metre"}],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"signed_lateral_shift","outputs":[{"cardinality":"single","entity_scope":"team","evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"missing_data_semantics":"unknown","name":"signed_shift","payload_type":"number","temporal_type":"frame_signal","unit":"metre"}],"parameters":[],"purpose":"Measure defensive centroid movement toward the ball side.","version":"0.1.0"},{"evidence_fields":["classification","outcome_frame_id"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"team","name":"accepted_shift_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"single","entity_scope":"team","name":"signed_shift","payload_type":"number","required":true,"temporal_type":"frame_signal","unit":"metre"}],"kind":"primitive","limitations":["Does not infer intent, optimality, or missed opportunity."],"missing_data_semantics":"unknown","name":"outcome_classification","outputs":[{"cardinality":"single","entity_scope":"possession","evidence_fields":["classification","outcome_frame_id"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Outcome lookahead horizon in seconds.","maximum":30.0,"minimum":0.2,"name":"horizon","payload_type":"number","required":true,"unit":"second"}],"purpose":"Classify the post-anchor outcome under the frozen M1 predicates.","version":"0.1.0"},{"evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"relation","name":"relation_episodes","payload_type":"relation_ref","required":true,"temporal_type":"relation_episode_set","unit":"none"}],"kind":"primitive","limitations":["Requires an upstream relation episode set.","No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."],"missing_data_semantics":"unknown","name":"relation_destination_entry_classification","outputs":[{"cardinality":"single","entity_scope":"relation","evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Lookahead horizon for destination lane entry.","maximum":30.0,"minimum":0.2,"name":"destination_entry_horizon_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Seed used to derive deterministic experimental result IDs.","name":"result_id_seed","payload_type":"enum","required":true,"unit":"none"},{"allowed_values":["first_by_duration_clearance"],"description":"Deterministic selection strategy when an anchor has multiple relation episodes.","name":"episode_selection","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Classify whether the ball later enters the destination region of a previously evaluated relation episode.","version":"0.1.0"}],"relations":[{"evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"executable":true,"inputs":[{"cardinality":"single","entity_scope":"possession","name":"anchors","payload_type":"enum","required":true,"temporal_type":"frame_signal","unit":"none"}],"kind":"relation","limitations":["No pass probability.","No optimality or decision-quality claim.","No receiver body-orientation model.","No offside model in V1 acceptance."],"missing_data_semantics":"unknown","name":"geometric_progressive_corridor","outputs":[{"cardinality":"collection","entity_scope":"relation","evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"relation_ref","temporal_type":"relation_episode_set","unit":"none"}],"parameters":[{"description":"Maximum relation search window after the anchor.","maximum":15.0,"minimum":0.2,"name":"max_window_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Minimum forward progression from source to target.","maximum":80.0,"minimum":0.0,"name":"minimum_progression_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum source-target segment length.","maximum":80.0,"minimum":0.0,"name":"minimum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Maximum source-target segment length.","maximum":100.0,"minimum":0.0,"name":"maximum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum defender clearance from the source-target segment.","maximum":40.0,"minimum":0.0,"name":"minimum_clearance_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Frames required before a corridor is considered open.","maximum":100.0,"minimum":1.0,"name":"open_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Frames required before a corridor is considered closed.","maximum":100.0,"minimum":1.0,"name":"close_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Minimum open duration retained in the relation output.","maximum":15.0,"minimum":0.0,"name":"minimum_duration_seconds","payload_type":"number","required":true,"unit":"second"},{"allowed_values":["any","same_ball_side","opposite_ball_side"],"description":"Retain corridors by relation destination side relative to the ball side.","name":"side_filter","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Represent a geometrically clear forward connection from the ball location to an attacking teammate over an interval.","version":"0.1.0"}],"schema_version":"1.0"}
++{"default_complexity_limits":{"max_execution_cost":100000,"max_nesting_depth":8,"max_plan_nodes":40,"max_relations_per_anchor":1000,"max_returned_moments":100,"max_temporal_horizon_seconds":15.0},"operators":[{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gt","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a strict lower numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"lte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to an upper numeric threshold.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"eq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to an equal typed value.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"neq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to a non-equal typed value.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":true,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean"],"input_temporal_types":["frame_signal"],"limitations":["UNKNOWN remains UNKNOWN; absence is not converted to FALSE."],"name":"persists_for","output_cardinality":"collection","output_payload_type":"boolean","output_temporal_type":"episode_set","output_unit":"none","purpose":"Promote a boolean frame signal to intervals after minimum duration.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["boolean","relation_ref"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"exists","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Test whether an episode or relation collection contains any episode.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["entity_set","relation_ref","boolean"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"count_at_least","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Count a collection and compare to a count threshold.","version":"1.0.0"}],"primitives":[{"evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"executable":true,"inputs":[],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"possession_segment","outputs":[{"cardinality":"collection","entity_scope":"possession","evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"boolean","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Identify active-ball possession intervals for the perspective team.","version":"0.1.0"},{"evidence_fields":["wide_entry_y_m","ball_side"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Depends on canonical pitch coordinates and known pitch width."],"missing_data_semantics":"unknown","name":"ball_lateral_fraction","outputs":[{"cardinality":"single","entity_scope":"ball","evidence_fields":["wide_entry_y_m","ball_side"],"missing_data_semantics":"unknown","name":"fraction","payload_type":"number","temporal_type":"frame_signal","unit":"fraction"}],"parameters":[],"purpose":"Normalize ball distance from pitch centerline toward either touchline.","version":"0.1.0"},{"evidence_fields":["baseline_defensive_centroid_y_m","defending_team_id"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Goalkeepers are excluded from the outfield centroid."],"missing_data_semantics":"unknown","name":"defensive_outfield_centroid","outputs":[{"cardinality":"per_team","entity_scope":"team","evidence_fields":["baseline_defensive_centroid_y_m"],"missing_data_semantics":"unknown","name":"centroid_y","payload_type":"number","temporal_type":"frame_signal","unit":"metre"}],"parameters":[],"purpose":"Measure defending outfield team centroid without goalkeeper bias.","version":"0.1.0"},{"evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"possession","name":"possession_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"ball","name":"entry_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"per_team","entity_scope":"team","name":"defensive_centroid","payload_type":"number","required":true,"temporal_type":"frame_signal","unit":"metre"}],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"signed_lateral_shift","outputs":[{"cardinality":"single","entity_scope":"team","evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"missing_data_semantics":"unknown","name":"signed_shift","payload_type":"number","temporal_type":"frame_signal","unit":"metre"}],"parameters":[],"purpose":"Measure defensive centroid movement toward the ball side.","version":"0.1.0"},{"evidence_fields":["classification","outcome_frame_id"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"team","name":"accepted_shift_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"single","entity_scope":"team","name":"signed_shift","payload_type":"number","required":true,"temporal_type":"frame_signal","unit":"metre"}],"kind":"primitive","limitations":["Does not infer intent, optimality, or missed opportunity."],"missing_data_semantics":"unknown","name":"outcome_classification","outputs":[{"cardinality":"single","entity_scope":"possession","evidence_fields":["classification","outcome_frame_id"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Outcome lookahead horizon in seconds.","maximum":30.0,"minimum":0.2,"name":"horizon","payload_type":"number","required":true,"unit":"second"}],"purpose":"Classify the post-anchor outcome under the frozen M1 predicates.","version":"0.1.0"},{"evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"relation","name":"relation_episodes","payload_type":"relation_ref","required":true,"temporal_type":"relation_episode_set","unit":"none"}],"kind":"primitive","limitations":["Requires an upstream relation episode set.","No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."],"missing_data_semantics":"unknown","name":"relation_destination_entry_classification","outputs":[{"cardinality":"single","entity_scope":"relation","evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Lookahead horizon for destination lane entry.","maximum":30.0,"minimum":0.2,"name":"destination_entry_horizon_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Seed used to derive deterministic experimental result IDs.","name":"result_id_seed","payload_type":"enum","required":true,"unit":"none"},{"allowed_values":["first_by_duration_clearance"],"description":"Deterministic selection strategy when an anchor has multiple relation episodes.","name":"episode_selection","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Classify whether the ball later enters the destination region of a previously evaluated relation episode.","version":"0.1.0"}],"relations":[{"evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"executable":true,"inputs":[{"cardinality":"single","entity_scope":"possession","name":"anchors","payload_type":"enum","required":true,"temporal_type":"frame_signal","unit":"none"}],"kind":"relation","limitations":["No pass probability.","No optimality or decision-quality claim.","No receiver body-orientation model.","No offside model in V1 acceptance."],"missing_data_semantics":"unknown","name":"geometric_progressive_corridor","outputs":[{"cardinality":"collection","entity_scope":"relation","evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"relation_ref","temporal_type":"relation_episode_set","unit":"none"}],"parameters":[{"description":"Maximum relation search window after the anchor.","maximum":15.0,"minimum":0.2,"name":"max_window_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Minimum forward progression from source to target.","maximum":80.0,"minimum":0.0,"name":"minimum_progression_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum source-target segment length.","maximum":80.0,"minimum":0.0,"name":"minimum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Maximum source-target segment length.","maximum":100.0,"minimum":0.0,"name":"maximum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum defender clearance from the source-target segment.","maximum":40.0,"minimum":0.0,"name":"minimum_clearance_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Frames required before a corridor is considered open.","maximum":100.0,"minimum":1.0,"name":"open_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Frames required before a corridor is considered closed.","maximum":100.0,"minimum":1.0,"name":"close_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Minimum open duration retained in the relation output.","maximum":15.0,"minimum":0.0,"name":"minimum_duration_seconds","payload_type":"number","required":true,"unit":"second"},{"allowed_values":["any","same_ball_side","opposite_ball_side"],"description":"Retain corridors by relation destination side relative to the ball side.","name":"side_filter","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Represent a geometrically clear forward connection from the ball location to an attacking teammate over an interval.","version":"0.1.0"}],"schema_version":"1.0"}
+diff --git a/src/tqe/runtime/catalog.py b/src/tqe/runtime/catalog.py
+index 5897734..59ffe6c 100644
+--- a/src/tqe/runtime/catalog.py
++++ b/src/tqe/runtime/catalog.py
+@@ -234,6 +234,13 @@ def default_primitives() -> list[CatalogEntry]:
+                 )
+             ],
+             inputs=[
++                input_ref(
++                    name="possession_episodes",
++                    temporal_type=TemporalContainer.EPISODE_SET,
++                    payload_type=PayloadType.BOOLEAN,
++                    cardinality=Cardinality.COLLECTION,
++                    entity_scope=EntityScope.POSSESSION,
++                ),
+                 input_ref(
+                     name="entry_episodes",
+                     temporal_type=TemporalContainer.EPISODE_SET,
+diff --git a/src/tqe/runtime/executor.py b/src/tqe/runtime/executor.py
+index 2dc53b9..d817855 100644
+--- a/src/tqe/runtime/executor.py
++++ b/src/tqe/runtime/executor.py
+@@ -683,12 +683,24 @@ def primitive_defensive_outfield_centroid(state: PeriodState, node: BoundCatalog
+ 
+ 
+ def primitive_signed_lateral_shift(state: PeriodState, node: BoundCatalogNode) -> None:
++    possession_reference = node.inputs.get("possession_episodes")
++    if possession_reference is None:
++        raise RuntimeError(f"{node.node_id} requires possession_episodes input")
+     entry_reference = node.inputs.get("entry_episodes")
+     if entry_reference is None:
+         raise RuntimeError(f"{node.node_id} requires entry_episodes input")
++    possession_signal = state.signals.get(possession_reference.source_node_id, {})
++    possession_episodes = (
++        possession_signal.get(possession_reference.output_name)
++        or possession_signal.get("episodes", [])
++    )
+     entry_signal = state.signals.get(entry_reference.source_node_id, {})
+     entry_episodes = entry_signal.get(entry_reference.output_name) or entry_signal.get("episodes", [])
+-    candidates = wide_entry_candidates_from_episodes(state, entry_episodes)
++    candidates = wide_entry_candidates_from_episodes(
++        state,
++        entry_episodes=entry_episodes,
++        possession_episodes=possession_episodes,
++    )
+     baseline_frames = int(round(state.params.number("baseline_window_seconds") * state.params.integer("analysis_rate_hz")))
+     search_frames = int(round(state.params.number("shift_search_window_seconds") * state.params.integer("analysis_rate_hz")))
+     shifted: list[dict[str, Any]] = []
+@@ -1090,7 +1102,6 @@ def predicate_gte(state: PeriodState, node: BoundPredicateNode) -> None:
+     candidates = state.signals.get(node.input.source_node_id, {}).get("candidates")
+     if isinstance(candidates, list) and len(candidates) == len(passed):
+         for candidate, status, value in zip(candidates, passed, values, strict=True):
+-            candidate[f"{node.node_id}_passed"] = bool(status)
+             record_candidate_predicate(
+                 candidate=candidate,
+                 node=node,
+@@ -1168,7 +1179,6 @@ def predicate_neq(state: PeriodState, node: BoundPredicateNode) -> None:
+     items = state.signals.get(node.input.source_node_id, {}).get(node.input.output_name)
+     if isinstance(items, list) and items and all(isinstance(item, dict) for item in items):
+         for item, status, value in zip(items, passed, values, strict=False):
+-            item[f"{node.node_id}_passed"] = bool(status)
+             if "_predicate_status" in item:
+                 record_candidate_predicate(
+                     candidate=item,
+@@ -1199,7 +1209,7 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
+     candidates = source_signal.get("candidates")
+     if isinstance(candidates, list) and len(candidates) == len(values):
+         threshold = state.params.number("minimum_shift_metres")
+-        for candidate in candidates:
++        for candidate, source_status in zip(candidates, values, strict=True):
+             persistence = shift_persistence_evidence(
+                 candidate["signed_shift_series"],
+                 threshold,
+@@ -1212,7 +1222,7 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
+             candidate["shift_persistence_start_frame_id"] = persistence["start_frame_id"]
+             candidate["shift_persistence_end_frame_id"] = persistence["end_frame_id"]
+             candidate["shift_gate_passed"] = bool(
+-                candidate.get(f"{node.input.source_node_id}_passed")
++                source_status is True
+                 and persistent
+                 and candidate["enough_defenders"]
+             )
+@@ -1301,9 +1311,9 @@ def wide_entry_candidates(
+     state: PeriodState,
+     wide_mask: np.ndarray,
+     dwell_frames: int,
++    possession_segments: list[Any],
+ ) -> list[dict[str, Any]]:
+     candidates: list[dict[str, Any]] = []
+-    possession_segments = state.signals.get("possession", {}).get("episodes", [])
+     baseline_frames = int(round(state.params.number("baseline_window_seconds") * state.params.integer("analysis_rate_hz")))
+     prior_central_threshold_m = state.params.number("prior_central_fraction") * PITCH_HALF_WIDTH_M
+ 
+@@ -1366,11 +1376,13 @@ def episode_records_from_mask(
+ 
+ def wide_entry_candidates_from_episodes(
+     state: PeriodState,
+-    episodes: list[Any],
++    *,
++    entry_episodes: list[Any],
++    possession_episodes: list[Any],
+ ) -> list[dict[str, Any]]:
+     wide_mask = np.zeros(len(state.frame_ids), dtype=bool)
+     structured_episodes: list[dict[str, Any]] = []
+-    for episode in episodes:
++    for episode in entry_episodes:
+         start_index = episode_start_index(episode)
+         end_index = episode_end_index(episode)
+         if start_index is None or end_index is None:
+@@ -1381,7 +1393,12 @@ def wide_entry_candidates_from_episodes(
+     dwell_frames = int(
+         round(state.params.number("minimum_wide_dwell_seconds") * state.params.integer("analysis_rate_hz"))
+     )
+-    candidates = wide_entry_candidates(state, wide_mask, dwell_frames)
++    candidates = wide_entry_candidates(
++        state,
++        wide_mask,
++        dwell_frames,
++        possession_segments=possession_episodes,
++    )
+     for candidate in candidates:
+         entry_frame_id = int(candidate["wide_entry_frame_id"])
+         source_episode = next(
+@@ -1553,155 +1570,11 @@ def predicate_traces_for_candidate(
+     candidate: dict[str, Any],
+     result: dict[str, Any],
+ ) -> list[PredicateTrace]:
+-    generated = predicate_traces_from_status_records(
++    return predicate_traces_from_status_records(
+         state=state,
+         candidate=candidate,
+         result=result,
+     )
+-    if generated:
+-        return generated
+-
+-    result_id = str(result.get("result_id") or candidate_key(state, candidate))
+-    common = {
+-        "result_id": result_id,
+-        "candidate_key": candidate_key(state, candidate),
+-        "match_id": state.match_id,
+-        "period": state.period,
+-        "wide_entry_frame_id": int(candidate["wide_entry_frame_id"]),
+-        "anchor_frame_id": int(candidate["anchor_frame_id"]),
+-    }
+-    wide_fraction = abs(float(candidate["wide_entry_y_m"])) / PITCH_HALF_WIDTH_M
+-    wide_threshold = state.params.number("wide_entry_fraction")
+-    shift_value = candidate.get("signed_shift_metres")
+-    shift_threshold = state.params.number("minimum_shift_metres")
+-    shift_status = numeric_trace_status(shift_value, shift_threshold, "gte")
+-    persistence_value = candidate.get("shift_persistence_seconds")
+-    persistence_threshold = state.params.number("minimum_shift_persistence_seconds")
+-    persistence_status = (
+-        "PASS"
+-        if candidate.get("persistent_shift")
+-        else ("UNKNOWN" if persistence_value is None else "FAIL")
+-    )
+-    classification = result.get("classification")
+-    if classification is None:
+-        stoppage_status = "UNKNOWN"
+-        stoppage_reason = "outcome_not_evaluated_after_failed_shift_gate"
+-    elif classification == "STOPPAGE":
+-        stoppage_status = "FAIL"
+-        stoppage_reason = "classification_is_stoppage"
+-    else:
+-        stoppage_status = "PASS"
+-        stoppage_reason = "classification_is_accepted_outcome"
+-
+-    return [
+-        PredicateTrace(
+-            predicate_id="wide_entry_threshold",
+-            status="PASS" if wide_fraction > wide_threshold else "FAIL",
+-            value=typed_number(round(wide_fraction, 6), Unit.FRACTION),
+-            threshold=typed_number(wide_threshold, Unit.FRACTION),
+-            unit=Unit.FRACTION,
+-            frame_id=int(candidate["wide_entry_frame_id"]),
+-            source_evidence={
+-                **common,
+-                "wide_entry_y_m": float(candidate["wide_entry_y_m"]),
+-                "source_node_id": "ball_lateral",
+-            },
+-        ),
+-        PredicateTrace(
+-            predicate_id="wide_entry_persists",
+-            status=(
+-                "PASS"
+-                if float(candidate["wide_dwell_seconds"])
+-                >= state.params.number("minimum_wide_dwell_seconds")
+-                else "FAIL"
+-            ),
+-            value=typed_number(float(candidate["wide_dwell_seconds"]), Unit.SECOND),
+-            threshold=typed_number(state.params.number("minimum_wide_dwell_seconds"), Unit.SECOND),
+-            unit=Unit.SECOND,
+-            frame_id=int(candidate["wide_entry_frame_id"]),
+-            window={
+-                "start_frame_id": int(candidate["wide_entry_frame_id"]),
+-                "end_frame_id": int(candidate["wide_dwell_end_frame_id"]),
+-            },
+-            source_evidence={
+-                **common,
+-                "prior_central_start_frame_id": int(candidate["prior_central_start_frame_id"]),
+-                "prior_central_end_frame_id": int(candidate["prior_central_end_frame_id"]),
+-                "source_node_id": "wide_entry_persists",
+-            },
+-        ),
+-        PredicateTrace(
+-            predicate_id="shift_threshold",
+-            status=shift_status,
+-            value=(
+-                typed_number(float(shift_value), Unit.METRE)
+-                if shift_value is not None and not is_nan_number(shift_value)
+-                else None
+-            ),
+-            threshold=typed_number(shift_threshold, Unit.METRE),
+-            unit=Unit.METRE,
+-            frame_id=int(candidate["anchor_frame_id"]),
+-            window={
+-                "baseline_start_frame_id": int(candidate["baseline_start_frame_id"]),
+-                "baseline_end_frame_id": int(candidate["baseline_end_frame_id"]),
+-                "search_start_frame_id": int(candidate["shift_search_start_frame_id"]),
+-                "search_end_frame_id": int(candidate["shift_search_end_frame_id"]),
+-            },
+-            source_evidence={
+-                **common,
+-                "baseline_defensive_centroid_y_m": float(candidate["baseline_defensive_centroid_y_m"]),
+-                "enough_defenders": bool(candidate["enough_defenders"]),
+-                "source_node_id": "signed_shift",
+-                "unknown_reason": None if shift_status != "UNKNOWN" else "signed_shift_unavailable",
+-            },
+-        ),
+-        PredicateTrace(
+-            predicate_id="shift_persists",
+-            status=persistence_status,
+-            value=(
+-                typed_number(float(persistence_value), Unit.SECOND)
+-                if persistence_value is not None
+-                else None
+-            ),
+-            threshold=typed_number(persistence_threshold, Unit.SECOND),
+-            unit=Unit.SECOND,
+-            frame_id=int(candidate["anchor_frame_id"]),
+-            window={
+-                "start_frame_id": candidate.get("shift_persistence_start_frame_id"),
+-                "end_frame_id": candidate.get("shift_persistence_end_frame_id"),
+-            },
+-            source_evidence={
+-                **common,
+-                "persistent_shift": bool(candidate.get("persistent_shift", False)),
+-                "source_node_id": "shift_persists",
+-                "unknown_reason": None
+-                if persistence_status != "UNKNOWN"
+-                else "shift_series_unavailable",
+-            },
+-        ),
+-        PredicateTrace(
+-            predicate_id="not_stoppage",
+-            status=stoppage_status,
+-            value=typed_enum(str(classification)) if classification is not None else None,
+-            threshold=typed_enum("STOPPAGE"),
+-            unit=Unit.NONE,
+-            frame_id=(
+-                int(result["outcome_frame_id"])
+-                if result.get("outcome_frame_id") is not None
+-                else None
+-            ),
+-            window={
+-                "start_frame_id": int(candidate["anchor_frame_id"]),
+-                "end_frame_id": result.get("outcome_frame_id"),
+-            },
+-            source_evidence={
+-                **common,
+-                "classification": classification,
+-                "source_node_id": "outcome",
+-                "reason": stoppage_reason,
+-            },
+-        ),
+-    ]
+ 
+ 
+ def numeric_trace_status(value: Any, threshold: float, operator: str) -> str:
+diff --git a/src/tqe/runtime/values.py b/src/tqe/runtime/values.py
+index 84074e9..9953e1c 100644
+--- a/src/tqe/runtime/values.py
++++ b/src/tqe/runtime/values.py
+@@ -70,13 +70,6 @@ def normalize_value(*, node_id: str, output: CatalogOutput, raw_value: Any) -> A
+                 for item in raw_value
+                 if isinstance(item, dict)
+             ]
+-        if output.payload_type == PayloadType.BOOLEAN:
+-            key = f"{node_id}_passed"
+-            return [
+-                bool(item.get(key))
+-                for item in raw_value
+-                if isinstance(item, dict) and key in item
+-            ]
+     return raw_value
+ 
+ 
+diff --git a/src/tqe/verification/m1_1_gate_r5.py b/src/tqe/verification/m1_1_gate_r5.py
+new file mode 100644
+index 0000000..7d466cb
+--- /dev/null
++++ b/src/tqe/verification/m1_1_gate_r5.py
+@@ -0,0 +1,622 @@
++"""Verify M1.1R Gate R5: architecture proof and parity."""
++
++from __future__ import annotations
++
++import json
++from collections import Counter
++from copy import deepcopy
++from datetime import UTC, datetime
++from pathlib import Path
++from typing import Any
++
++from tqe.runtime.binder import (
++    BindError,
++    bind_document,
++    bind_document_from_path,
++    bind_error_codes,
++)
++from tqe.runtime.catalog import default_catalog
++from tqe.runtime.executor import (
++    TacticalQueryExecutor,
++    apply_result_semantics,
++    execution_result_rows,
++)
++from tqe.runtime.ir import (
++    ExecutionStatus,
++    PredicateTrace,
++    TacticalQueryDocument,
++    UnknownEvidencePolicy,
++)
++from tqe.verification.m1_1_gate_b import build_report as build_gate_b_report
++
++APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
++EXPERIMENTAL_PLAN_PATH = Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json")
++EXECUTOR_PATH = Path("src/tqe/runtime/executor.py")
++REPORT_PATH = Path("artifacts/m1.1/gate-r5-verification-report.json")
++
++
++def utc_now_iso() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat()
++
++
++def write_json(path: Path, payload: dict[str, Any]) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++
++
++def pass_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "pass", "message": message, "details": details or {}}
++
++
++def fail_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "fail", "message": message, "details": details or {}}
++
++
++def build_report() -> dict[str, Any]:
++    checks: list[dict[str, Any]] = []
++    approved_bound = bind_document_from_path(APPROVED_PLAN_PATH)
++    approved_execution = TacticalQueryExecutor().execute(approved_bound)
++    approved_rows = execution_result_rows(approved_execution)
++
++    checks.extend(validate_node_id_opacity(approved_rows))
++    checks.extend(validate_required_dependency_failure())
++    checks.extend(validate_capability_execution())
++    checks.extend(validate_plan_driven_semantics())
++    checks.extend(validate_executor_source_opacity())
++    checks.extend(validate_cache_independent_reproduction(approved_rows))
++    checks.extend(validate_m1_parity())
++
++    summary = {
++        "pass": sum(1 for check in checks if check["status"] == "pass"),
++        "fail": sum(1 for check in checks if check["status"] == "fail"),
++        "not_ready": sum(1 for check in checks if check["status"] == "not_ready"),
++    }
++    report = {
++        "schema_version": "1.0",
++        "milestone": "M1.1R",
++        "gate": "Gate_R5_architecture_proof_and_parity",
++        "generated_at": utc_now_iso(),
++        "status": "pass" if summary["fail"] == 0 and summary["not_ready"] == 0 else "fail",
++        "summary": summary,
++        "checks": checks,
++    }
++    write_json(REPORT_PATH, report)
++    return report
++
++
++def validate_node_id_opacity(approved_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    payload = renamed_node_payload(clone_plan_payload(APPROVED_PLAN_PATH))
++    bound = bind_document(TacticalQueryDocument.model_validate(payload))
++    execution = TacticalQueryExecutor().execute(bound)
++    renamed_rows = execution_result_rows(execution)
++    original_normalized = [normalize_result_for_node_rename(row) for row in approved_rows]
++    renamed_normalized = [normalize_result_for_node_rename(row) for row in renamed_rows]
++    return [
++        pass_check(
++            "architecture.node_id_rename_opacity",
++            "renaming every approved-plan node while preserving references leaves runtime results unchanged",
++            {
++                "result_count": len(renamed_rows),
++                "renamed_plan_hash": bound.plan_hash,
++                "renamed_bound_plan_hash": bound.bound_plan_hash,
++            },
++        )
++        if execution.status == ExecutionStatus.PASS and original_normalized == renamed_normalized
++        else fail_check(
++            "architecture.node_id_rename_opacity",
++            "node-id rename changed approved-plan runtime behavior",
++            {
++                "status": execution.status.value,
++                "original_count": len(approved_rows),
++                "renamed_count": len(renamed_rows),
++            },
++        )
++    ]
++
++
++def validate_required_dependency_failure() -> list[dict[str, Any]]:
++    payload = clone_plan_payload(APPROVED_PLAN_PATH)
++    for node in payload["draft_plan"]["nodes"]:
++        if node.get("catalog_ref") == "signed_lateral_shift":
++            del node["inputs"]["possession_episodes"]
++            break
++    try:
++        bind_document(TacticalQueryDocument.model_validate(payload))
++    except BindError as error:
++        codes = sorted(bind_error_codes(error))
++        return [
++            pass_check(
++                "binder.removing_required_dependency_fails",
++                "removing signed_lateral_shift.possession_episodes fails binding",
++                {"codes": codes},
++            )
++            if "missing_node_input" in codes
++            else fail_check(
++                "binder.removing_required_dependency_fails",
++                "invalid dependency removal failed with the wrong issue code",
++                {"codes": codes},
++            )
++        ]
++    return [
++        fail_check(
++            "binder.removing_required_dependency_fails",
++            "binder accepted a plan missing a required dependency",
++        )
++    ]
++
++
++def validate_capability_execution() -> list[dict[str, Any]]:
++    approved_bound = bind_document_from_path(APPROVED_PLAN_PATH)
++    experimental_bound = bind_document_from_path(EXPERIMENTAL_PLAN_PATH)
++    simple_bound = bind_document(TacticalQueryDocument.model_validate(simple_non_block_shift_payload()))
++    executor = TacticalQueryExecutor()
++    executions = {
++        "approved": executor.execute(approved_bound),
++        "experimental": executor.execute(experimental_bound),
++        "simple_non_block_shift": executor.execute(simple_bound),
++    }
++    plans = {
++        "approved": approved_bound,
++        "experimental": experimental_bound,
++        "simple_non_block_shift": simple_bound,
++    }
++    coverage = capability_coverage(plans)
++    catalog = default_catalog()
++    advertised = {
++        "primitives": sorted(entry.name for entry in catalog.primitives),
++        "relations": sorted(entry.name for entry in catalog.relations),
++        "operators": sorted(entry.name for entry in catalog.operators),
++    }
++    missing = {
++        kind: sorted(set(names) - set(coverage[kind]))
++        for kind, names in advertised.items()
++    }
++    execution_failures = [
++        {
++            "plan": name,
++            "status": execution.status.value,
++            "runtime_value_count": execution.provenance.get("runtime_value_count"),
++            "result_count": len(execution.results),
++        }
++        for name, execution in executions.items()
++        if execution.status != ExecutionStatus.PASS
++        or int(execution.provenance.get("runtime_value_count", 0)) <= 0
++    ]
++    simple_rows = execution_result_rows(executions["simple_non_block_shift"])
++    forbidden_simple_fields = {
++        key
++        for row in simple_rows
++        for key in row
++        if key in {"signed_shift_metres", "block_shift_score", "baseline_defensive_centroid_y_m"}
++    }
++    return [
++        pass_check(
++            "capabilities.all_advertised_execute",
++            "approved, experimental, and simple valid plans execute every advertised capability",
++            {
++                "advertised": advertised,
++                "coverage": coverage,
++                "execution_summaries": {
++                    name: {
++                        "status": execution.status.value,
++                        "result_count": len(execution.results),
++                        "runtime_value_count": execution.provenance.get("runtime_value_count"),
++                    }
++                    for name, execution in executions.items()
++                },
++            },
++        )
++        if not any(missing.values()) and not execution_failures
++        else fail_check(
++            "capabilities.all_advertised_execute",
++            "one or more advertised capabilities are not covered by successful plan execution",
++            {"missing": missing, "execution_failures": execution_failures},
++        ),
++        pass_check(
++            "architecture.second_simple_plan",
++            "second simple plan executes without block-shift fields",
++            {
++                "status": executions["simple_non_block_shift"].status.value,
++                "result_count": len(simple_rows),
++                "runtime_value_count": executions["simple_non_block_shift"].provenance.get("runtime_value_count"),
++            },
++        )
++        if executions["simple_non_block_shift"].status == ExecutionStatus.PASS and not forbidden_simple_fields
++        else fail_check(
++            "architecture.second_simple_plan",
++            "simple plan did not execute cleanly or leaked block-shift fields",
++            {"forbidden_fields": sorted(forbidden_simple_fields)},
++        ),
++    ]
++
++
++def validate_plan_driven_semantics() -> list[dict[str, Any]]:
++    executor = TacticalQueryExecutor()
++    classification_payload = clone_plan_payload(APPROVED_PLAN_PATH)
++    switched_rule = next(
++        rule
++        for rule in classification_payload["draft_plan"]["classification_rules"]
++        if rule["label"] == "SWITCHED"
++    )
++    classification_payload["draft_plan"]["classification_mode"] = "partial_declared"
++    classification_payload["draft_plan"]["classification_rules"] = [switched_rule]
++    classification_payload["default_invocation"]["max_results"] = 50
++    classification_execution = executor.execute(
++        bind_document(TacticalQueryDocument.model_validate(classification_payload))
++    )
++    classification_rows = execution_result_rows(classification_execution)
++
++    evidence_payload = clone_plan_payload(APPROVED_PLAN_PATH)
++    evidence_payload["draft_plan"]["requested_evidence"] = [
++        {
++            "source": {"source_node_id": "signed_shift", "output_name": "signed_shift"},
++            "field": "signed_shift_metres",
++        }
++    ]
++    evidence_payload["default_invocation"]["max_results"] = 5
++    evidence_execution = executor.execute(
++        bind_document(TacticalQueryDocument.model_validate(evidence_payload))
++    )
++    evidence_rows = execution_result_rows(evidence_execution)
++    evidence_keys = {
++        tuple(sorted(row.get("requested_evidence", {}).keys()))
++        for row in evidence_rows
++    }
++
++    bound = bind_document_from_path(APPROVED_PLAN_PATH)
++    result = {"result_id": "synthetic_result", "classification": "SWITCHED"}
++    trace = PredicateTrace(
++        predicate_id="synthetic_predicate",
++        status="UNKNOWN",
++        source_evidence={"result_id": "synthetic_result"},
++    )
++    include_results, include_traces, include_status = apply_result_semantics(
++        results=[dict(result)],
++        trace_records=[trace],
++        bound_plan=bound.model_copy(
++            update={"unknown_evidence_policy": UnknownEvidencePolicy.INCLUDE_WITH_WARNING}
++        ),
++    )
++    exclude_results, exclude_traces, exclude_status = apply_result_semantics(
++        results=[dict(result)],
++        trace_records=[trace],
++        bound_plan=bound.model_copy(
++            update={"unknown_evidence_policy": UnknownEvidencePolicy.EXCLUDE_CANDIDATE}
++        ),
++    )
++    invalid_results, invalid_traces, invalid_status = apply_result_semantics(
++        results=[dict(result)],
++        trace_records=[trace],
++        bound_plan=bound.model_copy(
++            update={"unknown_evidence_policy": UnknownEvidencePolicy.INVALIDATE_EXECUTION}
++        ),
++    )
++    labels = {row["classification"] for row in classification_rows}
++    return [
++        pass_check(
++            "semantics.classification_rules_change_behavior",
++            "changing classification rules changes runtime classifications",
++            {"count": len(classification_rows), "labels": sorted(labels)},
++        )
++        if classification_rows and labels == {"SWITCHED"}
++        else fail_check(
++            "semantics.classification_rules_change_behavior",
++            "classification rule mutation did not narrow runtime classifications",
++            {"count": len(classification_rows), "labels": sorted(labels)},
++        ),
++        pass_check(
++            "semantics.requested_evidence_changes_projection",
++            "changing requested evidence changes result projection",
++            {"projection_keys": [list(item) for item in sorted(evidence_keys)]},
++        )
++        if evidence_rows and evidence_keys == {("signed_shift.signed_shift_metres",)}
++        else fail_check(
++            "semantics.requested_evidence_changes_projection",
++            "requested evidence mutation did not change projection",
++            {"projection_keys": [list(item) for item in sorted(evidence_keys)]},
++        ),
++        pass_check(
++            "semantics.unknown_policy_changes_behavior",
++            "unknown policy include/exclude/invalidate paths diverge",
++            {
++                "include": {
++                    "status": include_status.value,
++                    "result_count": len(include_results),
++                    "trace_count": len(include_traces),
++                },
++                "exclude": {
++                    "status": exclude_status.value,
++                    "result_count": len(exclude_results),
++                    "trace_count": len(exclude_traces),
++                },
++                "invalidate": {
++                    "status": invalid_status.value,
++                    "result_count": len(invalid_results),
++                    "trace_count": len(invalid_traces),
++                },
++            },
++        )
++        if include_status == ExecutionStatus.PASS
++        and len(include_results) == 1
++        and exclude_status == ExecutionStatus.PASS
++        and not exclude_results
++        and not exclude_traces
++        and invalid_status == ExecutionStatus.INCOMPLETE
++        and len(invalid_results) == 1
++        else fail_check(
++            "semantics.unknown_policy_changes_behavior",
++            "unknown policy did not alter runtime semantics",
++        ),
++    ]
++
++
++def validate_executor_source_opacity() -> list[dict[str, Any]]:
++    source = EXECUTOR_PATH.read_text(encoding="utf-8")
++    approved_predicate_ids = approved_recipe_predicate_ids()
++    hits = [predicate_id for predicate_id in approved_predicate_ids if predicate_id in source]
++    return [
++        pass_check(
++            "architecture.executor_has_no_approved_predicate_ids",
++            "generic executor source contains none of the approved recipe predicate IDs",
++            {"checked_predicate_ids": sorted(approved_predicate_ids)},
++        )
++        if not hits
++        else fail_check(
++            "architecture.executor_has_no_approved_predicate_ids",
++            "generic executor source still contains approved recipe predicate IDs",
++            {"hits": hits},
++        )
++    ]
++
++
++def validate_cache_independent_reproduction(
++    approved_rows: list[dict[str, Any]],
++) -> list[dict[str, Any]]:
++    cache_path = Path("artifacts/m1.1")
++    moved_path = Path("artifacts/m1.1.r5-cache-tmp")
++    if moved_path.exists():
++        return [
++            fail_check(
++                "reproduction.cache_independent",
++                "temporary R5 cache path already exists",
++                {"path": str(moved_path)},
++            )
++        ]
++    try:
++        if cache_path.exists():
++            cache_path.rename(moved_path)
++        _, execution = run_approved_plan()
++        rows_without_cache = execution_result_rows(execution)
++    finally:
++        if moved_path.exists() and not cache_path.exists():
++            moved_path.rename(cache_path)
++    return [
++        pass_check(
++            "reproduction.cache_independent",
++            "approved runtime reproduces results after generated artifacts cache is removed",
++            {"result_count": len(rows_without_cache)},
++        )
++        if normalized_result_ids(approved_rows) == normalized_result_ids(rows_without_cache)
++        else fail_check(
++            "reproduction.cache_independent",
++            "runtime result IDs changed when generated artifacts cache was unavailable",
++            {
++                "original_count": len(approved_rows),
++                "cacheless_count": len(rows_without_cache),
++            },
++        )
++    ]
++
++
++def validate_m1_parity() -> list[dict[str, Any]]:
++    gate_b = build_gate_b_report()
++    return [
++        pass_check(
++            "parity.corrected_runtime_matches_m1",
++            "Gate B full-output parity still passes after M1.1R corrections",
++            {"summary": gate_b["summary"]},
++        )
++        if gate_b["status"] == "pass"
++        else fail_check(
++            "parity.corrected_runtime_matches_m1",
++            "Gate B parity failed after M1.1R corrections",
++            {"summary": gate_b.get("summary")},
++        )
++    ]
++
++
++def run_approved_plan() -> tuple[Any, Any]:
++    bound = bind_document_from_path(APPROVED_PLAN_PATH)
++    execution = TacticalQueryExecutor().execute(bound)
++    return bound, execution
++
++
++def clone_plan_payload(path: Path) -> dict[str, Any]:
++    return deepcopy(json.loads(path.read_text(encoding="utf-8")))
++
++
++def renamed_node_payload(payload: dict[str, Any]) -> dict[str, Any]:
++    nodes = payload["draft_plan"]["nodes"]
++    mapping = {node["node_id"]: f"r5_{node['node_id']}" for node in nodes}
++    for node in nodes:
++        node["node_id"] = mapping[node["node_id"]]
++        for reference in node.get("inputs", {}).values():
++            reference["source_node_id"] = mapping[reference["source_node_id"]]
++        if "input" in node:
++            node["input"]["source_node_id"] = mapping[node["input"]["source_node_id"]]
++    for rule in payload["draft_plan"]["classification_rules"]:
++        rule["predicate_ids"] = [mapping[predicate_id] for predicate_id in rule["predicate_ids"]]
++    for request in payload["draft_plan"]["requested_evidence"]:
++        request["source"]["source_node_id"] = mapping[request["source"]["source_node_id"]]
++    payload["draft_plan"]["plan_id"] = "r5_renamed_approved_plan"
++    payload["default_invocation"]["invocation_id"] = "r5_renamed_invocation"
++    return payload
++
++
++def normalize_result_for_node_rename(row: dict[str, Any]) -> dict[str, Any]:
++    normalized = {
++        key: value
++        for key, value in row.items()
++        if key not in {"requested_evidence"}
++    }
++    if "matched_classification_rules" in normalized:
++        normalized["matched_classification_rules"] = sorted(normalized["matched_classification_rules"])
++    return normalized
++
++
++def normalized_result_ids(rows: list[dict[str, Any]]) -> list[str]:
++    return [str(row["result_id"]) for row in rows]
++
++
++def capability_coverage(plans: dict[str, Any]) -> dict[str, list[str]]:
++    coverage: dict[str, set[str]] = {
++        "primitives": set(),
++        "relations": set(),
++        "operators": set(),
++    }
++    for bound in plans.values():
++        for node in bound.nodes:
++            kind = getattr(node, "kind", None)
++            if kind is None:
++                continue
++            if kind.value == "primitive":
++                coverage["primitives"].add(node.catalog_ref)
++            elif kind.value == "relation":
++                coverage["relations"].add(node.catalog_ref)
++            elif kind.value == "predicate":
++                coverage["operators"].add(node.operator.name)
++    return {kind: sorted(values) for kind, values in coverage.items()}
++
++
++def simple_non_block_shift_payload() -> dict[str, Any]:
++    return {
++        "schema_version": "1.0",
++        "recipe": {
++            "schema_version": "1.0",
++            "recipe_id": "r5_simple_possession_v1",
++            "recipe_version": "0.1.0",
++            "display_name": "R5 Simple Possession",
++            "description": "Minimal non-block-shift plan used to prove the runtime can execute a second tactical shape.",
++            "default_unknown_evidence_policy": "exclude_candidate",
++            "allowed_claims": ["The perspective team had possession episodes."],
++            "disallowed_claims": ["No block-shift, corridor, optimality, or video claim is made."],
++            "limitations": ["Verification-only plan."],
++            "output_classifications": ["POSSESSION_PRESENT"],
++            "parameters": [
++                parameter_definition("analysis_rate_hz", "number", "hertz", 5, "Analysis cadence."),
++                parameter_definition("maximum_analysis_gap_ms", "number", "millisecond", 250, "Maximum analysis gap."),
++                parameter_definition("minimum_possession_seconds", "number", "second", 8.0, "Minimum possession duration."),
++            ],
++        },
++        "default_invocation": {
++            "schema_version": "1.0",
++            "invocation_id": "r5_simple_j03woy",
++            "match_ids": ["J03WOY"],
++            "periods": ["firstHalf"],
++            "perspective_team_role": "home",
++            "parameters": {},
++            "max_results": 10,
++            "execution_mode": "execute",
++        },
++        "draft_plan": {
++            "schema_version": "1.0",
++            "plan_id": "r5_simple_possession_plan",
++            "plan_version": "0.1.0",
++            "recipe_id": "r5_simple_possession_v1",
++            "recipe_version": "0.1.0",
++            "status": "experimental",
++            "unknown_evidence_policy": "exclude_candidate",
++            "classification_mode": "partial_declared",
++            "complexity_limits": {
++                "max_plan_nodes": 10,
++                "max_nesting_depth": 4,
++                "max_temporal_horizon_seconds": 5.0,
++                "max_returned_moments": 10,
++                "max_relations_per_anchor": 1,
++                "max_execution_cost": 1000,
++            },
++            "nodes": [
++                {"kind": "primitive", "node_id": "possession", "catalog_ref": "possession_segment", "version": "0.1.0"},
++                {"kind": "primitive", "node_id": "ball_lateral", "catalog_ref": "ball_lateral_fraction", "version": "0.1.0"},
++                {
++                    "kind": "predicate",
++                    "node_id": "central_lte",
++                    "input": {"source_node_id": "ball_lateral", "output_name": "fraction"},
++                    "operator": {"name": "lte", "version": "1.0.0"},
++                    "compare": {"payload_type": "number", "unit": "fraction", "value": 0.33},
++                },
++                {
++                    "kind": "predicate",
++                    "node_id": "central_eq_true",
++                    "input": {"source_node_id": "central_lte", "output_name": "predicate"},
++                    "operator": {"name": "eq", "version": "1.0.0"},
++                    "compare": {"payload_type": "boolean", "unit": "none", "value": True},
++                },
++                {
++                    "kind": "predicate",
++                    "node_id": "central_persists",
++                    "input": {"source_node_id": "central_eq_true", "output_name": "predicate"},
++                    "operator": {"name": "persists_for", "version": "1.0.0"},
++                    "duration": {"payload_type": "number", "unit": "second", "value": 0.4},
++                },
++                {
++                    "kind": "predicate",
++                    "node_id": "has_possession",
++                    "input": {"source_node_id": "possession", "output_name": "episodes"},
++                    "operator": {"name": "exists", "version": "1.0.0"},
++                },
++                {
++                    "kind": "predicate",
++                    "node_id": "enough_possessions",
++                    "input": {"source_node_id": "possession", "output_name": "episodes"},
++                    "operator": {"name": "count_at_least", "version": "1.0.0"},
++                    "compare": {"payload_type": "number", "unit": "count", "value": 1},
++                },
++            ],
++            "classification_rules": [
++                {
++                    "label": "POSSESSION_PRESENT",
++                    "predicate_ids": ["has_possession", "enough_possessions"],
++                    "description": "The period has possession episodes.",
++                }
++            ],
++            "requested_evidence": [],
++        },
++    }
++
++
++def parameter_definition(
++    name: str,
++    payload_type: str,
++    unit: str,
++    value: float,
++    description: str,
++) -> dict[str, Any]:
++    return {
++        "name": name,
++        "payload_type": payload_type,
++        "unit": unit,
++        "required": False,
++        "default": {"payload_type": payload_type, "unit": unit, "value": value},
++        "description": description,
++    }
++
++
++def approved_recipe_predicate_ids() -> set[str]:
++    payload = clone_plan_payload(APPROVED_PLAN_PATH)
++    return {
++        node["node_id"]
++        for node in payload["draft_plan"]["nodes"]
++        if node.get("kind") == "predicate"
++    }
++
++
++def main() -> int:
++    report = build_report()
++    print(f"Wrote {REPORT_PATH}")
++    print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
++    return 0 if report["status"] == "pass" else 1
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
