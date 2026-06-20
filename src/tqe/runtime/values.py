@@ -55,6 +55,7 @@ def runtime_value_from_raw(
     output: CatalogOutput,
     raw_value: Any,
     frame_ids: list[int] | None = None,
+    records: list[dict[str, Any]] | None = None,
 ) -> RuntimeValue:
     value = normalize_value(
         node_id=node_id,
@@ -73,6 +74,7 @@ def runtime_value_from_raw(
             "payload_type": output.payload_type.value,
             "unit": output.unit.value,
             "entity_scope": output.entity_scope.value,
+            "records": records,
         },
     )
 
