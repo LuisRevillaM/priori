@@ -230,6 +230,16 @@ External review rejected the first S3R packet as insufficient. The strengthened 
 - legacy M1 persistence behavior is isolated behind named compatibility adapters;
 - a non-M1 anchor produces engine-derived PASS and FAIL traces from declared runtime outputs.
 
+S3R2 external review conditionally approved the direction but required S3R3 before S4. Additional acceptance:
+
+- generic and legacy M1 parity execution are selected by host-only compatibility profile, not record shape;
+- generic execution never invokes legacy adapters;
+- generic target tracing never consumes `_runtime_result` or `_predicate_status`;
+- `persists_for` has one shared generic temporal implementation used by runtime and tests;
+- temporal output preserves UNKNOWN intervals;
+- a non-M1 proof executes actual predicate nodes and produces PASS, FAIL, and UNKNOWN traces;
+- perturbing candidates, accepted results, predicate traces, `_runtime_result`, and `_predicate_status` does not change generic target traces.
+
 ### Gate S4 - Rule-Driven Result Emission
 
 Acceptance:

@@ -56,6 +56,8 @@ PITCH_HALF_WIDTH_M = 34.0
 DEFAULT_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 DEFAULT_CANONICAL_ROOT = Path("data/canonical/v1")
 DEFAULT_RAW_ROOT = Path("data/raw/idsse") / SOURCE_VERSION
+GENERIC_EXECUTION_PROFILE = "generic"
+LEGACY_M1_PARITY_PROFILE = "legacy_m1_parity"
 
 
 @dataclass(frozen=True)
@@ -132,6 +134,25 @@ class NodeExecutionResult:
 
 
 @dataclass(frozen=True)
+class TemporalPredicateResult:
+    episodes: list[dict[str, Any]]
+    unknown_intervals: list[dict[str, Any]]
+    evaluated_frame_ids: list[int]
+
+    def output_records(self) -> list[dict[str, Any]]:
+        return [
+            *[
+                {**episode, "temporal_status": "PASS"}
+                for episode in self.episodes
+            ],
+            *[
+                {**interval, "temporal_status": "UNKNOWN"}
+                for interval in self.unknown_intervals
+            ],
+        ]
+
+
+@dataclass(frozen=True)
 class MatchContext:
     match_id: str
     period: str
@@ -150,9 +171,13 @@ class TacticalQueryExecutor:
         *,
         canonical_root: Path = DEFAULT_CANONICAL_ROOT,
         raw_root: Path = DEFAULT_RAW_ROOT,
+        compatibility_profile: str = LEGACY_M1_PARITY_PROFILE,
     ) -> None:
         self.canonical_root = canonical_root
         self.raw_root = raw_root
+        if compatibility_profile not in {GENERIC_EXECUTION_PROFILE, LEGACY_M1_PARITY_PROFILE}:
+            raise RuntimeError(f"Unsupported compatibility profile {compatibility_profile}")
+        self.compatibility_profile = compatibility_profile
         self.primitives: dict[str, PrimitiveImplementation] = {
             "possession_segment": primitive_possession_segment,
             "ball_lateral_fraction": primitive_ball_lateral_fraction,
@@ -227,6 +252,7 @@ class TacticalQueryExecutor:
                 bound_plan=bound_plan,
                 match_id=match_id,
                 params=params,
+                compatibility_profile=self.compatibility_profile,
             )
             results.extend(match_results)
             trace_records.extend(match_traces)
@@ -307,6 +333,7 @@ class TacticalQueryExecutor:
         bound_plan: BoundQueryPlan,
         match_id: str,
         params: RuntimeParameters,
+        compatibility_profile: str,
     ) -> tuple[list[dict[str, Any]], list[PredicateTrace], int]:
         accepted: list[dict[str, Any]] = []
         traces: list[PredicateTrace] = []
@@ -317,9 +344,10 @@ class TacticalQueryExecutor:
                 match_id=match_id,
                 period=period,
                 params=params,
+                compatibility_profile=compatibility_profile,
             )
             accepted.extend(state.accepted)
-            traces.extend(accepted_predicate_traces(state))
+            traces.extend(accepted_predicate_traces(state, compatibility_profile=compatibility_profile))
             runtime_value_count += sum(len(outputs) for outputs in state.runtime_values.values())
         accepted.sort(
             key=lambda item: (
@@ -347,8 +375,14 @@ class TacticalQueryExecutor:
             match_id=target.match_id,
             period=target.period,
             params=params,
+            compatibility_profile=self.compatibility_profile,
         )
-        return evaluate_target_in_state(bound_plan=bound_plan, state=state, target=target)
+        return evaluate_target_in_state(
+            bound_plan=bound_plan,
+            state=state,
+            target=target,
+            compatibility_profile=self.compatibility_profile,
+        )
 
     def _execute_period(
         self,
@@ -357,7 +391,9 @@ class TacticalQueryExecutor:
         match_id: str,
         period: str,
         params: RuntimeParameters,
+        compatibility_profile: str | None = None,
     ) -> PeriodState:
+        profile = compatibility_profile or self.compatibility_profile
         state = self._period_state(
             match_id=match_id,
             period=period,
@@ -367,7 +403,7 @@ class TacticalQueryExecutor:
             params=params,
         )
         for node in bound_plan.nodes:
-            self._execute_node(state=state, node=node)
+            self._execute_node(state=state, node=node, compatibility_profile=profile)
         return state
 
     def _execute_node(
@@ -375,7 +411,9 @@ class TacticalQueryExecutor:
         *,
         state: PeriodState,
         node: BoundPlanNode,
+        compatibility_profile: str | None = None,
     ) -> NodeExecutionResult:
+        profile = compatibility_profile or self.compatibility_profile
         inputs = resolved_node_inputs(state, node)
         parameters = resolved_node_parameters(node)
         if isinstance(node, BoundCatalogNode):
@@ -392,7 +430,7 @@ class TacticalQueryExecutor:
             implementation = self.predicates.get(node.operator.name)
             if implementation is None:
                 raise RuntimeError(f"No predicate implementation for {node.operator.name}")
-            if node.operator.name == "persists_for" and legacy_m1_record_persists_for_adapter(
+            if profile == LEGACY_M1_PARITY_PROFILE and node.operator.name == "persists_for" and legacy_m1_record_persists_for_adapter(
                 state=state,
                 node=node,
             ):
@@ -403,9 +441,9 @@ class TacticalQueryExecutor:
                     parameters=parameters,
                     outputs=state.signals.get(node.node_id, {}),
                     runtime_values=runtime_values,
-                    provenance={"node_kind": node.kind.value, "adapter": "legacy_m1_record_persists_for"},
+                    provenance={"node_kind": node.kind.value, "compatibility_profile": profile, "adapter": "legacy_m1_record_persists_for"},
                 )
-            if node.operator.name == "persists_for" and legacy_m1_frame_signal_persists_for_adapter(
+            if profile == LEGACY_M1_PARITY_PROFILE and node.operator.name == "persists_for" and legacy_m1_frame_signal_persists_for_adapter(
                 state=state,
                 node=node,
             ):
@@ -416,7 +454,7 @@ class TacticalQueryExecutor:
                     parameters=parameters,
                     outputs=state.signals.get(node.node_id, {}),
                     runtime_values=runtime_values,
-                    provenance={"node_kind": node.kind.value, "adapter": "legacy_m1_frame_signal_persists_for"},
+                    provenance={"node_kind": node.kind.value, "compatibility_profile": profile, "adapter": "legacy_m1_frame_signal_persists_for"},
                 )
             context = MatchContext(
                 match_id=state.match_id,
@@ -439,7 +477,7 @@ class TacticalQueryExecutor:
             parameters=parameters,
             outputs=state.signals.get(node.node_id, {}),
             runtime_values=runtime_values,
-            provenance={"node_kind": node.kind.value},
+            provenance={"node_kind": node.kind.value, "compatibility_profile": profile, "adapter": None},
         )
 
     def _period_state(
@@ -515,6 +553,7 @@ def evaluate_target_in_state(
     bound_plan: BoundQueryPlan,
     state: PeriodState,
     target: EvaluationTarget,
+    compatibility_profile: str = GENERIC_EXECUTION_PROFILE,
 ) -> dict[str, Any]:
     target_frame_id = int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
     radius_frames = int(round(target.search_radius_ms / 1000.0 * FRAME_RATE_HZ))
@@ -541,8 +580,18 @@ def evaluate_target_in_state(
         key=lambda anchor: abs(anchor.anchor_frame_id - target_frame_id),
     )
     anchor_record = closest.attributes
-    result = anchor_record.get("_runtime_result") or generic_target_result(anchor_record)
-    traces = predicate_traces_for_anchor(state, closest, result, bound_plan=bound_plan)
+    result = (
+        anchor_record.get("_runtime_result")
+        if compatibility_profile == LEGACY_M1_PARITY_PROFILE
+        else None
+    ) or generic_target_result(anchor_record)
+    traces = predicate_traces_for_anchor(
+        state,
+        closest,
+        result,
+        bound_plan=bound_plan,
+        compatibility_profile=compatibility_profile,
+    )
     traces.extend(
         missing_target_predicate_traces(
             bound_plan=bound_plan,
@@ -1058,17 +1107,19 @@ def execute_predicate_with_resolved_inputs(
         duration = parameters.get("duration")
         if duration is None:
             raise RuntimeError(f"{node.node_id} requires duration")
-        values = runtime_frame_values(runtime_value)
-        if not isinstance(values, list) or not all(value is None or isinstance(value, bool) for value in values):
+        if not isinstance(runtime_value.value, FrameSignal):
             raise RuntimeError(f"Unsupported persists_for source for {node.node_id}")
-        minimum_frames = int(round(float(duration.value) * context.params.integer("analysis_rate_hz")))
-        frame_ids = frame_ids_for_runtime_value(runtime_value, context)
-        episodes = episode_records_from_frame_ids_and_mask(
-            frame_ids=frame_ids,
-            mask=np.asarray([value is True for value in values], dtype=bool),
-            minimum_frames=minimum_frames,
+        temporal = execute_persists_for(
+            signal=runtime_value.value,
+            duration_seconds=float(duration.value),
+            analysis_rate_hz=context.params.integer("analysis_rate_hz"),
         )
-        return {"predicate": episodes, "episodes": episodes}
+        return {
+            "predicate": temporal.output_records(),
+            "episodes": temporal.output_records(),
+            "passing_episodes": temporal.episodes,
+            "unknown_intervals": temporal.unknown_intervals,
+        }
     if node.operator.name == "exists":
         source = runtime_value.value
         if isinstance(source, list):
@@ -1151,6 +1202,33 @@ def episode_records_from_frame_ids_and_mask(
         }
         for start, end in segment_true(mask, minimum_frames)
     ]
+
+
+def execute_persists_for(
+    *,
+    signal: FrameSignal,
+    duration_seconds: float,
+    analysis_rate_hz: int,
+) -> TemporalPredicateResult:
+    values = signal.values
+    if not all(value is None or isinstance(value, bool) for value in values):
+        raise RuntimeError("persists_for requires a Boolean frame signal")
+    minimum_frames = int(round(duration_seconds * analysis_rate_hz))
+    pass_episodes = episode_records_from_frame_ids_and_mask(
+        frame_ids=signal.frame_ids,
+        mask=np.asarray([value is True for value in values], dtype=bool),
+        minimum_frames=minimum_frames,
+    )
+    unknown_intervals = episode_records_from_frame_ids_and_mask(
+        frame_ids=signal.frame_ids,
+        mask=np.asarray([value is None for value in values], dtype=bool),
+        minimum_frames=1,
+    )
+    return TemporalPredicateResult(
+        episodes=pass_episodes,
+        unknown_intervals=unknown_intervals,
+        evaluated_frame_ids=[int(frame_id) for frame_id in signal.frame_ids],
+    )
 
 
 def primitive_noop(state: PeriodState, node: BoundCatalogNode) -> None:
@@ -1779,21 +1857,20 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
     duration_seconds = float(node.duration.value) if isinstance(node.duration, TypedValue) else None
     if duration_seconds is None:
         raise RuntimeError(f"{node.node_id} requires duration")
-    analysis_rate_hz = state.params.integer("analysis_rate_hz")
-    minimum_frames = int(round(duration_seconds * analysis_rate_hz))
     runtime_value = source_runtime_value(state, node)
-    values = runtime_frame_values(runtime_value)
-    if not isinstance(values, list):
-        raise RuntimeError(f"{node.node_id} expected list-backed source values")
-    if all(value is None or isinstance(value, bool) for value in values):
-        episodes = episode_records_from_mask(
-            state,
-            np.asarray([value is True for value in values], dtype=bool),
-            minimum_frames,
-        )
-        state.signals[node.node_id] = {"predicate": episodes, "episodes": episodes}
-        return
-    raise RuntimeError(f"Unsupported persists_for source for {node.node_id}")
+    if not isinstance(runtime_value.value, FrameSignal):
+        raise RuntimeError(f"Unsupported persists_for source for {node.node_id}")
+    temporal = execute_persists_for(
+        signal=runtime_value.value,
+        duration_seconds=duration_seconds,
+        analysis_rate_hz=state.params.integer("analysis_rate_hz"),
+    )
+    state.signals[node.node_id] = {
+        "predicate": temporal.output_records(),
+        "episodes": temporal.output_records(),
+        "passing_episodes": temporal.episodes,
+        "unknown_intervals": temporal.unknown_intervals,
+    }
 
 
 def predicate_noop(state: PeriodState, node: BoundPredicateNode) -> None:
@@ -2130,7 +2207,11 @@ def select_proof_results(candidates: list[dict[str, Any]], params: RuntimeParame
     return selected
 
 
-def accepted_predicate_traces(state: PeriodState) -> list[PredicateTrace]:
+def accepted_predicate_traces(
+    state: PeriodState,
+    *,
+    compatibility_profile: str = LEGACY_M1_PARITY_PROFILE,
+) -> list[PredicateTrace]:
     if state.predicate_traces:
         return state.predicate_traces
     traces: list[PredicateTrace] = []
@@ -2143,7 +2224,14 @@ def accepted_predicate_traces(state: PeriodState) -> list[PredicateTrace]:
             record=result,
         )
         if anchor is not None:
-            traces.extend(predicate_traces_for_anchor(state, anchor, result))
+            traces.extend(
+                predicate_traces_for_anchor(
+                    state,
+                    anchor,
+                    result,
+                    compatibility_profile=compatibility_profile,
+                )
+            )
     return traces
 
 
@@ -2202,6 +2290,7 @@ def predicate_traces_for_anchor(
     anchor: RuntimeAnchor,
     result: dict[str, Any],
     bound_plan: BoundQueryPlan | None = None,
+    compatibility_profile: str = GENERIC_EXECUTION_PROFILE,
 ) -> list[PredicateTrace]:
     runtime_traces = (
         predicate_traces_from_declared_runtime_outputs(
@@ -2213,10 +2302,14 @@ def predicate_traces_for_anchor(
         if bound_plan is not None
         else []
     )
-    legacy_traces = predicate_traces_from_status_records(
-        state=state,
-        anchor=anchor,
-        result=result,
+    legacy_traces = (
+        predicate_traces_from_status_records(
+            state=state,
+            anchor=anchor,
+            result=result,
+        )
+        if compatibility_profile == LEGACY_M1_PARITY_PROFILE
+        else []
     )
     if runtime_traces:
         legacy_by_id = {trace.predicate_id: trace for trace in legacy_traces}
@@ -2315,26 +2408,34 @@ def predicate_trace_from_runtime_value(
         )
     if isinstance(runtime_value.value, list):
         matched = None
+        matched_unknown = None
         for episode in runtime_value.value:
             if not isinstance(episode, dict):
                 continue
             start = optional_int(episode.get("start_frame_id"))
             end = optional_int(episode.get("end_frame_id"))
             if start is not None and end is not None and start <= anchor.anchor_frame_id <= end:
+                if episode.get("temporal_status") == "UNKNOWN":
+                    matched_unknown = episode
+                    break
                 matched = episode
                 break
+        status = "UNKNOWN" if matched_unknown is not None else "PASS" if matched is not None else "FAIL"
+        matched_window = matched_unknown or matched
         return PredicateTrace(
             predicate_id=node.node_id,
-            status="PASS" if matched is not None else "FAIL",
-            value=TypedValue(payload_type=PayloadType.BOOLEAN, value=matched is not None, unit=Unit.NONE),
+            status=status,
+            value=TypedValue(payload_type=PayloadType.BOOLEAN, value=matched is not None, unit=Unit.NONE)
+            if status != "UNKNOWN"
+            else None,
             threshold=node.compare if isinstance(node.compare, TypedValue) else node.duration,
             unit=node.output.unit,
             frame_id=anchor.anchor_frame_id,
             window={
-                "start_frame_id": matched.get("start_frame_id"),
-                "end_frame_id": matched.get("end_frame_id"),
+                "start_frame_id": matched_window.get("start_frame_id"),
+                "end_frame_id": matched_window.get("end_frame_id"),
             }
-            if isinstance(matched, dict)
+            if isinstance(matched_window, dict)
             else None,
             source_evidence=source_evidence,
         )

@@ -18,8 +18,10 @@ from tqe.runtime.executor import (
     PeriodState,
     RuntimeParameters,
     TacticalQueryExecutor,
+    GENERIC_EXECUTION_PROFILE,
     anchor_record_id,
     evaluate_target_in_state,
+    execute_persists_for,
     execute_predicate_with_resolved_inputs,
     execution_result_rows,
     predicate_persists_for,
@@ -79,6 +81,7 @@ def build_report() -> dict[str, Any]:
     checks.extend(validate_invalid_anchor_id_rejected())
     checks.extend(validate_non_m1_anchor_target_and_trace(bound))
     checks.extend(validate_generic_temporal_semantics(bound))
+    checks.extend(validate_generic_profile_rejects_legacy_shape(bound))
     checks.extend(validate_frame_length_mismatch_rejected())
     checks.extend(validate_generic_source_no_forbidden_assumptions())
     checks.extend(validate_node_execution_result_contract(executor, bound))
@@ -224,61 +227,114 @@ def validate_non_m1_anchor_target_and_trace(bound: Any) -> list[dict[str, Any]]:
     state.runtime_values["anchor_node"] = {
         "anchors": RuntimeValue(output=anchor_output(), value=[record])
     }
-    predicate_nodes = [node for node in bound.nodes if isinstance(node, BoundPredicateNode)]
-    pass_node = predicate_nodes[0]
-    fail_node = predicate_nodes[1]
-    state.runtime_values[pass_node.node_id] = {
-        pass_node.output.name: RuntimeValue(
-            output=pass_node.output,
+    predicate_by_id = {
+        node.node_id: node
+        for node in bound.nodes
+        if isinstance(node, BoundPredicateNode)
+    }
+    pass_node = predicate_by_id["wide_entry_threshold"]
+    unknown_source_node = predicate_by_id["shift_threshold"]
+    unknown_persist_node = predicate_by_id["shift_persists"].model_copy(
+        update={"duration": typed_number(0.2, Unit.SECOND)}
+    )
+    fail_node = predicate_by_id["not_stoppage"]
+    state.runtime_values[pass_node.input.source_node_id] = {
+        pass_node.input.output_name: RuntimeValue(
+            output=pass_node.input_type,
             value=FrameSignal(
                 frame_ids=[125],
-                values=[True],
+                values=[0.7],
                 unknown_mask=[False],
-                unit=pass_node.output.unit,
-                entity_scope=pass_node.output.entity_scope,
+                unit=pass_node.input_type.unit,
+                entity_scope=pass_node.input_type.entity_scope,
             ),
         )
     }
-    state.runtime_values[fail_node.node_id] = {
-        fail_node.output.name: RuntimeValue(
-            output=fail_node.output,
+    state.runtime_values[unknown_source_node.input.source_node_id] = {
+        unknown_source_node.input.output_name: RuntimeValue(
+            output=unknown_source_node.input_type,
             value=FrameSignal(
                 frame_ids=[125],
-                values=[False],
+                values=[None],
+                unknown_mask=[True],
+                unit=unknown_source_node.input_type.unit,
+                entity_scope=unknown_source_node.input_type.entity_scope,
+            ),
+            records=[{"status": "PASS", "measure_series": pd.Series([1.0])}],
+        )
+    }
+    state.runtime_values[fail_node.input.source_node_id] = {
+        fail_node.input.output_name: RuntimeValue(
+            output=fail_node.input_type,
+            value=FrameSignal(
+                frame_ids=[125],
+                values=["STOPPAGE"],
                 unknown_mask=[False],
-                unit=fail_node.output.unit,
-                entity_scope=fail_node.output.entity_scope,
+                unit=fail_node.input_type.unit,
+                entity_scope=fail_node.input_type.entity_scope,
             ),
         )
     }
+    executor = TacticalQueryExecutor(compatibility_profile=GENERIC_EXECUTION_PROFILE)
+    executed = [
+        executor._execute_node(state=state, node=pass_node, compatibility_profile=GENERIC_EXECUTION_PROFILE),  # noqa: SLF001
+        executor._execute_node(state=state, node=unknown_source_node, compatibility_profile=GENERIC_EXECUTION_PROFILE),  # noqa: SLF001
+        executor._execute_node(state=state, node=unknown_persist_node, compatibility_profile=GENERIC_EXECUTION_PROFILE),  # noqa: SLF001
+        executor._execute_node(state=state, node=fail_node, compatibility_profile=GENERIC_EXECUTION_PROFILE),  # noqa: SLF001
+    ]
     synthetic_bound = bound.model_copy(
-        update={"anchor_source": SignalRef(source_node_id="anchor_node", output_name="anchors")}
+        update={
+            "anchor_source": SignalRef(source_node_id="anchor_node", output_name="anchors"),
+            "nodes": [pass_node, unknown_source_node, unknown_persist_node, fail_node],
+        }
+    )
+    target = EvaluationTarget(
+        target_id="non_m1_anchor_probe",
+        match_id="synthetic",
+        period="firstHalf",
+        approximate_time_ms=int(round(125 / FRAME_RATE_HZ * 1000)),
+        search_radius_ms=250,
     )
     result = evaluate_target_in_state(
         bound_plan=synthetic_bound,
         state=state,
-        target=EvaluationTarget(
-            target_id="non_m1_anchor_probe",
-            match_id="synthetic",
-            period="firstHalf",
-            approximate_time_ms=int(round(125 / FRAME_RATE_HZ * 1000)),
-            search_radius_ms=250,
-        ),
+        target=target,
+        compatibility_profile=GENERIC_EXECUTION_PROFILE,
+    )
+    state.candidates = [{"_predicate_status": {"fake": {"status": "PASS"}}}]
+    state.accepted = [{"_runtime_result": {"accepted": True}}]
+    state.predicate_traces = []
+    record["_runtime_result"] = {"accepted": True, "classification": "SIDE_CHANNEL"}
+    record["_predicate_status"] = {"fake": {"status": "PASS"}}
+    perturbed = evaluate_target_in_state(
+        bound_plan=synthetic_bound,
+        state=state,
+        target=target,
+        compatibility_profile=GENERIC_EXECUTION_PROFILE,
     )
     traces = result["predicate_traces"]
     statuses = {trace["predicate_id"]: trace["status"] for trace in traces}
+    perturbed_statuses = {trace["predicate_id"]: trace["status"] for trace in perturbed["predicate_traces"]}
     source_text = inspect.getsource(evaluate_target_in_state)
     return [
         pass_check(
             "anchors.non_m1_anchor_targetable_and_traceable",
-            "a non-M1 anchor gets engine-derived PASS and FAIL traces from declared runtime outputs",
-            {"status": result["status"], "statuses": statuses, "closest": result["closest_candidate"]},
+            "a non-M1 anchor gets engine-derived PASS, FAIL, and UNKNOWN traces from actual generic node execution",
+            {
+                "status": result["status"],
+                "statuses": statuses,
+                "perturbed_statuses": perturbed_statuses,
+                "provenance": [item.provenance for item in executed],
+            },
         )
         if result["status"] == "NON_MATCH"
         and result["closest_candidate"]["anchor_id"] == record["anchor_id"]
         and traces
         and statuses.get(pass_node.node_id) == "PASS"
+        and statuses.get(unknown_persist_node.node_id) == "UNKNOWN"
         and statuses.get(fail_node.node_id) == "FAIL"
+        and statuses == perturbed_statuses
+        and all(item.provenance.get("adapter") is None for item in executed)
         and "wide_entry" not in source_text
         and "base_result_fields" not in source_text
         else fail_check(
@@ -311,23 +367,76 @@ def validate_generic_temporal_semantics(bound: Any) -> list[dict[str, Any]]:
             records=[{"truth_series": pd.Series([True, True, True])}],
         )
     }
-    predicate_persists_for(state, node)
+    executor = TacticalQueryExecutor(compatibility_profile=GENERIC_EXECUTION_PROFILE)
+    result = executor._execute_node(state=state, node=node, compatibility_profile=GENERIC_EXECUTION_PROFILE)  # noqa: SLF001
     episodes = state.signals[node.node_id]["episodes"]
-    windows = [(episode["start_frame_id"], episode["end_frame_id"]) for episode in episodes]
+    windows = [
+        (episode["temporal_status"], episode["start_frame_id"], episode["end_frame_id"])
+        for episode in episodes
+    ]
     source = inspect.getsource(predicate_persists_for)
+    shared_source = inspect.getsource(execute_persists_for)
     forbidden = ["wide_entry", "block_shift", "shift_gate", "persistence_series", "quality_status", "runtime_records", "_predicate_status", "truth_series"]
-    hits = [token for token in forbidden if token in source]
+    hits = [token for token in forbidden if token in source + shared_source]
     return [
         pass_check(
             "temporal.persists_for_generic_tri_state",
-            "persists_for consumes only tri-state booleans, ignores arbitrary records, and breaks on UNKNOWN",
-            {"windows": windows},
+            "persists_for uses one generic temporal implementation, ignores arbitrary records, and preserves UNKNOWN intervals",
+            {"windows": windows, "provenance": result.provenance},
         )
-        if windows == [(100, 101), (103, 105)] and not hits
+        if windows == [("PASS", 100, 101), ("PASS", 103, 105), ("UNKNOWN", 102, 102)]
+        and result.provenance.get("adapter") is None
+        and not hits
         else fail_check(
             "temporal.persists_for_generic_tri_state",
             "generic persists_for semantics failed",
             {"windows": windows, "forbidden_hits": hits},
+        )
+    ]
+
+
+def validate_generic_profile_rejects_legacy_shape(bound: Any) -> list[dict[str, Any]]:
+    node = next(
+        node
+        for node in bound.nodes
+        if isinstance(node, BoundPredicateNode) and node.operator.name == "persists_for"
+    ).model_copy(update={"duration": typed_number(0.2, Unit.SECOND)})
+    state = synthetic_period_state()
+    signal = FrameSignal(
+        frame_ids=[100, 101, 102],
+        values=[True, True, True],
+        unknown_mask=[False, False, False],
+        unit=node.input_type.unit,
+        entity_scope=node.input_type.entity_scope,
+    )
+    legacy_shaped_records = [
+        {"status": "PASS", "measure_series": pd.Series([9.0]), "truth_series": pd.Series([True])}
+        for _ in signal.values
+    ]
+    state.runtime_values[node.input.source_node_id] = {
+        node.input.output_name: RuntimeValue(
+            output=node.input_type,
+            value=signal,
+            records=legacy_shaped_records,
+        )
+    }
+    executor = TacticalQueryExecutor(compatibility_profile=GENERIC_EXECUTION_PROFILE)
+    result = executor._execute_node(state=state, node=node, compatibility_profile=GENERIC_EXECUTION_PROFILE)  # noqa: SLF001
+    windows = [
+        (episode["temporal_status"], episode["start_frame_id"], episode["end_frame_id"])
+        for episode in state.signals[node.node_id]["episodes"]
+    ]
+    return [
+        pass_check(
+            "temporal.generic_profile_never_shape_selects_legacy_adapter",
+            "generic execution ignores legacy-shaped records and uses no compatibility adapter",
+            {"windows": windows, "provenance": result.provenance},
+        )
+        if windows == [("PASS", 100, 102)] and result.provenance.get("adapter") is None
+        else fail_check(
+            "temporal.generic_profile_never_shape_selects_legacy_adapter",
+            "generic execution changed under legacy-shaped records",
+            {"windows": windows, "provenance": result.provenance},
         )
     ]
 
