@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from tqe.verification.m1_1_gate_a import build_report as build_gate_a_report
+from tqe.verification.m1_1_gate_b import build_report as build_gate_b_report
 
 REPORT_PATH = Path("artifacts/m1.1/verification-report.json")
 
@@ -31,14 +32,14 @@ def not_ready_report(gate: str, message: str) -> dict[str, Any]:
 
 def main() -> int:
     gate_a = build_gate_a_report()
+    gate_b = build_gate_b_report()
     downstream = {
-        "gate_b": not_ready_report("gate_b", "M1 runtime parity is blocked until Gate A is accepted."),
         "gate_c": not_ready_report("gate_c", "Predicate traces depend on Gate B runtime execution."),
         "gate_d": not_ready_report("gate_d", "Dynamic relation proof depends on Gate C trace support."),
         "gate_e": not_ready_report("gate_e", "No-code composition depends on relation proof."),
         "gate_f": not_ready_report("gate_f", "Inspector work depends on prior runtime artifacts."),
     }
-    gate_reports = {"gate_a": gate_a, **downstream}
+    gate_reports = {"gate_a": gate_a, "gate_b": gate_b, **downstream}
     summary = {
         "pass": sum(report["summary"]["pass"] for report in gate_reports.values()),
         "fail": sum(report["summary"]["fail"] for report in gate_reports.values()),

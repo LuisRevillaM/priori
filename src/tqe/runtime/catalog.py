@@ -311,6 +311,24 @@ def default_relations() -> list[CatalogEntry]:
 def default_operators() -> list[OperatorSignature]:
     return [
         OperatorSignature(
+            name="gt",
+            version="1.0.0",
+            purpose="Compare a numeric signal to a strict lower numeric threshold.",
+            input_temporal_types=[TemporalContainer.SCALAR, TemporalContainer.FRAME_SIGNAL],
+            input_payload_types=[PayloadType.NUMBER],
+            input_cardinalities=[
+                Cardinality.SINGLE,
+                Cardinality.PER_PLAYER,
+                Cardinality.PER_TEAM,
+            ],
+            compare_payload_types=[PayloadType.NUMBER],
+            compare_required=True,
+            compare_unit_must_match=True,
+            output_temporal_type=TemporalContainer.FRAME_SIGNAL,
+            output_payload_type=PayloadType.BOOLEAN,
+            output_cardinality=Cardinality.SINGLE,
+        ),
+        OperatorSignature(
             name="gte",
             version="1.0.0",
             purpose="Compare a numeric signal to a numeric threshold.",

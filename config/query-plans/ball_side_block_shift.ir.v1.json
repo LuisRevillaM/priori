@@ -33,6 +33,18 @@
     ],
     "parameters": [
       {
+        "name": "result_id_seed_hash",
+        "payload_type": "enum",
+        "unit": "none",
+        "required": false,
+        "default": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "af42853e6a3c8449e023dd98751ababbc7d34640f8751fbffa1c2bbbd0eab523"
+        },
+        "description": "Frozen M1 query hash used only to preserve legacy result IDs during parity."
+      },
+      {
         "name": "analysis_rate_hz",
         "payload_type": "number",
         "unit": "hertz",
@@ -43,6 +55,18 @@
           "value": 5
         },
         "description": "Analysis cadence used by the frozen M1 detector."
+      },
+      {
+        "name": "minimum_possession_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 8.0
+        },
+        "description": "Minimum active-ball possession duration."
       },
       {
         "name": "wide_entry_fraction",
@@ -57,6 +81,18 @@
         "description": "Ball lateral fraction required for wide entry."
       },
       {
+        "name": "prior_central_fraction",
+        "payload_type": "number",
+        "unit": "fraction",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "fraction",
+          "value": 0.45
+        },
+        "description": "Prior central-ball fraction required before a wide entry."
+      },
+      {
         "name": "minimum_wide_dwell_seconds",
         "payload_type": "number",
         "unit": "second",
@@ -67,6 +103,30 @@
           "value": 1.2
         },
         "description": "Minimum time the ball must dwell in the wide channel."
+      },
+      {
+        "name": "baseline_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.8
+        },
+        "description": "Pre-entry baseline window for defensive centroid measurement."
+      },
+      {
+        "name": "shift_search_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 4.0
+        },
+        "description": "Post-entry search window for the maximum signed defensive shift."
       },
       {
         "name": "minimum_shift_metres",
@@ -105,6 +165,66 @@
         "description": "Post-anchor horizon used for outcome classification."
       },
       {
+        "name": "opposite_side_fraction",
+        "payload_type": "number",
+        "unit": "fraction",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "fraction",
+          "value": 0.35
+        },
+        "description": "Opposite-side ball lateral fraction used for SWITCHED classification."
+      },
+      {
+        "name": "retained_after_switch_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 1.0
+        },
+        "description": "Minimum retained-possession time after opposite-side entry."
+      },
+      {
+        "name": "maximum_analysis_gap_ms",
+        "payload_type": "number",
+        "unit": "millisecond",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "millisecond",
+          "value": 250
+        },
+        "description": "Maximum permitted gap in the 5 Hz analysis stream."
+      },
+      {
+        "name": "minimum_outfield_players_per_team",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 9
+        },
+        "description": "Minimum defending outfield players required for accepted quality."
+      },
+      {
+        "name": "dedupe_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 8.0
+        },
+        "description": "Minimum source-frame separation between accepted wide-entry candidates."
+      },
+      {
         "name": "accepted_result_limit",
         "payload_type": "number",
         "unit": "count",
@@ -115,6 +235,30 @@
           "value": 16
         },
         "description": "Frozen proof result limit from M1."
+      },
+      {
+        "name": "accepted_per_match_limit",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 5
+        },
+        "description": "Frozen proof selection cap per evaluation match."
+      },
+      {
+        "name": "near_miss_limit",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 8
+        },
+        "description": "Frozen selected near-miss cap."
       }
     ]
   },
@@ -174,7 +318,7 @@
           "output_name": "fraction"
         },
         "operator": {
-          "name": "gte",
+          "name": "gt",
           "version": "1.0.0"
         },
         "compare": {

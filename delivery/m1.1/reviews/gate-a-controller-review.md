@@ -19,7 +19,7 @@ ACCEPTED_CONTROLLER_ONLY for proceeding to M1.1 Gate B.
 ## Evidence
 
 - `make m1-1-build` passes.
-- `make m1-1-gate-a-verify` passes with 46 passing checks, zero failures, and zero not-ready checks.
+- `make m1-1-gate-a-verify` passes with 47 passing checks, zero failures, and zero not-ready checks after the Gate B strict-`gt` operator addition.
 - `make test` passes with 13 tests.
 
 ## Acceptance Rationale
