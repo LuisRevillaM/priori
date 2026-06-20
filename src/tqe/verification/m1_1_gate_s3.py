@@ -50,7 +50,7 @@ def build_report() -> dict[str, Any]:
         period="firstHalf",
         params=runtime_parameters(bound),
     )
-    anchors = runtime_anchors(state)
+    anchors = runtime_anchors(state, bound.anchor_source)
 
     checks.extend(validate_runtime_anchor_set(state, anchors))
     checks.extend(validate_target_evaluation_uses_anchor_core(executor, bound))

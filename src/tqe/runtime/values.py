@@ -29,6 +29,7 @@ class RuntimeValue:
     output: CatalogOutput
     value: Any
     provenance: dict[str, Any] = field(default_factory=dict)
+    records: list[dict[str, Any]] = field(default_factory=list)
 
     @property
     def temporal_type(self) -> TemporalContainer:
@@ -74,8 +75,8 @@ def runtime_value_from_raw(
             "payload_type": output.payload_type.value,
             "unit": output.unit.value,
             "entity_scope": output.entity_scope.value,
-            "records": records,
         },
+        records=records or [],
     )
 
 
@@ -127,7 +128,12 @@ def normalize_frame_signal(
             raise RuntimeError(
                 f"{node_id}.{output.name} frame signal must contain scalar payload values, not structured records"
             )
-        if frame_ids is not None and len(frame_ids) == len(raw_value):
+        if frame_ids is not None:
+            if len(frame_ids) != len(raw_value):
+                raise RuntimeError(
+                    f"{node_id}.{output.name} frame signal length {len(raw_value)} "
+                    f"does not match frame_ids length {len(frame_ids)}"
+                )
             signal_frame_ids = [int(item) for item in frame_ids]
         else:
             signal_frame_ids = list(range(len(raw_value)))
@@ -194,11 +200,26 @@ def assert_value_conforms(*, node_id: str, output: CatalogOutput, value: Any) ->
 def assert_episode_record(*, node_id: str, output: CatalogOutput, item: Any) -> None:
     if not isinstance(item, dict):
         raise RuntimeError(f"{node_id}.{output.name} episode entries must be dictionaries")
+    if output.payload_type == PayloadType.ANCHOR_REF:
+        assert_anchor_record(node_id=node_id, output=output, item=item)
+        return
     has_standard_window = {"start_frame_id", "end_frame_id"}.issubset(item)
     has_possession_window = {"possession_start_frame_id", "possession_end_frame_id"}.issubset(item)
     has_anchor_window = "anchor_frame_id" in item or "wide_entry_frame_id" in item
     if not (has_standard_window or has_possession_window or has_anchor_window):
         raise RuntimeError(f"{node_id}.{output.name} episode entries need frame identity")
+
+
+def assert_anchor_record(*, node_id: str, output: CatalogOutput, item: dict[str, Any]) -> None:
+    required = {"anchor_id", "match_id", "period", "anchor_frame_id", "start_frame_id", "end_frame_id"}
+    missing = sorted(required - set(item))
+    if missing:
+        raise RuntimeError(f"{node_id}.{output.name} anchor records missing {missing}")
+    for field in ("anchor_frame_id", "start_frame_id", "end_frame_id"):
+        if isinstance(item.get(field), bool) or not isinstance(item.get(field), int):
+            raise RuntimeError(f"{node_id}.{output.name} anchor {field} must be an integer")
+    if not isinstance(item.get("anchor_id"), str) or not item["anchor_id"]:
+        raise RuntimeError(f"{node_id}.{output.name} anchor_id must be a non-empty string")
 
 
 def assert_relation_episode_record(*, node_id: str, output: CatalogOutput, item: Any) -> None:
@@ -241,6 +262,7 @@ def _matches_payload(
         return True
     if payload_type in {
         PayloadType.ENUM,
+        PayloadType.ANCHOR_REF,
         PayloadType.ENTITY_REF,
         PayloadType.TEAM_REF,
         PayloadType.REGION_REF,

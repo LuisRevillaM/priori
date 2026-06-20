@@ -33,6 +33,7 @@ class PayloadType(StrEnum):
     BOOLEAN = "boolean"
     NUMBER = "number"
     ENUM = "enum"
+    ANCHOR_REF = "anchor_ref"
     ENTITY_REF = "entity_ref"
     TEAM_REF = "team_ref"
     REGION_REF = "region_ref"
@@ -61,6 +62,7 @@ class Unit(StrEnum):
 
 class EntityScope(StrEnum):
     NONE = "none"
+    ANCHOR = "anchor"
     BALL = "ball"
     PLAYER = "player"
     TEAM = "team"
@@ -131,6 +133,7 @@ class TypedValue(StrictModel):
                 raise ValueError("number typed values must contain an int or float")
         if self.payload_type in {
             PayloadType.ENUM,
+            PayloadType.ANCHOR_REF,
             PayloadType.ENTITY_REF,
             PayloadType.TEAM_REF,
             PayloadType.REGION_REF,
@@ -287,6 +290,7 @@ class DraftQueryPlan(StrictModel):
     classification_mode: ClassificationMode
     nodes: list[DraftPlanNode] = Field(min_length=1)
     classification_rules: list[ClassificationRule] = Field(min_length=1)
+    anchor_source: SignalRef | None = None
     requested_evidence: list[EvidenceRequest] = Field(default_factory=list)
     complexity_limits: ComplexityLimits = Field(default_factory=ComplexityLimits)
 
@@ -465,6 +469,7 @@ class BoundQueryPlan(StrictModel):
     unknown_evidence_policy: UnknownEvidencePolicy
     classification_mode: ClassificationMode
     classification_rules: list[ClassificationRule]
+    anchor_source: SignalRef | None = None
     requested_evidence: list[EvidenceRequest]
     complexity_limits: ComplexityLimits
     resolved_parameters: list[ResolvedParameter]

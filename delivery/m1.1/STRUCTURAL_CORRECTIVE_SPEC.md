@@ -203,6 +203,23 @@ Acceptance:
 - actual missing data produces UNKNOWN end to end through ordinary execution;
 - all three unknown policies are tested through actual node execution.
 
+### Gate S3R - Explicit Anchor Contract And Generic Temporal Semantics
+
+Acceptance:
+
+- external S3 review is recorded and S4 remains blocked until this gate passes;
+- the plan designates a single anchor source, and runtime anchor discovery does not scan arbitrary record sidecars;
+- anchor records have a rigorous schema with semantic IDs derived from match, period, frame/window, and entities, not node IDs, output names, or list ordering;
+- repeated representations of the same physical anchor deduplicate to one anchor;
+- renaming plan nodes while preserving references leaves anchor IDs unchanged;
+- a non-M1 anchor without `wide_entry_*`, `block_shift_*`, or `shift_gate_*` fields can be targeted and traced;
+- clearing `state.candidates` and `state.accepted` does not change anchor discovery;
+- runtime records are not hidden in provenance metadata;
+- frame-signal frame-ID/value length mismatch is a hard error;
+- `persists_for` consumes tri-state Boolean signals and emits episodes without shift-specific fields;
+- generic anchor/target code contains no `wide_entry_*`, `block_shift_*`, or `shift_gate_*` assumptions;
+- node execution returns an explicit result containing resolved inputs, parameters, outputs, runtime values, warnings, and provenance.
+
 ### Gate S4 - Rule-Driven Result Emission
 
 Acceptance:

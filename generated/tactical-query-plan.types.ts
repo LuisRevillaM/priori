@@ -1,12 +1,12 @@
 /* eslint-disable */
 // Generated from Pydantic TacticalQuerySchemaBundle.
-// schema_sha256: 3ae97077c50d3380e4dd86bf53b593a5309576de264b4bb19a020505b43c3ae9
+// schema_sha256: bbc180e10362ef2a5960ee5aa990f154b4b4266f20978fedf08fe8fe24af6b99
 
 export type TemporalContainer = 'scalar' | 'frame_signal' | 'episode_set' | 'relation_episode_set';
-export type PayloadType = 'boolean' | 'number' | 'enum' | 'entity_ref' | 'team_ref' | 'region_ref' | 'point' | 'entity_set' | 'relation_ref';
+export type PayloadType = 'boolean' | 'number' | 'enum' | 'anchor_ref' | 'entity_ref' | 'team_ref' | 'region_ref' | 'point' | 'entity_set' | 'relation_ref';
 export type Cardinality = 'single' | 'per_player' | 'per_team' | 'collection';
 export type Unit = 'none' | 'metre' | 'second' | 'millisecond' | 'frame' | 'fraction' | 'hertz' | 'count';
-export type EntityScope = 'none' | 'ball' | 'player' | 'team' | 'match' | 'possession' | 'frame' | 'relation';
+export type EntityScope = 'none' | 'anchor' | 'ball' | 'player' | 'team' | 'match' | 'possession' | 'frame' | 'relation';
 export type MissingDataSemantics = 'unknown' | 'quality_fail' | 'not_applicable';
 export type UnknownEvidencePolicy = 'exclude_candidate' | 'include_with_warning' | 'invalidate_execution';
 export type ExecutionMode = 'bind_only' | 'dry_run' | 'execute';

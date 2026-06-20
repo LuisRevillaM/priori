@@ -100,6 +100,7 @@ class Binder:
         resolved_parameters = self._resolve_parameters(recipe, invocation)
         self._bind_nodes(draft_plan, resolved_parameters)
         self._validate_classifications(recipe, draft_plan)
+        self._validate_anchor_source(draft_plan)
         self._validate_evidence_requests(draft_plan)
 
         if self.issues:
@@ -127,6 +128,7 @@ class Binder:
             "unknown_evidence_policy": draft_plan.unknown_evidence_policy,
             "classification_mode": draft_plan.classification_mode,
             "classification_rules": draft_plan.classification_rules,
+            "anchor_source": draft_plan.anchor_source,
             "requested_evidence": draft_plan.requested_evidence,
             "complexity_limits": draft_plan.complexity_limits,
             "resolved_parameters": sorted(resolved_parameters, key=lambda item: item.name),
@@ -691,6 +693,29 @@ class Binder:
                     ),
                     f"draft_plan.requested_evidence[{index}].field",
                 )
+
+    def _validate_anchor_source(self, draft_plan: DraftQueryPlan) -> None:
+        if draft_plan.anchor_source is None:
+            self._issue(
+                "missing_anchor_source",
+                "draft plan must designate an anchor source",
+                "draft_plan.anchor_source",
+            )
+            return
+        referenced = self._resolve_signal(draft_plan.anchor_source, "draft_plan.anchor_source")
+        if referenced is None:
+            return
+        _, output = referenced
+        if (
+            output.temporal_type != TemporalContainer.EPISODE_SET
+            or output.payload_type != PayloadType.ANCHOR_REF
+            or output.cardinality != Cardinality.COLLECTION
+        ):
+            self._issue(
+                "invalid_anchor_source",
+                "anchor source must be an episode_set collection of anchor_ref records",
+                "draft_plan.anchor_source",
+            )
 
     def _find_catalog_entry(
         self,

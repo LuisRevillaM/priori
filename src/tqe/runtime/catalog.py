@@ -168,7 +168,20 @@ def default_primitives() -> list[CatalogEntry]:
                         "possession_end_frame_id",
                         "possession_duration_seconds",
                     ],
-                )
+                ),
+                output(
+                    name="anchors",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.ANCHOR_REF,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.ANCHOR,
+                    evidence_fields=[
+                        "anchor_id",
+                        "anchor_frame_id",
+                        "start_frame_id",
+                        "end_frame_id",
+                    ],
+                ),
             ],
             evidence_fields=[
                 "possession_start_frame_id",
@@ -231,7 +244,20 @@ def default_primitives() -> list[CatalogEntry]:
                         "signed_shift_metres",
                         "block_shift_score",
                     ],
-                )
+                ),
+                output(
+                    name="anchors",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.ANCHOR_REF,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.ANCHOR,
+                    evidence_fields=[
+                        "anchor_id",
+                        "anchor_frame_id",
+                        "start_frame_id",
+                        "end_frame_id",
+                    ],
+                ),
             ],
             inputs=[
                 input_ref(
@@ -285,14 +311,6 @@ def default_primitives() -> list[CatalogEntry]:
                     temporal_type=TemporalContainer.EPISODE_SET,
                     payload_type=PayloadType.BOOLEAN,
                     cardinality=Cardinality.COLLECTION,
-                    entity_scope=EntityScope.TEAM,
-                ),
-                input_ref(
-                    name="signed_shift",
-                    temporal_type=TemporalContainer.FRAME_SIGNAL,
-                    payload_type=PayloadType.NUMBER,
-                    cardinality=Cardinality.SINGLE,
-                    unit=Unit.METRE,
                     entity_scope=EntityScope.TEAM,
                 ),
             ],

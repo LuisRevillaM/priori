@@ -124,7 +124,7 @@ def validate_downstream_nodes_use_catalog_inputs() -> list[dict[str, Any]]:
         ),
         "primitive_outcome_classification": (
             primitive_outcome_classification,
-            ["accepted_shift_episodes", "signed_shift"],
+            ["accepted_shift_episodes"],
         ),
         "relation_anchor_results": (relation_anchor_results, ["anchors"]),
         "primitive_relation_destination_entry_classification": (

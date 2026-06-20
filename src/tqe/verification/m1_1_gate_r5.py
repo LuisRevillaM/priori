@@ -448,6 +448,9 @@ def renamed_node_payload(payload: dict[str, Any]) -> dict[str, Any]:
         rule["predicate_ids"] = [mapping[predicate_id] for predicate_id in rule["predicate_ids"]]
     for request in payload["draft_plan"]["requested_evidence"]:
         request["source"]["source_node_id"] = mapping[request["source"]["source_node_id"]]
+    anchor_source = payload["draft_plan"].get("anchor_source")
+    if isinstance(anchor_source, dict):
+        anchor_source["source_node_id"] = mapping[anchor_source["source_node_id"]]
     payload["draft_plan"]["plan_id"] = "r5_renamed_approved_plan"
     payload["default_invocation"]["invocation_id"] = "r5_renamed_invocation"
     return payload
@@ -580,6 +583,7 @@ def simple_non_block_shift_payload() -> dict[str, Any]:
                     "description": "The period has possession episodes.",
                 }
             ],
+            "anchor_source": {"source_node_id": "possession", "output_name": "anchors"},
             "requested_evidence": [],
         },
     }

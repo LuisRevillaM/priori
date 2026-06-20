@@ -409,10 +409,6 @@
           "accepted_shift_episodes": {
             "source_node_id": "shift_persists",
             "output_name": "predicate"
-          },
-          "signed_shift": {
-            "source_node_id": "signed_shift",
-            "output_name": "signed_shift"
           }
         },
         "parameters": {
@@ -520,6 +516,10 @@
         },
         "field": "outcome_frame_id"
       }
-    ]
+    ],
+    "anchor_source": {
+      "source_node_id": "signed_shift",
+      "output_name": "anchors"
+    }
   }
 }
