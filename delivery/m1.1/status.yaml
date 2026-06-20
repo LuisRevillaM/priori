@@ -3,7 +3,7 @@ name: "Composable Tactical Query Runtime"
 state: REJECTED_EXTERNAL_REVIEW_PENDING_M1_1R
 source_of_truth: delivery/m1.1/SPEC.md
 corrective_source_of_truth: delivery/m1.1/CORRECTIVE_SPEC.md
-last_updated: "2026-06-19"
+last_updated: "2026-06-20"
 preconditions:
   M1_valid_git_baseline: SATISFIED_BY_BASELINE_COMMIT_CONTAINING_THIS_STATUS
   M1_owner_acceptance_or_explicit_waiver: OWNER_BASELINE_FREEZE_PROCEED_FINAL_M1_ACCEPTANCE_PENDING
@@ -23,7 +23,7 @@ slices:
   S7_m1_1r_state_correction_review_integration: DONE
   S8_m1_1r_explicit_plan_graph_binder_contracts: DONE
   S9_m1_1r_typed_runtime_values_invocation_semantics: DONE
-  S10_m1_1r_generic_predicate_classification_evidence_unknown: IN_PROGRESS
+  S10_m1_1r_generic_predicate_classification_evidence_unknown: DONE
   S11_m1_1r_relation_anchor_decoupling_experimental_repair: NOT_STARTED
   S12_m1_1r_architecture_proof_and_parity: NOT_STARTED
 promotion_gates:
@@ -37,13 +37,13 @@ promotion_gates:
   Gate_R0_state_correction_review_integration: DONE
   Gate_R1_explicit_plan_graph_binder_contracts: ACCEPTED_CONTROLLER_ONLY
   Gate_R2_typed_runtime_values_invocation_semantics: ACCEPTED_CONTROLLER_ONLY
-  Gate_R3_generic_predicate_classification_evidence_unknown: IN_PROGRESS
+  Gate_R3_generic_predicate_classification_evidence_unknown: ACCEPTED_CONTROLLER_ONLY
   Gate_R4_relation_anchor_decoupling_experimental_repair: NOT_STARTED
   Gate_R5_architecture_proof_and_parity: NOT_STARTED
 verification:
-  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_PASS
+  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_PASS
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
   independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19
-  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_ACCEPTED_CONTROLLER_ONLY
+  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_ACCEPTED_CONTROLLER_ONLY
   owner_acceptance: NOT_STARTED
   m1_2_blocked_until: M1_1R_EXTERNAL_APPROVAL_OR_REQUIRED_CHANGES_INTEGRATED

@@ -4,7 +4,7 @@ source_of_truth:
   charter: PROJECT_CHARTER.md
   roadmap: MILESTONES.md
   current_milestone_spec: delivery/m1.1/CORRECTIVE_SPEC.md
-last_updated: "2026-06-19"
+last_updated: "2026-06-20"
 scope:
   dataset: IDSSE_DFL_PUBLIC
   integration: none

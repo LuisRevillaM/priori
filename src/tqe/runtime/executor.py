@@ -37,6 +37,7 @@ from tqe.runtime.ir import (
     QueryResult,
     TypedValue,
     Unit,
+    UnknownEvidencePolicy,
     stable_hash,
 )
 from tqe.runtime.values import RuntimeValue, runtime_value_from_raw
@@ -199,6 +200,11 @@ class TacticalQueryExecutor:
             trace_records.extend(match_traces)
             runtime_value_count += match_runtime_value_count
 
+        results, trace_records, unknown_policy_status = apply_result_semantics(
+            results=results,
+            trace_records=trace_records,
+            bound_plan=bound_plan,
+        )
         if len(results) > bound_plan.max_results:
             kept_ids = {str(result["result_id"]) for result in results[: bound_plan.max_results]}
             results = results[: bound_plan.max_results]
@@ -216,7 +222,12 @@ class TacticalQueryExecutor:
                 period=result["period"],
                 anchor_frame_id=result["anchor_frame_id"],
                 evidence={
-                    **{key: value for key, value in result.items() if key != "result_id"},
+                    **{
+                        key: value
+                        for key, value in result.items()
+                        if key != "result_id" and not key.startswith("_")
+                    },
+                    "requested_evidence": project_requested_evidence(result, bound_plan),
                     "plan_status": bound_plan.plan_status.value,
                 },
             )
@@ -237,7 +248,7 @@ class TacticalQueryExecutor:
         ]
         return QueryExecution(
             execution_id=execution_id,
-            status=ExecutionStatus.PASS,
+            status=unknown_policy_status,
             plan_hash=bound_plan.plan_hash,
             bound_plan_hash=bound_plan.bound_plan_hash,
             results=query_results,
@@ -252,6 +263,8 @@ class TacticalQueryExecutor:
                 "max_results": bound_plan.max_results,
                 "runtime_result_count": len(query_results),
                 "runtime_value_count": runtime_value_count,
+                "unknown_policy": bound_plan.unknown_evidence_policy.value,
+                "unknown_trace_count": sum(1 for trace in trace_records if trace.status == "UNKNOWN"),
                 "runtime_trace_hash": stable_hash(trace_payload),
             },
         )
@@ -463,6 +476,160 @@ def runtime_parameters(bound_plan: BoundQueryPlan) -> RuntimeParameters:
     )
 
 
+def apply_result_semantics(
+    *,
+    results: list[dict[str, Any]],
+    trace_records: list[PredicateTrace],
+    bound_plan: BoundQueryPlan,
+) -> tuple[list[dict[str, Any]], list[PredicateTrace], ExecutionStatus]:
+    allowed_labels = {rule.label for rule in bound_plan.classification_rules}
+    filtered = [result for result in results if str(result.get("classification")) in allowed_labels]
+    kept_ids = {str(result["result_id"]) for result in filtered}
+    filtered_traces = [
+        trace for trace in trace_records if str(trace.source_evidence.get("result_id")) in kept_ids
+    ]
+
+    traces_by_result: dict[str, list[PredicateTrace]] = defaultdict(list)
+    for trace in filtered_traces:
+        result_id = str(trace.source_evidence.get("result_id"))
+        if result_id:
+            traces_by_result[result_id].append(trace)
+    for result in filtered:
+        result_id = str(result["result_id"])
+        result["matched_classification_rules"] = matching_classification_rules(
+            result=result,
+            traces=traces_by_result.get(result_id, []),
+            bound_plan=bound_plan,
+        )
+
+    if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INVALIDATE_EXECUTION:
+        if any(trace.status == "UNKNOWN" for trace in filtered_traces):
+            return filtered, filtered_traces, ExecutionStatus.INCOMPLETE
+    if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.EXCLUDE_CANDIDATE:
+        unknown_ids = {
+            str(trace.source_evidence.get("result_id"))
+            for trace in filtered_traces
+            if trace.status == "UNKNOWN"
+        }
+        if unknown_ids:
+            filtered = [result for result in filtered if str(result["result_id"]) not in unknown_ids]
+            kept_ids = {str(result["result_id"]) for result in filtered}
+            filtered_traces = [
+                trace for trace in filtered_traces if str(trace.source_evidence.get("result_id")) in kept_ids
+            ]
+    return filtered, filtered_traces, ExecutionStatus.PASS
+
+
+def matching_classification_rules(
+    *,
+    result: dict[str, Any],
+    traces: list[PredicateTrace],
+    bound_plan: BoundQueryPlan,
+) -> list[str]:
+    status_by_predicate = {trace.predicate_id: trace.status for trace in traces}
+    matches: list[str] = []
+    for rule in bound_plan.classification_rules:
+        if rule.label != result.get("classification"):
+            continue
+        if all(status_by_predicate.get(predicate_id) == "PASS" for predicate_id in rule.predicate_ids):
+            matches.append(rule.label)
+    return matches
+
+
+def project_requested_evidence(
+    result: dict[str, Any],
+    bound_plan: BoundQueryPlan,
+) -> dict[str, Any]:
+    projected: dict[str, Any] = {}
+    for request in bound_plan.requested_evidence:
+        key = f"{request.source.source_node_id}.{request.field}"
+        projected[key] = result.get(request.field)
+    return projected
+
+
+def source_runtime_value(state: PeriodState, node: BoundPredicateNode) -> RuntimeValue:
+    try:
+        return state.runtime_values[node.input.source_node_id][node.input.output_name]
+    except KeyError as error:
+        raise RuntimeError(
+            f"{node.node_id} cannot resolve runtime value "
+            f"{node.input.source_node_id}.{node.input.output_name}"
+        ) from error
+
+
+def numeric_source_values(state: PeriodState, node: BoundPredicateNode) -> list[float | None]:
+    value = source_runtime_value(state, node).value
+    if not isinstance(value, list):
+        raise RuntimeError(f"{node.node_id} expected list-backed numeric runtime value")
+    values: list[float | None] = []
+    for item in value:
+        if item is None or is_nan_number(item):
+            values.append(None)
+        elif isinstance(item, bool) or not isinstance(item, int | float):
+            raise RuntimeError(f"{node.node_id} expected numeric source values")
+        else:
+            values.append(float(item))
+    return values
+
+
+def record_candidate_predicate(
+    *,
+    candidate: dict[str, Any],
+    node: BoundPredicateNode,
+    status: str,
+    value: TypedValue | None,
+    threshold: TypedValue | None,
+    unit: Unit | None = None,
+    frame_id: int | None = None,
+    window: dict[str, Any] | None = None,
+    source_evidence: dict[str, Any] | None = None,
+) -> None:
+    candidate.setdefault("_predicate_status", {})[node.node_id] = {
+        "status": status,
+        "value": value.model_dump(mode="json") if value is not None else None,
+        "threshold": threshold.model_dump(mode="json") if threshold is not None else None,
+        "unit": (unit or node.output.unit).value,
+        "frame_id": frame_id,
+        "window": window,
+        "source_evidence": source_evidence or {},
+    }
+
+
+def comparison_predicate_facts(
+    *,
+    state: PeriodState,
+    node: BoundPredicateNode,
+    values: list[float | None],
+    statuses: list[bool | None],
+    threshold: float,
+) -> list[dict[str, Any]]:
+    facts: list[dict[str, Any]] = []
+    for index, (value, status) in enumerate(zip(values, statuses, strict=True)):
+        facts.append(
+            {
+                "status": predicate_status_label(status),
+                "value": typed_number(float(value), node.input_type.unit).model_dump(mode="json")
+                if value is not None
+                else None,
+                "threshold": typed_number(threshold, node.input_type.unit).model_dump(mode="json"),
+                "unit": node.input_type.unit.value,
+                "frame_id": int(state.frame_ids[index]) if index < len(state.frame_ids) else None,
+                "window": None,
+                "source_evidence": {
+                    "source_node_id": node.input.source_node_id,
+                    "source_output_name": node.input.output_name,
+                },
+            }
+        )
+    return facts
+
+
+def predicate_status_label(status: bool | None) -> str:
+    if status is None:
+        return "UNKNOWN"
+    return "PASS" if status else "FAIL"
+
+
 def record_runtime_values(state: PeriodState, node: BoundPlanNode) -> None:
     raw_outputs = state.signals.get(node.node_id)
     if raw_outputs is None:
@@ -574,7 +741,10 @@ def primitive_signed_lateral_shift(state: PeriodState, node: BoundCatalogNode) -
             }
         )
     state.candidates = shifted
-    state.signals[node.node_id] = {"signed_shift": shifted}
+    state.signals[node.node_id] = {
+        "signed_shift": [float(item["signed_shift_metres"]) for item in shifted],
+        "candidates": shifted,
+    }
 
 
 def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode) -> None:
@@ -601,6 +771,7 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
                     "near_miss_reason": "below_shift_or_persistence_threshold",
                     "persistent_shift": candidate.get("persistent_shift", False),
                     "enough_defenders": candidate["enough_defenders"],
+                    "_predicate_status": candidate.get("_predicate_status", {}),
                 }
                 candidate["_runtime_result"] = near_miss
                 near_misses.append(near_miss)
@@ -631,6 +802,7 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
             "classification": outcome,
             "outcome_frame_id": outcome_frame_id,
             "accepted": outcome != "STOPPAGE" and candidate["quality_status"] == "pass",
+            "_predicate_status": candidate.get("_predicate_status", {}),
             "replay_start_frame_id": max(
                 int(candidate["segment_frame_ids"][0]),
                 int(candidate["baseline_start_frame_id"]) - FRAME_RATE_HZ * 2,
@@ -829,81 +1001,125 @@ def primitive_relation_destination_entry_classification(
 
 
 def predicate_gte(state: PeriodState, node: BoundPredicateNode) -> None:
-    source = state.signals[node.input.source_node_id][node.input.output_name]
     threshold = float(node.compare.value) if isinstance(node.compare, TypedValue) else None
     if threshold is None:
         raise RuntimeError(f"{node.node_id} requires a compare value")
-    if isinstance(source, np.ndarray):
-        state.signals[node.node_id] = {"predicate": source >= threshold}
-        return
-    if isinstance(source, list):
-        for candidate in source:
-            candidate[f"{node.node_id}_passed"] = float(candidate["signed_shift_metres"]) >= threshold
-        state.signals[node.node_id] = {"predicate": source}
-        return
-    raise RuntimeError(f"Unsupported gte source for {node.node_id}")
+    values = numeric_source_values(state, node)
+    passed = [None if value is None else float(value) >= threshold for value in values]
+    output: dict[str, Any] = {"predicate": passed}
+    candidates = state.signals.get(node.input.source_node_id, {}).get("candidates")
+    if isinstance(candidates, list) and len(candidates) == len(passed):
+        for candidate, status, value in zip(candidates, passed, values, strict=True):
+            candidate[f"{node.node_id}_passed"] = bool(status)
+            record_candidate_predicate(
+                candidate=candidate,
+                node=node,
+                status=predicate_status_label(status),
+                value=typed_number(float(value), node.input_type.unit) if value is not None else None,
+                threshold=typed_number(threshold, node.input_type.unit),
+                unit=node.input_type.unit,
+                frame_id=int(candidate["anchor_frame_id"]) if "anchor_frame_id" in candidate else None,
+                source_evidence={
+                    "source_node_id": node.input.source_node_id,
+                    "source_output_name": node.input.output_name,
+                },
+            )
+        output["candidates"] = candidates
+    else:
+        output["predicate_facts"] = comparison_predicate_facts(
+            state=state,
+            node=node,
+            values=values,
+            statuses=passed,
+            threshold=threshold,
+        )
+    state.signals[node.node_id] = output
 
 
 def predicate_gt(state: PeriodState, node: BoundPredicateNode) -> None:
-    source = state.signals[node.input.source_node_id][node.input.output_name]
     threshold = float(node.compare.value) if isinstance(node.compare, TypedValue) else None
     if threshold is None:
         raise RuntimeError(f"{node.node_id} requires a compare value")
-    if isinstance(source, np.ndarray):
-        state.signals[node.node_id] = {"predicate": source > threshold}
-        return
-    if isinstance(source, list):
-        for candidate in source:
-            candidate[f"{node.node_id}_passed"] = float(candidate["signed_shift_metres"]) > threshold
-        state.signals[node.node_id] = {"predicate": source}
-        return
-    raise RuntimeError(f"Unsupported gt source for {node.node_id}")
+    values = numeric_source_values(state, node)
+    passed = [None if value is None else float(value) > threshold for value in values]
+    state.signals[node.node_id] = {
+        "predicate": passed,
+        "predicate_facts": comparison_predicate_facts(
+            state=state,
+            node=node,
+            values=values,
+            statuses=passed,
+            threshold=threshold,
+        ),
+    }
 
 
 def predicate_lte(state: PeriodState, node: BoundPredicateNode) -> None:
-    source = state.signals[node.input.source_node_id][node.input.output_name]
     threshold = float(node.compare.value) if isinstance(node.compare, TypedValue) else None
-    if threshold is None or not isinstance(source, np.ndarray):
-        raise RuntimeError(f"Unsupported lte source for {node.node_id}")
-    state.signals[node.node_id] = {"predicate": source <= threshold}
+    if threshold is None:
+        raise RuntimeError(f"{node.node_id} requires a compare value")
+    values = numeric_source_values(state, node)
+    passed = [None if value is None else float(value) <= threshold for value in values]
+    state.signals[node.node_id] = {
+        "predicate": passed,
+        "predicate_facts": comparison_predicate_facts(
+            state=state,
+            node=node,
+            values=values,
+            statuses=passed,
+            threshold=threshold,
+        ),
+    }
 
 
 def predicate_eq(state: PeriodState, node: BoundPredicateNode) -> None:
-    source = state.signals[node.input.source_node_id][node.input.output_name]
-    if isinstance(source, np.ndarray):
-        state.signals[node.node_id] = {"predicate": source == node.compare.value}
-        return
-    raise RuntimeError(f"Unsupported eq source for {node.node_id}")
+    values = source_runtime_value(state, node).value
+    compare = node.compare.value if isinstance(node.compare, TypedValue) else None
+    state.signals[node.node_id] = {
+        "predicate": [None if value is None else value == compare for value in values]
+    }
 
 
 def predicate_neq(state: PeriodState, node: BoundPredicateNode) -> None:
-    source = state.signals[node.input.source_node_id][node.input.output_name]
-    if isinstance(source, list):
-        state.signals[node.node_id] = {
-            "predicate": [
-                item for item in source if item.get("classification") != node.compare.value
-            ]
-        }
-        return
-    if isinstance(source, np.ndarray):
-        state.signals[node.node_id] = {"predicate": source != node.compare.value}
-        return
-    raise RuntimeError(f"Unsupported neq source for {node.node_id}")
+    values = source_runtime_value(state, node).value
+    compare = node.compare.value if isinstance(node.compare, TypedValue) else None
+    passed = [None if value is None else value != compare for value in values]
+    output: dict[str, Any] = {"predicate": passed}
+    items = state.signals.get(node.input.source_node_id, {}).get(node.input.output_name)
+    if isinstance(items, list) and items and all(isinstance(item, dict) for item in items):
+        for item, status, value in zip(items, passed, values, strict=False):
+            item[f"{node.node_id}_passed"] = bool(status)
+            if "_predicate_status" in item:
+                record_candidate_predicate(
+                    candidate=item,
+                    node=node,
+                    status=predicate_status_label(status),
+                    value=typed_enum(str(value)) if value is not None else None,
+                    threshold=typed_enum(str(compare)),
+                    unit=Unit.NONE,
+                    frame_id=int(item["outcome_frame_id"]) if item.get("outcome_frame_id") is not None else None,
+                    source_evidence={
+                        "source_node_id": node.input.source_node_id,
+                        "source_output_name": node.input.output_name,
+                        "reason": "outcome_not_evaluated" if value is None else None,
+                    },
+                )
+        output["items"] = [item for item, status in zip(items, passed, strict=False) if status]
+    state.signals[node.node_id] = output
 
 
 def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None:
-    source = state.signals[node.input.source_node_id][node.input.output_name]
     duration_seconds = float(node.duration.value) if isinstance(node.duration, TypedValue) else None
     if duration_seconds is None:
         raise RuntimeError(f"{node.node_id} requires duration")
-    minimum_frames = int(round(duration_seconds * state.params.integer("analysis_rate_hz")))
-    if isinstance(source, np.ndarray):
-        episodes = episode_records_from_mask(state, source, minimum_frames)
-        state.signals[node.node_id] = {"predicate": episodes, "episodes": episodes}
-        return
-    if isinstance(source, list):
+    analysis_rate_hz = state.params.integer("analysis_rate_hz")
+    minimum_frames = int(round(duration_seconds * analysis_rate_hz))
+    values = source_runtime_value(state, node).value
+    source_signal = state.signals.get(node.input.source_node_id, {})
+    candidates = source_signal.get("candidates")
+    if isinstance(candidates, list) and len(candidates) == len(values):
         threshold = state.params.number("minimum_shift_metres")
-        for candidate in source:
+        for candidate in candidates:
             persistence = shift_persistence_evidence(
                 candidate["signed_shift_series"],
                 threshold,
@@ -916,12 +1132,63 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
             candidate["shift_persistence_start_frame_id"] = persistence["start_frame_id"]
             candidate["shift_persistence_end_frame_id"] = persistence["end_frame_id"]
             candidate["shift_gate_passed"] = bool(
-                candidate.get("shift_threshold_passed")
+                candidate.get(f"{node.input.source_node_id}_passed")
                 and persistent
                 and candidate["enough_defenders"]
             )
-        state.candidates = source
-        state.signals[node.node_id] = {"predicate": source, "episodes": source}
+            record_candidate_predicate(
+                candidate=candidate,
+                node=node,
+                status="PASS" if persistent else "FAIL",
+                value=(
+                    typed_number(float(persistence["duration_seconds"]), Unit.SECOND)
+                    if persistence["duration_seconds"] is not None
+                    else None
+                ),
+                threshold=typed_number(duration_seconds, Unit.SECOND),
+                unit=Unit.SECOND,
+                window={
+                    "start_frame_id": persistence["start_frame_id"],
+                    "end_frame_id": persistence["end_frame_id"],
+                },
+                source_evidence={
+                    "source_node_id": node.input.source_node_id,
+                    "source_output_name": node.input.output_name,
+                },
+            )
+        state.candidates = candidates
+        state.signals[node.node_id] = {"predicate": candidates, "episodes": candidates}
+        return
+    if all(value is None or isinstance(value, bool) for value in values):
+        episodes = episode_records_from_mask(
+            state,
+            np.asarray([value is True for value in values], dtype=bool),
+            minimum_frames,
+        )
+        source_facts = source_signal.get("predicate_facts")
+        for episode in episodes:
+            episode.setdefault("_predicate_status", {})
+            start_index = int(episode["start_index"])
+            if isinstance(source_facts, list) and start_index < len(source_facts):
+                episode["_predicate_status"][node.input.source_node_id] = source_facts[start_index]
+            duration = (int(episode["end_index"]) - start_index + 1) / analysis_rate_hz
+            record_candidate_predicate(
+                candidate=episode,
+                node=node,
+                status="PASS",
+                value=typed_number(round(float(duration), 3), Unit.SECOND),
+                threshold=typed_number(duration_seconds, Unit.SECOND),
+                unit=Unit.SECOND,
+                window={
+                    "start_frame_id": int(episode["start_frame_id"]),
+                    "end_frame_id": int(episode["end_frame_id"]),
+                },
+                source_evidence={
+                    "source_node_id": node.input.source_node_id,
+                    "source_output_name": node.input.output_name,
+                },
+            )
+        state.signals[node.node_id] = {"predicate": episodes, "episodes": episodes}
         return
     raise RuntimeError(f"Unsupported persists_for source for {node.node_id}")
 
@@ -931,7 +1198,7 @@ def predicate_noop(state: PeriodState, node: BoundPredicateNode) -> None:
 
 
 def predicate_exists(state: PeriodState, node: BoundPredicateNode) -> None:
-    source = state.signals[node.input.source_node_id][node.input.output_name]
+    source = source_runtime_value(state, node).value
     if isinstance(source, list):
         state.signals[node.node_id] = {"predicate": bool(source), "episodes": source}
         return
@@ -939,7 +1206,7 @@ def predicate_exists(state: PeriodState, node: BoundPredicateNode) -> None:
 
 
 def predicate_count_at_least(state: PeriodState, node: BoundPredicateNode) -> None:
-    source = state.signals[node.input.source_node_id][node.input.output_name]
+    source = source_runtime_value(state, node).value
     threshold = int(round(float(node.compare.value))) if isinstance(node.compare, TypedValue) else None
     if threshold is None or not isinstance(source, list):
         raise RuntimeError(f"Unsupported count_at_least source for {node.node_id}")
@@ -1022,16 +1289,34 @@ def wide_entry_candidates_from_episodes(
     episodes: list[Any],
 ) -> list[dict[str, Any]]:
     wide_mask = np.zeros(len(state.frame_ids), dtype=bool)
+    structured_episodes: list[dict[str, Any]] = []
     for episode in episodes:
         start_index = episode_start_index(episode)
         end_index = episode_end_index(episode)
         if start_index is None or end_index is None:
             continue
         wide_mask[start_index : end_index + 1] = True
+        if isinstance(episode, dict):
+            structured_episodes.append(episode)
     dwell_frames = int(
         round(state.params.number("minimum_wide_dwell_seconds") * state.params.integer("analysis_rate_hz"))
     )
-    return wide_entry_candidates(state, wide_mask, dwell_frames)
+    candidates = wide_entry_candidates(state, wide_mask, dwell_frames)
+    for candidate in candidates:
+        entry_frame_id = int(candidate["wide_entry_frame_id"])
+        source_episode = next(
+            (
+                episode
+                for episode in structured_episodes
+                if int(episode.get("start_frame_id", -1))
+                <= entry_frame_id
+                <= int(episode.get("end_frame_id", -1))
+            ),
+            None,
+        )
+        if source_episode is not None and isinstance(source_episode.get("_predicate_status"), dict):
+            candidate["_predicate_status"] = dict(source_episode["_predicate_status"])
+    return candidates
 
 
 def episode_start_index(episode: Any) -> int | None:
@@ -1134,11 +1419,68 @@ def accepted_predicate_traces(state: PeriodState) -> list[PredicateTrace]:
     return traces
 
 
+def predicate_traces_from_status_records(
+    *,
+    state: PeriodState,
+    candidate: dict[str, Any],
+    result: dict[str, Any],
+) -> list[PredicateTrace]:
+    records = candidate.get("_predicate_status") or result.get("_predicate_status") or {}
+    if not isinstance(records, dict) or not records:
+        return []
+    result_id = str(result.get("result_id") or candidate_key(state, candidate))
+    common = {
+        "result_id": result_id,
+        "candidate_key": candidate_key(state, candidate),
+        "match_id": state.match_id,
+        "period": state.period,
+        "wide_entry_frame_id": int(candidate["wide_entry_frame_id"]),
+        "anchor_frame_id": int(candidate["anchor_frame_id"]),
+    }
+    traces: list[PredicateTrace] = []
+    for predicate_id, record in records.items():
+        if not isinstance(record, dict):
+            continue
+        source_evidence = {
+            **common,
+            **{
+                key: value
+                for key, value in dict(record.get("source_evidence") or {}).items()
+                if value is not None
+            },
+        }
+        traces.append(
+            PredicateTrace(
+                predicate_id=str(predicate_id),
+                status=record["status"],
+                value=TypedValue.model_validate(record["value"])
+                if record.get("value") is not None
+                else None,
+                threshold=TypedValue.model_validate(record["threshold"])
+                if record.get("threshold") is not None
+                else None,
+                unit=Unit(record.get("unit", Unit.NONE.value)),
+                frame_id=record.get("frame_id"),
+                window=record.get("window"),
+                source_evidence=source_evidence,
+            )
+        )
+    return traces
+
+
 def predicate_traces_for_candidate(
     state: PeriodState,
     candidate: dict[str, Any],
     result: dict[str, Any],
 ) -> list[PredicateTrace]:
+    generated = predicate_traces_from_status_records(
+        state=state,
+        candidate=candidate,
+        result=result,
+    )
+    if generated:
+        return generated
+
     result_id = str(result.get("result_id") or candidate_key(state, candidate))
     common = {
         "result_id": result_id,
