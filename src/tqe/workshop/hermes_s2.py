@@ -1,8 +1,9 @@
-"""M1.2 S2 bounded Hermes compiler shell.
+"""M1.2 S2 bounded model-backed tactical query compiler.
 
-This module is deterministic test scaffolding for the Hermes client contract. It
-does not call a model and does not widen the tool boundary. It records the
-language-to-plan trace that a future model-backed Hermes instance must preserve.
+The historical function names keep the existing M1.2 verifier wiring stable, but
+this is not a concrete Hermes runtime integration. It is an agent-neutral,
+model-backed compiler client operating through the same bounded caller profile
+that a future Hermes adapter must use.
 """
 
 from __future__ import annotations
@@ -15,9 +16,9 @@ import urllib.request
 from copy import deepcopy
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from tqe.workshop.m1_2 import (
     CallerProfile,
@@ -34,9 +35,16 @@ EXPERIMENTAL_CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_a
 TRACE_DIR = DEFAULT_WORKSHOP_ROOT / "hermes-traces"
 OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
 DEFAULT_HERMES_MODEL = "gpt-4o-mini"
-HERMES_SYSTEM_PROMPT = """You are Hermes, a bounded tactical-query compiler.
+COMPILER_IDENTITY = "ModelBackedTacticalQueryCompiler"
+COMPILER_IDENTITY_DECISION = (
+    "S2C uses an agent-neutral model-backed tactical query compiler. It is not "
+    "a completed Hermes runtime integration; Hermes remains a future client "
+    "adapter over the same bounded tool surface."
+)
+HERMES_SYSTEM_PROMPT = """You are ModelBackedTacticalQueryCompiler, a bounded tactical-query compiler.
 
-You may return only JSON. You may choose exactly one action:
+You may return only JSON matching one action-specific schema. Choose exactly one
+action:
 - select_recipe: choose the trusted approved ball-side block-shift recipe.
 - draft_corridor: draft an EXPERIMENTAL progressive-corridor plan using existing capabilities.
 - clarify: ask concise clarification questions.
@@ -46,19 +54,22 @@ Never invent primitive, relation, operator, recipe, or tool identifiers.
 Never request raw tracking dumps, code execution, filesystem paths, SQL, video,
 primitive mutation, threshold auto-tuning, or execution confirmation.
 
-Available experimental draft family:
-- possession_corridor_availability_v1 using possession anchors and
-  geometric_progressive_corridor_from_anchor_set.
-Allowed draft parameters:
-- corridor_minimum_progression_m: number of metres, default 5.0
-- corridor_minimum_clearance_m: number of metres, default 4.0
-- corridor_max_window_seconds: seconds, default 5.0
-- corridor_minimum_duration_seconds: seconds, default 0.4
-
-Supported wording for draft_corridor includes corridor availability, open
-corridor, forward corridor, forward lane, progressive lane, progressive passing
-lane, geometric progressive option, active-ball possessions with a progressive
-corridor, and possession anchors with a corridor option.
+Use select_recipe only when the request explicitly asks for the approved
+ball-side block-shift recipe/detector. Use draft_corridor for requests about a
+progressive or forward corridor/lane/passing lane from possession anchors.
+Explicit thresholds are optional: when the analyst asks for corridor/lane
+availability without numeric constraints, draft the corridor plan with no
+parameter overrides and let the runtime defaults apply.
+Never return capability_gap merely because a corridor/lane request lacks numeric
+thresholds; default thresholds are valid and intentionally supported.
+Treat progressive lane, forward lane, passing lane, forward route, geometric
+progressive option, and open corridor as aliases for the experimental
+progressive-corridor family. Do not ask what those terms mean unless the request
+also asks for unsupported evidence.
+These corridor aliases MUST use action="draft_corridor" when attached to
+possession, possession anchors, ball carrier, or active-ball possessions:
+progressive lane, progressive passing lane, geometric passing lane, forward
+lane, forward route, open forward lane, and geometric progressive option.
 
 Parameter extraction rules:
 - "at least N metres progression", "advance N metres", and "N metres of gain"
@@ -67,10 +78,14 @@ Parameter extraction rules:
   from defenders" set corridor_minimum_clearance_m=N. Do not put defender
   clearance values into progression.
 - "within N seconds" sets corridor_max_window_seconds=N.
+- Include only parameters materially requested by the analyst. Do not restate
+  defaults as explicit parameter overrides.
 
 Unsupported concepts include body orientation, body shape, facial cues, scanning,
 intent, communication, video, pass probability, causality, deception, coach
 instructions, and optimal actions.
+If any unsupported concept appears, choose capability_gap rather than clarify.
+The gap must name every material unsupported concept in the request.
 
 Important ambiguity rule: if the request uses support/help/second runner/overload
 or line-break support language without explicitly saying corridor, passing lane,
@@ -78,6 +93,11 @@ progressive lane, or a clarification answer that maps support to a progressive
 corridor, you must choose action="clarify". Do not draft and do not capability-gap
 those support requests. Ask what support should mean and what time window should
 apply.
+Second runner language is ambiguous support language, not a capability gap,
+unless it also asks for unsupported evidence such as intent, video, body shape,
+or optimal decisions.
+If the request asks whether support is close enough or near enough, clarification
+must ask for a distance or proximity threshold.
 
 Clarification rule: the clarifications array contains authoritative user answers
 to your prior questions. If the original request was ambiguous support language
@@ -85,31 +105,16 @@ and the clarification history says "progressive corridor within two seconds" or
 an equivalent answer, you must choose action="draft_corridor" and set
 corridor_max_window_seconds=2.0. Do not ask the same clarification again once
 the clarifications array answers it.
+When clarifications contain any corridor alias, the clarified request is no
+longer ambiguous support language. Draft the corridor family and extract any
+numeric values from the clarification answer.
 
-Return JSON with this shape:
-{
-  "action": "select_recipe|draft_corridor|clarify|capability_gap",
-  "recipe_id": "ball_side_block_shift_v1|possession_corridor_availability_v1|null",
-  "interpretation": "short analyst-facing interpretation",
-  "clarification_questions": ["..."],
-  "capability_gaps": [{"concept": "...", "reason": "..."}],
-  "corridor_parameters": {
-    "corridor_minimum_progression_m": number|null,
-    "corridor_minimum_clearance_m": number|null,
-    "corridor_max_window_seconds": number|null,
-    "corridor_minimum_duration_seconds": number|null
-  },
-  "requested_evidence": ["relation_count", "witness_relation_id"]
-}
-
-Examples:
-- "Show when a forward lane is available from possession." -> draft_corridor.
-- "Find open forward lanes from active possession anchors." -> draft_corridor.
-- "Find progressive corridors with at least 6 metres defender clearance." ->
-  draft_corridor with corridor_minimum_clearance_m=6.0.
-- "Find intent to pass through the line." -> capability_gap.
-- "Use video to judge receiver scanning." -> capability_gap.
-- "Infer coach instructions from movement." -> capability_gap.
+Schema constraints:
+- select_recipe requires recipe_id="ball_side_block_shift_v1" and no draft parameters.
+- draft_corridor requires recipe_id="possession_corridor_availability_v1" and may
+  include only valid corridor parameter overrides.
+- clarify requires one or more clarification questions and no draft parameters.
+- capability_gap requires one or more explicit gaps and no draft parameters.
 """
 
 UNSUPPORTED_CONCEPTS = {
@@ -130,6 +135,8 @@ class StrictModel(BaseModel):
 
 class HermesCompileStatus(StrEnum):
     DRAFT_VALIDATED = "DRAFT_VALIDATED"
+    PLAN_VALIDATION_FAILED = "PLAN_VALIDATION_FAILED"
+    MODEL_OUTPUT_INVALID = "MODEL_OUTPUT_INVALID"
     EXISTING_RECIPE_SELECTED = "EXISTING_RECIPE_SELECTED"
     CLARIFICATION_REQUIRED = "CLARIFICATION_REQUIRED"
     CAPABILITY_GAP = "CAPABILITY_GAP"
@@ -146,14 +153,21 @@ class HermesCompileResponse(StrictModel):
     status: HermesCompileStatus
     trace_id: str
     original_language: str
-    agent_kind: Literal["model_backed", "deterministic_reference"] = "deterministic_reference"
+    clarifications: list[str] = Field(default_factory=list)
+    agent_kind: Literal["model_backed_tactical_query_compiler", "deterministic_reference"] = "deterministic_reference"
+    agent_identity: str = "deterministic_reference"
+    agent_identity_decision: str | None = None
     model_provider: str | None = None
     model_name: str | None = None
     model_response_id: str | None = None
+    model_temperature: float | None = None
+    model_seed: int | None = None
     system_prompt_hash: str | None = None
     capability_context_hash: str | None = None
     tool_schema_hash: str | None = None
+    trusted_recipe_context_hash: str | None = None
     raw_model_output: dict[str, Any] | None = None
+    model_output_errors: list[dict[str, Any]] = Field(default_factory=list)
     interpretation: dict[str, Any]
     selected_recipe: dict[str, Any] | None = None
     draft_plan_id: str | None = None
@@ -164,6 +178,53 @@ class HermesCompileResponse(StrictModel):
     clarification_questions: list[str] = Field(default_factory=list)
     capability_gaps: list[dict[str, str]] = Field(default_factory=list)
     tool_calls: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class CapabilityGapItem(StrictModel):
+    concept: str = Field(min_length=1, max_length=120)
+    reason: str = Field(min_length=1, max_length=500)
+
+
+class CorridorParameters(StrictModel):
+    corridor_minimum_progression_m: float | None = Field(default=None, ge=0.0, le=80.0)
+    corridor_minimum_clearance_m: float | None = Field(default=None, ge=0.0, le=40.0)
+    corridor_max_window_seconds: float | None = Field(default=None, ge=0.2, le=15.0)
+    corridor_minimum_duration_seconds: float | None = Field(default=None, ge=0.2, le=15.0)
+
+
+class SelectRecipeDecision(StrictModel):
+    action: Literal["select_recipe"]
+    recipe_id: Literal["ball_side_block_shift_v1"]
+    interpretation: str = Field(min_length=1, max_length=500)
+
+
+class DraftCorridorDecision(StrictModel):
+    action: Literal["draft_corridor"]
+    recipe_id: Literal["possession_corridor_availability_v1"]
+    interpretation: str = Field(min_length=1, max_length=500)
+    corridor_parameters: CorridorParameters = Field(default_factory=CorridorParameters)
+    requested_evidence: list[Literal["relation_count", "witness_relation_id"]] = Field(default_factory=list, max_length=2)
+
+
+class ClarificationDecision(StrictModel):
+    action: Literal["clarify"]
+    recipe_id: None = None
+    interpretation: str = Field(min_length=1, max_length=500)
+    clarification_questions: list[str] = Field(min_length=1, max_length=4)
+
+
+class CapabilityGapDecision(StrictModel):
+    action: Literal["capability_gap"]
+    recipe_id: None = None
+    interpretation: str = Field(min_length=1, max_length=500)
+    capability_gaps: list[CapabilityGapItem] = Field(min_length=1, max_length=8)
+
+
+ModelDecision = Annotated[
+    SelectRecipeDecision | DraftCorridorDecision | ClarificationDecision | CapabilityGapDecision,
+    Field(discriminator="action"),
+]
+MODEL_DECISION_ADAPTER = TypeAdapter(ModelDecision)
 
 
 def compile_hermes_request(
@@ -188,20 +249,180 @@ def compile_hermes_model_request(
         trusted_recipe_summary(APPROVED_M1_PLAN_PATH, state="APPROVED"),
         trusted_recipe_summary(EXPERIMENTAL_CORRIDOR_PLAN_PATH, state="EXPERIMENTAL"),
     ]
+    tool_schemas = model_visible_tool_schemas(capabilities)
+    model_parameter_context = model_visible_parameter_context(capabilities, recipe_summaries)
     model_payload = call_hermes_model(
         request=request,
         capability_context=capability_payload,
         recipe_summaries=recipe_summaries,
+        tool_schemas=tool_schemas,
+        parameter_context=model_parameter_context,
     )
-    decision = normalize_model_decision(model_payload["json"])
+    try:
+        decision = normalize_model_decision(model_payload["json"])
+    except ValidationError as exc:
+        repair_payload = call_hermes_model(
+            request=request,
+            capability_context=capability_payload,
+            recipe_summaries=recipe_summaries,
+            tool_schemas=tool_schemas,
+            parameter_context=model_parameter_context,
+            previous_invalid_output=model_payload["json"],
+            schema_errors=exc.errors(),
+        )
+        try:
+            decision = normalize_model_decision(repair_payload["json"])
+            model_payload = {
+                **repair_payload,
+                "invalid_first_output": model_payload["json"],
+                "first_output_schema_errors": exc.errors(),
+            }
+        except ValidationError as repair_exc:
+            model_payload = {
+                **repair_payload,
+                "invalid_first_output": model_payload["json"],
+                "first_output_schema_errors": exc.errors(),
+            }
+            exc = repair_exc
+        else:
+            exc = None
+    if isinstance(locals().get("exc"), ValidationError):
+        metadata = {
+            "agent_kind": "model_backed_tactical_query_compiler",
+            "agent_identity": COMPILER_IDENTITY,
+            "agent_identity_decision": COMPILER_IDENTITY_DECISION,
+            "model_provider": "openai",
+            "model_name": model_payload["model"],
+            "model_response_id": model_payload.get("id"),
+            "model_temperature": model_payload.get("temperature"),
+            "model_seed": model_payload.get("seed"),
+            "system_prompt_hash": stable_hash(HERMES_SYSTEM_PROMPT),
+            "capability_context_hash": stable_hash(capability_payload),
+            "tool_schema_hash": stable_hash(tool_schemas),
+            "trusted_recipe_context_hash": stable_hash(recipe_summaries),
+            "raw_model_output": model_payload["json"],
+            "model_output_errors": exc.errors(),
+        }
+        response = HermesCompileResponse(
+            ok=False,
+            status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
+            trace_id=trace_id_for(request, "model_output_invalid", model_payload["json"]),
+            original_language=request.original_language,
+            clarifications=request.clarifications,
+            interpretation={
+                "intent": "invalid_model_output",
+                "summary": "Model output failed the strict action-specific schema.",
+                "automatic_execution": False,
+            },
+            tool_calls=tool_calls,
+            **metadata,
+        )
+        persist_compile_trace(response, output_root=output_root)
+        return response
+    semantic_errors = semantic_decision_errors(request, decision)
+    if semantic_errors:
+        repair_payload = call_hermes_model(
+            request=request,
+            capability_context=capability_payload,
+            recipe_summaries=recipe_summaries,
+            tool_schemas=tool_schemas,
+            parameter_context=model_parameter_context,
+            previous_invalid_output=model_payload["json"],
+            semantic_errors=semantic_errors,
+        )
+        try:
+            decision = normalize_model_decision(repair_payload["json"])
+        except ValidationError as exc:
+            model_payload = {
+                **repair_payload,
+                "invalid_first_output": model_payload["json"],
+                "first_output_semantic_errors": semantic_errors,
+            }
+            metadata = {
+                "agent_kind": "model_backed_tactical_query_compiler",
+                "agent_identity": COMPILER_IDENTITY,
+                "agent_identity_decision": COMPILER_IDENTITY_DECISION,
+                "model_provider": "openai",
+                "model_name": model_payload["model"],
+                "model_response_id": model_payload.get("id"),
+                "model_temperature": model_payload.get("temperature"),
+                "model_seed": model_payload.get("seed"),
+                "system_prompt_hash": stable_hash(HERMES_SYSTEM_PROMPT),
+                "capability_context_hash": stable_hash(capability_payload),
+                "tool_schema_hash": stable_hash(tool_schemas),
+                "trusted_recipe_context_hash": stable_hash(recipe_summaries),
+                "raw_model_output": model_payload["json"],
+                "model_output_errors": exc.errors(),
+            }
+            response = HermesCompileResponse(
+                ok=False,
+                status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
+                trace_id=trace_id_for(request, "model_output_invalid_after_semantic_repair", model_payload["json"]),
+                original_language=request.original_language,
+                clarifications=request.clarifications,
+                interpretation={
+                    "intent": "invalid_model_output",
+                    "summary": "Model semantic repair failed the strict action-specific schema.",
+                    "automatic_execution": False,
+                },
+                tool_calls=tool_calls,
+                **metadata,
+            )
+            persist_compile_trace(response, output_root=output_root)
+            return response
+        semantic_errors_after_repair = semantic_decision_errors(request, decision)
+        model_payload = {
+            **repair_payload,
+            "invalid_first_output": model_payload["json"],
+            "first_output_semantic_errors": semantic_errors,
+        }
+        if semantic_errors_after_repair:
+            metadata = {
+                "agent_kind": "model_backed_tactical_query_compiler",
+                "agent_identity": COMPILER_IDENTITY,
+                "agent_identity_decision": COMPILER_IDENTITY_DECISION,
+                "model_provider": "openai",
+                "model_name": model_payload["model"],
+                "model_response_id": model_payload.get("id"),
+                "model_temperature": model_payload.get("temperature"),
+                "model_seed": model_payload.get("seed"),
+                "system_prompt_hash": stable_hash(HERMES_SYSTEM_PROMPT),
+                "capability_context_hash": stable_hash(capability_payload),
+                "tool_schema_hash": stable_hash(tool_schemas),
+                "trusted_recipe_context_hash": stable_hash(recipe_summaries),
+                "raw_model_output": model_payload["json"],
+                "model_output_errors": [{"type": "semantic_validation", "message": item} for item in semantic_errors_after_repair],
+            }
+            response = HermesCompileResponse(
+                ok=False,
+                status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
+                trace_id=trace_id_for(request, "model_semantic_invalid", model_payload["json"]),
+                original_language=request.original_language,
+                clarifications=request.clarifications,
+                interpretation={
+                    "intent": "invalid_model_output",
+                    "summary": "Model output failed compiler semantic validation.",
+                    "automatic_execution": False,
+                },
+                tool_calls=tool_calls,
+                **metadata,
+            )
+            persist_compile_trace(response, output_root=output_root)
+            return response
+
     metadata = {
-        "agent_kind": "model_backed",
+        "agent_kind": "model_backed_tactical_query_compiler",
+        "agent_identity": COMPILER_IDENTITY,
+        "agent_identity_decision": COMPILER_IDENTITY_DECISION,
         "model_provider": "openai",
         "model_name": model_payload["model"],
         "model_response_id": model_payload.get("id"),
+        "model_temperature": model_payload.get("temperature"),
+        "model_seed": model_payload.get("seed"),
         "system_prompt_hash": stable_hash(HERMES_SYSTEM_PROMPT),
         "capability_context_hash": stable_hash(capability_payload),
-        "tool_schema_hash": stable_hash([tool.get("name") for tool in capabilities.get("tools", [])]),
+        "tool_schema_hash": stable_hash(tool_schemas),
+        "trusted_recipe_context_hash": stable_hash(recipe_summaries),
         "raw_model_output": model_payload["json"],
     }
 
@@ -211,6 +432,7 @@ def compile_hermes_model_request(
             status=HermesCompileStatus.CAPABILITY_GAP,
             trace_id=trace_id_for(request, "model_capability_gap", decision),
             original_language=request.original_language,
+            clarifications=request.clarifications,
             interpretation={
                 "intent": "unsupported_tactical_request",
                 "summary": decision["interpretation"],
@@ -229,6 +451,7 @@ def compile_hermes_model_request(
             status=HermesCompileStatus.CLARIFICATION_REQUIRED,
             trace_id=trace_id_for(request, "model_clarification", decision),
             original_language=request.original_language,
+            clarifications=request.clarifications,
             interpretation={
                 "intent": "clarify_tactical_request",
                 "summary": decision["interpretation"],
@@ -248,6 +471,7 @@ def compile_hermes_model_request(
             status=HermesCompileStatus.EXISTING_RECIPE_SELECTED,
             trace_id=trace_id_for(request, "model_existing_recipe", decision),
             original_language=request.original_language,
+            clarifications=request.clarifications,
             interpretation={
                 "intent": "reuse_trusted_recipe",
                 "summary": decision["interpretation"],
@@ -280,11 +504,13 @@ def compile_hermes_model_request(
         tool_calls,
         output_root=output_root,
     )
+    validated = bool(validation.get("ok"))
     response = HermesCompileResponse(
-        ok=bool(validation.get("ok")),
-        status=HermesCompileStatus.DRAFT_VALIDATED,
-        trace_id=trace_id_for(request, "model_draft_validated", decision),
+        ok=validated,
+        status=HermesCompileStatus.DRAFT_VALIDATED if validated else HermesCompileStatus.PLAN_VALIDATION_FAILED,
+        trace_id=trace_id_for(request, "model_draft_validated" if validated else "model_plan_validation_failed", decision),
         original_language=request.original_language,
+        clarifications=request.clarifications,
         interpretation={
             "intent": "draft_experimental_progressive_corridor_query",
             "summary": decision["interpretation"],
@@ -329,6 +555,7 @@ def compile_hermes_reference_request(
             status=HermesCompileStatus.CAPABILITY_GAP,
             trace_id=trace_id_for(request, "capability_gap", gaps),
             original_language=request.original_language,
+            clarifications=request.clarifications,
             interpretation={
                 "intent": "unsupported_tactical_request",
                 "reason": "The request asks for concepts outside the exposed capability context.",
@@ -347,6 +574,7 @@ def compile_hermes_reference_request(
             status=HermesCompileStatus.EXISTING_RECIPE_SELECTED,
             trace_id=trace_id_for(request, "existing_recipe", selected),
             original_language=request.original_language,
+            clarifications=request.clarifications,
             interpretation={
                 "intent": "reuse_trusted_recipe",
                 "summary": "Use the trusted approved ball-side block-shift recipe.",
@@ -370,6 +598,7 @@ def compile_hermes_reference_request(
             status=HermesCompileStatus.CLARIFICATION_REQUIRED,
             trace_id=trace_id_for(request, "clarification", questions),
             original_language=request.original_language,
+            clarifications=request.clarifications,
             interpretation={
                 "intent": "ambiguous_support_request",
                 "reason": "The current vocabulary can measure possession anchors and progressive corridors, but support has multiple tactical meanings.",
@@ -401,11 +630,13 @@ def compile_hermes_reference_request(
             tool_calls,
             output_root=output_root,
         )
+        validated = bool(validation.get("ok"))
         response = HermesCompileResponse(
-            ok=bool(validation.get("ok")),
-            status=HermesCompileStatus.DRAFT_VALIDATED,
-            trace_id=trace_id_for(request, "draft_validated", validation),
+            ok=validated,
+            status=HermesCompileStatus.DRAFT_VALIDATED if validated else HermesCompileStatus.PLAN_VALIDATION_FAILED,
+            trace_id=trace_id_for(request, "draft_validated" if validated else "plan_validation_failed", validation),
             original_language=request.original_language,
+            clarifications=request.clarifications,
             interpretation={
                 "intent": "draft_experimental_progressive_corridor_query",
                 "summary": "Detect possession anchors where a geometric progressive corridor becomes available.",
@@ -436,6 +667,7 @@ def compile_hermes_reference_request(
         status=HermesCompileStatus.CLARIFICATION_REQUIRED,
         trace_id=trace_id_for(request, "unclassified", text),
         original_language=request.original_language,
+        clarifications=request.clarifications,
         interpretation={
             "intent": "unclassified_tactical_request",
             "reason": "The request did not clearly name a supported recipe or experimental corridor concept.",
@@ -515,6 +747,11 @@ def call_hermes_model(
     request: HermesCompileRequest,
     capability_context: dict[str, Any],
     recipe_summaries: list[dict[str, Any]],
+    tool_schemas: list[dict[str, Any]],
+    parameter_context: dict[str, Any],
+    previous_invalid_output: dict[str, Any] | None = None,
+    schema_errors: list[dict[str, Any]] | None = None,
+    semantic_errors: list[str] | None = None,
 ) -> dict[str, Any]:
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
@@ -535,7 +772,18 @@ def call_hermes_model(
                         "clarification_history_is_authoritative": bool(request.clarifications),
                         "resolved_request": resolved_request_for_model(request),
                         "capability_context": capability_context,
+                        "tool_schemas": tool_schemas,
+                        "parameter_context": parameter_context,
+                        "classification_rules": compiler_classification_rules(),
+                        "strict_decision_schema": MODEL_DECISION_ADAPTER.json_schema(),
                         "trusted_recipes": recipe_summaries,
+                        "repair_instruction": {
+                            "active": previous_invalid_output is not None,
+                            "previous_invalid_output": previous_invalid_output,
+                            "schema_errors": schema_errors or [],
+                            "semantic_errors": semantic_errors or [],
+                            "requirement": "Return one corrected JSON object that satisfies the strict_decision_schema and fixes every schema or semantic error. Do not add fields outside the selected action variant.",
+                        },
                     },
                     sort_keys=True,
                 ),
@@ -563,60 +811,40 @@ def call_hermes_model(
         "model": response_payload.get("model", model),
         "json": json.loads(content),
         "usage": response_payload.get("usage", {}),
+        "temperature": payload["temperature"],
+        "seed": payload.get("seed"),
     }
 
 
 def normalize_model_decision(payload: dict[str, Any]) -> dict[str, Any]:
-    action = str(payload.get("action", "")).strip()
-    if action not in {"select_recipe", "draft_corridor", "clarify", "capability_gap"}:
-        raise RuntimeError(f"Model returned unsupported action: {action}")
-    recipe_id = payload.get("recipe_id")
-    if recipe_id == "null":
-        recipe_id = None
-    if recipe_id not in {None, "ball_side_block_shift_v1", "possession_corridor_availability_v1"}:
-        raise RuntimeError(f"Model returned unsupported recipe_id: {recipe_id}")
-    if action == "select_recipe" and recipe_id != "ball_side_block_shift_v1":
-        raise RuntimeError("select_recipe may only choose ball_side_block_shift_v1")
-    if action == "draft_corridor" and recipe_id not in {None, "possession_corridor_availability_v1"}:
-        raise RuntimeError("draft_corridor may only use possession_corridor_availability_v1")
-    params = payload.get("corridor_parameters") if isinstance(payload.get("corridor_parameters"), dict) else {}
-    allowed_params = {
-        "corridor_minimum_progression_m",
-        "corridor_minimum_clearance_m",
-        "corridor_max_window_seconds",
-        "corridor_minimum_duration_seconds",
-    }
-    normalized_params = {}
-    for key in allowed_params:
-        value = params.get(key)
-        if value is None:
-            normalized_params[key] = None
-        elif isinstance(value, int | float) and not isinstance(value, bool):
-            normalized_params[key] = float(value)
-        else:
-            raise RuntimeError(f"Invalid corridor parameter {key}: {value!r}")
-    gaps = payload.get("capability_gaps")
-    if not isinstance(gaps, list):
-        gaps = []
-    normalized_gaps = [
-        {
-            "concept": str(item.get("concept", "unsupported")),
-            "reason": str(item.get("reason", "Unsupported by current capability context.")),
-        }
-        for item in gaps
-        if isinstance(item, dict)
-    ]
-    questions = payload.get("clarification_questions")
-    if not isinstance(questions, list):
-        questions = []
+    decision = MODEL_DECISION_ADAPTER.validate_python(payload)
+    params = CorridorParameters().model_dump()
+    gaps: list[dict[str, str]] = []
+    questions: list[str] = []
+    requested_evidence: list[str] = []
+    recipe_id: str | None = None
+    if isinstance(decision, SelectRecipeDecision):
+        action = decision.action
+        recipe_id = decision.recipe_id
+    elif isinstance(decision, DraftCorridorDecision):
+        action = decision.action
+        recipe_id = decision.recipe_id
+        params = decision.corridor_parameters.model_dump()
+        requested_evidence = list(decision.requested_evidence)
+    elif isinstance(decision, ClarificationDecision):
+        action = decision.action
+        questions = decision.clarification_questions
+    else:
+        action = decision.action
+        gaps = [item.model_dump() for item in decision.capability_gaps]
     return {
         "action": action,
         "recipe_id": recipe_id,
-        "interpretation": str(payload.get("interpretation", "")).strip() or action,
-        "clarification_questions": [str(item) for item in questions][:4],
-        "capability_gaps": normalized_gaps,
-        "corridor_parameters": normalized_params,
-        "requested_evidence": payload.get("requested_evidence", []),
+        "interpretation": decision.interpretation.strip(),
+        "clarification_questions": questions,
+        "capability_gaps": gaps,
+        "corridor_parameters": params,
+        "requested_evidence": requested_evidence,
     }
 
 
@@ -645,6 +873,207 @@ def compact_capability_context(context: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def model_visible_tool_schemas(context: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        {
+            "name": tool.get("name"),
+            "input_schema": tool.get("input_schema"),
+            "output_schema": tool.get("output_schema"),
+            "exposure": tool.get("exposure"),
+        }
+        for tool in context.get("tools", [])
+    ]
+
+
+def model_visible_parameter_context(
+    context: dict[str, Any],
+    recipe_summaries: list[dict[str, Any]],
+) -> dict[str, Any]:
+    corridor_relation = next(
+        (
+            relation
+            for relation in context.get("relations", [])
+            if relation.get("name") == "geometric_progressive_corridor_from_anchor_set"
+        ),
+        {},
+    )
+    parameter_aliases = {
+        "corridor_minimum_progression_m": {
+            "runtime_parameter": "minimum_progression_m",
+            "relation": "geometric_progressive_corridor_from_anchor_set",
+        },
+        "corridor_minimum_clearance_m": {
+            "runtime_parameter": "minimum_clearance_m",
+            "relation": "geometric_progressive_corridor_from_anchor_set",
+        },
+        "corridor_max_window_seconds": {
+            "runtime_parameter": "max_window_seconds",
+            "relation": "geometric_progressive_corridor_from_anchor_set",
+        },
+        "corridor_minimum_duration_seconds": {
+            "runtime_parameter": "minimum_duration_seconds",
+            "relation": "geometric_progressive_corridor_from_anchor_set",
+        },
+    }
+    runtime_parameters = {
+        parameter.get("name"): parameter
+        for parameter in corridor_relation.get("parameters", [])
+        if parameter.get("name")
+    }
+    exposed_parameters = {}
+    for exposed_name, mapping in parameter_aliases.items():
+        parameter = runtime_parameters.get(mapping["runtime_parameter"], {})
+        exposed_parameters[exposed_name] = {
+            "runtime_parameter": mapping["runtime_parameter"],
+            "payload_type": parameter.get("payload_type"),
+            "unit": parameter.get("unit"),
+            "minimum": parameter.get("minimum"),
+            "maximum": parameter.get("maximum"),
+            "description": parameter.get("description"),
+            "only_when_user_materially_specifies": True,
+        }
+    return {
+        "schema_version": "1.0",
+        "compiler_action_families": {
+            "select_recipe": {
+                "allowed_recipe_ids": ["ball_side_block_shift_v1"],
+                "allowed_parameters": [],
+            },
+            "draft_corridor": {
+                "allowed_recipe_ids": ["possession_corridor_availability_v1"],
+                "allowed_parameters": exposed_parameters,
+                "requested_evidence_allowed_values": ["relation_count", "witness_relation_id"],
+            },
+        },
+        "trusted_recipe_summaries": recipe_summaries,
+    }
+
+
+def compiler_classification_rules() -> dict[str, Any]:
+    return {
+        "draft_corridor_when_request_contains": [
+            "progressive corridor",
+            "open corridor",
+            "progressive lane",
+            "progressive passing lane",
+            "passing lane",
+            "geometric passing lane",
+            "forward lane",
+            "open forward lane",
+            "forward route",
+            "geometric progressive option",
+        ],
+        "draft_corridor_requires_context_any_of": [
+            "possession",
+            "possession anchor",
+            "active-ball",
+            "ball carrier",
+            "team in possession",
+        ],
+        "clarify_not_gap_when_request_contains_without_corridor_alias": [
+            "support",
+            "help",
+            "second runner",
+            "overload",
+            "line-break support",
+        ],
+        "clarify_distance_when_request_contains": [
+            "close enough",
+            "near enough",
+            "how close",
+            "distance",
+        ],
+        "capability_gap_when_request_contains": [
+            "body orientation",
+            "body shape",
+            "facial cue",
+            "scanning",
+            "scanned",
+            "intent",
+            "communication",
+            "video",
+            "pass probability",
+            "causality",
+            "deception",
+            "coach instruction",
+            "optimal",
+            "should have done",
+            "mutate primitive",
+            "ignore the allowed tools",
+            "execute_query_plan immediately",
+        ],
+        "clarification_answers_are_authoritative": True,
+        "draft_corridor_when_clarification_contains": [
+            "progressive corridor",
+            "open corridor",
+            "progressive lane",
+            "passing lane",
+            "forward lane",
+        ],
+    }
+
+
+def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str, Any]) -> list[str]:
+    text = normalize_text(resolved_request_for_model(request))
+    rules = compiler_classification_rules()
+    errors: list[str] = []
+    has_unsupported = [term for term in rules["capability_gap_when_request_contains"] if term in text]
+    if has_unsupported:
+        if decision["action"] != "capability_gap":
+            errors.append(
+                "Requests containing unsupported concepts must use action=capability_gap: "
+                + ", ".join(has_unsupported)
+            )
+        else:
+            gap_text = normalize_text(
+                " ".join(f"{gap.get('concept', '')} {gap.get('reason', '')}" for gap in decision["capability_gaps"])
+                + " "
+                + decision["interpretation"]
+            )
+            for term in has_unsupported:
+                if term in {"execute_query_plan immediately", "ignore the allowed tools"}:
+                    expected_terms = ["execute", "allowed tools", "authorization"]
+                elif term == "scanned":
+                    expected_terms = ["scan", "scanning", "scanned"]
+                elif term == "should have done":
+                    expected_terms = ["should", "optimal", "decision"]
+                elif term == "mutate primitive":
+                    expected_terms = ["mutate", "mutation", "primitive"]
+                else:
+                    expected_terms = [term]
+                if not any(expected in gap_text for expected in expected_terms):
+                    errors.append(f"Capability gap must name unsupported concept: {term}")
+        return errors
+
+    corridor_aliases = rules["draft_corridor_when_request_contains"]
+    corridor_context = rules["draft_corridor_requires_context_any_of"]
+    has_corridor_alias = any(alias in text for alias in corridor_aliases)
+    matched_corridor_aliases = [alias for alias in corridor_aliases if alias in text]
+    has_corridor_context = any(context in text for context in corridor_context) or bool(request.clarifications)
+    if has_corridor_alias and has_corridor_context and decision["action"] != "draft_corridor":
+        errors.append(
+            "The request contains supported corridor aliases "
+            f"{matched_corridor_aliases} with possession context. Correct output must be "
+            "action=draft_corridor, recipe_id=possession_corridor_availability_v1, and no "
+            "capability_gaps for these aliases."
+        )
+
+    clarification_text = normalize_text(" ".join(request.clarifications))
+    if request.clarifications and any(alias in clarification_text for alias in rules["draft_corridor_when_clarification_contains"]):
+        if decision["action"] != "draft_corridor":
+            errors.append("Clarification answer maps support to a corridor alias; action must be draft_corridor.")
+
+    ambiguous_terms = rules["clarify_not_gap_when_request_contains_without_corridor_alias"]
+    if any(term in text for term in ambiguous_terms) and not has_corridor_alias and not request.clarifications:
+        if decision["action"] != "clarify":
+            errors.append("Ambiguous support/help/second-runner language must clarify instead of draft or gap.")
+        elif any(term in text for term in rules["clarify_distance_when_request_contains"]):
+            question_text = normalize_text(" ".join(decision["clarification_questions"]))
+            if not any(token in question_text for token in ("distance", "close", "near", "proximity")):
+                errors.append("Close/near support clarification must ask for a distance or proximity threshold.")
+    return errors
+
+
 def dedupe_gaps(gaps: list[dict[str, str]]) -> list[dict[str, str]]:
     seen = set()
     deduped = []
@@ -668,7 +1097,7 @@ def resolved_request_for_model(request: HermesCompileRequest) -> str:
 def trusted_recipe_summary(path: Path, *, state: Literal["APPROVED", "EXPERIMENTAL"]) -> dict[str, Any]:
     payload = read_json(path)
     recipe = payload["recipe"]
-    return {
+    summary = {
         "recipe_id": recipe["recipe_id"],
         "recipe_version": recipe["recipe_version"],
         "display_name": recipe["display_name"],
@@ -677,6 +1106,20 @@ def trusted_recipe_summary(path: Path, *, state: Literal["APPROVED", "EXPERIMENT
         "allowed_claims": recipe.get("allowed_claims", []),
         "limitations": recipe.get("limitations", []),
     }
+    if recipe["recipe_id"] == "possession_corridor_availability_v1":
+        summary["model_visible_aliases"] = [
+            "progressive corridor",
+            "open corridor",
+            "progressive lane",
+            "progressive passing lane",
+            "passing lane",
+            "geometric passing lane",
+            "forward lane",
+            "open forward lane",
+            "forward route",
+            "geometric progressive option",
+        ]
+    return summary
 
 
 def record_confirmed_execution_trace(
@@ -696,7 +1139,26 @@ def record_confirmed_execution_trace(
         "recorded_at": utc_now_iso(),
         "compile_trace_id": compile_response.trace_id,
         "original_language": compile_response.original_language,
-        "clarification_turns": [],
+        "clarification_turns": [
+            {
+                "turn_index": index + 1,
+                "answer": answer,
+            }
+            for index, answer in enumerate(compile_response.clarifications)
+        ],
+        "agent_kind": compile_response.agent_kind,
+        "agent_identity": compile_response.agent_identity,
+        "agent_identity_decision": compile_response.agent_identity_decision,
+        "model_provider": compile_response.model_provider,
+        "model_name": compile_response.model_name,
+        "model_response_id": compile_response.model_response_id,
+        "model_temperature": compile_response.model_temperature,
+        "model_seed": compile_response.model_seed,
+        "system_prompt_hash": compile_response.system_prompt_hash,
+        "capability_context_hash": compile_response.capability_context_hash,
+        "tool_schema_hash": compile_response.tool_schema_hash,
+        "trusted_recipe_context_hash": compile_response.trusted_recipe_context_hash,
+        "raw_model_output": compile_response.raw_model_output,
         "selected_recipe": compile_response.selected_recipe,
         "draft_plan_id": compile_response.draft_plan_id,
         "draft_plan_hash": compile_response.draft_plan_hash,

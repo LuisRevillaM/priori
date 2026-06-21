@@ -462,6 +462,48 @@ Hard acceptance:
   with request/response hashes, host confirmation event, execution ID, result
   IDs, inspection, and replay handles.
 
+### S2C - Agent Identity, Strict Output, And Blind Evaluation
+
+External S2B review approved progress but blocked S3 until the compiler stopped
+over-claiming Hermes runtime integration and proved stricter language reliability.
+
+Hard acceptance:
+
+- S2 is represented honestly as `ModelBackedTacticalQueryCompiler`, an
+  agent-neutral model-backed compiler over the bounded caller profile, not as a
+  completed Hermes runtime integration;
+- model output is validated by a strict action-specific Pydantic union with
+  `extra="forbid"`, action-specific required fields, parameter bounds,
+  approved recipe IDs, nonempty clarification questions, nonempty capability
+  gaps, and allowed evidence IDs;
+- invalid model output receives at most one explicit repair turn and otherwise
+  fails closed as `MODEL_OUTPUT_INVALID`;
+- model outputs must also pass semantic validation against explicit
+  capability/recipe rules: supported corridor aliases cannot be refused,
+  unsupported concepts must be named, support/help/second-runner language must
+  clarify, and answered clarifications are authoritative;
+- failed plan binding returns `PLAN_VALIDATION_FAILED`, never
+  `DRAFT_VALIDATED`;
+- supported evaluation rows pass only when the correct recipe is selected or
+  drafted, the plan binds successfully, requested parameters are correct, and no
+  unintended parameter override is introduced;
+- ambiguous rows pass only when the clarification addresses the expected
+  ambiguity;
+- unsupported rows pass only when the capability gap names the material
+  unsupported concept;
+- a separate blind corpus from `config/evaluation/m1_2_s2c_blind_corpus.json`
+  is scored and copied to artifacts without being included as compiler prompt
+  examples;
+- confirmed execution traces include session ID, original language,
+  clarification answers, model/provider/version, temperature/seed where
+  available, system prompt hash, capability-context hash, full tool-schema hash,
+  trusted-recipe-context hash, raw structured model output, all ordered tool
+  calls, host confirmation event, execution ID, result IDs, inspection handles,
+  and replay handles;
+- adversarial tests prove negative parameters, excessive windows, unsupported
+  parameter names, wrong units, and hostile complexity limits fail validation;
+- prompt-injection and unauthorized-action tests remain fail-closed.
+
 ### Gate C - Feedback and Non-Match Inspection
 
 Hard acceptance:
@@ -520,6 +562,9 @@ artifacts/m1.2/workshop/feedback-records.jsonl
 artifacts/m1.2/workshop/recipes/*.json
 artifacts/m1.2/agent-evaluation-corpus.json
 artifacts/m1.2/agent-evaluation-report.json
+config/evaluation/m1_2_s2c_blind_corpus.json
+artifacts/m1.2/agent-blind-evaluation-corpus.json
+artifacts/m1.2/agent-blind-evaluation-report.json
 artifacts/m1.2/gate-s2-verification-report.json
 artifacts/m1.2/hermes-s2-trace-report.json
 artifacts/m1.2/workshop-loop-trace.json

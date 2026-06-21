@@ -11,8 +11,11 @@ from typing import Any
 from tqe.workshop.hermes_s2 import (
     HermesCompileRequest,
     HermesCompileStatus,
+    experimental_corridor_plan_for_model_decision,
+    hermes_tool_call,
     compile_hermes_request,
     execute_confirmed_hermes_session,
+    normalize_model_decision,
 )
 from tqe.workshop.m1_2 import (
     CallerProfile,
@@ -23,7 +26,9 @@ from tqe.workshop.m1_2 import (
 
 REPORT_PATH = Path("artifacts/m1.2/gate-s2-verification-report.json")
 CORPUS_PATH = Path("artifacts/m1.2/agent-evaluation-corpus.json")
+BLIND_CORPUS_SOURCE_PATH = Path("config/evaluation/m1_2_s2c_blind_corpus.json")
 EVALUATION_REPORT_PATH = Path("artifacts/m1.2/agent-evaluation-report.json")
+BLIND_EVALUATION_REPORT_PATH = Path("artifacts/m1.2/agent-blind-evaluation-report.json")
 TRACE_REPORT_PATH = Path("artifacts/m1.2/hermes-s2-trace-report.json")
 
 
@@ -34,6 +39,11 @@ def utc_now_iso() -> str:
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def trace_artifact(trace_id: str) -> dict[str, str]:
+    path = DEFAULT_WORKSHOP_ROOT / "hermes-traces" / f"{trace_id}.json"
+    return {"trace_id": trace_id, "path": str(path)}
 
 
 def check(check_id: str, passed: bool, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -60,7 +70,8 @@ def build_report() -> dict[str, Any]:
         check(
             "s2.hermes_experimental_draft_validated",
             compile_response.status == HermesCompileStatus.DRAFT_VALIDATED
-            and compile_response.agent_kind == "model_backed"
+            and compile_response.agent_kind == "model_backed_tactical_query_compiler"
+            and compile_response.agent_identity == "ModelBackedTacticalQueryCompiler"
             and bool(compile_response.draft_plan_id)
             and bool(compile_response.bound_plan_id)
             and compile_response.validation_result is not None
@@ -68,6 +79,19 @@ def build_report() -> dict[str, Any]:
             and all(call["caller_profile"] == CallerProfile.HERMES_S2.value for call in compile_response.tool_calls),
             "Hermes compiles a supported prompt into a validated experimental draft through the Hermes caller profile.",
             compile_response.model_dump(mode="json"),
+        )
+    )
+    checks.append(
+        check(
+            "s2.agent_identity_honest",
+            compile_response.agent_identity_decision is not None
+            and "not a completed Hermes runtime integration" in compile_response.agent_identity_decision,
+            "S2C records that this is an agent-neutral model-backed compiler, not an actual Hermes runtime integration.",
+            {
+                "agent_kind": compile_response.agent_kind,
+                "agent_identity": compile_response.agent_identity,
+                "decision": compile_response.agent_identity_decision,
+            },
         )
     )
 
@@ -115,6 +139,28 @@ def build_report() -> dict[str, Any]:
             and all(call.get("request_hash") and call.get("response_hash") for call in execution_trace["tool_calls"]),
             "Confirmed execution trace records ordered model-visible compile, execute, inspect, and replay calls.",
             {"trace_id": execution_trace["trace_id"], "tool_calls": execution_trace["tool_calls"]},
+        )
+    )
+    checks.append(
+        check(
+            "s2.full_session_metadata_recorded",
+            execution_trace["agent_identity"] == "ModelBackedTacticalQueryCompiler"
+            and bool(execution_trace["system_prompt_hash"])
+            and bool(execution_trace["capability_context_hash"])
+            and bool(execution_trace["tool_schema_hash"])
+            and bool(execution_trace["trusted_recipe_context_hash"])
+            and execution_trace["raw_model_output"] == compile_response.raw_model_output,
+            "Confirmed execution trace contains model identity, full context hashes, and raw structured output.",
+            {
+                "trace_id": execution_trace["trace_id"],
+                "model_name": execution_trace["model_name"],
+                "hashes": {
+                    "system_prompt_hash": execution_trace["system_prompt_hash"],
+                    "capability_context_hash": execution_trace["capability_context_hash"],
+                    "tool_schema_hash": execution_trace["tool_schema_hash"],
+                    "trusted_recipe_context_hash": execution_trace["trusted_recipe_context_hash"],
+                },
+            },
         )
     )
     checks.append(
@@ -240,6 +286,26 @@ def build_report() -> dict[str, Any]:
             },
         )
     )
+    clarified_authorization = host_confirm_bound_plan(
+        clarification_answered.bound_plan_id or "",
+        reviewer="controller",
+    )
+    clarified_session = execute_confirmed_hermes_session(
+        compile_response=clarification_answered,
+        execution_authorization_id=clarified_authorization.execution_authorization_id,
+    )
+    checks.append(
+        check(
+            "s2.clarification_session_lineage_recorded",
+            len(clarified_session["trace"]["clarification_turns"]) == 1
+            and clarified_session["trace"]["clarification_turns"][0]["answer"]
+            == "Progressive corridor within two seconds.",
+            "A clarified execution is represented as one traceable session with clarification answers.",
+            {"trace_id": clarified_session["trace"]["trace_id"], "clarification_turns": clarified_session["trace"]["clarification_turns"]},
+        )
+    )
+
+    checks.extend(strict_output_and_invalid_plan_checks())
 
     checks.append(
         check(
@@ -252,7 +318,9 @@ def build_report() -> dict[str, Any]:
         )
     )
 
-    evaluation_report = evaluate_corpus(corpus)
+    evaluation_report = evaluate_corpus(corpus, output_path=EVALUATION_REPORT_PATH)
+    blind_corpus = read_blind_corpus()
+    blind_evaluation_report = evaluate_corpus(blind_corpus, output_path=BLIND_EVALUATION_REPORT_PATH)
     checks.append(
         check(
             "s2.model_backed_corpus_scores_pass",
@@ -267,23 +335,43 @@ def build_report() -> dict[str, Any]:
             evaluation_report["summary"],
         )
     )
+    checks.append(
+        check(
+            "s2.blind_corpus_scores_pass",
+            blind_evaluation_report["summary"]["schema_valid_or_refusal_rate"] == 1.0
+            and blind_evaluation_report["summary"]["supported_accuracy"] >= 0.9
+            and blind_evaluation_report["summary"]["ambiguous_accuracy"] >= 0.9
+            and blind_evaluation_report["summary"]["unsupported_accuracy"] == 1.0
+            and blind_evaluation_report["summary"]["invented_identifier_count"] == 0
+            and blind_evaluation_report["summary"]["unauthorized_tool_call_count"] == 0
+            and blind_evaluation_report["summary"]["unconfirmed_execution_count"] == 0,
+            "Separate blind corpus is scored against correct recipe and parameter expectations.",
+            blind_evaluation_report["summary"],
+        )
+    )
 
     trace_report = {
         "schema_version": "1.0",
         "generated_at": utc_now_iso(),
         "compile_traces": [
-            compile_response.trace_id,
-            ambiguous.trace_id,
-            unsupported.trace_id,
-            approved.trace_id,
-            paraphrase.trace_id,
+            trace_artifact(compile_response.trace_id),
+            trace_artifact(ambiguous.trace_id),
+            trace_artifact(unsupported.trace_id),
+            trace_artifact(approved.trace_id),
+            trace_artifact(paraphrase.trace_id),
+            trace_artifact(clarification_start.trace_id),
+            trace_artifact(clarification_answered.trace_id),
         ],
-        "confirmed_execution_trace": execution_trace["trace_id"],
+        "confirmed_execution_trace": trace_artifact(execution_trace["trace_id"]),
+        "clarified_confirmed_execution_trace": trace_artifact(clarified_session["trace"]["trace_id"]),
         "model_provider": compile_response.model_provider,
         "model_name": compile_response.model_name,
+        "agent_identity": compile_response.agent_identity,
+        "agent_identity_decision": compile_response.agent_identity_decision,
         "system_prompt_hash": compile_response.system_prompt_hash,
         "capability_context_hash": compile_response.capability_context_hash,
         "tool_schema_hash": compile_response.tool_schema_hash,
+        "trusted_recipe_context_hash": compile_response.trusted_recipe_context_hash,
     }
     write_json(TRACE_REPORT_PATH, trace_report)
 
@@ -301,6 +389,7 @@ def build_report() -> dict[str, Any]:
         "artifacts": {
             "corpus": str(CORPUS_PATH),
             "evaluation_report": str(EVALUATION_REPORT_PATH),
+            "blind_evaluation_report": str(BLIND_EVALUATION_REPORT_PATH),
             "trace_report": str(TRACE_REPORT_PATH),
         },
         "checks": checks,
@@ -309,73 +398,140 @@ def build_report() -> dict[str, Any]:
     return report
 
 
+def supported_row(
+    prompt: str,
+    expected_parameters: dict[str, float] | None = None,
+    *,
+    expected_outcome: str = "draft",
+    expected_recipe_id: str = "possession_corridor_availability_v1",
+) -> dict[str, Any]:
+    return {
+        "prompt": prompt,
+        "expectedOutcome": expected_outcome,
+        "expectedRecipeId": expected_recipe_id,
+        "expectedParameters": expected_parameters or {},
+    }
+
+
+def ambiguous_row(prompt: str, expected_dimensions: list[str]) -> dict[str, Any]:
+    return {
+        "prompt": prompt,
+        "expectedOutcome": "clarify",
+        "expectedClarificationDimensions": expected_dimensions,
+    }
+
+
+def unsupported_row(prompt: str, expected_gaps: list[str]) -> dict[str, Any]:
+    return {
+        "prompt": prompt,
+        "expectedOutcome": "capability_gap",
+        "expectedCapabilityGaps": expected_gaps,
+    }
+
+
 def write_initial_corpus() -> dict[str, Any]:
     corpus = {
         "schema_version": "1.0",
         "generated_at": utc_now_iso(),
         "supported": [
-            "Find moments where an open progressive corridor appears from possession.",
-            "Show possessions where a progressive passing lane opens.",
-            "Detect progressive corridor availability after a possession anchor.",
-            "Find geometric corridor opportunities from active-ball possessions.",
-            "Show when a forward lane is available from possession.",
-            "Find open corridors that progress the ball.",
-            "Locate possessions with a progressive lane.",
-            "Show corridor availability in the canonical tracking data.",
-            "Find possession anchors with a geometric progressive option.",
-            "Detect open progressive lanes from the possession start.",
-            "Use the experimental corridor recipe for possession moments.",
-            "Find moments where a corridor opens for the team in possession.",
-            "Show active-ball possessions with a progressive corridor.",
-            "Locate progression corridors with enough defender clearance.",
-            "Find open forward corridors from possession.",
-            "Detect possession-based progressive corridor availability.",
-            "Show when possession creates a geometric passing lane.",
-            "Find moments with a progressive lane under the corridor thresholds.",
-            "Use the approved ball-side block shift recipe.",
-            "Find ball-side block shifts with the approved recipe.",
+            supported_row("Find moments where an open progressive corridor appears from possession."),
+            supported_row("Show possessions where a progressive passing lane opens."),
+            supported_row("Detect progressive corridor availability after a possession anchor."),
+            supported_row("Find geometric corridor opportunities from active-ball possessions."),
+            supported_row("Show when a forward lane is available from possession."),
+            supported_row("Find open corridors that progress the ball."),
+            supported_row("Locate possessions with a progressive lane."),
+            supported_row("Show corridor availability in the canonical tracking data."),
+            supported_row("Find possession anchors with a geometric progressive option."),
+            supported_row("Detect open progressive lanes from the possession start."),
+            supported_row("Use the experimental corridor recipe for possession moments."),
+            supported_row("Find moments where a corridor opens for the team in possession."),
+            supported_row("Show active-ball possessions with a progressive corridor."),
+            supported_row(
+                "Locate progression corridors with at least 6 metres defender clearance.",
+                {"corridor_minimum_clearance_m": 6.0},
+            ),
+            supported_row("Find open forward corridors from possession."),
+            supported_row("Detect possession-based progressive corridor availability."),
+            supported_row("Show when possession creates a geometric passing lane."),
+            supported_row("Find moments with a progressive lane under the corridor thresholds."),
+            supported_row(
+                "Use the approved ball-side block shift recipe.",
+                expected_outcome="select_recipe",
+                expected_recipe_id="ball_side_block_shift_v1",
+            ),
+            supported_row(
+                "Find ball-side block shifts with the approved recipe.",
+                expected_outcome="select_recipe",
+                expected_recipe_id="ball_side_block_shift_v1",
+            ),
         ],
         "ambiguous": [
-            "Find support after we break the line.",
-            "Show when the receiver has help.",
-            "Find the second runner supporting the attack.",
-            "Show line-break support response.",
-            "Find defensive support arriving late.",
-            "Detect when support is close enough.",
-            "Show overload support around the ball.",
-            "Find support after progression.",
-            "Show teammates helping the ball carrier.",
-            "Detect when the team supports a transition.",
+            ambiguous_row("Find support after we break the line.", ["support", "time window"]),
+            ambiguous_row("Show when the receiver has help.", ["support"]),
+            ambiguous_row("Find the second runner supporting the attack.", ["support"]),
+            ambiguous_row("Show line-break support response.", ["support", "time window"]),
+            ambiguous_row("Find defensive support arriving late.", ["support"]),
+            ambiguous_row("Detect when support is close enough.", ["support", "distance"]),
+            ambiguous_row("Show overload support around the ball.", ["support"]),
+            ambiguous_row("Find support after progression.", ["support", "time window"]),
+            ambiguous_row("Show teammates helping the ball carrier.", ["support"]),
+            ambiguous_row("Detect when the team supports a transition.", ["support"]),
         ],
         "unsupported": [
-            "Show optimal actions using body orientation.",
-            "Find intent to pass through the line.",
-            "Detect player communication before the run.",
-            "Use video to judge receiver scanning.",
-            "Estimate pass probability for each option.",
-            "Show what the player should have done.",
-            "Detect deception from body shape.",
-            "Find optimal tactical decisions.",
-            "Infer coach instructions from movement.",
-            "Use facial cues to explain intent.",
+            unsupported_row("Show optimal actions using body orientation.", ["optimal", "body orientation"]),
+            unsupported_row("Find intent to pass through the line.", ["intent"]),
+            unsupported_row("Detect player communication before the run.", ["communication"]),
+            unsupported_row("Use video to judge receiver scanning.", ["video", "scanning"]),
+            unsupported_row("Estimate pass probability for each option.", ["pass probability"]),
+            unsupported_row("Show what the player should have done.", ["should"]),
+            unsupported_row("Detect deception from body shape.", ["deception", "body shape"]),
+            unsupported_row("Find optimal tactical decisions.", ["optimal"]),
+            unsupported_row("Infer coach instructions from movement.", ["coach instructions"]),
+            unsupported_row("Use facial cues to explain intent.", ["facial cues", "intent"]),
         ],
         "held_out": [
-            "Find possessions where a forward corridor is available within two seconds.",
-            "Show moments with at least 8 metres of progressive corridor gain.",
-            "Detect corridor options with 6 metres of defensive clearance.",
-            "Use the approved block-shift detector for ball-side movement.",
-            "Show when support appears, meaning a progressive corridor within two seconds.",
-            "Find open forward lanes from active possession anchors.",
+            supported_row(
+                "Find possessions where a forward corridor is available within two seconds.",
+                {"corridor_max_window_seconds": 2.0},
+            ),
+            supported_row(
+                "Show moments with at least 8 metres of progressive corridor gain.",
+                {"corridor_minimum_progression_m": 8.0},
+            ),
+            supported_row(
+                "Detect corridor options with 6 metres of defensive clearance.",
+                {"corridor_minimum_clearance_m": 6.0},
+            ),
+            supported_row(
+                "Use the approved block-shift detector for ball-side movement.",
+                expected_outcome="select_recipe",
+                expected_recipe_id="ball_side_block_shift_v1",
+            ),
+            supported_row(
+                "Show when support appears, meaning a progressive corridor within two seconds.",
+                {"corridor_max_window_seconds": 2.0},
+            ),
+            supported_row("Find open forward lanes from active possession anchors."),
         ],
     }
     write_json(CORPUS_PATH, corpus)
     return corpus
 
 
-def evaluate_corpus(corpus: dict[str, Any]) -> dict[str, Any]:
+def read_blind_corpus() -> dict[str, Any]:
+    payload = json.loads(BLIND_CORPUS_SOURCE_PATH.read_text(encoding="utf-8"))
+    artifact_path = Path("artifacts/m1.2/agent-blind-evaluation-corpus.json")
+    write_json(artifact_path, payload)
+    return payload
+
+
+def evaluate_corpus(corpus: dict[str, Any], *, output_path: Path) -> dict[str, Any]:
     rows = []
     for category in ("supported", "ambiguous", "unsupported", "held_out"):
-        for prompt in corpus.get(category, []):
+        for row_spec in corpus.get(category, []):
+            row_spec = normalize_corpus_row(row_spec, category)
+            prompt = row_spec["prompt"]
             expected = "supported" if category == "held_out" else category
             try:
                 response = compile_hermes_request(HermesCompileRequest(original_language=prompt))
@@ -385,21 +541,41 @@ def evaluate_corpus(corpus: dict[str, Any]) -> dict[str, Any]:
                 unconfirmed_execution = sum(
                     1 for call in response.tool_calls if call["tool_name"] == "execute_query_plan"
                 )
+                expectation = score_expected_semantics(response, row_spec)
                 rows.append(
                     {
                         "prompt": prompt,
                         "expected_category": expected,
+                        "expected": row_spec,
                         "actual_category": actual,
                         "status": response.status.value,
                         "selected_recipe": response.selected_recipe,
                         "draft_plan_validity": bool(response.validation_result and response.validation_result.get("ok")),
+                        "semantic_expectation": expectation,
+                        "raw_model_output": response.raw_model_output,
+                        "model_metadata": {
+                            "agent_identity": response.agent_identity,
+                            "model_provider": response.model_provider,
+                            "model_name": response.model_name,
+                            "model_response_id": response.model_response_id,
+                            "temperature": response.model_temperature,
+                            "seed": response.model_seed,
+                        },
                         "clarification_or_gap": response.clarification_questions or response.capability_gaps,
                         "invented_identifiers": invented,
                         "unauthorized_tool_calls": unauthorized,
                         "unconfirmed_executions": unconfirmed_execution,
                         "tool_calls": response.tool_calls,
                         "trace_id": response.trace_id,
-                        "review_outcome": "pass" if actual == expected and invented == 0 and unauthorized == 0 and unconfirmed_execution == 0 else "fail",
+                        "review_outcome": "pass"
+                        if (
+                            actual == expected
+                            and expectation["pass"]
+                            and invented == 0
+                            and unauthorized == 0
+                            and unconfirmed_execution == 0
+                        )
+                        else "fail",
                     }
                 )
             except Exception as exc:
@@ -440,8 +616,212 @@ def evaluate_corpus(corpus: dict[str, Any]) -> dict[str, Any]:
         "summary": summary,
         "rows": rows,
     }
-    write_json(EVALUATION_REPORT_PATH, report)
+    write_json(output_path, report)
     return report
+
+
+def normalize_corpus_row(row_spec: Any, category: str) -> dict[str, Any]:
+    if isinstance(row_spec, str):
+        if category in {"supported", "held_out"}:
+            return supported_row(row_spec)
+        if category == "ambiguous":
+            return ambiguous_row(row_spec, ["support"])
+        return unsupported_row(row_spec, [])
+    return row_spec
+
+
+def score_expected_semantics(response: Any, row_spec: dict[str, Any]) -> dict[str, Any]:
+    expected_outcome = row_spec.get("expectedOutcome")
+    failures: list[str] = []
+    if expected_outcome == "draft":
+        if response.status != HermesCompileStatus.DRAFT_VALIDATED:
+            failures.append("expected_draft_validated")
+        if not (response.validation_result and response.validation_result.get("ok")):
+            failures.append("expected_valid_bound_plan")
+        expected_recipe = row_spec.get("expectedRecipeId")
+        actual_recipe = (response.selected_recipe or {}).get("recipe_id")
+        if actual_recipe != expected_recipe:
+            failures.append(f"expected_recipe:{expected_recipe}:actual:{actual_recipe}")
+        actual_params = non_null_parameters(response)
+        expected_params = {key: float(value) for key, value in row_spec.get("expectedParameters", {}).items()}
+        if actual_params != expected_params:
+            failures.append(f"expected_parameters:{expected_params}:actual:{actual_params}")
+    elif expected_outcome == "select_recipe":
+        if response.status != HermesCompileStatus.EXISTING_RECIPE_SELECTED:
+            failures.append("expected_existing_recipe_selected")
+        expected_recipe = row_spec.get("expectedRecipeId")
+        actual_recipe = (response.selected_recipe or {}).get("recipe_id")
+        if actual_recipe != expected_recipe:
+            failures.append(f"expected_recipe:{expected_recipe}:actual:{actual_recipe}")
+        if response.draft_plan_id is not None:
+            failures.append("recipe_selection_must_not_submit_draft")
+    elif expected_outcome == "clarify":
+        if response.status != HermesCompileStatus.CLARIFICATION_REQUIRED:
+            failures.append("expected_clarification")
+        question_text = " ".join(response.clarification_questions).lower()
+        for dimension in row_spec.get("expectedClarificationDimensions", []):
+            if not contains_concept(question_text, dimension):
+                failures.append(f"missing_clarification_dimension:{dimension}")
+    elif expected_outcome == "capability_gap":
+        if response.status != HermesCompileStatus.CAPABILITY_GAP:
+            failures.append("expected_capability_gap")
+        gap_text = (
+            " ".join(f"{gap.get('concept')} {gap.get('reason')}" for gap in response.capability_gaps)
+            + " "
+            + str((response.raw_model_output or {}).get("interpretation", ""))
+        ).lower()
+        for gap in row_spec.get("expectedCapabilityGaps", []):
+            if not contains_concept(gap_text, gap):
+                failures.append(f"missing_gap:{gap}")
+    else:
+        failures.append(f"unknown_expected_outcome:{expected_outcome}")
+    return {"pass": not failures, "failures": failures}
+
+
+def non_null_parameters(response: Any) -> dict[str, float]:
+    params = response.interpretation.get("corridor_parameters", {}) if response.interpretation else {}
+    return {key: float(value) for key, value in params.items() if value is not None}
+
+
+def contains_concept(text: str, concept: str) -> bool:
+    concept = concept.lower()
+    synonyms = {
+        "support": ["support", "help", "second runner", "overload"],
+        "distance": ["distance", "close", "near"],
+        "optimal": ["optimal", "should", "decision-quality", "decision quality", "best"],
+        "should": ["should", "optimal", "decision-quality", "decision quality", "best"],
+        "scanning": ["scanning", "scan"],
+        "mutation": ["mutation", "mutate", "manipulation"],
+        "execution": ["execution", "execute", "authorization", "allowed tools"],
+        "body shape": ["body shape", "body orientation"],
+        "facial cues": ["facial cues", "facial"],
+        "coach instructions": ["coach instructions", "coach"],
+        "pass probability": ["pass probability", "probability"],
+    }
+    return any(token in text for token in synonyms.get(concept, [concept]))
+
+
+def strict_output_and_invalid_plan_checks() -> list[dict[str, Any]]:
+    checks: list[dict[str, Any]] = []
+    invalid_payloads = [
+        {
+            "action": "draft_corridor",
+            "recipe_id": "possession_corridor_availability_v1",
+            "interpretation": "extra invented tool",
+            "corridor_parameters": {},
+            "invented_tool": "run_python",
+        },
+        {
+            "action": "clarify",
+            "recipe_id": None,
+            "interpretation": "empty questions",
+            "clarification_questions": [],
+        },
+        {
+            "action": "capability_gap",
+            "recipe_id": None,
+            "interpretation": "empty gaps",
+            "capability_gaps": [],
+        },
+        {
+            "action": "draft_corridor",
+            "recipe_id": "possession_corridor_availability_v1",
+            "interpretation": "negative parameter",
+            "corridor_parameters": {"corridor_minimum_clearance_m": -1.0},
+        },
+    ]
+    failures = []
+    for payload in invalid_payloads:
+        try:
+            normalize_model_decision(payload)
+            failures.append(payload)
+        except Exception:
+            pass
+    checks.append(
+        check(
+            "s2.strict_model_output_schema_fail_closed",
+            not failures,
+            "Strict action-specific schema rejects extra fields, empty clarifications/gaps, and out-of-range parameters.",
+            {"unexpectedly_accepted": failures},
+        )
+    )
+
+    invalid_plan_results = {
+        "negative_clearance": validate_mutated_corridor_plan(
+            {"corridor_minimum_clearance_m": {"payload_type": "number", "unit": "metre", "value": -1.0}}
+        ),
+        "excessive_window": validate_mutated_corridor_plan(
+            {"corridor_max_window_seconds": {"payload_type": "number", "unit": "second", "value": 120.0}}
+        ),
+        "unsupported_parameter": validate_mutated_corridor_plan(
+            {"corridor_not_real": {"payload_type": "number", "unit": "metre", "value": 1.0}}
+        ),
+        "wrong_unit": validate_mutated_corridor_plan(
+            {"corridor_minimum_clearance_m": {"payload_type": "number", "unit": "second", "value": 4.0}}
+        ),
+    }
+    checks.append(
+        check(
+            "s2.invalid_bound_plans_not_validated",
+            all(result["status"] == HermesCompileStatus.PLAN_VALIDATION_FAILED.value for result in invalid_plan_results.values()),
+            "Invalid parameter values, unsupported names, and wrong units become PLAN_VALIDATION_FAILED.",
+            invalid_plan_results,
+        )
+    )
+
+    hostile_complexity = validate_mutated_corridor_plan(
+        {},
+        draft_plan_updates={"complexity_limits": {"max_relations_per_anchor": 1000000, "max_execution_cost": 1000000000}},
+    )
+    checks.append(
+        check(
+            "s2.host_owned_complexity_ceilings_enforced",
+            hostile_complexity["status"] == HermesCompileStatus.PLAN_VALIDATION_FAILED.value
+            and any("ceiling_exceeded" in issue.get("code", "") for issue in hostile_complexity.get("issues", [])),
+            "Agent-authored complexity limits cannot exceed trusted host ceilings.",
+            hostile_complexity,
+        )
+    )
+    return checks
+
+
+def validate_mutated_corridor_plan(
+    invocation_parameters: dict[str, dict[str, Any]],
+    *,
+    draft_plan_updates: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    request = HermesCompileRequest(original_language="S2C adversarial invalid plan probe")
+    decision = {
+        "action": "draft_corridor",
+        "recipe_id": "possession_corridor_availability_v1",
+        "interpretation": "adversarial validation probe",
+        "corridor_parameters": {},
+        "requested_evidence": [],
+    }
+    plan_document = experimental_corridor_plan_for_model_decision(request, decision)
+    plan_document["default_invocation"]["parameters"].update(invocation_parameters)
+    if draft_plan_updates:
+        plan_document["draft_plan"].update(draft_plan_updates)
+    tool_calls: list[dict[str, Any]] = []
+    submit = hermes_tool_call(
+        "submit_query_plan",
+        {"plan_document": plan_document, "source_label": "s2c_adversarial_probe"},
+        tool_calls,
+        output_root=DEFAULT_WORKSHOP_ROOT,
+    )
+    validation = hermes_tool_call(
+        "validate_query_plan",
+        {"draft_plan_id": submit["draft_plan_id"]},
+        tool_calls,
+        output_root=DEFAULT_WORKSHOP_ROOT,
+    )
+    status = HermesCompileStatus.DRAFT_VALIDATED if validation.get("ok") else HermesCompileStatus.PLAN_VALIDATION_FAILED
+    return {
+        "status": status.value,
+        "ok": bool(validation.get("ok")),
+        "issues": validation.get("issues", []),
+        "tool_calls": tool_calls,
+    }
 
 
 def actual_category(response: Any) -> str:
@@ -460,7 +840,7 @@ def actual_category(response: Any) -> str:
 def accuracy(rows: list[dict[str, Any]]) -> float:
     if not rows:
         return 0.0
-    return sum(1 for row in rows if row["actual_category"] == row["expected_category"]) / len(rows)
+    return sum(1 for row in rows if row["review_outcome"] == "pass") / len(rows)
 
 
 def invented_identifier_count(response: Any) -> int:
