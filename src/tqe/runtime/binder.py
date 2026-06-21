@@ -171,31 +171,75 @@ class Binder:
         self, invocation: QueryInvocation, draft_plan: DraftQueryPlan
     ) -> None:
         limits = draft_plan.complexity_limits
-        if len(draft_plan.nodes) > limits.max_plan_nodes:
+        trusted = self.catalog.default_complexity_limits
+        for field_name in (
+            "max_plan_nodes",
+            "max_nesting_depth",
+            "max_temporal_horizon_seconds",
+            "max_returned_moments",
+            "max_relations_per_anchor",
+            "max_execution_cost",
+        ):
+            requested = getattr(limits, field_name)
+            ceiling = getattr(trusted, field_name)
+            if requested > ceiling:
+                self._issue(
+                    f"complexity_{field_name}_ceiling_exceeded",
+                    f"{field_name}={requested} exceeds trusted ceiling {ceiling}",
+                    f"draft_plan.complexity_limits.{field_name}",
+                )
+
+        effective_max_plan_nodes = min(limits.max_plan_nodes, trusted.max_plan_nodes)
+        effective_max_nesting_depth = min(limits.max_nesting_depth, trusted.max_nesting_depth)
+        effective_max_temporal_horizon_seconds = min(
+            limits.max_temporal_horizon_seconds,
+            trusted.max_temporal_horizon_seconds,
+        )
+        effective_max_returned_moments = min(limits.max_returned_moments, trusted.max_returned_moments)
+        effective_max_execution_cost = min(limits.max_execution_cost, trusted.max_execution_cost)
+
+        if len(draft_plan.nodes) > effective_max_plan_nodes:
             self._issue(
                 "complexity_nodes_exceeded",
-                f"{len(draft_plan.nodes)} nodes exceeds max_plan_nodes={limits.max_plan_nodes}",
+                f"{len(draft_plan.nodes)} nodes exceeds max_plan_nodes={effective_max_plan_nodes}",
                 "draft_plan.nodes",
             )
-        if invocation.max_results > limits.max_returned_moments:
+        if invocation.max_results > effective_max_returned_moments:
             self._issue(
                 "complexity_results_exceeded",
                 (
                     f"max_results={invocation.max_results} exceeds "
-                    f"max_returned_moments={limits.max_returned_moments}"
+                    f"max_returned_moments={effective_max_returned_moments}"
                 ),
                 "default_invocation.max_results",
+            )
+        estimated_cost = len(draft_plan.nodes) * len(invocation.match_ids) * len(invocation.periods) * invocation.max_results
+        if estimated_cost > effective_max_execution_cost:
+            self._issue(
+                "complexity_execution_cost_exceeded",
+                (
+                    f"estimated_execution_cost={estimated_cost} exceeds "
+                    f"max_execution_cost={effective_max_execution_cost}"
+                ),
+                "draft_plan.complexity_limits.max_execution_cost",
+            )
+        depth = draft_plan_dependency_depth(draft_plan)
+        if depth > effective_max_nesting_depth:
+            self._issue(
+                "complexity_nesting_depth_exceeded",
+                f"dependency_depth={depth} exceeds max_nesting_depth={effective_max_nesting_depth}",
+                "draft_plan.nodes",
             )
         for index, node in enumerate(draft_plan.nodes):
             if isinstance(node, DraftPredicateNode):
                 if isinstance(node.duration, TypedValue) and node.duration.payload_type == PayloadType.NUMBER:
                     seconds = _duration_seconds(node.duration)
-                    if seconds is not None and seconds > limits.max_temporal_horizon_seconds:
+                    if seconds is not None and seconds > effective_max_temporal_horizon_seconds:
                         self._issue(
                             "complexity_temporal_horizon_exceeded",
                             (
                                 f"duration={seconds}s exceeds "
-                                f"max_temporal_horizon_seconds={limits.max_temporal_horizon_seconds}"
+                                f"max_temporal_horizon_seconds={effective_max_temporal_horizon_seconds}"
                             ),
                             f"draft_plan.nodes[{index}].duration",
                         )
@@ -780,6 +824,41 @@ class Binder:
             return value
         self._issue("unsupported_argument", f"unsupported argument {argument}", path)
         return None
+
+
+def draft_plan_dependency_depth(draft_plan: DraftQueryPlan) -> int:
+    inputs_by_node: dict[str, list[str]] = {}
+    node_ids = {node.node_id for node in draft_plan.nodes}
+    for node in draft_plan.nodes:
+        if isinstance(node, DraftCatalogNode):
+            inputs_by_node[node.node_id] = [
+                reference.source_node_id
+                for reference in node.inputs.values()
+                if reference.source_node_id in node_ids
+            ]
+        elif isinstance(node, DraftPredicateNode):
+            inputs_by_node[node.node_id] = (
+                [node.input.source_node_id]
+                if node.input.source_node_id in node_ids
+                else []
+            )
+
+    visiting: set[str] = set()
+    visited: dict[str, int] = {}
+
+    def depth(node_id: str) -> int:
+        if node_id in visited:
+            return visited[node_id]
+        if node_id in visiting:
+            return len(inputs_by_node)
+        visiting.add(node_id)
+        parents = inputs_by_node.get(node_id, [])
+        value = 1 + max((depth(parent) for parent in parents), default=0)
+        visiting.remove(node_id)
+        visited[node_id] = value
+        return value
+
+    return max((depth(node.node_id) for node in draft_plan.nodes), default=0)
 
 
 def bind_document_from_path(path: Path) -> BoundQueryPlan:

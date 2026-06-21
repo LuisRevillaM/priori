@@ -1,12 +1,12 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: BLOCKED_PENDING_M1_1S_EXTERNAL_REVIEW
+state: READY_AFTER_M1_1S_S7R2_COMMIT_AND_OWNER_CONFIRMATION
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-20"
 preconditions:
-  M1_1_runtime_accepted: BLOCKED_BY_M1_1R_GATE_R5_EXTERNAL_REJECTION
+  M1_1_runtime_accepted: READY_AFTER_M1_1S_S7R2_CONTROLLER_ACCEPTANCE
   M1_1R_external_approval_or_required_changes_integrated: SUPERSEDED_BY_M1_1S
-  M1_1S_external_approval_or_required_changes_integrated: REQUIRED_BEFORE_IMPLEMENTATION
+  M1_1S_external_approval_or_required_changes_integrated: SATISFIED_BY_S7R2_REQUIRED_CHANGES_PENDING_COMMIT
   M1_2_agent_eval_corpus: REQUIRED_BEFORE_ACCEPTANCE
 slices:
   S0_tool_boundary_and_capability_context: NOT_STARTED

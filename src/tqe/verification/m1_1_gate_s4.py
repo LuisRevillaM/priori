@@ -121,7 +121,7 @@ def validate_classification_rules_control_labels(rows: list[dict[str, Any]]) -> 
     matched = [
         row
         for row in rows
-        if row.get("matched_classification_rules") == [row.get("classification")]
+        if row.get("classification") in set(row.get("matched_classification_rules") or [])
     ]
     expected = {"DESTINATION_ENTERED", "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY"}
     return [

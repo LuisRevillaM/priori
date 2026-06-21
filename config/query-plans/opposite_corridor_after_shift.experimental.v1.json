@@ -363,7 +363,7 @@
     "classification_mode": "partial_declared",
     "complexity_limits": {
       "max_plan_nodes": 40,
-      "max_nesting_depth": 6,
+      "max_nesting_depth": 10,
       "max_temporal_horizon_seconds": 12.0,
       "max_returned_moments": 64,
       "max_relations_per_anchor": 20,
@@ -563,7 +563,7 @@
         "node_id": "has_opposite_corridor",
         "input": {
           "source_node_id": "opposite_corridor",
-          "output_name": "episodes"
+          "output_name": "anchor_evaluations"
         },
         "operator": {
           "name": "exists",

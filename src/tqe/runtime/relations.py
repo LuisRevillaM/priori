@@ -41,6 +41,7 @@ def evaluate_geometric_progressive_corridors(
     players = read_table(canonical_root / "players.parquet")
     positions_cache: dict[tuple[str, str], pd.DataFrame] = {}
     episodes: list[dict[str, Any]] = []
+    anchor_evaluations: list[dict[str, Any]] = []
     negative_examples: list[dict[str, Any]] = []
     state_counts: Counter[str] = Counter()
 
@@ -62,6 +63,7 @@ def evaluate_geometric_progressive_corridors(
             config=config,
         )
         episodes.extend(relation_rows)
+        anchor_evaluations.append(anchor_evaluation_for_result(result, relation_rows, counts))
         negative_examples.extend(negatives)
         state_counts.update(counts)
 
@@ -81,6 +83,14 @@ def evaluate_geometric_progressive_corridors(
             item["result_id"],
             item["frame_id"],
             item["target_player_id"],
+        )
+    )
+    anchor_evaluations.sort(
+        key=lambda item: (
+            item["match_id"],
+            item["period"],
+            item["anchor_frame_id"],
+            item["result_id"],
         )
     )
     selected_negative_examples = negative_examples[:40]
@@ -106,6 +116,7 @@ def evaluate_geometric_progressive_corridors(
             "state_counts": dict(sorted(state_counts.items())),
         },
         "episodes": episodes,
+        "anchor_evaluations": anchor_evaluations,
         "negative_examples": selected_negative_examples,
         "unknown_invalid_controls": unknown_invalid_controls,
         "visual_review_cases": visual_review_cases,
@@ -173,6 +184,64 @@ def evaluate_result_window(
     for target_player_id, states in states_by_target.items():
         episodes.extend(episodes_from_states(result, target_player_id, states, config))
     return episodes, negative_examples, state_counts
+
+
+def anchor_evaluation_for_result(
+    result: dict[str, Any],
+    relation_rows: list[dict[str, Any]],
+    counts: Counter[str],
+) -> dict[str, Any]:
+    total_states = sum(counts.values())
+    known_states = counts.get("PASS", 0) + counts.get("FAIL", 0)
+    unknown_states = counts.get("UNKNOWN", 0) + counts.get("INVALID", 0)
+    base = {
+        "relation": "geometric_progressive_corridor",
+        "relation_version": "0.1.0",
+        "result_id": str(result["result_id"]),
+        "anchor_id": str(result.get("anchor_id") or result["result_id"]),
+        "match_id": str(result["match_id"]),
+        "period": str(result["period"]),
+        "perspective_team_role": str(result["perspective_team_role"]),
+        "defending_team_role": str(result["defending_team_role"]),
+        "anchor_frame_id": int(result["anchor_frame_id"]),
+        "relation_count": len(relation_rows),
+        "state_counts": dict(sorted(counts.items())),
+    }
+    if relation_rows:
+        witness = relation_witness_episode(relation_rows)
+        return {
+            **base,
+            "evaluation_status": "PASS",
+            "witness_relation_id": str(witness["relation_id"]),
+            "unknown_reason": None,
+        }
+    if total_states == 0 or known_states == 0 or unknown_states > 0:
+        return {
+            **base,
+            "evaluation_status": "UNKNOWN",
+            "witness_relation_id": None,
+            "unknown_reason": "relation_evidence_unavailable"
+            if total_states == 0 or known_states == 0
+            else "mixed_relation_evidence_unavailable",
+        }
+    return {
+        **base,
+        "evaluation_status": "FAIL",
+        "witness_relation_id": None,
+        "unknown_reason": None,
+    }
+
+
+def relation_witness_episode(relation_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    return sorted(
+        relation_rows,
+        key=lambda item: (
+            -float(item["duration_seconds"]),
+            -float(item["minimum_clearance_m"]),
+            int(item["open_frame_id"]),
+            str(item["relation_id"]),
+        ),
+    )[0]
 
 
 def corridor_state(

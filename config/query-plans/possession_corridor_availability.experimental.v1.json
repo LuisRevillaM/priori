@@ -264,7 +264,7 @@
         "node_id": "has_progressive_corridor",
         "input": {
           "source_node_id": "progressive_corridor",
-          "output_name": "episodes"
+          "output_name": "anchor_evaluations"
         },
         "operator": {
           "name": "exists",

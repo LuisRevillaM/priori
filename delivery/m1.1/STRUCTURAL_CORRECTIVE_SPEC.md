@@ -315,6 +315,32 @@ Acceptance:
 - deleting generated caches still reproduces results from canonical data;
 - M1.1S external review packet is prepared and independently reviewed.
 
+### Gate S7R - Relation Coverage And Witness Semantics
+
+Acceptance:
+
+- relation nodes expose per-anchor evaluation coverage, not only positive relation episodes;
+- `exists` over relation coverage produces `PASS`, `FAIL`, and `UNKNOWN`;
+- tightening a relation threshold can turn `PASS` into definitive `FAIL`, not `UNKNOWN`;
+- relation predicate traces carry a deterministic witness relation ID when they pass;
+- requested relation evidence resolves against the witness relation and is stable under relation episode reordering;
+- `count_at_least` is anchor-relative and tri-state for relation coverage;
+- generic non-match inspection preserves definitive `FAIL` versus `UNKNOWN`;
+- `max_relations_per_anchor`, `max_execution_cost`, and `max_nesting_depth` are enforced or explicitly removed from the IR contract;
+- `INCLUDE_WITH_WARNING` preserves warning rule decisions and unknown required predicates.
+
+### Gate S7R2 - Final Agent-Safety Correction
+
+Acceptance:
+
+- mixed known and unknown relation states produce `UNKNOWN` when missing evidence could change existence;
+- fully evaluated zero-relation anchors still produce definitive `FAIL`;
+- proven relation witnesses remain `PASS` despite unrelated missing evidence;
+- witness selection is scoped to the requested relation source;
+- agent-visible `exists` and `count_at_least` reject raw relation episode inputs;
+- agent-authored complexity limits cannot exceed trusted host ceilings;
+- S4, S6, S7, M1 parity, determinism, and non-match inspection remain green.
+
 ## Replacement Acceptance Tests
 
 Before M1.2 begins, all of the following must pass:

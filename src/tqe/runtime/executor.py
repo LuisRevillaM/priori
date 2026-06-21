@@ -447,6 +447,11 @@ class TacticalQueryExecutor:
         )
         for node in bound_plan.nodes:
             self._execute_node(state=state, node=node, compatibility_profile=profile)
+            enforce_runtime_complexity_limits(
+                state=state,
+                node=node,
+                bound_plan=bound_plan,
+            )
         return state
 
     def _execute_node(
@@ -691,11 +696,19 @@ def apply_result_semantics(
             traces_by_result[result_id].append(trace)
     for result in filtered:
         result_id = str(result["result_id"])
-        result["matched_classification_rules"] = matching_classification_rules(
-            result=result,
-            traces=traces_by_result.get(result_id, []),
-            bound_plan=bound_plan,
-        )
+        decisions = result.get("classification_rule_decisions")
+        if isinstance(decisions, list) and all(isinstance(item, dict) for item in decisions):
+            result["matched_classification_rules"] = [
+                str(item["label"])
+                for item in decisions
+                if item.get("label") is not None
+            ]
+        else:
+            result["matched_classification_rules"] = matching_classification_rules(
+                result=result,
+                traces=traces_by_result.get(result_id, []),
+                bound_plan=bound_plan,
+            )
 
     if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INVALIDATE_EXECUTION:
         if any(trace.status == "UNKNOWN" for trace in trace_records):
@@ -754,10 +767,11 @@ def emit_generic_results_from_rules(
                 existing_predicate_ids={trace.predicate_id for trace in anchor_traces},
             )
         )
-        labels = rule_labels_for_traces(
+        rule_decisions = rule_decisions_for_traces(
             traces=anchor_traces,
             bound_plan=bound_plan,
         )
+        labels = [decision["label"] for decision in rule_decisions]
         traces.extend(
             [
                 trace.model_copy(
@@ -781,6 +795,9 @@ def emit_generic_results_from_rules(
             "classification": classification,
             "accepted": True,
             "matched_classification_rules": labels,
+            "classification_rule_decisions": rule_decisions,
+            "rule_match_status": rule_decisions[0]["rule_match_status"],
+            "unknown_required_predicates": rule_decisions[0]["unknown_required_predicates"],
             "requested_evidence": project_requested_evidence_from_runtime(
                 state=state,
                 anchor=anchor,
@@ -841,20 +858,41 @@ def rule_labels_for_traces(
     traces: list[PredicateTrace],
     bound_plan: BoundQueryPlan,
 ) -> list[str]:
+    return [decision["label"] for decision in rule_decisions_for_traces(traces=traces, bound_plan=bound_plan)]
+
+
+def rule_decisions_for_traces(
+    *,
+    traces: list[PredicateTrace],
+    bound_plan: BoundQueryPlan,
+) -> list[dict[str, Any]]:
     status_by_predicate = {trace.predicate_id: trace.status for trace in traces}
-    matching: list[tuple[int, int, ClassificationRule]] = []
+    matching: list[tuple[int, int, ClassificationRule, str, list[str]]] = []
     rule_order = {id(rule): index for index, rule in enumerate(bound_plan.classification_rules)}
     for rule in bound_plan.classification_rules:
         statuses = [status_by_predicate.get(predicate_id, "UNKNOWN") for predicate_id in rule.predicate_ids]
         if any(status == "FAIL" for status in statuses):
             continue
+        unknown_predicates = [
+            predicate_id
+            for predicate_id in rule.predicate_ids
+            if status_by_predicate.get(predicate_id, "UNKNOWN") == "UNKNOWN"
+        ]
         if any(status == "UNKNOWN" for status in statuses):
             if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INCLUDE_WITH_WARNING:
-                matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule))
+                matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule, "WARNING", unknown_predicates))
             continue
-        matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule))
+        matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule, "PASS", []))
     matching.sort(key=lambda item: (-item[0], item[1]))
-    return [rule.label for _specificity, _order, rule in matching]
+    return [
+        {
+            "label": rule.label,
+            "rule_match_status": match_status,
+            "unknown_required_predicates": unknown_predicates,
+            "predicate_ids": list(rule.predicate_ids),
+        }
+        for _specificity, _order, rule, match_status, unknown_predicates in matching
+    ]
 
 
 def matching_classification_rules(
@@ -891,10 +929,15 @@ def project_requested_evidence_from_runtime(
     bound_plan: BoundQueryPlan,
 ) -> dict[str, Any]:
     projected: dict[str, Any] = {}
-    selected_relation_id = selected_relation_id_for_anchor(state=state, anchor=anchor)
     for request in bound_plan.requested_evidence:
         key = request.alias or f"{request.source.source_node_id}.{request.field}"
         runtime_value = state.runtime_values.get(request.source.source_node_id, {}).get(request.source.output_name)
+        selected_relation_id = selected_relation_id_for_anchor(
+            state=state,
+            anchor=anchor,
+            source_node_id=request.source.source_node_id,
+            output_name=request.source.output_name,
+        )
         projected[key] = evidence_value_for_anchor(
             runtime_value=runtime_value,
             anchor=anchor,
@@ -938,8 +981,38 @@ def selected_relation_id_for_anchor(
     *,
     state: PeriodState,
     anchor: RuntimeAnchor,
+    source_node_id: str | None = None,
+    output_name: str | None = None,
 ) -> str | None:
-    for outputs in state.runtime_values.values():
+    for node_id, outputs in state.runtime_values.items():
+        for runtime_value in outputs.values():
+            for record in runtime_records(runtime_value):
+                if record.get("predicate_id") is None:
+                    continue
+                source_record = record.get("source_record") if isinstance(record.get("source_record"), dict) else record
+                if not record_matches_anchor(source_record, anchor):
+                    continue
+                source_evidence = record.get("source_evidence")
+                if not witness_source_matches(
+                    source_evidence=source_evidence,
+                    requested_source_node_id=source_node_id,
+                    requested_output_name=output_name,
+                ):
+                    continue
+                if isinstance(source_evidence, dict) and source_evidence.get("witness_relation_id") is not None:
+                    return str(source_evidence["witness_relation_id"])
+    for node_id, outputs in state.runtime_values.items():
+        if source_node_id is not None and node_id != source_node_id:
+            continue
+        runtime_value = outputs.get("anchor_evaluations")
+        if runtime_value is None:
+            continue
+        for record in runtime_records(runtime_value):
+            if record_matches_anchor(record, anchor) and record.get("witness_relation_id") is not None:
+                return str(record["witness_relation_id"])
+    for node_id, outputs in state.runtime_values.items():
+        if source_node_id is not None and node_id != source_node_id:
+            continue
         runtime_value = outputs.get("classification")
         if runtime_value is None:
             continue
@@ -947,6 +1020,24 @@ def selected_relation_id_for_anchor(
             if record_matches_anchor(record, anchor) and record.get("relation_id") is not None:
                 return str(record["relation_id"])
     return None
+
+
+def witness_source_matches(
+    *,
+    source_evidence: Any,
+    requested_source_node_id: str | None,
+    requested_output_name: str | None,
+) -> bool:
+    if requested_source_node_id is None or not isinstance(source_evidence, dict):
+        return True
+    if source_evidence.get("source_node_id") != requested_source_node_id:
+        return False
+    source_output = source_evidence.get("source_output_name")
+    if requested_output_name in {None, source_output}:
+        return True
+    if requested_output_name == "episodes" and source_output == "anchor_evaluations":
+        return True
+    return False
 
 
 def evidence_value_for_anchor(
@@ -1008,6 +1099,36 @@ def catalog_input_value(
             f"{node.node_id} cannot resolve runtime input "
             f"{input_name}={reference.source_node_id}.{reference.output_name}"
         ) from error
+
+
+def enforce_runtime_complexity_limits(
+    *,
+    state: PeriodState,
+    node: BoundPlanNode,
+    bound_plan: BoundQueryPlan,
+) -> None:
+    if not isinstance(node, BoundCatalogNode) or node.kind != NodeKind.RELATION:
+        return
+    limit = int(bound_plan.complexity_limits.max_relations_per_anchor)
+    runtime_value = state.runtime_values.get(node.node_id, {}).get("episodes")
+    if runtime_value is None:
+        return
+    counts: Counter[str] = Counter()
+    for record in runtime_records(runtime_value):
+        key = str(record.get("anchor_id") or record.get("result_id") or record.get("anchor_frame_id") or "")
+        if key:
+            counts[key] += 1
+    violations = {
+        anchor_key: count
+        for anchor_key, count in counts.items()
+        if count > limit
+    }
+    if violations:
+        sample_key, sample_count = sorted(violations.items(), key=lambda item: (-item[1], item[0]))[0]
+        raise RuntimeError(
+            f"{node.node_id} exceeded max_relations_per_anchor={limit}; "
+            f"anchor {sample_key} produced {sample_count} relations"
+        )
 
 
 def runtime_records(value: RuntimeValue) -> list[dict[str, Any]]:
@@ -1424,6 +1545,12 @@ def execute_predicate_with_resolved_inputs(
         source = runtime_value.value
         if isinstance(source, list):
             records = [record for record in source if isinstance(record, dict)]
+            coverage = relation_anchor_evaluation_records(records)
+            if coverage:
+                return exists_from_anchor_evaluations(
+                    node=node,
+                    records=coverage,
+                )
             frame_ids = [
                 source_record_frame_id(record)
                 for record in records
@@ -1467,8 +1594,144 @@ def execute_predicate_with_resolved_inputs(
         compare = parameters.get("compare")
         if compare is None or not isinstance(source, list):
             raise RuntimeError(f"Unsupported count_at_least source for {node.node_id}")
+        records = [record for record in source if isinstance(record, dict)]
+        coverage = relation_anchor_evaluation_records(records)
+        if coverage:
+            return count_at_least_from_anchor_evaluations(
+                node=node,
+                records=coverage,
+                threshold=int(round(float(compare.value))),
+            )
         return {"predicate": len(source) >= int(round(float(compare.value)))}
     raise RuntimeError(f"Unsupported predicate operator {node.operator.name}")
+
+
+def relation_anchor_evaluation_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        record
+        for record in records
+        if record.get("evaluation_status") in {"PASS", "FAIL", "UNKNOWN"}
+        and "anchor_frame_id" in record
+        and "relation_count" in record
+    ]
+
+
+def exists_from_anchor_evaluations(
+    *,
+    node: BoundPredicateNode,
+    records: list[dict[str, Any]],
+) -> dict[str, Any]:
+    statuses = [anchor_evaluation_status(record) for record in records]
+    return predicate_output_from_anchor_evaluations(
+        node=node,
+        records=records,
+        statuses=statuses,
+        values=[None if status is None else bool(status) for status in statuses],
+        threshold=None,
+    )
+
+
+def count_at_least_from_anchor_evaluations(
+    *,
+    node: BoundPredicateNode,
+    records: list[dict[str, Any]],
+    threshold: int,
+) -> dict[str, Any]:
+    statuses: list[bool | None] = []
+    values: list[int | None] = []
+    for record in records:
+        if str(record.get("evaluation_status")) == "UNKNOWN":
+            statuses.append(None)
+            values.append(None)
+            continue
+        count = optional_int(record.get("relation_count"))
+        if count is None:
+            statuses.append(None)
+            values.append(None)
+            continue
+        statuses.append(count >= threshold)
+        values.append(count)
+    return predicate_output_from_anchor_evaluations(
+        node=node,
+        records=records,
+        statuses=statuses,
+        values=values,
+        threshold=TypedValue(payload_type=PayloadType.NUMBER, value=threshold, unit=Unit.COUNT),
+    )
+
+
+def anchor_evaluation_status(record: dict[str, Any]) -> bool | None:
+    status = str(record.get("evaluation_status"))
+    if status == "PASS":
+        return True
+    if status == "FAIL":
+        return False
+    return None
+
+
+def predicate_output_from_anchor_evaluations(
+    *,
+    node: BoundPredicateNode,
+    records: list[dict[str, Any]],
+    statuses: list[bool | None],
+    values: list[Any],
+    threshold: TypedValue | None,
+) -> dict[str, Any]:
+    usable = [
+        (record, status, value, optional_int(record.get("anchor_frame_id")))
+        for record, status, value in zip(records, statuses, values, strict=True)
+    ]
+    usable = [
+        (record, status, value, frame_id)
+        for record, status, value, frame_id in usable
+        if frame_id is not None
+    ]
+    predicate_records: list[dict[str, Any]] = []
+    for record, status, value, frame_id in usable:
+        predicate_records.append(
+            predicate_record_for_source_record(
+                source_record=record,
+                node=node,
+                status=predicate_status_label(status),
+                value=predicate_anchor_evaluation_value(value),
+                threshold=threshold,
+                unit=threshold.unit if threshold is not None else Unit.NONE,
+                frame_id=frame_id,
+                source_evidence={
+                    "source_node_id": node.input.source_node_id,
+                    "source_output_name": node.input.output_name,
+                    "witness_relation_id": record.get("witness_relation_id"),
+                    "relation_count": record.get("relation_count"),
+                    "evaluation_status": record.get("evaluation_status"),
+                    "unknown_reason": record.get("unknown_reason"),
+                },
+            )
+        )
+    return {
+        "predicate": FrameSignal(
+            frame_ids=[int(frame_id) for _record, _status, _value, frame_id in usable],
+            values=[status for _record, status, _value, _frame_id in usable],
+            unknown_mask=[status is None for _record, status, _value, _frame_id in usable],
+            unit=node.output.unit,
+            entity_scope=node.output.entity_scope,
+        ),
+        "predicate_records": predicate_records,
+        "items": [
+            record
+            for record, status, _value, _frame_id in usable
+            if status is True
+        ],
+    }
+
+
+def predicate_anchor_evaluation_value(value: Any) -> TypedValue | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return TypedValue(payload_type=PayloadType.BOOLEAN, value=value, unit=Unit.NONE)
+    if isinstance(value, int | float) and not isinstance(value, bool):
+        return TypedValue(payload_type=PayloadType.NUMBER, value=float(value), unit=Unit.COUNT)
+    return None
 
 
 def numeric_runtime_values(runtime_value: RuntimeValue, node_id: str) -> list[float | None]:
@@ -1946,6 +2209,7 @@ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatal
     if not source_results:
         state.signals[node.node_id] = {
             "episodes": [],
+            "anchor_evaluations": [],
             "source_results": [],
             "summary": {
                 "episode_count": 0,
@@ -1997,14 +2261,23 @@ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatal
             item["relation_id"],
         )
     )
+    anchor_evaluations = relation_anchor_evaluations_from_filtered(
+        source_results=source_results,
+        filtered=filtered,
+        raw_anchor_evaluations=relation_report.get("anchor_evaluations") or [],
+    )
     state.signals[node.node_id] = {
         "episodes": filtered,
+        "anchor_evaluations": anchor_evaluations,
         "source_results": source_results,
         "anchor_source": relation_anchor_source(node),
         "summary": {
             **relation_report["summary"],
             "filtered_episode_count": len(filtered),
             "filtered_result_count_with_episode": len({item["result_id"] for item in filtered}),
+            "filtered_anchor_evaluation_counts": dict(
+                sorted(Counter(item["evaluation_status"] for item in anchor_evaluations).items())
+            ),
             "anchor_source": relation_anchor_source(node),
             "side_filter": side_filter,
             "minimum_duration_seconds": minimum_duration_seconds,
@@ -2012,6 +2285,102 @@ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatal
         "config": relation_report["config"],
         "artifact_hash": relation_report["artifact_hash"],
     }
+
+
+def relation_anchor_evaluations_from_filtered(
+    *,
+    source_results: list[dict[str, Any]],
+    filtered: list[dict[str, Any]],
+    raw_anchor_evaluations: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    raw_by_result_id = {
+        str(record.get("result_id")): record
+        for record in raw_anchor_evaluations
+        if isinstance(record, dict) and record.get("result_id") is not None
+    }
+    filtered_by_result_id: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for episode in filtered:
+        filtered_by_result_id[str(episode["result_id"])].append(episode)
+
+    evaluations: list[dict[str, Any]] = []
+    for source_result in source_results:
+        result_id = str(source_result["result_id"])
+        raw = raw_by_result_id.get(result_id, {})
+        episodes = filtered_by_result_id.get(result_id, [])
+        base = {
+            **raw,
+            "relation": "geometric_progressive_corridor",
+            "relation_version": "0.1.0",
+            "result_id": result_id,
+            "anchor_id": str(source_result.get("anchor_id") or result_id),
+            "match_id": str(source_result["match_id"]),
+            "period": str(source_result["period"]),
+            "perspective_team_role": str(source_result["perspective_team_role"]),
+            "defending_team_role": str(source_result["defending_team_role"]),
+            "anchor_frame_id": int(source_result["anchor_frame_id"]),
+            "source_result": source_result,
+            "relation_anchor_source": raw.get("relation_anchor_source"),
+        }
+        if episodes:
+            witness = selected_relation_episode(episodes)
+            evaluations.append(
+                {
+                    **base,
+                    "evaluation_status": "PASS",
+                    "relation_count": len(episodes),
+                    "witness_relation_id": str(witness["relation_id"]),
+                    "unknown_reason": None,
+                }
+            )
+            continue
+        if raw.get("evaluation_status") == "UNKNOWN" or relation_coverage_has_unknown_evidence(raw):
+            evaluations.append(
+                {
+                    **base,
+                    "evaluation_status": "UNKNOWN",
+                    "relation_count": 0,
+                    "witness_relation_id": None,
+                    "unknown_reason": raw.get("unknown_reason") or "mixed_relation_evidence_unavailable",
+                }
+            )
+            continue
+        evaluations.append(
+            {
+                **base,
+                "evaluation_status": "FAIL",
+                "relation_count": 0,
+                "witness_relation_id": None,
+                "unknown_reason": None,
+            }
+        )
+    evaluations.sort(
+        key=lambda item: (
+            str(item["match_id"]),
+            str(item["period"]),
+            int(item["anchor_frame_id"]),
+            str(item["result_id"]),
+        )
+    )
+    return evaluations
+
+
+def relation_coverage_has_unknown_evidence(record: dict[str, Any]) -> bool:
+    counts = record.get("state_counts")
+    if not isinstance(counts, dict):
+        return False
+    return int(counts.get("UNKNOWN") or 0) > 0 or int(counts.get("INVALID") or 0) > 0
+
+
+def selected_relation_episode(episodes: list[dict[str, Any]]) -> dict[str, Any]:
+    return sorted(
+        episodes,
+        key=lambda item: (
+            -float(item["duration_seconds"]),
+            -float(item["minimum_clearance_m"]),
+            int(item["open_frame_id"]),
+            str(item["relation_id"]),
+        ),
+    )[0]
 
 
 def select_relation_episode(

@@ -442,7 +442,23 @@ def default_relations() -> list[CatalogEntry]:
                         "source_close_point",
                         "target_close_point",
                     ],
-                )
+                ),
+                output(
+                    name="anchor_evaluations",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.BOOLEAN,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.ANCHOR,
+                    evidence_fields=[
+                        "anchor_id",
+                        "anchor_frame_id",
+                        "evaluation_status",
+                        "relation_count",
+                        "witness_relation_id",
+                        "unknown_reason",
+                        "state_counts",
+                    ],
+                ),
             ],
             inputs=[
                 input_ref(
@@ -593,7 +609,23 @@ def default_relations() -> list[CatalogEntry]:
                         "source_close_point",
                         "target_close_point",
                     ],
-                )
+                ),
+                output(
+                    name="anchor_evaluations",
+                    temporal_type=TemporalContainer.EPISODE_SET,
+                    payload_type=PayloadType.BOOLEAN,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.ANCHOR,
+                    evidence_fields=[
+                        "anchor_id",
+                        "anchor_frame_id",
+                        "evaluation_status",
+                        "relation_count",
+                        "witness_relation_id",
+                        "unknown_reason",
+                        "state_counts",
+                    ],
+                ),
             ],
             inputs=[
                 input_ref(
@@ -858,12 +890,11 @@ def default_operators() -> list[OperatorSignature]:
         OperatorSignature(
             name="exists",
             version="1.0.0",
-            purpose="Test whether an episode or relation collection contains any episode.",
+            purpose="Test whether a boolean episode or anchor-evaluation collection exists.",
             input_temporal_types=[
                 TemporalContainer.EPISODE_SET,
-                TemporalContainer.RELATION_EPISODE_SET,
             ],
-            input_payload_types=[PayloadType.BOOLEAN, PayloadType.RELATION_REF],
+            input_payload_types=[PayloadType.BOOLEAN],
             input_cardinalities=[Cardinality.COLLECTION],
             output_temporal_type=TemporalContainer.FRAME_SIGNAL,
             output_payload_type=PayloadType.BOOLEAN,
@@ -872,12 +903,11 @@ def default_operators() -> list[OperatorSignature]:
         OperatorSignature(
             name="count_at_least",
             version="1.0.0",
-            purpose="Count a collection and compare to a count threshold.",
+            purpose="Count a boolean or entity collection and compare to a count threshold.",
             input_temporal_types=[
                 TemporalContainer.EPISODE_SET,
-                TemporalContainer.RELATION_EPISODE_SET,
             ],
-            input_payload_types=[PayloadType.ENTITY_SET, PayloadType.RELATION_REF, PayloadType.BOOLEAN],
+            input_payload_types=[PayloadType.ENTITY_SET, PayloadType.BOOLEAN],
             input_cardinalities=[Cardinality.COLLECTION],
             compare_payload_types=[PayloadType.NUMBER],
             compare_required=True,
@@ -895,9 +925,9 @@ def default_catalog() -> CapabilityCatalog:
         operators=default_operators(),
         default_complexity_limits=ComplexityLimits(
             max_plan_nodes=40,
-            max_nesting_depth=8,
+            max_nesting_depth=12,
             max_temporal_horizon_seconds=15.0,
-            max_returned_moments=100,
+            max_returned_moments=500,
             max_relations_per_anchor=1000,
             max_execution_cost=100000,
         ),
