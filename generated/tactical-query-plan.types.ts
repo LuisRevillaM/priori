@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from Pydantic TacticalQuerySchemaBundle.
-// schema_sha256: 10959fb716e7a4f4507b2a18b9207ef3c8671a1398eb5d34c403c0b63bffca16
+// schema_sha256: ef278b28b4b2d31f9b7730af3135302c5aea377111ee92b744b90c92c32dcd7a
 
 export type TemporalContainer = 'scalar' | 'frame_signal' | 'episode_set' | 'relation_episode_set';
 export type PayloadType = 'boolean' | 'number' | 'enum' | 'anchor_ref' | 'entity_ref' | 'team_ref' | 'region_ref' | 'point' | 'entity_set' | 'relation_ref';

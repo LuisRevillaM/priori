@@ -283,6 +283,7 @@ def unknown_policy_probe_bound(policy: UnknownEvidencePolicy) -> Any:
     payload = plan_payload()
     payload["draft_plan"]["unknown_evidence_policy"] = policy.value
     payload["draft_plan"]["anchor_source"] = {"source_node_id": "possession", "output_name": "anchors"}
+    payload["draft_plan"]["requested_evidence"] = []
     payload["draft_plan"]["classification_rules"] = [
         {
             "label": "DESTINATION_ENTERED",

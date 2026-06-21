@@ -675,7 +675,8 @@
           "output_name": "classification"
         },
         "field": "destination_entry_frame_id",
-        "alias": "destination_entry_frame_id"
+        "alias": "destination_entry_frame_id",
+        "required": false
       }
     ],
     "anchor_source": {

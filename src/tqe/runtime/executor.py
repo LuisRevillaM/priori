@@ -280,6 +280,9 @@ class TacticalQueryExecutor:
                 for trace in trace_records
                 if str(trace.source_evidence.get("result_id")) in kept_ids
             ]
+        evidence_failures = unresolved_requested_evidence(results, bound_plan)
+        if evidence_failures:
+            unknown_policy_status = ExecutionStatus.INCOMPLETE
 
         query_results = [
             QueryResult(
@@ -335,6 +338,8 @@ class TacticalQueryExecutor:
                 "runtime_value_count": runtime_value_count,
                 "unknown_policy": bound_plan.unknown_evidence_policy.value,
                 "unknown_trace_count": sum(1 for trace in trace_records if trace.status == "UNKNOWN"),
+                "requested_evidence_failure_count": len(evidence_failures),
+                "requested_evidence_failures": evidence_failures[:20],
                 "runtime_trace_hash": stable_hash(trace_payload),
             },
         )
@@ -897,6 +902,36 @@ def project_requested_evidence_from_runtime(
             selected_relation_id=selected_relation_id,
         )
     return projected
+
+
+def unresolved_requested_evidence(
+    results: list[dict[str, Any]],
+    bound_plan: BoundQueryPlan,
+) -> list[dict[str, Any]]:
+    required_aliases = {
+        request.alias or f"{request.source.source_node_id}.{request.field}"
+        for request in bound_plan.requested_evidence
+        if request.required
+    }
+    failures: list[dict[str, Any]] = []
+    for result in results:
+        requested = result.get("requested_evidence")
+        if not isinstance(requested, dict):
+            continue
+        missing = sorted(
+            key
+            for key, value in requested.items()
+            if key in required_aliases and value is None
+        )
+        if missing:
+            failures.append(
+                {
+                    "result_id": str(result.get("result_id")),
+                    "classification": str(result.get("classification")),
+                    "missing_aliases": missing,
+                }
+            )
+    return failures
 
 
 def selected_relation_id_for_anchor(

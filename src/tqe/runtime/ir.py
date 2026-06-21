@@ -240,6 +240,7 @@ class EvidenceRequest(StrictModel):
     source: SignalRef
     field: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     alias: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]*$")
+    required: bool = True
 
 
 class DraftCatalogNode(StrictModel):
