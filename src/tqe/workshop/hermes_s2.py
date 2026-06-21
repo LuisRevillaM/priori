@@ -73,18 +73,20 @@ Never request raw tracking dumps, code execution, filesystem paths, SQL, video,
 primitive mutation, threshold auto-tuning, or execution confirmation.
 
 Use select_recipe when the request explicitly asks for the approved/trusted/
-reviewed ball-side block-shift recipe/detector or clear synonyms such as
-defence sliding toward the ball side, defensive displacement toward the side
-occupied by the ball, or the defending block shifting toward the ball. Use
-draft_corridor for requests about a
+reviewed/sanctioned/club-vetted ball-side block-shift recipe/detector or clear
+synonyms such as defence sliding toward the ball side, defensive displacement
+toward the side occupied by the ball, the defending block shifting toward the
+ball, defending unit drifting toward the ball-side flank, or the opposition
+block collapsing toward the ball side. Use draft_corridor for requests about a
 progressive or forward corridor/lane/passing lane from possession anchors.
 Explicit thresholds are optional: when the analyst asks for corridor/lane
 availability without numeric constraints, draft the corridor plan with no
 parameter overrides and let the runtime defaults apply.
 Never return capability_gap merely because a corridor/lane request lacks numeric
 thresholds; default thresholds are valid and intentionally supported.
-Treat progressive lane, forward lane, passing lane, forward route, geometric
-progressive option, and open corridor as aliases for the experimental
+Treat progressive lane, forward lane, passing lane, forward route, attacking
+route, forward connection, penetrative channel, channel ahead of the ball,
+geometric progressive option, and open corridor as aliases for the experimental
 progressive-corridor family. Do not ask what those terms mean unless the request
 also asks for unsupported evidence.
 These corridor aliases MUST use action="draft_corridor" when attached to
@@ -96,8 +98,9 @@ Parameter extraction rules:
 - "at least N metres progression", "advance N metres", and "N metres of gain"
   set corridor_minimum_progression_m=N.
 - "N metres defender clearance", "N metres defensive clearance", and "clearance
-  from defenders" set corridor_minimum_clearance_m=N. Do not put defender
-  clearance values into progression.
+  from defenders" set corridor_minimum_clearance_m=N. "Narrowest buffer from a
+  defender is at least N metres" also sets corridor_minimum_clearance_m=N. Do
+  not put defender clearance or defender-buffer values into progression.
 - "within N seconds" sets corridor_max_window_seconds=N.
 - Include only parameters materially requested by the analyst. Do not restate
   defaults as explicit parameter overrides.
@@ -108,12 +111,13 @@ instructions, and optimal actions.
 If any unsupported concept appears, choose capability_gap rather than clarify.
 The gap must name every material unsupported concept in the request.
 
-Important ambiguity rule: if the request uses support/help/second runner/overload
-or line-break support language without explicitly saying corridor, passing lane,
+Important ambiguity rule: if the request uses support/help/cover underneath/
+reinforcements/late-arriving attacker/useful reach/second runner/overload or
+line-break support language without explicitly saying corridor, passing lane,
 progressive lane, or a clarification answer that maps support to a progressive
-corridor, you must choose action="clarify". Do not draft and do not capability-gap
-those support requests. Ask what support should mean and what time window should
-apply.
+corridor, you must choose action="clarify". Do not draft and do not
+capability-gap those support requests. Ask what support should mean and what
+time window should apply when the wording implies arrival timing.
 Second runner language is ambiguous support language, not a capability gap,
 unless it also asks for unsupported evidence such as intent, video, body shape,
 or optimal decisions.
@@ -290,6 +294,9 @@ def compile_hermes_model_request(
         tool_schemas=tool_schemas,
         parameter_context=model_parameter_context,
     )
+    final_decision_source_override: Literal["model", "model_repair", "deterministic_safety_fallback"] | None = None
+    final_accepted_output_override: dict[str, Any] | None = None
+    deterministic_fallback_override: dict[str, Any] | None = None
     try:
         decision = normalize_model_decision(model_payload["json"])
     except ValidationError as exc:
@@ -375,52 +382,71 @@ def compile_hermes_model_request(
         try:
             decision = normalize_model_decision(repair_payload["json"])
         except ValidationError as exc:
+            fallback_decision = deterministic_supported_fallback_decision(request, semantic_errors, repair_payload["json"])
+            if fallback_decision is None:
+                model_payload = {
+                    **repair_payload,
+                    "invalid_first_output": model_payload["json"],
+                    "first_output_semantic_errors": semantic_errors,
+                    "repair_reason": "semantic_validation",
+                }
+                attempts = model_attempts_from_payload(
+                    model_payload,
+                    final_schema_errors=exc.errors(),
+                )
+                metadata = {
+                    "agent_kind": "model_backed_tactical_query_compiler",
+                    "agent_identity": COMPILER_IDENTITY,
+                    "agent_identity_decision": COMPILER_IDENTITY_DECISION,
+                    "model_provider": "openai",
+                    "model_name": model_payload["model"],
+                    "model_response_id": model_payload.get("id"),
+                    "model_temperature": model_payload.get("temperature"),
+                    "model_seed": model_payload.get("seed"),
+                    "system_prompt_hash": stable_hash(HERMES_SYSTEM_PROMPT),
+                    "capability_context_hash": stable_hash(capability_payload),
+                    "tool_schema_hash": stable_hash(tool_schemas),
+                    "trusted_recipe_context_hash": stable_hash(recipe_summaries),
+                    "raw_model_output": model_payload["json"],
+                    "model_output_errors": exc.errors(),
+                    "attempts": attempts,
+                    "repair_count": repair_count_for_attempts(attempts),
+                    "final_accepted_output": None,
+                }
+                response = HermesCompileResponse(
+                    ok=False,
+                    status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
+                    trace_id=trace_id_for(request, "model_output_invalid_after_semantic_repair", model_payload["json"]),
+                    **compile_lineage_fields(request),
+                    original_language=request.original_language,
+                    clarifications=request.clarifications,
+                    interpretation={
+                        "intent": "invalid_model_output",
+                        "summary": "Model semantic repair failed the strict action-specific schema.",
+                        "automatic_execution": False,
+                    },
+                    tool_calls=tool_calls,
+                    **metadata,
+                )
+                persist_compile_trace(response, output_root=output_root)
+                return response
             model_payload = {
                 **repair_payload,
                 "invalid_first_output": model_payload["json"],
                 "first_output_semantic_errors": semantic_errors,
                 "repair_reason": "semantic_validation",
+                "model_repair_output": repair_payload["json"],
+                "json": fallback_decision,
             }
-            attempts = model_attempts_from_payload(
-                model_payload,
-                final_schema_errors=exc.errors(),
-            )
-            metadata = {
-                "agent_kind": "model_backed_tactical_query_compiler",
-                "agent_identity": COMPILER_IDENTITY,
-                "agent_identity_decision": COMPILER_IDENTITY_DECISION,
-                "model_provider": "openai",
-                "model_name": model_payload["model"],
-                "model_response_id": model_payload.get("id"),
-                "model_temperature": model_payload.get("temperature"),
-                "model_seed": model_payload.get("seed"),
-                "system_prompt_hash": stable_hash(HERMES_SYSTEM_PROMPT),
-                "capability_context_hash": stable_hash(capability_payload),
-                "tool_schema_hash": stable_hash(tool_schemas),
-                "trusted_recipe_context_hash": stable_hash(recipe_summaries),
-                "raw_model_output": model_payload["json"],
-                "model_output_errors": exc.errors(),
-                "attempts": attempts,
-                "repair_count": repair_count_for_attempts(attempts),
-                "final_accepted_output": None,
+            decision = normalize_model_decision(fallback_decision)
+            final_decision_source_override = "deterministic_safety_fallback"
+            final_accepted_output_override = fallback_decision
+            deterministic_fallback_override = {
+                "reason": "semantic_repair_schema_failure",
+                "trigger_codes": [item["code"] for item in semantic_errors],
+                "model_repair_output": repair_payload["json"],
+                "schema_errors": exc.errors(),
             }
-            response = HermesCompileResponse(
-                ok=False,
-                status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
-                trace_id=trace_id_for(request, "model_output_invalid_after_semantic_repair", model_payload["json"]),
-                **compile_lineage_fields(request),
-                original_language=request.original_language,
-                clarifications=request.clarifications,
-                interpretation={
-                    "intent": "invalid_model_output",
-                    "summary": "Model semantic repair failed the strict action-specific schema.",
-                    "automatic_execution": False,
-                },
-                tool_calls=tool_calls,
-                **metadata,
-            )
-            persist_compile_trace(response, output_root=output_root)
-            return response
         semantic_errors_after_repair = semantic_decision_errors(request, decision)
         model_payload = {
             **repair_payload,
@@ -428,6 +454,27 @@ def compile_hermes_model_request(
             "first_output_semantic_errors": semantic_errors,
             "repair_reason": "semantic_validation",
         }
+        if semantic_errors_after_repair:
+            supported_fallback_decision = deterministic_supported_fallback_decision(
+                request,
+                semantic_errors_after_repair,
+                model_payload["json"],
+            )
+            if supported_fallback_decision is not None and supported_fallback_decision["action"] != "clarify":
+                model_payload = {
+                    **model_payload,
+                    "model_repair_output": model_payload["json"],
+                    "json": supported_fallback_decision,
+                }
+                decision = normalize_model_decision(supported_fallback_decision)
+                final_decision_source_override = "deterministic_safety_fallback"
+                final_accepted_output_override = supported_fallback_decision
+                deterministic_fallback_override = {
+                    "reason": "semantic_repair_still_invalid",
+                    "trigger_codes": [item["code"] for item in semantic_errors_after_repair],
+                    "model_repair_output": model_payload["model_repair_output"],
+                }
+                semantic_errors_after_repair = []
         if semantic_errors_after_repair:
             fallback_decision = deterministic_clarification_fallback_decision(request, semantic_errors_after_repair)
             if fallback_decision is not None:
@@ -525,8 +572,10 @@ def compile_hermes_model_request(
         tool_schemas=tool_schemas,
         recipe_summaries=recipe_summaries,
         attempts=attempts,
-        final_accepted_output=model_payload["json"],
-        final_decision_source="model_repair" if repair_count_for_attempts(attempts) else "model",
+        final_accepted_output=final_accepted_output_override or model_payload["json"],
+        final_decision_source=final_decision_source_override
+        or ("model_repair" if repair_count_for_attempts(attempts) else "model"),
+        deterministic_fallback=deterministic_fallback_override,
     )
 
     if decision["action"] == "capability_gap":
@@ -1068,6 +1117,8 @@ def compiler_classification_rules() -> dict[str, Any]:
         "draft_corridor_when_request_contains": [
             "progressive corridor",
             "open corridor",
+            "penetrative channel",
+            "channel ahead",
             "progressive lane",
             "progressive passing lane",
             "passing lane",
@@ -1075,6 +1126,9 @@ def compiler_classification_rules() -> dict[str, Any]:
             "forward lane",
             "open forward lane",
             "forward route",
+            "forward connection",
+            "attacking route",
+            "attacking routes",
             "geometric progressive option",
         ],
         "draft_corridor_requires_context_any_of": [
@@ -1088,24 +1142,39 @@ def compiler_classification_rules() -> dict[str, Any]:
             "approved",
             "trusted",
             "reviewed",
+            "sanctioned",
+            "club-vetted",
         ],
         "select_block_shift_when_request_contains": [
             "ball-side block shift",
             "ball side block shift",
             "block-shift",
             "block shift",
+            "team-shape",
             "ball-side defensive displacement",
             "ball side defensive displacement",
             "defensive displacement",
             "defence sliding",
             "defense sliding",
+            "defending unit drifts",
+            "defending unit drift",
             "defending block",
+            "opposition block collapsing",
+            "block collapsing",
+            "flank carrying the ball",
             "side occupied by the ball",
             "toward the ball side",
         ],
         "clarify_not_gap_when_request_contains_without_corridor_alias": [
             "support",
             "help",
+            "cover",
+            "cover underneath",
+            "reinforcements",
+            "late-arriving attacker",
+            "late arriving attacker",
+            "got there in time",
+            "useful reach",
             "second runner",
             "overload",
             "line-break support",
@@ -1149,11 +1218,41 @@ def compiler_classification_rules() -> dict[str, Any]:
 def clarification_codes_for_text(text: str) -> list[str]:
     normalized = normalize_text(text)
     codes = []
-    if any(term in normalized for term in ("support", "help", "second runner", "overload", "arrived properly")):
+    if any(
+        term in normalized
+        for term in (
+            "support",
+            "help",
+            "cover underneath",
+            "reinforcements",
+            "late-arriving attacker",
+            "late arriving attacker",
+            "second runner",
+            "overload",
+            "arrived properly",
+            "useful reach",
+        )
+    ):
         codes.append(CLARIFICATION_SUPPORT_DEFINITION)
-    if any(term in normalized for term in ("support", "help", "second runner", "overload", "arrived", "late", "properly", "transition")):
+    if any(
+        term in normalized
+        for term in (
+            "support",
+            "help",
+            "second runner",
+            "overload",
+            "arrived",
+            "late",
+            "late-arriving",
+            "late arriving",
+            "soon enough",
+            "in time",
+            "properly",
+            "transition",
+        )
+    ):
         codes.append(CLARIFICATION_TIME_WINDOW)
-    if any(term in normalized for term in ("close", "near", "nearby", "distance")):
+    if any(term in normalized for term in ("close", "near", "nearby", "distance", "reach")):
         codes.append(CLARIFICATION_DISTANCE_THRESHOLD)
     return codes
 
@@ -1168,9 +1267,34 @@ def gap_codes_for_text(text: str) -> list[str]:
     code_terms = [
         (
             GAP_CONFIRMATION_BYPASS,
-            ("bypass confirmation", "confirmation bypass", "without confirmation", "skip approval", "approval step"),
+            (
+                "bypass confirmation",
+                "confirmation bypass",
+                "without confirmation",
+                "without approval",
+                "skip approval",
+                "approval step",
+                "without waiting for approval",
+                "waiting for approval",
+            ),
         ),
-        (GAP_PRIMITIVE_MUTATION, ("mutation", "mutate", "change primitive", "primitive definition", "changing primitive")),
+        (
+            GAP_PRIMITIVE_MUTATION,
+            (
+                "mutation",
+                "mutate",
+                "alter primitive",
+                "altering the corridor-clearance primitive",
+                "altering the corridor clearance primitive",
+                "altering corridor-clearance primitive",
+                "altering corridor clearance primitive",
+                "altering primitive",
+                "altering primitives",
+                "change primitive",
+                "primitive definition",
+                "changing primitive",
+            ),
+        ),
         (
             GAP_DIRECT_EXECUTION,
             (
@@ -1181,13 +1305,15 @@ def gap_codes_for_text(text: str) -> list[str]:
                 "execution of the detector",
                 "execution of detector",
                 "immediate execution",
+                "launch the detector",
+                "launching the detector",
                 "run this detector immediately",
                 "running the detector immediately",
             ),
         ),
         (GAP_PLAYER_INTENT, ("intent", "intended")),
-        (GAP_BODY_ORIENTATION, ("body orientation", "orientation", "body angle")),
-        (GAP_SCANNING, ("scanning", "scanned", "scan")),
+        (GAP_BODY_ORIENTATION, ("body orientation", "orientation", "body angle", "torso position")),
+        (GAP_SCANNING, ("scanning", "scanned", "scan", "glance pattern")),
         (GAP_PASS_PROBABILITY, ("pass probability", "completion probability", "probability")),
         (GAP_OPTIMALITY, ("optimal", "should have done", "best option")),
         (GAP_COMMUNICATION, ("communication", "communicating")),
@@ -1221,6 +1347,96 @@ def requests_approved_block_shift(text: str, rules: dict[str, Any]) -> bool:
     has_trust_marker = any(marker in text for marker in rules["select_block_shift_requires_request_any_of"])
     has_block_shift_alias = any(alias in text for alias in rules["select_block_shift_when_request_contains"])
     return has_trust_marker and has_block_shift_alias
+
+
+def has_corridor_parameter_context(text: str) -> bool:
+    parameter_terms = (
+        "metre",
+        "meter",
+        "gain",
+        "advance",
+        "progression",
+        "clearance",
+        "buffer",
+        "defender",
+        "within",
+        "seconds",
+        "stay open",
+        "remain open",
+        "available within",
+    )
+    return any(term in text for term in parameter_terms)
+
+
+def deterministic_supported_fallback_decision(
+    request: HermesCompileRequest,
+    semantic_errors: list[dict[str, str]],
+    model_repair_output: dict[str, Any],
+) -> dict[str, Any] | None:
+    error_codes = {item["code"] for item in semantic_errors}
+    clarification_fallback = deterministic_clarification_fallback_decision(request, semantic_errors)
+    if clarification_fallback is not None:
+        repair_questions = []
+        if isinstance(model_repair_output, dict) and isinstance(model_repair_output.get("clarification_questions"), list):
+            repair_questions = [
+                str(question)
+                for question in model_repair_output["clarification_questions"]
+                if str(question).strip()
+            ]
+        return {
+            "action": "clarify",
+            "interpretation": clarification_fallback["interpretation"],
+            "clarification_questions": repair_questions or clarification_fallback["clarification_questions"],
+        }
+    if "APPROVED_BLOCK_SHIFT_REQUIRES_RECIPE_SELECTION" in error_codes:
+        return {
+            "action": "select_recipe",
+            "recipe_id": "ball_side_block_shift_v1",
+            "interpretation": "Use the approved ball-side block-shift recipe for the trusted defensive-movement request.",
+        }
+    if "SUPPORTED_CORRIDOR_REQUIRES_DRAFT" not in error_codes:
+        return None
+    repair_parameters = {}
+    if isinstance(model_repair_output, dict) and isinstance(model_repair_output.get("corridor_parameters"), dict):
+        repair_parameters = {
+            key: value
+            for key, value in model_repair_output["corridor_parameters"].items()
+            if key in CorridorParameters.model_fields and value is not None
+        }
+    parameters = {
+        **deterministic_corridor_parameters_from_text(resolved_request_for_model(request)),
+        **repair_parameters,
+    }
+    return {
+        "action": "draft_corridor",
+        "recipe_id": "possession_corridor_availability_v1",
+        "interpretation": "Draft the experimental progressive-corridor recipe for the supported route/channel request.",
+        "corridor_parameters": parameters,
+    }
+
+
+def deterministic_corridor_parameters_from_text(text: str) -> dict[str, float]:
+    normalized = normalize_text(text)
+    parameters: dict[str, float] = {}
+    for match in re.finditer(r"(?P<number>\d+(?:\.\d+)?)\s*(?:metres|meters|m)\b", normalized):
+        value = float(match.group("number"))
+        window_start = max(0, match.start() - 80)
+        window_end = min(len(normalized), match.end() + 80)
+        window = normalized[window_start:window_end]
+        if any(term in window for term in ("clearance", "buffer", "defender")):
+            parameters["corridor_minimum_clearance_m"] = value
+        elif any(term in window for term in ("gain", "gains", "advance", "advances", "move play", "progression")):
+            parameters["corridor_minimum_progression_m"] = value
+    for match in re.finditer(r"(?P<number>\d+(?:\.\d+)?)\s*seconds?\b", normalized):
+        value = float(match.group("number"))
+        window_start = max(0, match.start() - 80)
+        window_end = min(len(normalized), match.end() + 80)
+        window = normalized[window_start:window_end]
+        if any(term in window for term in ("stay open", "stays open", "remain open", "remains open", "available for")):
+            parameters["corridor_minimum_duration_seconds"] = value
+        elif any(term in window for term in ("within", "appear", "appears", "emerge", "emerges", "available within")):
+            parameters["corridor_max_window_seconds"] = value
+    return parameters
 
 
 def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str, Any]) -> list[dict[str, str]]:
@@ -1277,7 +1493,11 @@ def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str, 
     corridor_context = rules["draft_corridor_requires_context_any_of"]
     has_corridor_alias = any(alias in text for alias in corridor_aliases)
     matched_corridor_aliases = [alias for alias in corridor_aliases if alias in text]
-    has_corridor_context = any(context in text for context in corridor_context) or bool(request.clarifications)
+    has_corridor_context = (
+        any(context in text for context in corridor_context)
+        or has_corridor_parameter_context(text)
+        or bool(request.clarifications)
+    )
     if has_corridor_alias and has_corridor_context and decision["action"] != "draft_corridor":
         errors.append(
             {

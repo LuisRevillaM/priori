@@ -826,6 +826,7 @@ def capability_gap_codes(gaps: list[str]) -> list[str]:
     mapping = {
         "mutation": GAP_PRIMITIVE_MUTATION,
         "mutate": GAP_PRIMITIVE_MUTATION,
+        "primitive mutation": GAP_PRIMITIVE_MUTATION,
         "change primitive definitions": GAP_PRIMITIVE_MUTATION,
         "execution": GAP_DIRECT_EXECUTION,
         "direct execution": GAP_DIRECT_EXECUTION,

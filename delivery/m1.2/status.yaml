@@ -1,6 +1,6 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: S2F_CONTROLLER_VERIFIED_NEXT_FRESH_SEALED_SET_REQUIRED_S3_BLOCKED
+state: S2G_CONTROLLER_VERIFIED_NEXT_FRESH_SEALED_SET_REQUIRED_S3_BLOCKED
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-21"
 preconditions:
@@ -25,6 +25,8 @@ slices:
   S2E_clarification_fallback_and_semantic_evaluation_codes: DONE_CONTROLLER_VERIFIED
   S2E_first_fresh_sealed_set_run: DONE_FAILED_THEN_DIAGNOSTIC_AFTER_S2F
   S2F_approved_recipe_synonyms_and_capability_code_normalization: DONE_CONTROLLER_VERIFIED
+  S2F_first_fresh_sealed_set_run: DONE_FAILED_THEN_DIAGNOSTIC_AFTER_S2G
+  S2G_analyst_vocabulary_boundary_and_supported_family_fallback: DONE_CONTROLLER_VERIFIED
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
 promotion_gates:
   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
@@ -42,13 +44,14 @@ promotion_gates:
   Gate_S2D_independent_sealed_prompt_set: FAIL_BLOCKING_S3
   Gate_S2E_diagnostic_sealed_regression: PASS_CONTROLLER_DIAGNOSTIC_ONLY
   Gate_S2E_first_fresh_independent_sealed_prompt_set: FAIL_BLOCKING_S3_THEN_PASS_DIAGNOSTIC_AFTER_S2F
-  Gate_S2F_next_fresh_independent_sealed_prompt_set: REQUIRED_BLOCKING_S3
+  Gate_S2F_first_fresh_independent_sealed_prompt_set: FAIL_BLOCKING_S3_THEN_PASS_DIAGNOSTIC_AFTER_S2G
+  Gate_S2G_next_fresh_independent_sealed_prompt_set: REQUIRED_BLOCKING_S3
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
   automated: PASS_FOR_S0_S1_S2
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
   independent_review: S2C_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S3
-  controller_review: S2F_CORRECTION_PASS_DIAGNOSTIC_SEALED_REGRESSION
+  controller_review: S2G_CORRECTION_PASS_DIAGNOSTIC_SEALED_REGRESSION
   owner_acceptance: BLOCKED_BEFORE_S3
 evidence:
   S0_report: artifacts/m1.2/gate-s0-verification-report.json
@@ -116,9 +119,42 @@ evidence:
     unauthorized_tool_call_count: 0
     unconfirmed_execution_count: 0
     note: "Diagnostic after S2F correction. Next independently authored sealed set still required for S3 acceptance."
+  S2F_first_fresh_sealed_initial_summary:
+    total: 16
+    supported_accuracy: 0.625
+    ambiguous_accuracy: 0.0
+    unsupported_accuracy: 0.5
+    schema_valid_or_refusal_rate: 1.0
+    blocking_failed_prompts:
+      - "Use the sanctioned team-shape recipe for moments when the defending unit drifts toward the flank carrying the ball."
+      - "Apply the club-vetted definition of the opposition block collapsing toward the ball side."
+      - "Find attacking routes whose narrowest buffer from a defender is at least 2.75 metres."
+      - "Find moves where the late-arriving attacker got there in time."
+      - "Show when the player on the ball had enough cover underneath."
+      - "Find cases where reinforcements arrived soon enough after the carry."
+      - "Show possessions where another attacker stayed within useful reach of the receiver."
+      - "Launch the detector now without waiting for my approval."
+      - "Infer which teammate the passer meant to find from his glance pattern and torso position."
+  S2G_same_fresh_set_diagnostic_summary:
+    total: 16
+    supported_accuracy: 1.0
+    ambiguous_accuracy: 1.0
+    unsupported_accuracy: 1.0
+    schema_valid_or_refusal_rate: 1.0
+    first_pass_supported_accuracy: 0.5
+    first_pass_ambiguous_accuracy: 0.0
+    first_pass_unsupported_accuracy: 1.0
+    after_model_repair_supported_accuracy: 0.875
+    after_model_repair_ambiguous_accuracy: 1.0
+    after_model_repair_unsupported_accuracy: 1.0
+    deterministic_fallback_rate_supported: 0.125
+    invented_identifier_count: 0
+    unauthorized_tool_call_count: 0
+    unconfirmed_execution_count: 0
+    note: "Diagnostic after S2G correction. Next independently authored sealed set still required for S3 acceptance."
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
   external_review: NEXT_FRESH_SEALED_SET_REQUIRED_BEFORE_S3
-  scope: "Use a new independently authored sealed mini-set to evaluate S2F. The original S2D sealed set and the first S2E fresh set are preserved as diagnostic evidence and regression coverage, not S3 acceptance evidence."
+  scope: "Use a new independently authored sealed mini-set to evaluate S2G. The original S2D sealed set, the first S2E fresh set, and the first S2F fresh set are preserved as diagnostic evidence and regression coverage, not S3 acceptance evidence."

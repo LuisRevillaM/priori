@@ -152,6 +152,22 @@ limited to:
 The S2E fresh set is diagnostic after S2F. S3 still requires a new independent
 sealed set created after S2F freeze.
 
+The first S2F fresh sealed mini-set exposed **S2G - Analyst Vocabulary Boundary
+and Deterministic Supported-Family Fallback**. S2G is limited to:
+
+- bounded analyst synonyms for the two existing supported families;
+- support-clarification vocabulary such as late-arriving attacker,
+  reinforcements, cover underneath, and useful reach;
+- capability-code normalization for approval, primitive-mutation, glance, and
+  torso-position wording;
+- deterministic fallback when semantic validation already proves a supported
+  recipe family or clarification requirement but model repair is malformed or
+  still semantically wrong.
+
+S2G does not add tactical primitives, runtime semantics, recipe families, or UI
+behavior. The first S2F fresh set is diagnostic after S2G. S3 still requires a
+new independent sealed set created after S2G freeze.
+
 ## Scope
 
 M1.2 includes:
