@@ -101,6 +101,27 @@ Unsupported concepts must not be silently approximated. A disclosed approximatio
 
 Hermes may not fabricate explanations for non-matches. It must present the engine result, including `NO_COMPATIBLE_ANCHOR` when applicable.
 
+## M1.2 S0 Capability Guard
+
+The Hermes-visible capability context is stricter than the internal catalog. S0 must expose only operator/source combinations with positive proof coverage.
+
+Until broader collection semantics are intentionally designed and tested:
+
+- Hermes may use `exists` and `count_at_least` only for declared `anchor_evaluations` coverage outputs;
+- Hermes must not bind `exists` or `count_at_least` directly to raw relation episode collections;
+- Hermes must not use generic Boolean `EpisodeSet` counting as if it were anchor-relative;
+- rejected or hidden combinations must appear as explicit capability gaps, not silent approximations.
+
+The S0 verifier must prove that the Hermes-facing capability context enforces this safe subset even if the internal runtime contains broader compatibility paths.
+
+## Human Visual Inspection Boundary
+
+M1.2 requires human visual inspection, but not polished UI. The manual reference workshop in S1 must let a user open each result and relevant non-match in a coordinate replay window.
+
+Structural traces answer why the engine matched. Coordinate replay lets the user decide whether the spatial sequence captures the intended football concept.
+
+Final typography, transitions, guided mode, and visual polish remain outside M1.2.
+
 ## Feedback Labels
 
 Structured feedback labels:
