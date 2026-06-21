@@ -1,6 +1,6 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: S2H_CONTROLLER_VERIFIED_NEXT_FRESH_SEALED_SET_REQUIRED_S3_BLOCKED
+state: S2I_PLANNED_SMALL_MODEL_BASELINE_FROZEN_WORKBENCH_ALPHA_PARALLEL
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-21"
 preconditions:
@@ -29,6 +29,8 @@ slices:
   S2G_analyst_vocabulary_boundary_and_supported_family_fallback: DONE_CONTROLLER_VERIFIED
   S2G_first_fresh_sealed_set_run: DONE_FAILED_THEN_DIAGNOSTIC_AFTER_S2H
   S2H_stable_agent_vocabulary_codes_and_sealed_set_drift_control: DONE_CONTROLLER_VERIFIED
+  S2I_frontier_agent_provisioning_and_context_rebaseline: PLANNED
+  Workbench_Alpha_query_to_replay_ui: PLANNED_PARALLEL
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
 promotion_gates:
   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
@@ -48,13 +50,15 @@ promotion_gates:
   Gate_S2E_first_fresh_independent_sealed_prompt_set: FAIL_BLOCKING_S3_THEN_PASS_DIAGNOSTIC_AFTER_S2F
   Gate_S2F_first_fresh_independent_sealed_prompt_set: FAIL_BLOCKING_S3_THEN_PASS_DIAGNOSTIC_AFTER_S2G
   Gate_S2G_first_fresh_independent_sealed_prompt_set: FAIL_BLOCKING_S3_THEN_PASS_DIAGNOSTIC_AFTER_S2H
-  Gate_S2H_next_fresh_independent_sealed_prompt_set: REQUIRED_BLOCKING_S3
+  Gate_S2H_next_fresh_independent_sealed_prompt_set: CANCELLED_SUPERSEDED_BY_S2I
+  Gate_S2I_frontier_agent_path_and_final_sealed_acceptance: REQUIRED_BLOCKING_S3
+  Gate_Workbench_Alpha_query_to_replay: REQUIRED_BLOCKING_S3
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
   automated: PASS_FOR_S0_S1_S2
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
   independent_review: S2C_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S3
-  controller_review: S2H_CORRECTION_PASS_DIAGNOSTIC_SEALED_REGRESSION
+  controller_review: S2I_REPLAN_ACCEPTED_SMALL_MODEL_BASELINE_FROZEN
   owner_acceptance: BLOCKED_BEFORE_S3
 evidence:
   S0_report: artifacts/m1.2/gate-s0-verification-report.json
@@ -188,9 +192,20 @@ evidence:
     unauthorized_tool_call_count: 0
     unconfirmed_execution_count: 0
     note: "Diagnostic after S2H correction. Next independently authored sealed set still required for S3 acceptance."
+  S2I_replan:
+    small_model_baseline_commit: f9eb5d8
+    small_model_role: REFERENCE_COMPILER_HARNESS_AND_FALLBACK
+    stop_gpt_4o_mini_sealed_set_cycle: true
+    required_artifacts:
+      - CURRENT_STATE.md
+      - generated/tactical-knowledge-pack.json
+      - generated/tactical-knowledge-pack.md
+    required_runtime_path: "Hermes + GPT-5.5 + Tactical Knowledge Pack + bounded tool surface"
+    direct_compiler_role: CONTROL_EVAL_DEBUG_FALLBACK_ONLY
+    final_sealed_acceptance_required_after_s2i_freeze: true
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: NEXT_FRESH_SEALED_SET_REQUIRED_BEFORE_S3
-  scope: "Use a new independently authored sealed mini-set to evaluate S2H. The original S2D sealed set and the first S2E/S2F/S2G fresh sets are preserved as diagnostic evidence and regression coverage, not S3 acceptance evidence."
+  external_review: NONE_BEFORE_S2I_IMPLEMENTATION_UNLESS_SCOPE_CHANGES
+  scope: "Stop the gpt-4o-mini sealed-set cycle. Freeze f9eb5d8 as the small-model compiler baseline. Implement S2I and Workbench Alpha in parallel. Run one final independent sealed acceptance set only after the intended Hermes/frontier-model runtime is frozen."

@@ -185,6 +185,50 @@ S2H does not add runtime semantics, tactical primitives, recipe families, or UI
 behavior. The first S2G fresh set is diagnostic after S2H. S3 still requires a
 new independent sealed set created after S2H freeze.
 
+External planning review then stopped the `gpt-4o-mini` sealed-set cycle. S2H is
+the end of the small-model compiler-hardening lane. Commit `f9eb5d8` is frozen
+as the reference compiler harness and fallback/evaluation control. It remains
+operational, but it is no longer the target meeting runtime and must not receive
+another synonym-correction loop unless a concrete regression is found.
+
+The next runtime milestone is **S2I - Frontier Agent Provisioning and Context
+Rebaseline**. S2I proves the intended product path:
+
+```text
+Hermes + GPT-5.5
+-> Tactical Knowledge Pack
+-> bounded tool surface
+-> typed tactical plan
+-> deterministic validation
+-> host confirmation
+-> execution / replay
+```
+
+S2I is not a tactical-runtime redesign. The query IR, binder, executor, replay,
+tool boundary, and confirmation authority remain unchanged. S2I must:
+
+- generate `generated/tactical-knowledge-pack.json` and
+  `generated/tactical-knowledge-pack.md` from existing sources of truth;
+- remove duplicated football intelligence from prompts where generated pack
+  content can be used instead;
+- expose the bounded tactical tools through a Hermes-compatible MCP/tool
+  allowlist;
+- verify GPT-5.5 Responses API access with strict structured outputs and compare
+  at least `high` and `xhigh` reasoning effort when feasible;
+- keep the direct compiler harness as control/eval/debug/fallback only;
+- freeze model snapshot, reasoning effort, prompt/schema, knowledge-pack hash,
+  Hermes/tool config, repair policy, and deterministic fallback policy;
+- run one final independent sealed acceptance set after S2I freeze.
+
+Workbench Alpha starts in parallel with S2I. It should use the stable
+deterministic contracts to show the visible product loop: interpretation,
+confirmation, results, evidence, traces, coordinate replay, clarification, and
+capability-gap states. Workbench Alpha should not wait for Hermes to be perfect,
+and it should not add new tactical primitives or a second tactical family.
+
+S3 remains blocked until S2I passes and Workbench Alpha proves query-to-replay on
+real data.
+
 ## Scope
 
 M1.2 includes:
@@ -417,6 +461,11 @@ Initial acceptance:
 - 100 percent explicit capability-gap handling for unsupported primitives;
 - zero unconfirmed material revisions;
 - zero invented primitive or operator IDs.
+
+The `gpt-4o-mini` S2D-S2H sealed sets are now frozen as regression evidence for
+the reference harness, not acceptance evidence for the product runtime. S2I must
+define the frontier/Hermes final sealed acceptance run after model, prompt,
+knowledge pack, and tool configuration are frozen.
 
 M4 can later harden broader language reliability with a larger corpus.
 

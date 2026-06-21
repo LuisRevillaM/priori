@@ -3,8 +3,9 @@ state: IN_PROGRESS
 source_of_truth:
   charter: PROJECT_CHARTER.md
   roadmap: MILESTONES.md
-  current_milestone_spec: delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
-last_updated: "2026-06-20"
+  current_milestone_spec: delivery/m1.2/SPEC.md
+  current_state_snapshot: CURRENT_STATE.md
+last_updated: "2026-06-21"
 scope:
   dataset: IDSSE_DFL_PUBLIC
   integration: none
@@ -13,26 +14,26 @@ scope:
 milestones:
   M1:
     name: "Verified Ball-Side Block-Shift Evidence Spine"
-    state: VERIFIED_CONTROLLER_ONLY
+    state: VERIFIED_CONTROLLER
     status_file: delivery/m1/status.yaml
   M1.1:
     name: "Composable Tactical Query Runtime"
-    state: REJECTED_EXTERNAL_REVIEW_PENDING_M1_1S
+    state: ACCEPTED_VIA_M1_1S_S7R2
     status_file: delivery/m1.1/status.yaml
     depends_on: M1
   M1.2:
     name: "Grounded Tactical Query Workshop"
-    state: BLOCKED_PENDING_M1_1S_EXTERNAL_REVIEW
+    state: IN_PROGRESS_S2I_PLANNED_WORKBENCH_ALPHA_PARALLEL
     status_file: delivery/m1.2/status.yaml
     depends_on: M1.1
   M2:
     name: "Second Approved Tactical Family and Capability Catalog"
-    state: PLANNED
+    state: PLANNED_AFTER_S3_VISIBLE_LOOP
     depends_on: M1.2
   M3:
     name: "Analyst Workbench v1"
-    state: PLANNED
-    depends_on: M2
+    state: SPLIT_WORKBENCH_ALPHA_PARALLEL_WITH_M1_2
+    depends_on: M1.2
   M4:
     name: "Agent Reliability and Tactical Lexicon Hardening"
     state: CONDITIONAL_PLANNED
@@ -59,3 +60,18 @@ explicit_out_of_scope:
   - match-video ingestion or synchronization
   - private credentials
   - production-scale infrastructure
+current_decisions:
+  small_model_compiler_baseline:
+    commit: f9eb5d8
+    role: REFERENCE_HARNESS_AND_FALLBACK
+    no_more_gpt_4o_mini_sealed_set_cycle: true
+  next_runtime_milestone:
+    id: S2I
+    name: "Frontier Agent Provisioning and Context Rebaseline"
+    product_path: "Hermes + GPT-5.5 + Tactical Knowledge Pack + bounded MCP/tool surface"
+  parallel_ui_milestone:
+    id: Workbench_Alpha
+    name: "Query-to-Replay UI over stable deterministic contracts"
+  s3_blocked_until:
+    - S2I_frontier_agent_path_frozen_and_final_sealed_acceptance_passes
+    - Workbench_Alpha_query_to_replay_proven_on_real_data
