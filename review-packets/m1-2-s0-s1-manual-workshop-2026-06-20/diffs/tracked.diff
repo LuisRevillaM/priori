@@ -1,0 +1,191 @@
+diff --git a/Makefile b/Makefile
+index a7541ee..1492a2c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ PYTHON ?= $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python
+ PYTHONPATH := $(CURDIR)/src
+ export PYTHONPATH
+ 
+-.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify test
++.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify m1-2-gate-s0-verify m1-2-gate-s1-verify m1-2-verify test
+ 
+ setup:
+ 	python3.12 -m venv .venv
+@@ -111,5 +111,14 @@ m1-1-gate-s7r-verify:
+ m1-1-verify:
+ 	$(PYTHON) -m tqe.verification.m1_1
+ 
++m1-2-gate-s0-verify:
++	$(PYTHON) -m tqe.verification.m1_2_gate_s0
++
++m1-2-gate-s1-verify:
++	$(PYTHON) -m tqe.verification.m1_2_gate_s1
++
++m1-2-verify:
++	$(PYTHON) -m tqe.verification.m1_2
++
+ test:
+ 	$(PYTHON) -m unittest discover -s tests
+diff --git a/delivery/m1.2/SPEC.md b/delivery/m1.2/SPEC.md
+index 4109a61..fcdd461 100644
+--- a/delivery/m1.2/SPEC.md
++++ b/delivery/m1.2/SPEC.md
+@@ -12,6 +12,21 @@ M1.2 begins only after M1.1 is accepted. If M1.1 fails, the problem is architect
+ 
+ M1.2 proves the workshop loop and bounded compilation. It does not prove broad soccer-language understanding; M4 remains the broader reliability and tactical lexicon hardening gate.
+ 
++## Current Work Order
++
++The externally approved M1.2 opening cut is:
++
++```text
++S0  Freeze the safe capability and tool boundary.
++S1  Build the manual reference workshop before Hermes.
++S2  Add Hermes drafting and clarification only after S1 works manually.
++S3  Add feedback-driven revision diffs and immutable recipe versions.
++```
++
++The first implementation stop is after S0 and S1. S2 and S3 remain out of
++scope until the manual typed-plan -> execution -> traces -> coordinate replay
++-> feedback loop receives review.
++
+ ## Scope
+ 
+ M1.2 includes:
+@@ -47,24 +62,24 @@ M1.2 excludes:
+ 
+ ## Hermes Tool Boundary
+ 
+-Hermes may use:
++During S0/S1, the exposed tool surface is intentionally limited to:
+ 
+ ```text
+ list_capabilities
+-search_recipes
+-describe_primitive
+-describe_relation
+-draft_query_plan
++describe_capability
+ validate_query_plan
+ execute_query_plan
+-inspect_result_trace
++inspect_result
+ inspect_non_match
+-retrieve_tracking_window
+-record_feedback
++retrieve_replay_window
+ compare_query_versions
++record_feedback
+ save_experimental_recipe
+ ```
+ 
++Hermes drafting tools are deferred to S2 and must be added only after this
++manual surface is reviewed.
++
+ Hermes may not use:
+ 
+ ```text
+@@ -243,6 +258,34 @@ M4 can later harden broader language reliability with a larger corpus.
+ 
+ ## Internal Gates
+ 
++### S0 - Capability and Tool Boundary
++
++Hard acceptance:
++
++- generated capability context exists at `generated/capability-context.json`;
++- the exposed tool list is exactly the S0/S1 list above;
++- `exists` and `count_at_least` are agent-visible only for declared
++  `anchor_evaluations`;
++- host-owned complexity ceilings are visible and enforced by validation;
++- unsupported concepts fail as capability gaps;
++- manual plan validation works without Hermes.
++
++### S1 - Manual Reference Workshop
++
++Hard acceptance:
++
++- approved M1 recipe and experimental corridor recipe both execute manually;
++- returned results expose ranked rows, predicate traces, requested evidence,
++  and coordinate replay windows;
++- known-timestamp inspection explains non-matches with failed/unknown
++  predicates;
++- feedback labels `MATCHES_INTENT`, `NEAR_MATCH`, `FALSE_POSITIVE`,
++  `KNOWN_MISS`, and `UNUSABLE_DATA` are recorded through a schema-valid tool;
++- an experimental recipe can be saved as an immutable content-addressed
++  version;
++- a plain local replay workshop artifact is generated;
++- no Hermes, model calls, canned prompts, or hardcoded result moments are used.
++
+ ### Gate A - Tool Boundary and Capability Context
+ 
+ Hard acceptance:
+@@ -314,6 +357,12 @@ Hard acceptance:
+ delivery/m1.2/SPEC.md
+ delivery/m1.2/status.yaml
+ generated/capability-context.json
++artifacts/m1.2/gate-s0-verification-report.json
++artifacts/m1.2/gate-s1-verification-report.json
++artifacts/m1.2/workshop/index.html
++artifacts/m1.2/workshop/manual-workshop-data.json
++artifacts/m1.2/workshop/feedback-records.jsonl
++artifacts/m1.2/workshop/recipes/*.json
+ artifacts/m1.2/agent-evaluation-corpus.json
+ artifacts/m1.2/agent-evaluation-report.json
+ artifacts/m1.2/workshop-loop-trace.json
+diff --git a/delivery/m1.2/status.yaml b/delivery/m1.2/status.yaml
+index ff6f935..e037fe0 100644
+--- a/delivery/m1.2/status.yaml
++++ b/delivery/m1.2/status.yaml
+@@ -1,6 +1,6 @@
+ milestone: M1.2
+ name: "Grounded Tactical Query Workshop"
+-state: UNBLOCKED_NOT_STARTED
++state: S0_S1_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW
+ source_of_truth: delivery/m1.2/SPEC.md
+ last_updated: "2026-06-20"
+ preconditions:
+@@ -9,23 +9,28 @@ preconditions:
+   M1_1S_external_approval_or_required_changes_integrated: SATISFIED_BY_S7R2_COMMIT_5428D9D_AND_APPROVE_M1_2_UNBLOCKED
+   M1_2_agent_eval_corpus: REQUIRED_BEFORE_ACCEPTANCE
+ slices:
+-  S0_tool_boundary_and_capability_context: NOT_STARTED
+-  S1_draft_bind_confirm_execute_loop: NOT_STARTED
+-  S2_feedback_and_known_miss_inspection: NOT_STARTED
+-  S3_revision_diff_and_versioning: NOT_STARTED
+-  S4_simple_immutable_persistence: NOT_STARTED
+-  S5_thin_workshop_ui: NOT_STARTED
+-  S6_agent_eval_and_verification: NOT_STARTED
++  S0_tool_boundary_and_capability_context: DONE_CONTROLLER_VERIFIED
++  S1_manual_reference_workshop: DONE_CONTROLLER_VERIFIED
++  S2_hermes_drafting_and_clarification: NOT_STARTED
++  S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
+ promotion_gates:
+-  Gate_A_tool_boundary_capability_context: NOT_STARTED
+-  Gate_B_draft_bind_confirm_execute: NOT_STARTED
+-  Gate_C_feedback_non_match_inspection: NOT_STARTED
+-  Gate_D_revision_versioning: NOT_STARTED
+-  Gate_E_workshop_thin_slice: NOT_STARTED
+-  Gate_F_agent_evaluation: NOT_STARTED
++  Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
++  Gate_S1_manual_typed_plan_execution_traces_replay_feedback: PASS_CONTROLLER
++  Gate_S2_hermes_drafting: NOT_STARTED
++  Gate_S3_revision_recipe_loop: NOT_STARTED
+ verification:
+-  automated: NOT_STARTED
++  automated: PASS_FOR_S0_S1
+   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+   independent_review: M1_1S_S7R2_APPROVED_M1_2_UNBLOCKED
+-  controller_review: READY_TO_START_S0
++  controller_review: S0_S1_PASS_PENDING_EXTERNAL_PACKET
+   owner_acceptance: APPROVED_TO_PROCEED
++evidence:
++  S0_report: artifacts/m1.2/gate-s0-verification-report.json
++  S1_report: artifacts/m1.2/gate-s1-verification-report.json
++  aggregate_report: artifacts/m1.2/verification-report.json
++  capability_context: generated/capability-context.json
++  workshop_html: artifacts/m1.2/workshop/index.html
++  workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
++next_step:
++  external_review: REQUIRED_BEFORE_HERMES_S2
++  scope: "Review S0/S1 only; do not start Hermes until required changes are integrated."

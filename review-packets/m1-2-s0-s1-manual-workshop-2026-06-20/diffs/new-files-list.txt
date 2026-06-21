@@ -1,0 +1,16 @@
+delivery/m1.2/reviews/s0-s1-controller-review.md
+docs/learnings/2026-06-20-m1-2-s0-s1-manual-workshop.md
+generated/capability-context.json
+src/tqe/workshop/__init__.py
+src/tqe/workshop/m1_2.py
+src/tqe/verification/m1_2_gate_s0.py
+src/tqe/verification/m1_2_gate_s1.py
+src/tqe/verification/m1_2.py
+artifacts/m1.2/gate-s0-verification-report.json
+artifacts/m1.2/gate-s1-verification-report.json
+artifacts/m1.2/verification-report.json
+artifacts/m1.2/workshop/index.html
+artifacts/m1.2/workshop/manual-workshop-data.json
+artifacts/m1.2/workshop/manual-workshop-data.js
+artifacts/m1.2/workshop/feedback-records.jsonl
+artifacts/m1.2/workshop/recipes/92769e17bb25b809.json
