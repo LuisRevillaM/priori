@@ -392,7 +392,7 @@ def canonical_identity(payload: Any) -> Any:
         return {
             key: canonical_identity(value)
             for key, value in payload.items()
-            if key not in {"created_at", "saved_at", "recorded_at", "generated_at", "timing_ms"}
+            if key not in {"created_at", "saved_at", "recorded_at", "generated_at", "timing_ms", "source_label"}
         }
     if isinstance(payload, list):
         return [canonical_identity(item) for item in payload]
@@ -1114,10 +1114,28 @@ def dispatch_tool(
             ok=False,
             tool_name=request.tool_name,
             response=ToolErrorResponse(
-                error_code=type(exc).__name__,
+                error_code=stable_tool_error_code(exc),
                 message=str(exc),
+                details={"exception_type": type(exc).__name__},
             ).model_dump(mode="json"),
         )
+
+
+def stable_tool_error_code(exc: Exception) -> str:
+    message = str(exc).lower()
+    if isinstance(exc, CapabilityGap):
+        if "unknown" in message and "handle" in message:
+            return "UNKNOWN_HANDLE"
+        if "no_replay_window" in message:
+            return "NO_REPLAY_WINDOW"
+        if "authorization" in message or "confirmed" in message:
+            return "EXECUTION_NOT_CONFIRMED"
+        return "CAPABILITY_GAP"
+    if isinstance(exc, BindError):
+        return "PLAN_VALIDATION_FAILED"
+    if type(exc).__name__ == "ValidationError":
+        return "REQUEST_SCHEMA_INVALID"
+    return "INTERNAL_ERROR"
 
 
 def dispatch_model_visible(

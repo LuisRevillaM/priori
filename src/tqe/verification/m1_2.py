@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from tqe.verification import m1_2_gate_s0, m1_2_gate_s1
+from tqe.verification import m1_2_gate_s0, m1_2_gate_s1, m1_2_gate_s2
 
 REPORT_PATH = Path("artifacts/m1.2/verification-report.json")
 
@@ -24,9 +24,11 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
 def build_report() -> dict[str, Any]:
     s0 = m1_2_gate_s0.build_report()
     s1 = m1_2_gate_s1.build_report()
+    s2 = m1_2_gate_s2.build_report()
     checks = [
         {"id": "m1_2.s0", "status": s0["status"], "summary": s0["summary"]},
         {"id": "m1_2.s1", "status": s1["status"], "summary": s1["summary"]},
+        {"id": "m1_2.s2", "status": s2["status"], "summary": s2["summary"]},
     ]
     summary = {
         "pass": sum(1 for item in checks if item["status"] == "pass"),
@@ -35,7 +37,7 @@ def build_report() -> dict[str, Any]:
     report = {
         "schema_version": "1.0",
         "milestone": "M1.2",
-        "scope": "S0_S1_manual_workshop_only",
+        "scope": "S0_S1_S2_hermes_workshop",
         "generated_at": utc_now_iso(),
         "status": "pass" if summary["fail"] == 0 else "fail",
         "summary": summary,
@@ -43,6 +45,7 @@ def build_report() -> dict[str, Any]:
         "reports": {
             "s0": str(m1_2_gate_s0.REPORT_PATH),
             "s1": str(m1_2_gate_s1.REPORT_PATH),
+            "s2": str(m1_2_gate_s2.REPORT_PATH),
         },
     }
     write_json(REPORT_PATH, report)
@@ -58,4 +61,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

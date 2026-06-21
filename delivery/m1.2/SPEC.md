@@ -79,6 +79,23 @@ S0R3/S1R3 correction:
 - The model-visible dispatcher must validate successful and failing responses
   for every S2-visible tool, not just a representative subset.
 
+External review then approved S2 on 2026-06-21. S2 must begin with these
+guardrails:
+
+- prove a complete experimental happy path under `CallerProfile.HERMES_S2`:
+  submit -> validate -> host confirmation -> execute -> inspect -> replay;
+- keep host confirmation outside model control;
+- use recipe lookup and drafting without exposing filesystem paths or allowing
+  Hermes-authored approved documents;
+- persist the language-to-execution trace, including original language,
+  selected recipe or draft, draft/bound hashes, validation, confirmation event,
+  execution ID, result IDs, and tool calls;
+- retain the current language request even when semantically equivalent plans
+  share content-addressed draft or bound handles;
+- keep unsupported concepts as explicit capability gaps;
+- defer automatic revisions, threshold tuning, second tactical family, UI polish,
+  recipe promotion, and production infrastructure.
+
 ## Scope
 
 M1.2 includes:
@@ -379,6 +396,26 @@ Hard acceptance:
 - the same bound plan produces identical results whether invoked manually or by Hermes;
 - manual plan inspector remains usable when Hermes is unavailable.
 
+### S2 - Hermes Compiler Shell
+
+Hard acceptance:
+
+- supported progressive-corridor prompts compile to `EXPERIMENTAL` typed draft
+  plans through `dispatch_model_visible(..., caller_profile=HERMES_S2)`;
+- approved recipes are selected as trusted host records, not submitted as
+  Hermes-authored approved documents;
+- ambiguous support language asks clarification before drafting;
+- unsupported concepts such as body orientation, intent, optimality,
+  communication, video, and pass probability return explicit capability gaps;
+- host confirmation remains outside the compile response and outside Hermes tool
+  calls;
+- after host confirmation, execution, result inspection, and replay retrieval
+  succeed through the Hermes caller profile;
+- semantically equivalent language requests may share content-addressed handles
+  while preserving separate language traces;
+- the initial evaluation corpus contains at least 20 supported, 10 ambiguous,
+  and 10 unsupported prompts.
+
 ### Gate C - Feedback and Non-Match Inspection
 
 Hard acceptance:
@@ -437,6 +474,8 @@ artifacts/m1.2/workshop/feedback-records.jsonl
 artifacts/m1.2/workshop/recipes/*.json
 artifacts/m1.2/agent-evaluation-corpus.json
 artifacts/m1.2/agent-evaluation-report.json
+artifacts/m1.2/gate-s2-verification-report.json
+artifacts/m1.2/hermes-s2-trace-report.json
 artifacts/m1.2/workshop-loop-trace.json
 artifacts/m1.2/query-version-manifest.json
 artifacts/m1.2/feedback-records.jsonl
