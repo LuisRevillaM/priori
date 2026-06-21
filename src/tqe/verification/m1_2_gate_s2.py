@@ -12,19 +12,18 @@ from tqe.workshop.hermes_s2 import (
     HermesCompileRequest,
     HermesCompileStatus,
     compile_hermes_request,
-    record_confirmed_execution_trace,
+    execute_confirmed_hermes_session,
 )
 from tqe.workshop.m1_2 import (
     CallerProfile,
     DEFAULT_WORKSHOP_ROOT,
-    ToolDispatchRequest,
-    dispatch_model_visible,
     host_confirm_bound_plan,
     read_handle,
 )
 
 REPORT_PATH = Path("artifacts/m1.2/gate-s2-verification-report.json")
 CORPUS_PATH = Path("artifacts/m1.2/agent-evaluation-corpus.json")
+EVALUATION_REPORT_PATH = Path("artifacts/m1.2/agent-evaluation-report.json")
 TRACE_REPORT_PATH = Path("artifacts/m1.2/hermes-s2-trace-report.json")
 
 
@@ -49,6 +48,7 @@ def check(check_id: str, passed: bool, message: str, details: dict[str, Any] | N
 def build_report() -> dict[str, Any]:
     clean_s2_artifacts()
     checks: list[dict[str, Any]] = []
+    corpus = write_initial_corpus()
 
     compile_response = compile_hermes_request(
         HermesCompileRequest(
@@ -60,6 +60,7 @@ def build_report() -> dict[str, Any]:
         check(
             "s2.hermes_experimental_draft_validated",
             compile_response.status == HermesCompileStatus.DRAFT_VALIDATED
+            and compile_response.agent_kind == "model_backed"
             and bool(compile_response.draft_plan_id)
             and bool(compile_response.bound_plan_id)
             and compile_response.validation_result is not None
@@ -74,39 +75,14 @@ def build_report() -> dict[str, Any]:
         compile_response.bound_plan_id or "",
         reviewer="controller",
     )
-    execution = dispatch_model_visible(
-        ToolDispatchRequest(
-            tool_name="execute_query_plan",
-            arguments={
-                "bound_plan_id": compile_response.bound_plan_id,
-                "execution_authorization_id": authorization.execution_authorization_id,
-                "result_limit": 3,
-            },
-        ),
-        caller_profile=CallerProfile.HERMES_S2,
-    )
-    first_result_id = execution["results"][0]["result_id"]
-    inspection = dispatch_model_visible(
-        ToolDispatchRequest(
-            tool_name="inspect_result",
-            arguments={"execution_id": execution["execution_id"], "result_id": first_result_id},
-        ),
-        caller_profile=CallerProfile.HERMES_S2,
-    )
-    replay = dispatch_model_visible(
-        ToolDispatchRequest(
-            tool_name="retrieve_replay_window",
-            arguments={"execution_id": execution["execution_id"], "result_id": first_result_id},
-        ),
-        caller_profile=CallerProfile.HERMES_S2,
-    )
-    execution_trace = record_confirmed_execution_trace(
+    confirmed_session = execute_confirmed_hermes_session(
         compile_response=compile_response,
         execution_authorization_id=authorization.execution_authorization_id,
-        execution=execution,
-        inspection=inspection,
-        replay=replay,
     )
+    execution = confirmed_session["execution"]
+    inspection = confirmed_session["inspection"]
+    replay = confirmed_session["replay"]
+    execution_trace = confirmed_session["trace"]
     checks.append(
         check(
             "s2.hermes_confirmed_execution_grounded",
@@ -121,6 +97,24 @@ def build_report() -> dict[str, Any]:
                 "trace_id": execution_trace["trace_id"],
                 "replay_window_id": replay["replay_window_id"],
             },
+        )
+    )
+    checks.append(
+        check(
+            "s2.complete_session_tool_trace_recorded",
+            [call["tool_name"] for call in execution_trace["tool_calls"]]
+            == [
+                "list_capabilities",
+                "describe_capability",
+                "submit_query_plan",
+                "validate_query_plan",
+                "execute_query_plan",
+                "inspect_result",
+                "retrieve_replay_window",
+            ]
+            and all(call.get("request_hash") and call.get("response_hash") for call in execution_trace["tool_calls"]),
+            "Confirmed execution trace records ordered model-visible compile, execute, inspect, and replay calls.",
+            {"trace_id": execution_trace["trace_id"], "tool_calls": execution_trace["tool_calls"]},
         )
     )
     checks.append(
@@ -179,7 +173,7 @@ def build_report() -> dict[str, Any]:
 
     paraphrase = compile_hermes_request(
         HermesCompileRequest(
-            original_language="Show possessions where a progressive passing lane opens.",
+            original_language="Find open progressive corridors from possession.",
             requester="controller",
         )
     )
@@ -202,7 +196,51 @@ def build_report() -> dict[str, Any]:
         )
     )
 
-    corpus = write_initial_corpus()
+    progression_plan = compile_hermes_request(
+        HermesCompileRequest(original_language="Find progressive corridors that advance at least 10 metres from possession.")
+    )
+    clearance_plan = compile_hermes_request(
+        HermesCompileRequest(original_language="Find progressive corridors with at least 6 metres defender clearance from possession.")
+    )
+    checks.append(
+        check(
+            "s2.language_sensitive_compilation_changes_plan_hash",
+            progression_plan.status == HermesCompileStatus.DRAFT_VALIDATED
+            and clearance_plan.status == HermesCompileStatus.DRAFT_VALIDATED
+            and progression_plan.bound_plan_hash != clearance_plan.bound_plan_hash
+            and progression_plan.interpretation.get("corridor_parameters", {}).get("corridor_minimum_progression_m") == 10.0
+            and clearance_plan.interpretation.get("corridor_parameters", {}).get("corridor_minimum_clearance_m") == 6.0,
+            "Two semantically different supported requests produce materially different validated plans.",
+            {
+                "progression": progression_plan.model_dump(mode="json"),
+                "clearance": clearance_plan.model_dump(mode="json"),
+            },
+        )
+    )
+
+    clarification_start = compile_hermes_request(
+        HermesCompileRequest(original_language="Show support after the line break.")
+    )
+    clarification_answered = compile_hermes_request(
+        HermesCompileRequest(
+            original_language="Show support after the line break.",
+            clarifications=["Progressive corridor within two seconds."],
+        )
+    )
+    checks.append(
+        check(
+            "s2.clarification_round_trip_to_validated_plan",
+            clarification_start.status == HermesCompileStatus.CLARIFICATION_REQUIRED
+            and clarification_answered.status == HermesCompileStatus.DRAFT_VALIDATED
+            and clarification_answered.interpretation.get("corridor_parameters", {}).get("corridor_max_window_seconds") == 2.0,
+            "A clarification answer changes an ambiguous support request into a validated supported plan.",
+            {
+                "initial": clarification_start.model_dump(mode="json"),
+                "answered": clarification_answered.model_dump(mode="json"),
+            },
+        )
+    )
+
     checks.append(
         check(
             "s2.initial_evaluation_corpus_frozen",
@@ -211,6 +249,22 @@ def build_report() -> dict[str, Any]:
             and len(corpus["unsupported"]) == 10,
             "Initial S2 evaluation corpus exists with supported, ambiguous, and unsupported prompts.",
             {"path": str(CORPUS_PATH)},
+        )
+    )
+
+    evaluation_report = evaluate_corpus(corpus)
+    checks.append(
+        check(
+            "s2.model_backed_corpus_scores_pass",
+            evaluation_report["summary"]["schema_valid_or_refusal_rate"] == 1.0
+            and evaluation_report["summary"]["supported_accuracy"] >= 0.9
+            and evaluation_report["summary"]["ambiguous_accuracy"] >= 0.9
+            and evaluation_report["summary"]["unsupported_accuracy"] == 1.0
+            and evaluation_report["summary"]["invented_identifier_count"] == 0
+            and evaluation_report["summary"]["unauthorized_tool_call_count"] == 0
+            and evaluation_report["summary"]["unconfirmed_execution_count"] == 0,
+            "Frozen corpus is executed and scored against S2 model-backed acceptance thresholds.",
+            evaluation_report["summary"],
         )
     )
 
@@ -225,6 +279,11 @@ def build_report() -> dict[str, Any]:
             paraphrase.trace_id,
         ],
         "confirmed_execution_trace": execution_trace["trace_id"],
+        "model_provider": compile_response.model_provider,
+        "model_name": compile_response.model_name,
+        "system_prompt_hash": compile_response.system_prompt_hash,
+        "capability_context_hash": compile_response.capability_context_hash,
+        "tool_schema_hash": compile_response.tool_schema_hash,
     }
     write_json(TRACE_REPORT_PATH, trace_report)
 
@@ -241,6 +300,7 @@ def build_report() -> dict[str, Any]:
         "summary": summary,
         "artifacts": {
             "corpus": str(CORPUS_PATH),
+            "evaluation_report": str(EVALUATION_REPORT_PATH),
             "trace_report": str(TRACE_REPORT_PATH),
         },
         "checks": checks,
@@ -299,13 +359,139 @@ def write_initial_corpus() -> dict[str, Any]:
             "Infer coach instructions from movement.",
             "Use facial cues to explain intent.",
         ],
+        "held_out": [
+            "Find possessions where a forward corridor is available within two seconds.",
+            "Show moments with at least 8 metres of progressive corridor gain.",
+            "Detect corridor options with 6 metres of defensive clearance.",
+            "Use the approved block-shift detector for ball-side movement.",
+            "Show when support appears, meaning a progressive corridor within two seconds.",
+            "Find open forward lanes from active possession anchors.",
+        ],
     }
     write_json(CORPUS_PATH, corpus)
     return corpus
 
 
+def evaluate_corpus(corpus: dict[str, Any]) -> dict[str, Any]:
+    rows = []
+    for category in ("supported", "ambiguous", "unsupported", "held_out"):
+        for prompt in corpus.get(category, []):
+            expected = "supported" if category == "held_out" else category
+            try:
+                response = compile_hermes_request(HermesCompileRequest(original_language=prompt))
+                actual = actual_category(response)
+                invented = invented_identifier_count(response)
+                unauthorized = unauthorized_tool_count(response)
+                unconfirmed_execution = sum(
+                    1 for call in response.tool_calls if call["tool_name"] == "execute_query_plan"
+                )
+                rows.append(
+                    {
+                        "prompt": prompt,
+                        "expected_category": expected,
+                        "actual_category": actual,
+                        "status": response.status.value,
+                        "selected_recipe": response.selected_recipe,
+                        "draft_plan_validity": bool(response.validation_result and response.validation_result.get("ok")),
+                        "clarification_or_gap": response.clarification_questions or response.capability_gaps,
+                        "invented_identifiers": invented,
+                        "unauthorized_tool_calls": unauthorized,
+                        "unconfirmed_executions": unconfirmed_execution,
+                        "tool_calls": response.tool_calls,
+                        "trace_id": response.trace_id,
+                        "review_outcome": "pass" if actual == expected and invented == 0 and unauthorized == 0 and unconfirmed_execution == 0 else "fail",
+                    }
+                )
+            except Exception as exc:
+                rows.append(
+                    {
+                        "prompt": prompt,
+                        "expected_category": expected,
+                        "actual_category": "error",
+                        "error": str(exc),
+                        "review_outcome": "fail",
+                    }
+                )
+    supported_rows = [row for row in rows if row["expected_category"] == "supported"]
+    ambiguous_rows = [row for row in rows if row["expected_category"] == "ambiguous"]
+    unsupported_rows = [row for row in rows if row["expected_category"] == "unsupported"]
+    summary = {
+        "total": len(rows),
+        "schema_valid_or_refusal_rate": sum(1 for row in rows if row["actual_category"] != "error") / len(rows),
+        "supported_accuracy": accuracy(supported_rows),
+        "ambiguous_accuracy": accuracy(ambiguous_rows),
+        "unsupported_accuracy": accuracy(unsupported_rows),
+        "invented_identifier_count": sum(int(row.get("invented_identifiers", 0)) for row in rows),
+        "unauthorized_tool_call_count": sum(int(row.get("unauthorized_tool_calls", 0)) for row in rows),
+        "unconfirmed_execution_count": sum(int(row.get("unconfirmed_executions", 0)) for row in rows),
+    }
+    report = {
+        "schema_version": "1.0",
+        "generated_at": utc_now_iso(),
+        "acceptance_thresholds": {
+            "schema_valid_or_refusal_rate": 1.0,
+            "supported_accuracy_min": 0.9,
+            "ambiguous_accuracy_min": 0.9,
+            "unsupported_accuracy": 1.0,
+            "invented_identifier_count": 0,
+            "unauthorized_tool_call_count": 0,
+            "unconfirmed_execution_count": 0,
+        },
+        "summary": summary,
+        "rows": rows,
+    }
+    write_json(EVALUATION_REPORT_PATH, report)
+    return report
+
+
+def actual_category(response: Any) -> str:
+    if response.status in {
+        HermesCompileStatus.DRAFT_VALIDATED,
+        HermesCompileStatus.EXISTING_RECIPE_SELECTED,
+    }:
+        return "supported"
+    if response.status == HermesCompileStatus.CLARIFICATION_REQUIRED:
+        return "ambiguous"
+    if response.status == HermesCompileStatus.CAPABILITY_GAP:
+        return "unsupported"
+    return "error"
+
+
+def accuracy(rows: list[dict[str, Any]]) -> float:
+    if not rows:
+        return 0.0
+    return sum(1 for row in rows if row["actual_category"] == row["expected_category"]) / len(rows)
+
+
+def invented_identifier_count(response: Any) -> int:
+    allowed_recipes = {"ball_side_block_shift_v1", "possession_corridor_availability_v1"}
+    raw = response.raw_model_output or {}
+    recipe_id = raw.get("recipe_id")
+    if recipe_id not in allowed_recipes and recipe_id is not None:
+        return 1
+    return 0
+
+
+def unauthorized_tool_count(response: Any) -> int:
+    allowed_tools = {
+        "list_capabilities",
+        "describe_capability",
+        "submit_query_plan",
+        "validate_query_plan",
+        "execute_query_plan",
+        "inspect_result",
+        "inspect_non_match",
+        "retrieve_replay_window",
+    }
+    return sum(
+        1
+        for call in response.tool_calls
+        if call["tool_name"] not in allowed_tools or call["caller_profile"] != CallerProfile.HERMES_S2.value
+    )
+
+
 def clean_s2_artifacts() -> None:
-    for path in (CORPUS_PATH, TRACE_REPORT_PATH, REPORT_PATH):
+    for path in (CORPUS_PATH, EVALUATION_REPORT_PATH, TRACE_REPORT_PATH, REPORT_PATH):
         if path.exists():
             path.unlink()
     if (DEFAULT_WORKSHOP_ROOT / "hermes-traces").exists():

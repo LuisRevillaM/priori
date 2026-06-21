@@ -96,6 +96,24 @@ guardrails:
 - defer automatic revisions, threshold tuning, second tactical family, UI polish,
   recipe promotion, and production infrastructure.
 
+The first S2 implementation is explicitly named **S2A - Deterministic Compiler
+Contract**. It remains as a deterministic reference fixture and offline fallback,
+but it is not sufficient for S3 by itself.
+
+External review required **S2B - Model-Backed Hermes Compiler and Corpus
+Evaluation** before S3:
+
+- use a real model-backed Hermes client, not a keyword router;
+- keep model output bounded to trusted recipe selection, typed experimental
+  draft, clarification request, or structured capability gap;
+- prove two semantically different supported requests create different validated
+  bound-plan hashes because parameters differ;
+- prove an ambiguous support request can be clarified into a validated plan;
+- run and score the frozen prompt corpus rather than only counting rows;
+- persist provider/model, prompt/context/schema hashes, raw structured model
+  output, all model-visible tool calls, confirmation event, execution ID,
+  result IDs, inspection, and replay handles.
+
 ## Scope
 
 M1.2 includes:
@@ -396,7 +414,7 @@ Hard acceptance:
 - the same bound plan produces identical results whether invoked manually or by Hermes;
 - manual plan inspector remains usable when Hermes is unavailable.
 
-### S2 - Hermes Compiler Shell
+### S2A - Deterministic Compiler Contract
 
 Hard acceptance:
 
@@ -415,6 +433,34 @@ Hard acceptance:
   while preserving separate language traces;
 - the initial evaluation corpus contains at least 20 supported, 10 ambiguous,
   and 10 unsupported prompts.
+
+### S2B - Model-Backed Hermes Compiler And Corpus Evaluation
+
+Hard acceptance:
+
+- a real model-backed Hermes client receives the tactical system instructions,
+  safe capability context, tool schemas, trusted recipe summaries, user request,
+  and clarification history;
+- model output is bounded to trusted recipe selection, typed experimental draft,
+  clarification request, or structured capability gap;
+- every model-authored draft is submitted, bound, and validated through
+  `dispatch_model_visible(..., caller_profile=HERMES_S2)`;
+- two supported prompts with different tactical meanings produce different
+  validated bound-plan hashes through parameter changes, not cosmetic IDs;
+- an ambiguous support prompt asks clarification, and an answer such as
+  "Progressive corridor within two seconds" produces a validated plan with
+  `corridor_max_window_seconds=2.0`;
+- the corpus evaluation report contains every prompt, expected category, actual
+  category, selected recipe or capability, draft validity, clarification or gap,
+  invented identifier count, tool calls, and review outcome;
+- corpus thresholds are met: 100 percent schema-valid plan or explicit refusal,
+  at least 90 percent supported accuracy, at least 90 percent ambiguous
+  clarification accuracy, 100 percent unsupported capability-gap accuracy, zero
+  invented IDs, zero unauthorized tool calls, and zero unconfirmed executions;
+- session traces record model/provider/version, system prompt hash, capability
+  context hash, tool schema hash, raw structured model outputs, all tool calls
+  with request/response hashes, host confirmation event, execution ID, result
+  IDs, inspection, and replay handles.
 
 ### Gate C - Feedback and Non-Match Inspection
 

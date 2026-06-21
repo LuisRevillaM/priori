@@ -1,6 +1,6 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: S2_HERMES_COMPILER_SHELL_CONTROLLER_VERIFIED
+state: S2B_MODEL_BACKED_HERMES_CONTROLLER_VERIFIED
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-21"
 preconditions:
@@ -17,7 +17,8 @@ slices:
   S1R_dispatcher_backed_manual_workshop: DONE_CONTROLLER_VERIFIED
   S1R2_replay_target_resolution_and_schema_dispatch: DONE_CONTROLLER_VERIFIED
   S1R3_resolved_target_consistency_and_predicate_failure_probe: DONE_CONTROLLER_VERIFIED
-  S2_hermes_drafting_and_clarification: DONE_CONTROLLER_VERIFIED
+  S2A_deterministic_compiler_contract: DONE_CONTROLLER_VERIFIED
+  S2B_model_backed_hermes_compiler_and_corpus_evaluation: DONE_CONTROLLER_VERIFIED
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
 promotion_gates:
   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
@@ -28,13 +29,14 @@ promotion_gates:
   Gate_S1R_serialized_dispatcher_manual_loop: PASS_CONTROLLER
   Gate_S1R2_canonical_target_replay_and_model_visible_schema_conformance: PASS_CONTROLLER
   Gate_S1R3_inspection_replay_same_frame_and_failed_predicate_target: PASS_CONTROLLER
-  Gate_S2_hermes_drafting: PASS_CONTROLLER
+  Gate_S2A_deterministic_compiler_contract: PASS_CONTROLLER
+  Gate_S2B_model_backed_hermes_and_corpus_evaluation: PASS_CONTROLLER
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
   automated: PASS_FOR_S0_S1_S2
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
-  independent_review: S0R3_S1R3_APPROVED_S2_UNBLOCKED
-  controller_review: S2_PASS_PENDING_EXTERNAL_REVIEW
+  independent_review: S2A_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S3
+  controller_review: S2B_PASS_PENDING_EXTERNAL_REVIEW
   owner_acceptance: APPROVED_TO_PROCEED
 evidence:
   S0_report: artifacts/m1.2/gate-s0-verification-report.json
@@ -43,9 +45,10 @@ evidence:
   S2_report: artifacts/m1.2/gate-s2-verification-report.json
   S2_trace_report: artifacts/m1.2/hermes-s2-trace-report.json
   S2_eval_corpus: artifacts/m1.2/agent-evaluation-corpus.json
+  S2_eval_report: artifacts/m1.2/agent-evaluation-report.json
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
   external_review: REQUIRED_BEFORE_S3
-  scope: "Review S2 Hermes compiler shell, confirmed execution trace, clarification/capability-gap behavior, and initial corpus before S3."
+  scope: "Review S2B model-backed Hermes integration, corpus scores, clarification round trip, language-sensitive plans, and complete session trace before S3."
