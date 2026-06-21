@@ -2,11 +2,11 @@
 
 ## Product Outcome
 
-A soccer expert can describe a positional process, inspect Hermes's interpretation, execute the bound query plan, review real moments and non-matches, label good and bad results, approve an explicit revision, and save a new immutable experimental recipe version.
+A soccer expert can describe a positional process, inspect the model-backed compiler's interpretation, execute the bound query plan, review real moments and non-matches, label good and bad results, approve an explicit revision, and save a new immutable experimental recipe version.
 
 ## Boundary Decision
 
-M1.2 makes Hermes a first-class client of the M1.1 deterministic runtime. It does not invent a separate agent analytics path.
+M1.2 makes a model-backed tactical query compiler a bounded client of the M1.1 deterministic runtime. It does not invent a separate agent analytics path.
 
 M1.2 begins only after M1.1 is accepted. If M1.1 fails, the problem is architectural. If M1.2 fails, the deterministic runtime remains valuable and the problem is language interpretation or interaction design.
 
@@ -18,8 +18,8 @@ The externally approved M1.2 opening cut is:
 
 ```text
 S0  Freeze the safe capability and tool boundary.
-S1  Build the manual reference workshop before Hermes.
-S2  Add Hermes drafting and clarification only after S1 works manually.
+S1  Build the manual reference workshop before model-backed compilation.
+S2  Add model-backed drafting and clarification only after S1 works manually.
 S3  Add feedback-driven revision diffs and immutable recipe versions.
 ```
 
@@ -30,7 +30,7 @@ scope until the manual typed-plan -> execution -> traces -> coordinate replay
 External review on 2026-06-21 required an S0R/S1R boundary correction before
 S2. The corrected pre-S2 boundary is:
 
-- Hermes and the manual client submit typed plan documents and receive opaque
+- the model-backed compiler and the manual client submit typed plan documents and receive opaque
   host-owned handles, not filesystem paths.
 - Tool schemas are generated from Pydantic request and response models.
 - The host selects compatibility mode; legacy parity is restricted to the frozen
@@ -38,24 +38,24 @@ S2. The corrected pre-S2 boundary is:
 - Result inspection, non-match inspection, replay retrieval, and feedback
   resolve through immutable `execution_id` records.
 - The manual reference proof must call the same serialized dispatcher that
-  Hermes will use later.
+  model-backed compiler will use later.
 
 A second external review on 2026-06-21 approved that direction but required one
 more S0R2/S1R2 trust-boundary patch before S2:
 
-- Every tool call is evaluated under an explicit caller profile. Hermes sees
+- Every tool call is evaluated under an explicit caller profile. The model-backed compiler sees
   only the S2-safe tool surface; host/manual verification can use the full
   reference surface.
 - Execution confirmation is host-owned. `validate_query_plan` creates an
   unconfirmed bound handle, and `host_confirm_bound_plan` creates the execution
-  authorization. Hermes cannot mint or choose authorization IDs.
+  authorization. The model-backed compiler cannot mint or choose authorization IDs.
 - Draft, bound, execution, replay, recipe, and authorization handles are opaque,
   pattern-validated, storage-root confined, and create-once.
-- Hermes-authored submitted plans must be `EXPERIMENTAL`.
-- Non-authorable catalog nodes cannot appear in Hermes-authored plans. The only
+- model-authored submitted plans must be `EXPERIMENTAL`.
+- Non-authorable catalog nodes cannot appear in model-authored plans. The only
   approved legacy path is the exact trusted frozen M1 recipe, selected by host
   binding/hash rather than by model request.
-- Hermes-visible replay responses return replay-window handles and summary
+- model-visible replay responses return replay-window handles and summary
   metadata, not local filesystem paths. Host/UI code may resolve replay artifacts
   internally.
 - Target-time replay resolution maps supplied timestamps to canonical frames and
@@ -86,7 +86,7 @@ guardrails:
   submit -> validate -> host confirmation -> execute -> inspect -> replay;
 - keep host confirmation outside model control;
 - use recipe lookup and drafting without exposing filesystem paths or allowing
-  Hermes-authored approved documents;
+  model-authored approved documents;
 - persist the language-to-execution trace, including original language,
   selected recipe or draft, draft/bound hashes, validation, confirmation event,
   execution ID, result IDs, and tool calls;
@@ -100,10 +100,10 @@ The first S2 implementation is explicitly named **S2A - Deterministic Compiler
 Contract**. It remains as a deterministic reference fixture and offline fallback,
 but it is not sufficient for S3 by itself.
 
-External review required **S2B - Model-Backed Hermes Compiler and Corpus
+External review required **S2B - Model-Backed Compiler and Corpus
 Evaluation** before S3:
 
-- use a real model-backed Hermes client, not a keyword router;
+- use a real model-backed compiler client, not a keyword router;
 - keep model output bounded to trusted recipe selection, typed experimental
   draft, clarification request, or structured capability gap;
 - prove two semantically different supported requests create different validated
@@ -118,7 +118,7 @@ Evaluation** before S3:
 
 M1.2 includes:
 
-- Hermes/tool-mediated drafting of `DraftQueryPlan` objects;
+- model/tool-mediated drafting of `DraftQueryPlan` objects;
 - recipe search across approved, user-saved, experimental, and deprecated recipes;
 - deterministic validation and binding before execution;
 - visible interpretation and confirmation before execution;
@@ -147,7 +147,7 @@ M1.2 excludes:
 - polished M3/M5-grade workbench design;
 - production persistence, auth, cloud deployment, or match video.
 
-## Hermes Tool Boundary
+## Model-Visible Tool Boundary
 
 During S0/S1, the exposed tool surface is intentionally limited to:
 
@@ -170,10 +170,10 @@ record_feedback
 save_experimental_recipe
 ```
 
-Hermes drafting tools are deferred to S2 and must be added only after this
+Model-backed drafting tools are deferred to S2 and must be added only after this
 manual surface is reviewed.
 
-Hermes may not use:
+The model-backed compiler may not use:
 
 ```text
 arbitrary Python execution
@@ -185,7 +185,7 @@ threshold auto-tuning
 complete raw-match coordinate dumps
 ```
 
-Hermes has access to the complete dataset through scoped tools, not by loading coordinates into model context.
+The model-backed compiler has access to the complete dataset through scoped tools, not by loading coordinates into model context.
 
 `retrieve_tracking_window` returns:
 
@@ -198,7 +198,7 @@ It must not place hundreds or thousands of coordinate rows into the model contex
 
 ## Runtime Decision Process
 
-Hermes follows this order:
+The model-backed compiler follows this order:
 
 1. Search approved recipes.
 2. Search user-saved recipes.
@@ -207,20 +207,20 @@ Hermes follows this order:
 
 Unsupported concepts must not be silently approximated. A disclosed approximation can be proposed, but it cannot execute as if it were exact.
 
-Hermes may not fabricate explanations for non-matches. It must present the engine result, including `NO_COMPATIBLE_ANCHOR` when applicable.
+The model-backed compiler may not fabricate explanations for non-matches. It must present the engine result, including `NO_COMPATIBLE_ANCHOR` when applicable.
 
 ## M1.2 S0 Capability Guard
 
-The Hermes-visible capability context is stricter than the internal catalog. S0 must expose only operator/source combinations with positive proof coverage.
+The model-visible capability context is stricter than the internal catalog. S0 must expose only operator/source combinations with positive proof coverage.
 
 Until broader collection semantics are intentionally designed and tested:
 
-- Hermes may use `exists` and `count_at_least` only for declared `anchor_evaluations` coverage outputs;
-- Hermes must not bind `exists` or `count_at_least` directly to raw relation episode collections;
-- Hermes must not use generic Boolean `EpisodeSet` counting as if it were anchor-relative;
+- the model-backed compiler may use `exists` and `count_at_least` only for declared `anchor_evaluations` coverage outputs;
+- the model-backed compiler must not bind `exists` or `count_at_least` directly to raw relation episode collections;
+- the model-backed compiler must not use generic Boolean `EpisodeSet` counting as if it were anchor-relative;
 - rejected or hidden combinations must appear as explicit capability gaps, not silent approximations.
 
-The S0 verifier must prove that the Hermes-facing capability context enforces this safe subset even if the internal runtime contains broader compatibility paths.
+The S0 verifier must prove that the model-facing capability context enforces this safe subset even if the internal runtime contains broader compatibility paths.
 
 ## Human Visual Inspection Boundary
 
@@ -287,7 +287,7 @@ Inside or progressive geometric corridor
 persisting at least 0.4 seconds
 ```
 
-All result deltas must be computed by the deterministic engine, not by Hermes.
+All result deltas must be computed by the deterministic engine, not by the model-backed compiler.
 
 ## Persistence
 
@@ -363,7 +363,7 @@ Hard acceptance:
   `anchor_evaluations`;
 - host-owned complexity ceilings are visible and enforced by validation;
 - unsupported concepts fail as capability gaps;
-- manual plan validation works without Hermes;
+- manual plan validation works without the model-backed compiler;
 - clients use `draft_plan_id`, `bound_plan_id`, `execution_id`, and
   `replay_window_id` handles instead of local paths.
 - repeated submit, validate, execute, and replay calls are idempotent for
@@ -384,35 +384,35 @@ Hard acceptance:
   frame;
 - target inspection includes a real compatible-anchor predicate-failure example,
   not only a no-compatible-anchor case;
-- all manual actions flow through the same serialized dispatcher Hermes will use
+- all manual actions flow through the same serialized dispatcher the model-backed compiler will use
   later;
 - feedback labels `MATCHES_INTENT`, `NEAR_MATCH`, `FALSE_POSITIVE`,
   `KNOWN_MISS`, and `UNUSABLE_DATA` are recorded through a schema-valid tool;
 - an experimental recipe can be saved as an immutable content-addressed
   version;
 - a plain local replay workshop artifact is generated;
-- no Hermes, model calls, canned prompts, or hardcoded result moments are used.
+- no model calls, canned prompts, or hardcoded result moments are used.
 
 ### Gate A - Tool Boundary and Capability Context
 
 Hard acceptance:
 
-- Hermes tool surface is bounded to the approved tools;
+- model-visible tool surface is bounded to the approved tools;
 - no filesystem editing, code execution, SQL, primitive mutation, result-row mutation, threshold auto-tuning, or raw coordinate dumps are available;
 - generated capability context includes primitives, relations, operators, recipe states, limitations, and supported evidence fields;
 - unsupported concepts produce capability-gap responses;
-- manual plan entry remains usable without Hermes.
+- manual plan entry remains usable without the model-backed compiler.
 
 ### Gate B - Draft, Bind, Confirm, Execute
 
 Hard acceptance:
 
-- Hermes produces only schema-valid draft plans or explicit refusals;
+- the model-backed compiler produces only schema-valid draft plans or explicit refusals;
 - all plans are validated/bound by the deterministic compiler before execution;
 - user sees the interpretation before execution;
 - every assistant execution records original text, draft plan, bound plan, confirmation, result IDs, hashes, scope, and provenance;
-- the same bound plan produces identical results whether invoked manually or by Hermes;
-- manual plan inspector remains usable when Hermes is unavailable.
+- the same bound plan produces identical results whether invoked manually or by the model-backed compiler;
+- manual plan inspector remains usable when the model-backed compiler is unavailable.
 
 ### S2A - Deterministic Compiler Contract
 
@@ -421,24 +421,24 @@ Hard acceptance:
 - supported progressive-corridor prompts compile to `EXPERIMENTAL` typed draft
   plans through `dispatch_model_visible(..., caller_profile=HERMES_S2)`;
 - approved recipes are selected as trusted host records, not submitted as
-  Hermes-authored approved documents;
+  model-authored approved documents;
 - ambiguous support language asks clarification before drafting;
 - unsupported concepts such as body orientation, intent, optimality,
   communication, video, and pass probability return explicit capability gaps;
-- host confirmation remains outside the compile response and outside Hermes tool
+- host confirmation remains outside the compile response and outside model-visible tool
   calls;
 - after host confirmation, execution, result inspection, and replay retrieval
-  succeed through the Hermes caller profile;
+  succeed through the agent caller profile;
 - semantically equivalent language requests may share content-addressed handles
   while preserving separate language traces;
 - the initial evaluation corpus contains at least 20 supported, 10 ambiguous,
   and 10 unsupported prompts.
 
-### S2B - Model-Backed Hermes Compiler And Corpus Evaluation
+### S2B - Model-Backed Compiler And Corpus Evaluation
 
 Hard acceptance:
 
-- a real model-backed Hermes client receives the tactical system instructions,
+- a real model-backed compiler client receives the tactical system instructions,
   safe capability context, tool schemas, trusted recipe summaries, user request,
   and clarification history;
 - model output is bounded to trusted recipe selection, typed experimental draft,
@@ -504,6 +504,36 @@ Hard acceptance:
   parameter names, wrong units, and hostile complexity limits fail validation;
 - prompt-injection and unauthorized-action tests remain fail-closed.
 
+### S2D - Session Provenance And Evaluation Integrity
+
+External S2C review approved the core compiler but blocked S3 until provenance
+and evaluation integrity were strong enough for feedback and revision lineage.
+
+Hard acceptance:
+
+- every compiler request receives a host-owned `session_id` and `turn_id`;
+- clarification answers reference the original clarification turn through
+  `parent_turn_id`;
+- session records contain the original request, model questions, user answers,
+  model decisions, draft/bound plan hashes, confirmation event, execution ID,
+  inspection handle, and replay handle;
+- every model decision trace records all attempts, raw outputs, schema
+  validation results, semantic validation results, `repair_count`, and the final
+  accepted output;
+- evaluation summaries report first-pass accuracy, after-repair accuracy, and
+  repair rate by category;
+- the previous "blind" corpus is described as a separate held-out regression set,
+  not proof of external blindness;
+- the verifier supports an externally sealed prompt set at
+  `config/evaluation/m1_2_s2d_sealed_prompt_set.json`;
+- S3 remains blocked until an owner or independent reviewer supplies that sealed
+  set after code/prompt freeze and the frozen compiler run is preserved;
+- `requested_evidence` is not accepted in the model decision schema until it has
+  real execution semantics;
+- product/spec/verifier language uses "model-backed compiler", "agent caller
+  profile", and "model-visible tool boundary"; "Hermes integration" is reserved
+  for a real Hermes adapter.
+
 ### Gate C - Feedback and Non-Match Inspection
 
 Hard acceptance:
@@ -519,7 +549,7 @@ Hard acceptance:
 
 Hard acceptance:
 
-- Hermes proposes explicit revisions using available primitives/relations only;
+- the model-backed compiler proposes explicit revisions using available primitives/relations only;
 - semantic and raw diffs are visible;
 - full-corpus added, removed, and retained result sets are inspectable;
 - previous versions remain reproducible and executable;
@@ -582,13 +612,13 @@ make m1-1-verify
 make m1-2-verify
 ```
 
-`make m1-2-verify` must fail if Hermes bypasses the binder, unsupported concepts are silently approximated, revisions happen without confirmation, prior versions are unreproducible, feedback is lost across restart, result deltas are model-computed, or workshop evidence is hardcoded.
+`make m1-2-verify` must fail if the model-backed compiler bypasses the binder, unsupported concepts are silently approximated, revisions happen without confirmation, prior versions are unreproducible, feedback is lost across restart, result deltas are model-computed, or workshop evidence is hardcoded.
 
 ## Anti-Reward-Hacking Rules
 
-- Hermes never executes generated code.
-- Hermes never mutates primitive implementations.
-- Hermes never silently changes thresholds or semantics.
+- The model-backed compiler never executes generated code.
+- The model-backed compiler never mutates primitive implementations.
+- The model-backed compiler never silently changes thresholds or semantics.
 - Agent memory cannot change query semantics; persisted recipes and feedback are explicit and versioned.
 - Unsupported concepts produce capability gaps, not nearby substitute executions.
 - Experimental, user-saved, approved, and deprecated recipes remain visually distinct.
@@ -601,7 +631,7 @@ make m1-2-verify
 
 Stop and reassess if:
 
-- Hermes succeeds only on canned prompts;
+- The model-backed compiler succeeds only on canned prompts;
 - unsupported prompts execute as approximate supported prompts;
 - feedback causes hidden threshold tuning;
 - query versions cannot be reproduced;

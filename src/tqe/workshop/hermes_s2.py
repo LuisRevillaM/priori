@@ -33,6 +33,7 @@ from tqe.workshop.m1_2 import (
 APPROVED_M1_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 EXPERIMENTAL_CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
 TRACE_DIR = DEFAULT_WORKSHOP_ROOT / "hermes-traces"
+SESSION_DIR = DEFAULT_WORKSHOP_ROOT / "compiler-sessions"
 OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
 DEFAULT_HERMES_MODEL = "gpt-4o-mini"
 COMPILER_IDENTITY = "ModelBackedTacticalQueryCompiler"
@@ -146,12 +147,17 @@ class HermesCompileRequest(StrictModel):
     original_language: str = Field(min_length=1, max_length=1000)
     clarifications: list[str] = Field(default_factory=list)
     requester: str = Field(default="analyst", min_length=1, max_length=80)
+    session_id: str | None = Field(default=None, min_length=1, max_length=80)
+    parent_turn_id: str | None = Field(default=None, min_length=1, max_length=80)
 
 
 class HermesCompileResponse(StrictModel):
     ok: bool
     status: HermesCompileStatus
     trace_id: str
+    session_id: str
+    turn_id: str
+    parent_turn_id: str | None = None
     original_language: str
     clarifications: list[str] = Field(default_factory=list)
     agent_kind: Literal["model_backed_tactical_query_compiler", "deterministic_reference"] = "deterministic_reference"
@@ -168,6 +174,9 @@ class HermesCompileResponse(StrictModel):
     trusted_recipe_context_hash: str | None = None
     raw_model_output: dict[str, Any] | None = None
     model_output_errors: list[dict[str, Any]] = Field(default_factory=list)
+    attempts: list[dict[str, Any]] = Field(default_factory=list)
+    repair_count: int = 0
+    final_accepted_output: dict[str, Any] | None = None
     interpretation: dict[str, Any]
     selected_recipe: dict[str, Any] | None = None
     draft_plan_id: str | None = None
@@ -203,7 +212,6 @@ class DraftCorridorDecision(StrictModel):
     recipe_id: Literal["possession_corridor_availability_v1"]
     interpretation: str = Field(min_length=1, max_length=500)
     corridor_parameters: CorridorParameters = Field(default_factory=CorridorParameters)
-    requested_evidence: list[Literal["relation_count", "witness_relation_id"]] = Field(default_factory=list, max_length=2)
 
 
 class ClarificationDecision(StrictModel):
@@ -287,6 +295,10 @@ def compile_hermes_model_request(
         else:
             exc = None
     if isinstance(locals().get("exc"), ValidationError):
+        attempts = model_attempts_from_payload(
+            model_payload,
+            final_schema_errors=exc.errors(),
+        )
         metadata = {
             "agent_kind": "model_backed_tactical_query_compiler",
             "agent_identity": COMPILER_IDENTITY,
@@ -302,11 +314,15 @@ def compile_hermes_model_request(
             "trusted_recipe_context_hash": stable_hash(recipe_summaries),
             "raw_model_output": model_payload["json"],
             "model_output_errors": exc.errors(),
+            "attempts": attempts,
+            "repair_count": repair_count_for_attempts(attempts),
+            "final_accepted_output": None,
         }
         response = HermesCompileResponse(
             ok=False,
             status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
             trace_id=trace_id_for(request, "model_output_invalid", model_payload["json"]),
+            **compile_lineage_fields(request),
             original_language=request.original_language,
             clarifications=request.clarifications,
             interpretation={
@@ -338,6 +354,10 @@ def compile_hermes_model_request(
                 "invalid_first_output": model_payload["json"],
                 "first_output_semantic_errors": semantic_errors,
             }
+            attempts = model_attempts_from_payload(
+                model_payload,
+                final_schema_errors=exc.errors(),
+            )
             metadata = {
                 "agent_kind": "model_backed_tactical_query_compiler",
                 "agent_identity": COMPILER_IDENTITY,
@@ -353,11 +373,15 @@ def compile_hermes_model_request(
                 "trusted_recipe_context_hash": stable_hash(recipe_summaries),
                 "raw_model_output": model_payload["json"],
                 "model_output_errors": exc.errors(),
+                "attempts": attempts,
+                "repair_count": repair_count_for_attempts(attempts),
+                "final_accepted_output": None,
             }
             response = HermesCompileResponse(
                 ok=False,
                 status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
                 trace_id=trace_id_for(request, "model_output_invalid_after_semantic_repair", model_payload["json"]),
+                **compile_lineage_fields(request),
                 original_language=request.original_language,
                 clarifications=request.clarifications,
                 interpretation={
@@ -377,6 +401,11 @@ def compile_hermes_model_request(
             "first_output_semantic_errors": semantic_errors,
         }
         if semantic_errors_after_repair:
+            attempts = model_attempts_from_payload(
+                model_payload,
+                final_decision=decision,
+                final_semantic_errors=semantic_errors_after_repair,
+            )
             metadata = {
                 "agent_kind": "model_backed_tactical_query_compiler",
                 "agent_identity": COMPILER_IDENTITY,
@@ -392,11 +421,15 @@ def compile_hermes_model_request(
                 "trusted_recipe_context_hash": stable_hash(recipe_summaries),
                 "raw_model_output": model_payload["json"],
                 "model_output_errors": [{"type": "semantic_validation", "message": item} for item in semantic_errors_after_repair],
+                "attempts": attempts,
+                "repair_count": repair_count_for_attempts(attempts),
+                "final_accepted_output": None,
             }
             response = HermesCompileResponse(
                 ok=False,
                 status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
                 trace_id=trace_id_for(request, "model_semantic_invalid", model_payload["json"]),
+                **compile_lineage_fields(request),
                 original_language=request.original_language,
                 clarifications=request.clarifications,
                 interpretation={
@@ -410,6 +443,7 @@ def compile_hermes_model_request(
             persist_compile_trace(response, output_root=output_root)
             return response
 
+    attempts = model_attempts_from_payload(model_payload, final_decision=decision)
     metadata = {
         "agent_kind": "model_backed_tactical_query_compiler",
         "agent_identity": COMPILER_IDENTITY,
@@ -424,6 +458,9 @@ def compile_hermes_model_request(
         "tool_schema_hash": stable_hash(tool_schemas),
         "trusted_recipe_context_hash": stable_hash(recipe_summaries),
         "raw_model_output": model_payload["json"],
+        "attempts": attempts,
+        "repair_count": repair_count_for_attempts(attempts),
+        "final_accepted_output": model_payload["json"],
     }
 
     if decision["action"] == "capability_gap":
@@ -431,6 +468,7 @@ def compile_hermes_model_request(
             ok=False,
             status=HermesCompileStatus.CAPABILITY_GAP,
             trace_id=trace_id_for(request, "model_capability_gap", decision),
+            **compile_lineage_fields(request),
             original_language=request.original_language,
             clarifications=request.clarifications,
             interpretation={
@@ -450,6 +488,7 @@ def compile_hermes_model_request(
             ok=False,
             status=HermesCompileStatus.CLARIFICATION_REQUIRED,
             trace_id=trace_id_for(request, "model_clarification", decision),
+            **compile_lineage_fields(request),
             original_language=request.original_language,
             clarifications=request.clarifications,
             interpretation={
@@ -470,6 +509,7 @@ def compile_hermes_model_request(
             ok=True,
             status=HermesCompileStatus.EXISTING_RECIPE_SELECTED,
             trace_id=trace_id_for(request, "model_existing_recipe", decision),
+            **compile_lineage_fields(request),
             original_language=request.original_language,
             clarifications=request.clarifications,
             interpretation={
@@ -509,6 +549,7 @@ def compile_hermes_model_request(
         ok=validated,
         status=HermesCompileStatus.DRAFT_VALIDATED if validated else HermesCompileStatus.PLAN_VALIDATION_FAILED,
         trace_id=trace_id_for(request, "model_draft_validated" if validated else "model_plan_validation_failed", decision),
+        **compile_lineage_fields(request),
         original_language=request.original_language,
         clarifications=request.clarifications,
         interpretation={
@@ -554,6 +595,7 @@ def compile_hermes_reference_request(
             ok=False,
             status=HermesCompileStatus.CAPABILITY_GAP,
             trace_id=trace_id_for(request, "capability_gap", gaps),
+            **compile_lineage_fields(request),
             original_language=request.original_language,
             clarifications=request.clarifications,
             interpretation={
@@ -573,6 +615,7 @@ def compile_hermes_reference_request(
             ok=True,
             status=HermesCompileStatus.EXISTING_RECIPE_SELECTED,
             trace_id=trace_id_for(request, "existing_recipe", selected),
+            **compile_lineage_fields(request),
             original_language=request.original_language,
             clarifications=request.clarifications,
             interpretation={
@@ -597,6 +640,7 @@ def compile_hermes_reference_request(
             ok=False,
             status=HermesCompileStatus.CLARIFICATION_REQUIRED,
             trace_id=trace_id_for(request, "clarification", questions),
+            **compile_lineage_fields(request),
             original_language=request.original_language,
             clarifications=request.clarifications,
             interpretation={
@@ -635,6 +679,7 @@ def compile_hermes_reference_request(
             ok=validated,
             status=HermesCompileStatus.DRAFT_VALIDATED if validated else HermesCompileStatus.PLAN_VALIDATION_FAILED,
             trace_id=trace_id_for(request, "draft_validated" if validated else "plan_validation_failed", validation),
+            **compile_lineage_fields(request),
             original_language=request.original_language,
             clarifications=request.clarifications,
             interpretation={
@@ -666,6 +711,7 @@ def compile_hermes_reference_request(
         ok=False,
         status=HermesCompileStatus.CLARIFICATION_REQUIRED,
         trace_id=trace_id_for(request, "unclassified", text),
+        **compile_lineage_fields(request),
         original_language=request.original_language,
         clarifications=request.clarifications,
         interpretation={
@@ -755,7 +801,7 @@ def call_hermes_model(
 ) -> dict[str, Any]:
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        raise RuntimeError("OPENAI_API_KEY is required for model-backed Hermes S2B verification")
+        raise RuntimeError("OPENAI_API_KEY is required for model-backed compiler S2 verification")
     model = os.environ.get("HERMES_S2_MODEL") or os.environ.get("OPENAI_MODEL") or DEFAULT_HERMES_MODEL
     payload = {
         "model": model,
@@ -821,7 +867,6 @@ def normalize_model_decision(payload: dict[str, Any]) -> dict[str, Any]:
     params = CorridorParameters().model_dump()
     gaps: list[dict[str, str]] = []
     questions: list[str] = []
-    requested_evidence: list[str] = []
     recipe_id: str | None = None
     if isinstance(decision, SelectRecipeDecision):
         action = decision.action
@@ -830,7 +875,6 @@ def normalize_model_decision(payload: dict[str, Any]) -> dict[str, Any]:
         action = decision.action
         recipe_id = decision.recipe_id
         params = decision.corridor_parameters.model_dump()
-        requested_evidence = list(decision.requested_evidence)
     elif isinstance(decision, ClarificationDecision):
         action = decision.action
         questions = decision.clarification_questions
@@ -844,7 +888,7 @@ def normalize_model_decision(payload: dict[str, Any]) -> dict[str, Any]:
         "clarification_questions": questions,
         "capability_gaps": gaps,
         "corridor_parameters": params,
-        "requested_evidence": requested_evidence,
+        "requested_evidence": [],
     }
 
 
@@ -942,7 +986,6 @@ def model_visible_parameter_context(
             "draft_corridor": {
                 "allowed_recipe_ids": ["possession_corridor_availability_v1"],
                 "allowed_parameters": exposed_parameters,
-                "requested_evidence_allowed_values": ["relation_count", "witness_relation_id"],
             },
         },
         "trusted_recipe_summaries": recipe_summaries,
@@ -1074,6 +1117,57 @@ def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str, 
     return errors
 
 
+def model_attempts_from_payload(
+    model_payload: dict[str, Any],
+    *,
+    final_decision: dict[str, Any] | None = None,
+    final_schema_errors: list[dict[str, Any]] | None = None,
+    final_semantic_errors: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    attempts: list[dict[str, Any]] = []
+    first_output = model_payload.get("invalid_first_output")
+    if first_output is not None:
+        first_schema_errors = model_payload.get("first_output_schema_errors") or []
+        first_semantic_errors = model_payload.get("first_output_semantic_errors") or []
+        attempts.append(
+            {
+                "attempt_index": 1,
+                "raw_output": first_output,
+                "schema_validation": {
+                    "ok": not first_schema_errors,
+                    "errors": first_schema_errors,
+                },
+                "semantic_validation": {
+                    "ok": not first_semantic_errors,
+                    "errors": first_semantic_errors,
+                },
+                "accepted": False,
+            }
+        )
+    schema_errors = final_schema_errors or []
+    semantic_errors = final_semantic_errors or []
+    attempts.append(
+        {
+            "attempt_index": len(attempts) + 1,
+            "raw_output": model_payload.get("json"),
+            "schema_validation": {
+                "ok": not schema_errors,
+                "errors": schema_errors,
+            },
+            "semantic_validation": {
+                "ok": not semantic_errors and final_decision is not None,
+                "errors": semantic_errors,
+            },
+            "accepted": final_decision is not None and not schema_errors and not semantic_errors,
+        }
+    )
+    return attempts
+
+
+def repair_count_for_attempts(attempts: list[dict[str, Any]]) -> int:
+    return max(0, len(attempts) - 1)
+
+
 def dedupe_gaps(gaps: list[dict[str, str]]) -> list[dict[str, str]]:
     seen = set()
     deduped = []
@@ -1138,6 +1232,9 @@ def record_confirmed_execution_trace(
         "trace_kind": "hermes_confirmed_execution",
         "recorded_at": utc_now_iso(),
         "compile_trace_id": compile_response.trace_id,
+        "session_id": compile_response.session_id,
+        "turn_id": compile_response.turn_id,
+        "parent_turn_id": compile_response.parent_turn_id,
         "original_language": compile_response.original_language,
         "clarification_turns": [
             {
@@ -1146,6 +1243,7 @@ def record_confirmed_execution_trace(
             }
             for index, answer in enumerate(compile_response.clarifications)
         ],
+        "clarification_questions": compile_response.clarification_questions,
         "agent_kind": compile_response.agent_kind,
         "agent_identity": compile_response.agent_identity,
         "agent_identity_decision": compile_response.agent_identity_decision,
@@ -1159,6 +1257,9 @@ def record_confirmed_execution_trace(
         "tool_schema_hash": compile_response.tool_schema_hash,
         "trusted_recipe_context_hash": compile_response.trusted_recipe_context_hash,
         "raw_model_output": compile_response.raw_model_output,
+        "attempts": compile_response.attempts,
+        "repair_count": compile_response.repair_count,
+        "final_accepted_output": compile_response.final_accepted_output,
         "selected_recipe": compile_response.selected_recipe,
         "draft_plan_id": compile_response.draft_plan_id,
         "draft_plan_hash": compile_response.draft_plan_hash,
@@ -1180,6 +1281,15 @@ def record_confirmed_execution_trace(
     trace_id = "hermes_exec_" + stable_hash(payload)[:16]
     path = output_root / "hermes-traces" / f"{trace_id}.json"
     write_json(path, {"trace_id": trace_id, **payload})
+    record_session_execution(
+        compile_response=compile_response,
+        execution_authorization_id=execution_authorization_id,
+        execution=execution,
+        inspection=inspection,
+        replay=replay,
+        trace_id=trace_id,
+        output_root=output_root,
+    )
     return {"trace_id": trace_id, **payload}
 
 
@@ -1235,6 +1345,127 @@ def execute_confirmed_hermes_session(
 def persist_compile_trace(response: HermesCompileResponse, *, output_root: Path) -> None:
     path = output_root / "hermes-traces" / f"{response.trace_id}.json"
     write_json(path, response.model_dump(mode="json"))
+    record_session_turn(response, output_root=output_root)
+
+
+def compile_lineage_fields(request: HermesCompileRequest) -> dict[str, Any]:
+    return {
+        "session_id": session_id_for(request),
+        "turn_id": turn_id_for(request),
+        "parent_turn_id": parent_turn_id_for(request),
+    }
+
+
+def session_id_for(request: HermesCompileRequest) -> str:
+    if request.session_id:
+        return request.session_id
+    return "session_" + stable_hash(
+        {
+            "requester": request.requester,
+            "original_language": request.original_language,
+        }
+    )[:16]
+
+
+def turn_id_for(request: HermesCompileRequest) -> str:
+    return "turn_" + stable_hash(
+        {
+            "session_id": session_id_for(request),
+            "original_language": request.original_language,
+            "clarifications": request.clarifications,
+            "requester": request.requester,
+        }
+    )[:16]
+
+
+def parent_turn_id_for(request: HermesCompileRequest) -> str | None:
+    if request.parent_turn_id:
+        return request.parent_turn_id
+    if request.clarifications:
+        parent_request = request.model_copy(update={"clarifications": [], "parent_turn_id": None})
+        return turn_id_for(parent_request)
+    return None
+
+
+def record_session_turn(response: HermesCompileResponse, *, output_root: Path) -> None:
+    path = output_root / "compiler-sessions" / f"{response.session_id}.json"
+    if path.exists():
+        session = read_json(path)
+    else:
+        session = {
+            "schema_version": "1.0",
+            "session_id": response.session_id,
+            "created_at": utc_now_iso(),
+            "original_language": response.original_language,
+            "turns": [],
+            "executions": [],
+        }
+    turns = [turn for turn in session.get("turns", []) if turn.get("turn_id") != response.turn_id]
+    turns.append(
+        {
+            "turn_id": response.turn_id,
+            "parent_turn_id": response.parent_turn_id,
+            "trace_id": response.trace_id,
+            "recorded_at": utc_now_iso(),
+            "original_language": response.original_language,
+            "clarification_questions": response.clarification_questions,
+            "clarification_answers": response.clarifications,
+            "status": response.status.value,
+            "model_decision": response.raw_model_output,
+            "attempts": response.attempts,
+            "repair_count": response.repair_count,
+            "draft_plan_hash": response.draft_plan_hash,
+            "bound_plan_hash": response.bound_plan_hash,
+        }
+    )
+    session["turns"] = sorted(turns, key=lambda item: item["recorded_at"])
+    session["updated_at"] = utc_now_iso()
+    write_json(path, session)
+
+
+def record_session_execution(
+    *,
+    compile_response: HermesCompileResponse,
+    execution_authorization_id: str,
+    execution: dict[str, Any],
+    inspection: dict[str, Any],
+    replay: dict[str, Any],
+    trace_id: str,
+    output_root: Path,
+) -> None:
+    path = output_root / "compiler-sessions" / f"{compile_response.session_id}.json"
+    if path.exists():
+        session = read_json(path)
+    else:
+        session = {
+            "schema_version": "1.0",
+            "session_id": compile_response.session_id,
+            "created_at": utc_now_iso(),
+            "original_language": compile_response.original_language,
+            "turns": [],
+            "executions": [],
+        }
+    executions = [
+        item
+        for item in session.get("executions", [])
+        if item.get("execution_id") != execution.get("execution_id")
+    ]
+    executions.append(
+        {
+            "trace_id": trace_id,
+            "turn_id": compile_response.turn_id,
+            "parent_turn_id": compile_response.parent_turn_id,
+            "recorded_at": utc_now_iso(),
+            "execution_authorization_id": execution_authorization_id,
+            "execution_id": execution.get("execution_id"),
+            "result_ids": [result["result_id"] for result in execution.get("results", [])],
+            "inspection_result_id": inspection.get("result_id"),
+            "replay_window_id": replay.get("replay_window_id"),
+        }
+    )
+    session["executions"] = executions
+    session["updated_at"] = utc_now_iso()
+    write_json(path, session)
 
 
 def trace_id_for(request: HermesCompileRequest, outcome: str, payload: Any) -> str:

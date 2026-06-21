@@ -1,4 +1,4 @@
-"""Verify M1.2 S2: bounded Hermes drafting and clarification shell."""
+"""Verify M1.2 S2: bounded model-backed compiler and clarification shell."""
 
 from __future__ import annotations
 
@@ -30,6 +30,8 @@ BLIND_CORPUS_SOURCE_PATH = Path("config/evaluation/m1_2_s2c_blind_corpus.json")
 EVALUATION_REPORT_PATH = Path("artifacts/m1.2/agent-evaluation-report.json")
 BLIND_EVALUATION_REPORT_PATH = Path("artifacts/m1.2/agent-blind-evaluation-report.json")
 TRACE_REPORT_PATH = Path("artifacts/m1.2/hermes-s2-trace-report.json")
+SEALED_CORPUS_SOURCE_PATH = Path("config/evaluation/m1_2_s2d_sealed_prompt_set.json")
+SEALED_EVALUATION_REPORT_PATH = Path("artifacts/m1.2/agent-sealed-evaluation-report.json")
 
 
 def utc_now_iso() -> str:
@@ -41,9 +43,18 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def read_json_path(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def trace_artifact(trace_id: str) -> dict[str, str]:
     path = DEFAULT_WORKSHOP_ROOT / "hermes-traces" / f"{trace_id}.json"
     return {"trace_id": trace_id, "path": str(path)}
+
+
+def session_artifact(session_id: str) -> dict[str, str]:
+    path = DEFAULT_WORKSHOP_ROOT / "compiler-sessions" / f"{session_id}.json"
+    return {"session_id": session_id, "path": str(path)}
 
 
 def check(check_id: str, passed: bool, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -68,16 +79,18 @@ def build_report() -> dict[str, Any]:
     )
     checks.append(
         check(
-            "s2.hermes_experimental_draft_validated",
+            "s2.compiler_experimental_draft_validated",
             compile_response.status == HermesCompileStatus.DRAFT_VALIDATED
             and compile_response.agent_kind == "model_backed_tactical_query_compiler"
             and compile_response.agent_identity == "ModelBackedTacticalQueryCompiler"
+            and compile_response.session_id.startswith("session_")
+            and compile_response.turn_id.startswith("turn_")
             and bool(compile_response.draft_plan_id)
             and bool(compile_response.bound_plan_id)
             and compile_response.validation_result is not None
             and compile_response.validation_result.get("plan_status") == "experimental"
             and all(call["caller_profile"] == CallerProfile.HERMES_S2.value for call in compile_response.tool_calls),
-            "Hermes compiles a supported prompt into a validated experimental draft through the Hermes caller profile.",
+            "The model-backed compiler compiles a supported prompt into a validated experimental draft through the agent caller profile.",
             compile_response.model_dump(mode="json"),
         )
     )
@@ -109,12 +122,12 @@ def build_report() -> dict[str, Any]:
     execution_trace = confirmed_session["trace"]
     checks.append(
         check(
-            "s2.hermes_confirmed_execution_grounded",
+            "s2.compiler_confirmed_execution_grounded",
             execution["total_result_count"] > 0
             and bool(inspection["predicate_traces"])
             and replay["frame_count"] > 0
             and execution_trace["original_language"] == compile_response.original_language,
-            "After host confirmation, Hermes executes, inspects, and retrieves replay through the model-visible boundary.",
+            "After host confirmation, the compiler path executes, inspects, and retrieves replay through the model-visible boundary.",
             {
                 "execution_id": execution["execution_id"],
                 "result_count": execution["total_result_count"],
@@ -145,6 +158,8 @@ def build_report() -> dict[str, Any]:
         check(
             "s2.full_session_metadata_recorded",
             execution_trace["agent_identity"] == "ModelBackedTacticalQueryCompiler"
+            and execution_trace["session_id"] == compile_response.session_id
+            and execution_trace["turn_id"] == compile_response.turn_id
             and bool(execution_trace["system_prompt_hash"])
             and bool(execution_trace["capability_context_hash"])
             and bool(execution_trace["tool_schema_hash"])
@@ -168,7 +183,7 @@ def build_report() -> dict[str, Any]:
             "s2.confirmation_boundary_preserved",
             authorization.execution_authorization_id not in json.dumps(compile_response.model_dump(mode="json"))
             and not any(call["tool_name"] == "host_confirm_bound_plan" for call in compile_response.tool_calls),
-            "Hermes compile output does not mint or receive execution authorization before host confirmation.",
+            "Compiler output does not mint or receive execution authorization before host confirmation.",
             {"compile_trace_id": compile_response.trace_id},
         )
     )
@@ -212,7 +227,7 @@ def build_report() -> dict[str, Any]:
             and approved.selected_recipe["state"] == "APPROVED"
             and approved.draft_plan_id is None
             and not any(call["tool_name"] == "submit_query_plan" for call in approved.tool_calls),
-            "Approved recipes are selected as trusted host records rather than submitted as Hermes-authored approved documents.",
+            "Approved recipes are selected as trusted host records rather than submitted as model-authored approved documents.",
             approved.model_dump(mode="json"),
         )
     )
@@ -271,6 +286,8 @@ def build_report() -> dict[str, Any]:
         HermesCompileRequest(
             original_language="Show support after the line break.",
             clarifications=["Progressive corridor within two seconds."],
+            session_id=clarification_start.session_id,
+            parent_turn_id=clarification_start.turn_id,
         )
     )
     checks.append(
@@ -278,6 +295,8 @@ def build_report() -> dict[str, Any]:
             "s2.clarification_round_trip_to_validated_plan",
             clarification_start.status == HermesCompileStatus.CLARIFICATION_REQUIRED
             and clarification_answered.status == HermesCompileStatus.DRAFT_VALIDATED
+            and clarification_answered.session_id == clarification_start.session_id
+            and clarification_answered.parent_turn_id == clarification_start.turn_id
             and clarification_answered.interpretation.get("corridor_parameters", {}).get("corridor_max_window_seconds") == 2.0,
             "A clarification answer changes an ambiguous support request into a validated supported plan.",
             {
@@ -304,6 +323,30 @@ def build_report() -> dict[str, Any]:
             {"trace_id": clarified_session["trace"]["trace_id"], "clarification_turns": clarified_session["trace"]["clarification_turns"]},
         )
     )
+    clarified_session_record = read_json_path(
+        DEFAULT_WORKSHOP_ROOT / "compiler-sessions" / f"{clarification_start.session_id}.json"
+    )
+    checks.append(
+        check(
+            "s2.session_record_links_clarification_execution",
+            clarified_session_record["session_id"] == clarification_start.session_id
+            and len(clarified_session_record["turns"]) >= 2
+            and any(turn["turn_id"] == clarification_start.turn_id for turn in clarified_session_record["turns"])
+            and any(
+                turn["turn_id"] == clarification_answered.turn_id
+                and turn["parent_turn_id"] == clarification_start.turn_id
+                and turn["clarification_answers"] == ["Progressive corridor within two seconds."]
+                for turn in clarified_session_record["turns"]
+            )
+            and any(item["execution_id"] == clarified_session["execution"]["execution_id"] for item in clarified_session_record["executions"]),
+            "Host-owned session record links initial question, answered turn, and confirmed execution.",
+            {
+                "session": session_artifact(clarification_start.session_id),
+                "turn_ids": [turn["turn_id"] for turn in clarified_session_record["turns"]],
+                "execution_ids": [item["execution_id"] for item in clarified_session_record["executions"]],
+            },
+        )
+    )
 
     checks.extend(strict_output_and_invalid_plan_checks())
 
@@ -321,6 +364,7 @@ def build_report() -> dict[str, Any]:
     evaluation_report = evaluate_corpus(corpus, output_path=EVALUATION_REPORT_PATH)
     blind_corpus = read_blind_corpus()
     blind_evaluation_report = evaluate_corpus(blind_corpus, output_path=BLIND_EVALUATION_REPORT_PATH)
+    sealed_evaluation_report = evaluate_sealed_corpus_if_present()
     checks.append(
         check(
             "s2.model_backed_corpus_scores_pass",
@@ -349,6 +393,19 @@ def build_report() -> dict[str, Any]:
             blind_evaluation_report["summary"],
         )
     )
+    checks.append(
+        check(
+            "s2.repair_provenance_and_first_pass_stats_visible",
+            "first_pass_supported_accuracy" in evaluation_report["summary"]
+            and "repair_rate_by_category" in evaluation_report["summary"]
+            and all("attempts" in row and "repair_count" in row for row in evaluation_report["rows"]),
+            "Evaluation rows expose model attempts, repair counts, first-pass accuracy, and repair rates.",
+            {
+                "visible_summary": evaluation_report["summary"],
+                "blind_summary": blind_evaluation_report["summary"],
+            },
+        )
+    )
 
     trace_report = {
         "schema_version": "1.0",
@@ -364,6 +421,10 @@ def build_report() -> dict[str, Any]:
         ],
         "confirmed_execution_trace": trace_artifact(execution_trace["trace_id"]),
         "clarified_confirmed_execution_trace": trace_artifact(clarified_session["trace"]["trace_id"]),
+        "sessions": [
+            session_artifact(compile_response.session_id),
+            session_artifact(clarification_start.session_id),
+        ],
         "model_provider": compile_response.model_provider,
         "model_name": compile_response.model_name,
         "agent_identity": compile_response.agent_identity,
@@ -372,6 +433,7 @@ def build_report() -> dict[str, Any]:
         "capability_context_hash": compile_response.capability_context_hash,
         "tool_schema_hash": compile_response.tool_schema_hash,
         "trusted_recipe_context_hash": compile_response.trusted_recipe_context_hash,
+        "sealed_evaluation": sealed_evaluation_report,
     }
     write_json(TRACE_REPORT_PATH, trace_report)
 
@@ -382,7 +444,7 @@ def build_report() -> dict[str, Any]:
     report = {
         "schema_version": "1.0",
         "milestone": "M1.2",
-        "gate": "S2_hermes_drafting_and_clarification",
+        "gate": "S2_model_backed_compiler_drafting_and_clarification",
         "generated_at": utc_now_iso(),
         "status": "pass" if summary["fail"] == 0 else "fail",
         "summary": summary,
@@ -390,6 +452,7 @@ def build_report() -> dict[str, Any]:
             "corpus": str(CORPUS_PATH),
             "evaluation_report": str(EVALUATION_REPORT_PATH),
             "blind_evaluation_report": str(BLIND_EVALUATION_REPORT_PATH),
+            "sealed_evaluation_report": str(SEALED_EVALUATION_REPORT_PATH) if SEALED_EVALUATION_REPORT_PATH.exists() else "not_run_requires_independent_prompt_set",
             "trace_report": str(TRACE_REPORT_PATH),
         },
         "checks": checks,
@@ -526,6 +589,23 @@ def read_blind_corpus() -> dict[str, Any]:
     return payload
 
 
+def evaluate_sealed_corpus_if_present() -> dict[str, Any]:
+    if not SEALED_CORPUS_SOURCE_PATH.exists():
+        return {
+            "status": "not_run",
+            "reason": "requires owner or independent reviewer sealed prompt set after compiler freeze",
+            "expected_path": str(SEALED_CORPUS_SOURCE_PATH),
+        }
+    payload = read_json_path(SEALED_CORPUS_SOURCE_PATH)
+    report = evaluate_corpus(payload, output_path=SEALED_EVALUATION_REPORT_PATH)
+    return {
+        "status": "run",
+        "source": str(SEALED_CORPUS_SOURCE_PATH),
+        "report": str(SEALED_EVALUATION_REPORT_PATH),
+        "summary": report["summary"],
+    }
+
+
 def evaluate_corpus(corpus: dict[str, Any], *, output_path: Path) -> dict[str, Any]:
     rows = []
     for category in ("supported", "ambiguous", "unsupported", "held_out"):
@@ -552,6 +632,9 @@ def evaluate_corpus(corpus: dict[str, Any], *, output_path: Path) -> dict[str, A
                         "selected_recipe": response.selected_recipe,
                         "draft_plan_validity": bool(response.validation_result and response.validation_result.get("ok")),
                         "semantic_expectation": expectation,
+                        "attempts": response.attempts,
+                        "repair_count": response.repair_count,
+                        "first_pass_accepted": bool(response.attempts and response.attempts[0].get("accepted")),
                         "raw_model_output": response.raw_model_output,
                         "model_metadata": {
                             "agent_identity": response.agent_identity,
@@ -597,6 +680,14 @@ def evaluate_corpus(corpus: dict[str, Any], *, output_path: Path) -> dict[str, A
         "supported_accuracy": accuracy(supported_rows),
         "ambiguous_accuracy": accuracy(ambiguous_rows),
         "unsupported_accuracy": accuracy(unsupported_rows),
+        "first_pass_supported_accuracy": first_pass_accuracy(supported_rows),
+        "first_pass_ambiguous_accuracy": first_pass_accuracy(ambiguous_rows),
+        "first_pass_unsupported_accuracy": first_pass_accuracy(unsupported_rows),
+        "repair_rate_by_category": {
+            "supported": repair_rate(supported_rows),
+            "ambiguous": repair_rate(ambiguous_rows),
+            "unsupported": repair_rate(unsupported_rows),
+        },
         "invented_identifier_count": sum(int(row.get("invented_identifiers", 0)) for row in rows),
         "unauthorized_tool_call_count": sum(int(row.get("unauthorized_tool_calls", 0)) for row in rows),
         "unconfirmed_execution_count": sum(int(row.get("unconfirmed_executions", 0)) for row in rows),
@@ -729,6 +820,13 @@ def strict_output_and_invalid_plan_checks() -> list[dict[str, Any]]:
             "interpretation": "negative parameter",
             "corridor_parameters": {"corridor_minimum_clearance_m": -1.0},
         },
+        {
+            "action": "draft_corridor",
+            "recipe_id": "possession_corridor_availability_v1",
+            "interpretation": "decorative evidence request",
+            "corridor_parameters": {},
+            "requested_evidence": ["relation_count"],
+        },
     ]
     failures = []
     for payload in invalid_payloads:
@@ -796,7 +894,6 @@ def validate_mutated_corridor_plan(
         "recipe_id": "possession_corridor_availability_v1",
         "interpretation": "adversarial validation probe",
         "corridor_parameters": {},
-        "requested_evidence": [],
     }
     plan_document = experimental_corridor_plan_for_model_decision(request, decision)
     plan_document["default_invocation"]["parameters"].update(invocation_parameters)
@@ -843,6 +940,20 @@ def accuracy(rows: list[dict[str, Any]]) -> float:
     return sum(1 for row in rows if row["review_outcome"] == "pass") / len(rows)
 
 
+def first_pass_accuracy(rows: list[dict[str, Any]]) -> float:
+    if not rows:
+        return 0.0
+    return sum(
+        1 for row in rows if row["review_outcome"] == "pass" and row.get("repair_count", 0) == 0
+    ) / len(rows)
+
+
+def repair_rate(rows: list[dict[str, Any]]) -> float:
+    if not rows:
+        return 0.0
+    return sum(1 for row in rows if row.get("repair_count", 0) > 0) / len(rows)
+
+
 def invented_identifier_count(response: Any) -> int:
     allowed_recipes = {"ball_side_block_shift_v1", "possession_corridor_availability_v1"}
     raw = response.raw_model_output or {}
@@ -871,11 +982,13 @@ def unauthorized_tool_count(response: Any) -> int:
 
 
 def clean_s2_artifacts() -> None:
-    for path in (CORPUS_PATH, EVALUATION_REPORT_PATH, TRACE_REPORT_PATH, REPORT_PATH):
+    for path in (CORPUS_PATH, EVALUATION_REPORT_PATH, BLIND_EVALUATION_REPORT_PATH, SEALED_EVALUATION_REPORT_PATH, TRACE_REPORT_PATH, REPORT_PATH):
         if path.exists():
             path.unlink()
     if (DEFAULT_WORKSHOP_ROOT / "hermes-traces").exists():
         shutil.rmtree(DEFAULT_WORKSHOP_ROOT / "hermes-traces")
+    if (DEFAULT_WORKSHOP_ROOT / "compiler-sessions").exists():
+        shutil.rmtree(DEFAULT_WORKSHOP_ROOT / "compiler-sessions")
 
 
 def main() -> None:
