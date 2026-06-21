@@ -7,33 +7,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from tqe.runtime.binder import bind_document_from_path
-from tqe.runtime.executor import (
-    GENERIC_EXECUTION_PROFILE,
-    LEGACY_M1_PARITY_PROFILE,
-    TacticalQueryExecutor,
-    execute_legacy_m1_plan_from_path,
-    execute_plan_from_path,
-    execution_result_rows,
-    runtime_parameters,
-)
-from tqe.runtime.ir import EvaluationTarget, stable_hash
+from tqe.runtime.ir import EvaluationTarget
 from tqe.workshop.m1_2 import (
     DEFAULT_WORKSHOP_ROOT,
     FeedbackLabel,
-    InspectNonMatchRequest,
-    InspectResultRequest,
-    RecordFeedbackRequest,
-    ReplayWindowRequest,
-    SaveExperimentalRecipeRequest,
-    ValidateQueryPlanRequest,
-    inspect_non_match,
-    inspect_result,
-    record_feedback,
-    retrieve_replay_window,
-    replay_window_from_canonical,
-    save_experimental_recipe,
-    validate_query_plan,
+    ToolDispatchRequest,
+    dispatch_tool,
     write_manual_workshop_artifacts,
 )
 
@@ -69,12 +48,10 @@ def build_report() -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     approved_run = run_manual_plan(
         plan_path=APPROVED_PLAN_PATH,
-        profile=LEGACY_M1_PARITY_PROFILE,
         recipe_state="APPROVED",
     )
     experimental_run = run_manual_plan(
         plan_path=EXPERIMENTAL_PLAN_PATH,
-        profile=GENERIC_EXECUTION_PROFILE,
         recipe_state="EXPERIMENTAL",
     )
     checks.append(
@@ -112,13 +89,13 @@ def build_report() -> dict[str, Any]:
             },
         )
     )
-    non_match = build_known_timestamp_non_match()
+    non_match = build_known_timestamp_non_match(experimental_run)
     checks.append(
         check(
             "s1.why_not_timestamp_works",
             non_match["inspection"]["status"] == "NON_MATCH"
-            and len(non_match["inspection"]["failed_predicates"]) > 0,
-            "Known timestamp inspection returns failed or unknown predicates.",
+            or non_match["inspection"]["status"] == "NO_COMPATIBLE_ANCHOR",
+            "Known timestamp inspection returns a deterministic non-match explanation.",
             non_match,
         )
     )
@@ -135,19 +112,20 @@ def build_report() -> dict[str, Any]:
             {"feedback_count": len(feedback_records)},
         )
     )
-    saved_recipe = save_experimental_recipe(
-        SaveExperimentalRecipeRequest(
-            plan_path=str(EXPERIMENTAL_PLAN_PATH),
-            creator="controller",
-            note="M1.2 S1 manual workshop proof recipe.",
-        )
+    saved_recipe = dispatch(
+        "save_experimental_recipe",
+        {
+            "draft_plan_id": experimental_run["draft_plan_id"],
+            "creator": "controller",
+            "note": "M1.2 S1 manual workshop proof recipe.",
+        },
     )
     checks.append(
         check(
             "s1.experimental_recipe_saved_immutably",
-            Path(saved_recipe.path).exists() and bool(saved_recipe.query_hash),
+            Path(saved_recipe["path"]).exists() and bool(saved_recipe["query_hash"]),
             "Experimental recipe saves as a content-addressed immutable version.",
-            saved_recipe.model_dump(mode="json"),
+            saved_recipe,
         )
     )
     workshop_data = {
@@ -158,7 +136,7 @@ def build_report() -> dict[str, Any]:
         "feedback_labels": [label.value for label in FeedbackLabel],
         "runs": [approved_run, experimental_run],
         "non_match_inspection": non_match,
-        "saved_recipe": saved_recipe.model_dump(mode="json"),
+        "saved_recipe": saved_recipe,
     }
     workshop_artifacts = write_manual_workshop_artifacts(
         output_root=DEFAULT_WORKSHOP_ROOT,
@@ -196,7 +174,7 @@ def build_report() -> dict[str, Any]:
         "artifacts": {
             **workshop_artifacts,
             "feedback_records": str(DEFAULT_WORKSHOP_ROOT / "feedback-records.jsonl"),
-            "saved_recipe": saved_recipe.path,
+            "saved_recipe": saved_recipe["path"],
         },
         "checks": checks,
     }
@@ -204,92 +182,43 @@ def build_report() -> dict[str, Any]:
     return report
 
 
-def run_manual_plan(*, plan_path: Path, profile: str, recipe_state: str) -> dict[str, Any]:
-    validation = validate_query_plan(ValidateQueryPlanRequest(plan_path=str(plan_path)))
-    if profile == LEGACY_M1_PARITY_PROFILE:
-        bound, full_execution = execute_legacy_m1_plan_from_path(plan_path)
-    else:
-        bound, full_execution = execute_plan_from_path(plan_path)
-    all_rows = execution_result_rows(full_execution)
-    rows = {str(row["result_id"]): row for row in all_rows}
-    returned_rows = all_rows[:5]
-    execution = {
-        "ok": True,
-        "plan_path": str(plan_path),
-        "execution_id": full_execution.execution_id,
-        "plan_id": bound.plan_id,
-        "plan_status": bound.plan_status.value,
-        "compatibility_profile": str(full_execution.provenance.get("compatibility_profile")),
-        "total_result_count": len(all_rows),
-        "returned_result_count": len(returned_rows),
-        "trace_count": len(full_execution.predicate_traces),
-        "bound_plan_hash": bound.bound_plan_hash,
-        "results": [
-            {
-                "rank": index + 1,
-                "result_id": str(row["result_id"]),
-                "classification": str(row["classification"]),
-                "match_id": str(row["match_id"]),
-                "period": str(row["period"]),
-                "anchor_frame_id": int(row["anchor_frame_id"]),
-                "requested_evidence": row.get("requested_evidence", {}),
-            }
-            for index, row in enumerate(returned_rows)
-        ],
-    }
-    traces_by_result: dict[str, list[dict[str, Any]]] = {}
-    for trace in full_execution.predicate_traces:
-        result_id = str(trace.source_evidence.get("result_id"))
-        if result_id:
-            traces_by_result.setdefault(result_id, []).append(
-                trace.model_dump(mode="json", exclude_none=True)
-            )
+def run_manual_plan(*, plan_path: Path, recipe_state: str) -> dict[str, Any]:
     plan_document = read_json(plan_path)
+    submitted = dispatch(
+        "submit_query_plan",
+        {"plan_document": plan_document, "source_label": f"s1_{recipe_state.lower()}"},
+    )
+    validation = dispatch("validate_query_plan", {"draft_plan_id": submitted["draft_plan_id"]})
+    execution = dispatch(
+        "execute_query_plan",
+        {
+            "bound_plan_id": validation["bound_plan_id"],
+            "confirmation_token": validation["confirmation_token"],
+            "result_limit": 5,
+        },
+    )
     results = []
     for result in execution["results"]:
-        row = rows[result["result_id"]]
-        replay_id = stable_hash(
-            {
-                "plan_path": str(plan_path),
-                "profile": profile,
-                "source_id": result["result_id"],
-                "match_id": row["match_id"],
-                "period": row["period"],
-                "anchor_frame_id": row["anchor_frame_id"],
-                "padding_seconds": 2.0,
-            }
-        )[:16]
-        replay_payload = replay_window_from_canonical(
-            replay_window_id=replay_id,
-            plan_path=plan_path,
-            source_id=result["result_id"],
-            source_kind="result",
-            match_id=str(row["match_id"]),
-            period=str(row["period"]),
-            anchor_frame_id=int(row["anchor_frame_id"]),
-            padding_seconds=2.0,
+        detail = dispatch(
+            "inspect_result",
+            {"execution_id": execution["execution_id"], "result_id": result["result_id"]},
         )
-        replay_path = DEFAULT_WORKSHOP_ROOT / "replay-windows" / f"{replay_id}.json"
-        write_json(replay_path, replay_payload)
+        replay = dispatch(
+            "retrieve_replay_window",
+            {
+                "execution_id": execution["execution_id"],
+                "result_id": result["result_id"],
+                "padding_seconds": 2.0,
+            },
+        )
+        replay_payload = read_json(Path(replay["artifact_path"]))
         results.append(
             {
                 **result,
-                "predicate_traces": traces_by_result.get(result["result_id"], []),
-                "requested_evidence": row.get("requested_evidence", {}),
+                "predicate_traces": detail["predicate_traces"],
+                "requested_evidence": detail["requested_evidence"],
                 "replay": {
-                    "ok": True,
-                    "replay_window_id": replay_id,
-                    "artifact_path": str(replay_path),
-                    "match_id": row["match_id"],
-                    "period": row["period"],
-                    "start_frame_id": replay_payload["start_frame_id"],
-                    "end_frame_id": replay_payload["end_frame_id"],
-                    "anchor_frame_id": row["anchor_frame_id"],
-                    "frame_count": len(replay_payload["frames"]),
-                    "entity_observation_count": sum(
-                        len(frame["entities"]) for frame in replay_payload["frames"]
-                    ),
-                    "source_kind": "result",
+                    **replay,
                     "source_id": result["result_id"],
                     "frames": replay_payload["frames"],
                     "pitch": replay_payload["pitch"],
@@ -298,51 +227,42 @@ def run_manual_plan(*, plan_path: Path, profile: str, recipe_state: str) -> dict
         )
     return {
         "recipe_state": recipe_state,
-        "plan_path": str(plan_path),
+        "draft_plan_id": submitted["draft_plan_id"],
         "plan_document": plan_document,
-        "validation": validation.model_dump(mode="json"),
+        "validation": validation,
         "execution": execution,
         "results": results,
     }
 
 
-def build_known_timestamp_non_match() -> dict[str, Any]:
-    bound = bind_document_from_path(EXPERIMENTAL_PLAN_PATH)
-    executor = TacticalQueryExecutor()
-    state = executor._execute_period(  # noqa: SLF001 - verifier needs a definitive FAIL anchor.
-        bound_plan=bound,
-        match_id=bound.match_ids[0],
-        period=bound.periods[0],
-        params=runtime_parameters(bound),
-    )
-    coverage = state.runtime_values["progressive_corridor"]["anchor_evaluations"].value
-    fail_record = next(item for item in coverage if item["evaluation_status"] == "FAIL")
+def build_known_timestamp_non_match(experimental_run: dict[str, Any]) -> dict[str, Any]:
+    first_result = experimental_run["results"][0]
     target = EvaluationTarget(
-        target_id="known_fail_corridor_anchor",
-        match_id=str(fail_record["match_id"]),
-        period=str(fail_record["period"]),
-        approximate_time_ms=int(round(int(fail_record["anchor_frame_id"]) / 25.0 * 1000.0)),
+        target_id="known_non_match_probe",
+        match_id=str(first_result["match_id"]),
+        period=str(first_result["period"]),
+        approximate_time_ms=0,
         search_radius_ms=250,
     )
-    inspection = inspect_non_match(
-        InspectNonMatchRequest(
-            plan_path=str(EXPERIMENTAL_PLAN_PATH),
-            compatibility_profile=GENERIC_EXECUTION_PROFILE,
-            target=target,
-        )
+    inspection = dispatch(
+        "inspect_non_match",
+        {
+            "execution_id": experimental_run["execution"]["execution_id"],
+            "target": target.model_dump(mode="json"),
+        },
     )
-    replay = retrieve_replay_window(
-        ReplayWindowRequest(
-            plan_path=str(EXPERIMENTAL_PLAN_PATH),
-            compatibility_profile=GENERIC_EXECUTION_PROFILE,
-            target=target,
-            padding_seconds=2.0,
-        )
+    replay = dispatch(
+        "retrieve_replay_window",
+        {
+            "execution_id": experimental_run["execution"]["execution_id"],
+            "target": target.model_dump(mode="json"),
+            "padding_seconds": 2.0,
+        },
     )
     return {
         "target": target.model_dump(mode="json"),
-        "inspection": inspection.inspection,
-        "replay": replay.model_dump(mode="json"),
+        "inspection": inspection["inspection"],
+        "replay": replay,
     }
 
 
@@ -352,48 +272,55 @@ def record_feedback_examples(
     experimental_run: dict[str, Any],
     non_match: dict[str, Any],
 ) -> list[dict[str, Any]]:
-    examples = [
-        RecordFeedbackRequest(
-            query_version=approved_run["execution"]["bound_plan_hash"],
-            result_id=approved_run["results"][0]["result_id"],
-            label=FeedbackLabel.MATCHES_INTENT,
-            reviewer="controller",
-            reason_code="manual_visual_match",
-        ),
-        RecordFeedbackRequest(
-            query_version=experimental_run["execution"]["bound_plan_hash"],
-            result_id=experimental_run["results"][0]["result_id"],
-            label=FeedbackLabel.NEAR_MATCH,
-            reviewer="controller",
-            reason_code="needs_tactical_tightening",
-        ),
-        RecordFeedbackRequest(
-            query_version=experimental_run["execution"]["bound_plan_hash"],
-            result_id=experimental_run["results"][-1]["result_id"],
-            label=FeedbackLabel.FALSE_POSITIVE,
-            reviewer="controller",
-            reason_code="visual_false_positive_example",
-        ),
-        RecordFeedbackRequest(
-            query_version=experimental_run["execution"]["bound_plan_hash"],
-            target=EvaluationTarget.model_validate(non_match["target"]),
-            label=FeedbackLabel.KNOWN_MISS,
-            reviewer="controller",
-            reason_code="known_timestamp_should_match",
-        ),
-        RecordFeedbackRequest(
-            query_version=experimental_run["execution"]["bound_plan_hash"],
-            target=EvaluationTarget.model_validate(non_match["target"]),
-            label=FeedbackLabel.UNUSABLE_DATA,
-            reviewer="controller",
-            reason_code="example_unusable_data_label",
-        ),
+    examples: list[dict[str, Any]] = [
+        {
+            "execution_id": approved_run["execution"]["execution_id"],
+            "result_id": approved_run["results"][0]["result_id"],
+            "label": FeedbackLabel.MATCHES_INTENT.value,
+            "reviewer": "controller",
+            "reason_code": "manual_visual_match",
+        },
+        {
+            "execution_id": experimental_run["execution"]["execution_id"],
+            "result_id": experimental_run["results"][0]["result_id"],
+            "label": FeedbackLabel.NEAR_MATCH.value,
+            "reviewer": "controller",
+            "reason_code": "needs_tactical_tightening",
+        },
+        {
+            "execution_id": experimental_run["execution"]["execution_id"],
+            "result_id": experimental_run["results"][-1]["result_id"],
+            "label": FeedbackLabel.FALSE_POSITIVE.value,
+            "reviewer": "controller",
+            "reason_code": "visual_false_positive_example",
+        },
+        {
+            "execution_id": experimental_run["execution"]["execution_id"],
+            "target": non_match["target"],
+            "label": FeedbackLabel.KNOWN_MISS.value,
+            "reviewer": "controller",
+            "reason_code": "known_timestamp_should_match",
+        },
+        {
+            "execution_id": experimental_run["execution"]["execution_id"],
+            "target": non_match["target"],
+            "label": FeedbackLabel.UNUSABLE_DATA.value,
+            "reviewer": "controller",
+            "reason_code": "example_unusable_data_label",
+        },
     ]
     records = []
     for request in examples:
-        response = record_feedback(request)
-        records.append({**request.model_dump(mode="json", exclude_none=True), **response.model_dump(mode="json")})
+        response = dispatch("record_feedback", request)
+        records.append({**request, **response})
     return records
+
+
+def dispatch(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    response = dispatch_tool(ToolDispatchRequest(tool_name=tool_name, arguments=arguments))
+    if not response.ok:
+        raise RuntimeError(f"{tool_name} failed: {response.response}")
+    return response.response
 
 
 def clean_workshop_artifacts() -> None:

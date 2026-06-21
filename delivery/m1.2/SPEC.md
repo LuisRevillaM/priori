@@ -27,6 +27,19 @@ The first implementation stop is after S0 and S1. S2 and S3 remain out of
 scope until the manual typed-plan -> execution -> traces -> coordinate replay
 -> feedback loop receives review.
 
+External review on 2026-06-21 required an S0R/S1R boundary correction before
+S2. The corrected pre-S2 boundary is:
+
+- Hermes and the manual client submit typed plan documents and receive opaque
+  host-owned handles, not filesystem paths.
+- Tool schemas are generated from Pydantic request and response models.
+- The host selects compatibility mode; legacy parity is restricted to the frozen
+  M1 recipe.
+- Result inspection, non-match inspection, replay retrieval, and feedback
+  resolve through immutable `execution_id` records.
+- The manual reference proof must call the same serialized dispatcher that
+  Hermes will use later.
+
 ## Scope
 
 M1.2 includes:
@@ -67,11 +80,17 @@ During S0/S1, the exposed tool surface is intentionally limited to:
 ```text
 list_capabilities
 describe_capability
+submit_query_plan
 validate_query_plan
 execute_query_plan
 inspect_result
 inspect_non_match
 retrieve_replay_window
+```
+
+The following tools are manual/host-only until S3:
+
+```text
 compare_query_versions
 record_feedback
 save_experimental_recipe
@@ -264,11 +283,15 @@ Hard acceptance:
 
 - generated capability context exists at `generated/capability-context.json`;
 - the exposed tool list is exactly the S0/S1 list above;
+- tool request and response schemas are concrete, generated schemas rather than
+  placeholders;
 - `exists` and `count_at_least` are agent-visible only for declared
   `anchor_evaluations`;
 - host-owned complexity ceilings are visible and enforced by validation;
 - unsupported concepts fail as capability gaps;
-- manual plan validation works without Hermes.
+- manual plan validation works without Hermes;
+- clients use `draft_plan_id`, `bound_plan_id`, `execution_id`, and
+  `replay_window_id` handles instead of local paths.
 
 ### S1 - Manual Reference Workshop
 
@@ -279,6 +302,8 @@ Hard acceptance:
   and coordinate replay windows;
 - known-timestamp inspection explains non-matches with failed/unknown
   predicates;
+- all manual actions flow through the same serialized dispatcher Hermes will use
+  later;
 - feedback labels `MATCHES_INTENT`, `NEAR_MATCH`, `FALSE_POSITIVE`,
   `KNOWN_MISS`, and `UNUSABLE_DATA` are recorded through a schema-valid tool;
 - an experimental recipe can be saved as an immutable content-addressed

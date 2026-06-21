@@ -13,9 +13,9 @@ from pathlib import Path
 from typing import Any, Literal
 
 import pyarrow.parquet as pq
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from tqe.runtime.binder import BindError, bind_document_from_path
+from tqe.runtime.binder import BindError, bind_document, bind_document_from_path
 from tqe.runtime.catalog import default_catalog
 from tqe.runtime.executor import (
     DEFAULT_CANONICAL_ROOT,
@@ -33,23 +33,28 @@ from tqe.runtime.ir import (
     EvaluationTarget,
     NodeKind,
     PlanStatus,
+    QueryExecution,
     TacticalQueryDocument,
     model_payload,
     stable_hash,
 )
 
-APPROVED_TOOL_NAMES = [
+HERMES_S2_TOOL_NAMES = [
     "list_capabilities",
     "describe_capability",
+    "submit_query_plan",
     "validate_query_plan",
     "execute_query_plan",
     "inspect_result",
     "inspect_non_match",
     "retrieve_replay_window",
+]
+MANUAL_ONLY_TOOL_NAMES = [
     "compare_query_versions",
     "record_feedback",
     "save_experimental_recipe",
 ]
+APPROVED_TOOL_NAMES = HERMES_S2_TOOL_NAMES + MANUAL_ONLY_TOOL_NAMES
 FORBIDDEN_SURFACES = [
     "arbitrary_python",
     "sql",
@@ -83,6 +88,7 @@ class ToolSpec(StrictModel):
     input_schema: dict[str, Any]
     output_schema: dict[str, Any]
     unavailable_surfaces: list[str]
+    exposure: Literal["hermes_s2", "manual_only"]
 
 
 class CapabilityContext(StrictModel):
@@ -102,33 +108,82 @@ class CapabilityContext(StrictModel):
     forbidden_surfaces: list[str]
 
 
+class ToolErrorResponse(StrictModel):
+    ok: Literal[False] = False
+    error_code: str
+    message: str
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class ToolDispatchRequest(StrictModel):
+    tool_name: str
+    arguments: dict[str, Any] = Field(default_factory=dict)
+
+
+class ToolDispatchResponse(StrictModel):
+    ok: bool
+    tool_name: str
+    response: dict[str, Any]
+
+
+class ListCapabilitiesRequest(StrictModel):
+    pass
+
+
+class DescribeCapabilityRequest(StrictModel):
+    capability_name: str = Field(min_length=1)
+
+
+class DescribeCapabilityResponse(StrictModel):
+    ok: bool
+    capability: dict[str, Any]
+
+
+class SubmitQueryPlanRequest(StrictModel):
+    plan_document: TacticalQueryDocument
+    source_label: str = Field(default="manual", min_length=1, max_length=80)
+
+
+class SubmitQueryPlanResponse(StrictModel):
+    ok: bool
+    draft_plan_id: str
+    draft_plan_hash: str
+    recipe_id: str
+    recipe_version: str
+    plan_status: str
+
+
 class ValidateQueryPlanRequest(StrictModel):
-    plan_path: str
+    draft_plan_id: str
 
 
 class ValidateQueryPlanResponse(StrictModel):
     ok: bool
-    plan_path: str
+    draft_plan_id: str
+    bound_plan_id: str | None = None
     plan_id: str | None = None
+    recipe_id: str | None = None
     plan_status: str | None = None
     bound_plan_hash: str | None = None
-    compatibility_profile: str | None = None
+    execution_profile: str | None = None
+    confirmation_token: str | None = None
     issues: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class ExecuteQueryPlanRequest(StrictModel):
-    plan_path: str
-    compatibility_profile: Literal["generic", "legacy_m1_parity"] = GENERIC_EXECUTION_PROFILE
+    bound_plan_id: str
+    confirmation_token: str
     result_limit: int = Field(default=25, ge=1, le=100)
 
 
 class ExecuteQueryPlanResponse(StrictModel):
     ok: bool
-    plan_path: str
     execution_id: str
+    bound_plan_id: str
     plan_id: str
     plan_status: str
     compatibility_profile: str
+    draft_plan_hash: str
     total_result_count: int
     returned_result_count: int
     results: list[dict[str, Any]]
@@ -137,39 +192,45 @@ class ExecuteQueryPlanResponse(StrictModel):
 
 
 class InspectResultRequest(StrictModel):
-    plan_path: str
+    execution_id: str
     result_id: str
-    compatibility_profile: Literal["generic", "legacy_m1_parity"] = GENERIC_EXECUTION_PROFILE
 
 
 class InspectResultResponse(StrictModel):
     ok: bool
+    execution_id: str
     result: dict[str, Any]
     predicate_traces: list[dict[str, Any]]
     requested_evidence: dict[str, Any]
 
 
 class InspectNonMatchRequest(StrictModel):
-    plan_path: str
+    execution_id: str
     target: EvaluationTarget
-    compatibility_profile: Literal["generic", "legacy_m1_parity"] = GENERIC_EXECUTION_PROFILE
 
 
 class InspectNonMatchResponse(StrictModel):
     ok: bool
+    execution_id: str
     inspection: dict[str, Any]
 
 
 class ReplayWindowRequest(StrictModel):
-    plan_path: str
-    compatibility_profile: Literal["generic", "legacy_m1_parity"] = GENERIC_EXECUTION_PROFILE
+    execution_id: str
     result_id: str | None = None
     target: EvaluationTarget | None = None
     padding_seconds: float = Field(default=2.0, ge=0.2, le=8.0)
 
+    @model_validator(mode="after")
+    def exactly_one_source(self) -> "ReplayWindowRequest":
+        if (self.result_id is None) == (self.target is None):
+            raise ValueError("provide exactly one of result_id or target")
+        return self
+
 
 class ReplayWindowResponse(StrictModel):
     ok: bool
+    execution_id: str
     replay_window_id: str
     artifact_path: str
     match_id: str
@@ -183,7 +244,7 @@ class ReplayWindowResponse(StrictModel):
 
 
 class RecordFeedbackRequest(StrictModel):
-    query_version: str
+    execution_id: str
     label: FeedbackLabel
     reviewer: str
     reason_code: str
@@ -191,15 +252,22 @@ class RecordFeedbackRequest(StrictModel):
     target: EvaluationTarget | None = None
     note: str | None = None
 
+    @model_validator(mode="after")
+    def exactly_one_feedback_subject(self) -> "RecordFeedbackRequest":
+        if (self.result_id is None) == (self.target is None):
+            raise ValueError("provide exactly one of result_id or target")
+        return self
+
 
 class RecordFeedbackResponse(StrictModel):
     ok: bool
+    execution_id: str
     feedback_id: str
     path: str
 
 
 class SaveExperimentalRecipeRequest(StrictModel):
-    plan_path: str
+    draft_plan_id: str
     creator: str
     parent_version: str | None = None
     note: str | None = None
@@ -213,8 +281,8 @@ class SaveExperimentalRecipeResponse(StrictModel):
 
 
 class CompareQueryVersionsRequest(StrictModel):
-    before_path: str
-    after_path: str
+    before_recipe_version_id: str
+    after_recipe_version_id: str
 
 
 class CompareQueryVersionsResponse(StrictModel):
@@ -240,6 +308,66 @@ def read_json(path: Path) -> Any:
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def handle_path(kind: str, handle_id: str, *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> Path:
+    return output_root / "handles" / kind / f"{handle_id}.json"
+
+
+def write_handle(
+    kind: str,
+    handle_id: str,
+    payload: dict[str, Any],
+    *,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+) -> None:
+    write_json(handle_path(kind, handle_id, output_root=output_root), payload)
+
+
+def read_handle(
+    kind: str,
+    handle_id: str,
+    *,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+) -> dict[str, Any]:
+    path = handle_path(kind, handle_id, output_root=output_root)
+    if not path.exists():
+        raise CapabilityGap(f"Unknown {kind} handle: {handle_id}")
+    payload = read_json(path)
+    if not isinstance(payload, dict):
+        raise CapabilityGap(f"Invalid {kind} handle payload: {handle_id}")
+    return payload
+
+
+def submit_query_plan(
+    request: SubmitQueryPlanRequest,
+    *,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+) -> SubmitQueryPlanResponse:
+    document_payload = model_payload(request.plan_document)
+    draft_hash = stable_hash(document_payload)
+    draft_plan_id = f"draft_{draft_hash[:16]}"
+    write_handle(
+        "draft-plans",
+        draft_plan_id,
+        {
+            "schema_version": "1.0",
+            "created_at": utc_now_iso(),
+            "source_label": request.source_label,
+            "draft_plan_id": draft_plan_id,
+            "draft_plan_hash": draft_hash,
+            "document": document_payload,
+        },
+        output_root=output_root,
+    )
+    return SubmitQueryPlanResponse(
+        ok=True,
+        draft_plan_id=draft_plan_id,
+        draft_plan_hash=draft_hash,
+        recipe_id=request.plan_document.recipe.recipe_id,
+        recipe_version=request.plan_document.recipe.recipe_version,
+        plan_status=request.plan_document.draft_plan.status.value,
+    )
 
 
 def list_capabilities() -> CapabilityContext:
@@ -309,51 +437,93 @@ def describe_capability(capability_name: str) -> dict[str, Any]:
     raise CapabilityGap(f"Unsupported capability: {capability_name}")
 
 
+def describe_capability_tool(request: DescribeCapabilityRequest) -> DescribeCapabilityResponse:
+    return DescribeCapabilityResponse(ok=True, capability=describe_capability(request.capability_name))
+
+
 def validate_query_plan(request: ValidateQueryPlanRequest) -> ValidateQueryPlanResponse:
-    plan_path = Path(request.plan_path)
     try:
-        bound = bind_document_from_path(plan_path)
+        draft_record = read_handle("draft-plans", request.draft_plan_id)
+        document = TacticalQueryDocument.model_validate(draft_record["document"])
+        bound = bind_document(document)
         validate_safe_agent_plan(bound)
-        profile = default_profile_for_plan(bound.plan_status)
+        profile = default_profile_for_bound_plan(bound)
+        bound_plan_id = f"bound_{bound.bound_plan_hash[:16]}"
+        write_handle(
+            "bound-plans",
+            bound_plan_id,
+            {
+                "schema_version": "1.0",
+                "created_at": utc_now_iso(),
+                "draft_plan_id": request.draft_plan_id,
+                "draft_plan_hash": draft_record["draft_plan_hash"],
+                "bound_plan_id": bound_plan_id,
+                "bound_plan_hash": bound.bound_plan_hash,
+                "execution_profile": profile,
+                "document": draft_record["document"],
+                "bound_plan": model_payload(bound),
+                "confirmation_token": stable_hash(
+                    {"bound_plan_id": bound_plan_id, "bound_plan_hash": bound.bound_plan_hash}
+                )[:16],
+            },
+        )
         return ValidateQueryPlanResponse(
             ok=True,
-            plan_path=str(plan_path),
+            draft_plan_id=request.draft_plan_id,
+            bound_plan_id=bound_plan_id,
             plan_id=bound.plan_id,
+            recipe_id=bound.recipe_id,
             plan_status=bound.plan_status.value,
             bound_plan_hash=bound.bound_plan_hash,
-            compatibility_profile=profile,
+            execution_profile=profile,
+            confirmation_token=stable_hash(
+                {"bound_plan_id": bound_plan_id, "bound_plan_hash": bound.bound_plan_hash}
+            )[:16],
         )
     except BindError as exc:
         return ValidateQueryPlanResponse(
             ok=False,
-            plan_path=str(plan_path),
+            draft_plan_id=request.draft_plan_id,
             issues=[issue.model_dump(mode="json") for issue in exc.issues],
         )
     except Exception as exc:
         return ValidateQueryPlanResponse(
             ok=False,
-            plan_path=str(plan_path),
-            issues=[{"code": type(exc).__name__, "message": str(exc), "path": str(plan_path)}],
+            draft_plan_id=request.draft_plan_id,
+            issues=[{"code": type(exc).__name__, "message": str(exc), "path": request.draft_plan_id}],
         )
 
 
-def execute_query_plan(request: ExecuteQueryPlanRequest) -> ExecuteQueryPlanResponse:
-    bound = bind_document_from_path(Path(request.plan_path))
+def execute_query_plan(
+    request: ExecuteQueryPlanRequest,
+    *,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+) -> ExecuteQueryPlanResponse:
+    bound_record = read_handle("bound-plans", request.bound_plan_id, output_root=output_root)
+    if request.confirmation_token != bound_record["confirmation_token"]:
+        raise CapabilityGap("execution requires the host confirmation token for this bound plan")
+    document = TacticalQueryDocument.model_validate(bound_record["document"])
+    bound = bind_document(document)
     validate_safe_agent_plan(bound)
-    validate_profile_allowed(bound.plan_status, request.compatibility_profile)
-    if request.compatibility_profile == LEGACY_M1_PARITY_PROFILE:
-        bound, execution = execute_legacy_m1_plan_from_path(Path(request.plan_path))
-    else:
-        bound, execution = execute_plan_from_path(Path(request.plan_path))
+    profile = str(bound_record["execution_profile"])
+    execution = executor_for_profile(profile).execute(bound)
     rows = execution_result_rows(execution)
     returned = rows[: request.result_limit]
+    execution_record = execution_record_payload(
+        bound_record=bound_record,
+        execution=execution,
+        rows=rows,
+        profile=profile,
+    )
+    write_handle("executions", execution.execution_id, execution_record, output_root=output_root)
     return ExecuteQueryPlanResponse(
         ok=True,
-        plan_path=request.plan_path,
         execution_id=execution.execution_id,
+        bound_plan_id=request.bound_plan_id,
         plan_id=bound.plan_id,
         plan_status=bound.plan_status.value,
         compatibility_profile=str(execution.provenance.get("compatibility_profile")),
+        draft_plan_hash=str(bound_record["draft_plan_hash"]),
         total_result_count=len(rows),
         returned_result_count=len(returned),
         results=[rank_result(row, rank=index + 1) for index, row in enumerate(returned)],
@@ -363,22 +533,20 @@ def execute_query_plan(request: ExecuteQueryPlanRequest) -> ExecuteQueryPlanResp
 
 
 def inspect_result(request: InspectResultRequest) -> InspectResultResponse:
-    bound = bind_document_from_path(Path(request.plan_path))
-    validate_safe_agent_plan(bound)
-    validate_profile_allowed(bound.plan_status, request.compatibility_profile)
-    execution = executor_for_profile(request.compatibility_profile).execute(bound)
-    rows = execution_result_rows(execution)
+    execution_record = read_handle("executions", request.execution_id)
+    rows = execution_record["rows"]
     result = next((row for row in rows if str(row["result_id"]) == request.result_id), None)
     if result is None:
         raise CapabilityGap(f"Unknown result_id for plan execution: {request.result_id}")
     traces = [
-        trace.model_dump(mode="json", exclude_none=True)
-        for trace in execution.predicate_traces
-        if str(trace.source_evidence.get("result_id")) == request.result_id
+        trace
+        for trace in execution_record["predicate_traces"]
+        if str(trace.get("source_evidence", {}).get("result_id")) == request.result_id
     ]
     requested_evidence = result.get("requested_evidence")
     return InspectResultResponse(
         ok=True,
+        execution_id=request.execution_id,
         result=result,
         predicate_traces=traces,
         requested_evidence=requested_evidence if isinstance(requested_evidence, dict) else {},
@@ -386,14 +554,15 @@ def inspect_result(request: InspectResultRequest) -> InspectResultResponse:
 
 
 def inspect_non_match(request: InspectNonMatchRequest) -> InspectNonMatchResponse:
-    bound = bind_document_from_path(Path(request.plan_path))
+    execution_record = read_handle("executions", request.execution_id)
+    document = TacticalQueryDocument.model_validate(execution_record["document"])
+    bound = bind_document(document)
     validate_safe_agent_plan(bound)
-    validate_profile_allowed(bound.plan_status, request.compatibility_profile)
-    inspection = executor_for_profile(request.compatibility_profile).evaluate_target(
+    inspection = executor_for_profile(str(execution_record["compatibility_profile"])).evaluate_target(
         bound,
         request.target,
     )
-    return InspectNonMatchResponse(ok=True, inspection=inspection)
+    return InspectNonMatchResponse(ok=True, execution_id=request.execution_id, inspection=inspection)
 
 
 def retrieve_replay_window(
@@ -401,14 +570,12 @@ def retrieve_replay_window(
     *,
     output_root: Path = DEFAULT_WORKSHOP_ROOT,
 ) -> ReplayWindowResponse:
-    if (request.result_id is None) == (request.target is None):
-        raise CapabilityGap("Provide exactly one of result_id or target")
+    execution_record = read_handle("executions", request.execution_id, output_root=output_root)
     if request.result_id is not None:
         inspection = inspect_result(
             InspectResultRequest(
-                plan_path=request.plan_path,
+                execution_id=request.execution_id,
                 result_id=request.result_id,
-                compatibility_profile=request.compatibility_profile,
             )
         )
         row = inspection.result
@@ -427,8 +594,7 @@ def retrieve_replay_window(
 
     replay_window_id = stable_hash(
         {
-            "plan_path": request.plan_path,
-            "profile": request.compatibility_profile,
+            "execution_id": request.execution_id,
             "source_id": source_id,
             "match_id": match_id,
             "period": period,
@@ -438,7 +604,7 @@ def retrieve_replay_window(
     )[:16]
     replay = replay_window_from_canonical(
         replay_window_id=replay_window_id,
-        plan_path=Path(request.plan_path),
+        plan_path=Path(f"handle://{execution_record['bound_plan_id']}"),
         source_id=source_id,
         source_kind=source_kind,
         match_id=match_id,
@@ -450,6 +616,7 @@ def retrieve_replay_window(
     write_json(artifact_path, replay)
     return ReplayWindowResponse(
         ok=True,
+        execution_id=request.execution_id,
         replay_window_id=replay_window_id,
         artifact_path=str(artifact_path),
         match_id=match_id,
@@ -468,6 +635,10 @@ def record_feedback(
     *,
     output_root: Path = DEFAULT_WORKSHOP_ROOT,
 ) -> RecordFeedbackResponse:
+    execution_record = read_handle("executions", request.execution_id, output_root=output_root)
+    if request.result_id is not None:
+        if not any(str(row["result_id"]) == request.result_id for row in execution_record["rows"]):
+            raise CapabilityGap(f"result_id {request.result_id} does not belong to execution {request.execution_id}")
     payload = {
         "schema_version": "1.0",
         "recorded_at": utc_now_iso(),
@@ -479,7 +650,7 @@ def record_feedback(
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n")
-    return RecordFeedbackResponse(ok=True, feedback_id=feedback_id, path=str(path))
+    return RecordFeedbackResponse(ok=True, execution_id=request.execution_id, feedback_id=feedback_id, path=str(path))
 
 
 def save_experimental_recipe(
@@ -487,7 +658,12 @@ def save_experimental_recipe(
     *,
     output_root: Path = DEFAULT_WORKSHOP_ROOT,
 ) -> SaveExperimentalRecipeResponse:
-    document = TacticalQueryDocument.model_validate_json(Path(request.plan_path).read_text(encoding="utf-8"))
+    draft_record = read_handle("draft-plans", request.draft_plan_id, output_root=output_root)
+    document = TacticalQueryDocument.model_validate(draft_record["document"])
+    bound = bind_document(document)
+    validate_safe_agent_plan(bound)
+    if document.draft_plan.status != PlanStatus.EXPERIMENTAL:
+        raise CapabilityGap("save_experimental_recipe only accepts experimental draft plans")
     query_hash = stable_hash(model_payload(document))
     payload = {
         "schema_version": "1.0",
@@ -496,8 +672,9 @@ def save_experimental_recipe(
         "creator": request.creator,
         "parent_version": request.parent_version,
         "note": request.note,
-        "plan_path": request.plan_path,
+        "draft_plan_id": request.draft_plan_id,
         "query_hash": query_hash,
+        "bound_plan_hash": bound.bound_plan_hash,
         "document": model_payload(document),
     }
     recipe_version_id = query_hash[:16]
@@ -508,6 +685,7 @@ def save_experimental_recipe(
             raise RuntimeError(f"Immutable recipe path collision at {path}")
     else:
         write_json(path, payload)
+    write_handle("recipes", recipe_version_id, payload, output_root=output_root)
     return SaveExperimentalRecipeResponse(
         ok=True,
         recipe_version_id=recipe_version_id,
@@ -517,8 +695,8 @@ def save_experimental_recipe(
 
 
 def compare_query_versions(request: CompareQueryVersionsRequest) -> CompareQueryVersionsResponse:
-    before = read_json(Path(request.before_path))
-    after = read_json(Path(request.after_path))
+    before = read_handle("recipes", request.before_recipe_version_id)
+    after = read_handle("recipes", request.after_recipe_version_id)
     before_hash = stable_hash(before)
     after_hash = stable_hash(after)
     changes: list[dict[str, Any]] = []
@@ -555,8 +733,43 @@ def validate_safe_agent_plan(bound: Any) -> None:
                 )
 
 
-def default_profile_for_plan(plan_status: PlanStatus) -> str:
-    return LEGACY_M1_PARITY_PROFILE if plan_status == PlanStatus.APPROVED else GENERIC_EXECUTION_PROFILE
+def default_profile_for_bound_plan(bound_plan: Any) -> str:
+    if (
+        bound_plan.plan_status == PlanStatus.APPROVED
+        and bound_plan.recipe_id == "ball_side_block_shift"
+        and bound_plan.recipe_version == "1.0.0"
+    ):
+        return LEGACY_M1_PARITY_PROFILE
+    return GENERIC_EXECUTION_PROFILE
+
+
+def execution_record_payload(
+    *,
+    bound_record: dict[str, Any],
+    execution: QueryExecution,
+    rows: list[dict[str, Any]],
+    profile: str,
+) -> dict[str, Any]:
+    traces = [trace.model_dump(mode="json", exclude_none=True) for trace in execution.predicate_traces]
+    return {
+        "schema_version": "1.0",
+        "created_at": utc_now_iso(),
+        "execution_id": execution.execution_id,
+        "draft_plan_id": bound_record["draft_plan_id"],
+        "draft_plan_hash": bound_record["draft_plan_hash"],
+        "bound_plan_id": bound_record["bound_plan_id"],
+        "bound_plan_hash": bound_record["bound_plan_hash"],
+        "compatibility_profile": profile,
+        "dataset_identity": {
+            "canonical_root": str(DEFAULT_CANONICAL_ROOT),
+            "raw_root": str(DEFAULT_RAW_ROOT),
+        },
+        "document": bound_record["document"],
+        "execution": execution.model_dump(mode="json", exclude_none=True),
+        "rows": rows,
+        "result_ids": [str(row["result_id"]) for row in rows],
+        "predicate_traces": traces,
+    }
 
 
 def validate_profile_allowed(plan_status: PlanStatus, profile: str) -> None:
@@ -578,6 +791,11 @@ def catalog_entry_summary(entry: Any) -> dict[str, Any]:
         "version": entry.version,
         "kind": entry.kind.value if hasattr(entry.kind, "value") else entry.kind,
         "purpose": entry.purpose,
+        "agent_authorable": not any(
+            token in entry.name
+            for token in ("outcome_classification", "shift_persistence", "wide_channel_dwell")
+        ),
+        "inputs": [item.model_dump(mode="json") for item in entry.inputs],
         "outputs": [output.model_dump(mode="json") for output in entry.outputs],
         "parameters": [parameter.model_dump(mode="json", exclude_none=True) for parameter in entry.parameters],
         "limitations": entry.limitations,
@@ -589,7 +807,8 @@ def tool_spec(name: str) -> ToolSpec:
     descriptions = {
         "list_capabilities": "Return the Hermes-safe capability context.",
         "describe_capability": "Describe one exposed tool, primitive, relation, or operator.",
-        "validate_query_plan": "Bind and boundary-check a typed query plan.",
+        "submit_query_plan": "Store a typed query document and return an opaque draft_plan_id.",
+        "validate_query_plan": "Bind and boundary-check a submitted typed query plan.",
         "execute_query_plan": "Execute a validated plan through the deterministic runtime.",
         "inspect_result": "Return predicate traces and requested evidence for a result.",
         "inspect_non_match": "Evaluate a known timestamp target against a bound plan.",
@@ -598,13 +817,106 @@ def tool_spec(name: str) -> ToolSpec:
         "record_feedback": "Append immutable analyst feedback for a result or known target.",
         "save_experimental_recipe": "Save a content-addressed experimental recipe version.",
     }
+    request_models: dict[str, type[BaseModel]] = {
+        "list_capabilities": ListCapabilitiesRequest,
+        "describe_capability": DescribeCapabilityRequest,
+        "submit_query_plan": SubmitQueryPlanRequest,
+        "validate_query_plan": ValidateQueryPlanRequest,
+        "execute_query_plan": ExecuteQueryPlanRequest,
+        "inspect_result": InspectResultRequest,
+        "inspect_non_match": InspectNonMatchRequest,
+        "retrieve_replay_window": ReplayWindowRequest,
+        "compare_query_versions": CompareQueryVersionsRequest,
+        "record_feedback": RecordFeedbackRequest,
+        "save_experimental_recipe": SaveExperimentalRecipeRequest,
+    }
+    response_models: dict[str, type[BaseModel]] = {
+        "list_capabilities": CapabilityContext,
+        "describe_capability": DescribeCapabilityResponse,
+        "submit_query_plan": SubmitQueryPlanResponse,
+        "validate_query_plan": ValidateQueryPlanResponse,
+        "execute_query_plan": ExecuteQueryPlanResponse,
+        "inspect_result": InspectResultResponse,
+        "inspect_non_match": InspectNonMatchResponse,
+        "retrieve_replay_window": ReplayWindowResponse,
+        "compare_query_versions": CompareQueryVersionsResponse,
+        "record_feedback": RecordFeedbackResponse,
+        "save_experimental_recipe": SaveExperimentalRecipeResponse,
+    }
     return ToolSpec(
         name=name,
         description=descriptions[name],
-        input_schema={"type": "object", "additionalProperties": False},
-        output_schema={"type": "object", "additionalProperties": False},
+        input_schema=request_models[name].model_json_schema(),
+        output_schema={
+            "oneOf": [
+                response_models[name].model_json_schema(),
+                ToolErrorResponse.model_json_schema(),
+            ]
+        },
         unavailable_surfaces=FORBIDDEN_SURFACES,
+        exposure="hermes_s2" if name in HERMES_S2_TOOL_NAMES else "manual_only",
     )
+
+
+def dispatch_tool(
+    request: ToolDispatchRequest,
+    *,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+) -> ToolDispatchResponse:
+    try:
+        if request.tool_name == "list_capabilities":
+            response = list_capabilities()
+        elif request.tool_name == "describe_capability":
+            response = describe_capability_tool(DescribeCapabilityRequest.model_validate(request.arguments))
+        elif request.tool_name == "submit_query_plan":
+            response = submit_query_plan(
+                SubmitQueryPlanRequest.model_validate(request.arguments),
+                output_root=output_root,
+            )
+        elif request.tool_name == "validate_query_plan":
+            response = validate_query_plan(ValidateQueryPlanRequest.model_validate(request.arguments))
+        elif request.tool_name == "execute_query_plan":
+            response = execute_query_plan(
+                ExecuteQueryPlanRequest.model_validate(request.arguments),
+                output_root=output_root,
+            )
+        elif request.tool_name == "inspect_result":
+            response = inspect_result(InspectResultRequest.model_validate(request.arguments))
+        elif request.tool_name == "inspect_non_match":
+            response = inspect_non_match(InspectNonMatchRequest.model_validate(request.arguments))
+        elif request.tool_name == "retrieve_replay_window":
+            response = retrieve_replay_window(
+                ReplayWindowRequest.model_validate(request.arguments),
+                output_root=output_root,
+            )
+        elif request.tool_name == "record_feedback":
+            response = record_feedback(
+                RecordFeedbackRequest.model_validate(request.arguments),
+                output_root=output_root,
+            )
+        elif request.tool_name == "save_experimental_recipe":
+            response = save_experimental_recipe(
+                SaveExperimentalRecipeRequest.model_validate(request.arguments),
+                output_root=output_root,
+            )
+        elif request.tool_name == "compare_query_versions":
+            response = compare_query_versions(CompareQueryVersionsRequest.model_validate(request.arguments))
+        else:
+            raise CapabilityGap(f"Unsupported tool: {request.tool_name}")
+        return ToolDispatchResponse(
+            ok=True,
+            tool_name=request.tool_name,
+            response=response.model_dump(mode="json") if isinstance(response, BaseModel) else response,
+        )
+    except Exception as exc:
+        return ToolDispatchResponse(
+            ok=False,
+            tool_name=request.tool_name,
+            response=ToolErrorResponse(
+                error_code=type(exc).__name__,
+                message=str(exc),
+            ).model_dump(mode="json"),
+        )
 
 
 def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:

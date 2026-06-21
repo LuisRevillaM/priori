@@ -15,8 +15,12 @@ from tqe.workshop.m1_2 import (
     FORBIDDEN_SURFACES,
     SAFE_ANCHOR_RELATIVE_OUTPUT,
     CapabilityGap,
+    SubmitQueryPlanRequest,
+    ToolDispatchRequest,
     ValidateQueryPlanRequest,
+    dispatch_tool,
     list_capabilities,
+    submit_query_plan,
     validate_query_plan,
     write_capability_context,
 )
@@ -47,12 +51,20 @@ def build_report() -> dict[str, Any]:
     context = write_capability_context(CAPABILITY_CONTEXT_PATH)
     checks: list[dict[str, Any]] = []
     tool_names = [tool.name for tool in context.tools]
+    checks.append(check("s0.tool_surface.exact", tool_names == APPROVED_TOOL_NAMES, "Tool catalog contains the staged S2 and manual-only tools.", {"tools": tool_names}))
+    placeholder_schemas = [
+        tool.name
+        for tool in context.tools
+        if tool.input_schema == {"type": "object", "additionalProperties": False}
+        or tool.output_schema == {"type": "object", "additionalProperties": False}
+    ]
     checks.append(
         check(
-            "s0.tool_surface.exact",
-            tool_names == APPROVED_TOOL_NAMES,
-            "Hermes-visible tools are exactly the approved S0 surface.",
-            {"tools": tool_names},
+            "s0.tool_schemas.real",
+            not placeholder_schemas
+            and all("properties" in tool.input_schema or "$defs" in tool.input_schema for tool in context.tools),
+            "Every tool advertises real generated request/response JSON schemas.",
+            {"placeholder_schemas": placeholder_schemas},
         )
     )
     checks.append(
@@ -92,18 +104,26 @@ def build_report() -> dict[str, Any]:
             {"ceilings": context.host_owned_complexity_ceilings},
         )
     )
-    approved_validation = validate_query_plan(ValidateQueryPlanRequest(plan_path=str(APPROVED_PLAN_PATH)))
+    approved_submit = submit_query_plan(
+        SubmitQueryPlanRequest(
+            plan_document=TacticalQueryDocument.model_validate_json(APPROVED_PLAN_PATH.read_text(encoding="utf-8"))
+        )
+    )
+    approved_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=approved_submit.draft_plan_id))
     checks.append(
         check(
             "s0.approved_plan.validates",
             approved_validation.ok and bool(approved_validation.bound_plan_hash),
-            "Manual plan entry can validate the frozen approved recipe without Hermes.",
+            "Manual plan entry validates through an opaque draft_plan_id, not a filesystem path.",
             approved_validation.model_dump(mode="json"),
         )
     )
-    unsafe_path = Path("artifacts/m1.2/unsafe-raw-episode-exists.plan.json")
-    write_json(unsafe_path, unsafe_raw_episode_exists_plan())
-    unsafe_validation = validate_query_plan(ValidateQueryPlanRequest(plan_path=str(unsafe_path)))
+    unsafe_submit = submit_query_plan(
+        SubmitQueryPlanRequest(
+            plan_document=TacticalQueryDocument.model_validate(unsafe_raw_episode_exists_plan())
+        )
+    )
+    unsafe_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=unsafe_submit.draft_plan_id))
     checks.append(
         check(
             "s0.unsafe_raw_episode_exists_rejected",
@@ -125,6 +145,20 @@ def build_report() -> dict[str, Any]:
             "s0.unsupported_capability_gap",
             unsupported_gap,
             "Unsupported concepts fail explicitly as capability gaps.",
+        )
+    )
+    dispatched = dispatch_tool(
+        ToolDispatchRequest(
+            tool_name="validate_query_plan",
+            arguments={"draft_plan_id": approved_submit.draft_plan_id},
+        )
+    )
+    checks.append(
+        check(
+            "s0.serialized_dispatcher_validates",
+            dispatched.ok and dispatched.response.get("bound_plan_id") == approved_validation.bound_plan_id,
+            "Serialized dispatcher reaches the same validation boundary Hermes will use.",
+            dispatched.model_dump(mode="json"),
         )
     )
 
