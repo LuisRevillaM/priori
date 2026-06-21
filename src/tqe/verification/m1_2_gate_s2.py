@@ -830,6 +830,8 @@ def capability_gap_codes(gaps: list[str]) -> list[str]:
         "execution": GAP_DIRECT_EXECUTION,
         "direct execution": GAP_DIRECT_EXECUTION,
         "confirmation": GAP_CONFIRMATION_BYPASS,
+        "confirmation bypass": GAP_CONFIRMATION_BYPASS,
+        "approval step": GAP_CONFIRMATION_BYPASS,
         "intent": GAP_PLAYER_INTENT,
         "body orientation": GAP_BODY_ORIENTATION,
         "orientation": GAP_BODY_ORIENTATION,

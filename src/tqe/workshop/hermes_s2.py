@@ -72,8 +72,11 @@ Never invent primitive, relation, operator, recipe, or tool identifiers.
 Never request raw tracking dumps, code execution, filesystem paths, SQL, video,
 primitive mutation, threshold auto-tuning, or execution confirmation.
 
-Use select_recipe only when the request explicitly asks for the approved
-ball-side block-shift recipe/detector. Use draft_corridor for requests about a
+Use select_recipe when the request explicitly asks for the approved/trusted/
+reviewed ball-side block-shift recipe/detector or clear synonyms such as
+defence sliding toward the ball side, defensive displacement toward the side
+occupied by the ball, or the defending block shifting toward the ball. Use
+draft_corridor for requests about a
 progressive or forward corridor/lane/passing lane from possession anchors.
 Explicit thresholds are optional: when the analyst asks for corridor/lane
 availability without numeric constraints, draft the corridor plan with no
@@ -1081,6 +1084,25 @@ def compiler_classification_rules() -> dict[str, Any]:
             "ball carrier",
             "team in possession",
         ],
+        "select_block_shift_requires_request_any_of": [
+            "approved",
+            "trusted",
+            "reviewed",
+        ],
+        "select_block_shift_when_request_contains": [
+            "ball-side block shift",
+            "ball side block shift",
+            "block-shift",
+            "block shift",
+            "ball-side defensive displacement",
+            "ball side defensive displacement",
+            "defensive displacement",
+            "defence sliding",
+            "defense sliding",
+            "defending block",
+            "side occupied by the ball",
+            "toward the ball side",
+        ],
         "clarify_not_gap_when_request_contains_without_corridor_alias": [
             "support",
             "help",
@@ -1144,11 +1166,27 @@ def clarification_codes_from_questions(questions: list[str]) -> list[str]:
 def gap_codes_for_text(text: str) -> list[str]:
     normalized = normalize_text(text)
     code_terms = [
-        (GAP_CONFIRMATION_BYPASS, ("bypass confirmation", "confirmation bypass", "without confirmation")),
+        (
+            GAP_CONFIRMATION_BYPASS,
+            ("bypass confirmation", "confirmation bypass", "without confirmation", "skip approval", "approval step"),
+        ),
         (GAP_PRIMITIVE_MUTATION, ("mutation", "mutate", "change primitive", "primitive definition", "changing primitive")),
-        (GAP_DIRECT_EXECUTION, ("direct execution", "execute directly", "execute the revised", "execute_query_plan")),
+        (
+            GAP_DIRECT_EXECUTION,
+            (
+                "direct execution",
+                "execute directly",
+                "execute the revised",
+                "execute_query_plan",
+                "execution of the detector",
+                "execution of detector",
+                "immediate execution",
+                "run this detector immediately",
+                "running the detector immediately",
+            ),
+        ),
         (GAP_PLAYER_INTENT, ("intent", "intended")),
-        (GAP_BODY_ORIENTATION, ("body orientation", "orientation")),
+        (GAP_BODY_ORIENTATION, ("body orientation", "orientation", "body angle")),
         (GAP_SCANNING, ("scanning", "scanned", "scan")),
         (GAP_PASS_PROBABILITY, ("pass probability", "completion probability", "probability")),
         (GAP_OPTIMALITY, ("optimal", "should have done", "best option")),
@@ -1179,10 +1217,26 @@ def dedupe_codes(codes: list[str]) -> list[str]:
     return deduped
 
 
+def requests_approved_block_shift(text: str, rules: dict[str, Any]) -> bool:
+    has_trust_marker = any(marker in text for marker in rules["select_block_shift_requires_request_any_of"])
+    has_block_shift_alias = any(alias in text for alias in rules["select_block_shift_when_request_contains"])
+    return has_trust_marker and has_block_shift_alias
+
+
 def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str, Any]) -> list[dict[str, str]]:
     text = normalize_text(resolved_request_for_model(request))
     rules = compiler_classification_rules()
     errors: list[dict[str, str]] = []
+
+    if requests_approved_block_shift(text, rules) and decision["action"] != "select_recipe":
+        errors.append(
+            {
+                "code": "APPROVED_BLOCK_SHIFT_REQUIRES_RECIPE_SELECTION",
+                "message": "Trusted/reviewed/approved ball-side defensive movement requests must select "
+                "recipe_id=ball_side_block_shift_v1 instead of drafting or capability-gapping.",
+            }
+        )
+
     has_unsupported = [term for term in rules["capability_gap_when_request_contains"] if term in text]
     if has_unsupported:
         if decision["action"] != "capability_gap":

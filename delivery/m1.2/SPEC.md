@@ -139,6 +139,19 @@ diagnostic evidence and a regression suite; it cannot become S3 acceptance
 evidence after S2E changes. S3 remains blocked until a fresh independently
 authored sealed mini-set passes the acceptance thresholds.
 
+The first S2E fresh sealed mini-set exposed one more narrow correction:
+**S2F - Approved Recipe Synonyms and Capability-Code Normalization**. S2F is
+limited to:
+
+- recognizing trusted/reviewed/approved ball-side defensive movement synonyms
+  as requests for `ball_side_block_shift_v1`;
+- validating those synonyms before accepting a model-produced capability gap;
+- mapping safe refusal language such as "approval step", "execution of the
+  detector", and "body angle" to stable capability-gap codes.
+
+The S2E fresh set is diagnostic after S2F. S3 still requires a new independent
+sealed set created after S2F freeze.
+
 ## Scope
 
 M1.2 includes:
