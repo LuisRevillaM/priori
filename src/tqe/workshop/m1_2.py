@@ -112,6 +112,26 @@ class HostConfirmationResponse(StrictModel):
     execution_authorization_id: str
 
 
+class ResolvedEvaluationTarget(StrictModel):
+    original_target: EvaluationTarget
+    match_id: str
+    period: str
+    canonical_frame_id: int
+    resolved_match_time_ms: int
+    absolute_frame_time_ms: int
+    resolution_distance_frames: int
+    resolution_distance_ms: int
+
+    def as_executor_target(self) -> EvaluationTarget:
+        return EvaluationTarget(
+            target_id=self.original_target.target_id,
+            match_id=self.match_id,
+            period=self.period,  # type: ignore[arg-type]
+            approximate_time_ms=self.absolute_frame_time_ms,
+            search_radius_ms=self.original_target.search_radius_ms,
+        )
+
+
 class ToolSpec(StrictModel):
     name: str
     description: str
@@ -360,8 +380,23 @@ def write_handle(
 ) -> None:
     path = handle_path(kind, handle_id, output_root=output_root)
     if path.exists():
-        raise CapabilityGap(f"{kind} handle already exists: {handle_id}")
+        existing = read_json(path)
+        if canonical_identity(existing) == canonical_identity(payload):
+            return
+        raise CapabilityGap(f"{kind} handle collision: {handle_id}")
     write_json(path, payload)
+
+
+def canonical_identity(payload: Any) -> Any:
+    if isinstance(payload, dict):
+        return {
+            key: canonical_identity(value)
+            for key, value in payload.items()
+            if key not in {"created_at", "saved_at", "recorded_at", "generated_at", "timing_ms"}
+        }
+    if isinstance(payload, list):
+        return [canonical_identity(item) for item in payload]
+    return payload
 
 
 def read_handle(
@@ -496,10 +531,12 @@ def describe_capability_tool(
 
 def validate_query_plan(
     request: ValidateQueryPlanRequest,
+    *,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
     caller_profile: CallerProfile = CallerProfile.HERMES_S2,
 ) -> ValidateQueryPlanResponse:
     try:
-        draft_record = read_handle("draft-plans", request.draft_plan_id)
+        draft_record = read_handle("draft-plans", request.draft_plan_id, output_root=output_root)
         document = TacticalQueryDocument.model_validate(draft_record["document"])
         bound = bind_document(document)
         validate_safe_agent_plan(bound, caller_profile=caller_profile)
@@ -517,13 +554,13 @@ def validate_query_plan(
                 "bound_plan": model_payload(bound),
                 "confirmed": False,
             }
-        bound_path = handle_path("bound-plans", bound_plan_id)
+        bound_path = handle_path("bound-plans", bound_plan_id, output_root=output_root)
         if bound_path.exists():
-            existing = read_handle("bound-plans", bound_plan_id)
+            existing = read_handle("bound-plans", bound_plan_id, output_root=output_root)
             if existing.get("bound_plan_hash") != bound.bound_plan_hash:
                 raise CapabilityGap(f"bound plan handle collision: {bound_plan_id}")
         else:
-            write_handle("bound-plans", bound_plan_id, bound_payload)
+            write_handle("bound-plans", bound_plan_id, bound_payload, output_root=output_root)
         return ValidateQueryPlanResponse(
             ok=True,
             draft_plan_id=request.draft_plan_id,
@@ -585,6 +622,8 @@ def execute_query_plan(
     auth_record = read_handle("authorizations", request.execution_authorization_id, output_root=output_root)
     if auth_record.get("bound_plan_id") != request.bound_plan_id:
         raise CapabilityGap("execution authorization does not match bound_plan_id")
+    if auth_record.get("bound_plan_hash") != bound_record.get("bound_plan_hash"):
+        raise CapabilityGap("execution authorization does not match bound_plan_hash")
     document = TacticalQueryDocument.model_validate(bound_record["document"])
     bound = bind_document(document)
     validate_safe_agent_plan(bound, caller_profile=CallerProfile.HOST_MANUAL)
@@ -617,8 +656,12 @@ def execute_query_plan(
     )
 
 
-def inspect_result(request: InspectResultRequest) -> InspectResultResponse:
-    execution_record = read_handle("executions", request.execution_id)
+def inspect_result(
+    request: InspectResultRequest,
+    *,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+) -> InspectResultResponse:
+    execution_record = read_handle("executions", request.execution_id, output_root=output_root)
     rows = execution_record["rows"]
     result = next((row for row in rows if str(row["result_id"]) == request.result_id), None)
     if result is None:
@@ -638,15 +681,21 @@ def inspect_result(request: InspectResultRequest) -> InspectResultResponse:
     )
 
 
-def inspect_non_match(request: InspectNonMatchRequest) -> InspectNonMatchResponse:
-    execution_record = read_handle("executions", request.execution_id)
+def inspect_non_match(
+    request: InspectNonMatchRequest,
+    *,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+) -> InspectNonMatchResponse:
+    execution_record = read_handle("executions", request.execution_id, output_root=output_root)
     document = TacticalQueryDocument.model_validate(execution_record["document"])
     bound = bind_document(document)
     validate_safe_agent_plan(bound, caller_profile=CallerProfile.HOST_MANUAL)
+    resolved = resolve_evaluation_target(request.target)
     inspection = executor_for_profile(str(execution_record["compatibility_profile"])).evaluate_target(
         bound,
-        request.target,
+        resolved.as_executor_target(),
     )
+    inspection["resolved_target"] = resolved.model_dump(mode="json")
     return InspectNonMatchResponse(ok=True, execution_id=request.execution_id, inspection=inspection)
 
 
@@ -661,7 +710,8 @@ def retrieve_replay_window(
             InspectResultRequest(
                 execution_id=request.execution_id,
                 result_id=request.result_id,
-            )
+            ),
+            output_root=output_root,
         )
         row = inspection.result
         match_id = str(row["match_id"])
@@ -671,9 +721,10 @@ def retrieve_replay_window(
         source_kind: Literal["result", "target"] = "result"
     else:
         assert request.target is not None
-        match_id = request.target.match_id
-        period = request.target.period
-        anchor_frame_id = canonical_frame_for_target(request.target)
+        resolved = resolve_evaluation_target(request.target)
+        match_id = resolved.match_id
+        period = resolved.period
+        anchor_frame_id = resolved.canonical_frame_id
         source_id = request.target.target_id
         source_kind = "target"
 
@@ -697,10 +748,15 @@ def retrieve_replay_window(
         anchor_frame_id=anchor_frame_id,
         padding_seconds=request.padding_seconds,
     )
-    artifact_path = output_root / "replay-windows" / f"{replay_window_id}.json"
     if not replay["frames"]:
         raise CapabilityGap("NO_REPLAY_WINDOW: requested target produced no canonical replay frames")
-    write_json(artifact_path, replay)
+    artifact_path = output_root / "replay-windows" / f"{replay_window_id}.json"
+    if artifact_path.exists():
+        existing_replay = read_json(artifact_path)
+        if canonical_identity(existing_replay) != canonical_identity(replay):
+            raise CapabilityGap(f"replay artifact collision: {replay_window_id}")
+    else:
+        write_json(artifact_path, replay)
     write_handle(
         "replay-windows",
         replay_window_id,
@@ -995,6 +1051,7 @@ def dispatch_tool(
         if caller_profile == CallerProfile.HERMES_S2 and request.tool_name not in HERMES_S2_TOOL_NAMES:
             raise CapabilityGap(f"{request.tool_name} is not available to Hermes S2")
         if request.tool_name == "list_capabilities":
+            ListCapabilitiesRequest.model_validate(request.arguments)
             response = list_capabilities(caller_profile)
         elif request.tool_name == "describe_capability":
             response = describe_capability_tool(
@@ -1010,6 +1067,7 @@ def dispatch_tool(
         elif request.tool_name == "validate_query_plan":
             response = validate_query_plan(
                 ValidateQueryPlanRequest.model_validate(request.arguments),
+                output_root=output_root,
                 caller_profile=caller_profile,
             )
         elif request.tool_name == "execute_query_plan":
@@ -1018,9 +1076,15 @@ def dispatch_tool(
                 output_root=output_root,
             )
         elif request.tool_name == "inspect_result":
-            response = inspect_result(InspectResultRequest.model_validate(request.arguments))
+            response = inspect_result(
+                InspectResultRequest.model_validate(request.arguments),
+                output_root=output_root,
+            )
         elif request.tool_name == "inspect_non_match":
-            response = inspect_non_match(InspectNonMatchRequest.model_validate(request.arguments))
+            response = inspect_non_match(
+                InspectNonMatchRequest.model_validate(request.arguments),
+                output_root=output_root,
+            )
         elif request.tool_name == "retrieve_replay_window":
             response = retrieve_replay_window(
                 ReplayWindowRequest.model_validate(request.arguments),
@@ -1121,14 +1185,30 @@ def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:
     }
 
 
-def canonical_frame_for_target(target: EvaluationTarget) -> int:
+def resolve_evaluation_target(target: EvaluationTarget) -> ResolvedEvaluationTarget:
     frame_path = DEFAULT_CANONICAL_ROOT / "frames" / f"match_id={target.match_id}" / f"period={target.period}.parquet"
     frames_table = pq.ParquetFile(frame_path).read(columns=["frame_id"]).to_pandas()
     frame_ids = sorted(int(item) for item in frames_table.frame_id.tolist())
     if not frame_ids:
         raise CapabilityGap(f"NO_REPLAY_WINDOW: no canonical frames for {target.match_id} {target.period}")
-    nominal = frame_ids[0] + int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
-    return min(frame_ids, key=lambda item: abs(item - nominal))
+    first_frame = frame_ids[0]
+    nominal = first_frame + int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
+    canonical_frame_id = min(frame_ids, key=lambda item: abs(item - nominal))
+    resolution_distance_frames = abs(canonical_frame_id - nominal)
+    return ResolvedEvaluationTarget(
+        original_target=target,
+        match_id=target.match_id,
+        period=target.period,
+        canonical_frame_id=canonical_frame_id,
+        resolved_match_time_ms=int(round((canonical_frame_id - first_frame) / FRAME_RATE_HZ * 1000)),
+        absolute_frame_time_ms=int(round(canonical_frame_id / FRAME_RATE_HZ * 1000)),
+        resolution_distance_frames=resolution_distance_frames,
+        resolution_distance_ms=int(round(resolution_distance_frames / FRAME_RATE_HZ * 1000)),
+    )
+
+
+def canonical_frame_for_target(target: EvaluationTarget) -> int:
+    return resolve_evaluation_target(target).canonical_frame_id
 
 
 def replay_artifact_path(

@@ -63,6 +63,22 @@ more S0R2/S1R2 trust-boundary patch before S2:
 - Model-visible dispatcher responses are validated against the generated
   Pydantic response schemas before they are accepted as tool output.
 
+A third external review on 2026-06-21 kept S2 blocked for one final focused
+S0R3/S1R3 correction:
+
+- `inspect_non_match` and `retrieve_replay_window` must resolve an
+  `EvaluationTarget` through one shared canonical target resolver, so structural
+  inspection and human replay refer to the same frame.
+- Target inspection must expose the resolved canonical frame, resolved match
+  time, and resolution distance.
+- S1 must prove both `NO_COMPATIBLE_ANCHOR` style inspection and a compatible
+  anchor that fails a declared predicate.
+- Content-addressed tool resources must be retry-safe: repeated identical
+  calls return the existing handle, while conflicting payloads remain hard
+  collisions.
+- The model-visible dispatcher must validate successful and failing responses
+  for every S2-visible tool, not just a representative subset.
+
 ## Scope
 
 M1.2 includes:
@@ -315,6 +331,10 @@ Hard acceptance:
 - manual plan validation works without Hermes;
 - clients use `draft_plan_id`, `bound_plan_id`, `execution_id`, and
   `replay_window_id` handles instead of local paths.
+- repeated submit, validate, execute, and replay calls are idempotent for
+  identical content-addressed resources and fail only on true handle collision;
+- every S2-visible model-facing tool has both successful and failing
+  response-schema validation coverage.
 
 ### S1 - Manual Reference Workshop
 
@@ -325,6 +345,10 @@ Hard acceptance:
   and coordinate replay windows;
 - known-timestamp inspection explains non-matches with failed/unknown
   predicates;
+- known-timestamp inspection and target replay resolve to the same canonical
+  frame;
+- target inspection includes a real compatible-anchor predicate-failure example,
+  not only a no-compatible-anchor case;
 - all manual actions flow through the same serialized dispatcher Hermes will use
   later;
 - feedback labels `MATCHES_INTENT`, `NEAR_MATCH`, `FALSE_POSITIVE`,

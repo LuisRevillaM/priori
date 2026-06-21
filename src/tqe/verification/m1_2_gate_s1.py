@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -13,9 +14,11 @@ from tqe.workshop.m1_2 import (
     DEFAULT_WORKSHOP_ROOT,
     FeedbackLabel,
     ToolDispatchRequest,
+    dispatch_model_visible,
     dispatch_tool,
     host_confirm_bound_plan,
     replay_artifact_path,
+    resolve_evaluation_target,
     write_manual_workshop_artifacts,
 )
 
@@ -102,6 +105,29 @@ def build_report() -> dict[str, Any]:
             non_match,
         )
     )
+    checks.append(
+        check(
+            "s1.non_match_inspection_replay_same_resolved_frame",
+            non_match["inspection"]["resolved_target"]["canonical_frame_id"] == non_match["replay"]["anchor_frame_id"],
+            "Known timestamp inspection and coordinate replay resolve to the same canonical frame.",
+            {
+                "inspection_frame": non_match["inspection"]["resolved_target"]["canonical_frame_id"],
+                "replay_frame": non_match["replay"]["anchor_frame_id"],
+            },
+        )
+    )
+    predicate_failure_probe = build_compatible_predicate_failure_probe(experimental_run)
+    checks.append(
+        check(
+            "s1.compatible_anchor_predicate_failure_explained",
+            predicate_failure_probe is not None
+            and predicate_failure_probe["inspection"]["status"] == "NON_MATCH"
+            and predicate_failure_probe["inspection"]["candidate_count"] > 0
+            and bool(predicate_failure_probe["inspection"]["failed_predicates"]),
+            "Known timestamp inspection distinguishes compatible-anchor predicate failure from no compatible anchor.",
+            predicate_failure_probe or {},
+        )
+    )
     feedback_records = record_feedback_examples(
         approved_run=approved_run,
         experimental_run=experimental_run,
@@ -139,6 +165,7 @@ def build_report() -> dict[str, Any]:
         "feedback_labels": [label.value for label in FeedbackLabel],
         "runs": [approved_run, experimental_run],
         "non_match_inspection": non_match,
+        "predicate_failure_probe": predicate_failure_probe,
         "saved_recipe": saved_recipe,
     }
     workshop_artifacts = write_manual_workshop_artifacts(
@@ -272,6 +299,94 @@ def build_known_timestamp_non_match(experimental_run: dict[str, Any]) -> dict[st
     }
 
 
+def build_compatible_predicate_failure_probe(experimental_run: dict[str, Any]) -> dict[str, Any] | None:
+    diagnostic_plan = strict_corridor_failure_plan()
+    submitted = dispatch(
+        "submit_query_plan",
+        {"plan_document": diagnostic_plan, "source_label": "s1_predicate_failure_probe"},
+    )
+    validation = dispatch("validate_query_plan", {"draft_plan_id": submitted["draft_plan_id"]})
+    execution = dispatch(
+        "execute_query_plan",
+        {
+            "bound_plan_id": validation["bound_plan_id"],
+            "execution_authorization_id": host_confirm_bound_plan(
+                validation["bound_plan_id"],
+                reviewer="controller",
+            ).execution_authorization_id,
+            "result_limit": 5,
+        },
+    )
+    execution_id = execution["execution_id"]
+    first_result = experimental_run["results"][0]
+    match_id = str(first_result["match_id"])
+    period = str(first_result["period"])
+    period_start = resolve_evaluation_target(
+        EvaluationTarget(
+            target_id="period_start_probe",
+            match_id=match_id,
+            period=period,
+            approximate_time_ms=0,
+            search_radius_ms=250,
+        )
+    ).canonical_frame_id
+    candidate_frames = [int(first_result["anchor_frame_id"])]
+    for index, frame_id in enumerate(candidate_frames):
+        approximate_time_ms = int(round((frame_id - period_start) / 25 * 1000))
+        target = EvaluationTarget(
+            target_id=f"predicate_fail_{index}",
+            match_id=match_id,
+            period=period,
+            approximate_time_ms=approximate_time_ms,
+            search_radius_ms=500,
+        )
+        inspection = dispatch(
+            "inspect_non_match",
+            {"execution_id": execution_id, "target": target.model_dump(mode="json")},
+        )["inspection"]
+        if (
+            inspection.get("status") == "NON_MATCH"
+            and int(inspection.get("candidate_count", 0)) > 0
+            and inspection.get("failed_predicates")
+        ):
+            replay = dispatch(
+                "retrieve_replay_window",
+                {
+                    "execution_id": execution_id,
+                    "target": target.model_dump(mode="json"),
+                    "padding_seconds": 2.0,
+                },
+            )
+            return {
+                "diagnostic_execution": execution,
+                "target": target.model_dump(mode="json"),
+                "inspection": inspection,
+                "replay": replay,
+            }
+    return None
+
+
+def strict_corridor_failure_plan() -> dict[str, Any]:
+    payload = deepcopy(read_json(EXPERIMENTAL_PLAN_PATH))
+    payload["recipe"]["recipe_id"] = "s1_strict_corridor_failure_probe"
+    payload["recipe"]["display_name"] = "S1 Strict Corridor Failure Probe"
+    payload["recipe"]["output_classifications"] = ["IMPOSSIBLY_DENSE_CORRIDOR"]
+    payload["draft_plan"]["plan_id"] = "s1_strict_corridor_failure_probe"
+    payload["draft_plan"]["recipe_id"] = "s1_strict_corridor_failure_probe"
+    payload["draft_plan"]["classification_rules"] = [
+        {
+            "label": "IMPOSSIBLY_DENSE_CORRIDOR",
+            "predicate_ids": ["has_progressive_corridor"],
+            "description": "Diagnostic proof that compatible anchors can fail declared predicates.",
+        }
+    ]
+    for node in payload["draft_plan"]["nodes"]:
+        if node.get("node_id") == "has_progressive_corridor":
+            node["operator"] = {"name": "count_at_least", "version": "1.0.0"}
+            node["compare"] = {"payload_type": "number", "unit": "count", "value": 999}
+    return payload
+
+
 def record_feedback_examples(
     *,
     approved_run: dict[str, Any],
@@ -323,6 +438,23 @@ def record_feedback_examples(
 
 
 def dispatch(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    if tool_name in {
+        "list_capabilities",
+        "describe_capability",
+        "submit_query_plan",
+        "validate_query_plan",
+        "execute_query_plan",
+        "inspect_result",
+        "inspect_non_match",
+        "retrieve_replay_window",
+    }:
+        payload = dispatch_model_visible(
+            ToolDispatchRequest(tool_name=tool_name, arguments=arguments),
+            caller_profile=CallerProfile.HOST_MANUAL,
+        )
+        if payload.get("ok") is False:
+            raise RuntimeError(f"{tool_name} failed: {payload}")
+        return payload
     response = dispatch_tool(
         ToolDispatchRequest(tool_name=tool_name, arguments=arguments),
         caller_profile=CallerProfile.HOST_MANUAL,

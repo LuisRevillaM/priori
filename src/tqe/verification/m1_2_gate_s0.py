@@ -21,6 +21,7 @@ from tqe.workshop.m1_2 import (
     SubmitQueryPlanRequest,
     ToolDispatchRequest,
     dispatch_model_visible,
+    host_confirm_bound_plan,
     ValidateQueryPlanRequest,
     dispatch_tool,
     list_capabilities,
@@ -174,6 +175,87 @@ def build_report() -> dict[str, Any]:
             dispatched.model_dump(mode="json"),
         )
     )
+    retry_submit = dispatch_model_visible(
+        ToolDispatchRequest(
+            tool_name="submit_query_plan",
+            arguments={
+                "plan_document": TacticalQueryDocument.model_validate_json(
+                    APPROVED_PLAN_PATH.read_text(encoding="utf-8")
+                ).model_dump(mode="json")
+            },
+        ),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    retry_validation = dispatch_model_visible(
+        ToolDispatchRequest(
+            tool_name="validate_query_plan",
+            arguments={"draft_plan_id": approved_submit.draft_plan_id},
+        ),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    authorization = host_confirm_bound_plan(approved_validation.bound_plan_id)
+    retry_authorization = host_confirm_bound_plan(approved_validation.bound_plan_id)
+    retry_execution = dispatch_model_visible(
+        ToolDispatchRequest(
+            tool_name="execute_query_plan",
+            arguments={
+                "bound_plan_id": approved_validation.bound_plan_id,
+                "execution_authorization_id": authorization.execution_authorization_id,
+                "result_limit": 2,
+            },
+        ),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    retry_execution_again = dispatch_model_visible(
+        ToolDispatchRequest(
+            tool_name="execute_query_plan",
+            arguments={
+                "bound_plan_id": approved_validation.bound_plan_id,
+                "execution_authorization_id": retry_authorization.execution_authorization_id,
+                "result_limit": 2,
+            },
+        ),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    retry_replay = dispatch_model_visible(
+        ToolDispatchRequest(
+            tool_name="retrieve_replay_window",
+            arguments={
+                "execution_id": retry_execution["execution_id"],
+                "result_id": retry_execution["results"][0]["result_id"],
+                "padding_seconds": 2.0,
+            },
+        ),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    retry_replay_again = dispatch_model_visible(
+        ToolDispatchRequest(
+            tool_name="retrieve_replay_window",
+            arguments={
+                "execution_id": retry_execution["execution_id"],
+                "result_id": retry_execution["results"][0]["result_id"],
+                "padding_seconds": 2.0,
+            },
+        ),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    checks.append(
+        check(
+            "s0.content_addressed_retries_idempotent",
+            retry_submit["draft_plan_id"] == approved_submit.draft_plan_id
+            and retry_validation["bound_plan_id"] == approved_validation.bound_plan_id
+            and authorization.execution_authorization_id == retry_authorization.execution_authorization_id
+            and retry_execution["execution_id"] == retry_execution_again["execution_id"]
+            and retry_replay["replay_window_id"] == retry_replay_again["replay_window_id"],
+            "Repeated content-addressed tool calls return existing resources instead of false failures.",
+            {
+                "draft_plan_id": retry_submit["draft_plan_id"],
+                "bound_plan_id": retry_validation["bound_plan_id"],
+                "execution_id": retry_execution["execution_id"],
+                "replay_window_id": retry_replay["replay_window_id"],
+            },
+        )
+    )
     manual_denied = dispatch_tool(
         ToolDispatchRequest(tool_name="record_feedback", arguments={}),
         caller_profile=CallerProfile.HERMES_S2,
@@ -203,15 +285,15 @@ def build_report() -> dict[str, Any]:
     )
     non_authorable_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=non_authorable_submit.draft_plan_id))
     checks.append(check("s0.non_authorable_capability_rejected", not non_authorable_validation.ok and any("not agent-authorable" in issue.get("message", "") for issue in non_authorable_validation.issues), "Non-authorable catalog capabilities are rejected.", non_authorable_validation.model_dump(mode="json")))
-    model_visible_success = dispatch_model_visible(
-        ToolDispatchRequest(tool_name="list_capabilities", arguments={}),
-        caller_profile=CallerProfile.HERMES_S2,
+    model_visible_matrix = model_visible_tool_matrix()
+    checks.append(
+        check(
+            "s0.model_visible_schema_conformance_all_s2_tools",
+            all(item["success_ok"] and item["failure_ok"] for item in model_visible_matrix),
+            "Model-visible dispatcher validates successful and failing responses for every S2-visible tool.",
+            {"matrix": model_visible_matrix},
+        )
     )
-    model_visible_failure = dispatch_model_visible(
-        ToolDispatchRequest(tool_name="describe_capability", arguments={"capability_name": "not_real"}),
-        caller_profile=CallerProfile.HERMES_S2,
-    )
-    checks.append(check("s0.model_visible_schema_conformance", model_visible_success.get("schema_version") == "1.0" and model_visible_failure.get("ok") is False, "Model-visible dispatcher payloads validate against generated schemas.", {"success_keys": sorted(model_visible_success)[:8], "failure": model_visible_failure}))
 
     summary = {
         "pass": sum(1 for item in checks if item["status"] == "pass"),
@@ -229,6 +311,89 @@ def build_report() -> dict[str, Any]:
     }
     write_json(REPORT_PATH, report)
     return report
+
+
+def model_visible_tool_matrix() -> list[dict[str, Any]]:
+    plan_document = TacticalQueryDocument.model_validate_json(APPROVED_PLAN_PATH.read_text(encoding="utf-8"))
+    submit = dispatch_model_visible(
+        ToolDispatchRequest(tool_name="submit_query_plan", arguments={"plan_document": plan_document.model_dump(mode="json")}),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    validation = dispatch_model_visible(
+        ToolDispatchRequest(tool_name="validate_query_plan", arguments={"draft_plan_id": submit["draft_plan_id"]}),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    authorization = host_confirm_bound_plan(validation["bound_plan_id"])
+    execution = dispatch_model_visible(
+        ToolDispatchRequest(
+            tool_name="execute_query_plan",
+            arguments={
+                "bound_plan_id": validation["bound_plan_id"],
+                "execution_authorization_id": authorization.execution_authorization_id,
+                "result_limit": 1,
+            },
+        ),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    result_id = execution["results"][0]["result_id"]
+    first_result = execution["results"][0]
+    target = {
+        "schema_version": "1.0",
+        "target_id": "model_visible_probe",
+        "match_id": first_result["match_id"],
+        "period": first_result["period"],
+        "approximate_time_ms": 0,
+        "search_radius_ms": 250,
+    }
+    success_args = {
+        "list_capabilities": {},
+        "describe_capability": {"capability_name": "execute_query_plan"},
+        "submit_query_plan": {"plan_document": plan_document.model_dump(mode="json")},
+        "validate_query_plan": {"draft_plan_id": submit["draft_plan_id"]},
+        "execute_query_plan": {
+            "bound_plan_id": validation["bound_plan_id"],
+            "execution_authorization_id": authorization.execution_authorization_id,
+            "result_limit": 1,
+        },
+        "inspect_result": {"execution_id": execution["execution_id"], "result_id": result_id},
+        "inspect_non_match": {"execution_id": execution["execution_id"], "target": target},
+        "retrieve_replay_window": {"execution_id": execution["execution_id"], "result_id": result_id},
+    }
+    failure_args = {
+        "list_capabilities": {"unexpected": True},
+        "describe_capability": {"capability_name": "not_real"},
+        "submit_query_plan": {"plan_document": {"not": "a plan"}},
+        "validate_query_plan": {"draft_plan_id": "draft_deadbeefdeadbeef"},
+        "execute_query_plan": {
+            "bound_plan_id": validation["bound_plan_id"],
+            "execution_authorization_id": "auth_deadbeefdeadbeef",
+        },
+        "inspect_result": {"execution_id": execution["execution_id"], "result_id": "missing"},
+        "inspect_non_match": {
+            "execution_id": execution["execution_id"],
+            "target": {**target, "period": "badPeriod"},
+        },
+        "retrieve_replay_window": {"execution_id": execution["execution_id"]},
+    }
+    matrix = []
+    for tool_name in HERMES_S2_TOOL_NAMES:
+        success = dispatch_model_visible(
+            ToolDispatchRequest(tool_name=tool_name, arguments=success_args[tool_name]),
+            caller_profile=CallerProfile.HOST_MANUAL,
+        )
+        failure = dispatch_model_visible(
+            ToolDispatchRequest(tool_name=tool_name, arguments=failure_args[tool_name]),
+            caller_profile=CallerProfile.HOST_MANUAL,
+        )
+        matrix.append(
+            {
+                "tool": tool_name,
+                "success_ok": success.get("ok", True) is not False,
+                "failure_ok": failure.get("ok") is False,
+                "failure_code": failure.get("error_code"),
+            }
+        )
+    return matrix
 
 
 def unsafe_raw_episode_exists_plan() -> dict[str, Any]:
