@@ -1,17 +1,17 @@
-# M1.2 S2G Fresh Sealed Mini-Set Request
+# M1.2 S2H Fresh Sealed Mini-Set Request
 
 Date: 2026-06-21
 
 ## Request For External Agent
 
-Please author a **fresh independently created sealed mini-set** for M1.2 S2G.
+Please author a **fresh independently created sealed mini-set** for M1.2 S2H.
 Do not reuse, paraphrase mechanically, or derive directly from the previous
-sealed prompts. The goal is to test whether the S2G correction generalizes.
+sealed prompts. The goal is to test whether the S2H correction generalizes.
 
-The local implementation has been frozen after S2G. The original S2D sealed set,
-the first S2E fresh set, and the first S2F fresh set already served as
-diagnostic evidence and are now only regression suites. This new set is the
-acceptance candidate for unblocking S3.
+The local implementation has been frozen after S2H. The original S2D sealed set
+and the first S2E/S2F/S2G fresh sets already served as diagnostic evidence and
+are now only regression suites. This new set is the acceptance candidate for
+unblocking S3.
 
 ## System Under Test
 
@@ -150,8 +150,8 @@ Return only one JSON object:
 ```json
 {
   "schema_version": "1.0",
-  "authorship": "external_reviewer_s2g_fresh_sealed_set",
-  "description": "Fresh M1.2 S2G sealed evaluation set created after S2G correction freeze. Contains 8 supported, 4 ambiguous, and 4 unsupported requests.",
+  "authorship": "external_reviewer_s2h_fresh_sealed_set",
+  "description": "Fresh M1.2 S2H sealed evaluation set created after S2H correction freeze. Contains 8 supported, 4 ambiguous, and 4 unsupported requests.",
   "supported": [],
   "ambiguous": [],
   "unsupported": []

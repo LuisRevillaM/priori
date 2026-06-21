@@ -168,6 +168,23 @@ S2G does not add tactical primitives, runtime semantics, recipe families, or UI
 behavior. The first S2F fresh set is diagnostic after S2G. S3 still requires a
 new independent sealed set created after S2G freeze.
 
+The first S2G fresh sealed mini-set exposed **S2H - Stable Agent Vocabulary
+Codes and Sealed-Set Drift Control**. S2H is limited to:
+
+- additional bounded synonyms for existing approved block-shift and corridor
+  families;
+- additional support-clarification aliases around receiver isolation, extra
+  runners, teammate arrival, and close-enough combination options;
+- unsupported-code aliases for primitive redefinition, confirmation bypass,
+  direct detector launch, head checks, and hip angle;
+- host-owned capability-gap code extraction from both the model refusal and the
+  original request text, so safe refusals are not under-credited when the model
+  summarizes the unsupported concept.
+
+S2H does not add runtime semantics, tactical primitives, recipe families, or UI
+behavior. The first S2G fresh set is diagnostic after S2H. S3 still requires a
+new independent sealed set created after S2H freeze.
+
 ## Scope
 
 M1.2 includes:

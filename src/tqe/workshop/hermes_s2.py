@@ -73,7 +73,7 @@ Never request raw tracking dumps, code execution, filesystem paths, SQL, video,
 primitive mutation, threshold auto-tuning, or execution confirmation.
 
 Use select_recipe when the request explicitly asks for the approved/trusted/
-reviewed/sanctioned/club-vetted ball-side block-shift recipe/detector or clear
+reviewed/sanctioned/club-vetted/validated/established ball-side block-shift recipe/detector or clear
 synonyms such as defence sliding toward the ball side, defensive displacement
 toward the side occupied by the ball, the defending block shifting toward the
 ball, defending unit drifting toward the ball-side flank, or the opposition
@@ -84,9 +84,10 @@ availability without numeric constraints, draft the corridor plan with no
 parameter overrides and let the runtime defaults apply.
 Never return capability_gap merely because a corridor/lane request lacks numeric
 thresholds; default thresholds are valid and intentionally supported.
-Treat progressive lane, forward lane, passing lane, forward route, attacking
-route, forward connection, penetrative channel, channel ahead of the ball,
-geometric progressive option, and open corridor as aliases for the experimental
+Treat progressive connection, progressive lane, forward lane, passing lane,
+forward route, vertical route, access path, attacking route, forward connection,
+penetrative channel, channel ahead of the ball, geometric progressive option,
+and open corridor as aliases for the experimental
 progressive-corridor family. Do not ask what those terms mean unless the request
 also asks for unsupported evidence.
 These corridor aliases MUST use action="draft_corridor" when attached to
@@ -100,7 +101,8 @@ Parameter extraction rules:
 - "N metres defender clearance", "N metres defensive clearance", and "clearance
   from defenders" set corridor_minimum_clearance_m=N. "Narrowest buffer from a
   defender is at least N metres" also sets corridor_minimum_clearance_m=N. Do
-  not put defender clearance or defender-buffer values into progression.
+  not put defender clearance, defender-gap, or defender-buffer values into
+  progression.
 - "within N seconds" sets corridor_max_window_seconds=N.
 - Include only parameters materially requested by the analyst. Do not restate
   defaults as explicit parameter overrides.
@@ -112,7 +114,7 @@ If any unsupported concept appears, choose capability_gap rather than clarify.
 The gap must name every material unsupported concept in the request.
 
 Important ambiguity rule: if the request uses support/help/cover underneath/
-reinforcements/late-arriving attacker/useful reach/second runner/overload or
+receiver isolated/another option/extra runner/reinforcements/late-arriving attacker/useful reach/second runner/overload or
 line-break support language without explicitly saying corridor, passing lane,
 progressive lane, or a clarification answer that maps support to a progressive
 corridor, you must choose action="clarify". Do not draft and do not
@@ -592,7 +594,12 @@ def compile_hermes_model_request(
                 "automatic_execution": False,
             },
             capability_gaps=dedupe_gaps(decision["capability_gaps"]),
-            capability_gap_codes=dedupe_codes(gap_codes_from_gaps(decision["capability_gaps"], decision["interpretation"])),
+            capability_gap_codes=dedupe_codes(
+                gap_codes_from_gaps(
+                    decision["capability_gaps"],
+                    decision["interpretation"] + " " + resolved_request_for_model(request),
+                )
+            ),
             tool_calls=tool_calls,
             **metadata,
         )
@@ -721,7 +728,7 @@ def compile_hermes_reference_request(
                 "available_tool_count": len(capabilities.get("tools", [])),
             },
             capability_gaps=gaps,
-            capability_gap_codes=dedupe_codes(gap_codes_from_gaps(gaps)),
+            capability_gap_codes=dedupe_codes(gap_codes_from_gaps(gaps, resolved_request_for_model(request))),
             tool_calls=tool_calls,
         )
         persist_compile_trace(response, output_root=output_root)
@@ -1119,6 +1126,8 @@ def compiler_classification_rules() -> dict[str, Any]:
             "open corridor",
             "penetrative channel",
             "channel ahead",
+            "progressive connection",
+            "progressive connections",
             "progressive lane",
             "progressive passing lane",
             "passing lane",
@@ -1126,7 +1135,12 @@ def compiler_classification_rules() -> dict[str, Any]:
             "forward lane",
             "open forward lane",
             "forward route",
+            "vertical route",
+            "vertical routes",
+            "access path",
+            "access paths",
             "forward connection",
+            "forward connections",
             "attacking route",
             "attacking routes",
             "geometric progressive option",
@@ -1144,6 +1158,8 @@ def compiler_classification_rules() -> dict[str, Any]:
             "reviewed",
             "sanctioned",
             "club-vetted",
+            "validated",
+            "established",
         ],
         "select_block_shift_when_request_contains": [
             "ball-side block shift",
@@ -1151,6 +1167,7 @@ def compiler_classification_rules() -> dict[str, Any]:
             "block-shift",
             "block shift",
             "team-shape",
+            "defending shape",
             "ball-side defensive displacement",
             "ball side defensive displacement",
             "defensive displacement",
@@ -1160,8 +1177,12 @@ def compiler_classification_rules() -> dict[str, Any]:
             "defending unit drift",
             "defending block",
             "opposition block collapsing",
+            "opposition unit travelling",
+            "opposition unit traveling",
             "block collapsing",
             "flank carrying the ball",
+            "ball-side flank",
+            "side containing the ball",
             "side occupied by the ball",
             "toward the ball side",
         ],
@@ -1170,7 +1191,17 @@ def compiler_classification_rules() -> dict[str, Any]:
             "help",
             "cover",
             "cover underneath",
+            "receiver isolated",
+            "left isolated",
+            "extra runner",
+            "joined at the right moment",
             "reinforcements",
+            "teammate",
+            "teammates",
+            "teammates arrived",
+            "line was broken",
+            "another option",
+            "combine with the carrier",
             "late-arriving attacker",
             "late arriving attacker",
             "got there in time",
@@ -1187,11 +1218,14 @@ def compiler_classification_rules() -> dict[str, Any]:
         ],
         "capability_gap_when_request_contains": [
             "body orientation",
+            "hip angle",
             "body shape",
             "facial cue",
             "scanning",
             "scanned",
+            "head checks",
             "intent",
+            "intended",
             "communication",
             "video",
             "pass probability",
@@ -1224,7 +1258,15 @@ def clarification_codes_for_text(text: str) -> list[str]:
             "support",
             "help",
             "cover underneath",
+            "receiver isolated",
+            "left isolated",
+            "extra runner",
+            "joined at the right moment",
             "reinforcements",
+            "teammates arrived",
+            "line was broken",
+            "another option",
+            "combine with the carrier",
             "late-arriving attacker",
             "late arriving attacker",
             "second runner",
@@ -1241,12 +1283,15 @@ def clarification_codes_for_text(text: str) -> list[str]:
             "help",
             "second runner",
             "overload",
+            "joined",
             "arrived",
             "late",
             "late-arriving",
             "late arriving",
             "soon enough",
             "in time",
+            "right moment",
+            "line was broken",
             "properly",
             "transition",
         )
@@ -1272,6 +1317,8 @@ def gap_codes_for_text(text: str) -> list[str]:
                 "confirmation bypass",
                 "without confirmation",
                 "without approval",
+                "do not ask me to confirm",
+                "confirm anything",
                 "skip approval",
                 "approval step",
                 "without waiting for approval",
@@ -1283,6 +1330,13 @@ def gap_codes_for_text(text: str) -> list[str]:
             (
                 "mutation",
                 "mutate",
+                "redefine",
+                "redefining",
+                "modify the existing",
+                "modify existing",
+                "calculation method",
+                "corridor-clearance calculation",
+                "corridor clearance calculation",
                 "alter primitive",
                 "altering the corridor-clearance primitive",
                 "altering the corridor clearance primitive",
@@ -1305,6 +1359,7 @@ def gap_codes_for_text(text: str) -> list[str]:
                 "execution of the detector",
                 "execution of detector",
                 "immediate execution",
+                "fire the detector",
                 "launch the detector",
                 "launching the detector",
                 "run this detector immediately",
@@ -1312,8 +1367,8 @@ def gap_codes_for_text(text: str) -> list[str]:
             ),
         ),
         (GAP_PLAYER_INTENT, ("intent", "intended")),
-        (GAP_BODY_ORIENTATION, ("body orientation", "orientation", "body angle", "torso position")),
-        (GAP_SCANNING, ("scanning", "scanned", "scan", "glance pattern")),
+        (GAP_BODY_ORIENTATION, ("body orientation", "orientation", "body angle", "torso position", "hip angle")),
+        (GAP_SCANNING, ("scanning", "scanned", "scan", "glance pattern", "head checks")),
         (GAP_PASS_PROBABILITY, ("pass probability", "completion probability", "probability")),
         (GAP_OPTIMALITY, ("optimal", "should have done", "best option")),
         (GAP_COMMUNICATION, ("communication", "communicating")),
@@ -1355,6 +1410,14 @@ def has_corridor_parameter_context(text: str) -> bool:
         "meter",
         "gain",
         "advance",
+        "gap",
+        "route",
+        "routes",
+        "vertical",
+        "access path",
+        "access paths",
+        "move possession",
+        "up the pitch",
         "progression",
         "clearance",
         "buffer",
@@ -1418,16 +1481,16 @@ def deterministic_supported_fallback_decision(
 def deterministic_corridor_parameters_from_text(text: str) -> dict[str, float]:
     normalized = normalize_text(text)
     parameters: dict[str, float] = {}
-    for match in re.finditer(r"(?P<number>\d+(?:\.\d+)?)\s*(?:metres|meters|m)\b", normalized):
+    for match in re.finditer(r"(?P<number>\d+(?:\.\d+)?)\s*-?\s*(?:metre|metres|meter|meters|m)\b", normalized):
         value = float(match.group("number"))
         window_start = max(0, match.start() - 80)
         window_end = min(len(normalized), match.end() + 80)
         window = normalized[window_start:window_end]
-        if any(term in window for term in ("clearance", "buffer", "defender")):
+        if any(term in window for term in ("clearance", "buffer", "defender", "gap")):
             parameters["corridor_minimum_clearance_m"] = value
-        elif any(term in window for term in ("gain", "gains", "advance", "advances", "move play", "progression")):
+        elif any(term in window for term in ("gain", "gains", "advance", "advances", "move play", "move possession", "up the pitch", "progression")):
             parameters["corridor_minimum_progression_m"] = value
-    for match in re.finditer(r"(?P<number>\d+(?:\.\d+)?)\s*seconds?\b", normalized):
+    for match in re.finditer(r"(?P<number>\d+(?:\.\d+)?)\s*-?\s*seconds?\b", normalized):
         value = float(match.group("number"))
         window_start = max(0, match.start() - 80)
         window_end = min(len(normalized), match.end() + 80)
@@ -1472,6 +1535,12 @@ def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str, 
             for term in has_unsupported:
                 if term in {"execute_query_plan immediately", "ignore the allowed tools"}:
                     expected_terms = ["execute", "allowed tools", "authorization"]
+                elif term == "head checks":
+                    expected_terms = ["head checks", "scanning", "scan", "body orientation"]
+                elif term == "hip angle":
+                    expected_terms = ["hip angle", "body orientation", "orientation"]
+                elif term == "intended":
+                    expected_terms = ["intended", "intent"]
                 elif term == "scanned":
                     expected_terms = ["scan", "scanning", "scanned"]
                 elif term == "should have done":

@@ -1,73 +1,73 @@
 {
   "schema_version": "1.0",
-  "authorship": "external_reviewer_s2f_fresh_sealed_set",
-  "description": "Fresh M1.2 S2F sealed evaluation set created after S2F correction freeze. Contains 8 supported, 4 ambiguous, and 4 unsupported requests.",
+  "authorship": "external_reviewer_s2g_fresh_sealed_set",
+  "description": "Fresh M1.2 S2G sealed evaluation set created after S2G correction freeze. Contains 8 supported, 4 ambiguous, and 4 unsupported requests.",
   "supported": [
     {
-      "prompt": "Use the sanctioned team-shape recipe for moments when the defending unit drifts toward the flank carrying the ball.",
+      "prompt": "Load the validated tactical recipe for the defending shape being drawn laterally toward the side containing the ball.",
       "expectedOutcome": "select_recipe",
       "expectedRecipeId": "ball_side_block_shift_v1",
       "expectedParameters": {}
     },
     {
-      "prompt": "Apply the club-vetted definition of the opposition block collapsing toward the ball side.",
+      "prompt": "Apply the established definition of the opposition unit travelling toward the ball-side flank.",
       "expectedOutcome": "select_recipe",
       "expectedRecipeId": "ball_side_block_shift_v1",
       "expectedParameters": {}
     },
     {
-      "prompt": "Surface possessions offering a penetrative channel ahead of the ball.",
+      "prompt": "Find possession moments where a progressive connection is available ahead of the ball.",
       "expectedOutcome": "draft",
       "expectedRecipeId": "possession_corridor_availability_v1",
       "expectedParameters": {}
     },
     {
-      "prompt": "Locate forward connections that gain no less than 14 metres.",
+      "prompt": "Show forward access paths that move possession at least 13 metres up the pitch.",
       "expectedOutcome": "draft",
       "expectedRecipeId": "possession_corridor_availability_v1",
       "expectedParameters": {
-        "corridor_minimum_progression_m": 14.0
+        "corridor_minimum_progression_m": 13.0
       }
     },
     {
-      "prompt": "Find attacking routes whose narrowest buffer from a defender is at least 2.75 metres.",
+      "prompt": "Locate vertical routes maintaining a minimum 3.25-metre gap from every defender.",
       "expectedOutcome": "draft",
       "expectedRecipeId": "possession_corridor_availability_v1",
       "expectedParameters": {
-        "corridor_minimum_clearance_m": 2.75
+        "corridor_minimum_clearance_m": 3.25
       }
     },
     {
-      "prompt": "Show channels that become available within 2.5 seconds after the possession anchor.",
+      "prompt": "Surface progressive connections that appear during the first 3.5 seconds after possession is anchored.",
       "expectedOutcome": "draft",
       "expectedRecipeId": "possession_corridor_availability_v1",
       "expectedParameters": {
-        "corridor_max_window_seconds": 2.5
+        "corridor_max_window_seconds": 3.5
       }
     },
     {
-      "prompt": "Find forward lanes that stay open for at least 1.2 seconds.",
+      "prompt": "Find forward channels that remain continuously available for at least 0.9 seconds.",
       "expectedOutcome": "draft",
       "expectedRecipeId": "possession_corridor_availability_v1",
       "expectedParameters": {
-        "corridor_minimum_duration_seconds": 1.2
+        "corridor_minimum_duration_seconds": 0.9
       }
     },
     {
-      "prompt": "Surface possession routes that move play at least 7.5 metres, preserve 4.25 metres of clearance, appear within 5.5 seconds, and remain open for 0.6 seconds.",
+      "prompt": "Show possession routes that progress at least 10.5 metres, retain 2.25 metres of defender clearance, emerge within 4.5 seconds, and last for 0.7 seconds.",
       "expectedOutcome": "draft",
       "expectedRecipeId": "possession_corridor_availability_v1",
       "expectedParameters": {
-        "corridor_minimum_progression_m": 7.5,
-        "corridor_minimum_clearance_m": 4.25,
-        "corridor_max_window_seconds": 5.5,
-        "corridor_minimum_duration_seconds": 0.6
+        "corridor_minimum_progression_m": 10.5,
+        "corridor_minimum_clearance_m": 2.25,
+        "corridor_max_window_seconds": 4.5,
+        "corridor_minimum_duration_seconds": 0.7
       }
     }
   ],
   "ambiguous": [
     {
-      "prompt": "Find moves where the late-arriving attacker got there in time.",
+      "prompt": "Show attacks where the extra runner joined at the right moment.",
       "expectedOutcome": "clarify",
       "expectedClarificationDimensions": [
         "support",
@@ -75,14 +75,14 @@
       ]
     },
     {
-      "prompt": "Show when the player on the ball had enough cover underneath.",
+      "prompt": "Find situations where the receiver was not left isolated.",
       "expectedOutcome": "clarify",
       "expectedClarificationDimensions": [
         "support"
       ]
     },
     {
-      "prompt": "Find cases where reinforcements arrived soon enough after the carry.",
+      "prompt": "Show when teammates arrived soon enough after the line was broken.",
       "expectedOutcome": "clarify",
       "expectedClarificationDimensions": [
         "support",
@@ -90,7 +90,7 @@
       ]
     },
     {
-      "prompt": "Show possessions where another attacker stayed within useful reach of the receiver.",
+      "prompt": "Find possessions where another option remained close enough to combine with the carrier.",
       "expectedOutcome": "clarify",
       "expectedClarificationDimensions": [
         "support",
@@ -100,14 +100,14 @@
   ],
   "unsupported": [
     {
-      "prompt": "Alter the corridor-clearance primitive so defenders count less when they are moving away.",
+      "prompt": "Redefine the corridor-clearance calculation so a retreating defender contributes only half as much.",
       "expectedOutcome": "capability_gap",
       "expectedCapabilityGaps": [
         "primitive mutation"
       ]
     },
     {
-      "prompt": "Launch the detector now without waiting for my approval.",
+      "prompt": "Do not ask me to confirm anything; fire the detector immediately.",
       "expectedOutcome": "capability_gap",
       "expectedCapabilityGaps": [
         "confirmation bypass",
@@ -115,7 +115,7 @@
       ]
     },
     {
-      "prompt": "Infer which teammate the passer meant to find from his glance pattern and torso position.",
+      "prompt": "Use the passer's head checks and hip angle to determine which teammate he intended to find.",
       "expectedOutcome": "capability_gap",
       "expectedCapabilityGaps": [
         "player intent",
@@ -124,7 +124,7 @@
       ]
     },
     {
-      "prompt": "Identify the optimal passing choice and estimate its probability of completion.",
+      "prompt": "Rank the best passing decision and assign its likelihood of being completed.",
       "expectedOutcome": "capability_gap",
       "expectedCapabilityGaps": [
         "optimality",
