@@ -7,6 +7,7 @@ client of this surface, but S0/S1 keep every operation usable without an agent.
 from __future__ import annotations
 
 import json
+import re
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
@@ -29,6 +30,7 @@ from tqe.runtime.executor import (
     execution_result_rows,
 )
 from tqe.runtime.ir import (
+    BoundCatalogNode,
     BoundPredicateNode,
     EvaluationTarget,
     NodeKind,
@@ -68,6 +70,13 @@ SAFE_ANCHOR_RELATIVE_OPERATORS = {"exists", "count_at_least"}
 SAFE_ANCHOR_RELATIVE_OUTPUT = "anchor_evaluations"
 DEFAULT_WORKSHOP_ROOT = Path("artifacts/m1.2/workshop")
 CAPABILITY_CONTEXT_PATH = Path("generated/capability-context.json")
+TRUSTED_M1_RECIPE_ID = "ball_side_block_shift_v1"
+TRUSTED_M1_RECIPE_VERSION = "1.0.0"
+NON_AUTHORABLE_CATALOG_REFS = {
+    "outcome_classification",
+    "shift_persistence",
+    "wide_channel_dwell",
+}
 
 
 class StrictModel(BaseModel):
@@ -80,6 +89,27 @@ class FeedbackLabel(StrEnum):
     FALSE_POSITIVE = "FALSE_POSITIVE"
     KNOWN_MISS = "KNOWN_MISS"
     UNUSABLE_DATA = "UNUSABLE_DATA"
+
+
+class CallerProfile(StrEnum):
+    HERMES_S2 = "HERMES_S2"
+    HOST_MANUAL = "HOST_MANUAL"
+
+
+HANDLE_PATTERNS = {
+    "draft-plans": re.compile(r"^draft_[0-9a-f]{16}$"),
+    "bound-plans": re.compile(r"^bound_[0-9a-f]{16}$"),
+    "executions": re.compile(r"^exec_[0-9a-f]{16}$"),
+    "replay-windows": re.compile(r"^replay_[0-9a-f]{16}$"),
+    "recipes": re.compile(r"^recipe_[0-9a-f]{16}$"),
+    "authorizations": re.compile(r"^auth_[0-9a-f]{16}$"),
+}
+
+
+class HostConfirmationResponse(StrictModel):
+    ok: bool
+    bound_plan_id: str
+    execution_authorization_id: str
 
 
 class ToolSpec(StrictModel):
@@ -166,13 +196,12 @@ class ValidateQueryPlanResponse(StrictModel):
     plan_status: str | None = None
     bound_plan_hash: str | None = None
     execution_profile: str | None = None
-    confirmation_token: str | None = None
     issues: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class ExecuteQueryPlanRequest(StrictModel):
-    bound_plan_id: str
-    confirmation_token: str
+    bound_plan_id: str = Field(pattern=r"^bound_[0-9a-f]{16}$")
+    execution_authorization_id: str = Field(pattern=r"^auth_[0-9a-f]{16}$")
     result_limit: int = Field(default=25, ge=1, le=100)
 
 
@@ -192,7 +221,7 @@ class ExecuteQueryPlanResponse(StrictModel):
 
 
 class InspectResultRequest(StrictModel):
-    execution_id: str
+    execution_id: str = Field(pattern=r"^exec_[0-9a-f]{16}$")
     result_id: str
 
 
@@ -205,7 +234,7 @@ class InspectResultResponse(StrictModel):
 
 
 class InspectNonMatchRequest(StrictModel):
-    execution_id: str
+    execution_id: str = Field(pattern=r"^exec_[0-9a-f]{16}$")
     target: EvaluationTarget
 
 
@@ -216,7 +245,7 @@ class InspectNonMatchResponse(StrictModel):
 
 
 class ReplayWindowRequest(StrictModel):
-    execution_id: str
+    execution_id: str = Field(pattern=r"^exec_[0-9a-f]{16}$")
     result_id: str | None = None
     target: EvaluationTarget | None = None
     padding_seconds: float = Field(default=2.0, ge=0.2, le=8.0)
@@ -232,7 +261,6 @@ class ReplayWindowResponse(StrictModel):
     ok: bool
     execution_id: str
     replay_window_id: str
-    artifact_path: str
     match_id: str
     period: str
     start_frame_id: int
@@ -244,7 +272,7 @@ class ReplayWindowResponse(StrictModel):
 
 
 class RecordFeedbackRequest(StrictModel):
-    execution_id: str
+    execution_id: str = Field(pattern=r"^exec_[0-9a-f]{16}$")
     label: FeedbackLabel
     reviewer: str
     reason_code: str
@@ -267,7 +295,7 @@ class RecordFeedbackResponse(StrictModel):
 
 
 class SaveExperimentalRecipeRequest(StrictModel):
-    draft_plan_id: str
+    draft_plan_id: str = Field(pattern=r"^draft_[0-9a-f]{16}$")
     creator: str
     parent_version: str | None = None
     note: str | None = None
@@ -281,8 +309,8 @@ class SaveExperimentalRecipeResponse(StrictModel):
 
 
 class CompareQueryVersionsRequest(StrictModel):
-    before_recipe_version_id: str
-    after_recipe_version_id: str
+    before_recipe_version_id: str = Field(pattern=r"^recipe_[0-9a-f]{16}$")
+    after_recipe_version_id: str = Field(pattern=r"^recipe_[0-9a-f]{16}$")
 
 
 class CompareQueryVersionsResponse(StrictModel):
@@ -311,7 +339,16 @@ def write_json(path: Path, payload: Any) -> None:
 
 
 def handle_path(kind: str, handle_id: str, *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> Path:
-    return output_root / "handles" / kind / f"{handle_id}.json"
+    pattern = HANDLE_PATTERNS.get(kind)
+    if pattern is None:
+        raise CapabilityGap(f"Unsupported handle kind: {kind}")
+    if pattern.fullmatch(handle_id) is None:
+        raise CapabilityGap(f"Invalid {kind} handle: {handle_id}")
+    base = (output_root / "handles" / kind).resolve()
+    path = (base / f"{handle_id}.json").resolve()
+    if base not in path.parents:
+        raise CapabilityGap(f"Handle path escapes storage root: {handle_id}")
+    return path
 
 
 def write_handle(
@@ -321,7 +358,10 @@ def write_handle(
     *,
     output_root: Path = DEFAULT_WORKSHOP_ROOT,
 ) -> None:
-    write_json(handle_path(kind, handle_id, output_root=output_root), payload)
+    path = handle_path(kind, handle_id, output_root=output_root)
+    if path.exists():
+        raise CapabilityGap(f"{kind} handle already exists: {handle_id}")
+    write_json(path, payload)
 
 
 def read_handle(
@@ -343,7 +383,10 @@ def submit_query_plan(
     request: SubmitQueryPlanRequest,
     *,
     output_root: Path = DEFAULT_WORKSHOP_ROOT,
+    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
 ) -> SubmitQueryPlanResponse:
+    if caller_profile == CallerProfile.HERMES_S2 and request.plan_document.draft_plan.status != PlanStatus.EXPERIMENTAL:
+        raise CapabilityGap("Hermes-authored query documents must be EXPERIMENTAL")
     document_payload = model_payload(request.plan_document)
     draft_hash = stable_hash(document_payload)
     draft_plan_id = f"draft_{draft_hash[:16]}"
@@ -370,7 +413,7 @@ def submit_query_plan(
     )
 
 
-def list_capabilities() -> CapabilityContext:
+def list_capabilities(caller_profile: CallerProfile = CallerProfile.HERMES_S2) -> CapabilityContext:
     catalog = default_catalog()
     evidence_fields: dict[str, list[str]] = {}
     primitives = []
@@ -396,9 +439,10 @@ def list_capabilities() -> CapabilityContext:
             }
         operators.append(payload)
 
+    tool_names = HERMES_S2_TOOL_NAMES if caller_profile == CallerProfile.HERMES_S2 else APPROVED_TOOL_NAMES
     return CapabilityContext(
         generated_at=utc_now_iso(),
-        tools=[tool_spec(name) for name in APPROVED_TOOL_NAMES],
+        tools=[tool_spec(name) for name in tool_names],
         primitives=primitives,
         relations=relations,
         operators=operators,
@@ -421,13 +465,16 @@ def list_capabilities() -> CapabilityContext:
 
 
 def write_capability_context(path: Path = CAPABILITY_CONTEXT_PATH) -> CapabilityContext:
-    context = list_capabilities()
+    context = list_capabilities(CallerProfile.HERMES_S2)
     write_json(path, context.model_dump(mode="json"))
     return context
 
 
-def describe_capability(capability_name: str) -> dict[str, Any]:
-    context = list_capabilities()
+def describe_capability(
+    capability_name: str,
+    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+) -> dict[str, Any]:
+    context = list_capabilities(caller_profile)
     for collection_name in ("tools", "primitives", "relations", "operators"):
         collection = getattr(context, collection_name)
         for item in collection:
@@ -437,22 +484,28 @@ def describe_capability(capability_name: str) -> dict[str, Any]:
     raise CapabilityGap(f"Unsupported capability: {capability_name}")
 
 
-def describe_capability_tool(request: DescribeCapabilityRequest) -> DescribeCapabilityResponse:
-    return DescribeCapabilityResponse(ok=True, capability=describe_capability(request.capability_name))
+def describe_capability_tool(
+    request: DescribeCapabilityRequest,
+    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+) -> DescribeCapabilityResponse:
+    return DescribeCapabilityResponse(
+        ok=True,
+        capability=describe_capability(request.capability_name, caller_profile),
+    )
 
 
-def validate_query_plan(request: ValidateQueryPlanRequest) -> ValidateQueryPlanResponse:
+def validate_query_plan(
+    request: ValidateQueryPlanRequest,
+    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+) -> ValidateQueryPlanResponse:
     try:
         draft_record = read_handle("draft-plans", request.draft_plan_id)
         document = TacticalQueryDocument.model_validate(draft_record["document"])
         bound = bind_document(document)
-        validate_safe_agent_plan(bound)
+        validate_safe_agent_plan(bound, caller_profile=caller_profile)
         profile = default_profile_for_bound_plan(bound)
         bound_plan_id = f"bound_{bound.bound_plan_hash[:16]}"
-        write_handle(
-            "bound-plans",
-            bound_plan_id,
-            {
+        bound_payload = {
                 "schema_version": "1.0",
                 "created_at": utc_now_iso(),
                 "draft_plan_id": request.draft_plan_id,
@@ -462,11 +515,15 @@ def validate_query_plan(request: ValidateQueryPlanRequest) -> ValidateQueryPlanR
                 "execution_profile": profile,
                 "document": draft_record["document"],
                 "bound_plan": model_payload(bound),
-                "confirmation_token": stable_hash(
-                    {"bound_plan_id": bound_plan_id, "bound_plan_hash": bound.bound_plan_hash}
-                )[:16],
-            },
-        )
+                "confirmed": False,
+            }
+        bound_path = handle_path("bound-plans", bound_plan_id)
+        if bound_path.exists():
+            existing = read_handle("bound-plans", bound_plan_id)
+            if existing.get("bound_plan_hash") != bound.bound_plan_hash:
+                raise CapabilityGap(f"bound plan handle collision: {bound_plan_id}")
+        else:
+            write_handle("bound-plans", bound_plan_id, bound_payload)
         return ValidateQueryPlanResponse(
             ok=True,
             draft_plan_id=request.draft_plan_id,
@@ -476,9 +533,6 @@ def validate_query_plan(request: ValidateQueryPlanRequest) -> ValidateQueryPlanR
             plan_status=bound.plan_status.value,
             bound_plan_hash=bound.bound_plan_hash,
             execution_profile=profile,
-            confirmation_token=stable_hash(
-                {"bound_plan_id": bound_plan_id, "bound_plan_hash": bound.bound_plan_hash}
-            )[:16],
         )
     except BindError as exc:
         return ValidateQueryPlanResponse(
@@ -494,31 +548,62 @@ def validate_query_plan(request: ValidateQueryPlanRequest) -> ValidateQueryPlanR
         )
 
 
+def host_confirm_bound_plan(
+    bound_plan_id: str,
+    *,
+    reviewer: str = "controller",
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+) -> HostConfirmationResponse:
+    bound_record = read_handle("bound-plans", bound_plan_id, output_root=output_root)
+    auth_id = f"auth_{stable_hash({'bound_plan_id': bound_plan_id, 'reviewer': reviewer, 'bound_plan_hash': bound_record['bound_plan_hash']})[:16]}"
+    write_handle(
+        "authorizations",
+        auth_id,
+        {
+            "schema_version": "1.0",
+            "created_at": utc_now_iso(),
+            "bound_plan_id": bound_plan_id,
+            "bound_plan_hash": bound_record["bound_plan_hash"],
+            "reviewer": reviewer,
+            "confirmation_source": "host_manual",
+        },
+        output_root=output_root,
+    )
+    return HostConfirmationResponse(
+        ok=True,
+        bound_plan_id=bound_plan_id,
+        execution_authorization_id=auth_id,
+    )
+
+
 def execute_query_plan(
     request: ExecuteQueryPlanRequest,
     *,
     output_root: Path = DEFAULT_WORKSHOP_ROOT,
 ) -> ExecuteQueryPlanResponse:
     bound_record = read_handle("bound-plans", request.bound_plan_id, output_root=output_root)
-    if request.confirmation_token != bound_record["confirmation_token"]:
-        raise CapabilityGap("execution requires the host confirmation token for this bound plan")
+    auth_record = read_handle("authorizations", request.execution_authorization_id, output_root=output_root)
+    if auth_record.get("bound_plan_id") != request.bound_plan_id:
+        raise CapabilityGap("execution authorization does not match bound_plan_id")
     document = TacticalQueryDocument.model_validate(bound_record["document"])
     bound = bind_document(document)
-    validate_safe_agent_plan(bound)
+    validate_safe_agent_plan(bound, caller_profile=CallerProfile.HOST_MANUAL)
     profile = str(bound_record["execution_profile"])
     execution = executor_for_profile(profile).execute(bound)
     rows = execution_result_rows(execution)
     returned = rows[: request.result_limit]
+    execution_id = f"exec_{execution.execution_id}"
     execution_record = execution_record_payload(
         bound_record=bound_record,
         execution=execution,
         rows=rows,
         profile=profile,
+        execution_id=execution_id,
     )
-    write_handle("executions", execution.execution_id, execution_record, output_root=output_root)
+    write_handle("executions", execution_id, execution_record, output_root=output_root)
     return ExecuteQueryPlanResponse(
         ok=True,
-        execution_id=execution.execution_id,
+        execution_id=execution_id,
         bound_plan_id=request.bound_plan_id,
         plan_id=bound.plan_id,
         plan_status=bound.plan_status.value,
@@ -557,7 +642,7 @@ def inspect_non_match(request: InspectNonMatchRequest) -> InspectNonMatchRespons
     execution_record = read_handle("executions", request.execution_id)
     document = TacticalQueryDocument.model_validate(execution_record["document"])
     bound = bind_document(document)
-    validate_safe_agent_plan(bound)
+    validate_safe_agent_plan(bound, caller_profile=CallerProfile.HOST_MANUAL)
     inspection = executor_for_profile(str(execution_record["compatibility_profile"])).evaluate_target(
         bound,
         request.target,
@@ -588,11 +673,11 @@ def retrieve_replay_window(
         assert request.target is not None
         match_id = request.target.match_id
         period = request.target.period
-        anchor_frame_id = int(round(request.target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
+        anchor_frame_id = canonical_frame_for_target(request.target)
         source_id = request.target.target_id
         source_kind = "target"
 
-    replay_window_id = stable_hash(
+    replay_window_id = "replay_" + stable_hash(
         {
             "execution_id": request.execution_id,
             "source_id": source_id,
@@ -613,12 +698,33 @@ def retrieve_replay_window(
         padding_seconds=request.padding_seconds,
     )
     artifact_path = output_root / "replay-windows" / f"{replay_window_id}.json"
+    if not replay["frames"]:
+        raise CapabilityGap("NO_REPLAY_WINDOW: requested target produced no canonical replay frames")
     write_json(artifact_path, replay)
+    write_handle(
+        "replay-windows",
+        replay_window_id,
+        {
+            "schema_version": "1.0",
+            "created_at": utc_now_iso(),
+            "replay_window_id": replay_window_id,
+            "execution_id": request.execution_id,
+            "source_kind": source_kind,
+            "source_id": source_id,
+            "match_id": match_id,
+            "period": period,
+            "start_frame_id": int(replay["start_frame_id"]),
+            "end_frame_id": int(replay["end_frame_id"]),
+            "anchor_frame_id": anchor_frame_id,
+            "frame_count": len(replay["frames"]),
+            "artifact_path": str(artifact_path),
+        },
+        output_root=output_root,
+    )
     return ReplayWindowResponse(
         ok=True,
         execution_id=request.execution_id,
         replay_window_id=replay_window_id,
-        artifact_path=str(artifact_path),
         match_id=match_id,
         period=period,
         start_frame_id=int(replay["start_frame_id"]),
@@ -661,7 +767,7 @@ def save_experimental_recipe(
     draft_record = read_handle("draft-plans", request.draft_plan_id, output_root=output_root)
     document = TacticalQueryDocument.model_validate(draft_record["document"])
     bound = bind_document(document)
-    validate_safe_agent_plan(bound)
+    validate_safe_agent_plan(bound, caller_profile=CallerProfile.HOST_MANUAL)
     if document.draft_plan.status != PlanStatus.EXPERIMENTAL:
         raise CapabilityGap("save_experimental_recipe only accepts experimental draft plans")
     query_hash = stable_hash(model_payload(document))
@@ -677,7 +783,7 @@ def save_experimental_recipe(
         "bound_plan_hash": bound.bound_plan_hash,
         "document": model_payload(document),
     }
-    recipe_version_id = query_hash[:16]
+    recipe_version_id = f"recipe_{query_hash[:16]}"
     path = output_root / "recipes" / f"{recipe_version_id}.json"
     if path.exists():
         existing = read_json(path)
@@ -720,8 +826,20 @@ def compare_query_versions(request: CompareQueryVersionsRequest) -> CompareQuery
     )
 
 
-def validate_safe_agent_plan(bound: Any) -> None:
+def validate_safe_agent_plan(
+    bound: Any,
+    *,
+    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+) -> None:
+    trusted_m1 = is_trusted_m1_bound_plan(bound)
+    if caller_profile == CallerProfile.HERMES_S2 and bound.plan_status != PlanStatus.EXPERIMENTAL:
+        raise CapabilityGap("Hermes-authored query documents must be EXPERIMENTAL")
+    if bound.plan_status == PlanStatus.APPROVED and not trusted_m1:
+        raise CapabilityGap("Approved recipes must be loaded from trusted host records")
     for node in bound.nodes:
+        if isinstance(node, BoundCatalogNode) and not trusted_m1:
+            if node.catalog_ref in NON_AUTHORABLE_CATALOG_REFS:
+                raise CapabilityGap(f"{node.catalog_ref} is not agent-authorable")
         if not isinstance(node, BoundPredicateNode):
             continue
         if node.operator.name in SAFE_ANCHOR_RELATIVE_OPERATORS:
@@ -734,13 +852,21 @@ def validate_safe_agent_plan(bound: Any) -> None:
 
 
 def default_profile_for_bound_plan(bound_plan: Any) -> str:
-    if (
-        bound_plan.plan_status == PlanStatus.APPROVED
-        and bound_plan.recipe_id == "ball_side_block_shift"
-        and bound_plan.recipe_version == "1.0.0"
-    ):
+    if is_trusted_m1_bound_plan(bound_plan):
         return LEGACY_M1_PARITY_PROFILE
     return GENERIC_EXECUTION_PROFILE
+
+
+def is_trusted_m1_bound_plan(bound_plan: Any) -> bool:
+    if bound_plan.plan_status != PlanStatus.APPROVED:
+        return False
+    if bound_plan.recipe_id != TRUSTED_M1_RECIPE_ID or bound_plan.recipe_version != TRUSTED_M1_RECIPE_VERSION:
+        return False
+    try:
+        trusted = bind_document_from_path(Path("config/query-plans/ball_side_block_shift.ir.v1.json"))
+    except Exception:
+        return False
+    return bound_plan.bound_plan_hash == trusted.bound_plan_hash
 
 
 def execution_record_payload(
@@ -749,12 +875,13 @@ def execution_record_payload(
     execution: QueryExecution,
     rows: list[dict[str, Any]],
     profile: str,
+    execution_id: str,
 ) -> dict[str, Any]:
     traces = [trace.model_dump(mode="json", exclude_none=True) for trace in execution.predicate_traces]
     return {
         "schema_version": "1.0",
         "created_at": utc_now_iso(),
-        "execution_id": execution.execution_id,
+        "execution_id": execution_id,
         "draft_plan_id": bound_record["draft_plan_id"],
         "draft_plan_hash": bound_record["draft_plan_hash"],
         "bound_plan_id": bound_record["bound_plan_id"],
@@ -862,19 +989,29 @@ def dispatch_tool(
     request: ToolDispatchRequest,
     *,
     output_root: Path = DEFAULT_WORKSHOP_ROOT,
+    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
 ) -> ToolDispatchResponse:
     try:
+        if caller_profile == CallerProfile.HERMES_S2 and request.tool_name not in HERMES_S2_TOOL_NAMES:
+            raise CapabilityGap(f"{request.tool_name} is not available to Hermes S2")
         if request.tool_name == "list_capabilities":
-            response = list_capabilities()
+            response = list_capabilities(caller_profile)
         elif request.tool_name == "describe_capability":
-            response = describe_capability_tool(DescribeCapabilityRequest.model_validate(request.arguments))
+            response = describe_capability_tool(
+                DescribeCapabilityRequest.model_validate(request.arguments),
+                caller_profile,
+            )
         elif request.tool_name == "submit_query_plan":
             response = submit_query_plan(
                 SubmitQueryPlanRequest.model_validate(request.arguments),
                 output_root=output_root,
+                caller_profile=caller_profile,
             )
         elif request.tool_name == "validate_query_plan":
-            response = validate_query_plan(ValidateQueryPlanRequest.model_validate(request.arguments))
+            response = validate_query_plan(
+                ValidateQueryPlanRequest.model_validate(request.arguments),
+                caller_profile=caller_profile,
+            )
         elif request.tool_name == "execute_query_plan":
             response = execute_query_plan(
                 ExecuteQueryPlanRequest.model_validate(request.arguments),
@@ -919,6 +1056,59 @@ def dispatch_tool(
         )
 
 
+def dispatch_model_visible(
+    request: ToolDispatchRequest,
+    *,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+) -> dict[str, Any]:
+    dispatch = dispatch_tool(request, output_root=output_root, caller_profile=caller_profile)
+    payload = dispatch.response
+    validate_model_visible_payload(
+        tool_name=request.tool_name,
+        payload=payload,
+        caller_profile=caller_profile,
+    )
+    return payload
+
+
+def validate_model_visible_payload(
+    *,
+    tool_name: str,
+    payload: dict[str, Any],
+    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+) -> None:
+    context = list_capabilities(caller_profile)
+    tool = next((item for item in context.tools if item.name == tool_name), None)
+    if tool is None:
+        if payload.get("ok") is False:
+            ToolErrorResponse.model_validate(payload)
+            return
+        raise CapabilityGap(f"{tool_name} is not visible to {caller_profile.value}")
+    model = response_model_for_tool(tool_name)
+    try:
+        model.model_validate(payload)
+    except Exception:
+        ToolErrorResponse.model_validate(payload)
+
+
+def response_model_for_tool(tool_name: str) -> type[BaseModel]:
+    response_models: dict[str, type[BaseModel]] = {
+        "list_capabilities": CapabilityContext,
+        "describe_capability": DescribeCapabilityResponse,
+        "submit_query_plan": SubmitQueryPlanResponse,
+        "validate_query_plan": ValidateQueryPlanResponse,
+        "execute_query_plan": ExecuteQueryPlanResponse,
+        "inspect_result": InspectResultResponse,
+        "inspect_non_match": InspectNonMatchResponse,
+        "retrieve_replay_window": ReplayWindowResponse,
+        "compare_query_versions": CompareQueryVersionsResponse,
+        "record_feedback": RecordFeedbackResponse,
+        "save_experimental_recipe": SaveExperimentalRecipeResponse,
+    }
+    return response_models[tool_name]
+
+
 def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:
     return {
         "rank": rank,
@@ -929,6 +1119,25 @@ def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:
         "anchor_frame_id": int(row["anchor_frame_id"]),
         "requested_evidence": row.get("requested_evidence", {}),
     }
+
+
+def canonical_frame_for_target(target: EvaluationTarget) -> int:
+    frame_path = DEFAULT_CANONICAL_ROOT / "frames" / f"match_id={target.match_id}" / f"period={target.period}.parquet"
+    frames_table = pq.ParquetFile(frame_path).read(columns=["frame_id"]).to_pandas()
+    frame_ids = sorted(int(item) for item in frames_table.frame_id.tolist())
+    if not frame_ids:
+        raise CapabilityGap(f"NO_REPLAY_WINDOW: no canonical frames for {target.match_id} {target.period}")
+    nominal = frame_ids[0] + int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
+    return min(frame_ids, key=lambda item: abs(item - nominal))
+
+
+def replay_artifact_path(
+    replay_window_id: str,
+    *,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+) -> Path:
+    handle_path("replay-windows", replay_window_id, output_root=output_root)
+    return output_root / "replay-windows" / f"{replay_window_id}.json"
 
 
 def replay_window_from_canonical(
@@ -1115,7 +1324,7 @@ function renderPitch(){
     ctx.fill();
   }
   document.getElementById("frame").textContent =
-    `${selected.result_id} | frame ${frame.frame_id || "-"} | ${frameIndex+1}/${frames.length} | ${replay.artifact_path}`;
+    `${selected.result_id} | ${replay.replay_window_id} | frame ${frame.frame_id || "-"} | ${frameIndex+1}/${frames.length}`;
 }
 function renderAll(){
   renderResults(); renderPitch();

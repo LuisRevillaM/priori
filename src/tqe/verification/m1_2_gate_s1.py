@@ -9,10 +9,13 @@ from typing import Any
 
 from tqe.runtime.ir import EvaluationTarget
 from tqe.workshop.m1_2 import (
+    CallerProfile,
     DEFAULT_WORKSHOP_ROOT,
     FeedbackLabel,
     ToolDispatchRequest,
     dispatch_tool,
+    host_confirm_bound_plan,
+    replay_artifact_path,
     write_manual_workshop_artifacts,
 )
 
@@ -193,7 +196,10 @@ def run_manual_plan(*, plan_path: Path, recipe_state: str) -> dict[str, Any]:
         "execute_query_plan",
         {
             "bound_plan_id": validation["bound_plan_id"],
-            "confirmation_token": validation["confirmation_token"],
+            "execution_authorization_id": host_confirm_bound_plan(
+                validation["bound_plan_id"],
+                reviewer="controller",
+            ).execution_authorization_id,
             "result_limit": 5,
         },
     )
@@ -211,7 +217,7 @@ def run_manual_plan(*, plan_path: Path, recipe_state: str) -> dict[str, Any]:
                 "padding_seconds": 2.0,
             },
         )
-        replay_payload = read_json(Path(replay["artifact_path"]))
+        replay_payload = read_json(replay_artifact_path(replay["replay_window_id"]))
         results.append(
             {
                 **result,
@@ -317,13 +323,18 @@ def record_feedback_examples(
 
 
 def dispatch(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
-    response = dispatch_tool(ToolDispatchRequest(tool_name=tool_name, arguments=arguments))
+    response = dispatch_tool(
+        ToolDispatchRequest(tool_name=tool_name, arguments=arguments),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
     if not response.ok:
         raise RuntimeError(f"{tool_name} failed: {response.response}")
     return response.response
 
 
 def clean_workshop_artifacts() -> None:
+    import shutil
+
     for path in (
         DEFAULT_WORKSHOP_ROOT / "feedback-records.jsonl",
         DEFAULT_WORKSHOP_ROOT / "manual-workshop-data.json",
@@ -332,6 +343,13 @@ def clean_workshop_artifacts() -> None:
     ):
         if path.exists():
             path.unlink()
+    for directory in (
+        DEFAULT_WORKSHOP_ROOT / "handles",
+        DEFAULT_WORKSHOP_ROOT / "replay-windows",
+        DEFAULT_WORKSHOP_ROOT / "recipes",
+    ):
+        if directory.exists():
+            shutil.rmtree(directory)
 
 
 def main() -> None:

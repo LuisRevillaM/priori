@@ -91,7 +91,7 @@
     "result_row_mutation",
     "threshold_auto_tuning"
   ],
-  "generated_at": "2026-06-21T14:06:02+00:00",
+  "generated_at": "2026-06-21T14:38:19+00:00",
   "host_owned_complexity_ceilings": {
     "max_execution_cost": 100000,
     "max_nesting_depth": 12,
@@ -2291,18 +2291,6 @@
                 "default": null,
                 "title": "Bound Plan Id"
               },
-              "confirmation_token": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ],
-                "default": null,
-                "title": "Confirmation Token"
-              },
               "draft_plan_id": {
                 "title": "Draft Plan Id",
                 "type": "string"
@@ -2424,11 +2412,13 @@
         "additionalProperties": false,
         "properties": {
           "bound_plan_id": {
+            "pattern": "^bound_[0-9a-f]{16}$",
             "title": "Bound Plan Id",
             "type": "string"
           },
-          "confirmation_token": {
-            "title": "Confirmation Token",
+          "execution_authorization_id": {
+            "pattern": "^auth_[0-9a-f]{16}$",
+            "title": "Execution Authorization Id",
             "type": "string"
           },
           "result_limit": {
@@ -2441,7 +2431,7 @@
         },
         "required": [
           "bound_plan_id",
-          "confirmation_token"
+          "execution_authorization_id"
         ],
         "title": "ExecuteQueryPlanRequest",
         "type": "object"
@@ -2571,6 +2561,7 @@
         "additionalProperties": false,
         "properties": {
           "execution_id": {
+            "pattern": "^exec_[0-9a-f]{16}$",
             "title": "Execution Id",
             "type": "string"
           },
@@ -2727,6 +2718,7 @@
         "additionalProperties": false,
         "properties": {
           "execution_id": {
+            "pattern": "^exec_[0-9a-f]{16}$",
             "title": "Execution Id",
             "type": "string"
           },
@@ -2867,6 +2859,7 @@
         "additionalProperties": false,
         "properties": {
           "execution_id": {
+            "pattern": "^exec_[0-9a-f]{16}$",
             "title": "Execution Id",
             "type": "string"
           },
@@ -2917,10 +2910,6 @@
                 "title": "Anchor Frame Id",
                 "type": "integer"
               },
-              "artifact_path": {
-                "title": "Artifact Path",
-                "type": "string"
-              },
               "end_frame_id": {
                 "title": "End Frame Id",
                 "type": "integer"
@@ -2970,7 +2959,6 @@
               "ok",
               "execution_id",
               "replay_window_id",
-              "artifact_path",
               "match_id",
               "period",
               "start_frame_id",
@@ -2981,431 +2969,6 @@
               "source_kind"
             ],
             "title": "ReplayWindowResponse",
-            "type": "object"
-          },
-          {
-            "additionalProperties": false,
-            "properties": {
-              "details": {
-                "additionalProperties": true,
-                "title": "Details",
-                "type": "object"
-              },
-              "error_code": {
-                "title": "Error Code",
-                "type": "string"
-              },
-              "message": {
-                "title": "Message",
-                "type": "string"
-              },
-              "ok": {
-                "const": false,
-                "default": false,
-                "title": "Ok",
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "error_code",
-              "message"
-            ],
-            "title": "ToolErrorResponse",
-            "type": "object"
-          }
-        ]
-      },
-      "unavailable_surfaces": [
-        "arbitrary_python",
-        "sql",
-        "filesystem_editing",
-        "primitive_mutation",
-        "raw_match_dump",
-        "result_row_mutation",
-        "threshold_auto_tuning"
-      ]
-    },
-    {
-      "description": "Compute deterministic semantic diffs for two query documents.",
-      "exposure": "manual_only",
-      "input_schema": {
-        "additionalProperties": false,
-        "properties": {
-          "after_recipe_version_id": {
-            "title": "After Recipe Version Id",
-            "type": "string"
-          },
-          "before_recipe_version_id": {
-            "title": "Before Recipe Version Id",
-            "type": "string"
-          }
-        },
-        "required": [
-          "before_recipe_version_id",
-          "after_recipe_version_id"
-        ],
-        "title": "CompareQueryVersionsRequest",
-        "type": "object"
-      },
-      "name": "compare_query_versions",
-      "output_schema": {
-        "oneOf": [
-          {
-            "additionalProperties": false,
-            "properties": {
-              "after_hash": {
-                "title": "After Hash",
-                "type": "string"
-              },
-              "before_hash": {
-                "title": "Before Hash",
-                "type": "string"
-              },
-              "ok": {
-                "title": "Ok",
-                "type": "boolean"
-              },
-              "same": {
-                "title": "Same",
-                "type": "boolean"
-              },
-              "semantic_changes": {
-                "items": {
-                  "additionalProperties": true,
-                  "type": "object"
-                },
-                "title": "Semantic Changes",
-                "type": "array"
-              }
-            },
-            "required": [
-              "ok",
-              "before_hash",
-              "after_hash",
-              "same",
-              "semantic_changes"
-            ],
-            "title": "CompareQueryVersionsResponse",
-            "type": "object"
-          },
-          {
-            "additionalProperties": false,
-            "properties": {
-              "details": {
-                "additionalProperties": true,
-                "title": "Details",
-                "type": "object"
-              },
-              "error_code": {
-                "title": "Error Code",
-                "type": "string"
-              },
-              "message": {
-                "title": "Message",
-                "type": "string"
-              },
-              "ok": {
-                "const": false,
-                "default": false,
-                "title": "Ok",
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "error_code",
-              "message"
-            ],
-            "title": "ToolErrorResponse",
-            "type": "object"
-          }
-        ]
-      },
-      "unavailable_surfaces": [
-        "arbitrary_python",
-        "sql",
-        "filesystem_editing",
-        "primitive_mutation",
-        "raw_match_dump",
-        "result_row_mutation",
-        "threshold_auto_tuning"
-      ]
-    },
-    {
-      "description": "Append immutable analyst feedback for a result or known target.",
-      "exposure": "manual_only",
-      "input_schema": {
-        "$defs": {
-          "EvaluationTarget": {
-            "additionalProperties": false,
-            "properties": {
-              "approximate_time_ms": {
-                "minimum": 0,
-                "title": "Approximate Time Ms",
-                "type": "integer"
-              },
-              "match_id": {
-                "title": "Match Id",
-                "type": "string"
-              },
-              "period": {
-                "enum": [
-                  "firstHalf",
-                  "secondHalf"
-                ],
-                "title": "Period",
-                "type": "string"
-              },
-              "schema_version": {
-                "const": "1.0",
-                "default": "1.0",
-                "title": "Schema Version",
-                "type": "string"
-              },
-              "search_radius_ms": {
-                "exclusiveMinimum": 0,
-                "title": "Search Radius Ms",
-                "type": "integer"
-              },
-              "target_id": {
-                "pattern": "^[a-z][a-z0-9_]*$",
-                "title": "Target Id",
-                "type": "string"
-              }
-            },
-            "required": [
-              "target_id",
-              "match_id",
-              "period",
-              "approximate_time_ms",
-              "search_radius_ms"
-            ],
-            "title": "EvaluationTarget",
-            "type": "object"
-          },
-          "FeedbackLabel": {
-            "enum": [
-              "MATCHES_INTENT",
-              "NEAR_MATCH",
-              "FALSE_POSITIVE",
-              "KNOWN_MISS",
-              "UNUSABLE_DATA"
-            ],
-            "title": "FeedbackLabel",
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "properties": {
-          "execution_id": {
-            "title": "Execution Id",
-            "type": "string"
-          },
-          "label": {
-            "$ref": "#/$defs/FeedbackLabel"
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Note"
-          },
-          "reason_code": {
-            "title": "Reason Code",
-            "type": "string"
-          },
-          "result_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Result Id"
-          },
-          "reviewer": {
-            "title": "Reviewer",
-            "type": "string"
-          },
-          "target": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/EvaluationTarget"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null
-          }
-        },
-        "required": [
-          "execution_id",
-          "label",
-          "reviewer",
-          "reason_code"
-        ],
-        "title": "RecordFeedbackRequest",
-        "type": "object"
-      },
-      "name": "record_feedback",
-      "output_schema": {
-        "oneOf": [
-          {
-            "additionalProperties": false,
-            "properties": {
-              "execution_id": {
-                "title": "Execution Id",
-                "type": "string"
-              },
-              "feedback_id": {
-                "title": "Feedback Id",
-                "type": "string"
-              },
-              "ok": {
-                "title": "Ok",
-                "type": "boolean"
-              },
-              "path": {
-                "title": "Path",
-                "type": "string"
-              }
-            },
-            "required": [
-              "ok",
-              "execution_id",
-              "feedback_id",
-              "path"
-            ],
-            "title": "RecordFeedbackResponse",
-            "type": "object"
-          },
-          {
-            "additionalProperties": false,
-            "properties": {
-              "details": {
-                "additionalProperties": true,
-                "title": "Details",
-                "type": "object"
-              },
-              "error_code": {
-                "title": "Error Code",
-                "type": "string"
-              },
-              "message": {
-                "title": "Message",
-                "type": "string"
-              },
-              "ok": {
-                "const": false,
-                "default": false,
-                "title": "Ok",
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "error_code",
-              "message"
-            ],
-            "title": "ToolErrorResponse",
-            "type": "object"
-          }
-        ]
-      },
-      "unavailable_surfaces": [
-        "arbitrary_python",
-        "sql",
-        "filesystem_editing",
-        "primitive_mutation",
-        "raw_match_dump",
-        "result_row_mutation",
-        "threshold_auto_tuning"
-      ]
-    },
-    {
-      "description": "Save a content-addressed experimental recipe version.",
-      "exposure": "manual_only",
-      "input_schema": {
-        "additionalProperties": false,
-        "properties": {
-          "creator": {
-            "title": "Creator",
-            "type": "string"
-          },
-          "draft_plan_id": {
-            "title": "Draft Plan Id",
-            "type": "string"
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Note"
-          },
-          "parent_version": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Parent Version"
-          }
-        },
-        "required": [
-          "draft_plan_id",
-          "creator"
-        ],
-        "title": "SaveExperimentalRecipeRequest",
-        "type": "object"
-      },
-      "name": "save_experimental_recipe",
-      "output_schema": {
-        "oneOf": [
-          {
-            "additionalProperties": false,
-            "properties": {
-              "ok": {
-                "title": "Ok",
-                "type": "boolean"
-              },
-              "path": {
-                "title": "Path",
-                "type": "string"
-              },
-              "query_hash": {
-                "title": "Query Hash",
-                "type": "string"
-              },
-              "recipe_version_id": {
-                "title": "Recipe Version Id",
-                "type": "string"
-              }
-            },
-            "required": [
-              "ok",
-              "recipe_version_id",
-              "path",
-              "query_hash"
-            ],
-            "title": "SaveExperimentalRecipeResponse",
             "type": "object"
           },
           {

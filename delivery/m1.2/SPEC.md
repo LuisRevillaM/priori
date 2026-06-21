@@ -40,6 +40,29 @@ S2. The corrected pre-S2 boundary is:
 - The manual reference proof must call the same serialized dispatcher that
   Hermes will use later.
 
+A second external review on 2026-06-21 approved that direction but required one
+more S0R2/S1R2 trust-boundary patch before S2:
+
+- Every tool call is evaluated under an explicit caller profile. Hermes sees
+  only the S2-safe tool surface; host/manual verification can use the full
+  reference surface.
+- Execution confirmation is host-owned. `validate_query_plan` creates an
+  unconfirmed bound handle, and `host_confirm_bound_plan` creates the execution
+  authorization. Hermes cannot mint or choose authorization IDs.
+- Draft, bound, execution, replay, recipe, and authorization handles are opaque,
+  pattern-validated, storage-root confined, and create-once.
+- Hermes-authored submitted plans must be `EXPERIMENTAL`.
+- Non-authorable catalog nodes cannot appear in Hermes-authored plans. The only
+  approved legacy path is the exact trusted frozen M1 recipe, selected by host
+  binding/hash rather than by model request.
+- Hermes-visible replay responses return replay-window handles and summary
+  metadata, not local filesystem paths. Host/UI code may resolve replay artifacts
+  internally.
+- Target-time replay resolution maps supplied timestamps to canonical frames and
+  rejects empty replay windows as explicit capability gaps.
+- Model-visible dispatcher responses are validated against the generated
+  Pydantic response schemas before they are accepted as tool output.
+
 ## Scope
 
 M1.2 includes:

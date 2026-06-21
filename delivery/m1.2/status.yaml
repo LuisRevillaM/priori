@@ -1,6 +1,6 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: S0R_S1R_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW
+state: S0R2_S1R2_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-21"
 preconditions:
@@ -11,22 +11,26 @@ preconditions:
 slices:
   S0_tool_boundary_and_capability_context: DONE_CONTROLLER_VERIFIED
   S0R_agent_boundary_correction: DONE_CONTROLLER_VERIFIED
+  S0R2_trusted_handle_confirmation_and_authoring_boundary: DONE_CONTROLLER_VERIFIED
   S1_manual_reference_workshop: DONE_CONTROLLER_VERIFIED
   S1R_dispatcher_backed_manual_workshop: DONE_CONTROLLER_VERIFIED
+  S1R2_replay_target_resolution_and_schema_dispatch: DONE_CONTROLLER_VERIFIED
   S2_hermes_drafting_and_clarification: NOT_STARTED
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
 promotion_gates:
   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
   Gate_S0R_real_schemas_handles_host_profiles: PASS_CONTROLLER
+  Gate_S0R2_explicit_caller_profiles_host_confirmation_safe_authoring: PASS_CONTROLLER
   Gate_S1_manual_typed_plan_execution_traces_replay_feedback: PASS_CONTROLLER
   Gate_S1R_serialized_dispatcher_manual_loop: PASS_CONTROLLER
+  Gate_S1R2_canonical_target_replay_and_model_visible_schema_conformance: PASS_CONTROLLER
   Gate_S2_hermes_drafting: NOT_STARTED
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
-  automated: PASS_FOR_S0_S1
+  automated: PASS_FOR_S0R2_S1R2
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
   independent_review: M1_1S_S7R2_APPROVED_M1_2_UNBLOCKED
-  controller_review: S0R_S1R_PASS_PENDING_EXTERNAL_PACKET
+  controller_review: S0R2_S1R2_PASS_PENDING_EXTERNAL_PACKET
   owner_acceptance: APPROVED_TO_PROCEED
 evidence:
   S0_report: artifacts/m1.2/gate-s0-verification-report.json
@@ -37,4 +41,4 @@ evidence:
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
   external_review: REQUIRED_BEFORE_HERMES_S2
-  scope: "Review S0R/S1R boundary corrections; do not start Hermes until approved."
+  scope: "Review S0R2/S1R2 boundary corrections; do not start Hermes until approved."

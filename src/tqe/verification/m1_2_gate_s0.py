@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
@@ -13,10 +14,13 @@ from tqe.workshop.m1_2 import (
     APPROVED_TOOL_NAMES,
     CAPABILITY_CONTEXT_PATH,
     FORBIDDEN_SURFACES,
+    HERMES_S2_TOOL_NAMES,
     SAFE_ANCHOR_RELATIVE_OUTPUT,
     CapabilityGap,
+    CallerProfile,
     SubmitQueryPlanRequest,
     ToolDispatchRequest,
+    dispatch_model_visible,
     ValidateQueryPlanRequest,
     dispatch_tool,
     list_capabilities,
@@ -48,10 +52,13 @@ def check(check_id: str, passed: bool, message: str, details: dict[str, Any] | N
 
 
 def build_report() -> dict[str, Any]:
+    clean_handles()
     context = write_capability_context(CAPABILITY_CONTEXT_PATH)
+    manual_context = list_capabilities(CallerProfile.HOST_MANUAL)
     checks: list[dict[str, Any]] = []
     tool_names = [tool.name for tool in context.tools]
-    checks.append(check("s0.tool_surface.exact", tool_names == APPROVED_TOOL_NAMES, "Tool catalog contains the staged S2 and manual-only tools.", {"tools": tool_names}))
+    checks.append(check("s0.hermes_tool_surface.exact", tool_names == HERMES_S2_TOOL_NAMES, "Hermes sees only the S2 tool surface.", {"tools": tool_names}))
+    checks.append(check("s0.manual_tool_surface.full", [tool.name for tool in manual_context.tools] == APPROVED_TOOL_NAMES, "Host/manual sees the full staged tool surface.", {"tools": [tool.name for tool in manual_context.tools]}))
     placeholder_schemas = [
         tool.name
         for tool in context.tools
@@ -107,9 +114,13 @@ def build_report() -> dict[str, Any]:
     approved_submit = submit_query_plan(
         SubmitQueryPlanRequest(
             plan_document=TacticalQueryDocument.model_validate_json(APPROVED_PLAN_PATH.read_text(encoding="utf-8"))
-        )
+        ),
+        caller_profile=CallerProfile.HOST_MANUAL,
     )
-    approved_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=approved_submit.draft_plan_id))
+    approved_validation = validate_query_plan(
+        ValidateQueryPlanRequest(draft_plan_id=approved_submit.draft_plan_id),
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
     checks.append(
         check(
             "s0.approved_plan.validates",
@@ -121,7 +132,8 @@ def build_report() -> dict[str, Any]:
     unsafe_submit = submit_query_plan(
         SubmitQueryPlanRequest(
             plan_document=TacticalQueryDocument.model_validate(unsafe_raw_episode_exists_plan())
-        )
+        ),
+        caller_profile=CallerProfile.HERMES_S2,
     )
     unsafe_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=unsafe_submit.draft_plan_id))
     checks.append(
@@ -151,7 +163,8 @@ def build_report() -> dict[str, Any]:
         ToolDispatchRequest(
             tool_name="validate_query_plan",
             arguments={"draft_plan_id": approved_submit.draft_plan_id},
-        )
+        ),
+        caller_profile=CallerProfile.HOST_MANUAL,
     )
     checks.append(
         check(
@@ -161,6 +174,44 @@ def build_report() -> dict[str, Any]:
             dispatched.model_dump(mode="json"),
         )
     )
+    manual_denied = dispatch_tool(
+        ToolDispatchRequest(tool_name="record_feedback", arguments={}),
+        caller_profile=CallerProfile.HERMES_S2,
+    )
+    checks.append(check("s0.hermes_manual_tool_denied", not manual_denied.ok, "Hermes cannot call manual-only tools.", manual_denied.model_dump(mode="json")))
+    authored_approved = dispatch_tool(
+        ToolDispatchRequest(
+            tool_name="submit_query_plan",
+            arguments={"plan_document": TacticalQueryDocument.model_validate_json(APPROVED_PLAN_PATH.read_text(encoding="utf-8")).model_dump(mode="json")},
+        ),
+        caller_profile=CallerProfile.HERMES_S2,
+    )
+    checks.append(check("s0.hermes_cannot_submit_approved", not authored_approved.ok, "Hermes-authored documents cannot claim APPROVED status.", authored_approved.model_dump(mode="json")))
+    traversal_rejected = False
+    traversal_details: dict[str, Any] = {}
+    try:
+        traversal_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id="draft_../../badbad"))
+        traversal_rejected = not traversal_validation.ok
+        traversal_details = traversal_validation.model_dump(mode="json")
+    except Exception as exc:
+        traversal_rejected = True
+        traversal_details = {"error": type(exc).__name__, "message": str(exc)}
+    checks.append(check("s0.handle_traversal_rejected", traversal_rejected, "Invalid handle patterns and traversal are rejected.", traversal_details))
+    non_authorable_submit = submit_query_plan(
+        SubmitQueryPlanRequest(plan_document=TacticalQueryDocument.model_validate(non_authorable_outcome_plan())),
+        caller_profile=CallerProfile.HERMES_S2,
+    )
+    non_authorable_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=non_authorable_submit.draft_plan_id))
+    checks.append(check("s0.non_authorable_capability_rejected", not non_authorable_validation.ok and any("not agent-authorable" in issue.get("message", "") for issue in non_authorable_validation.issues), "Non-authorable catalog capabilities are rejected.", non_authorable_validation.model_dump(mode="json")))
+    model_visible_success = dispatch_model_visible(
+        ToolDispatchRequest(tool_name="list_capabilities", arguments={}),
+        caller_profile=CallerProfile.HERMES_S2,
+    )
+    model_visible_failure = dispatch_model_visible(
+        ToolDispatchRequest(tool_name="describe_capability", arguments={"capability_name": "not_real"}),
+        caller_profile=CallerProfile.HERMES_S2,
+    )
+    checks.append(check("s0.model_visible_schema_conformance", model_visible_success.get("schema_version") == "1.0" and model_visible_failure.get("ok") is False, "Model-visible dispatcher payloads validate against generated schemas.", {"success_keys": sorted(model_visible_success)[:8], "failure": model_visible_failure}))
 
     summary = {
         "pass": sum(1 for item in checks if item["status"] == "pass"),
@@ -194,6 +245,7 @@ def unsafe_raw_episode_exists_plan() -> dict[str, Any]:
     }
     payload["draft_plan"]["plan_id"] = "unsafe_raw_episode_exists"
     payload["draft_plan"]["recipe_id"] = "unsafe_raw_episode_exists"
+    payload["draft_plan"]["status"] = "experimental"
     payload["recipe"]["recipe_id"] = "unsafe_raw_episode_exists"
     payload["recipe"]["display_name"] = "Unsafe Raw Episode Exists"
     payload["draft_plan"]["nodes"] = [possession, predicate]
@@ -209,6 +261,24 @@ def unsafe_raw_episode_exists_plan() -> dict[str, Any]:
     payload["recipe"]["output_classifications"] = ["HAS_POSSESSION"]
     payload["default_invocation"]["max_results"] = 5
     return payload
+
+
+def non_authorable_outcome_plan() -> dict[str, Any]:
+    payload = TacticalQueryDocument.model_validate_json(
+        APPROVED_PLAN_PATH.read_text(encoding="utf-8")
+    ).model_dump(mode="json")
+    payload["draft_plan"]["plan_id"] = "unsafe_outcome_authored"
+    payload["draft_plan"]["recipe_id"] = "unsafe_outcome_authored"
+    payload["draft_plan"]["status"] = "experimental"
+    payload["recipe"]["recipe_id"] = "unsafe_outcome_authored"
+    payload["recipe"]["display_name"] = "Unsafe Outcome Authored"
+    return payload
+
+
+def clean_handles() -> None:
+    handle_root = Path("artifacts/m1.2/workshop/handles")
+    if handle_root.exists():
+        shutil.rmtree(handle_root)
 
 
 def main() -> None:
