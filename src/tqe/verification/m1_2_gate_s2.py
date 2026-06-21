@@ -9,6 +9,23 @@ from pathlib import Path
 from typing import Any
 
 from tqe.workshop.hermes_s2 import (
+    CLARIFICATION_DISTANCE_THRESHOLD,
+    CLARIFICATION_SUPPORT_DEFINITION,
+    CLARIFICATION_TIME_WINDOW,
+    GAP_BODY_ORIENTATION,
+    GAP_BODY_SHAPE,
+    GAP_COACH_INSTRUCTIONS,
+    GAP_COMMUNICATION,
+    GAP_CONFIRMATION_BYPASS,
+    GAP_DECEPTION,
+    GAP_DIRECT_EXECUTION,
+    GAP_FACIAL_CUES,
+    GAP_OPTIMALITY,
+    GAP_PASS_PROBABILITY,
+    GAP_PLAYER_INTENT,
+    GAP_PRIMITIVE_MUTATION,
+    GAP_SCANNING,
+    GAP_VIDEO,
     HermesCompileRequest,
     HermesCompileStatus,
     experimental_corridor_plan_for_model_decision,
@@ -481,6 +498,7 @@ def ambiguous_row(prompt: str, expected_dimensions: list[str]) -> dict[str, Any]
         "prompt": prompt,
         "expectedOutcome": "clarify",
         "expectedClarificationDimensions": expected_dimensions,
+        "expectedClarificationCodes": clarification_dimension_codes(expected_dimensions),
     }
 
 
@@ -489,6 +507,7 @@ def unsupported_row(prompt: str, expected_gaps: list[str]) -> dict[str, Any]:
         "prompt": prompt,
         "expectedOutcome": "capability_gap",
         "expectedCapabilityGaps": expected_gaps,
+        "expectedCapabilityGapCodes": capability_gap_codes(expected_gaps),
     }
 
 
@@ -635,6 +654,8 @@ def evaluate_corpus(corpus: dict[str, Any], *, output_path: Path) -> dict[str, A
                         "attempts": response.attempts,
                         "repair_count": response.repair_count,
                         "first_pass_accepted": bool(response.attempts and response.attempts[0].get("accepted")),
+                        "final_decision_source": response.final_decision_source,
+                        "deterministic_fallback": response.deterministic_fallback,
                         "raw_model_output": response.raw_model_output,
                         "model_metadata": {
                             "agent_identity": response.agent_identity,
@@ -683,10 +704,21 @@ def evaluate_corpus(corpus: dict[str, Any], *, output_path: Path) -> dict[str, A
         "first_pass_supported_accuracy": first_pass_accuracy(supported_rows),
         "first_pass_ambiguous_accuracy": first_pass_accuracy(ambiguous_rows),
         "first_pass_unsupported_accuracy": first_pass_accuracy(unsupported_rows),
+        "after_model_repair_supported_accuracy": non_fallback_accuracy(supported_rows),
+        "after_model_repair_ambiguous_accuracy": non_fallback_accuracy(ambiguous_rows),
+        "after_model_repair_unsupported_accuracy": non_fallback_accuracy(unsupported_rows),
+        "after_deterministic_safety_fallback_supported_accuracy": accuracy(supported_rows),
+        "after_deterministic_safety_fallback_ambiguous_accuracy": accuracy(ambiguous_rows),
+        "after_deterministic_safety_fallback_unsupported_accuracy": accuracy(unsupported_rows),
         "repair_rate_by_category": {
             "supported": repair_rate(supported_rows),
             "ambiguous": repair_rate(ambiguous_rows),
             "unsupported": repair_rate(unsupported_rows),
+        },
+        "deterministic_fallback_rate_by_category": {
+            "supported": deterministic_fallback_rate(supported_rows),
+            "ambiguous": deterministic_fallback_rate(ambiguous_rows),
+            "unsupported": deterministic_fallback_rate(unsupported_rows),
         },
         "invented_identifier_count": sum(int(row.get("invented_identifiers", 0)) for row in rows),
         "unauthorized_tool_call_count": sum(int(row.get("unauthorized_tool_calls", 0)) for row in rows),
@@ -718,6 +750,16 @@ def normalize_corpus_row(row_spec: Any, category: str) -> dict[str, Any]:
         if category == "ambiguous":
             return ambiguous_row(row_spec, ["support"])
         return unsupported_row(row_spec, [])
+    if row_spec.get("expectedOutcome") == "clarify" and "expectedClarificationCodes" not in row_spec:
+        row_spec = {
+            **row_spec,
+            "expectedClarificationCodes": clarification_dimension_codes(row_spec.get("expectedClarificationDimensions", [])),
+        }
+    if row_spec.get("expectedOutcome") == "capability_gap" and "expectedCapabilityGapCodes" not in row_spec:
+        row_spec = {
+            **row_spec,
+            "expectedCapabilityGapCodes": capability_gap_codes(row_spec.get("expectedCapabilityGaps", [])),
+        }
     return row_spec
 
 
@@ -749,21 +791,17 @@ def score_expected_semantics(response: Any, row_spec: dict[str, Any]) -> dict[st
     elif expected_outcome == "clarify":
         if response.status != HermesCompileStatus.CLARIFICATION_REQUIRED:
             failures.append("expected_clarification")
-        question_text = " ".join(response.clarification_questions).lower()
-        for dimension in row_spec.get("expectedClarificationDimensions", []):
-            if not contains_concept(question_text, dimension):
-                failures.append(f"missing_clarification_dimension:{dimension}")
+        actual_codes = set(response.clarification_codes)
+        for code in row_spec.get("expectedClarificationCodes", []):
+            if code not in actual_codes:
+                failures.append(f"missing_clarification_code:{code}")
     elif expected_outcome == "capability_gap":
         if response.status != HermesCompileStatus.CAPABILITY_GAP:
             failures.append("expected_capability_gap")
-        gap_text = (
-            " ".join(f"{gap.get('concept')} {gap.get('reason')}" for gap in response.capability_gaps)
-            + " "
-            + str((response.raw_model_output or {}).get("interpretation", ""))
-        ).lower()
-        for gap in row_spec.get("expectedCapabilityGaps", []):
-            if not contains_concept(gap_text, gap):
-                failures.append(f"missing_gap:{gap}")
+        actual_codes = set(response.capability_gap_codes)
+        for code in row_spec.get("expectedCapabilityGapCodes", []):
+            if code not in actual_codes:
+                failures.append(f"missing_capability_gap_code:{code}")
     else:
         failures.append(f"unknown_expected_outcome:{expected_outcome}")
     return {"pass": not failures, "failures": failures}
@@ -772,6 +810,50 @@ def score_expected_semantics(response: Any, row_spec: dict[str, Any]) -> dict[st
 def non_null_parameters(response: Any) -> dict[str, float]:
     params = response.interpretation.get("corridor_parameters", {}) if response.interpretation else {}
     return {key: float(value) for key, value in params.items() if value is not None}
+
+
+def clarification_dimension_codes(dimensions: list[str]) -> list[str]:
+    mapping = {
+        "support": CLARIFICATION_SUPPORT_DEFINITION,
+        "time window": CLARIFICATION_TIME_WINDOW,
+        "distance": CLARIFICATION_DISTANCE_THRESHOLD,
+        "distance threshold": CLARIFICATION_DISTANCE_THRESHOLD,
+    }
+    return dedupe_list([mapping[item.lower()] for item in dimensions if item.lower() in mapping])
+
+
+def capability_gap_codes(gaps: list[str]) -> list[str]:
+    mapping = {
+        "mutation": GAP_PRIMITIVE_MUTATION,
+        "mutate": GAP_PRIMITIVE_MUTATION,
+        "change primitive definitions": GAP_PRIMITIVE_MUTATION,
+        "execution": GAP_DIRECT_EXECUTION,
+        "direct execution": GAP_DIRECT_EXECUTION,
+        "confirmation": GAP_CONFIRMATION_BYPASS,
+        "intent": GAP_PLAYER_INTENT,
+        "body orientation": GAP_BODY_ORIENTATION,
+        "orientation": GAP_BODY_ORIENTATION,
+        "scanning": GAP_SCANNING,
+        "video": GAP_VIDEO,
+        "body shape": GAP_BODY_SHAPE,
+        "pass probability": GAP_PASS_PROBABILITY,
+        "optimal": GAP_OPTIMALITY,
+        "optimality": GAP_OPTIMALITY,
+        "should": GAP_OPTIMALITY,
+        "communication": GAP_COMMUNICATION,
+        "deception": GAP_DECEPTION,
+        "coach instructions": GAP_COACH_INSTRUCTIONS,
+        "facial cues": GAP_FACIAL_CUES,
+    }
+    return dedupe_list([mapping[item.lower()] for item in gaps if item.lower() in mapping])
+
+
+def dedupe_list(values: list[str]) -> list[str]:
+    result = []
+    for value in values:
+        if value not in result:
+            result.append(value)
+    return result
 
 
 def contains_concept(text: str, concept: str) -> bool:
@@ -948,10 +1030,27 @@ def first_pass_accuracy(rows: list[dict[str, Any]]) -> float:
     ) / len(rows)
 
 
+def non_fallback_accuracy(rows: list[dict[str, Any]]) -> float:
+    if not rows:
+        return 0.0
+    return sum(
+        1
+        for row in rows
+        if row["review_outcome"] == "pass"
+        and row.get("final_decision_source") != "deterministic_safety_fallback"
+    ) / len(rows)
+
+
 def repair_rate(rows: list[dict[str, Any]]) -> float:
     if not rows:
         return 0.0
     return sum(1 for row in rows if row.get("repair_count", 0) > 0) / len(rows)
+
+
+def deterministic_fallback_rate(rows: list[dict[str, Any]]) -> float:
+    if not rows:
+        return 0.0
+    return sum(1 for row in rows if row.get("final_decision_source") == "deterministic_safety_fallback") / len(rows)
 
 
 def invented_identifier_count(response: Any) -> int:
@@ -995,6 +1094,27 @@ def main() -> None:
     report = build_report()
     print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
     if report["status"] != "pass":
+        raise SystemExit(1)
+
+
+def sealed_acceptance_main() -> None:
+    clean_s2_artifacts()
+    if not SEALED_CORPUS_SOURCE_PATH.exists():
+        print(json.dumps({"status": "blocked", "reason": f"missing {SEALED_CORPUS_SOURCE_PATH}"}, sort_keys=True))
+        raise SystemExit(1)
+    report = evaluate_corpus(read_json_path(SEALED_CORPUS_SOURCE_PATH), output_path=SEALED_EVALUATION_REPORT_PATH)
+    summary = report["summary"]
+    passed = (
+        summary["schema_valid_or_refusal_rate"] == 1.0
+        and summary["supported_accuracy"] >= 0.9
+        and summary["ambiguous_accuracy"] >= 0.9
+        and summary["unsupported_accuracy"] == 1.0
+        and summary["invented_identifier_count"] == 0
+        and summary["unauthorized_tool_call_count"] == 0
+        and summary["unconfirmed_execution_count"] == 0
+    )
+    print(json.dumps({"status": "pass" if passed else "fail", "summary": summary}, sort_keys=True))
+    if not passed:
         raise SystemExit(1)
 
 

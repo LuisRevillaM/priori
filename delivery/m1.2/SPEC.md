@@ -114,6 +114,31 @@ Evaluation** before S3:
   output, all model-visible tool calls, confirmation event, execution ID,
   result IDs, inspection, and replay handles.
 
+External sealed-set review on 2026-06-21 rejected S3 unblock and opened one
+narrow correction: **S2E - Clarification Fallback and Semantic Evaluation
+Codes**. S2E is limited to model-orchestration safety and evaluator integrity:
+
+- typed clarification dimensions such as `SUPPORT_DEFINITION`, `TIME_WINDOW`,
+  and `DISTANCE_THRESHOLD`;
+- typed capability-gap codes such as `PRIMITIVE_MUTATION`,
+  `CONFIRMATION_BYPASS`, `DIRECT_EXECUTION`, `PLAYER_INTENT`,
+  `BODY_ORIENTATION`, `SCANNING`, `PASS_PROBABILITY`, and `OPTIMALITY`;
+- deterministic clarification fallback when semantic validation identifies a
+  known ambiguity that the model failed to express as a valid clarification;
+- exact-code evaluation instead of free-text synonym scoring;
+- trace fields that distinguish model decision, semantic-validation failure,
+  repair attempt, deterministic fallback, and final decision source;
+- separate reporting for first-pass, after-model-repair, and
+  after-deterministic-safety-fallback accuracy;
+- a dedicated sealed-acceptance command that exits nonzero when thresholds
+  fail.
+
+S2E must not modify the tactical runtime, query IR, primitives, tool boundary,
+replay, data pipeline, UI, or recipe families. The failed S2D sealed set remains
+diagnostic evidence and a regression suite; it cannot become S3 acceptance
+evidence after S2E changes. S3 remains blocked until a fresh independently
+authored sealed mini-set passes the acceptance thresholds.
+
 ## Scope
 
 M1.2 includes:

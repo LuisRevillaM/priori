@@ -42,6 +42,23 @@ COMPILER_IDENTITY_DECISION = (
     "a completed Hermes runtime integration; Hermes remains a future client "
     "adapter over the same bounded tool surface."
 )
+CLARIFICATION_SUPPORT_DEFINITION = "SUPPORT_DEFINITION"
+CLARIFICATION_TIME_WINDOW = "TIME_WINDOW"
+CLARIFICATION_DISTANCE_THRESHOLD = "DISTANCE_THRESHOLD"
+GAP_PRIMITIVE_MUTATION = "PRIMITIVE_MUTATION"
+GAP_CONFIRMATION_BYPASS = "CONFIRMATION_BYPASS"
+GAP_DIRECT_EXECUTION = "DIRECT_EXECUTION"
+GAP_PLAYER_INTENT = "PLAYER_INTENT"
+GAP_BODY_ORIENTATION = "BODY_ORIENTATION"
+GAP_SCANNING = "SCANNING"
+GAP_PASS_PROBABILITY = "PASS_PROBABILITY"
+GAP_OPTIMALITY = "OPTIMALITY"
+GAP_COMMUNICATION = "COMMUNICATION"
+GAP_VIDEO = "VIDEO"
+GAP_BODY_SHAPE = "BODY_SHAPE"
+GAP_DECEPTION = "DECEPTION"
+GAP_COACH_INSTRUCTIONS = "COACH_INSTRUCTIONS"
+GAP_FACIAL_CUES = "FACIAL_CUES"
 HERMES_SYSTEM_PROMPT = """You are ModelBackedTacticalQueryCompiler, a bounded tactical-query compiler.
 
 You may return only JSON matching one action-specific schema. Choose exactly one
@@ -177,6 +194,8 @@ class HermesCompileResponse(StrictModel):
     attempts: list[dict[str, Any]] = Field(default_factory=list)
     repair_count: int = 0
     final_accepted_output: dict[str, Any] | None = None
+    final_decision_source: Literal["model", "model_repair", "deterministic_safety_fallback"] = "model"
+    deterministic_fallback: dict[str, Any] | None = None
     interpretation: dict[str, Any]
     selected_recipe: dict[str, Any] | None = None
     draft_plan_id: str | None = None
@@ -185,7 +204,9 @@ class HermesCompileResponse(StrictModel):
     bound_plan_hash: str | None = None
     validation_result: dict[str, Any] | None = None
     clarification_questions: list[str] = Field(default_factory=list)
+    clarification_codes: list[str] = Field(default_factory=list)
     capability_gaps: list[dict[str, str]] = Field(default_factory=list)
+    capability_gap_codes: list[str] = Field(default_factory=list)
     tool_calls: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -284,12 +305,14 @@ def compile_hermes_model_request(
                 **repair_payload,
                 "invalid_first_output": model_payload["json"],
                 "first_output_schema_errors": exc.errors(),
+                "repair_reason": "schema_validation",
             }
         except ValidationError as repair_exc:
             model_payload = {
                 **repair_payload,
                 "invalid_first_output": model_payload["json"],
                 "first_output_schema_errors": exc.errors(),
+                "repair_reason": "schema_validation",
             }
             exc = repair_exc
         else:
@@ -353,6 +376,7 @@ def compile_hermes_model_request(
                 **repair_payload,
                 "invalid_first_output": model_payload["json"],
                 "first_output_semantic_errors": semantic_errors,
+                "repair_reason": "semantic_validation",
             }
             attempts = model_attempts_from_payload(
                 model_payload,
@@ -399,8 +423,49 @@ def compile_hermes_model_request(
             **repair_payload,
             "invalid_first_output": model_payload["json"],
             "first_output_semantic_errors": semantic_errors,
+            "repair_reason": "semantic_validation",
         }
         if semantic_errors_after_repair:
+            fallback_decision = deterministic_clarification_fallback_decision(request, semantic_errors_after_repair)
+            if fallback_decision is not None:
+                attempts = model_attempts_from_payload(
+                    model_payload,
+                    final_decision=None,
+                    final_semantic_errors=semantic_errors_after_repair,
+                )
+                fallback_metadata = compiler_metadata(
+                    model_payload=model_payload,
+                    capability_payload=capability_payload,
+                    tool_schemas=tool_schemas,
+                    recipe_summaries=recipe_summaries,
+                    attempts=attempts,
+                    final_accepted_output=fallback_decision,
+                    final_decision_source="deterministic_safety_fallback",
+                    deterministic_fallback={
+                        "reason": "semantic_validation",
+                        "trigger_codes": [item["code"] for item in semantic_errors_after_repair],
+                        "model_repair_output": model_payload["json"],
+                    },
+                )
+                response = HermesCompileResponse(
+                    ok=False,
+                    status=HermesCompileStatus.CLARIFICATION_REQUIRED,
+                    trace_id=trace_id_for(request, "deterministic_clarification_fallback", fallback_decision),
+                    **compile_lineage_fields(request),
+                    original_language=request.original_language,
+                    clarifications=request.clarifications,
+                    interpretation={
+                        "intent": "clarify_tactical_request",
+                        "summary": fallback_decision["interpretation"],
+                        "automatic_execution": False,
+                    },
+                    clarification_questions=fallback_decision["clarification_questions"],
+                    clarification_codes=fallback_decision["clarification_codes"],
+                    tool_calls=tool_calls,
+                    **fallback_metadata,
+                )
+                persist_compile_trace(response, output_root=output_root)
+                return response
             attempts = model_attempts_from_payload(
                 model_payload,
                 final_decision=decision,
@@ -420,7 +485,14 @@ def compile_hermes_model_request(
                 "tool_schema_hash": stable_hash(tool_schemas),
                 "trusted_recipe_context_hash": stable_hash(recipe_summaries),
                 "raw_model_output": model_payload["json"],
-                "model_output_errors": [{"type": "semantic_validation", "message": item} for item in semantic_errors_after_repair],
+                "model_output_errors": [
+                    {
+                        "type": "semantic_validation",
+                        "code": item["code"],
+                        "message": item["message"],
+                    }
+                    for item in semantic_errors_after_repair
+                ],
                 "attempts": attempts,
                 "repair_count": repair_count_for_attempts(attempts),
                 "final_accepted_output": None,
@@ -444,24 +516,15 @@ def compile_hermes_model_request(
             return response
 
     attempts = model_attempts_from_payload(model_payload, final_decision=decision)
-    metadata = {
-        "agent_kind": "model_backed_tactical_query_compiler",
-        "agent_identity": COMPILER_IDENTITY,
-        "agent_identity_decision": COMPILER_IDENTITY_DECISION,
-        "model_provider": "openai",
-        "model_name": model_payload["model"],
-        "model_response_id": model_payload.get("id"),
-        "model_temperature": model_payload.get("temperature"),
-        "model_seed": model_payload.get("seed"),
-        "system_prompt_hash": stable_hash(HERMES_SYSTEM_PROMPT),
-        "capability_context_hash": stable_hash(capability_payload),
-        "tool_schema_hash": stable_hash(tool_schemas),
-        "trusted_recipe_context_hash": stable_hash(recipe_summaries),
-        "raw_model_output": model_payload["json"],
-        "attempts": attempts,
-        "repair_count": repair_count_for_attempts(attempts),
-        "final_accepted_output": model_payload["json"],
-    }
+    metadata = compiler_metadata(
+        model_payload=model_payload,
+        capability_payload=capability_payload,
+        tool_schemas=tool_schemas,
+        recipe_summaries=recipe_summaries,
+        attempts=attempts,
+        final_accepted_output=model_payload["json"],
+        final_decision_source="model_repair" if repair_count_for_attempts(attempts) else "model",
+    )
 
     if decision["action"] == "capability_gap":
         response = HermesCompileResponse(
@@ -477,6 +540,7 @@ def compile_hermes_model_request(
                 "automatic_execution": False,
             },
             capability_gaps=dedupe_gaps(decision["capability_gaps"]),
+            capability_gap_codes=dedupe_codes(gap_codes_from_gaps(decision["capability_gaps"], decision["interpretation"])),
             tool_calls=tool_calls,
             **metadata,
         )
@@ -497,6 +561,7 @@ def compile_hermes_model_request(
                 "automatic_execution": False,
             },
             clarification_questions=decision["clarification_questions"],
+            clarification_codes=dedupe_codes(clarification_codes_from_questions(decision["clarification_questions"])),
             tool_calls=tool_calls,
             **metadata,
         )
@@ -604,6 +669,7 @@ def compile_hermes_reference_request(
                 "available_tool_count": len(capabilities.get("tools", [])),
             },
             capability_gaps=gaps,
+            capability_gap_codes=dedupe_codes(gap_codes_from_gaps(gaps)),
             tool_calls=tool_calls,
         )
         persist_compile_trace(response, output_root=output_root)
@@ -649,6 +715,7 @@ def compile_hermes_reference_request(
                 "automatic_execution": False,
             },
             clarification_questions=questions,
+            clarification_codes=[CLARIFICATION_SUPPORT_DEFINITION, CLARIFICATION_TIME_WINDOW],
             tool_calls=tool_calls,
         )
         persist_compile_trace(response, output_root=output_root)
@@ -722,6 +789,7 @@ def compile_hermes_reference_request(
         clarification_questions=[
             "Do you want the approved ball-side block-shift recipe or the experimental progressive-corridor recipe?",
         ],
+        clarification_codes=[],
         tool_calls=tool_calls,
     )
     persist_compile_trace(response, output_root=output_root)
@@ -797,7 +865,7 @@ def call_hermes_model(
     parameter_context: dict[str, Any],
     previous_invalid_output: dict[str, Any] | None = None,
     schema_errors: list[dict[str, Any]] | None = None,
-    semantic_errors: list[str] | None = None,
+    semantic_errors: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
@@ -1056,16 +1124,74 @@ def compiler_classification_rules() -> dict[str, Any]:
     }
 
 
-def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str, Any]) -> list[str]:
+def clarification_codes_for_text(text: str) -> list[str]:
+    normalized = normalize_text(text)
+    codes = []
+    if any(term in normalized for term in ("support", "help", "second runner", "overload", "arrived properly")):
+        codes.append(CLARIFICATION_SUPPORT_DEFINITION)
+    if any(term in normalized for term in ("support", "help", "second runner", "overload", "arrived", "late", "properly", "transition")):
+        codes.append(CLARIFICATION_TIME_WINDOW)
+    if any(term in normalized for term in ("close", "near", "nearby", "distance")):
+        codes.append(CLARIFICATION_DISTANCE_THRESHOLD)
+    return codes
+
+
+def clarification_codes_from_questions(questions: list[str]) -> list[str]:
+    text = " ".join(questions)
+    return clarification_codes_for_text(text)
+
+
+def gap_codes_for_text(text: str) -> list[str]:
+    normalized = normalize_text(text)
+    code_terms = [
+        (GAP_CONFIRMATION_BYPASS, ("bypass confirmation", "confirmation bypass", "without confirmation")),
+        (GAP_PRIMITIVE_MUTATION, ("mutation", "mutate", "change primitive", "primitive definition", "changing primitive")),
+        (GAP_DIRECT_EXECUTION, ("direct execution", "execute directly", "execute the revised", "execute_query_plan")),
+        (GAP_PLAYER_INTENT, ("intent", "intended")),
+        (GAP_BODY_ORIENTATION, ("body orientation", "orientation")),
+        (GAP_SCANNING, ("scanning", "scanned", "scan")),
+        (GAP_PASS_PROBABILITY, ("pass probability", "completion probability", "probability")),
+        (GAP_OPTIMALITY, ("optimal", "should have done", "best option")),
+        (GAP_COMMUNICATION, ("communication", "communicating")),
+        (GAP_VIDEO, ("video",)),
+        (GAP_BODY_SHAPE, ("body shape",)),
+        (GAP_DECEPTION, ("deception", "disguised")),
+        (GAP_COACH_INSTRUCTIONS, ("coach instruction", "coach")),
+        (GAP_FACIAL_CUES, ("facial cue", "facial")),
+    ]
+    codes = []
+    for code, terms in code_terms:
+        if any(term in normalized for term in terms):
+            codes.append(code)
+    return codes
+
+
+def gap_codes_from_gaps(gaps: list[dict[str, str]], interpretation: str = "") -> list[str]:
+    text = " ".join(f"{gap.get('concept', '')} {gap.get('reason', '')}" for gap in gaps) + " " + interpretation
+    return gap_codes_for_text(text)
+
+
+def dedupe_codes(codes: list[str]) -> list[str]:
+    deduped = []
+    for code in codes:
+        if code not in deduped:
+            deduped.append(code)
+    return deduped
+
+
+def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str, Any]) -> list[dict[str, str]]:
     text = normalize_text(resolved_request_for_model(request))
     rules = compiler_classification_rules()
-    errors: list[str] = []
+    errors: list[dict[str, str]] = []
     has_unsupported = [term for term in rules["capability_gap_when_request_contains"] if term in text]
     if has_unsupported:
         if decision["action"] != "capability_gap":
             errors.append(
-                "Requests containing unsupported concepts must use action=capability_gap: "
-                + ", ".join(has_unsupported)
+                {
+                    "code": "UNSUPPORTED_REQUIRES_CAPABILITY_GAP",
+                    "message": "Requests containing unsupported concepts must use action=capability_gap: "
+                    + ", ".join(has_unsupported),
+                }
             )
         else:
             gap_text = normalize_text(
@@ -1085,7 +1211,12 @@ def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str, 
                 else:
                     expected_terms = [term]
                 if not any(expected in gap_text for expected in expected_terms):
-                    errors.append(f"Capability gap must name unsupported concept: {term}")
+                    errors.append(
+                        {
+                            "code": "CAPABILITY_GAP_MISSING_CODE",
+                            "message": f"Capability gap must name unsupported concept: {term}",
+                        }
+                    )
         return errors
 
     corridor_aliases = rules["draft_corridor_when_request_contains"]
@@ -1095,25 +1226,43 @@ def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str, 
     has_corridor_context = any(context in text for context in corridor_context) or bool(request.clarifications)
     if has_corridor_alias and has_corridor_context and decision["action"] != "draft_corridor":
         errors.append(
-            "The request contains supported corridor aliases "
-            f"{matched_corridor_aliases} with possession context. Correct output must be "
-            "action=draft_corridor, recipe_id=possession_corridor_availability_v1, and no "
-            "capability_gaps for these aliases."
+            {
+                "code": "SUPPORTED_CORRIDOR_REQUIRES_DRAFT",
+                "message": "The request contains supported corridor aliases "
+                f"{matched_corridor_aliases} with possession context. Correct output must be "
+                "action=draft_corridor, recipe_id=possession_corridor_availability_v1, and no "
+                "capability_gaps for these aliases.",
+            }
         )
 
     clarification_text = normalize_text(" ".join(request.clarifications))
     if request.clarifications and any(alias in clarification_text for alias in rules["draft_corridor_when_clarification_contains"]):
         if decision["action"] != "draft_corridor":
-            errors.append("Clarification answer maps support to a corridor alias; action must be draft_corridor.")
+            errors.append(
+                {
+                    "code": "ANSWERED_SUPPORT_REQUIRES_DRAFT",
+                    "message": "Clarification answer maps support to a corridor alias; action must be draft_corridor.",
+                }
+            )
 
     ambiguous_terms = rules["clarify_not_gap_when_request_contains_without_corridor_alias"]
     if any(term in text for term in ambiguous_terms) and not has_corridor_alias and not request.clarifications:
         if decision["action"] != "clarify":
-            errors.append("Ambiguous support/help/second-runner language must clarify instead of draft or gap.")
+            errors.append(
+                {
+                    "code": "AMBIGUOUS_SUPPORT_REQUIRES_CLARIFICATION",
+                    "message": "Ambiguous support/help/second-runner language must clarify instead of draft or gap.",
+                }
+            )
         elif any(term in text for term in rules["clarify_distance_when_request_contains"]):
             question_text = normalize_text(" ".join(decision["clarification_questions"]))
             if not any(token in question_text for token in ("distance", "close", "near", "proximity")):
-                errors.append("Close/near support clarification must ask for a distance or proximity threshold.")
+                errors.append(
+                    {
+                        "code": "DISTANCE_SUPPORT_REQUIRES_DISTANCE_THRESHOLD",
+                        "message": "Close/near support clarification must ask for a distance or proximity threshold.",
+                    }
+                )
     return errors
 
 
@@ -1122,7 +1271,7 @@ def model_attempts_from_payload(
     *,
     final_decision: dict[str, Any] | None = None,
     final_schema_errors: list[dict[str, Any]] | None = None,
-    final_semantic_errors: list[str] | None = None,
+    final_semantic_errors: list[dict[str, str]] | None = None,
 ) -> list[dict[str, Any]]:
     attempts: list[dict[str, Any]] = []
     first_output = model_payload.get("invalid_first_output")
@@ -1162,6 +1311,68 @@ def model_attempts_from_payload(
         }
     )
     return attempts
+
+
+def deterministic_clarification_fallback_decision(
+    request: HermesCompileRequest,
+    semantic_errors: list[dict[str, str]],
+) -> dict[str, Any] | None:
+    error_codes = {item["code"] for item in semantic_errors}
+    if "AMBIGUOUS_SUPPORT_REQUIRES_CLARIFICATION" not in error_codes:
+        return None
+    codes = dedupe_codes(clarification_codes_for_text(request.original_language))
+    if CLARIFICATION_SUPPORT_DEFINITION not in codes:
+        codes.append(CLARIFICATION_SUPPORT_DEFINITION)
+    if CLARIFICATION_TIME_WINDOW not in codes:
+        codes.append(CLARIFICATION_TIME_WINDOW)
+    questions = [
+        "What should count as support in this request?",
+        "What time window should apply?",
+    ]
+    if CLARIFICATION_DISTANCE_THRESHOLD in codes:
+        questions.append("What distance threshold should define nearby support?")
+    return {
+        "action": "clarify",
+        "recipe_id": None,
+        "interpretation": "Deterministic safety fallback: ambiguous support language requires clarification.",
+        "clarification_questions": questions,
+        "clarification_codes": codes,
+    }
+
+
+def compiler_metadata(
+    *,
+    model_payload: dict[str, Any],
+    capability_payload: dict[str, Any],
+    tool_schemas: list[dict[str, Any]],
+    recipe_summaries: list[dict[str, Any]],
+    attempts: list[dict[str, Any]],
+    final_accepted_output: dict[str, Any] | None,
+    final_decision_source: Literal["model", "model_repair", "deterministic_safety_fallback"],
+    deterministic_fallback: dict[str, Any] | None = None,
+    model_output_errors: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    return {
+        "agent_kind": "model_backed_tactical_query_compiler",
+        "agent_identity": COMPILER_IDENTITY,
+        "agent_identity_decision": COMPILER_IDENTITY_DECISION,
+        "model_provider": "openai",
+        "model_name": model_payload["model"],
+        "model_response_id": model_payload.get("id"),
+        "model_temperature": model_payload.get("temperature"),
+        "model_seed": model_payload.get("seed"),
+        "system_prompt_hash": stable_hash(HERMES_SYSTEM_PROMPT),
+        "capability_context_hash": stable_hash(capability_payload),
+        "tool_schema_hash": stable_hash(tool_schemas),
+        "trusted_recipe_context_hash": stable_hash(recipe_summaries),
+        "raw_model_output": model_payload["json"],
+        "model_output_errors": model_output_errors or [],
+        "attempts": attempts,
+        "repair_count": repair_count_for_attempts(attempts),
+        "final_accepted_output": final_accepted_output,
+        "final_decision_source": final_decision_source,
+        "deterministic_fallback": deterministic_fallback,
+    }
 
 
 def repair_count_for_attempts(attempts: list[dict[str, Any]]) -> int:
@@ -1260,6 +1471,10 @@ def record_confirmed_execution_trace(
         "attempts": compile_response.attempts,
         "repair_count": compile_response.repair_count,
         "final_accepted_output": compile_response.final_accepted_output,
+        "final_decision_source": compile_response.final_decision_source,
+        "deterministic_fallback": compile_response.deterministic_fallback,
+        "clarification_codes": compile_response.clarification_codes,
+        "capability_gap_codes": compile_response.capability_gap_codes,
         "selected_recipe": compile_response.selected_recipe,
         "draft_plan_id": compile_response.draft_plan_id,
         "draft_plan_hash": compile_response.draft_plan_hash,
@@ -1409,11 +1624,15 @@ def record_session_turn(response: HermesCompileResponse, *, output_root: Path) -
             "recorded_at": utc_now_iso(),
             "original_language": response.original_language,
             "clarification_questions": response.clarification_questions,
+            "clarification_codes": response.clarification_codes,
             "clarification_answers": response.clarifications,
+            "capability_gap_codes": response.capability_gap_codes,
             "status": response.status.value,
             "model_decision": response.raw_model_output,
             "attempts": response.attempts,
             "repair_count": response.repair_count,
+            "final_decision_source": response.final_decision_source,
+            "deterministic_fallback": response.deterministic_fallback,
             "draft_plan_hash": response.draft_plan_hash,
             "bound_plan_hash": response.bound_plan_hash,
         }
