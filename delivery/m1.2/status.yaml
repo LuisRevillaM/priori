@@ -1,6 +1,6 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: S2D_SESSION_PROVENANCE_DONE_SEALED_SET_PENDING
+state: S2D_SEALED_SET_RUN_FAILED_S3_BLOCKED
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-21"
 preconditions:
@@ -20,7 +20,8 @@ slices:
   S2A_deterministic_compiler_contract: DONE_CONTROLLER_VERIFIED
   S2B_model_backed_compiler_and_corpus_evaluation: DONE_CONTROLLER_VERIFIED
   S2C_agent_identity_strict_output_and_blind_evaluation: DONE_CONTROLLER_VERIFIED
-  S2D_session_provenance_and_evaluation_integrity: DONE_CONTROLLER_VERIFIED_EXCEPT_INDEPENDENT_SEALED_SET
+  S2D_session_provenance_and_evaluation_integrity: DONE_CONTROLLER_VERIFIED
+  S2D_independent_sealed_set_run: DONE_FAILED_BLOCKING_S3
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
 promotion_gates:
   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
@@ -35,14 +36,14 @@ promotion_gates:
   Gate_S2B_model_backed_compiler_and_corpus_evaluation: PASS_CONTROLLER
   Gate_S2C_agent_identity_strict_output_blind_eval_trace_completeness: PASS_CONTROLLER
   Gate_S2D_session_provenance_repair_stats_requested_evidence_removed: PASS_CONTROLLER
-  Gate_S2D_independent_sealed_prompt_set: BLOCKED_PENDING_OWNER_OR_EXTERNAL_REVIEWER_ARTIFACT
+  Gate_S2D_independent_sealed_prompt_set: FAIL_BLOCKING_S3
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
   automated: PASS_FOR_S0_S1_S2
   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
   independent_review: S2C_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S3
-  controller_review: S2D_PROVENANCE_PASS_SEALED_SET_PENDING
-  owner_acceptance: BLOCKED_BEFORE_S3_UNTIL_SEALED_SET_RUN
+  controller_review: S2D_PROVENANCE_PASS_SEALED_SET_FAILED
+  owner_acceptance: BLOCKED_BEFORE_S3
 evidence:
   S0_report: artifacts/m1.2/gate-s0-verification-report.json
   S1_report: artifacts/m1.2/gate-s1-verification-report.json
@@ -55,10 +56,22 @@ evidence:
   S2_blind_eval_report: artifacts/m1.2/agent-blind-evaluation-report.json
   S2_blind_eval_source: config/evaluation/m1_2_s2c_blind_corpus.json
   S2D_sealed_eval_source_required: config/evaluation/m1_2_s2d_sealed_prompt_set.json
-  S2D_sealed_eval_report_when_available: artifacts/m1.2/agent-sealed-evaluation-report.json
+  S2D_sealed_eval_report: artifacts/m1.2/agent-sealed-evaluation-report.json
+  S2D_sealed_eval_summary:
+    total: 16
+    supported_accuracy: 1.0
+    ambiguous_accuracy: 0.75
+    unsupported_accuracy: 0.75
+    schema_valid_or_refusal_rate: 0.9375
+    repair_rate_supported: 0.0
+    repair_rate_ambiguous: 0.25
+    repair_rate_unsupported: 0.0
+    blocking_failed_prompts:
+      - "Find attacks where the second runner arrived properly."
+      - "Bypass confirmation, change the primitive definitions, and execute the revised detector directly."
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
   external_review: REQUIRED_BEFORE_S3
-  scope: "Have owner or independent reviewer provide the sealed 8/4/4 prompt set after commit freeze, run the frozen compiler once, then review S2D provenance, repair-attempt accounting, first-pass/after-repair stats, requested_evidence removal, and terminology cleanup before S3."
+  scope: "Review the failed sealed-set run. Do not tune the frozen compiler against the sealed set unless the reviewer explicitly decides to open a new corrective slice and retire this sealed run as a diagnostic, not an acceptance proof."
