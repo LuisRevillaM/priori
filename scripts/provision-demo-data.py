@@ -145,7 +145,7 @@ def unpack_tar_gz(archive: Path, destination: Path) -> None:
             target = (destination / member.name).resolve()
             if destination.resolve() not in target.parents and target != destination.resolve():
                 raise SystemExit(f"Unsafe path in data bundle: {member.name}")
-        tar.extractall(destination)
+        tar.extractall(destination, filter="data")
 
 
 def replace_tree(source: Path, destination: Path) -> None:
