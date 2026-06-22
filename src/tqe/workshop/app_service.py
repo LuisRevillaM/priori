@@ -1213,6 +1213,8 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         cookie = self.headers.get("Cookie", "")
         if any(part.strip() == f"demo_access_token={DEMO_ACCESS_TOKEN}" for part in cookie.split(";")):
             return True
+        if self.headers.get("X-Demo-Access-Token", "") == DEMO_ACCESS_TOKEN:
+            return True
         authorization = self.headers.get("Authorization", "")
         if authorization == f"Bearer {DEMO_ACCESS_TOKEN}":
             return True

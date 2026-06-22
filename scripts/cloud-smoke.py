@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import base64
 import json
 import urllib.error
 import urllib.request
@@ -107,8 +106,7 @@ class Client:
         if body is not None:
             request.add_header("Content-Type", "application/json")
         if self.token:
-            encoded = base64.b64encode(f"smoke:{self.token}".encode("utf-8")).decode("ascii")
-            request.add_header("Authorization", f"Basic {encoded}")
+            request.add_header("X-Demo-Access-Token", self.token)
         try:
             with urllib.request.urlopen(request, timeout=600) as response:  # noqa: S310 - user-supplied smoke URL.
                 return json.loads(response.read().decode("utf-8"))
