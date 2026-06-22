@@ -148,11 +148,51 @@ async function boot(page: Page, consoleErrors: string[]) {
   page.on("pageerror", (error) => consoleErrors.push(error.message));
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Host tactical query workbench" })).toBeVisible();
-  await expect(page.getByText("browser to host API")).toBeVisible();
+  await expect(page.getByTestId("host-status")).toBeVisible();
+  await expect(page.getByTestId("path-chooser")).toBeVisible();
   await expect(page.getByTestId("interpret-button")).toBeEnabled();
-  await expect(page.getByTestId("validate-button")).toBeDisabled();
-  await expect(page.getByTestId("confirm-button")).toBeDisabled();
-  await expect(page.getByTestId("execute-button")).toBeDisabled();
+  await expect(page.getByTestId("primary-action")).toBeDisabled();
+}
+
+// One product action drives the whole host-authority sequence (validate -> confirm -> execute).
+// Captures the three host responses that fire from the single "Confirm and run" click.
+async function confirmAndRun(page: Page, trace: ApiTraceEntry[], label: string) {
+  const start = Date.now();
+  const validatePromise = page.waitForResponse(responsePath("/api/submit-validate"));
+  const confirmPromise = page.waitForResponse(responsePath("/api/confirm"));
+  const executePromise = page.waitForResponse(responsePath("/api/execute"));
+  await page.getByTestId("primary-action").click();
+
+  const validateResponse = await validatePromise;
+  const validation = (await validateResponse.json()) as Record<string, unknown>;
+  trace.push({
+    label: `${label}.validate`,
+    path: "/api/submit-validate",
+    status: validateResponse.status(),
+    duration_ms: Date.now() - start,
+    summary: summarizePayload(validation)
+  });
+
+  const confirmResponse = await confirmPromise;
+  const confirmation = (await confirmResponse.json()) as Record<string, unknown>;
+  trace.push({
+    label: `${label}.confirm`,
+    path: "/api/confirm",
+    status: confirmResponse.status(),
+    duration_ms: Date.now() - start,
+    summary: summarizePayload(confirmation)
+  });
+
+  const executeResponse = await executePromise;
+  const execution = (await executeResponse.json()) as Record<string, unknown>;
+  trace.push({
+    label: `${label}.execute`,
+    path: "/api/execute",
+    status: executeResponse.status(),
+    duration_ms: Date.now() - start,
+    summary: summarizePayload(execution)
+  });
+  return { validation, confirmation, execution, executeStatus: executeResponse.status() };
 }
 
 async function waitForInspectionResponse(page: Page, resultId: string) {
@@ -199,48 +239,28 @@ async function runRealQueryJourney(
   await expect(page.getByTestId("interpretation-source").locator("code")).toHaveCount(0);
   expect(await page.getByTestId("interpretation-source").getAttribute("data-raw-source")).toBe("manual_host_interpreter");
   expect(await page.getByTestId("interpretation-source").getAttribute("data-provenance-source")).toBe(expectedProvenance);
-  await expect(page.getByTestId("confirm-button")).toBeDisabled();
-  await expect(page.getByTestId("execute-button")).toBeDisabled();
+  await expect(page.getByTestId("primary-action")).toBeEnabled();
+  await expect(page.getByTestId("primary-action")).toHaveText("Confirm and run");
   await capture(page, `${label}-interpretation`);
 
-  const validation = await jsonAfterClick<Record<string, unknown>>(
-    page,
-    trace,
-    `${label}.validate`,
-    "validate-button",
-    "/api/submit-validate"
-  );
+  const { validation, confirmation, execution } = await confirmAndRun(page, trace, label);
   const validationBody = validation.validation as Record<string, unknown>;
   expect(validationBody.ok).toBe(true);
   expect(String(validationBody.bound_plan_id)).toMatch(/^bound_[0-9a-f]{16}$/);
-  await expect(page.getByTestId("validation-result")).toContainText(String(validationBody.bound_plan_id));
-  await expect(page.getByTestId("confirm-button")).toBeEnabled();
-  await expect(page.getByTestId("execute-button")).toBeDisabled();
-
-  const confirmation = await jsonAfterClick<Record<string, unknown>>(
-    page,
-    trace,
-    `${label}.confirm`,
-    "confirm-button",
-    "/api/confirm"
-  );
   const confirmationBody = confirmation.confirmation as Record<string, unknown>;
   expect(String(confirmationBody.execution_authorization_id)).toMatch(/^auth_[0-9a-f]{16}$/);
-  await expect(page.getByTestId("host-confirmation")).toContainText(String(confirmationBody.execution_authorization_id));
-  await expect(page.getByTestId("execute-button")).toBeEnabled();
-  await capture(page, `${label}-confirmation`);
-
-  const executeStart = Date.now();
-  const executeResponsePromise = page.waitForResponse(responsePath("/api/execute"));
-  await page.getByTestId("execute-button").click();
-  const executeResponse = await executeResponsePromise;
-  const execution = (await executeResponse.json()) as Record<string, unknown>;
   const executionBody = execution.execution as Record<string, unknown>;
   expect(execution.ok).toBe(true);
   expect(executionBody.ok).toBe(true);
   const results = executionBody.results as Array<Record<string, unknown>>;
   expect(results.length).toBeGreaterThan(0);
 
+  // Host artifacts are preserved in Developer details (collapsed by default; still in the DOM).
+  await expect(page.getByTestId("validation-result")).toContainText(String(validationBody.bound_plan_id));
+  await expect(page.getByTestId("host-confirmation")).toContainText(String(confirmationBody.execution_authorization_id));
+  await capture(page, `${label}-confirmation`);
+
+  const executeStart = Date.now();
   await expect(page.getByTestId("result-count")).toHaveText(String(results.length));
   const firstResultId = String(results[0].result_id);
   const inspectResponsePromise = waitForInspectionResponse(page, firstResultId);
@@ -248,13 +268,6 @@ async function runRealQueryJourney(
   const inspectResponse = await inspectResponsePromise;
   const inspection = (await inspectResponse.json()) as Record<string, unknown>;
 
-  trace.push({
-    label: `${label}.execute`,
-    path: "/api/execute",
-    status: executeResponse.status(),
-    duration_ms: Date.now() - executeStart,
-    summary: summarizePayload(execution)
-  });
   trace.push({
     label: `${label}.inspect_initial_result`,
     path: "/api/inspect-result",
@@ -281,8 +294,14 @@ async function runRealQueryJourney(
     expect(String(value)).toMatch(/^canonical_source:[0-9a-f]{16}$/);
   }
   expect(selectedResult.result_id).toBe(results[0].result_id);
-  await expect(page.getByTestId("replay-window-summary")).toContainText(String(replay.replay_window_id));
-  await expect(page.getByTestId("replay-window-summary")).toContainText(String(selectedResult.result_id));
+  await expect(page.getByTestId("replay-window-summary")).toHaveAttribute(
+    "data-replay-window-id",
+    String(replay.replay_window_id)
+  );
+  await expect(page.getByTestId("replay-window-summary")).toHaveAttribute(
+    "data-result-id",
+    String(selectedResult.result_id)
+  );
   await expect(page.locator(`[data-testid="result-item"][data-result-id="${selectedResult.result_id}"]`)).toHaveClass(/active/);
   await expect(page.getByTestId("evidence-alias").first()).toBeVisible();
 
@@ -342,7 +361,10 @@ async function runRealQueryJourney(
       duration_ms: Date.now() - selectStart,
       summary: summarizePayload(selectedInspection)
     });
-    await expect(page.getByTestId("replay-window-summary")).toContainText(String(alternateResult.result_id));
+    await expect(page.getByTestId("replay-window-summary")).toHaveAttribute(
+      "data-result-id",
+      String(alternateResult.result_id)
+    );
   }
 
   const rapidTargets = results.slice(2, Math.min(5, results.length));
@@ -362,13 +384,19 @@ async function runRealQueryJourney(
       duration_ms: Date.now() - rapidStart,
       summary: summarizePayload(selectedInspection)
     });
-    await expect(page.getByTestId("replay-window-summary")).toContainText(String(finalRapidTarget.result_id));
+    await expect(page.getByTestId("replay-window-summary")).toHaveAttribute(
+      "data-result-id",
+      String(finalRapidTarget.result_id)
+    );
     await expect(page.locator(`[data-testid="result-item"][data-result-id="${finalRapidTarget.result_id}"]`)).toHaveClass(/active/);
     await expect(page.getByTestId("inspection-loading")).toHaveCount(0);
     await expect(page.getByTestId("evidence-alias").first().locator("code")).not.toHaveText("");
     await expect(page.getByTestId("predicate-trace").first()).toBeVisible();
     await page.waitForTimeout(250);
-    await expect(page.getByTestId("replay-window-summary")).toContainText(String(finalRapidTarget.result_id));
+    await expect(page.getByTestId("replay-window-summary")).toHaveAttribute(
+      "data-result-id",
+      String(finalRapidTarget.result_id)
+    );
   }
 
   const selectedReplay = selectedInspection.replay as Record<string, unknown>;
@@ -422,6 +450,9 @@ test("approved recipe runs from query to replay with evidence and predicate trac
     consoleErrors
   );
 
+  // Known-timestamp probe now lives behind a collapsed Developer details drawer.
+  await page.getByTestId("dev-tools-toggle").click();
+  await expect(page.getByTestId("inspect-timestamp-button")).toBeVisible();
   const timestampResponsePromise = page.waitForResponse(responsePath("/api/inspect-timestamp"));
   await page.getByTestId("inspect-timestamp-button").click();
   const timestampResponse = await timestampResponsePromise;
@@ -429,7 +460,10 @@ test("approved recipe runs from query to replay with evidence and predicate trac
   const replay = timestampInspection.replay as Record<string, unknown>;
   expect(Array.isArray(replay.frames) ? replay.frames.length : 0).toBeGreaterThan(0);
   await expect(page.getByTestId("timestamp-inspection")).toContainText("NO_COMPATIBLE_ANCHOR");
-  await expect(page.getByTestId("replay-window-summary")).toContainText(String(replay.replay_window_id));
+  await expect(page.getByTestId("replay-window-summary")).toHaveAttribute(
+    "data-replay-window-id",
+    String(replay.replay_window_id)
+  );
   await capture(page, "approved-known-timestamp");
 
   expect(consoleErrors).toEqual([]);
@@ -476,7 +510,7 @@ test("model-unavailable UI and backend clarification/gap contracts remain explic
   expect(gap.provenance_source).toBe("CAPABILITY_GAP");
   expect(gap.plan_document).toBeNull();
 
-  await page.getByRole("button", { name: "Model" }).click();
+  await page.getByTestId("path-ask-hermes").click();
   await page.getByTestId("query-input").fill("Show possessions where the ball goes wide and the defending block shifts.");
   const modelUnavailable = await jsonAfterClick<Record<string, unknown>>(
     page,
@@ -489,8 +523,11 @@ test("model-unavailable UI and backend clarification/gap contracts remain explic
   expect(modelUnavailable.provenance_source).toBe("MODEL_UNAVAILABLE");
   expect(modelUnavailable.manual_available).toBe(true);
   await expect(page.getByTestId("interpreted-plan-panel")).toContainText("MODEL_UNAVAILABLE");
+  await expect(page.getByTestId("model-unavailable-state")).toBeVisible();
+  await expect(page.getByTestId("switch-to-recipes")).toBeVisible();
 
-  await page.getByRole("button", { name: "Manual" }).click();
+  // Honest manual recovery: the typed model-unavailable state routes the user to recipes.
+  await page.getByTestId("switch-to-recipes").click();
   await page.getByTestId("preset-approved_block_shift").click();
   const manualInterpretation = await jsonAfterClick<Record<string, unknown>>(
     page,
@@ -501,15 +538,10 @@ test("model-unavailable UI and backend clarification/gap contracts remain explic
   );
   expect(manualInterpretation.status).toBe("PLAN_INTERPRETED");
   expect(manualInterpretation.provenance_source).toBe("REVIEWED_RECIPE");
-  await expect(page.getByTestId("validate-button")).toBeEnabled();
+  await expect(page.getByTestId("primary-action")).toBeEnabled();
 
-  const validation = await jsonAfterClick<Record<string, unknown>>(
-    page,
-    [],
-    "state.validate_before_non_plan_reinterpret",
-    "validate-button",
-    "/api/submit-validate"
-  );
+  // Confirm and run drives the full host-authority chain; capture the bound plan id it produced.
+  const { validation } = await confirmAndRun(page, [], "state");
   const boundPlanId = String((validation.validation as Record<string, unknown>).bound_plan_id);
   await expect(page.getByTestId("validation-result")).toContainText(boundPlanId);
 
@@ -546,9 +578,7 @@ test("model-unavailable UI and backend clarification/gap contracts remain explic
   );
   expect(staleClear.status).toBe("MODEL_UNAVAILABLE");
   await expect(page.getByTestId("validation-result")).not.toContainText(boundPlanId);
-  await expect(page.getByTestId("validate-button")).toBeDisabled();
-  await expect(page.getByTestId("confirm-button")).toBeDisabled();
-  await expect(page.getByTestId("execute-button")).toBeDisabled();
+  await expect(page.getByTestId("primary-action")).toBeDisabled();
   await page.unroute("**/api/interpret");
   await capture(page, "state-model-unavailable-manual-recovery");
 
@@ -658,60 +688,186 @@ test("scope transitions invalidate validation execution results and replay", asy
   await fourthMatch.click();
   await expect(page.getByTestId("analysis-scope")).toContainText("1 selected match");
 
+  // zero matches disables the single primary action
   await firstMatch.click();
   await expect(page.getByTestId("analysis-scope")).toContainText("0 selected matches");
   await expect(page.getByTestId("scope-warning")).toBeVisible();
-  await expect(page.getByTestId("validate-button")).toBeDisabled();
-  await expect(page.getByTestId("confirm-button")).toBeDisabled();
-  await expect(page.getByTestId("execute-button")).toBeDisabled();
+  await expect(page.getByTestId("primary-action")).toBeDisabled();
 
   await secondMatch.click();
   await expect(page.getByTestId("analysis-scope")).toContainText("1 selected match");
   await expect(page.getByTestId("scope-warning")).toHaveCount(0);
+  await expect(page.getByTestId("primary-action")).toBeEnabled();
 
+  // run over the full scope via the single Confirm and run action
   await allButton.click();
-  const validation = await jsonAfterClick<Record<string, unknown>>(
-    page,
-    [],
-    "scope.validate",
-    "validate-button",
-    "/api/submit-validate"
-  );
+  const { validation, execution } = await confirmAndRun(page, [], "scope");
   const boundPlanId = String((validation.validation as Record<string, unknown>).bound_plan_id);
-  await expect(page.getByTestId("validation-result")).toContainText(boundPlanId);
-  await expect(page.getByTestId("confirm-button")).toBeEnabled();
-
-  await firstMatch.click();
-  await expect(page.getByTestId("validation-result")).not.toContainText(boundPlanId);
-  await expect(page.getByTestId("confirm-button")).toBeDisabled();
-  await expect(page.getByTestId("execute-button")).toBeDisabled();
-  await expect(page.getByTestId("result-count")).toHaveText("0");
-  await expect(page.getByTestId("replay-window-summary")).toContainText("No replay window selected");
-
-  await allButton.click();
-  await jsonAfterClick<Record<string, unknown>>(page, [], "scope.revalidate", "validate-button", "/api/submit-validate");
-  await jsonAfterClick<Record<string, unknown>>(page, [], "scope.confirm", "confirm-button", "/api/confirm");
-  const executeResponsePromise = page.waitForResponse(responsePath("/api/execute"));
-  await page.getByTestId("execute-button").click();
-  const executeResponse = await executeResponsePromise;
-  const executionPayload = (await executeResponse.json()) as Record<string, unknown>;
-  expect(executionPayload.ok).toBe(true);
-  const executionBody = executionPayload.execution as Record<string, unknown>;
-  const results = executionBody.results as Array<Record<string, unknown>>;
+  const results = (execution.execution as Record<string, unknown>).results as Array<Record<string, unknown>>;
   expect(results.length).toBeGreaterThan(0);
+  await expect(page.getByTestId("validation-result")).toContainText(boundPlanId);
   const firstResultId = String(results[0].result_id);
-  await expect(page.getByTestId("result-count")).toHaveText(String(results.length));
   const inspectResponsePromise = waitForInspectionResponse(page, firstResultId);
   await page.locator(`[data-testid="result-item"][data-result-id="${firstResultId}"]`).click();
   await inspectResponsePromise;
-  await expect(page.getByTestId("result-count")).not.toHaveText("0");
+  await expect(page.getByTestId("result-count")).toHaveText(String(results.length));
   await expect(page.getByTestId("replay-window-summary")).not.toContainText("No replay window selected");
 
+  // changing scope after execution invalidates validation, results, and replay
   await firstMatch.click();
+  await expect(page.getByTestId("validation-result")).not.toContainText(boundPlanId);
   await expect(page.getByTestId("result-count")).toHaveText("0");
   await expect(page.getByTestId("replay-window-summary")).toContainText("No replay window selected");
-  await expect(page.getByTestId("confirm-button")).toBeDisabled();
-  await expect(page.getByTestId("execute-button")).toBeDisabled();
+  // the plan is still interpreted, so the user can immediately re-run over the new scope
+  await expect(page.getByTestId("primary-action")).toBeEnabled();
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test("beta1a interpretation invalidation: recipe switch, path switch, and query edit clear downstream state", async ({
+  page,
+  request
+}) => {
+  const consoleErrors: string[] = [];
+  await boot(page, consoleErrors);
+
+  // T2 — selecting a different recipe clears a ready interpretation
+  await page.getByTestId("preset-approved_block_shift").click();
+  const approved = await jsonAfterClick<Record<string, unknown>>(page, [], "inval.approved", "interpret-button", "/api/interpret");
+  expect(approved.provenance_source).toBe("REVIEWED_RECIPE");
+  await expect(page.getByTestId("primary-action")).toBeEnabled();
+  await page.getByTestId("preset-experimental_corridor").click();
+  await expect(page.getByTestId("primary-action")).toBeDisabled();
+  await expect(page.getByTestId("interpreted-plan-panel")).not.toContainText("PLAN_INTERPRETED");
+
+  // T5 — switching Ask Hermes <-> Browse recipes clears a ready interpretation
+  const experimental = await jsonAfterClick<Record<string, unknown>>(page, [], "inval.experimental", "interpret-button", "/api/interpret");
+  expect(experimental.provenance_source).toBe("MANUAL_PRESET");
+  await expect(page.getByTestId("primary-action")).toBeEnabled();
+  await page.getByTestId("path-ask-hermes").click();
+  await expect(page.getByTestId("primary-action")).toBeDisabled();
+  await page.getByTestId("path-browse-recipes").click();
+  await expect(page.getByTestId("primary-action")).toBeDisabled();
+
+  // T1 — Ask Hermes: editing the query after validation marks the plan stale.
+  // A one-shot synthetic Hermes interpretation injects the REAL approved plan document so the
+  // model-path query-edit invalidation can be exercised deterministically (live Hermes is offline).
+  const planResponse = await request.get("/api/plan?recipe_id=ball_side_block_shift_v1");
+  const planPayload = (await planResponse.json()) as Record<string, unknown>;
+  let injected = false;
+  await page.route("**/api/interpret", async (route) => {
+    if (injected) {
+      await route.continue();
+      return;
+    }
+    injected = true;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        status: "PLAN_INTERPRETED",
+        provenance_source: "HERMES_RECIPE_SELECTION",
+        query: "synthetic hermes recipe selection",
+        source: "hermes_frontier_agent",
+        recipe: planPayload.recipe,
+        recipe_id: "ball_side_block_shift_v1",
+        plan_document: planPayload.plan_document,
+        plan_hash: planPayload.plan_hash,
+        manual_available: true,
+        repair_applied: false
+      })
+    });
+  });
+  await page.getByTestId("path-ask-hermes").click();
+  await page.getByTestId("query-input").fill("Find ball-side block shifts.");
+  const hermesPlan = await jsonAfterClick<Record<string, unknown>>(page, [], "inval.hermes_plan", "interpret-button", "/api/interpret");
+  expect(hermesPlan.status).toBe("PLAN_INTERPRETED");
+  expect(hermesPlan.provenance_source).toBe("HERMES_RECIPE_SELECTION");
+  await page.unroute("**/api/interpret");
+  await expect(page.getByTestId("primary-action")).toBeEnabled();
+
+  const { validation } = await confirmAndRun(page, [], "inval");
+  const boundPlanId = String((validation.validation as Record<string, unknown>).bound_plan_id);
+  await expect(page.getByTestId("validation-result")).toContainText(boundPlanId);
+
+  await page.getByTestId("query-input").fill("Find ball-side block shifts, now edited after running.");
+  await expect(page.getByTestId("primary-action")).toBeDisabled();
+  await expect(page.getByTestId("validation-result")).not.toContainText(boundPlanId);
+  await expect(page.getByTestId("result-count")).toHaveText("0");
+  await expect(page.getByTestId("replay-window-summary")).toContainText("No replay window selected");
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test("beta1a product surface hides developer internals by default", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  await boot(page, consoleErrors);
+
+  // raw host/model internals are not product copy, but are preserved as data attributes for tooling
+  await expect(page.getByText("browser to host API")).toHaveCount(0);
+  const hostStatus = page.getByTestId("host-status");
+  await expect(hostStatus).not.toContainText("HERMES_FRONTIER_READY");
+  expect(await hostStatus.getAttribute("data-model-status")).not.toBeNull();
+
+  // the known-timestamp probe is hidden until the developer drawer is opened
+  await expect(page.getByTestId("inspect-timestamp-button")).toBeHidden();
+  await page.getByTestId("dev-tools-toggle").click();
+  await expect(page.getByTestId("inspect-timestamp-button")).toBeVisible();
+
+  // result cards lead with a tactical headline and never print the raw result id
+  await page.getByTestId("preset-approved_block_shift").click();
+  await jsonAfterClick<Record<string, unknown>>(page, [], "hidden.interpret", "interpret-button", "/api/interpret");
+  const { execution } = await confirmAndRun(page, [], "hidden");
+  const results = (execution.execution as Record<string, unknown>).results as Array<Record<string, unknown>>;
+  expect(results.length).toBeGreaterThan(0);
+  const firstResultId = String(results[0].result_id);
+  const card = page.locator(`[data-testid="result-item"][data-result-id="${firstResultId}"]`);
+  await expect(card).toBeVisible();
+  await expect(card).not.toContainText(firstResultId);
+  expect(await card.getAttribute("data-classification")).not.toBeNull();
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test("beta1a novel composition is surfaced as pending proof refresh, not a runnable product success", async ({
+  page,
+  request
+}) => {
+  const consoleErrors: string[] = [];
+  await boot(page, consoleErrors);
+
+  // Inject a synthetic HERMES_NOVEL_COMPOSITION interpretation (live N1 proof is held back).
+  const planResponse = await request.get("/api/plan?recipe_id=possession_corridor_availability_v1");
+  const planPayload = (await planResponse.json()) as Record<string, unknown>;
+  await page.route("**/api/interpret", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        status: "PLAN_INTERPRETED",
+        provenance_source: "HERMES_NOVEL_COMPOSITION",
+        query: "synthetic novel composition",
+        source: "hermes_frontier_agent",
+        recipe: planPayload.recipe,
+        plan_document: planPayload.plan_document,
+        plan_hash: planPayload.plan_hash,
+        manual_available: true,
+        repair_applied: false
+      })
+    });
+  });
+  await page.getByTestId("path-ask-hermes").click();
+  await page.getByTestId("query-input").fill("Compose a brand new tactical pattern.");
+  const novel = await jsonAfterClick<Record<string, unknown>>(page, [], "novel.interpret", "interpret-button", "/api/interpret");
+  expect(novel.provenance_source).toBe("HERMES_NOVEL_COMPOSITION");
+
+  await expect(page.getByTestId("novel-composition-pending")).toBeVisible();
+  await expect(page.getByTestId("interpretation-source")).toContainText("pending proof refresh");
+  // It is shown for transparency but must never be runnable as a product success.
+  await expect(page.getByTestId("primary-action")).toBeDisabled();
+  await page.unroute("**/api/interpret");
 
   expect(consoleErrors).toEqual([]);
 });

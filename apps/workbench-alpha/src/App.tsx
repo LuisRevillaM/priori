@@ -13,6 +13,7 @@ import {
 } from "./api";
 import { PitchCanvas } from "./PitchCanvas";
 import { advancePlaybackFrame } from "./playback";
+import { describeMeasurement, entryModeLabel, provenanceLabel, provenanceTone, tacticalHeadline } from "./presentation";
 import type {
   BootstrapResponse,
   ConfirmationResponse,
@@ -25,7 +26,6 @@ import type {
   MatchLibraryResponse,
   MatchSummary,
   Preset,
-  ProvenanceSource,
   ReplayPayload,
   ResultRow,
   SubmitValidateResponse,
@@ -100,32 +100,10 @@ function matchLabel(match: MatchSummary | undefined, fallbackId: string) {
   return match.match_title.replace(":", " vs ");
 }
 
-function provenanceLabel(source: ProvenanceSource | null | undefined) {
-  switch (source) {
-    case "REVIEWED_RECIPE":
-      return "Reviewed recipe";
-    case "MANUAL_PRESET":
-      return "Manual preset";
-    case "HERMES_RECIPE_SELECTION":
-      return "Hermes selected recipe";
-    case "HERMES_NOVEL_COMPOSITION":
-      return "Hermes authored composition";
-    case "DETERMINISTIC_REPAIR":
-      return "Safety repair applied";
-    case "CAPABILITY_GAP":
-      return "Capability gap";
-    case "MODEL_UNAVAILABLE":
-      return "Hermes unavailable";
-    default:
-      return "Not interpreted";
-  }
-}
-
-function provenanceTone(source: ProvenanceSource | null | undefined): "neutral" | "good" | "warn" | "bad" {
-  if (source === "CAPABILITY_GAP") return "bad";
-  if (source === "MODEL_UNAVAILABLE" || source === "DETERMINISTIC_REPAIR") return "warn";
-  if (source === "HERMES_NOVEL_COMPOSITION") return "good";
-  return source ? "neutral" : "warn";
+function modelStatusCopy(boot: BootstrapResponse | null) {
+  if (!boot) return { tone: "neutral" as const, label: "Loading host status" };
+  if (boot.model.available) return { tone: "good" as const, label: "Hermes ready" };
+  return { tone: "warn" as const, label: "Hermes unavailable · recipes work" };
 }
 
 function interpretationBullets(recipe: InterpretResponse["recipe"] | null | undefined, planDocument: JsonObject | null) {
@@ -342,35 +320,35 @@ export function App() {
     }
   }
 
-  async function handleValidate() {
+  // One product action ("Confirm and run") drives the full host-authority sequence:
+  // submit/validate -> host confirm -> execute. The host still issues the bound plan and
+  // execution authorization on the server; this only collapses three competing buttons into
+  // a single deliberate confirmation the user makes after reading the interpretation.
+  async function handleConfirmAndRun() {
     if (!planDocument || selectedMatchIds.length === 0) return;
+    if (interpretation?.status !== "PLAN_INTERPRETED") return;
+
     const scopedPlan = applyScopeToPlan(planDocument, selectedMatchIds);
     setPlanDocument(scopedPlan);
-    const payload = await runAction("validate", () => submitValidate(scopedPlan));
-    if (!payload) return;
-    setValidation(payload);
+
+    const validationPayload = await runAction("validate", () => submitValidate(scopedPlan));
+    if (!validationPayload) return;
+    setValidation(validationPayload);
     setConfirmation(null);
-    setExecutionProgress(null);
     setExecution(null);
     setSelectedResultId(null);
     setInspection(null);
     setTimestampInspection(null);
     setInspectionLoadingResultId(null);
-  }
+    const boundPlanId = validationPayload.validation.bound_plan_id;
+    if (!validationPayload.validation.ok || !boundPlanId) return;
 
-  async function handleConfirm() {
-    const boundPlanId = validation?.validation.bound_plan_id;
-    if (!boundPlanId) return;
-    const payload = await runAction("confirm", () => confirm(boundPlanId));
-    if (!payload) return;
-    setConfirmation(payload);
-    setExecutionProgress(null);
-  }
+    const confirmationPayload = await runAction("confirm", () => confirm(boundPlanId));
+    if (!confirmationPayload) return;
+    setConfirmation(confirmationPayload);
+    const authorizationId = confirmationPayload.confirmation.execution_authorization_id;
+    if (!authorizationId) return;
 
-  async function handleExecute() {
-    const boundPlanId = confirmation?.confirmation.bound_plan_id;
-    const authorizationId = confirmation?.confirmation.execution_authorization_id;
-    if (!boundPlanId || !authorizationId) return;
     setExecutionProgress({
       ok: true,
       cache_key: "pending",
@@ -477,7 +455,17 @@ export function App() {
   const interpretationItems = interpretationBullets(planRecipe, planDocument);
   const provenance = interpretation?.provenance_source ?? null;
   const sourceTone = provenanceTone(provenance);
-  const canValidate = Boolean(planDocument && interpretation?.status === "PLAN_INTERPRETED" && hasSelectedScope);
+  const modelStatus = modelStatusCopy(boot);
+  // Live N1 novel composition is not product-ready (proof artifacts predate the N1C entry_mode
+  // contract). We keep the enum and surface it honestly, but never run it as a product success.
+  const isNovelComposition = provenance === "HERMES_NOVEL_COMPOSITION";
+  const planReady = Boolean(planDocument && interpretation?.status === "PLAN_INTERPRETED");
+  const canRun = Boolean(planReady && hasSelectedScope && !isNovelComposition);
+  const hasResults = Boolean(execution);
+  const selectedEntryModeRaw = selectedResult
+    ? selectedResult.requested_evidence?.["entry_mode"] ?? asRecord(selectedResult)["entry_mode"]
+    : null;
+  const selectedEntryMode = entryModeLabel(selectedEntryModeRaw);
   const manualRecipeDescription = recipeDescription(planRecipe);
   const overlayProof = (() => {
     const evidence = evidenceResult?.requested_evidence ?? {};
@@ -502,10 +490,20 @@ export function App() {
           <div className="eyebrow">Workbench Alpha</div>
           <h1>Host tactical query workbench</h1>
         </div>
-        <div className="topbarStatus">
-          <StatusPill tone={boot?.service.mcp_adapter === false ? "good" : "warn"}>browser to host API</StatusPill>
-          <StatusPill tone={boot?.model.available ? "good" : "warn"}>{boot?.model.status ?? "loading"}</StatusPill>
-          <StatusPill tone="neutral">{busy ? `busy: ${busy}` : "idle"}</StatusPill>
+        <div
+          className="topbarStatus"
+          data-testid="host-status"
+          data-model-status={boot?.model.status ?? "loading"}
+          data-model-available={String(boot?.model.available ?? false)}
+          data-mcp-adapter={String(boot?.service.mcp_adapter ?? "")}
+          data-busy={busy ?? "idle"}
+        >
+          <StatusPill tone={modelStatus.tone}>{modelStatus.label}</StatusPill>
+          {busy ? (
+            <span className="pill pill-neutral" data-testid="busy-indicator">
+              Working…
+            </span>
+          ) : null}
         </div>
       </header>
 
@@ -553,13 +551,29 @@ export function App() {
       <section className="workspaceGrid">
         <aside className="leftRail">
           <section className="panel">
-            <div className="panelTitle">Query</div>
-            <div className="segmented">
-              <button aria-label="Model" className={mode === "model" ? "active" : ""} onClick={() => handleModeChange("model")}>
-                Ask Hermes
+            <div className="panelTitle">Start here</div>
+            <div className="pathChooser" data-testid="path-chooser" role="tablist" aria-label="Choose how to start">
+              <button
+                role="tab"
+                aria-selected={mode === "model"}
+                aria-label="Ask Hermes"
+                data-testid="path-ask-hermes"
+                className={mode === "model" ? "pathOption active" : "pathOption"}
+                onClick={() => handleModeChange("model")}
+              >
+                <strong>Ask Hermes</strong>
+                <small>Type a football question in your own words.</small>
               </button>
-              <button aria-label="Manual" className={mode === "manual" ? "active" : ""} onClick={() => handleModeChange("manual")}>
-                Browse recipes
+              <button
+                role="tab"
+                aria-selected={mode === "manual"}
+                aria-label="Browse recipes"
+                data-testid="path-browse-recipes"
+                className={mode === "manual" ? "pathOption active" : "pathOption"}
+                onClick={() => handleModeChange("manual")}
+              >
+                <strong>Browse recipes</strong>
+                <small>Pick a reviewed or experimental recipe.</small>
               </button>
             </div>
             {mode === "model" ? (
@@ -592,13 +606,19 @@ export function App() {
                 </div>
               </>
             )}
-            <button className="primaryAction" data-testid="interpret-button" onClick={() => void handleInterpret()} disabled={busy !== null}>
-              {mode === "model" ? "Ask Hermes" : "Use selected recipe"}
+            <button
+              className={planReady ? "fullButton" : "primaryAction"}
+              data-testid="interpret-button"
+              onClick={() => void handleInterpret()}
+              disabled={busy !== null}
+            >
+              {mode === "model" ? (planReady ? "Ask Hermes again" : "Ask Hermes") : planReady ? "Reload recipe" : "Use selected recipe"}
             </button>
           </section>
 
-          <section className="panel">
-            <div className="panelTitle">Known Timestamp</div>
+          <details className="panel developerDrawer devPanel" data-testid="developer-tools">
+            <summary data-testid="dev-tools-toggle">Developer details · known-timestamp probe</summary>
+            <p className="muted devNote">Engineering inspection tool. Not part of the primary flow.</p>
             <label className="field tight">
               <span>Target ID</span>
               <input value={target.target_id} onChange={(event) => setTarget({ ...target, target_id: event.target.value })} />
@@ -648,7 +668,7 @@ export function App() {
             >
               Inspect timestamp
             </button>
-          </section>
+          </details>
         </aside>
 
         <section className="centerStage">
@@ -691,7 +711,32 @@ export function App() {
               </div>
             ) : null}
             {interpretation?.status === "MODEL_UNAVAILABLE" ? (
-              <div className="stateBox warn">{interpretation.message}</div>
+              <div className="stateBox warn" data-testid="model-unavailable-state">
+                <strong>Hermes interpretation is not available right now</strong>
+                <p>{interpretation.message}</p>
+                <p>
+                  Browse recipes still works. It runs reviewed and experimental recipes deterministically —
+                  this is recipe/manual analysis, not a fallback AI interpretation.
+                </p>
+                {interpretation.manual_available ? (
+                  <button
+                    className="fullButton"
+                    data-testid="switch-to-recipes"
+                    onClick={() => handleModeChange("manual")}
+                  >
+                    Switch to Browse recipes
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+            {isNovelComposition ? (
+              <div className="stateBox warn" data-testid="novel-composition-pending">
+                <strong>Novel composition is not product-ready yet</strong>
+                <p>
+                  Live model-authored composition is held back pending an N1C runtime proof refresh.
+                  This interpretation is shown for transparency only and cannot be run as a product result here.
+                </p>
+              </div>
             ) : null}
             <div className="interpretSummary">
               {interpretationItems.map((item) => (
@@ -712,31 +757,25 @@ export function App() {
                 <StatusPill tone={sourceTone}>{provenanceLabel(provenance)}</StatusPill>
               </div>
             </div>
-            <div className="actionStrip">
-              <button
-                className="fullButton"
-                data-testid="validate-button"
-                onClick={() => void handleValidate()}
-                disabled={!canValidate || busy !== null}
-              >
-                Validate interpretation
-              </button>
-              <button
-                className="fullButton"
-                data-testid="confirm-button"
-                onClick={() => void handleConfirm()}
-                disabled={!validation?.validation.bound_plan_id || busy !== null}
-              >
-                Approve run
-              </button>
+            <div className="actionStrip single">
               <button
                 className="primaryAction"
-                data-testid="execute-button"
-                onClick={() => void handleExecute()}
-                disabled={!confirmation?.confirmation.execution_authorization_id || busy !== null}
+                data-testid="primary-action"
+                data-stage={hasResults ? "ran" : planReady ? "ready" : "interpret"}
+                onClick={() => void handleConfirmAndRun()}
+                disabled={!canRun || busy !== null}
               >
-                Run query
+                {busy === "validate" || busy === "confirm" || busy === "execute"
+                  ? "Confirming and running…"
+                  : hasResults
+                    ? "Run again"
+                    : "Confirm and run"}
               </button>
+              <p className="actionNote" data-testid="confirm-and-run-note">
+                {planReady
+                  ? "Host confirms the bound plan and runs the deterministic execution over the selected scope. Nothing runs until you confirm."
+                  : "Interpret a question or recipe above, then confirm to run."}
+              </p>
             </div>
             <details className="developerDrawer">
               <summary>Developer details</summary>
@@ -755,15 +794,25 @@ export function App() {
               <div>
                 <div className="panelTitle">Coordinate Replay</div>
                 {selectedResult ? (
-                  <div className="replayContext" data-testid="replay-window-summary">
+                  <div
+                    className="replayContext"
+                    data-testid="replay-window-summary"
+                    data-replay-window-id={replay?.replay_window_id ?? ""}
+                    data-result-id={selectedResult.result_id}
+                  >
                     <strong>{matchLabel(selectedResultMatch, selectedResult.match_id)}</strong>
+                    <span>{tacticalHeadline(selectedResult.classification)}</span>
                     <span>
                       {periodLabel(selectedResult.period)} · {matchTimeLabel(selectedResult.match_time_ms)} · Fortuna in possession
                     </span>
                     <span>
                       Result {selectedResultIndex + 1} of {execution?.execution.returned_result_count ?? 0}
                     </span>
-                    <small>{replay?.replay_window_id} · {selectedResult.result_id}</small>
+                    {selectedEntryMode ? (
+                      <span data-testid="entry-mode" data-entry-mode={selectedEntryMode.value}>
+                        Destination entry: {selectedEntryMode.label}
+                      </span>
+                    ) : null}
                   </div>
                 ) : (
                   <div className="muted" data-testid="replay-window-summary">
@@ -820,9 +869,14 @@ export function App() {
               <div className="panelTitle">Evidence Aliases</div>
               <div className="evidenceGrid" data-testid="evidence-aliases">
                 {evidenceAliases.map((item) => (
-                  <div key={item.id} className="evidenceRow" data-testid="evidence-alias">
+                  <div
+                    key={item.id}
+                    className="evidenceRow"
+                    data-testid="evidence-alias"
+                    data-source={item.source}
+                    data-field={item.field}
+                  >
                     <span>{item.alias}</span>
-                    <small>{item.source} / {item.field}</small>
                     <code>{String(evidenceResult?.requested_evidence[item.alias] ?? "")}</code>
                   </div>
                 ))}
@@ -854,12 +908,13 @@ export function App() {
                   key={result.result_id}
                   data-testid="result-item"
                   data-result-id={result.result_id}
+                  data-classification={result.classification}
                   className={effectiveSelectedResultId === result.result_id ? "resultItem active" : "resultItem"}
                   onClick={() => void handleResultSelect(result.result_id)}
                 >
-                  <span>#{result.rank} {result.classification.replaceAll("_", " ")}</span>
+                  <span>#{result.rank} · {tacticalHeadline(result.classification)}</span>
                   <small>{matchLabel(matchesById.get(result.match_id), result.match_id)}</small>
-                  <small>{periodLabel(result.period)} · {matchTimeLabel(result.match_time_ms)} · {result.result_id}</small>
+                  <small>{periodLabel(result.period)} · {matchTimeLabel(result.match_time_ms)}</small>
                 </button>
               ))}
               {!execution ? <div className="emptyState">Execute a confirmed bound plan to populate results.</div> : null}
@@ -917,7 +972,11 @@ function StateList({ title, items }: { title: string; items: string[] }) {
   );
 }
 
-function TraceList({ traces }: { traces: Array<{ predicate_id?: string; status?: string; value?: unknown; threshold?: unknown }> }) {
+function TraceList({
+  traces
+}: {
+  traces: Array<{ predicate_id?: string; status?: string; value?: unknown; threshold?: unknown; unit?: string | null }>;
+}) {
   if (traces.length === 0) {
     return <div className="emptyState">No predicate trace selected.</div>;
   }
@@ -927,10 +986,15 @@ function TraceList({ traces }: { traces: Array<{ predicate_id?: string; status?:
         const status = trace.status ?? "UNKNOWN";
         const tone = status === "PASS" ? "good" : status === "FAIL" ? "bad" : "warn";
         return (
-          <div key={`${trace.predicate_id ?? "trace"}-${index}`} className="traceRow" data-testid="predicate-trace">
+          <div
+            key={`${trace.predicate_id ?? "trace"}-${index}`}
+            className="traceRow"
+            data-testid="predicate-trace"
+            data-raw={pretty({ value: trace.value, threshold: trace.threshold })}
+          >
             <StatusPill tone={tone}>{status}</StatusPill>
             <span>{trace.predicate_id ?? "predicate"}</span>
-            <small>{pretty({ value: trace.value, threshold: trace.threshold })}</small>
+            <small>{describeMeasurement(trace.value, trace.threshold, trace.unit)}</small>
           </div>
         );
       })}

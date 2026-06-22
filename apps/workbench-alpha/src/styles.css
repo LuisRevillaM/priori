@@ -470,6 +470,67 @@ button:disabled {
   margin: 12px 0;
 }
 
+.actionStrip.single {
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.actionNote {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.pathChooser {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.pathOption {
+  display: grid;
+  gap: 3px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  text-align: left;
+  align-content: start;
+}
+
+.pathOption strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pathOption small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.pathOption.active {
+  border-color: var(--accent-dark);
+  background: #edf4ee;
+}
+
+.pathOption.active strong {
+  color: var(--accent-dark);
+}
+
+.devPanel summary {
+  list-style: revert;
+}
+
+.devNote {
+  margin: 6px 0 10px;
+}
+
+.stateBox button {
+  margin-top: 8px;
+}
+
 .planMeta {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
