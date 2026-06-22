@@ -226,8 +226,23 @@ confirmation, results, evidence, traces, coordinate replay, clarification, and
 capability-gap states. Workbench Alpha should not wait for Hermes to be perfect,
 and it should not add new tactical primitives or a second tactical family.
 
-S3 remains blocked until S2I passes and Workbench Alpha proves query-to-replay on
-real data.
+S3 remains blocked until S2I passes and Workbench Alpha proves minimal
+query-to-replay on real data. This is not a finished-UI requirement: final
+typography, animations, guided demo mode, visual regression, and meeting polish
+remain later milestones.
+
+The immediate work is split into two parallel tracks:
+
+- **Track A - S2I-A/B:** generate the Tactical Knowledge Pack, then run the
+  provisioning spike for GPT-5.5, Responses strict structured outputs, high/xhigh
+  reasoning, Hermes installation/version, trivial MCP connectivity, safe tool
+  allowlisting, and API/billing readiness.
+- **Track B - Workbench Alpha 1:** build the React/TypeScript workbench shell
+  against the existing manual/saved-plan orchestration contract. It must cover
+  query or recipe selection, interpreted-plan display, host confirmation,
+  execution, real result rail, and loading/empty/validation/clarification/
+  capability-gap/model-unavailable states. Replay and evidence follow
+  immediately in Workbench Alpha 2.
 
 ## Scope
 

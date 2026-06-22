@@ -30,7 +30,10 @@ slices:
   S2G_first_fresh_sealed_set_run: DONE_FAILED_THEN_DIAGNOSTIC_AFTER_S2H
   S2H_stable_agent_vocabulary_codes_and_sealed_set_drift_control: DONE_CONTROLLER_VERIFIED
   S2I_frontier_agent_provisioning_and_context_rebaseline: PLANNED
-  Workbench_Alpha_query_to_replay_ui: PLANNED_PARALLEL
+  S2I_A_tactical_knowledge_pack: NEXT_PARALLEL_TRACK_A
+  S2I_B_frontier_and_hermes_provisioning_spike: NEXT_PARALLEL_TRACK_A
+  Workbench_Alpha_1_query_to_result_shell: NEXT_PARALLEL_TRACK_B
+  Workbench_Alpha_2_evidence_and_replay: PLANNED_AFTER_ALPHA_1
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
 promotion_gates:
   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
@@ -203,9 +206,12 @@ evidence:
     required_runtime_path: "Hermes + GPT-5.5 + Tactical Knowledge Pack + bounded tool surface"
     direct_compiler_role: CONTROL_EVAL_DEBUG_FALLBACK_ONLY
     final_sealed_acceptance_required_after_s2i_freeze: true
+    s3_ui_blocker_definition: "minimal query-to-replay workbench, not finished UI"
+    immediate_work_orders:
+      - delivery/m1.2/NEXT_TASKS.md
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
   external_review: NONE_BEFORE_S2I_IMPLEMENTATION_UNLESS_SCOPE_CHANGES
-  scope: "Stop the gpt-4o-mini sealed-set cycle. Freeze f9eb5d8 as the small-model compiler baseline. Implement S2I and Workbench Alpha in parallel. Run one final independent sealed acceptance set only after the intended Hermes/frontier-model runtime is frozen."
+  scope: "Stop the gpt-4o-mini sealed-set cycle. Freeze f9eb5d8 as the small-model compiler baseline. Implement S2I-A/B and Workbench Alpha 1 in parallel. S3 is blocked on a working frontier-agent path and minimal query-to-replay workbench, not a finished UI. Run one final independent sealed acceptance set only after the intended Hermes/frontier-model runtime is frozen."

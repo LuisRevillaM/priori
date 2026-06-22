@@ -176,4 +176,8 @@ manual/saved recipe
 -> clarification/capability-gap states
 ```
 
-S3 remains blocked until S2I passes and Workbench Alpha proves query-to-replay over real data.
+S3 remains blocked until S2I passes and Workbench Alpha proves minimal
+query-to-replay over real data. This means a working query/selection,
+interpretation, confirmation, execution, result rail, evidence/trace, and replay
+path. It does not mean finished visual design, animation polish, guided demo
+mode, or meeting packaging.
