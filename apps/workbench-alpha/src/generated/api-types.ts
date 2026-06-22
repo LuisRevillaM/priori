@@ -943,6 +943,42 @@ export const apiSchemas = {
     },
     "additionalProperties": false,
     "properties": {
+      "agent_session_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Agent Session Id"
+      },
+      "bound_plan_hash": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Bound Plan Hash"
+      },
+      "bound_plan_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Bound Plan Id"
+      },
       "capability_gaps": {
         "anyOf": [
           {
@@ -987,6 +1023,18 @@ export const apiSchemas = {
         ],
         "default": null,
         "title": "Clarification Questions"
+      },
+      "draft_plan_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Draft Plan Id"
       },
       "manual_available": {
         "anyOf": [

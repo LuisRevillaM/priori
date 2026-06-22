@@ -10,6 +10,12 @@ from __future__ import annotations
 import argparse
 import json
 import mimetypes
+import os
+import re
+import shutil
+import sqlite3
+import subprocess
+import time
 from hashlib import sha256
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -53,6 +59,38 @@ from tqe.workshop.m1_2 import (
 APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
 DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
+HERMES_HOME = Path(os.environ.get("HERMES_HOME", "/Users/luisrevilla/.hermes-priori"))
+HERMES_DB = HERMES_HOME / "state.db"
+HERMES_WORKSHOP_ROOT = Path(os.environ.get("WORKBENCH_HERMES_WORKSHOP_ROOT", "artifacts/m1.2/workshop"))
+HERMES_PROVIDER = os.environ.get("WORKBENCH_HERMES_PROVIDER", "openai-codex")
+HERMES_MODEL = os.environ.get("WORKBENCH_HERMES_MODEL", "gpt-5.5")
+HERMES_TOOLSET = os.environ.get("WORKBENCH_HERMES_TOOLSET", "priori_tactical")
+HERMES_TIMEOUT_SECONDS = int(os.environ.get("WORKBENCH_HERMES_TIMEOUT_SECONDS", "240"))
+HERMES_MCP_TOOL_NAMES = {
+    "mcp_priori_tactical_list_capabilities",
+    "mcp_priori_tactical_search_recipes",
+    "mcp_priori_tactical_describe_capability",
+    "mcp_priori_tactical_submit_query_plan",
+    "mcp_priori_tactical_validate_query_plan",
+    "mcp_priori_tactical_inspect_result",
+    "mcp_priori_tactical_inspect_non_match",
+    "mcp_priori_tactical_retrieve_replay_window",
+}
+HERMES_FORBIDDEN_TOOL_FRAGMENTS = {
+    "terminal",
+    "process",
+    "shell",
+    "file",
+    "read_file",
+    "write_file",
+    "python",
+    "sql",
+    "execute",
+    "browser",
+    "web_",
+    "host_confirm_bound_plan",
+    "execute_query_plan",
+}
 
 
 class WorkbenchResponseModel(BaseModel):
@@ -136,6 +174,10 @@ class InterpretResponse(WorkbenchResponseModel):
     query: str | None = None
     message: str | None = None
     source: str | None = None
+    agent_session_id: str | None = None
+    draft_plan_id: str | None = None
+    bound_plan_id: str | None = None
+    bound_plan_hash: str | None = None
     recipe: RecipeCardResponse | None = None
     plan_document: dict[str, Any] | None = None
     plan_hash: str | None = None
@@ -387,22 +429,272 @@ def recipe_card(plan_document: dict[str, Any], state: str) -> dict[str, Any]:
     }
 
 
-def interpret_request(payload: dict[str, Any]) -> dict[str, Any]:
+def hermes_enabled() -> bool:
+    return os.environ.get("WORKBENCH_HERMES_ENABLED") == "1"
+
+
+def hermes_unavailable(query: str, message: str | None = None) -> dict[str, Any]:
+    return ok(
+        {
+            "status": "MODEL_UNAVAILABLE",
+            "query": query,
+            "message": message or "Hermes frontier interpretation is not connected in this Workbench process. Manual mode remains available.",
+            "source": "hermes_frontier_unavailable",
+            "manual_available": True,
+        }
+    )
+
+
+def hermes_interpret_request(query: str) -> dict[str, Any]:
+    hermes = shutil.which("hermes")
+    if not hermes:
+        return hermes_unavailable(query, "Hermes executable was not found. Manual mode remains available.")
+    if not HERMES_DB.exists():
+        return hermes_unavailable(query, "Hermes session store was not found. Manual mode remains available.")
+    surface = hermes_tool_surface(hermes)
+    if not surface["safe"]:
+        return hermes_unavailable(
+            query,
+            "Hermes did not expose the frozen priori_tactical-only tool surface. Manual mode remains available.",
+        )
+    started_at = newest_hermes_session_started_at()
+    completed = subprocess.run(
+        [
+            hermes,
+            "--provider",
+            HERMES_PROVIDER,
+            "--model",
+            HERMES_MODEL,
+            "--toolsets",
+            HERMES_TOOLSET,
+            "--oneshot",
+            hermes_interpret_prompt(query),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=HERMES_TIMEOUT_SECONDS,
+        env={**os.environ, "HERMES_HOME": str(HERMES_HOME), "CODEX_HOME": os.environ.get("CODEX_HOME", "/Users/luisrevilla/.codex")},
+    )
+    session = newest_hermes_session_after(started_at)
+    final = parse_final_json(completed.stdout)
+    if completed.returncode != 0 or not final:
+        return hermes_unavailable(
+            query,
+            "Hermes did not return a valid structured interpretation. Manual mode remains available.",
+        )
+    return hermes_final_to_interpretation(query, final, session)
+
+
+def hermes_tool_surface(hermes: str) -> dict[str, Any]:
+    completed = subprocess.run(
+        [
+            hermes,
+            "--provider",
+            HERMES_PROVIDER,
+            "--model",
+            HERMES_MODEL,
+            "--toolsets",
+            HERMES_TOOLSET,
+            "--oneshot",
+            "Return only a JSON array of exact tool names you can call.",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=45,
+        env={**os.environ, "HERMES_HOME": str(HERMES_HOME), "CODEX_HOME": os.environ.get("CODEX_HOME", "/Users/luisrevilla/.codex")},
+    )
+    names = parse_tool_name_list(completed.stdout)
+    normalized = {name.removeprefix("functions.") for name in names}
+    forbidden = sorted(
+        name
+        for name in normalized
+        if any(fragment in name.lower() for fragment in HERMES_FORBIDDEN_TOOL_FRAGMENTS)
+    )
+    return {
+        "safe": completed.returncode == 0 and HERMES_MCP_TOOL_NAMES.issubset(normalized) and not forbidden,
+        "tool_names": sorted(normalized),
+        "forbidden": forbidden,
+    }
+
+
+def parse_tool_name_list(text: str) -> list[str]:
+    match = re.search(r"\[.*\]", text.strip(), flags=re.S)
+    if not match:
+        return []
+    try:
+        parsed = json.loads(match.group(0))
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(parsed, list):
+        return []
+    return [str(item) for item in parsed]
+
+
+def hermes_interpret_prompt(query: str) -> str:
+    return f"""
+You are the Priori M1.2 Integrated Alpha tactical query interpreter.
+
+Use only the priori_tactical MCP tools. Do not use filesystem, terminal, Python,
+SQL, raw coordinate dumps, host confirmation, or execution. Stop before
+execution. If the request is supported, either select an approved recipe or
+author an EXPERIMENTAL typed plan through submit_query_plan and validate it. If
+the request is ambiguous, ask for clarification. If unsupported, report stable
+capability gaps.
+
+Return only one JSON object:
+{{
+  "outcome": "select_recipe" | "draft" | "clarify" | "capability_gap",
+  "recipe_id": string | null,
+  "draft_plan_id": string | null,
+  "bound_plan_id": string | null,
+  "bound_plan_hash": string | null,
+  "clarification_questions": string[],
+  "clarification_dimensions": string[],
+  "capability_gaps": string[],
+  "stopped_before_execution": true,
+  "notes": string
+}}
+
+Tactical request:
+{query}
+""".strip()
+
+
+def parse_final_json(text: str) -> dict[str, Any]:
+    match = re.search(r"\{.*\}", text.strip(), flags=re.S)
+    if not match:
+        return {}
+    try:
+        parsed = json.loads(match.group(0))
+    except json.JSONDecodeError:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def hermes_final_to_interpretation(query: str, final: dict[str, Any], session: dict[str, Any] | None) -> dict[str, Any]:
+    outcome = normalize_outcome(final.get("outcome"))
+    session_id = str(session.get("id")) if session else None
+    base = {
+        "query": query,
+        "source": "hermes_frontier_agent",
+        "agent_session_id": session_id,
+        "draft_plan_id": final.get("draft_plan_id"),
+        "bound_plan_id": final.get("bound_plan_id"),
+        "bound_plan_hash": final.get("bound_plan_hash"),
+        "manual_available": True,
+    }
+    if outcome == "clarify":
+        questions = [str(item) for item in final.get("clarification_questions") or [] if str(item).strip()]
+        dimensions = [str(item).upper().replace(" ", "_") for item in final.get("clarification_dimensions") or [] if str(item).strip()]
+        return ok(
+            {
+                **base,
+                "status": "CLARIFICATION_REQUIRED",
+                "clarification_questions": questions or ["Please clarify the tactical definition before execution."],
+                "clarification_codes": dimensions or ["TACTICAL_DEFINITION"],
+            }
+        )
+    if outcome == "capability_gap":
+        gaps = [{"concept": str(item), "reason": "Hermes reported this capability is outside the frozen tool boundary."} for item in final.get("capability_gaps") or []]
+        return ok(
+            {
+                **base,
+                "status": "CAPABILITY_GAP",
+                "capability_gaps": gaps or [{"concept": "unsupported_request", "reason": "Hermes could not map the request to the frozen tactical capability set."}],
+            }
+        )
+    if outcome == "select_recipe":
+        recipe_id = str(final.get("recipe_id") or "")
+        try:
+            plan_document = plan_for_recipe(recipe_id)
+        except ValueError:
+            return hermes_unavailable(query, "Hermes selected an unknown recipe. Manual mode remains available.")
+        state = "APPROVED" if recipe_id == "ball_side_block_shift_v1" else "EXPERIMENTAL"
+        return ok(
+            {
+                **base,
+                "status": "PLAN_INTERPRETED",
+                "recipe": recipe_card(plan_document, state),
+                "plan_document": plan_document,
+                "plan_hash": stable_hash(plan_document),
+            }
+        )
+    if outcome == "draft":
+        bound_plan_id = str(final.get("bound_plan_id") or "")
+        plan_document = hermes_bound_plan_document(bound_plan_id)
+        if plan_document is None:
+            return hermes_unavailable(query, "Hermes validated a draft but the host could not recover its bound plan handle.")
+        return ok(
+            {
+                **base,
+                "status": "PLAN_INTERPRETED",
+                "recipe": recipe_card(plan_document, "EXPERIMENTAL"),
+                "plan_document": plan_document,
+                "plan_hash": stable_hash(plan_document),
+            }
+        )
+    return hermes_unavailable(query, "Hermes returned an unsupported interpretation outcome. Manual mode remains available.")
+
+
+def normalize_outcome(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    aliases = {
+        "existing_recipe_selected": "select_recipe",
+        "recipe_selected": "select_recipe",
+        "draft_validated": "draft",
+        "plan_interpreted": "draft",
+        "clarification_required": "clarify",
+    }
+    return aliases.get(text, text)
+
+
+def hermes_bound_plan_document(bound_plan_id: str) -> dict[str, Any] | None:
+    if not bound_plan_id:
+        return None
+    for root in (HERMES_WORKSHOP_ROOT, DEFAULT_WORKSHOP_ROOT):
+        try:
+            record = read_handle("bound-plans", bound_plan_id, output_root=root)
+        except CapabilityGap:
+            continue
+        document = record.get("document")
+        if isinstance(document, dict):
+            return document
+    return None
+
+
+def newest_hermes_session_started_at() -> float:
+    row = hermes_db_one("select started_at from sessions order by started_at desc limit 1", ())
+    return float(row["started_at"]) if row else 0.0
+
+
+def newest_hermes_session_after(started_at: float) -> dict[str, Any] | None:
+    return hermes_db_one(
+        "select id, source, model, model_config, started_at, ended_at, tool_call_count, message_count, input_tokens, output_tokens, reasoning_tokens, estimated_cost_usd from sessions where started_at >= ? order by started_at desc limit 1",
+        (started_at,),
+    )
+
+
+def hermes_db_one(query: str, params: tuple[Any, ...]) -> dict[str, Any] | None:
+    if not HERMES_DB.exists():
+        return None
+    with sqlite3.connect(HERMES_DB, timeout=10) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(query, params).fetchone()
+        return dict(row) if row else None
+
+
+def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> dict[str, Any]:
     query = str(payload.get("query") or "").strip()
     mode = str(payload.get("mode") or "manual")
     clarifications = [str(item) for item in payload.get("clarifications") or [] if str(item).strip()]
     selected_recipe_id = payload.get("selected_recipe_id")
     preset_id = payload.get("preset_id")
     if mode == "model":
-        return ok(
-            {
-                "status": "MODEL_UNAVAILABLE",
-                "query": query,
-                "message": "Model-backed interpretation is not connected in Workbench Alpha. Manual mode remains available.",
-                "source": "reference_compiler_unavailable",
-                "manual_available": True,
-            }
-        )
+        if not hermes_enabled():
+            return hermes_unavailable(query)
+        return hermes_interpret_request(query)
 
     text = normalized(query)
     gaps = unsupported_gaps(text)
@@ -748,7 +1040,7 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         try:
             payload = self.read_body()
             if parsed.path == "/api/interpret":
-                self.send_json(interpret_request(payload))
+                self.send_json(interpret_request(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/execution-cache-status":
                 self.send_json(execution_cache_status(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/submit-validate":
@@ -821,9 +1113,13 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                     "mcp_adapter": False,
                 },
                 "model": {
-                    "available": False,
-                    "status": "MODEL_UNAVAILABLE",
-                    "message": "Manual mode is active; model-backed compilation is not connected in Workbench Alpha.",
+                    "available": hermes_enabled() and shutil.which("hermes") is not None,
+                    "status": "HERMES_FRONTIER_READY" if hermes_enabled() and shutil.which("hermes") is not None else "MODEL_UNAVAILABLE",
+                    "message": (
+                        "Hermes frontier interpretation is available through the host service."
+                        if hermes_enabled() and shutil.which("hermes") is not None
+                        else "Manual mode is active; Hermes frontier interpretation is disabled for this Workbench process."
+                    ),
                 },
                 "presets": [
                     {
