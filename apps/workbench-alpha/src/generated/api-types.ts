@@ -1024,6 +1024,18 @@ export const apiSchemas = {
         "default": null,
         "title": "Clarification Questions"
       },
+      "draft_plan_hash": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Draft Plan Hash"
+      },
       "draft_plan_id": {
         "anyOf": [
           {
@@ -1035,6 +1047,18 @@ export const apiSchemas = {
         ],
         "default": null,
         "title": "Draft Plan Id"
+      },
+      "fallback_reason": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Fallback Reason"
       },
       "manual_available": {
         "anyOf": [
@@ -1059,6 +1083,18 @@ export const apiSchemas = {
         ],
         "default": null,
         "title": "Message"
+      },
+      "model_session_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Model Session Id"
       },
       "ok": {
         "const": true,
@@ -1090,6 +1126,19 @@ export const apiSchemas = {
         "default": null,
         "title": "Plan Hash"
       },
+      "provenance_source": {
+        "enum": [
+          "REVIEWED_RECIPE",
+          "MANUAL_PRESET",
+          "HERMES_RECIPE_SELECTION",
+          "HERMES_NOVEL_COMPOSITION",
+          "DETERMINISTIC_REPAIR",
+          "CAPABILITY_GAP",
+          "MODEL_UNAVAILABLE"
+        ],
+        "title": "Provenance Source",
+        "type": "string"
+      },
       "query": {
         "anyOf": [
           {
@@ -1112,6 +1161,23 @@ export const apiSchemas = {
           }
         ],
         "default": null
+      },
+      "recipe_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Recipe Id"
+      },
+      "repair_applied": {
+        "default": false,
+        "title": "Repair Applied",
+        "type": "boolean"
       },
       "source": {
         "anyOf": [
@@ -1138,7 +1204,8 @@ export const apiSchemas = {
     },
     "required": [
       "ok",
-      "status"
+      "status",
+      "provenance_source"
     ],
     "title": "InterpretResponse",
     "type": "object"

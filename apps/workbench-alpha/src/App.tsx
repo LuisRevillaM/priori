@@ -6,7 +6,6 @@ import {
   execute,
   executionCacheStatus,
   fetchMatches,
-  fetchPlan,
   inspectResult,
   inspectTimestamp,
   interpret,
@@ -26,6 +25,7 @@ import type {
   MatchLibraryResponse,
   MatchSummary,
   Preset,
+  ProvenanceSource,
   ReplayPayload,
   ResultRow,
   SubmitValidateResponse,
@@ -100,12 +100,32 @@ function matchLabel(match: MatchSummary | undefined, fallbackId: string) {
   return match.match_title.replace(":", " vs ");
 }
 
-function sourceLabel(source: string | null | undefined) {
-  if (!source) return "Not interpreted";
-  if (source.includes("hermes")) return "Hermes frontier agent";
-  if (source === "manual_preset") return "Manual recipe";
-  if (source.includes("manual")) return "Manual fallback";
-  return source;
+function provenanceLabel(source: ProvenanceSource | null | undefined) {
+  switch (source) {
+    case "REVIEWED_RECIPE":
+      return "Reviewed recipe";
+    case "MANUAL_PRESET":
+      return "Manual preset";
+    case "HERMES_RECIPE_SELECTION":
+      return "Hermes selected recipe";
+    case "HERMES_NOVEL_COMPOSITION":
+      return "Hermes authored composition";
+    case "DETERMINISTIC_REPAIR":
+      return "Safety repair applied";
+    case "CAPABILITY_GAP":
+      return "Capability gap";
+    case "MODEL_UNAVAILABLE":
+      return "Hermes unavailable";
+    default:
+      return "Not interpreted";
+  }
+}
+
+function provenanceTone(source: ProvenanceSource | null | undefined): "neutral" | "good" | "warn" | "bad" {
+  if (source === "CAPABILITY_GAP") return "bad";
+  if (source === "MODEL_UNAVAILABLE" || source === "DETERMINISTIC_REPAIR") return "warn";
+  if (source === "HERMES_NOVEL_COMPOSITION") return "good";
+  return source ? "neutral" : "warn";
 }
 
 function interpretationBullets(recipe: InterpretResponse["recipe"] | null | undefined, planDocument: JsonObject | null) {
@@ -129,6 +149,11 @@ function interpretationBullets(recipe: InterpretResponse["recipe"] | null | unde
     ];
   }
   return ["Ask a tactical question or choose a recipe to load an interpretation."];
+}
+
+function recipeDescription(recipe: InterpretResponse["recipe"] | null | undefined) {
+  if (!recipe) return "Choose a reviewed or experimental recipe to load its deterministic definition.";
+  return recipe.description;
 }
 
 function StatusPill({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "good" | "warn" | "bad" }) {
@@ -197,13 +222,6 @@ export function App() {
         setBoot(bootPayload);
         setMatchLibrary(matchPayload);
         setSelectedMatchIds(matchPayload.default_match_ids);
-        return fetchPlan("ball_side_block_shift_v1").then((planPayload) => ({
-          planPayload,
-          matchIds: matchPayload.default_match_ids
-        }));
-      })
-      .then(({ planPayload, matchIds }) => {
-        setPlanDocument(applyScopeToPlan(planPayload.plan_document, matchIds));
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => setBusy(null));
@@ -266,32 +284,26 @@ export function App() {
     setInspectionLoadingResultId(null);
   }
 
-  async function choosePreset(presetId: Preset["preset_id"]) {
-    setSelectedPreset(presetId);
-    const recipeId = presetId === "approved_block_shift" ? "ball_side_block_shift_v1" : "possession_corridor_availability_v1";
-    const payload = await runAction("interpret", () => fetchPlan(recipeId));
-    if (!payload) return;
-    const scopedPlan = applyScopeToPlan(payload.plan_document, selectedMatchIds);
-    setPlanDocument(scopedPlan);
-    setInterpretation({
-      ok: true,
-      status: "PLAN_INTERPRETED",
-      query: null,
-      message: null,
-      source: "manual_preset",
-      agent_session_id: null,
-      draft_plan_id: null,
-      bound_plan_id: null,
-      bound_plan_hash: null,
-      recipe: payload.recipe,
-      plan_document: scopedPlan,
-      plan_hash: payload.plan_hash,
-      clarification_questions: null,
-      clarification_codes: null,
-      capability_gaps: null,
-      manual_available: null
-    });
+  function clearInterpretationState() {
+    setInterpretation(null);
+    setPlanDocument(null);
     clearScopeDependentState();
+  }
+
+  function handleModeChange(nextMode: "manual" | "model") {
+    if (nextMode === mode) return;
+    setMode(nextMode);
+    clearInterpretationState();
+  }
+
+  function handleQueryChange(nextQuery: string) {
+    setQuery(nextQuery);
+    clearInterpretationState();
+  }
+
+  function choosePreset(presetId: Preset["preset_id"]) {
+    setSelectedPreset(presetId);
+    clearInterpretationState();
   }
 
   function setAllMatches() {
@@ -314,7 +326,7 @@ export function App() {
   async function handleInterpret() {
     const payload = await runAction("interpret", () =>
       interpret({
-        query,
+        query: mode === "model" ? query : "",
         mode,
         preset_id: selectedPreset
       })
@@ -449,7 +461,6 @@ export function App() {
     setInspectionLoadingResultId(null);
   }
 
-  const validationTone = validation?.validation.ok ? "good" : validation ? "bad" : "neutral";
   const currentFrame = replay?.frames[Math.min(frameIndex, Math.max(0, replay.frames.length - 1))];
   const matchesById = new Map((matchLibrary?.matches ?? []).map((match) => [match.match_id, match]));
   const selectedResultIndex = execution?.execution.results.findIndex((result) => result.result_id === effectiveSelectedResultId) ?? -1;
@@ -461,7 +472,10 @@ export function App() {
   const hasSelectedScope = selectedMatchIds.length > 0;
   const planRecipe = interpretation?.recipe ?? boot?.presets.find((preset) => preset.preset_id === selectedPreset)?.recipe ?? null;
   const interpretationItems = interpretationBullets(planRecipe, planDocument);
-  const sourceTone = interpretation?.source?.includes("hermes") ? "good" : interpretation?.source ? "neutral" : "warn";
+  const provenance = interpretation?.provenance_source ?? null;
+  const sourceTone = provenanceTone(provenance);
+  const canValidate = Boolean(planDocument && interpretation?.status === "PLAN_INTERPRETED" && hasSelectedScope);
+  const manualRecipeDescription = recipeDescription(planRecipe);
   const overlayProof = (() => {
     const evidence = evidenceResult?.requested_evidence ?? {};
     const targetPlayerId = typeof evidence.target_player_id === "string" ? evidence.target_player_id : null;
@@ -469,8 +483,18 @@ export function App() {
     const targetEntity = targetPlayerId
       ? currentFrame?.entities.find((entity) => entity.entity_id === targetPlayerId)
       : null;
-    if (ball && targetEntity) return `Exact corridor overlay: ball to ${targetPlayerId}`;
-    if (evidenceResult) return "No exact overlay geometry available";
+    const witnessFrameId = targetPlayerId
+      ? replay?.frames.find((frame) => {
+          const hasBall = frame.entities.some((entity) => entity.entity_type === "ball");
+          const hasTarget = frame.entities.some((entity) => entity.entity_id === targetPlayerId);
+          return hasBall && hasTarget;
+        })?.frame_id
+      : null;
+    if (ball && targetEntity && currentFrame?.frame_id === witnessFrameId) {
+      return `Witness-frame corridor: ball to selected receiver`;
+    }
+    if (targetPlayerId) return "Corridor witness hidden outside the witness frame";
+    if (evidenceResult) return "No exact corridor witness available";
     return "No selected result overlay";
   })();
 
@@ -533,60 +557,46 @@ export function App() {
         <aside className="leftRail">
           <section className="panel">
             <div className="panelTitle">Query</div>
-            <label className="field">
-              <span>Natural language</span>
-              <textarea data-testid="query-input" value={query} onChange={(event) => setQuery(event.target.value)} />
-            </label>
             <div className="segmented">
-              <button aria-label="Model" className={mode === "model" ? "active" : ""} onClick={() => setMode("model")}>
+              <button aria-label="Model" className={mode === "model" ? "active" : ""} onClick={() => handleModeChange("model")}>
                 Ask Hermes
               </button>
-              <button aria-label="Manual" className={mode === "manual" ? "active" : ""} onClick={() => setMode("manual")}>
+              <button aria-label="Manual" className={mode === "manual" ? "active" : ""} onClick={() => handleModeChange("manual")}>
                 Browse recipes
               </button>
             </div>
-            <div className="helperText">Browse recipes is deterministic/offline. Ask Hermes uses the frontier interpreter when available.</div>
-            <div className="presetStack">
-              {boot?.presets.map((preset) => (
-                <button
-                  key={preset.preset_id}
-                  data-testid={`preset-${preset.preset_id}`}
-                  className={selectedPreset === preset.preset_id ? "preset active" : "preset"}
-                  onClick={() => void choosePreset(preset.preset_id)}
-                >
-                  <span>{preset.label}</span>
-                  <small>{preset.recipe.state}</small>
-                </button>
-              ))}
-            </div>
+            {mode === "model" ? (
+              <>
+                <label className="field">
+                  <span>Natural language</span>
+                  <textarea data-testid="query-input" value={query} onChange={(event) => handleQueryChange(event.target.value)} />
+                </label>
+                <div className="helperText">Ask Hermes translates football language into a bounded typed plan when the model path is available.</div>
+              </>
+            ) : (
+              <>
+                <div className="helperText">Browse recipes loads a stored deterministic definition. The recipe text below is not interpreted as a new request.</div>
+                <div className="presetStack">
+                  {boot?.presets.map((preset) => (
+                    <button
+                      key={preset.preset_id}
+                      data-testid={`preset-${preset.preset_id}`}
+                      className={selectedPreset === preset.preset_id ? "preset active" : "preset"}
+                      onClick={() => choosePreset(preset.preset_id)}
+                    >
+                      <span>{preset.label}</span>
+                      <small>{preset.recipe.state}</small>
+                    </button>
+                  ))}
+                </div>
+                <div className="recipeBrief" data-testid="manual-recipe-description">
+                  <strong>{planRecipe?.display_name ?? "Choose a recipe"}</strong>
+                  <span>{manualRecipeDescription}</span>
+                </div>
+              </>
+            )}
             <button className="primaryAction" data-testid="interpret-button" onClick={() => void handleInterpret()} disabled={busy !== null}>
-              Interpret
-            </button>
-          </section>
-
-          <section className="panel">
-            <div className="panelHeader">
-              <div className="panelTitle">Validation</div>
-              <StatusPill tone={validationTone}>{validation?.validation.ok ? "valid" : validation ? "invalid" : "not run"}</StatusPill>
-            </div>
-            <button className="fullButton" data-testid="validate-button" onClick={() => void handleValidate()} disabled={!planDocument || !hasSelectedScope || busy !== null}>
-              Submit and validate
-            </button>
-            <button
-              className="fullButton"
-              data-testid="confirm-button"
-              onClick={() => void handleConfirm()}
-              disabled={!validation?.validation.bound_plan_id || busy !== null}
-            >
-              Host confirm
-            </button>
-            <button
-              className="primaryAction"
-              data-testid="execute-button"
-              onClick={() => void handleExecute()}
-              disabled={!confirmation?.confirmation.execution_authorization_id || busy !== null}
-            >
-              Execute
+              {mode === "model" ? "Ask Hermes" : "Use selected recipe"}
             </button>
           </section>
 
@@ -656,12 +666,18 @@ export function App() {
               </StatusPill>
             </div>
             {interpretation?.source ? (
-              <div className="sourceLine" data-testid="interpretation-source" data-raw-source={interpretation.source}>
-                Interpretation source: <strong>{sourceLabel(interpretation.source)}</strong>
+              <div
+                className="sourceLine"
+                data-testid="interpretation-source"
+                data-raw-source={interpretation.source}
+                data-provenance-source={interpretation.provenance_source}
+              >
+                Source: <StatusPill tone={sourceTone}>{provenanceLabel(interpretation.provenance_source)}</StatusPill>
+                {interpretation.fallback_reason ? <span className="sourceReason">{interpretation.fallback_reason}</span> : null}
               </div>
             ) : (
               <div className="sourceLine">
-                Interpretation source: <strong>{mode === "model" ? "Hermes frontier agent" : "Manual recipe"}</strong>
+                Source: <StatusPill tone="warn">Not interpreted</StatusPill>
               </div>
             )}
             {interpretation?.status === "CLARIFICATION_REQUIRED" ? (
@@ -691,22 +707,37 @@ export function App() {
                 <strong>{scopeLabel}</strong>
               </div>
               <div>
-                <span>Status</span>
-                <strong>{planRecipe?.state ?? "not selected"}</strong>
+                <span>Validation</span>
+                <strong>{validation?.validation.ok ? "valid" : validation ? "invalid" : "not run"}</strong>
               </div>
               <div>
-                <span>Source</span>
-                <StatusPill tone={sourceTone}>{sourceLabel(interpretation?.source)}</StatusPill>
+                <span>Plan source</span>
+                <StatusPill tone={sourceTone}>{provenanceLabel(provenance)}</StatusPill>
               </div>
             </div>
             <div className="actionStrip">
-              <button className="fullButton" onClick={() => void handleValidate()} disabled={!planDocument || !hasSelectedScope || busy !== null}>
-                Confirm interpretation
+              <button
+                className="fullButton"
+                data-testid="validate-button"
+                onClick={() => void handleValidate()}
+                disabled={!canValidate || busy !== null}
+              >
+                Validate interpretation
               </button>
-              <button className="fullButton" onClick={() => void handleConfirm()} disabled={!validation?.validation.bound_plan_id || busy !== null}>
-                Host confirm
+              <button
+                className="fullButton"
+                data-testid="confirm-button"
+                onClick={() => void handleConfirm()}
+                disabled={!validation?.validation.bound_plan_id || busy !== null}
+              >
+                Approve run
               </button>
-              <button className="primaryAction" onClick={() => void handleExecute()} disabled={!confirmation?.confirmation.execution_authorization_id || busy !== null}>
+              <button
+                className="primaryAction"
+                data-testid="execute-button"
+                onClick={() => void handleExecute()}
+                disabled={!confirmation?.confirmation.execution_authorization_id || busy !== null}
+              >
                 Run query
               </button>
             </div>
@@ -714,9 +745,10 @@ export function App() {
               <summary>Developer details</summary>
               <div className="planMeta">
                 <span>{planDocument ? String(asRecord(planDocument.recipe).recipe_id ?? "") : "no recipe"}</span>
-                <span>{planDocument ? String(asRecord(planDocument.draft_plan).status ?? "") : "no status"}</span>
+                <span>{interpretation?.provenance_source ?? "no provenance"}</span>
                 <span>{interpretation?.plan_hash ?? ""}</span>
               </div>
+              <JsonBlock value={interpretation ?? { status: "not_interpreted" }} compact />
               <JsonBlock value={planDocument ?? {}} compact />
             </details>
           </section>
@@ -746,6 +778,9 @@ export function App() {
             </div>
             <PitchCanvas replay={replay} frameIndex={frameIndex} result={evidenceResult} />
             <div className="overlayProof" data-testid="overlay-proof">{overlayProof}</div>
+            <div className="overlayLegend">
+              A geometric corridor is a sufficiently clear forward connection from the ball to a teammate. It does not establish that this was the optimal pass.
+            </div>
             <div className="replayControls">
               <button onClick={() => setFrameIndex((value) => Math.max(0, value - 1))} disabled={!replay}>
                 Prev
@@ -841,7 +876,13 @@ export function App() {
                 <div>
                   <strong>{executionProgress.cache_status}</strong> {executionProgress.message}
                 </div>
-                <small>{executionProgress.stages.join(" -> ")}</small>
+                <small>
+                  Searching {scopeLabel.toLowerCase()} across all periods. First runs are cached for repeated queries.
+                </small>
+                <details className="developerDrawer inlineDrawer">
+                  <summary>Developer stages</summary>
+                  <small>{executionProgress.stages.join(" -> ")}</small>
+                </details>
               </div>
             ) : (
               <div className="emptyState">Confirm and run an interpretation to populate moments.</div>

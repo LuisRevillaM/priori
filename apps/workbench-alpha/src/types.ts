@@ -75,19 +75,34 @@ export type InterpretStatus =
   | "CAPABILITY_GAP"
   | "MODEL_UNAVAILABLE";
 
+export type ProvenanceSource =
+  | "REVIEWED_RECIPE"
+  | "MANUAL_PRESET"
+  | "HERMES_RECIPE_SELECTION"
+  | "HERMES_NOVEL_COMPOSITION"
+  | "DETERMINISTIC_REPAIR"
+  | "CAPABILITY_GAP"
+  | "MODEL_UNAVAILABLE";
+
 export type InterpretResponse = Omit<GeneratedInterpretResponse, "recipe" | "plan_document" | "capability_gaps"> & {
   ok: true;
   status: InterpretStatus;
+  provenance_source: ProvenanceSource;
   query?: string | null;
   message?: string | null;
   source?: string | null;
+  model_session_id?: string | null;
   recipe?: RecipeSummary | null;
   plan_document?: JsonObject | null;
   plan_hash?: string | null;
+  recipe_id?: string | null;
+  draft_plan_hash?: string | null;
   clarification_questions?: string[] | null;
   clarification_codes?: string[] | null;
   capability_gaps?: Array<{ concept: string; reason: string }> | null;
   manual_available?: boolean | null;
+  repair_applied?: boolean;
+  fallback_reason?: string | null;
 };
 
 export type SubmitValidateResponse = Omit<GeneratedSubmitValidateResponse, "submit" | "validation"> & {

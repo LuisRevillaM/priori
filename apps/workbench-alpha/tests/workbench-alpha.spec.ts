@@ -140,6 +140,7 @@ async function boot(page: Page, consoleErrors: string[]) {
   await expect(page.getByRole("heading", { name: "Host tactical query workbench" })).toBeVisible();
   await expect(page.getByText("browser to host API")).toBeVisible();
   await expect(page.getByTestId("interpret-button")).toBeEnabled();
+  await expect(page.getByTestId("validate-button")).toBeDisabled();
   await expect(page.getByTestId("confirm-button")).toBeDisabled();
   await expect(page.getByTestId("execute-button")).toBeDisabled();
 }
@@ -161,7 +162,7 @@ async function waitForInspectionResponse(page: Page, resultId: string) {
 async function runRealQueryJourney(
   page: Page,
   label: "approved" | "experimental",
-  input: { query: string; presetTestId: string },
+  input: { presetTestId: string },
   consoleErrors: string[]
 ) {
   ensureProofDirs();
@@ -169,7 +170,8 @@ async function runRealQueryJourney(
 
   await boot(page, consoleErrors);
   await page.getByTestId(input.presetTestId).click();
-  await page.getByTestId("query-input").fill(input.query);
+  await expect(page.getByTestId("manual-recipe-description")).toBeVisible();
+  await expect(page.getByTestId("query-input")).toHaveCount(0);
 
   const interpretation = await jsonAfterClick<Record<string, unknown>>(
     page,
@@ -179,10 +181,12 @@ async function runRealQueryJourney(
     "/api/interpret"
   );
   expect(interpretation.status).toBe("PLAN_INTERPRETED");
+  expect(interpretation.provenance_source).toBe("MANUAL_PRESET");
   await expect(page.getByTestId("interpreted-plan-panel")).toContainText("PLAN_INTERPRETED");
-  await expect(page.getByTestId("interpretation-source")).toContainText(/Manual/);
+  await expect(page.getByTestId("interpretation-source")).toContainText("Manual preset");
   await expect(page.getByTestId("interpretation-source").locator("code")).toHaveCount(0);
   expect(await page.getByTestId("interpretation-source").getAttribute("data-raw-source")).toBe("manual_host_interpreter");
+  expect(await page.getByTestId("interpretation-source").getAttribute("data-provenance-source")).toBe("MANUAL_PRESET");
   await expect(page.getByTestId("confirm-button")).toBeDisabled();
   await expect(page.getByTestId("execute-button")).toBeDisabled();
   await capture(page, `${label}-interpretation`);
@@ -276,9 +280,11 @@ async function runRealQueryJourney(
   };
   if (label === "experimental" && typeof selectedEvidence.target_player_id === "string") {
     const targetPlayerId = selectedEvidence.target_player_id;
+    const anchorFrameId = Number(selectedResult.anchor_frame_id);
     const exactFrameIndex = (replayFrames as Array<Record<string, unknown>>).findIndex((frame) => {
       const entities = (frame.entities ?? []) as Array<Record<string, unknown>>;
-      return entities.some((entity) => entity.entity_type === "ball") &&
+      return frame.frame_id === anchorFrameId &&
+        entities.some((entity) => entity.entity_type === "ball") &&
         entities.some((entity) => entity.entity_id === targetPlayerId);
     });
     expect(exactFrameIndex).toBeGreaterThanOrEqual(0);
@@ -288,16 +294,16 @@ async function runRealQueryJourney(
       input.dispatchEvent(new Event("input", { bubbles: true }));
       input.dispatchEvent(new Event("change", { bubbles: true }));
     }, exactFrameIndex);
-    await expect(page.getByTestId("overlay-proof")).toContainText(`ball to ${targetPlayerId}`);
+    await expect(page.getByTestId("overlay-proof")).toContainText("Witness-frame corridor");
     overlayEvidenceCorrelation = {
-      mode: "exact_corridor",
+      mode: "witness_frame_corridor",
       targetPlayerId,
       frameIndex: exactFrameIndex,
       evidenceAlias: "target_player_id"
     };
     await capture(page, `${label}-overlay-evidence-correlation`);
   } else {
-    await expect(page.getByTestId("overlay-proof")).toContainText("No exact overlay geometry available");
+    await expect(page.getByTestId("overlay-proof")).toContainText("No exact corridor witness available");
   }
 
   const traces = inspectionBody.predicate_traces as Array<Record<string, unknown>>;
@@ -409,8 +415,7 @@ test("approved recipe runs from query to replay with evidence and predicate trac
     page,
     "approved",
     {
-      presetTestId: "preset-approved_block_shift",
-      query: "Show possessions where the ball goes wide and the defending block moves toward that side."
+      presetTestId: "preset-approved_block_shift"
     },
     consoleErrors
   );
@@ -434,44 +439,43 @@ test("experimental corridor runs from query to replay with real result rail", as
     page,
     "experimental",
     {
-      presetTestId: "preset-experimental_corridor",
-      query: "Find possessions where a progressive corridor is available after the ball-side shift."
+      presetTestId: "preset-experimental_corridor"
     },
     consoleErrors
   );
   expect(consoleErrors).toEqual([]);
 });
 
-test("clarification, capability-gap, and model-unavailable states remain explicit", async ({ page }) => {
+test("model-unavailable UI and backend clarification/gap contracts remain explicit", async ({ page, request }) => {
   const consoleErrors: string[] = [];
   await boot(page, consoleErrors);
 
-  await page.getByTestId("query-input").fill("Find moments where a teammate provides support after the ball carrier receives.");
-  const clarification = await jsonAfterClick<Record<string, unknown>>(
-    page,
-    [],
-    "state.clarification",
-    "interpret-button",
-    "/api/interpret"
-  );
+  const clarificationResponse = await request.post("/api/interpret", {
+    data: {
+      mode: "manual",
+      query: "Find moments where a teammate provides support after the ball carrier receives."
+    }
+  });
+  expect(clarificationResponse.ok()).toBe(true);
+  const clarification = (await clarificationResponse.json()) as Record<string, unknown>;
   expect(clarification.status).toBe("CLARIFICATION_REQUIRED");
-  await expect(page.getByTestId("interpreted-plan-panel")).toContainText("CLARIFICATION_REQUIRED");
-  await capture(page, "state-clarification");
+  expect(clarification.provenance_source).toBe("DETERMINISTIC_REPAIR");
 
-  await page.getByTestId("query-input").fill("Show pass probability changes under pressure against the defensive line.");
-  const gap = await jsonAfterClick<Record<string, unknown>>(
-    page,
-    [],
-    "state.capability_gap",
-    "interpret-button",
-    "/api/interpret"
-  );
+  const gapResponse = await request.post("/api/interpret", {
+    data: {
+      mode: "manual",
+      query: "Infer what the midfielder meant to do from his scanning and body angle.",
+      preset_id: "experimental_corridor"
+    }
+  });
+  expect(gapResponse.ok()).toBe(true);
+  const gap = (await gapResponse.json()) as Record<string, unknown>;
   expect(gap.status).toBe("CAPABILITY_GAP");
-  await expect(page.getByTestId("interpreted-plan-panel")).toContainText("CAPABILITY_GAP");
-  await expect(page.getByTestId("interpreted-plan-panel")).toContainText("pressure_change");
-  await capture(page, "state-capability-gap");
+  expect(gap.provenance_source).toBe("CAPABILITY_GAP");
+  expect(gap.plan_document).toBeNull();
 
   await page.getByRole("button", { name: "Model" }).click();
+  await page.getByTestId("query-input").fill("Show possessions where the ball goes wide and the defending block shifts.");
   const modelUnavailable = await jsonAfterClick<Record<string, unknown>>(
     page,
     [],
@@ -480,11 +484,12 @@ test("clarification, capability-gap, and model-unavailable states remain explici
     "/api/interpret"
   );
   expect(modelUnavailable.status).toBe("MODEL_UNAVAILABLE");
+  expect(modelUnavailable.provenance_source).toBe("MODEL_UNAVAILABLE");
   expect(modelUnavailable.manual_available).toBe(true);
   await expect(page.getByTestId("interpreted-plan-panel")).toContainText("MODEL_UNAVAILABLE");
 
   await page.getByRole("button", { name: "Manual" }).click();
-  await page.getByTestId("query-input").fill("Show possessions where the ball goes wide and the defending block shifts.");
+  await page.getByTestId("preset-approved_block_shift").click();
   const manualInterpretation = await jsonAfterClick<Record<string, unknown>>(
     page,
     [],
@@ -493,6 +498,7 @@ test("clarification, capability-gap, and model-unavailable states remain explici
     "/api/interpret"
   );
   expect(manualInterpretation.status).toBe("PLAN_INTERPRETED");
+  expect(manualInterpretation.provenance_source).toBe("MANUAL_PRESET");
   await expect(page.getByTestId("validate-button")).toBeEnabled();
   await capture(page, "state-model-unavailable-manual-recovery");
 
@@ -587,7 +593,6 @@ test("scope transitions invalidate validation execution results and replay", asy
   const consoleErrors: string[] = [];
   await boot(page, consoleErrors);
   await page.getByTestId("preset-approved_block_shift").click();
-  await page.getByTestId("query-input").fill("Show possessions where the ball goes wide and the defending block moves toward that side.");
   await jsonAfterClick<Record<string, unknown>>(page, [], "scope.interpret", "interpret-button", "/api/interpret");
 
   const selector = page.getByTestId("match-scope-selector");

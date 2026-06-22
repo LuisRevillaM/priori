@@ -312,6 +312,28 @@ button:disabled {
   font-size: 11px;
 }
 
+.recipeBrief {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcf8;
+  padding: 10px;
+}
+
+.recipeBrief strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.recipeBrief span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .primaryAction,
 .fullButton {
   width: 100%;
@@ -388,6 +410,23 @@ button:disabled {
   margin: 12px 0;
 }
 
+.sourceLine {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.sourceReason {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+
 .interpretLine {
   position: relative;
   padding-left: 18px;
@@ -458,6 +497,11 @@ button:disabled {
   margin-top: 8px;
 }
 
+.inlineDrawer {
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
 .planMeta span {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -516,6 +560,17 @@ button:disabled {
   margin-top: 8px;
   color: var(--muted);
   font-size: 12px;
+}
+
+.overlayLegend {
+  margin-top: 6px;
+  border: 1px solid #d6c386;
+  border-radius: 8px;
+  background: #fbf7e6;
+  color: #5e4a18;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .replayControls {

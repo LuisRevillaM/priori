@@ -93,7 +93,14 @@ export function PitchCanvas({ replay, frameIndex, result }: PitchCanvasProps) {
     const target = targetPlayerId
       ? frame.entities.find((entity) => entity.entity_id === targetPlayerId)
       : null;
-    if (ball && target) {
+    const witnessFrameId = targetPlayerId
+      ? replay.frames.find((item) => {
+          const hasBall = item.entities.some((entity) => entity.entity_type === "ball");
+          const hasTarget = item.entities.some((entity) => entity.entity_id === targetPlayerId);
+          return hasBall && hasTarget;
+        })?.frame_id
+      : null;
+    if (ball && target && frame.frame_id === witnessFrameId) {
       const start = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
       const end = pitchPointToPixel(target.x_m, target.y_m, replay.pitch, layout);
       ctx.save();
@@ -113,7 +120,7 @@ export function PitchCanvas({ replay, frameIndex, result }: PitchCanvasProps) {
       ctx.lineWidth = 1.5;
       ctx.stroke();
       ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, monospace";
-      ctx.fillText(`target ${target.entity_id}`, end.x + 12, end.y - 10);
+      ctx.fillText("target", end.x + 12, end.y - 10);
       ctx.restore();
     }
 

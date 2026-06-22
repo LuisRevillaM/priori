@@ -190,16 +190,31 @@ class CapabilityGapResponse(WorkbenchResponseModel):
     reason: str
 
 
+ProvenanceSource = Literal[
+    "REVIEWED_RECIPE",
+    "MANUAL_PRESET",
+    "HERMES_RECIPE_SELECTION",
+    "HERMES_NOVEL_COMPOSITION",
+    "DETERMINISTIC_REPAIR",
+    "CAPABILITY_GAP",
+    "MODEL_UNAVAILABLE",
+]
+
+
 class InterpretResponse(WorkbenchResponseModel):
     ok: Literal[True]
     status: Literal["PLAN_INTERPRETED", "CLARIFICATION_REQUIRED", "CAPABILITY_GAP", "MODEL_UNAVAILABLE"]
+    provenance_source: ProvenanceSource
     query: str | None = None
     message: str | None = None
     source: str | None = None
     agent_session_id: str | None = None
+    model_session_id: str | None = None
     draft_plan_id: str | None = None
+    draft_plan_hash: str | None = None
     bound_plan_id: str | None = None
     bound_plan_hash: str | None = None
+    recipe_id: str | None = None
     recipe: RecipeCardResponse | None = None
     plan_document: dict[str, Any] | None = None
     plan_hash: str | None = None
@@ -207,6 +222,8 @@ class InterpretResponse(WorkbenchResponseModel):
     clarification_codes: list[str] | None = None
     capability_gaps: list[CapabilityGapResponse] | None = None
     manual_available: bool | None = None
+    repair_applied: bool = False
+    fallback_reason: str | None = None
 
 
 class ExecutionProgressResponse(WorkbenchResponseModel):
@@ -304,11 +321,26 @@ WORKBENCH_RESPONSE_MODELS: dict[str, type[BaseModel]] = {
 UNSUPPORTED_CONCEPTS = {
     "body orientation": "No body-orientation primitive is exposed.",
     "orientation": "No body-orientation primitive is exposed.",
+    "body angle": "No body-orientation primitive is exposed.",
+    "body shape": "No body-orientation primitive is exposed.",
+    "hip angle": "No body-orientation primitive is exposed.",
+    "torso": "No body-orientation primitive is exposed.",
+    "head check": "Scanning/head-check evidence is not represented in the current tracking data.",
+    "head checks": "Scanning/head-check evidence is not represented in the current tracking data.",
+    "scanning": "Scanning/head-check evidence is not represented in the current tracking data.",
+    "scan": "Scanning/head-check evidence is not represented in the current tracking data.",
+    "glance": "Scanning/head-check evidence is not represented in the current tracking data.",
     "intent": "Intent is not observable in the current deterministic vocabulary.",
+    "intended": "Intent is not observable in the current deterministic vocabulary.",
+    "meant to do": "Intent is not observable in the current deterministic vocabulary.",
+    "meant to find": "Intent is not observable in the current deterministic vocabulary.",
     "optimal": "Optimal-action claims are outside the approved claims.",
+    "best pass": "Optimal-action claims are outside the approved claims.",
     "should": "Normative decision-quality claims are outside the approved claims.",
     "communication": "Communication is not represented in the tracking data.",
     "pass probability": "Pass-probability modelling is not available.",
+    "probability": "Pass-probability modelling is not available.",
+    "likelihood": "Pass-probability modelling is not available.",
     "video": "Video is outside the current dataset/tool boundary.",
 }
 
@@ -526,53 +558,77 @@ def hermes_enabled() -> bool:
     return os.environ.get("WORKBENCH_HERMES_ENABLED") == "1"
 
 
-def hermes_unavailable(query: str, message: str | None = None) -> dict[str, Any]:
+def hermes_unavailable(
+    query: str,
+    message: str | None = None,
+    *,
+    fallback_reason: str | None = None,
+) -> dict[str, Any]:
     return ok(
         {
             "status": "MODEL_UNAVAILABLE",
+            "provenance_source": "MODEL_UNAVAILABLE",
             "query": query,
             "message": message or "Hermes frontier interpretation is not connected in this Workbench process. Manual mode remains available.",
             "source": "hermes_frontier_unavailable",
+            "model_session_id": None,
             "manual_available": True,
+            "repair_applied": False,
+            "fallback_reason": fallback_reason,
         }
     )
 
 
 def hermes_interpret_request(query: str) -> dict[str, Any]:
-    hermes = shutil.which("hermes")
-    if not hermes:
-        return hermes_unavailable(query, "Hermes executable was not found. Manual mode remains available.")
-    surface = hermes_tool_surface(hermes)
-    if not surface["safe"]:
+    try:
+        hermes = shutil.which("hermes")
+        if not hermes:
+            return hermes_unavailable(query, "Hermes executable was not found. Manual mode remains available.", fallback_reason="hermes_executable_missing")
+        surface = hermes_tool_surface(hermes)
+        if not surface["safe"]:
+            return hermes_unavailable(
+                query,
+                "Hermes did not expose the frozen priori_tactical-only tool surface. Manual mode remains available.",
+                fallback_reason="unsafe_tool_surface",
+            )
+        started_at = newest_hermes_session_started_at()
+        completed = run_hermes_invocation(
+            hermes,
+            [
+                "interpret",
+                "--provider",
+                HERMES_PROVIDER,
+                "--model",
+                HERMES_MODEL,
+                "--toolset",
+                HERMES_TOOLSET,
+                "--prompt",
+                hermes_interpret_prompt(query),
+            ],
+            timeout=HERMES_TIMEOUT_SECONDS,
+        )
+        session = newest_hermes_session_after(started_at)
+        invocation = parse_invocation_json(completed.stdout)
+        final = parse_final_json(str(invocation.get("stdout") or ""))
+        if completed.returncode != 0 or not invocation.get("ok") or not final:
+            return hermes_unavailable(
+                query,
+                "Hermes did not return a valid structured interpretation. Manual mode remains available.",
+                fallback_reason="invalid_structured_interpretation",
+            )
+        return hermes_final_to_interpretation(query, final, session)
+    except subprocess.TimeoutExpired:
         return hermes_unavailable(
             query,
-            "Hermes did not expose the frozen priori_tactical-only tool surface. Manual mode remains available.",
+            "Hermes interpretation timed out before returning a safe bounded response. Manual recipes remain available.",
+            fallback_reason="hermes_timeout",
         )
-    started_at = newest_hermes_session_started_at()
-    completed = run_hermes_invocation(
-        hermes,
-        [
-            "interpret",
-            "--provider",
-            HERMES_PROVIDER,
-            "--model",
-            HERMES_MODEL,
-            "--toolset",
-            HERMES_TOOLSET,
-            "--prompt",
-            hermes_interpret_prompt(query),
-        ],
-        timeout=HERMES_TIMEOUT_SECONDS,
-    )
-    session = newest_hermes_session_after(started_at)
-    invocation = parse_invocation_json(completed.stdout)
-    final = parse_final_json(str(invocation.get("stdout") or ""))
-    if completed.returncode != 0 or not invocation.get("ok") or not final:
+    except Exception as exc:  # noqa: BLE001 - model invocation failures must be typed product states.
         return hermes_unavailable(
             query,
-            "Hermes did not return a valid structured interpretation. Manual mode remains available.",
+            "Hermes interpretation failed before returning a safe bounded response. Manual recipes remain available.",
+            fallback_reason=type(exc).__name__,
         )
-    return hermes_final_to_interpretation(query, final, session)
 
 
 def hermes_tool_surface(hermes: str) -> dict[str, Any]:
@@ -691,10 +747,13 @@ def hermes_final_to_interpretation(query: str, final: dict[str, Any], session: d
         "query": query,
         "source": "hermes_frontier_agent",
         "agent_session_id": session_id,
+        "model_session_id": session_id,
         "draft_plan_id": final.get("draft_plan_id"),
         "bound_plan_id": final.get("bound_plan_id"),
         "bound_plan_hash": final.get("bound_plan_hash"),
         "manual_available": True,
+        "repair_applied": False,
+        "fallback_reason": None,
     }
     if outcome == "clarify":
         questions = [str(item) for item in final.get("clarification_questions") or [] if str(item).strip()]
@@ -703,6 +762,9 @@ def hermes_final_to_interpretation(query: str, final: dict[str, Any], session: d
             {
                 **base,
                 "status": "CLARIFICATION_REQUIRED",
+                "provenance_source": "DETERMINISTIC_REPAIR",
+                "repair_applied": True,
+                "fallback_reason": "clarification_required",
                 "clarification_questions": questions or ["Please clarify the tactical definition before execution."],
                 "clarification_codes": dimensions or ["TACTICAL_DEFINITION"],
             }
@@ -713,6 +775,7 @@ def hermes_final_to_interpretation(query: str, final: dict[str, Any], session: d
             {
                 **base,
                 "status": "CAPABILITY_GAP",
+                "provenance_source": "CAPABILITY_GAP",
                 "capability_gaps": gaps or [{"concept": "unsupported_request", "reason": "Hermes could not map the request to the frozen tactical capability set."}],
             }
         )
@@ -727,6 +790,8 @@ def hermes_final_to_interpretation(query: str, final: dict[str, Any], session: d
             {
                 **base,
                 "status": "PLAN_INTERPRETED",
+                "provenance_source": "HERMES_RECIPE_SELECTION",
+                "recipe_id": recipe_id,
                 "recipe": recipe_card(plan_document, state),
                 "plan_document": plan_document,
                 "plan_hash": stable_hash(plan_document),
@@ -741,9 +806,12 @@ def hermes_final_to_interpretation(query: str, final: dict[str, Any], session: d
             {
                 **base,
                 "status": "PLAN_INTERPRETED",
+                "provenance_source": hermes_plan_provenance(plan_document),
+                "recipe_id": str(plan_document.get("recipe", {}).get("recipe_id") or ""),
                 "recipe": recipe_card(plan_document, "EXPERIMENTAL"),
                 "plan_document": plan_document,
                 "plan_hash": stable_hash(plan_document),
+                "draft_plan_hash": stable_hash(plan_document),
             }
         )
     return hermes_unavailable(query, "Hermes returned an unsupported interpretation outcome. Manual mode remains available.")
@@ -759,6 +827,14 @@ def normalize_outcome(value: Any) -> str:
         "clarification_required": "clarify",
     }
     return aliases.get(text, text)
+
+
+def hermes_plan_provenance(plan_document: dict[str, Any]) -> str:
+    recipe = plan_document.get("recipe") if isinstance(plan_document, dict) else None
+    recipe_id = str(recipe.get("recipe_id") or "") if isinstance(recipe, dict) else ""
+    if recipe_id in {"ball_side_block_shift_v1", "possession_corridor_availability_v1"}:
+        return "HERMES_RECIPE_SELECTION"
+    return "HERMES_NOVEL_COMPOSITION"
 
 
 def hermes_bound_plan_document(bound_plan_id: str) -> dict[str, Any] | None:
@@ -804,7 +880,7 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
     preset_id = payload.get("preset_id")
     if mode == "model":
         if not hermes_enabled():
-            return hermes_unavailable(query)
+            return hermes_unavailable(query, fallback_reason="hermes_disabled")
         return hermes_interpret_request(query)
 
     text = normalized(query)
@@ -813,6 +889,7 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
         return ok(
             {
                 "status": "CAPABILITY_GAP",
+                "provenance_source": "CAPABILITY_GAP",
                 "query": query,
                 "source": "manual_host_interpreter",
                 "capability_gaps": gaps,
@@ -823,8 +900,11 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
         return ok(
             {
                 "status": "CLARIFICATION_REQUIRED",
+                "provenance_source": "DETERMINISTIC_REPAIR",
                 "query": query,
                 "source": "manual_host_interpreter",
+                "repair_applied": True,
+                "fallback_reason": "support_language_requires_clarification",
                 "clarification_questions": [
                     "Should support mean a progressive corridor, a nearby teammate, or a distinct lane option?",
                     "What time window should count as support arriving after the anchor?",
@@ -843,8 +923,11 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
         return ok(
             {
                 "status": "CLARIFICATION_REQUIRED",
+                "provenance_source": "DETERMINISTIC_REPAIR",
                 "query": query,
                 "source": "manual_host_interpreter",
+                "repair_applied": True,
+                "fallback_reason": "recipe_selection_required",
                 "clarification_questions": [
                     "Select the approved block-shift recipe or the experimental corridor preset.",
                 ],
@@ -857,8 +940,10 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
     return ok(
         {
             "status": "PLAN_INTERPRETED",
+            "provenance_source": "MANUAL_PRESET",
             "query": query,
             "source": "manual_host_interpreter",
+            "recipe_id": str(plan_document.get("recipe", {}).get("recipe_id") or ""),
             "recipe": recipe_card(plan_document, state),
             "plan_document": plan_document,
             "plan_hash": stable_hash(plan_document),
@@ -1422,7 +1507,12 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         try:
             payload = self.read_body()
             if parsed.path == "/api/interpret":
-                self.send_json(interpret_request(payload, output_root=self.server.output_root))
+                self.send_json(
+                    validate_public_response(
+                        "InterpretResponse",
+                        interpret_request(payload, output_root=self.server.output_root),
+                    )
+                )
             elif parsed.path == "/api/execution-cache-status":
                 self.send_json(execution_cache_status(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/submit-validate":
@@ -1496,9 +1586,9 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                 },
                 "model": {
                     "available": hermes_enabled() and shutil.which("hermes") is not None,
-                    "status": "HERMES_FRONTIER_READY" if hermes_enabled() and shutil.which("hermes") is not None else "MODEL_UNAVAILABLE",
+                    "status": "HERMES_CONFIGURED" if hermes_enabled() and shutil.which("hermes") is not None else "MODEL_UNAVAILABLE",
                     "message": (
-                        "Hermes frontier interpretation is available through the host service."
+                        "Hermes is configured; each interpretation is probed and validated at request time."
                         if hermes_enabled() and shutil.which("hermes") is not None
                         else "Manual mode is active; Hermes frontier interpretation is disabled for this Workbench process."
                     ),
