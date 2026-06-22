@@ -14,7 +14,7 @@ export HOME="${HOME:-/var/data}"
 export HERMES_HOME="${HERMES_HOME:-/var/data/hermes-home}"
 export CODEX_HOME="${CODEX_HOME:-/var/data/.codex}"
 export HERMES_AGENT_SOURCE="${HERMES_AGENT_SOURCE:-/opt/hermes-agent}"
-export WORKBENCH_HERMES_PYTHON="${WORKBENCH_HERMES_PYTHON:-/opt/hermes-agent/venv/bin/python3}"
+export WORKBENCH_HERMES_PYTHON="${WORKBENCH_HERMES_PYTHON:-/opt/hermes-agent/venv/bin/python}"
 
 mkdir -p "$TQE_DATA_ROOT" "$TQE_RAW_ROOT" "$TQE_RUNTIME_ROOT" "$TQE_CACHE_ROOT"
 

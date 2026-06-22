@@ -9,7 +9,7 @@ export CODEX_AUTH_FILE="${CODEX_AUTH_FILE:-$CODEX_HOME/auth.json}"
 export WORKBENCH_HERMES_PROVIDER="${WORKBENCH_HERMES_PROVIDER:-openai-codex}"
 export WORKBENCH_HERMES_MODEL="${WORKBENCH_HERMES_MODEL:-gpt-5.5}"
 export WORKBENCH_HERMES_TOOLSET="${WORKBENCH_HERMES_TOOLSET:-mcp-priori_tactical}"
-export WORKBENCH_HERMES_PYTHON="${WORKBENCH_HERMES_PYTHON:-/opt/hermes-agent/venv/bin/python3}"
+export WORKBENCH_HERMES_PYTHON="${WORKBENCH_HERMES_PYTHON:-/opt/hermes-agent/venv/bin/python}"
 
 mkdir -p "$HERMES_HOME" "$CODEX_HOME"
 chmod 700 "$HERMES_HOME" "$CODEX_HOME" 2>/dev/null || true

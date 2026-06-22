@@ -31,7 +31,7 @@ services:
       - key: WORKBENCH_HERMES_TOOLSET
         value: mcp-priori_tactical
       - key: WORKBENCH_HERMES_PYTHON
-        value: /opt/hermes-agent/venv/bin/python3
+        value: /opt/hermes-agent/venv/bin/python
       - key: TQE_DATA_ROOT
         value: /var/data/dataset/canonical/v1
       - key: TQE_RAW_ROOT
