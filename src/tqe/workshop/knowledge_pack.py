@@ -276,34 +276,6 @@ def model_visible_tool_schemas() -> dict[str, Any]:
             "reference_exposure": spec["exposure"],
             "s2i_target_exposure": "hermes_mcp" if name in S2I_HERMES_MCP_TOOL_NAMES else "host_only",
         }
-    schemas["search_recipes"] = {
-        "status": "planned_s2i_mcp_tool",
-        "description": "Search generated recipe summaries by text query and optional recipe state.",
-        "s2i_target_exposure": "hermes_mcp",
-        "input_schema": {
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {
-                "query": {"type": "string", "minLength": 1},
-                "states": {
-                    "type": "array",
-                    "items": {"enum": ["APPROVED", "USER_SAVED", "EXPERIMENTAL", "DEPRECATED"]},
-                    "default": ["APPROVED", "EXPERIMENTAL"],
-                },
-                "limit": {"type": "integer", "minimum": 1, "maximum": 20, "default": 5},
-            },
-            "required": ["query"],
-        },
-        "output_schema": {
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {
-                "ok": {"const": True},
-                "recipes": {"type": "array", "items": {"type": "object"}},
-            },
-            "required": ["ok", "recipes"],
-        },
-    }
     return {name: schemas[name] for name in S2I_HERMES_MCP_TOOL_NAMES + sorted(set(schemas) - set(S2I_HERMES_MCP_TOOL_NAMES))}
 
 
@@ -409,11 +381,24 @@ def verify_tactical_knowledge_pack(
     checks.append(check("pack.markdown.exists", md_path.exists(), {"path": str(md_path)}))
     markdown = md_path.read_text(encoding="utf-8") if md_path.exists() else ""
     checks.append(check("pack.markdown.references_hash", pack.get("knowledge_pack_sha256", "") in markdown, {}))
+    checks.append(check("pack.markdown.generated_from_json", markdown == render_markdown(pack), {}))
     recipe_ids = {recipe["recipe_id"] for recipe in pack.get("recipes", [])}
     checks.append(check("pack.recipes.include_approved_m1", "ball_side_block_shift_v1" in recipe_ids, {"recipe_ids": sorted(recipe_ids)}))
     checks.append(check("pack.recipes.include_corridor", "possession_corridor_availability_v1" in recipe_ids, {"recipe_ids": sorted(recipe_ids)}))
     target_tools = set(pack["tool_surfaces"]["s2i_target_hermes_mcp"]["tools"])
     checks.append(check("pack.tools.include_search_recipes", "search_recipes" in target_tools, {"tools": sorted(target_tools)}))
+    search_schema = pack.get("model_visible_tool_schemas", {}).get("search_recipes", {})
+    checks.append(
+        check(
+            "pack.tools.search_recipes_implemented_schema",
+            search_schema.get("status") == "implemented_reference_harness_tool"
+            and search_schema.get("input_schema", {}).get("title") == "SearchRecipesRequest",
+            {
+                "status": search_schema.get("status"),
+                "schema_title": search_schema.get("input_schema", {}).get("title"),
+            },
+        )
+    )
     checks.append(check("pack.tools.exclude_execute_from_hermes_mcp", "execute_query_plan" not in target_tools, {"tools": sorted(target_tools)}))
     host_tools = set(pack["tool_surfaces"]["host_only"]["tools"])
     checks.append(check("pack.tools.host_owns_execution", {"host_confirm_bound_plan", "execute_query_plan"}.issubset(host_tools), {"host_tools": sorted(host_tools)}))
@@ -423,6 +408,17 @@ def verify_tactical_knowledge_pack(
     checks.append(check("pack.ambiguity.include_required_dimensions", {CLARIFICATION_SUPPORT_DEFINITION, CLARIFICATION_TIME_WINDOW, CLARIFICATION_DISTANCE_THRESHOLD}.issubset(dimensions), {"dimensions": sorted(dimensions)}))
     checks.append(check("pack.schema.embedded", bool(pack.get("query_plan_schema", {}).get("schema")), {}))
     checks.append(check("pack.source_hashes.present", len(pack.get("source_hashes", {})) >= 8, {"count": len(pack.get("source_hashes", {}))}))
+    pack_text = json.dumps(pack, sort_keys=True)
+    forbidden_markers = ["/Users/", "OPENAI_API_KEY", "sk-", "data/raw/", "data/canonical/", '"frames": [', '"entities": [']
+    present_markers = [marker for marker in forbidden_markers if marker in pack_text]
+    checks.append(check("pack.safety.no_secret_local_or_raw_payload_markers", not present_markers, {"present_markers": present_markers}))
+    checks.append(
+        check(
+            "pack.size.recorded",
+            len(pack_text) > 0,
+            {"json_chars": len(pack_text), "approx_tokens": len(pack_text) // 4},
+        )
+    )
     return checks
 
 

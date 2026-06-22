@@ -5,7 +5,9 @@ Type: implementation learning
 ## Fact
 
 S2I-A now generates a Tactical Knowledge Pack from executable/project sources
-instead of maintaining another hand-written football prompt.
+instead of maintaining another hand-written football prompt. `search_recipes` is
+implemented as a bounded schema-validated dispatcher tool rather than remaining
+a planned-only MCP affordance.
 
 ## Decision
 
@@ -22,10 +24,14 @@ or initiate execution.
 - `src/tqe/workshop/knowledge_pack.py`
 - `src/tqe/verification/m1_2_gate_s2i.py`
 - `make m1-2-gate-s2i-verify`
-- Pack SHA-256: `69cc6ed3160179643de2c5cf5ed7dcdb0c0ade35f8280178c8b22af1c7681866`
+- Pack SHA-256: `44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6`
+- S2I-A local review:
+  `docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md`
 
 ## Follow-Up
 
-Run S2I-B provisioning: verify GPT-5.5 Responses access, strict structured
-outputs, high/xhigh reasoning, Hermes installation, trivial local stdio MCP
-connectivity, and tactical tool allowlisting.
+Before formal S2I-A acceptance, complete one broader S2 regression or revise the
+acceptance rule if the old live `gpt-4o-mini` sealed path should no longer gate
+S2I-A. Then run S2I-B provisioning: verify GPT-5.5 Responses access, strict
+structured outputs, high/xhigh reasoning, Hermes installation, trivial local
+stdio MCP connectivity, and tactical tool allowlisting.

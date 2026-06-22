@@ -1068,6 +1068,7 @@ def invented_identifier_count(response: Any) -> int:
 def unauthorized_tool_count(response: Any) -> int:
     allowed_tools = {
         "list_capabilities",
+        "search_recipes",
         "describe_capability",
         "submit_query_plan",
         "validate_query_plan",

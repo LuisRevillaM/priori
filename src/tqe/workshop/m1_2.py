@@ -43,6 +43,7 @@ from tqe.runtime.ir import (
 
 HERMES_S2_TOOL_NAMES = [
     "list_capabilities",
+    "search_recipes",
     "describe_capability",
     "submit_query_plan",
     "validate_query_plan",
@@ -72,6 +73,11 @@ DEFAULT_WORKSHOP_ROOT = Path("artifacts/m1.2/workshop")
 CAPABILITY_CONTEXT_PATH = Path("generated/capability-context.json")
 TRUSTED_M1_RECIPE_ID = "ball_side_block_shift_v1"
 TRUSTED_M1_RECIPE_VERSION = "1.0.0"
+RECIPE_PLAN_PATHS = [
+    Path("config/query-plans/ball_side_block_shift.ir.v1.json"),
+    Path("config/query-plans/possession_corridor_availability.experimental.v1.json"),
+    Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json"),
+]
 NON_AUTHORABLE_CATALOG_REFS = {
     "outcome_classification",
     "shift_persistence",
@@ -187,6 +193,36 @@ class DescribeCapabilityRequest(StrictModel):
 class DescribeCapabilityResponse(StrictModel):
     ok: bool
     capability: dict[str, Any]
+
+
+class SearchRecipesRequest(StrictModel):
+    query: str = Field(min_length=1, max_length=500)
+    states: list[Literal["APPROVED", "USER_SAVED", "EXPERIMENTAL", "DEPRECATED"]] = Field(
+        default_factory=lambda: ["APPROVED", "EXPERIMENTAL"],
+        min_length=1,
+    )
+    limit: int = Field(default=5, ge=1, le=20)
+
+
+class RecipeSearchResult(StrictModel):
+    recipe_id: str
+    recipe_version: str
+    state: Literal["APPROVED", "USER_SAVED", "EXPERIMENTAL", "DEPRECATED"]
+    display_name: str
+    description: str
+    output_classifications: list[str]
+    allowed_claims: list[str]
+    disallowed_claims: list[str]
+    limitations: list[str]
+    parameters: list[dict[str, Any]]
+    score: int
+    matched_fields: list[str]
+
+
+class SearchRecipesResponse(StrictModel):
+    ok: bool
+    query: str
+    recipes: list[RecipeSearchResult]
 
 
 class SubmitQueryPlanRequest(StrictModel):
@@ -527,6 +563,91 @@ def describe_capability_tool(
         ok=True,
         capability=describe_capability(request.capability_name, caller_profile),
     )
+
+
+def search_recipes(
+    request: SearchRecipesRequest,
+    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+) -> SearchRecipesResponse:
+    del caller_profile
+    query_terms = normalized_search_terms(request.query)
+    requested_states = set(request.states)
+    results: list[RecipeSearchResult] = []
+    for recipe in recipe_summaries():
+        if recipe["state"] not in requested_states:
+            continue
+        score, matched_fields = score_recipe_match(recipe, query_terms)
+        if score <= 0:
+            continue
+        results.append(
+            RecipeSearchResult(
+                recipe_id=recipe["recipe_id"],
+                recipe_version=recipe["recipe_version"],
+                state=recipe["state"],
+                display_name=recipe["display_name"],
+                description=recipe["description"],
+                output_classifications=recipe["output_classifications"],
+                allowed_claims=recipe["allowed_claims"],
+                disallowed_claims=recipe["disallowed_claims"],
+                limitations=recipe["limitations"],
+                parameters=recipe["parameters"],
+                score=score,
+                matched_fields=matched_fields,
+            )
+        )
+    results.sort(key=lambda item: (-item.score, item.recipe_id))
+    return SearchRecipesResponse(ok=True, query=request.query, recipes=results[: request.limit])
+
+
+def recipe_summaries() -> list[dict[str, Any]]:
+    summaries = []
+    for path in RECIPE_PLAN_PATHS:
+        document = read_json(path)
+        recipe = document["recipe"]
+        state = "APPROVED" if recipe["recipe_id"] == TRUSTED_M1_RECIPE_ID else "EXPERIMENTAL"
+        summaries.append(
+            {
+                "recipe_id": recipe["recipe_id"],
+                "recipe_version": recipe["recipe_version"],
+                "state": state,
+                "display_name": recipe["display_name"],
+                "description": recipe["description"],
+                "output_classifications": recipe.get("output_classifications", []),
+                "allowed_claims": recipe.get("allowed_claims", []),
+                "disallowed_claims": recipe.get("disallowed_claims", []),
+                "limitations": recipe.get("limitations", []),
+                "parameters": recipe.get("parameters", []),
+            }
+        )
+    return summaries
+
+
+def normalized_search_terms(query: str) -> list[str]:
+    normalized = re.sub(r"[^a-z0-9_]+", " ", query.lower())
+    return [term for term in normalized.split() if len(term) >= 3]
+
+
+def score_recipe_match(recipe: dict[str, Any], query_terms: list[str]) -> tuple[int, list[str]]:
+    field_texts = {
+        "recipe_id": recipe["recipe_id"],
+        "display_name": recipe["display_name"],
+        "description": recipe["description"],
+        "output_classifications": " ".join(recipe["output_classifications"]),
+        "claims": " ".join(recipe["allowed_claims"] + recipe["disallowed_claims"]),
+        "parameters": " ".join(
+            f"{parameter.get('name', '')} {parameter.get('description', '')}"
+            for parameter in recipe["parameters"]
+        ),
+    }
+    score = 0
+    matched_fields: list[str] = []
+    for field, text in field_texts.items():
+        normalized = re.sub(r"[^a-z0-9_]+", " ", text.lower())
+        field_score = sum(1 for term in query_terms if term in normalized)
+        if field_score:
+            score += field_score
+            matched_fields.append(field)
+    return score, matched_fields
 
 
 def validate_query_plan(
@@ -989,6 +1110,7 @@ def catalog_entry_summary(entry: Any) -> dict[str, Any]:
 def tool_spec(name: str) -> ToolSpec:
     descriptions = {
         "list_capabilities": "Return the Hermes-safe capability context.",
+        "search_recipes": "Search approved and experimental recipe summaries without exposing files or raw data.",
         "describe_capability": "Describe one exposed tool, primitive, relation, or operator.",
         "submit_query_plan": "Store a typed query document and return an opaque draft_plan_id.",
         "validate_query_plan": "Bind and boundary-check a submitted typed query plan.",
@@ -1002,6 +1124,7 @@ def tool_spec(name: str) -> ToolSpec:
     }
     request_models: dict[str, type[BaseModel]] = {
         "list_capabilities": ListCapabilitiesRequest,
+        "search_recipes": SearchRecipesRequest,
         "describe_capability": DescribeCapabilityRequest,
         "submit_query_plan": SubmitQueryPlanRequest,
         "validate_query_plan": ValidateQueryPlanRequest,
@@ -1015,6 +1138,7 @@ def tool_spec(name: str) -> ToolSpec:
     }
     response_models: dict[str, type[BaseModel]] = {
         "list_capabilities": CapabilityContext,
+        "search_recipes": SearchRecipesResponse,
         "describe_capability": DescribeCapabilityResponse,
         "submit_query_plan": SubmitQueryPlanResponse,
         "validate_query_plan": ValidateQueryPlanResponse,
@@ -1053,6 +1177,11 @@ def dispatch_tool(
         if request.tool_name == "list_capabilities":
             ListCapabilitiesRequest.model_validate(request.arguments)
             response = list_capabilities(caller_profile)
+        elif request.tool_name == "search_recipes":
+            response = search_recipes(
+                SearchRecipesRequest.model_validate(request.arguments),
+                caller_profile,
+            )
         elif request.tool_name == "describe_capability":
             response = describe_capability_tool(
                 DescribeCapabilityRequest.model_validate(request.arguments),
@@ -1177,6 +1306,7 @@ def validate_model_visible_payload(
 def response_model_for_tool(tool_name: str) -> type[BaseModel]:
     response_models: dict[str, type[BaseModel]] = {
         "list_capabilities": CapabilityContext,
+        "search_recipes": SearchRecipesResponse,
         "describe_capability": DescribeCapabilityResponse,
         "submit_query_plan": SubmitQueryPlanResponse,
         "validate_query_plan": ValidateQueryPlanResponse,

@@ -347,6 +347,7 @@ def model_visible_tool_matrix() -> list[dict[str, Any]]:
     }
     success_args = {
         "list_capabilities": {},
+        "search_recipes": {"query": "progressive corridor", "states": ["EXPERIMENTAL"], "limit": 2},
         "describe_capability": {"capability_name": "execute_query_plan"},
         "submit_query_plan": {"plan_document": plan_document.model_dump(mode="json")},
         "validate_query_plan": {"draft_plan_id": submit["draft_plan_id"]},
@@ -361,6 +362,7 @@ def model_visible_tool_matrix() -> list[dict[str, Any]]:
     }
     failure_args = {
         "list_capabilities": {"unexpected": True},
+        "search_recipes": {"query": "", "limit": 0},
         "describe_capability": {"capability_name": "not_real"},
         "submit_query_plan": {"plan_document": {"not": "a plan"}},
         "validate_query_plan": {"draft_plan_id": "draft_deadbeefdeadbeef"},

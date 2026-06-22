@@ -91,7 +91,7 @@
     "result_row_mutation",
     "threshold_auto_tuning"
   ],
-  "generated_at": "2026-06-21T17:23:03+00:00",
+  "generated_at": "2026-06-22T01:04:20+00:00",
   "host_owned_complexity_ceilings": {
     "max_execution_cost": 100000,
     "max_nesting_depth": 12,
@@ -1230,6 +1230,214 @@
               "forbidden_surfaces"
             ],
             "title": "CapabilityContext",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "details": {
+                "additionalProperties": true,
+                "title": "Details",
+                "type": "object"
+              },
+              "error_code": {
+                "title": "Error Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "ok": {
+                "const": false,
+                "default": false,
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "error_code",
+              "message"
+            ],
+            "title": "ToolErrorResponse",
+            "type": "object"
+          }
+        ]
+      },
+      "unavailable_surfaces": [
+        "arbitrary_python",
+        "sql",
+        "filesystem_editing",
+        "primitive_mutation",
+        "raw_match_dump",
+        "result_row_mutation",
+        "threshold_auto_tuning"
+      ]
+    },
+    {
+      "description": "Search approved and experimental recipe summaries without exposing files or raw data.",
+      "exposure": "hermes_s2",
+      "input_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "default": 5,
+            "maximum": 20,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "query": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "states": {
+            "items": {
+              "enum": [
+                "APPROVED",
+                "USER_SAVED",
+                "EXPERIMENTAL",
+                "DEPRECATED"
+              ],
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "States",
+            "type": "array"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "SearchRecipesRequest",
+        "type": "object"
+      },
+      "name": "search_recipes",
+      "output_schema": {
+        "oneOf": [
+          {
+            "$defs": {
+              "RecipeSearchResult": {
+                "additionalProperties": false,
+                "properties": {
+                  "allowed_claims": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Allowed Claims",
+                    "type": "array"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "type": "string"
+                  },
+                  "disallowed_claims": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Disallowed Claims",
+                    "type": "array"
+                  },
+                  "display_name": {
+                    "title": "Display Name",
+                    "type": "string"
+                  },
+                  "limitations": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Limitations",
+                    "type": "array"
+                  },
+                  "matched_fields": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Matched Fields",
+                    "type": "array"
+                  },
+                  "output_classifications": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Output Classifications",
+                    "type": "array"
+                  },
+                  "parameters": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "title": "Parameters",
+                    "type": "array"
+                  },
+                  "recipe_id": {
+                    "title": "Recipe Id",
+                    "type": "string"
+                  },
+                  "recipe_version": {
+                    "title": "Recipe Version",
+                    "type": "string"
+                  },
+                  "score": {
+                    "title": "Score",
+                    "type": "integer"
+                  },
+                  "state": {
+                    "enum": [
+                      "APPROVED",
+                      "USER_SAVED",
+                      "EXPERIMENTAL",
+                      "DEPRECATED"
+                    ],
+                    "title": "State",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "recipe_id",
+                  "recipe_version",
+                  "state",
+                  "display_name",
+                  "description",
+                  "output_classifications",
+                  "allowed_claims",
+                  "disallowed_claims",
+                  "limitations",
+                  "parameters",
+                  "score",
+                  "matched_fields"
+                ],
+                "title": "RecipeSearchResult",
+                "type": "object"
+              }
+            },
+            "additionalProperties": false,
+            "properties": {
+              "ok": {
+                "title": "Ok",
+                "type": "boolean"
+              },
+              "query": {
+                "title": "Query",
+                "type": "string"
+              },
+              "recipes": {
+                "items": {
+                  "$ref": "#/$defs/RecipeSearchResult"
+                },
+                "title": "Recipes",
+                "type": "array"
+              }
+            },
+            "required": [
+              "ok",
+              "query",
+              "recipes"
+            ],
+            "title": "SearchRecipesResponse",
             "type": "object"
           },
           {

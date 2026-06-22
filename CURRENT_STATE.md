@@ -134,22 +134,28 @@ The existing app directory is `apps/replay-proof`, used for earlier replay proof
 
 ## S2I-A Tactical Knowledge Pack
 
-Implemented and controller-verified:
+Implemented and locally verified; formal acceptance is pending one successful
+broader S2 regression run:
 
 - JSON: `generated/tactical-knowledge-pack.json`
 - Markdown: `generated/tactical-knowledge-pack.md`
-- Pack SHA-256: `69cc6ed3160179643de2c5cf5ed7dcdb0c0ade35f8280178c8b22af1c7681866`
+- Pack SHA-256: `44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6`
 - Verification: `make m1-2-gate-s2i-verify`
+- Local verification report:
+  `docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md`
 
 The pack is generated from source hashes and distinguishes the current S2
 reference-harness tool surface from the S2I target Hermes/MCP allowlist. The S2I
 target keeps `execute_query_plan` and `host_confirm_bound_plan` host-only.
+`search_recipes` is implemented as a bounded schema-validated dispatcher tool.
 
 ## Known Gaps Before S2I-B
 
 - No real Hermes MCP adapter is wired to the bounded tool surface.
 - No GPT-5.5 Responses adapter has been implemented or benchmarked.
 - No high/xhigh effort comparison has been run.
+- One broader S2 regression run must still complete successfully before S2I-A is
+  formally accepted.
 - No final sealed acceptance set has been run against the intended frontier/Hermes path.
 
 ## Known Gaps Before Workbench Alpha

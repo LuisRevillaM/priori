@@ -30,7 +30,7 @@ slices:
   S2G_first_fresh_sealed_set_run: DONE_FAILED_THEN_DIAGNOSTIC_AFTER_S2H
   S2H_stable_agent_vocabulary_codes_and_sealed_set_drift_control: DONE_CONTROLLER_VERIFIED
   S2I_frontier_agent_provisioning_and_context_rebaseline: IN_PROGRESS
-  S2I_A_tactical_knowledge_pack: DONE_CONTROLLER_VERIFIED
+  S2I_A_tactical_knowledge_pack: IMPLEMENTED_LOCAL_VERIFIED_PENDING_S2_REGRESSION
   S2I_B_frontier_and_hermes_provisioning_spike: NEXT_PARALLEL_TRACK_A
   Workbench_Alpha_1_query_to_result_shell: NEXT_PARALLEL_TRACK_B
   Workbench_Alpha_2_evidence_and_replay: PLANNED_AFTER_ALPHA_1
@@ -55,7 +55,7 @@ promotion_gates:
   Gate_S2G_first_fresh_independent_sealed_prompt_set: FAIL_BLOCKING_S3_THEN_PASS_DIAGNOSTIC_AFTER_S2H
   Gate_S2H_next_fresh_independent_sealed_prompt_set: CANCELLED_SUPERSEDED_BY_S2I
   Gate_S2I_frontier_agent_path_and_final_sealed_acceptance: REQUIRED_BLOCKING_S3
-  Gate_S2I_A_tactical_knowledge_pack: PASS_CONTROLLER
+  Gate_S2I_A_tactical_knowledge_pack: PASS_LOCAL_PENDING_BROADER_S2_REGRESSION
   Gate_Workbench_Alpha_query_to_replay: REQUIRED_BLOCKING_S3
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
@@ -229,15 +229,25 @@ evidence:
   S2I_A_tactical_knowledge_pack:
     knowledge_pack_json: generated/tactical-knowledge-pack.json
     knowledge_pack_markdown: generated/tactical-knowledge-pack.md
-    knowledge_pack_sha256: 69cc6ed3160179643de2c5cf5ed7dcdb0c0ade35f8280178c8b22af1c7681866
+    knowledge_pack_sha256: 44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6
     verification_report: artifacts/m1.2/gate-s2i-verification-report.json
     verification_command: make m1-2-gate-s2i-verify
     verification_summary:
-      passed: 12
+      passed: 16
       failed: 0
+    local_review: docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md
+    pack_size:
+      json_bytes: 201461
+      json_approx_chars_per_4_tokens: 50365
+      markdown_bytes: 6516
+      markdown_approx_chars_per_4_tokens: 1629
+      compact_json_chars: 119542
+      compact_json_approx_chars_per_4_tokens: 29885
+    search_recipes_status: IMPLEMENTED_SCHEMA_VALIDATED_SAFE_SUMMARY_ONLY
+    acceptance_blocker: make_m1_2_gate_s2_verify_must_complete_once
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
   external_review: NONE_BEFORE_S2I_IMPLEMENTATION_UNLESS_SCOPE_CHANGES
-  scope: "S2I-A knowledge pack is generated and verified. Next Track A step is S2I-B provisioning: GPT-5.5 Responses strict structured output, high/xhigh reasoning, Hermes install/version, trivial local stdio MCP connectivity, and safe tool allowlisting. Workbench Alpha 1 may proceed in parallel."
+  scope: "S2I-A knowledge pack is implemented and locally verified, with formal acceptance pending one successful broader S2 regression. search_recipes is now implemented and schema-validated. Next Track A step remains S2I-B provisioning, but acceptance should resolve the old live gpt-4o-mini S2 regression requirement. Workbench Alpha 1 should proceed in parallel."
