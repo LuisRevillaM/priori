@@ -57,7 +57,7 @@
       "ok": true
     },
     {
-      "name": "runs.bound_handles_present",
+      "name": "runs.bound_validations_present",
       "ok": true
     },
     {
@@ -81,19 +81,19 @@
       "ok": true
     }
   ],
-  "elapsed_ms": 370,
+  "elapsed_ms": 201,
   "frontier_identity": {
     "configured_model": "gpt-5.5",
     "hermes_config_sha256": "e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237",
     "hermes_executable": "/Users/luisrevilla/.local/bin/hermes",
-    "hermes_version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream 2b3a4f0a\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUp to date",
+    "hermes_version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream b4cb33cd\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUpdate available: 60 commits behind \u2014 run 'hermes update'",
     "provider": "openai-codex",
     "reasoning_effort": "xhigh"
   },
-  "generated_at": "2026-06-22T05:15:57+00:00",
+  "generated_at": "2026-06-22T11:29:40+00:00",
   "knowledge_surface": {
     "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-    "knowledge_pack_sha256": "49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e",
+    "knowledge_pack_sha256": "5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af",
     "recipe_authoring_contract_exposed": true,
     "unseeded_prompt_policy": "Prompts contain natural language requests and instructions, not plan JSON."
   },
@@ -131,56 +131,22 @@
     {
       "bound_execution_mode": "bind_only",
       "bound_execution_profile": "generic",
-      "bound_handle_present": true,
+      "bound_handle_present": false,
       "bound_plan_hash": "2179b7a0233596959d5122e17110cdc541bb79115d66b9676e012d2a1ff92336",
       "bound_plan_id": "bound_2179b7a023359695",
       "bound_resolved_parameters": {
-        "close_after_frames": {
-          "payload_type": "number",
-          "unit": "count",
-          "value": 2
-        },
-        "max_window_seconds": {
-          "payload_type": "number",
-          "unit": "second",
-          "value": 5.0
-        },
-        "maximum_segment_length_m": {
-          "payload_type": "number",
-          "unit": "metre",
-          "value": 45.0
-        },
-        "minimum_clearance_m": {
-          "payload_type": "number",
-          "unit": "metre",
-          "value": 4.0
-        },
         "minimum_duration_seconds": {
           "payload_type": "number",
-          "unit": "second",
+          "unit": "unknown",
           "value": 0.4
         },
         "minimum_progression_m": {
           "payload_type": "number",
-          "unit": "metre",
+          "unit": "unknown",
           "value": 5.0
-        },
-        "minimum_segment_length_m": {
-          "payload_type": "number",
-          "unit": "metre",
-          "value": 6.0
-        },
-        "open_after_frames": {
-          "payload_type": "number",
-          "unit": "count",
-          "value": 2
-        },
-        "side_filter": {
-          "payload_type": "enum",
-          "unit": "none",
-          "value": "any"
         }
       },
+      "bound_validation_present": true,
       "called_tools": [
         "mcp_priori_tactical_list_capabilities",
         "mcp_priori_tactical_list_capabilities",
@@ -286,35 +252,26 @@
       "source": "s2id_live",
       "system_instruction_sha256": "e1252b6e66c41d8fb49d7414573d7f0cdee6f6fddbb2677cee7c2cb64cfd4039",
       "tool_call_count": 13,
-      "user_prompt_contains_plan_json": false
+      "user_prompt_contains_plan_json": false,
+      "validate_response": {
+        "bound_plan_hash": "2179b7a0233596959d5122e17110cdc541bb79115d66b9676e012d2a1ff92336",
+        "bound_plan_id": "bound_2179b7a023359695",
+        "draft_plan_id": "draft_496efd224daf3c31",
+        "execution_profile": "generic",
+        "issues": [],
+        "ok": true,
+        "plan_id": "possession_corridor_availability_experimental_v1",
+        "plan_status": "experimental",
+        "recipe_id": "possession_corridor_availability_v1"
+      }
     },
     {
       "bound_execution_mode": "bind_only",
       "bound_execution_profile": "generic",
-      "bound_handle_present": true,
+      "bound_handle_present": false,
       "bound_plan_hash": "a622811f41c9f5d04b8f666e5d8b819164935523cbec1d1b470fd0f012777fd2",
       "bound_plan_id": "bound_a622811f41c9f5d0",
       "bound_resolved_parameters": {
-        "close_after_frames": {
-          "payload_type": "number",
-          "unit": "count",
-          "value": 2
-        },
-        "max_window_seconds": {
-          "payload_type": "number",
-          "unit": "second",
-          "value": 5.0
-        },
-        "maximum_segment_length_m": {
-          "payload_type": "number",
-          "unit": "metre",
-          "value": 45.0
-        },
-        "minimum_clearance_m": {
-          "payload_type": "number",
-          "unit": "metre",
-          "value": 4.0
-        },
         "minimum_duration_seconds": {
           "payload_type": "number",
           "unit": "second",
@@ -324,23 +281,9 @@
           "payload_type": "number",
           "unit": "metre",
           "value": 12.0
-        },
-        "minimum_segment_length_m": {
-          "payload_type": "number",
-          "unit": "metre",
-          "value": 6.0
-        },
-        "open_after_frames": {
-          "payload_type": "number",
-          "unit": "count",
-          "value": 2
-        },
-        "side_filter": {
-          "payload_type": "enum",
-          "unit": "none",
-          "value": "any"
         }
       },
+      "bound_validation_present": true,
       "called_tools": [
         "mcp_priori_tactical_list_capabilities",
         "mcp_priori_tactical_list_capabilities",
@@ -419,7 +362,18 @@
       "source": "s2id_live",
       "system_instruction_sha256": "e1252b6e66c41d8fb49d7414573d7f0cdee6f6fddbb2677cee7c2cb64cfd4039",
       "tool_call_count": 8,
-      "user_prompt_contains_plan_json": false
+      "user_prompt_contains_plan_json": false,
+      "validate_response": {
+        "bound_plan_hash": "a622811f41c9f5d04b8f666e5d8b819164935523cbec1d1b470fd0f012777fd2",
+        "bound_plan_id": "bound_a622811f41c9f5d0",
+        "draft_plan_id": "draft_4f4a534a0b4fd356",
+        "execution_profile": "generic",
+        "issues": [],
+        "ok": true,
+        "plan_id": "possession_corridor_12m_08s",
+        "plan_status": "experimental",
+        "recipe_id": "possession_corridor_availability_v1"
+      }
     }
   ],
   "safety_boundary": {

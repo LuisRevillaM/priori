@@ -91,7 +91,7 @@
     "result_row_mutation",
     "threshold_auto_tuning"
   ],
-  "generated_at": "2026-06-22T05:15:57+00:00",
+  "generated_at": "2026-06-22T11:25:45+00:00",
   "host_owned_complexity_ceilings": {
     "max_execution_cost": 100000,
     "max_nesting_depth": 12,

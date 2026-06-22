@@ -371,7 +371,7 @@
     ]
   },
   "generated_at": "reproducible_from_source_hashes",
-  "knowledge_pack_sha256": "5c1cb1174486ef1c4a42cea4b361c1245d22df1ceb960f1144f2e2a8ca39a919",
+  "knowledge_pack_sha256": "15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9",
   "knowledge_pack_version": "m1.2-s2i-a.0",
   "model_visible_tool_schemas": {
     "compare_query_versions": {
@@ -6739,11 +6739,11 @@
   },
   "schema_version": "1.0",
   "source_hashes": {
-    "Makefile": "c996738f0428706ae1923fbfdcf10af9c2fa99b0eb4319ae36b8fca01a1e0c93",
+    "Makefile": "364dd3dcb87d8265749b20071be15076d3f6112070652ae2dac09001e5bd7a97",
     "config/query-plans/ball_side_block_shift.ir.v1.json": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
     "config/query-plans/opposite_corridor_after_shift.experimental.v1.json": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
     "config/query-plans/possession_corridor_availability.experimental.v1.json": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
-    "generated/capability-context.json": "69653ebbd7749af66b67b9e3661fcca609850ec1a4f9fe7d81acd380238fbac8",
+    "generated/capability-context.json": "4816ffb893c34ddcd587192f5690f179d51ba46d09df6706a040b373f35950e8",
     "generated/tactical-query-plan.schema.json": "2e012f1500b19c4159f69e937e604562b1374ff972780f2c7b0478c52d8c61db",
     "generated/tactical-query-plan.types.ts": "58b25d3f41064565159dbcbcc52e8158217761cdb8b2c3ac142006d0fbf42d7f",
     "src/tqe/runtime/binder.py": "a6d9ab90e0d7b6e7ffb0bb1e8b3ca355b59f528c2f444d6750c5ffec7a5f4459",

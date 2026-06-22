@@ -1,13 +1,13 @@
 # Current State Snapshot
 
-Date: 2026-06-21
+Date: 2026-06-22
 
 ## Repository State
 
 - Branch: `codex/m1-1-s1-ir-binder`
 - Latest committed controller checkpoint before this snapshot:
-  `f2f5be8 Add primitive layer audit planning artifacts`
-- Working tree: scoped S2I-D frontier/Hermes authoring integration; existing untracked review packets and `docs/learnings.zip` remain outside this snapshot.
+  `4c475cd Verify unseeded Hermes plan authoring`
+- Working tree: scoped S2I-E frontier configuration freeze; existing untracked review packets and `docs/learnings.zip` remain outside this snapshot.
 - Current product source of truth:
   - `delivery/m1.2/SPEC.md`
   - `delivery/m1.2/status.yaml`
@@ -46,6 +46,8 @@ Known green commands at the frozen baseline:
 ```text
 make m1-2-gate-s2-sealed-verify
 make m1-2-gate-s2-verify
+make m1-2-gate-s2id-verify
+make m1-2-gate-s2ie-verify
 make m1-2-verify
 make m1-1-gate-s7r-verify
 make test
@@ -149,6 +151,13 @@ The existing app directory is `apps/replay-proof`, used for earlier replay proof
 - Hermes auth: `openai-codex` logged in via ChatGPT/Codex subscription device auth under `HERMES_HOME=/Users/luisrevilla/.hermes-priori`.
 - Hermes model config: provider `openai-codex`, default `gpt-5.5`, reasoning effort `xhigh`.
 - MCP support for Hermes: tactical stdio MCP adapter is connected and verified through a real Hermes session that lists/searches/describes capabilities, submits a seeded experimental plan, validates it, and stops before execution.
+- Frontier freeze: `delivery/m1.2/frontier-runtime-freeze.json`.
+- Freeze status: `FROZEN_PENDING_FINAL_INDEPENDENT_EVALUATION`.
+- Freeze SHA-256: `b072b8006ae60aba64e3a564d983dae30effbfccdb5ec091c2c1bcb001cd11b9`.
+- Freeze report: `artifacts/m1.2/s2i-e-frontier-freeze-report.json`.
+- Freeze report SHA-256: `a55ae56fed08f1a379e85a9712e8de46ddcc603742101653d0e403571f4709d2`.
+- Important identity boundary: direct Responses API probes returned exact model `gpt-5.5-2026-04-23`; Hermes sessions currently report the product alias `gpt-5.5`, not the exact snapshot.
+- Final independent evaluation remains required before S3 acceptance. S2I-B probes and S2I-D live Hermes authoring are provisioning/authoring proof, not sealed acceptance.
 
 ## S2I-A Tactical Knowledge Pack
 
@@ -156,7 +165,8 @@ Implemented and controller-verified for the frontier/Hermes path:
 
 - JSON: `generated/tactical-knowledge-pack.json`
 - Markdown: `generated/tactical-knowledge-pack.md`
-- Pack SHA-256: `28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854`
+- Pack semantic SHA-256: `15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9`
+- Pack file SHA-256: `5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af`
 - Verification: `make m1-2-gate-s2i-verify`
 - Local verification report:
   `docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md`
@@ -199,7 +209,7 @@ Controller-verified:
 - Hermes provider/model: `openai-codex` / `gpt-5.5`
 - Reasoning effort: `xhigh`
 - Tactical Knowledge Pack SHA-256:
-  `49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e`
+  `5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af`
 - Hermes config SHA-256:
   `e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237`
 
@@ -217,7 +227,26 @@ recipe IDs and returns a declarative authoring contract derived from checked-in
 recipe documents. This is not tactical runtime logic and does not expose host
 execution.
 
-## Known Gaps After S2I-D
+## S2I-E Frontier Configuration Freeze
+
+Controller-verified:
+
+- Freeze artifact: `delivery/m1.2/frontier-runtime-freeze.json`
+- Freeze report: `artifacts/m1.2/s2i-e-frontier-freeze-report.json`
+- Local review: `docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md`
+- Verification: `make m1-2-gate-s2ie-verify`
+- Result: `17 pass / 0 fail`
+- Product route: Hermes Agent over local stdio Tactical MCP.
+- Provider/model: `openai-codex` / `gpt-5.5`.
+- Reasoning effort: `xhigh`.
+- Direct API control route exact returned model: `gpt-5.5-2026-04-23`.
+- Hermes exact snapshot status: Hermes session metadata reports the alias `gpt-5.5` only.
+- Frozen tool allowlist: `list_capabilities`, `search_recipes`, `describe_capability`, `submit_query_plan`, `validate_query_plan`, `inspect_result`, `inspect_non_match`, `retrieve_replay_window`.
+- Host-only tools remain absent: `host_confirm_bound_plan`, `execute_query_plan`, `record_feedback`, `compare_query_versions`, `save_experimental_recipe`.
+
+The freeze intentionally does not claim final sealed acceptance. It fixes the target route and evidence hashes so the next independent evaluation can be run against a stable frontier configuration.
+
+## Known Gaps After S2I-E
 
 - Initial high/xhigh comparison has run outside full Workbench context and
   currently recommends `xhigh`; final product-runtime acceptance still needs the
@@ -255,8 +284,8 @@ Provisioning proof is now green:
 
 ## Next Roadmap State
 
-The next frontier milestone is S2I-E: freeze the Hermes/frontier configuration
-and run final evaluation. Workbench Alpha 1 continues in parallel as the visible
+The next frontier milestone is final independent evaluation against the frozen
+S2I-E Hermes/frontier route. Workbench Alpha continues in parallel as the visible
 product path.
 
 S2I-E should:

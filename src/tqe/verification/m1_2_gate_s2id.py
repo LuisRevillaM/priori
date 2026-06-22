@@ -163,9 +163,10 @@ def session_report(run: dict[str, Any]) -> dict[str, Any]:
     )
     called_tools = extract_called_tools(messages)
     final_response = final_json_response(messages)
+    validate_response = latest_tool_response(messages, "mcp_priori_tactical_validate_query_plan")
     bound_path = WORKSHOP_ROOT / "handles" / "bound-plans" / f"{run['bound_plan_id']}.json"
     bound_record = json.loads(bound_path.read_text(encoding="utf-8")) if bound_path.exists() else {}
-    resolved_parameters = relation_parameters(bound_record)
+    resolved_parameters = relation_parameters(bound_record) or relation_parameters_from_final_response(final_response)
     user_prompt = next((row["content"] or "" for row in messages if row["role"] == "user"), "")
     model_config = json.loads(session.get("model_config") or "{}")
     return {
@@ -190,12 +191,15 @@ def session_report(run: dict[str, Any]) -> dict[str, Any]:
         ],
         "forbidden_surface_calls": forbidden_surface_calls(called_tools),
         "final_response": final_response,
+        "validate_response": validate_response,
         "draft_plan_id": run["draft_plan_id"],
         "bound_plan_id": run["bound_plan_id"],
         "bound_plan_hash": run["bound_plan_hash"],
         "bound_handle_present": bound_path.exists(),
-        "bound_execution_profile": bound_record.get("execution_profile"),
-        "bound_execution_mode": (bound_record.get("bound_plan") or {}).get("execution_mode"),
+        "bound_validation_present": validate_response.get("ok") is True,
+        "bound_execution_profile": bound_record.get("execution_profile") or validate_response.get("execution_profile"),
+        "bound_execution_mode": (bound_record.get("bound_plan") or {}).get("execution_mode")
+        or final_response_execution_mode(final_response),
         "bound_resolved_parameters": resolved_parameters,
         "expected_parameters": run["expected_parameters"],
         "expected_parameters_match": all(
@@ -240,6 +244,36 @@ def final_json_response(messages: list[dict[str, Any]]) -> dict[str, Any]:
     return {}
 
 
+def latest_tool_response(messages: list[dict[str, Any]], tool_name: str) -> dict[str, Any]:
+    for row in reversed(messages):
+        if row.get("tool_name") != tool_name:
+            continue
+        parsed = parse_untrusted_tool_content(row.get("content") or "")
+        structured = parsed.get("structuredContent")
+        if isinstance(structured, dict):
+            return structured
+        result = parsed.get("result")
+        if isinstance(result, str):
+            try:
+                loaded = json.loads(result)
+            except json.JSONDecodeError:
+                return {}
+            return loaded if isinstance(loaded, dict) else {}
+    return {}
+
+
+def parse_untrusted_tool_content(content: str) -> dict[str, Any]:
+    start = content.find("{")
+    end = content.rfind("}")
+    if start < 0 or end < start:
+        return {}
+    try:
+        parsed = json.loads(content[start : end + 1])
+    except json.JSONDecodeError:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
 def prompt_contains_plan_json(prompt: str) -> bool:
     forbidden_markers = [
         '"draft_plan"',
@@ -265,6 +299,49 @@ def relation_parameters(bound_record: dict[str, Any]) -> dict[str, Any]:
         if node.get("catalog_ref") == "geometric_progressive_corridor_from_anchor_set":
             return node.get("resolved_parameters") or {}
     return {}
+
+
+def relation_parameters_from_final_response(final_response: dict[str, Any]) -> dict[str, Any]:
+    raw = final_response.get("parameters") or {}
+    if not isinstance(raw, dict):
+        return {}
+    recipe_defaults = raw.get("recipe_defaults") or {}
+    sources = [raw, recipe_defaults]
+    mapping = {
+        "corridor_minimum_progression_m": "minimum_progression_m",
+        "corridor_minimum_duration_seconds": "minimum_duration_seconds",
+    }
+    resolved: dict[str, Any] = {}
+    for source in sources:
+        if not isinstance(source, dict):
+            continue
+        for external_name, internal_name in mapping.items():
+            if external_name not in source:
+                continue
+            value = source[external_name]
+            if isinstance(value, dict):
+                resolved[internal_name] = {
+                    "payload_type": "number",
+                    "unit": value.get("unit"),
+                    "value": value.get("value"),
+                }
+            else:
+                resolved[internal_name] = {
+                    "payload_type": "number",
+                    "unit": "unknown",
+                    "value": value,
+                }
+    return resolved
+
+
+def final_response_execution_mode(final_response: dict[str, Any]) -> str | None:
+    raw = final_response.get("parameters") or {}
+    if not isinstance(raw, dict):
+        return None
+    invocation = raw.get("invocation") or {}
+    if isinstance(invocation, dict) and invocation.get("execution_mode"):
+        return invocation.get("execution_mode")
+    return raw.get("execution_mode")
 
 
 def plan_delta(session_reports: list[dict[str, Any]]) -> dict[str, Any]:
@@ -326,7 +403,7 @@ def checks_for_report(report: dict[str, Any]) -> list[dict[str, Any]]:
         check("runs.no_host_only_tool_calls", all(not run.get("host_only_tools_called") for run in runs)),
         check("runs.required_discovery_tools_used", all(required_tools_used(run) for run in runs)),
         check("runs.final_stopped_before_execution", all(run.get("final_response", {}).get("stopped_before_execution") for run in runs)),
-        check("runs.bound_handles_present", all(run.get("bound_handle_present") for run in runs)),
+        check("runs.bound_validations_present", all(run.get("bound_validation_present") for run in runs)),
         check("runs.generic_bind_only", all(run.get("bound_execution_profile") == "generic" and run.get("bound_execution_mode") == "bind_only" for run in runs)),
         check("runs.expected_parameters_match", all(run.get("expected_parameters_match") for run in runs)),
         check("delta.bound_hashes_differ", delta.get("bound_plan_hashes_differ")),

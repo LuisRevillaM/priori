@@ -1,8 +1,8 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: S2I_D_UNSEEDED_HERMES_AUTHORING_CONTROLLER_VERIFIED_FRONTIER_FREEZE_NEXT
+state: S2I_E_FRONTIER_CONFIGURATION_FROZEN_FINAL_INDEPENDENT_EVAL_NEXT
 source_of_truth: delivery/m1.2/SPEC.md
-last_updated: "2026-06-21"
+last_updated: "2026-06-22"
 preconditions:
   M1_1_runtime_accepted: SATISFIED_BY_M1_1S_S7R2_APPROVAL
   M1_1R_external_approval_or_required_changes_integrated: SUPERSEDED_BY_M1_1S
@@ -34,7 +34,8 @@ slices:
   S2I_B_frontier_and_hermes_provisioning_spike: DONE_CONTROLLER_VERIFIED
   S2I_C_tactical_mcp_adapter_and_hermes_validation: DONE_CONTROLLER_VERIFIED
   S2I_D_unseeded_frontier_agent_plan_authoring: DONE_CONTROLLER_VERIFIED
-  S2I_E_frontier_configuration_freeze_and_final_eval: NEXT_TRACK_A
+  S2I_E_frontier_configuration_freeze: DONE_CONTROLLER_VERIFIED_FINAL_EVAL_PENDING
+  S2I_E_final_independent_evaluation: REQUIRED_BLOCKING_S3
   Workbench_Alpha_1_query_to_result_shell: NEXT_PARALLEL_TRACK_B
   Workbench_Alpha_2_evidence_and_replay: PLANNED_AFTER_ALPHA_1
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
@@ -62,7 +63,8 @@ promotion_gates:
   Gate_S2I_B_frontier_and_hermes_provisioning_spike: PASS_CONTROLLER
   Gate_S2I_C_tactical_mcp_adapter_and_hermes_validation: PASS_CONTROLLER
   Gate_S2I_D_unseeded_frontier_agent_plan_authoring: PASS_CONTROLLER
-  Gate_S2I_E_frontier_configuration_freeze_and_final_eval: REQUIRED_BLOCKING_S3
+  Gate_S2I_E_frontier_configuration_freeze: PASS_CONTROLLER
+  Gate_S2I_E_final_independent_evaluation: REQUIRED_BLOCKING_S3
   Gate_Workbench_Alpha_query_to_replay: REQUIRED_BLOCKING_S3
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
@@ -236,7 +238,7 @@ evidence:
   S2I_A_tactical_knowledge_pack:
     knowledge_pack_json: generated/tactical-knowledge-pack.json
     knowledge_pack_markdown: generated/tactical-knowledge-pack.md
-    knowledge_pack_sha256: 49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e
+    knowledge_pack_sha256: 15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9
     verification_report: artifacts/m1.2/gate-s2i-verification-report.json
     verification_command: make m1-2-gate-s2i-verify
     verification_summary:
@@ -353,8 +355,8 @@ evidence:
     hermes_model: gpt-5.5
     hermes_reasoning_effort: xhigh
     hermes_config_sha256: e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237
-    knowledge_pack_sha256: 49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e
-    report_sha256: bdb8eff6a75b5c4f8d4a44a1602c862ac740324a79e6a3a59996175f67d2fa72
+    knowledge_pack_sha256: 5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af
+    report_sha256: bd8473822c37217553b19dad12e7431dd3adcbe806a290504568cfedaad7d03d
     live_runs:
       - label: any_progressive_corridor
         session_id: "20260621_220512_1d38ec"
@@ -383,9 +385,52 @@ evidence:
       no_filesystem_terminal_python_sql_raw_data_tools: true
       mcp_adapter_still_thin: true
     implementation_note: "S2I-D required exposing recipe authoring contracts through describe_capability. This is knowledge-surface disclosure from existing recipe documents, not tactical runtime logic or execution authority."
+  S2I_E_frontier_configuration_freeze:
+    freeze_artifact: delivery/m1.2/frontier-runtime-freeze.json
+    freeze_sha256: b072b8006ae60aba64e3a564d983dae30effbfccdb5ec091c2c1bcb001cd11b9
+    verification_report: artifacts/m1.2/s2i-e-frontier-freeze-report.json
+    report_sha256: a55ae56fed08f1a379e85a9712e8de46ddcc603742101653d0e403571f4709d2
+    local_review: docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md
+    verification_command: make m1-2-gate-s2ie-verify
+    verification_result: PASS_CONTROLLER
+    verification_summary:
+      passed: 17
+      failed: 0
+    product_route:
+      runtime: "Hermes Agent over local stdio Tactical MCP"
+      provider: openai-codex
+      configured_model: gpt-5.5
+      reasoning_effort: xhigh
+      auth_route: CHATGPT_CODEX_SUBSCRIPTION_LOGIN
+      hermes_session_model_identity: "alias-only:gpt-5.5"
+    direct_api_control_route:
+      requested_model: gpt-5.5-2026-04-23
+      returned_model: gpt-5.5-2026-04-23
+      strict_structured_output: PASS
+      reasoning_high: PASS
+      reasoning_xhigh: PASS
+    frozen_mcp_allowlist:
+      - list_capabilities
+      - search_recipes
+      - describe_capability
+      - submit_query_plan
+      - validate_query_plan
+      - inspect_result
+      - inspect_non_match
+      - retrieve_replay_window
+    host_only_tools_absent:
+      - host_confirm_bound_plan
+      - execute_query_plan
+      - record_feedback
+      - compare_query_versions
+      - save_experimental_recipe
+    final_independent_evaluation:
+      status: PENDING_EXTERNAL_INDEPENDENT_SET
+      required_before_s3: true
+    non_claim: "S2I-E freezes configuration and provenance only; it does not claim final sealed acceptance."
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: READY_AFTER_FRONTIER_FREEZE_OR_NOW_IF_DESIRED
-  scope: "S2I-D is controller-verified: real Hermes under the restricted priori_tactical toolset handled two unseeded football-language requests, discovered recipe/capability context, authored EXPERIMENTAL typed plans, submitted and validated them deterministically, produced different bound-plan hashes for different tactical parameters, and stopped before execution. Next freeze frontier configuration and run final evaluation while Workbench Alpha proceeds in parallel."
+  external_review: READY_FOR_FINAL_EVALUATION_SET_OR_S2I_PACKET
+  scope: "S2I-E is controller-verified: the intended Hermes product route is frozen as openai-codex/gpt-5.5/xhigh over the restricted priori_tactical MCP toolset, with direct API control evidence for exact gpt-5.5-2026-04-23 access. Final independent evaluation remains required before S3; Workbench Alpha proceeds in parallel."
