@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 import urllib.error
 import urllib.request
 from typing import Any
@@ -101,18 +102,26 @@ class Client:
 
     def request(self, method: str, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         body = None if payload is None else json.dumps(payload).encode("utf-8")
-        request = urllib.request.Request(self.base_url + path, data=body, method=method)
-        request.add_header("Accept", "application/json")
-        if body is not None:
-            request.add_header("Content-Type", "application/json")
-        if self.token:
-            request.add_header("X-Demo-Access-Token", self.token)
-        try:
-            with urllib.request.urlopen(request, timeout=600) as response:  # noqa: S310 - user-supplied smoke URL.
-                return json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")
-            raise RuntimeError(f"{method} {path} failed with {exc.code}: {detail}") from exc
+        last_error: RuntimeError | None = None
+        for attempt in range(1, 6):
+            request = urllib.request.Request(self.base_url + path, data=body, method=method)
+            request.add_header("Accept", "application/json")
+            if body is not None:
+                request.add_header("Content-Type", "application/json")
+            if self.token:
+                request.add_header("X-Demo-Access-Token", self.token)
+            try:
+                with urllib.request.urlopen(request, timeout=600) as response:  # noqa: S310 - user-supplied smoke URL.
+                    return json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", errors="replace")
+                last_error = RuntimeError(f"{method} {path} failed with {exc.code}: {detail}")
+                if exc.code not in {502, 503, 504} or attempt == 5:
+                    raise last_error from exc
+                time.sleep(attempt)
+        if last_error is not None:
+            raise last_error
+        raise RuntimeError(f"{method} {path} failed without an HTTP response")
 
 
 if __name__ == "__main__":

@@ -72,6 +72,16 @@ HERMES_TOOLSET = os.environ.get("WORKBENCH_HERMES_TOOLSET", "mcp-priori_tactical
 HERMES_TIMEOUT_SECONDS = int(os.environ.get("WORKBENCH_HERMES_TIMEOUT_SECONDS", "240"))
 DEMO_ACCESS_TOKEN = os.environ.get("DEMO_ACCESS_TOKEN", "").strip()
 DEMO_ACCESS_QUERY_TOKEN_ENABLED = os.environ.get("DEMO_ACCESS_QUERY_TOKEN_ENABLED", "").strip() == "1"
+WORKBENCH_PREWARM_EXECUTION_CACHE = os.environ.get("WORKBENCH_PREWARM_EXECUTION_CACHE", "").strip() == "1"
+WORKBENCH_PREWARM_RESULT_LIMIT = int(os.environ.get("WORKBENCH_PREWARM_RESULT_LIMIT", "3"))
+WORKBENCH_PREWARM_RECIPE_IDS = tuple(
+    recipe_id.strip()
+    for recipe_id in os.environ.get(
+        "WORKBENCH_PREWARM_RECIPE_IDS",
+        "ball_side_block_shift_v1,possession_corridor_availability_v1",
+    ).split(",")
+    if recipe_id.strip()
+)
 KNOWLEDGE_PACK_PATH = Path(os.environ.get("TQE_KNOWLEDGE_PACK_PATH", "generated/tactical-knowledge-pack.json"))
 EXPECTED_KNOWLEDGE_PACK_SHA256 = os.environ.get("TQE_EXPECTED_KNOWLEDGE_PACK_SHA256", "").strip()
 DATA_MANIFEST_PATH = Path(os.environ.get("TQE_DATA_MANIFEST_PATH", "config/deploy/demo-data-manifest.json"))
@@ -1096,6 +1106,45 @@ def recipe_readiness_checks() -> list[dict[str, Any]]:
     return checks
 
 
+def prewarm_execution_cache(*, output_root: Path, recipe_ids: tuple[str, ...], result_limit: int) -> None:
+    for recipe_id in recipe_ids:
+        started_at = time.monotonic()
+        print(f"Prewarming execution cache for {recipe_id}...", flush=True)
+        submitted = submit_query_plan(
+            SubmitQueryPlanRequest(
+                plan_document=host_owned_plan_document(plan_for_recipe(recipe_id)),
+                source_label="workbench_alpha_prewarm",
+            ),
+            output_root=output_root,
+            caller_profile=CallerProfile.HOST_MANUAL,
+        )
+        validation = validate_query_plan(
+            ValidateQueryPlanRequest(draft_plan_id=submitted.draft_plan_id),
+            output_root=output_root,
+            caller_profile=CallerProfile.HOST_MANUAL,
+        )
+        confirmation = host_confirm_bound_plan(
+            validation.bound_plan_id,
+            reviewer="workbench_alpha_prewarm",
+            output_root=output_root,
+        )
+        executed = cached_execute_query_plan(
+            ExecuteQueryPlanRequest(
+                bound_plan_id=validation.bound_plan_id,
+                execution_authorization_id=confirmation.execution_authorization_id,
+                result_limit=result_limit,
+            ),
+            output_root=output_root,
+        )
+        elapsed_ms = int((time.monotonic() - started_at) * 1000)
+        print(
+            "Prewarmed execution cache for "
+            f"{recipe_id}: cache_status={executed['cache']['cache_status']} "
+            f"results={executed['execution']['total_result_count']} elapsed_ms={elapsed_ms}",
+            flush=True,
+        )
+
+
 def read_deploy_manifest(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
@@ -1406,6 +1455,12 @@ def main() -> None:
     parser.add_argument("--static-root", type=Path, default=DEFAULT_STATIC_ROOT)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_WORKSHOP_ROOT)
     args = parser.parse_args()
+    if WORKBENCH_PREWARM_EXECUTION_CACHE:
+        prewarm_execution_cache(
+            output_root=args.output_root,
+            recipe_ids=WORKBENCH_PREWARM_RECIPE_IDS,
+            result_limit=WORKBENCH_PREWARM_RESULT_LIMIT,
+        )
     server = WorkbenchServer(
         (args.host, args.port),
         WorkbenchHandler,
