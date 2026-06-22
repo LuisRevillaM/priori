@@ -1,3 +1,16 @@
+import type {
+  BootstrapResponse as GeneratedBootstrapResponse,
+  ConfirmationResponse as GeneratedConfirmationResponse,
+  ErrorResponse as GeneratedErrorResponse,
+  ExecutionProgressResponse as GeneratedExecutionProgressResponse,
+  ExecutionResponse as GeneratedExecutionResponse,
+  InspectResultResponse as GeneratedInspectResultResponse,
+  InspectTimestampResponse as GeneratedInspectTimestampResponse,
+  InterpretResponse as GeneratedInterpretResponse,
+  PlanResponse as GeneratedPlanResponse,
+  SubmitValidateResponse as GeneratedSubmitValidateResponse
+} from "./generated/api-types";
+
 export type JsonValue =
   | string
   | number
@@ -27,17 +40,7 @@ export type Preset = {
   plan_hash: string;
 };
 
-export type BootstrapResponse = {
-  ok: boolean;
-  service: {
-    name: string;
-    mcp_adapter: boolean;
-  };
-  model: {
-    available: boolean;
-    status: string;
-    message: string;
-  };
+export type BootstrapResponse = Omit<GeneratedBootstrapResponse, "presets" | "capabilities"> & {
   presets: Preset[];
   capabilities: {
     primitive_count: number;
@@ -54,39 +57,39 @@ export type InterpretStatus =
   | "CAPABILITY_GAP"
   | "MODEL_UNAVAILABLE";
 
-export type InterpretResponse = {
-  ok: boolean;
+export type InterpretResponse = Omit<GeneratedInterpretResponse, "recipe" | "plan_document" | "capability_gaps"> & {
+  ok: true;
   status: InterpretStatus;
-  query?: string;
-  message?: string;
-  source?: string;
-  recipe?: RecipeSummary;
-  plan_document?: JsonObject;
-  plan_hash?: string;
-  clarification_questions?: string[];
-  clarification_codes?: string[];
-  capability_gaps?: Array<{ concept: string; reason: string }>;
-  manual_available?: boolean;
+  query?: string | null;
+  message?: string | null;
+  source?: string | null;
+  recipe?: RecipeSummary | null;
+  plan_document?: JsonObject | null;
+  plan_hash?: string | null;
+  clarification_questions?: string[] | null;
+  clarification_codes?: string[] | null;
+  capability_gaps?: Array<{ concept: string; reason: string }> | null;
+  manual_available?: boolean | null;
 };
 
-export type SubmitValidateResponse = {
-  ok: boolean;
+export type SubmitValidateResponse = Omit<GeneratedSubmitValidateResponse, "submit" | "validation"> & {
+  ok: true;
   submit: JsonObject;
   validation: {
     ok: boolean;
     draft_plan_id: string;
-    bound_plan_id?: string;
-    plan_id?: string;
-    recipe_id?: string;
-    plan_status?: string;
-    bound_plan_hash?: string;
-    execution_profile?: string;
+    bound_plan_id?: string | null;
+    plan_id?: string | null;
+    recipe_id?: string | null;
+    plan_status?: string | null;
+    bound_plan_hash?: string | null;
+    execution_profile?: string | null;
     issues: JsonObject[];
   };
 };
 
-export type ConfirmationResponse = {
-  ok: boolean;
+export type ConfirmationResponse = Omit<GeneratedConfirmationResponse, "confirmation"> & {
+  ok: true;
   confirmation: {
     ok: boolean;
     bound_plan_id: string;
@@ -104,8 +107,17 @@ export type ResultRow = {
   requested_evidence: Record<string, JsonValue>;
 };
 
-export type ExecutionResponse = {
-  ok: boolean;
+export type ExecutionProgressResponse = GeneratedExecutionProgressResponse & {
+  ok: true;
+  cache_key: string;
+  cache_status: "HIT" | "MISS";
+  message: string;
+  stages: string[];
+};
+
+export type ExecutionResponse = Omit<GeneratedExecutionResponse, "execution" | "cache"> & {
+  ok: true;
+  cache: ExecutionProgressResponse;
   execution: {
     ok: boolean;
     execution_id: string;
@@ -133,7 +145,7 @@ export type ReplayEntity = {
 
 export type ReplayFrame = {
   frame_id: number;
-  timestamp_utc?: string;
+  timestamp_utc?: string | null;
   entities: ReplayEntity[];
 };
 
@@ -148,6 +160,8 @@ export type ReplayPayload = {
   start_frame_id: number;
   end_frame_id: number;
   anchor_frame_id: number;
+  generated_at: string;
+  canonical_sources: Record<string, string>;
   pitch: {
     length_m: number;
     width_m: number;
@@ -167,8 +181,8 @@ export type PredicateTrace = {
   window?: JsonObject;
 };
 
-export type InspectResultResponse = {
-  ok: boolean;
+export type InspectResultResponse = Omit<GeneratedInspectResultResponse, "inspection" | "replay"> & {
+  ok: true;
   inspection: {
     ok: boolean;
     execution_id: string;
@@ -189,14 +203,21 @@ export type TimestampTarget = {
   search_radius_ms: number;
 };
 
-export type InspectTimestampResponse = {
-  ok: boolean;
+export type InspectTimestampResponse = Omit<GeneratedInspectTimestampResponse, "inspection" | "replay"> & {
+  ok: true;
   inspection: JsonObject;
   replay_window: JsonObject;
   replay: ReplayPayload;
 };
 
-export type ApiError = {
+export type PlanResponse = Omit<GeneratedPlanResponse, "recipe" | "plan_document"> & {
+  ok: true;
+  recipe: RecipeSummary;
+  plan_document: JsonObject;
+  plan_hash: string;
+};
+
+export type ErrorResponse = GeneratedErrorResponse & {
   ok: false;
   error_code: string;
   message: string;

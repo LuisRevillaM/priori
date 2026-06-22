@@ -454,6 +454,21 @@ button:disabled {
   line-height: 1.45;
 }
 
+.sourceLine,
+.progressBox {
+  margin-bottom: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.progressBox strong {
+  color: var(--text);
+}
+
 .stateBox p {
   margin: 7px 0 0;
 }

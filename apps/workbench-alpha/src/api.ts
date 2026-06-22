@@ -3,12 +3,14 @@ import { apiSchemas } from "./generated/api-types";
 import type {
   BootstrapResponse,
   ConfirmationResponse,
+  ErrorResponse,
+  ExecutionProgressResponse,
   ExecutionResponse,
   InspectResultResponse,
   InspectTimestampResponse,
   InterpretResponse,
   JsonObject,
-  RecipeSummary,
+  PlanResponse,
   SubmitValidateResponse,
   TimestampTarget
 } from "./types";
@@ -45,7 +47,8 @@ async function request<T>(schemaName: ApiSchemaName, path: string, options: Requ
   });
   const payload = (await response.json()) as T & { ok?: boolean; message?: string; error_code?: string };
   if (!response.ok || payload.ok === false) {
-    const message = payload.message ?? payload.error_code ?? `Request failed: ${path}`;
+    const errorPayload = assertValidResponse<ErrorResponse>("ErrorResponse", payload);
+    const message = errorPayload.message ?? errorPayload.error_code ?? `Request failed: ${path}`;
     throw new Error(message);
   }
   return assertValidResponse<T>(schemaName, payload);
@@ -55,8 +58,8 @@ export function bootstrap(): Promise<BootstrapResponse> {
   return request<BootstrapResponse>("BootstrapResponse", "/api/bootstrap");
 }
 
-export function fetchPlan(recipeId: string): Promise<{ ok: boolean; recipe: RecipeSummary; plan_document: JsonObject; plan_hash: string }> {
-  return request("PlanResponse", `/api/plan?recipe_id=${encodeURIComponent(recipeId)}`);
+export function fetchPlan(recipeId: string): Promise<PlanResponse> {
+  return request<PlanResponse>("PlanResponse", `/api/plan?recipe_id=${encodeURIComponent(recipeId)}`);
 }
 
 export function interpret(input: {
@@ -83,6 +86,17 @@ export function confirm(boundPlanId: string): Promise<ConfirmationResponse> {
   return request<ConfirmationResponse>("ConfirmationResponse", "/api/confirm", {
     method: "POST",
     body: JSON.stringify({ bound_plan_id: boundPlanId, reviewer: "workbench_alpha_host" })
+  });
+}
+
+export function executionCacheStatus(input: {
+  bound_plan_id: string;
+  execution_authorization_id: string;
+  result_limit: number;
+}): Promise<ExecutionProgressResponse> {
+  return request<ExecutionProgressResponse>("ExecutionProgressResponse", "/api/execution-cache-status", {
+    method: "POST",
+    body: JSON.stringify(input)
   });
 }
 

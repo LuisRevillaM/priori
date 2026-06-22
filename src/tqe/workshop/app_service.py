@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import mimetypes
+from hashlib import sha256
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -22,8 +23,10 @@ from tqe.runtime.ir import TacticalQueryDocument, stable_hash
 from tqe.workshop.m1_2 import (
     CallerProfile,
     CapabilityGap,
+    DEFAULT_CANONICAL_ROOT,
     DEFAULT_WORKSHOP_ROOT,
     ExecuteQueryPlanRequest,
+    ExecuteQueryPlanResponse,
     HostConfirmationResponse,
     InspectNonMatchRequest,
     InspectResultRequest,
@@ -37,11 +40,14 @@ from tqe.workshop.m1_2 import (
     inspect_result,
     list_capabilities,
     read_json,
+    read_handle,
     replay_artifact_path,
     retrieve_replay_window,
     submit_query_plan,
     stable_tool_error_code,
     validate_query_plan,
+    write_handle,
+    write_json,
 )
 
 APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
@@ -139,6 +145,14 @@ class InterpretResponse(WorkbenchResponseModel):
     manual_available: bool | None = None
 
 
+class ExecutionProgressResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    cache_key: str
+    cache_status: Literal["HIT", "MISS"]
+    message: str
+    stages: list[str]
+
+
 class SubmitValidateResponseEnvelope(WorkbenchResponseModel):
     ok: Literal[True]
     submit: dict[str, Any]
@@ -153,6 +167,7 @@ class ConfirmationResponseEnvelope(WorkbenchResponseModel):
 class ExecutionResponseEnvelope(WorkbenchResponseModel):
     ok: Literal[True]
     execution: dict[str, Any]
+    cache: ExecutionProgressResponse
 
 
 class ReplayEntityResponse(WorkbenchResponseModel):
@@ -189,7 +204,6 @@ class ReplayPayloadResponse(WorkbenchResponseModel):
     anchor_frame_id: int
     generated_at: str
     canonical_sources: dict[str, str]
-    plan_path: str
     pitch: PitchResponse
     frames: list[ReplayFrameResponse]
 
@@ -217,6 +231,7 @@ WORKBENCH_RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     "SubmitValidateResponse": SubmitValidateResponseEnvelope,
     "ConfirmationResponse": ConfirmationResponseEnvelope,
     "ExecutionResponse": ExecutionResponseEnvelope,
+    "ExecutionProgressResponse": ExecutionProgressResponse,
     "InspectResultResponse": InspectResultResponseEnvelope,
     "InspectTimestampResponse": InspectTimestampResponseEnvelope,
 }
@@ -279,6 +294,11 @@ PUBLIC_ERROR_MESSAGES = {
 
 def public_error_message(code: str) -> str:
     return PUBLIC_ERROR_MESSAGES.get(code, "Request could not be completed.")
+
+
+def validate_public_response(model_name: str, payload: dict[str, Any]) -> dict[str, Any]:
+    model = WORKBENCH_RESPONSE_MODELS[model_name]
+    return model.model_validate(payload).model_dump(mode="json")
 
 
 def plan_for_recipe(recipe_id: str) -> dict[str, Any]:
@@ -379,6 +399,7 @@ def interpret_request(payload: dict[str, Any]) -> dict[str, Any]:
                 "status": "MODEL_UNAVAILABLE",
                 "query": query,
                 "message": "Model-backed interpretation is not connected in Workbench Alpha. Manual mode remains available.",
+                "source": "reference_compiler_unavailable",
                 "manual_available": True,
             }
         )
@@ -390,6 +411,7 @@ def interpret_request(payload: dict[str, Any]) -> dict[str, Any]:
             {
                 "status": "CAPABILITY_GAP",
                 "query": query,
+                "source": "manual_host_interpreter",
                 "capability_gaps": gaps,
                 "message": "The request contains concepts outside the current deterministic capability set.",
             }
@@ -399,6 +421,7 @@ def interpret_request(payload: dict[str, Any]) -> dict[str, Any]:
             {
                 "status": "CLARIFICATION_REQUIRED",
                 "query": query,
+                "source": "manual_host_interpreter",
                 "clarification_questions": [
                     "Should support mean a progressive corridor, a nearby teammate, or a distinct lane option?",
                     "What time window should count as support arriving after the anchor?",
@@ -418,6 +441,7 @@ def interpret_request(payload: dict[str, Any]) -> dict[str, Any]:
             {
                 "status": "CLARIFICATION_REQUIRED",
                 "query": query,
+                "source": "manual_host_interpreter",
                 "clarification_questions": [
                     "Select the approved block-shift recipe or the experimental corridor preset.",
                 ],
@@ -440,7 +464,142 @@ def interpret_request(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def replay_payload(replay_window_id: str, *, output_root: Path) -> dict[str, Any]:
-    return read_json(replay_artifact_path(replay_window_id, output_root=output_root))
+    return sanitize_replay_payload(read_json(replay_artifact_path(replay_window_id, output_root=output_root)))
+
+
+def sanitize_replay_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    public = dict(payload)
+    public.pop("plan_path", None)
+    public["canonical_sources"] = public_canonical_sources(payload.get("canonical_sources"))
+    return public
+
+
+def public_canonical_sources(raw: Any) -> dict[str, str]:
+    sources = raw if isinstance(raw, dict) else {}
+    public: dict[str, str] = {}
+    for key, value in sources.items():
+        public[str(key)] = f"canonical_source:{sha256(str(value).encode('utf-8')).hexdigest()[:16]}"
+    return public
+
+
+def canonical_data_hash() -> str:
+    entries: list[dict[str, Any]] = []
+    root = DEFAULT_CANONICAL_ROOT
+    if root.exists():
+        for path in sorted(root.rglob("*.parquet")):
+            stat = path.stat()
+            entries.append(
+                {
+                    "logical_id": path.relative_to(root).as_posix(),
+                    "size": stat.st_size,
+                    "mtime_ns": stat.st_mtime_ns,
+                }
+            )
+    return stable_hash({"canonical_root": "DEFAULT_CANONICAL_ROOT", "entries": entries})
+
+
+def cache_request_identity(request: ExecuteQueryPlanRequest, *, output_root: Path) -> dict[str, Any]:
+    bound_record = read_handle("bound-plans", request.bound_plan_id, output_root=output_root)
+    document = bound_record.get("document") or {}
+    invocation = document.get("default_invocation") if isinstance(document, dict) else {}
+    return {
+        "schema_version": "1.0",
+        "runtime_version": "workbench_alpha_execution_cache_v1",
+        "canonical_data_hash": canonical_data_hash(),
+        "bound_plan_hash": bound_record.get("bound_plan_hash"),
+        "scope": {
+            "match_ids": invocation.get("match_ids") if isinstance(invocation, dict) else None,
+            "periods": invocation.get("periods") if isinstance(invocation, dict) else None,
+            "perspective_team_role": invocation.get("perspective_team_role") if isinstance(invocation, dict) else None,
+        },
+        "parameters": invocation.get("parameters") if isinstance(invocation, dict) else None,
+        "result_limit": request.result_limit,
+    }
+
+
+def assert_execution_authorized(request: ExecuteQueryPlanRequest, *, output_root: Path) -> None:
+    bound_record = read_handle("bound-plans", request.bound_plan_id, output_root=output_root)
+    auth_record = read_handle("authorizations", request.execution_authorization_id, output_root=output_root)
+    if auth_record.get("bound_plan_id") != request.bound_plan_id:
+        raise CapabilityGap("execution authorization does not match bound_plan_id")
+    if auth_record.get("bound_plan_hash") != bound_record.get("bound_plan_hash"):
+        raise CapabilityGap("execution authorization does not match bound_plan_hash")
+
+
+def execution_cache_key(request: ExecuteQueryPlanRequest, *, output_root: Path) -> str:
+    return stable_hash(cache_request_identity(request, output_root=output_root))
+
+
+def execution_cache_path(cache_key: str, *, output_root: Path) -> Path:
+    base = (output_root / "execution-cache").resolve()
+    path = (base / f"{cache_key}.json").resolve()
+    if base not in path.parents:
+        raise CapabilityGap("Execution cache path escapes storage root.")
+    return path
+
+
+def execution_cache_status(payload: dict[str, Any], *, output_root: Path) -> dict[str, Any]:
+    request = ExecuteQueryPlanRequest.model_validate(payload)
+    assert_execution_authorized(request, output_root=output_root)
+    cache_key = execution_cache_key(request, output_root=output_root)
+    hit = execution_cache_path(cache_key, output_root=output_root).exists()
+    return ok(
+        {
+            "cache_key": cache_key,
+            "cache_status": "HIT" if hit else "MISS",
+            "message": "Cached execution is available." if hit else "Cache miss; deterministic runtime will execute on confirmation.",
+            "stages": execution_progress_stages(hit),
+        }
+    )
+
+
+def execution_progress_stages(cache_hit: bool) -> list[str]:
+    if cache_hit:
+        return ["authorization_checked", "cache_hit", "execution_handle_materialized"]
+    return ["authorization_checked", "cache_miss", "deterministic_runtime_execution", "cache_record_written"]
+
+
+def cached_execute_query_plan(request: ExecuteQueryPlanRequest, *, output_root: Path) -> dict[str, Any]:
+    assert_execution_authorized(request, output_root=output_root)
+    cache_key = execution_cache_key(request, output_root=output_root)
+    cache_path = execution_cache_path(cache_key, output_root=output_root)
+    if cache_path.exists():
+        cached = read_json(cache_path)
+        execution_record = cached.get("execution_record")
+        if not isinstance(execution_record, dict):
+            raise CapabilityGap("Invalid execution cache record.")
+        write_handle("executions", str(execution_record["execution_id"]), execution_record, output_root=output_root)
+        response = ExecuteQueryPlanResponse.model_validate(cached["response"]).model_dump(mode="json")
+        return {
+            "execution": response,
+            "cache": {
+                "ok": True,
+                "cache_key": cache_key,
+                "cache_status": "HIT",
+                "message": "Returned cached deterministic execution.",
+                "stages": execution_progress_stages(True),
+            },
+        }
+    execution = execute_query_plan(request, output_root=output_root)
+    execution_record = read_handle("executions", execution.execution_id, output_root=output_root)
+    cache_payload = {
+        "schema_version": "1.0",
+        "cache_key": cache_key,
+        "cache_identity": cache_request_identity(request, output_root=output_root),
+        "response": execution.model_dump(mode="json"),
+        "execution_record": execution_record,
+    }
+    write_json(cache_path, cache_payload)
+    return {
+        "execution": execution.model_dump(mode="json"),
+        "cache": {
+            "ok": True,
+            "cache_key": cache_key,
+            "cache_status": "MISS",
+            "message": "Executed deterministic runtime and stored host-owned cache record.",
+            "stages": execution_progress_stages(False),
+        },
+    }
 
 
 def result_with_replay(payload: dict[str, Any], *, output_root: Path) -> dict[str, Any]:
@@ -590,6 +749,8 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             payload = self.read_body()
             if parsed.path == "/api/interpret":
                 self.send_json(interpret_request(payload))
+            elif parsed.path == "/api/execution-cache-status":
+                self.send_json(execution_cache_status(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/submit-validate":
                 plan_document = host_owned_plan_document(payload["plan_document"])
                 submitted = submit_query_plan(
@@ -618,11 +779,11 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                 )
                 self.send_json(ok({"confirmation": confirmation.model_dump(mode="json")}))
             elif parsed.path == "/api/execute":
-                execution = execute_query_plan(
+                executed = cached_execute_query_plan(
                     ExecuteQueryPlanRequest.model_validate(payload),
                     output_root=self.server.output_root,
                 )
-                self.send_json(ok({"execution": execution.model_dump(mode="json")}))
+                self.send_json(validate_public_response("ExecutionResponse", ok(executed)))
             elif parsed.path == "/api/inspect-result":
                 self.send_json(result_with_replay(payload, output_root=self.server.output_root))
             elif parsed.path == "/api/inspect-timestamp":

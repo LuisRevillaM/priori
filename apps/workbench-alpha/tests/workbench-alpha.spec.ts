@@ -117,6 +117,7 @@ function summarizePayload(payload: unknown): Record<string, unknown> {
     execution_id: execution?.execution_id ?? inspection?.execution_id,
     total_result_count: execution?.total_result_count,
     returned_result_count: execution?.returned_result_count,
+    cache_status: (record.cache as Record<string, unknown> | undefined)?.cache_status,
     result_ids: Array.isArray(execution?.results)
       ? (execution.results as Array<Record<string, unknown>>).map((item) => item.result_id)
       : undefined,
@@ -179,6 +180,7 @@ async function runRealQueryJourney(
   );
   expect(interpretation.status).toBe("PLAN_INTERPRETED");
   await expect(page.getByTestId("interpreted-plan-panel")).toContainText("PLAN_INTERPRETED");
+  await expect(page.getByTestId("interpretation-source")).toContainText("manual_host_interpreter");
   await expect(page.getByTestId("confirm-button")).toBeDisabled();
   await expect(page.getByTestId("execute-button")).toBeDisabled();
   await capture(page, `${label}-interpretation`);
@@ -247,6 +249,12 @@ async function runRealQueryJourney(
   const replayFrames = replay.frames as unknown[];
   const selectedResult = inspectionBody.result as Record<string, unknown>;
   expect(replayFrames.length).toBeGreaterThan(0);
+  expect(replay.plan_path).toBeUndefined();
+  expect(JSON.stringify(replay.canonical_sources)).not.toContain("/Users/");
+  expect(JSON.stringify(replay.canonical_sources)).not.toContain(".parquet");
+  for (const value of Object.values((replay.canonical_sources ?? {}) as Record<string, unknown>)) {
+    expect(String(value)).toMatch(/^canonical_source:[0-9a-f]{16}$/);
+  }
   expect(selectedResult.result_id).toBe(results[0].result_id);
   await expect(page.getByTestId("replay-window-summary")).toContainText(String(replay.replay_window_id));
   await expect(page.getByTestId("replay-window-summary")).toContainText(String(selectedResult.result_id));
@@ -562,6 +570,15 @@ async function executeOneResult(api: APIRequestContext): Promise<Record<string, 
   });
   const confirmationPayload = (await confirmationResponse.json()) as Record<string, unknown>;
   const authorizationId = String((confirmationPayload.confirmation as Record<string, unknown>).execution_authorization_id);
+  const initialCacheStatus = await api.post("/api/execution-cache-status", {
+    data: {
+      bound_plan_id: boundPlanId,
+      execution_authorization_id: authorizationId,
+      result_limit: 1
+    }
+  });
+  expect(initialCacheStatus.ok()).toBe(true);
+  expect(await initialCacheStatus.json()).toMatchObject({ ok: true });
   const executionResponse = await api.post("/api/execute", {
     data: {
       bound_plan_id: boundPlanId,
@@ -570,8 +587,18 @@ async function executeOneResult(api: APIRequestContext): Promise<Record<string, 
     }
   });
   const executionPayload = (await executionResponse.json()) as Record<string, unknown>;
+  expect((executionPayload.cache as Record<string, unknown>).cache_status).toMatch(/^(HIT|MISS)$/);
   const execution = executionPayload.execution as Record<string, unknown>;
   const first = (execution.results as Array<Record<string, unknown>>)[0];
+  const postExecutionCacheStatus = await api.post("/api/execution-cache-status", {
+    data: {
+      bound_plan_id: boundPlanId,
+      execution_authorization_id: authorizationId,
+      result_limit: 1
+    }
+  });
+  expect(postExecutionCacheStatus.ok()).toBe(true);
+  expect(await postExecutionCacheStatus.json()).toMatchObject({ ok: true, cache_status: "HIT" });
   return {
     execution_id: execution.execution_id,
     result_id: first.result_id

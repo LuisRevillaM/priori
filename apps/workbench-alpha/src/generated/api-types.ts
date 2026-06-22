@@ -275,9 +275,98 @@ export const apiSchemas = {
     "title": "ErrorResponse",
     "type": "object"
   },
-  "ExecutionResponse": {
+  "ExecutionProgressResponse": {
     "additionalProperties": false,
     "properties": {
+      "cache_key": {
+        "title": "Cache Key",
+        "type": "string"
+      },
+      "cache_status": {
+        "enum": [
+          "HIT",
+          "MISS"
+        ],
+        "title": "Cache Status",
+        "type": "string"
+      },
+      "message": {
+        "title": "Message",
+        "type": "string"
+      },
+      "ok": {
+        "const": true,
+        "title": "Ok",
+        "type": "boolean"
+      },
+      "stages": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Stages",
+        "type": "array"
+      }
+    },
+    "required": [
+      "ok",
+      "cache_key",
+      "cache_status",
+      "message",
+      "stages"
+    ],
+    "title": "ExecutionProgressResponse",
+    "type": "object"
+  },
+  "ExecutionResponse": {
+    "$defs": {
+      "ExecutionProgressResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "cache_key": {
+            "title": "Cache Key",
+            "type": "string"
+          },
+          "cache_status": {
+            "enum": [
+              "HIT",
+              "MISS"
+            ],
+            "title": "Cache Status",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "ok": {
+            "const": true,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "stages": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Stages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ok",
+          "cache_key",
+          "cache_status",
+          "message",
+          "stages"
+        ],
+        "title": "ExecutionProgressResponse",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "cache": {
+        "$ref": "#/$defs/ExecutionProgressResponse"
+      },
       "execution": {
         "additionalProperties": true,
         "title": "Execution",
@@ -291,7 +380,8 @@ export const apiSchemas = {
     },
     "required": [
       "ok",
-      "execution"
+      "execution",
+      "cache"
     ],
     "title": "ExecutionResponseEnvelope",
     "type": "object"
@@ -464,10 +554,6 @@ export const apiSchemas = {
           "pitch": {
             "$ref": "#/$defs/PitchResponse"
           },
-          "plan_path": {
-            "title": "Plan Path",
-            "type": "string"
-          },
           "replay_window_id": {
             "title": "Replay Window Id",
             "type": "string"
@@ -506,7 +592,6 @@ export const apiSchemas = {
           "anchor_frame_id",
           "generated_at",
           "canonical_sources",
-          "plan_path",
           "pitch",
           "frames"
         ],
@@ -687,10 +772,6 @@ export const apiSchemas = {
           "pitch": {
             "$ref": "#/$defs/PitchResponse"
           },
-          "plan_path": {
-            "title": "Plan Path",
-            "type": "string"
-          },
           "replay_window_id": {
             "title": "Replay Window Id",
             "type": "string"
@@ -729,7 +810,6 @@ export const apiSchemas = {
           "anchor_frame_id",
           "generated_at",
           "canonical_sources",
-          "plan_path",
           "pitch",
           "frames"
         ],
@@ -1151,6 +1231,7 @@ export const apiSchemas = {
 export type BootstrapResponse = FromSchema<typeof apiSchemas["BootstrapResponse"]>;
 export type ConfirmationResponse = FromSchema<typeof apiSchemas["ConfirmationResponse"]>;
 export type ErrorResponse = FromSchema<typeof apiSchemas["ErrorResponse"]>;
+export type ExecutionProgressResponse = FromSchema<typeof apiSchemas["ExecutionProgressResponse"]>;
 export type ExecutionResponse = FromSchema<typeof apiSchemas["ExecutionResponse"]>;
 export type HealthResponse = FromSchema<typeof apiSchemas["HealthResponse"]>;
 export type InspectResultResponse = FromSchema<typeof apiSchemas["InspectResultResponse"]>;

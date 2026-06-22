@@ -4,6 +4,7 @@ import {
   bootstrap,
   confirm,
   execute,
+  executionCacheStatus,
   fetchPlan,
   inspectResult,
   inspectTimestamp,
@@ -15,6 +16,7 @@ import { advancePlaybackFrame } from "./playback";
 import type {
   BootstrapResponse,
   ConfirmationResponse,
+  ExecutionProgressResponse,
   ExecutionResponse,
   InspectResultResponse,
   InspectTimestampResponse,
@@ -81,6 +83,7 @@ export function App() {
   const [interpretation, setInterpretation] = useState<InterpretResponse | null>(null);
   const [validation, setValidation] = useState<SubmitValidateResponse | null>(null);
   const [confirmation, setConfirmation] = useState<ConfirmationResponse | null>(null);
+  const [executionProgress, setExecutionProgress] = useState<ExecutionProgressResponse | null>(null);
   const [execution, setExecution] = useState<ExecutionResponse | null>(null);
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
   const [inspection, setInspection] = useState<InspectResultResponse | null>(null);
@@ -189,12 +192,20 @@ export function App() {
     setInterpretation({
       ok: true,
       status: "PLAN_INTERPRETED",
+      query: null,
+      message: null,
+      source: "manual_preset",
       recipe: payload.recipe,
       plan_document: payload.plan_document,
-      plan_hash: payload.plan_hash
+      plan_hash: payload.plan_hash,
+      clarification_questions: null,
+      clarification_codes: null,
+      capability_gaps: null,
+      manual_available: null
     });
     setValidation(null);
     setConfirmation(null);
+    setExecutionProgress(null);
     setExecution(null);
     setInspection(null);
     setTimestampInspection(null);
@@ -215,6 +226,7 @@ export function App() {
       setPlanDocument(payload.plan_document);
       setValidation(null);
       setConfirmation(null);
+      setExecutionProgress(null);
       setExecution(null);
       setInspection(null);
       setTimestampInspection(null);
@@ -228,6 +240,7 @@ export function App() {
     if (!payload) return;
     setValidation(payload);
     setConfirmation(null);
+    setExecutionProgress(null);
     setExecution(null);
     setInspection(null);
     setTimestampInspection(null);
@@ -240,12 +253,35 @@ export function App() {
     const payload = await runAction("confirm", () => confirm(boundPlanId));
     if (!payload) return;
     setConfirmation(payload);
+    setExecutionProgress(null);
   }
 
   async function handleExecute() {
     const boundPlanId = confirmation?.confirmation.bound_plan_id;
     const authorizationId = confirmation?.confirmation.execution_authorization_id;
     if (!boundPlanId || !authorizationId) return;
+    setExecutionProgress({
+      ok: true,
+      cache_key: "pending",
+      cache_status: "MISS",
+      message: "Checking host-owned execution cache.",
+      stages: ["authorization_checked"]
+    });
+    const cache = await runAction("execute", () =>
+      executionCacheStatus({
+        bound_plan_id: boundPlanId,
+        execution_authorization_id: authorizationId,
+        result_limit: 25
+      })
+    );
+    if (!cache) return;
+    setExecutionProgress({
+      ...cache,
+      message:
+        cache.cache_status === "HIT"
+          ? "Cache hit: loading cached deterministic execution."
+          : "Cache miss: deterministic runtime is running."
+    });
     const payload = await runAction("execute", () =>
       execute({
         bound_plan_id: boundPlanId,
@@ -254,6 +290,7 @@ export function App() {
       })
     );
     if (!payload) return;
+    setExecutionProgress(payload.cache);
     setExecution(payload);
     const first = payload.execution.results[0];
     setSelectedResultId(first?.result_id ?? null);
@@ -458,6 +495,11 @@ export function App() {
               </div>
               {interpretation ? <StatusPill tone={interpretation.status === "PLAN_INTERPRETED" ? "good" : "warn"}>{interpretation.status}</StatusPill> : null}
             </div>
+            {interpretation?.source ? (
+              <div className="sourceLine" data-testid="interpretation-source">
+                source: <strong>{interpretation.source}</strong>
+              </div>
+            ) : null}
             {interpretation?.status === "CLARIFICATION_REQUIRED" ? (
               <StateList title="Clarification" items={interpretation.clarification_questions ?? []} />
             ) : null}
@@ -600,6 +642,14 @@ export function App() {
 
           <section className="panel">
             <div className="panelTitle">Execution</div>
+            {executionProgress ? (
+              <div className="progressBox" data-testid="execution-progress">
+                <div>
+                  <strong>{executionProgress.cache_status}</strong> {executionProgress.message}
+                </div>
+                <small>{executionProgress.stages.join(" -> ")}</small>
+              </div>
+            ) : null}
             <div data-testid="execution-result">
               <JsonBlock value={execution?.execution ?? { status: "not_executed" }} compact />
             </div>
