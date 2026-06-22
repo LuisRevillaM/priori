@@ -52,6 +52,16 @@ HERMES_S2_TOOL_NAMES = [
     "inspect_non_match",
     "retrieve_replay_window",
 ]
+HERMES_S2I_MCP_TOOL_NAMES = [
+    "list_capabilities",
+    "search_recipes",
+    "describe_capability",
+    "submit_query_plan",
+    "validate_query_plan",
+    "inspect_result",
+    "inspect_non_match",
+    "retrieve_replay_window",
+]
 MANUAL_ONLY_TOOL_NAMES = [
     "compare_query_versions",
     "record_feedback",
@@ -99,6 +109,7 @@ class FeedbackLabel(StrEnum):
 
 class CallerProfile(StrEnum):
     HERMES_S2 = "HERMES_S2"
+    HERMES_S2I_MCP = "HERMES_S2I_MCP"
     HOST_MANUAL = "HOST_MANUAL"
 
 
@@ -456,7 +467,7 @@ def submit_query_plan(
     output_root: Path = DEFAULT_WORKSHOP_ROOT,
     caller_profile: CallerProfile = CallerProfile.HERMES_S2,
 ) -> SubmitQueryPlanResponse:
-    if caller_profile == CallerProfile.HERMES_S2 and request.plan_document.draft_plan.status != PlanStatus.EXPERIMENTAL:
+    if is_model_caller(caller_profile) and request.plan_document.draft_plan.status != PlanStatus.EXPERIMENTAL:
         raise CapabilityGap("Hermes-authored query documents must be EXPERIMENTAL")
     document_payload = model_payload(request.plan_document)
     draft_hash = stable_hash(document_payload)
@@ -482,6 +493,18 @@ def submit_query_plan(
         recipe_version=request.plan_document.recipe.recipe_version,
         plan_status=request.plan_document.draft_plan.status.value,
     )
+
+
+def is_model_caller(caller_profile: CallerProfile) -> bool:
+    return caller_profile in {CallerProfile.HERMES_S2, CallerProfile.HERMES_S2I_MCP}
+
+
+def visible_tool_names(caller_profile: CallerProfile) -> list[str]:
+    if caller_profile == CallerProfile.HERMES_S2:
+        return HERMES_S2_TOOL_NAMES
+    if caller_profile == CallerProfile.HERMES_S2I_MCP:
+        return HERMES_S2I_MCP_TOOL_NAMES
+    return APPROVED_TOOL_NAMES
 
 
 def list_capabilities(caller_profile: CallerProfile = CallerProfile.HERMES_S2) -> CapabilityContext:
@@ -510,7 +533,7 @@ def list_capabilities(caller_profile: CallerProfile = CallerProfile.HERMES_S2) -
             }
         operators.append(payload)
 
-    tool_names = HERMES_S2_TOOL_NAMES if caller_profile == CallerProfile.HERMES_S2 else APPROVED_TOOL_NAMES
+    tool_names = visible_tool_names(caller_profile)
     return CapabilityContext(
         generated_at=utc_now_iso(),
         tools=[tool_spec(name) for name in tool_names],
@@ -1009,7 +1032,7 @@ def validate_safe_agent_plan(
     caller_profile: CallerProfile = CallerProfile.HERMES_S2,
 ) -> None:
     trusted_m1 = is_trusted_m1_bound_plan(bound)
-    if caller_profile == CallerProfile.HERMES_S2 and bound.plan_status != PlanStatus.EXPERIMENTAL:
+    if is_model_caller(caller_profile) and bound.plan_status != PlanStatus.EXPERIMENTAL:
         raise CapabilityGap("Hermes-authored query documents must be EXPERIMENTAL")
     if bound.plan_status == PlanStatus.APPROVED and not trusted_m1:
         raise CapabilityGap("Approved recipes must be loaded from trusted host records")
@@ -1172,8 +1195,8 @@ def dispatch_tool(
     caller_profile: CallerProfile = CallerProfile.HERMES_S2,
 ) -> ToolDispatchResponse:
     try:
-        if caller_profile == CallerProfile.HERMES_S2 and request.tool_name not in HERMES_S2_TOOL_NAMES:
-            raise CapabilityGap(f"{request.tool_name} is not available to Hermes S2")
+        if is_model_caller(caller_profile) and request.tool_name not in visible_tool_names(caller_profile):
+            raise CapabilityGap(f"{request.tool_name} is not available to {caller_profile.value}")
         if request.tool_name == "list_capabilities":
             ListCapabilitiesRequest.model_validate(request.arguments)
             response = list_capabilities(caller_profile)

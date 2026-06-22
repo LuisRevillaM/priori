@@ -33,6 +33,7 @@ from tqe.workshop.m1_2 import (
     APPROVED_TOOL_NAMES,
     CAPABILITY_CONTEXT_PATH,
     FORBIDDEN_SURFACES,
+    HERMES_S2I_MCP_TOOL_NAMES,
     HERMES_S2_TOOL_NAMES,
     MANUAL_ONLY_TOOL_NAMES,
     CallerProfile,
@@ -69,16 +70,7 @@ SOURCE_PATHS = [
     CAPABILITY_CONTEXT_PATH,
     *RECIPE_PLAN_PATHS,
 ]
-S2I_HERMES_MCP_TOOL_NAMES = [
-    "list_capabilities",
-    "search_recipes",
-    "describe_capability",
-    "submit_query_plan",
-    "validate_query_plan",
-    "inspect_result",
-    "inspect_non_match",
-    "retrieve_replay_window",
-]
+S2I_HERMES_MCP_TOOL_NAMES = HERMES_S2I_MCP_TOOL_NAMES
 S2I_HOST_ONLY_TOOL_NAMES = [
     "host_confirm_bound_plan",
     "execute_query_plan",
@@ -89,7 +81,7 @@ S2I_HOST_ONLY_TOOL_NAMES = [
 
 
 def build_tactical_knowledge_pack() -> dict[str, Any]:
-    capability_context = list_capabilities(CallerProfile.HERMES_S2).model_dump(mode="json")
+    capability_context = list_capabilities(CallerProfile.HERMES_S2I_MCP).model_dump(mode="json")
     catalog = default_catalog()
     recipes = [recipe_summary(path) for path in RECIPE_PLAN_PATHS]
     base: dict[str, Any] = {

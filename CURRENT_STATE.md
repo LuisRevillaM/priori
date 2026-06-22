@@ -6,8 +6,8 @@ Date: 2026-06-21
 
 - Branch: `codex/m1-1-s1-ir-binder`
 - Latest committed controller checkpoint before this snapshot:
-  `d745f6c Add S2I-B provisioning spike report`
-- Working tree: scoped S2I-B status/report updates; existing untracked review packets, primitive-audit artifacts, and `docs/learnings.zip` remain outside this snapshot.
+  `464b9a8 Verify Hermes install and S2I-B pass`
+- Working tree: scoped S2I-C Tactical MCP adapter integration; existing untracked review packets, primitive-audit artifacts, and `docs/learnings.zip` remain outside this snapshot.
 - Current product source of truth:
   - `delivery/m1.2/SPEC.md`
   - `delivery/m1.2/status.yaml`
@@ -75,6 +75,20 @@ inspect_non_match
 retrieve_replay_window
 ```
 
+The S2I product Hermes/MCP profile is stricter than the S2 reference compiler
+profile. It exposes only:
+
+```text
+list_capabilities
+search_recipes
+describe_capability
+submit_query_plan
+validate_query_plan
+inspect_result
+inspect_non_match
+retrieve_replay_window
+```
+
 Manual/host-only tools already exist:
 
 ```text
@@ -134,7 +148,7 @@ The existing app directory is `apps/replay-proof`, used for earlier replay proof
 - Hermes version: Hermes Agent v0.17.0 (2026.6.19), upstream `2b3a4f0a`.
 - Hermes auth: `openai-codex` logged in via ChatGPT/Codex subscription device auth under `HERMES_HOME=/Users/luisrevilla/.hermes-priori`.
 - Hermes model config: provider `openai-codex`, default `gpt-5.5`, reasoning effort `xhigh`.
-- MCP support for Hermes: base provisioning is now green; the tactical MCP adapter has not yet been connected to a real Hermes-authored validation.
+- MCP support for Hermes: tactical stdio MCP adapter is connected and verified through a real Hermes session that lists/searches/describes capabilities, submits a seeded experimental plan, validates it, and stops before execution.
 
 ## S2I-A Tactical Knowledge Pack
 
@@ -143,7 +157,7 @@ broader S2 regression run:
 
 - JSON: `generated/tactical-knowledge-pack.json`
 - Markdown: `generated/tactical-knowledge-pack.md`
-- Pack SHA-256: `35b5d64e426ec3eb27faee220f5500713e71b0dd2a55fd477a26cd888f38a41e`
+- Pack SHA-256: `28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854`
 - Verification: `make m1-2-gate-s2i-verify`
 - Local verification report:
   `docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md`
@@ -153,14 +167,35 @@ reference-harness tool surface from the S2I target Hermes/MCP allowlist. The S2I
 target keeps `execute_query_plan` and `host_confirm_bound_plan` host-only.
 `search_recipes` is implemented as a bounded schema-validated dispatcher tool.
 
-## Known Gaps After S2I-B
+## S2I-C Tactical MCP Integration
 
-- No real Hermes MCP adapter is wired to the bounded tool surface yet.
-- No real Hermes-authored tactical request has run through list/search/describe,
-  plan submission, validation, and stop-before-host-execution.
-- Initial high/xhigh comparison has run outside Hermes context and currently
-  recommends `xhigh`; Hermes-context evaluation still needs to prove the final
-  runtime setting.
+Controller-verified:
+
+- Report: `artifacts/m1.2/s2i-c-mcp-integration-report.json`
+- Local review: `docs/reviews/2026-06-21-m1-2-s2i-c-mcp-integration.md`
+- Verification: `make m1-2-gate-s2ic-verify`
+- Result: `12 pass / 0 fail`
+- MCP server: `src/tqe/workshop/mcp_server.py`
+- Hermes MCP server name: `priori_tactical`
+- Hermes session: `20260621_212207_0f45e6`
+- Draft plan: `draft_92769e17bb25b809`
+- Bound plan: `bound_7094041d9225ea8c`
+- Product allowlist excludes `execute_query_plan`, `host_confirm_bound_plan`,
+  arbitrary filesystem access, terminal access, raw-data dumps, resources, and
+  prompts.
+
+The proof is intentionally bounded. It proves Hermes can use the Tactical MCP
+adapter to submit and validate a seeded experimental plan through the host
+boundary, then stop before execution. It does not yet prove fully autonomous
+natural-language plan drafting from summary-only context.
+
+## Known Gaps After S2I-C
+
+- Fully autonomous Hermes drafting from natural language, without a seeded plan
+  document, has not yet passed as a product claim.
+- Initial high/xhigh comparison has run outside full Workbench context and
+  currently recommends `xhigh`; final product-runtime acceptance still needs the
+  post-freeze sealed path.
 - One broader S2 regression run must still complete successfully before S2I-A is
   formally accepted.
 - No final sealed acceptance set has been run against the intended frontier/Hermes path.
@@ -194,19 +229,20 @@ Provisioning proof is now green:
 
 ## Next Roadmap State
 
-The next implementation milestone is S2I tactical MCP integration on top of the
-now-provisioned frontier/Hermes path.
+The next implementation milestone is Workbench Alpha 1, with the Tactical MCP
+adapter preserved as the Hermes path and the direct compiler harness preserved
+only as a control/evaluation fallback.
 
-S2I should:
+S2I still needs final product-runtime acceptance after Workbench context is
+stable:
 
-1. Connect the tactical MCP adapter to Hermes without exposing host-only tools.
-2. Run one real Hermes-authored request through list/search/describe, submit,
-   validate, and stop before host execution.
-3. Record pack hash, Hermes version/config hashes, latency, and any model repair
-   or fallback use in session traces.
-4. Keep the direct model harness as a control/evaluation path only.
-5. Freeze the selected product runtime after Hermes-context validation.
-6. Run one final independent sealed acceptance set.
+1. Keep the Tactical MCP allowlist strict and host-owned.
+2. Record the knowledge-pack hash in future Hermes session traces.
+3. Do not expose host confirmation or execution to Hermes.
+4. Add richer knowledge retrieval or explicit drafting support only if needed by
+   a bounded Hermes drafting milestone.
+5. Run one final independent sealed acceptance set after the product runtime is
+   frozen.
 
 Workbench Alpha should start in parallel against stable deterministic contracts:
 

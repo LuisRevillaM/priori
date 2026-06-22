@@ -1,6 +1,6 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: S2I_B_PROVISIONED_GREEN_TACTICAL_MCP_INTEGRATION_NEXT_WORKBENCH_ALPHA_PARALLEL
+state: S2I_C_MCP_INTEGRATION_CONTROLLER_VERIFIED_WORKBENCH_ALPHA_PARALLEL
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-21"
 preconditions:
@@ -32,6 +32,7 @@ slices:
   S2I_frontier_agent_provisioning_and_context_rebaseline: IN_PROGRESS
   S2I_A_tactical_knowledge_pack: IMPLEMENTED_LOCAL_VERIFIED_PENDING_S2_REGRESSION
   S2I_B_frontier_and_hermes_provisioning_spike: DONE_CONTROLLER_VERIFIED
+  S2I_C_tactical_mcp_adapter_and_hermes_validation: DONE_CONTROLLER_VERIFIED
   Workbench_Alpha_1_query_to_result_shell: NEXT_PARALLEL_TRACK_B
   Workbench_Alpha_2_evidence_and_replay: PLANNED_AFTER_ALPHA_1
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
@@ -57,6 +58,7 @@ promotion_gates:
   Gate_S2I_frontier_agent_path_and_final_sealed_acceptance: REQUIRED_BLOCKING_S3
   Gate_S2I_A_tactical_knowledge_pack: PASS_LOCAL_PENDING_BROADER_S2_REGRESSION
   Gate_S2I_B_frontier_and_hermes_provisioning_spike: PASS_CONTROLLER
+  Gate_S2I_C_tactical_mcp_adapter_and_hermes_validation: PASS_CONTROLLER
   Gate_Workbench_Alpha_query_to_replay: REQUIRED_BLOCKING_S3
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
@@ -230,7 +232,7 @@ evidence:
   S2I_A_tactical_knowledge_pack:
     knowledge_pack_json: generated/tactical-knowledge-pack.json
     knowledge_pack_markdown: generated/tactical-knowledge-pack.md
-    knowledge_pack_sha256: 35b5d64e426ec3eb27faee220f5500713e71b0dd2a55fd477a26cd888f38a41e
+    knowledge_pack_sha256: 28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854
     verification_report: artifacts/m1.2/gate-s2i-verification-report.json
     verification_command: make m1-2-gate-s2i-verify
     verification_summary:
@@ -299,9 +301,44 @@ evidence:
       submit_query_plan: PASS
       validate_query_plan: PASS
       stopped_before_execution: PASS
+  S2I_C_tactical_mcp_adapter_and_hermes_validation:
+    mcp_server: src/tqe/workshop/mcp_server.py
+    verification_report: artifacts/m1.2/s2i-c-mcp-integration-report.json
+    local_review: docs/reviews/2026-06-21-m1-2-s2i-c-mcp-integration.md
+    verification_command: make m1-2-gate-s2ic-verify
+    verification_result: PASS_CONTROLLER
+    verification_summary:
+      passed: 12
+      failed: 0
+    hermes_mcp_server_name: priori_tactical
+    hermes_mcp_config: /Users/luisrevilla/.hermes-priori/config.yaml
+    hermes_mcp_allowlist:
+      - list_capabilities
+      - search_recipes
+      - describe_capability
+      - submit_query_plan
+      - validate_query_plan
+      - inspect_result
+      - inspect_non_match
+      - retrieve_replay_window
+    host_only_tools_absent:
+      - host_confirm_bound_plan
+      - execute_query_plan
+      - record_feedback
+      - compare_query_versions
+      - save_experimental_recipe
+    resources_enabled: false
+    prompts_enabled: false
+    live_hermes_session_id: "20260621_212207_0f45e6"
+    live_draft_plan_id: draft_92769e17bb25b809
+    live_bound_plan_id: bound_7094041d9225ea8c
+    live_seeded_plan_validation: true
+    stopped_before_execution: true
+    autonomous_unseeded_plan_drafting_claimed: false
+    report_sha256: 7fb6978013235d50b215dd2f05fcc41f6ba31bd6fc189de8c4bf4d550ca66e52
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: NONE_BEFORE_S2I_IMPLEMENTATION_UNLESS_SCOPE_CHANGES
-  scope: "S2I-A knowledge pack is implemented and locally verified, with formal acceptance pending one successful broader S2 regression. S2I-B frontier/Hermes provisioning is controller-verified: GPT-5.5 Responses strict output/high/xhigh pass, Hermes is installed, openai-codex subscription auth is logged in, and the provisioning gate passes 8/0. Next connect the tactical MCP adapter to Hermes and run one real Hermes-authored validation while Workbench Alpha 1 proceeds in parallel."
+  external_review: READY_FOR_NARROW_S2I_C_PACKET_IF_DESIRED
+  scope: "S2I-C Tactical MCP integration is controller-verified: Hermes sees exactly the bounded product allowlist, host-only execution and confirmation tools are absent, resources/prompts are disabled, and one live Hermes session listed/searched/described capabilities, submitted a seeded experimental plan, validated it, and stopped before execution. This does not claim fully autonomous unseeded plan drafting. Next start Workbench Alpha 1 against the host application service while preserving MCP as the Hermes adapter path."

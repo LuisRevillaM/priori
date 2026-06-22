@@ -1,0 +1,171 @@
+{
+  "checks": [
+    {
+      "details": {
+        "actual": "545eec0c97a43e4b6bacd1da9bba71bfc0872386410cc375315c743f853b35e1",
+        "expected": "545eec0c97a43e4b6bacd1da9bba71bfc0872386410cc375315c743f853b35e1"
+      },
+      "name": "pack.hash.matches_content",
+      "ok": true
+    },
+    {
+      "details": {
+        "path": "generated/tactical-knowledge-pack.md"
+      },
+      "name": "pack.markdown.exists",
+      "ok": true
+    },
+    {
+      "details": {},
+      "name": "pack.markdown.references_hash",
+      "ok": true
+    },
+    {
+      "details": {},
+      "name": "pack.markdown.generated_from_json",
+      "ok": true
+    },
+    {
+      "details": {
+        "recipe_ids": [
+          "ball_side_block_shift_v1",
+          "opposite_corridor_after_shift_v1",
+          "possession_corridor_availability_v1"
+        ]
+      },
+      "name": "pack.recipes.include_approved_m1",
+      "ok": true
+    },
+    {
+      "details": {
+        "recipe_ids": [
+          "ball_side_block_shift_v1",
+          "opposite_corridor_after_shift_v1",
+          "possession_corridor_availability_v1"
+        ]
+      },
+      "name": "pack.recipes.include_corridor",
+      "ok": true
+    },
+    {
+      "details": {
+        "tools": [
+          "describe_capability",
+          "inspect_non_match",
+          "inspect_result",
+          "list_capabilities",
+          "retrieve_replay_window",
+          "search_recipes",
+          "submit_query_plan",
+          "validate_query_plan"
+        ]
+      },
+      "name": "pack.tools.include_search_recipes",
+      "ok": true
+    },
+    {
+      "details": {
+        "schema_title": "SearchRecipesRequest",
+        "status": "implemented_reference_harness_tool"
+      },
+      "name": "pack.tools.search_recipes_implemented_schema",
+      "ok": true
+    },
+    {
+      "details": {
+        "tools": [
+          "describe_capability",
+          "inspect_non_match",
+          "inspect_result",
+          "list_capabilities",
+          "retrieve_replay_window",
+          "search_recipes",
+          "submit_query_plan",
+          "validate_query_plan"
+        ]
+      },
+      "name": "pack.tools.exclude_execute_from_hermes_mcp",
+      "ok": true
+    },
+    {
+      "details": {
+        "host_tools": [
+          "compare_query_versions",
+          "execute_query_plan",
+          "host_confirm_bound_plan",
+          "record_feedback",
+          "save_experimental_recipe"
+        ]
+      },
+      "name": "pack.tools.host_owns_execution",
+      "ok": true
+    },
+    {
+      "details": {
+        "gap_codes": [
+          "BODY_ORIENTATION",
+          "BODY_SHAPE",
+          "COACH_INSTRUCTIONS",
+          "COMMUNICATION",
+          "CONFIRMATION_BYPASS",
+          "DECEPTION",
+          "DIRECT_EXECUTION",
+          "FACIAL_CUES",
+          "OPTIMALITY",
+          "PASS_PROBABILITY",
+          "PLAYER_INTENT",
+          "PRIMITIVE_MUTATION",
+          "SCANNING",
+          "VIDEO"
+        ]
+      },
+      "name": "pack.gaps.include_safety_codes",
+      "ok": true
+    },
+    {
+      "details": {
+        "dimensions": [
+          "DISTANCE_THRESHOLD",
+          "SUPPORT_DEFINITION",
+          "TIME_WINDOW"
+        ]
+      },
+      "name": "pack.ambiguity.include_required_dimensions",
+      "ok": true
+    },
+    {
+      "details": {},
+      "name": "pack.schema.embedded",
+      "ok": true
+    },
+    {
+      "details": {
+        "count": 16
+      },
+      "name": "pack.source_hashes.present",
+      "ok": true
+    },
+    {
+      "details": {
+        "present_markers": []
+      },
+      "name": "pack.safety.no_secret_local_or_raw_payload_markers",
+      "ok": true
+    },
+    {
+      "details": {
+        "approx_tokens": 29885,
+        "json_chars": 119542
+      },
+      "name": "pack.size.recorded",
+      "ok": true
+    }
+  ],
+  "gate": "S2I_A_tactical_knowledge_pack",
+  "generated_at": "2026-06-22T04:35:44+00:00",
+  "knowledge_pack_markdown_path": "generated/tactical-knowledge-pack.md",
+  "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
+  "knowledge_pack_sha256": "545eec0c97a43e4b6bacd1da9bba71bfc0872386410cc375315c743f853b35e1",
+  "passed": true,
+  "schema_version": "1.0"
+}

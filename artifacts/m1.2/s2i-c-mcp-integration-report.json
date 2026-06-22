@@ -1,0 +1,235 @@
+{
+  "checks": [
+    {
+      "name": "mcp.server_tools_exact_allowlist",
+      "ok": true
+    },
+    {
+      "name": "mcp.host_only_tools_absent",
+      "ok": true
+    },
+    {
+      "name": "mcp.no_unknown_tools",
+      "ok": true
+    },
+    {
+      "name": "mcp.list_search_describe_submit_validate_ok",
+      "ok": true
+    },
+    {
+      "name": "mcp.submit_created_draft",
+      "ok": true
+    },
+    {
+      "name": "mcp.validate_created_bound_plan",
+      "ok": true
+    },
+    {
+      "name": "mcp.stopped_before_execution",
+      "ok": true
+    },
+    {
+      "name": "hermes.configured_exact_allowlist",
+      "ok": true
+    },
+    {
+      "name": "hermes.config_resources_prompts_disabled",
+      "ok": true
+    },
+    {
+      "name": "hermes.cli_mcp_test_discovers_8_tools",
+      "ok": true
+    },
+    {
+      "name": "hermes.live_session_stopped_before_execution",
+      "ok": true
+    },
+    {
+      "name": "hermes.live_session_bound_handle_present",
+      "ok": true
+    }
+  ],
+  "elapsed_ms": 1658,
+  "generated_at": "2026-06-22T04:35:37+00:00",
+  "hermes_cli_probe": {
+    "exit_code": 0,
+    "ok": true,
+    "output_excerpt": "Testing 'priori_tactical'...\n  Transport: stdio \u2192 /Users/luisrevilla/Documents/priori/.venv/bin/python\n  Auth: none\n  \u2713 Connected (559ms)\n  \u2713 Tools discovered: 8\n\n    list_capabilities                    Return the Hermes-safe S2I capability context.\n    search_recipes                       Search approved and experimental recipe summaries.\n    describe_capability                  Describe one exposed tool, primitive, relation, or oper...\n    submit_query_plan                    Store an experimental typed query document and return a...\n    validate_query_plan                  Bind and boundary-check a submitted typed query plan.\n    inspect_result                       Return predicate traces and requested evidence for a ho...\n    inspect_non_match                    Evaluate a known timestamp target against a host-create...\n    retrieve_replay_window               Materialize a bounded coordinate replay artifact for a ...",
+    "tools_discovered_8": true
+  },
+  "hermes_config": {
+    "args": [
+      "-m",
+      "tqe.workshop.mcp_server"
+    ],
+    "command": "/Users/luisrevilla/Documents/priori/.venv/bin/python",
+    "host_only_tools_absent": true,
+    "include": [
+      "list_capabilities",
+      "search_recipes",
+      "describe_capability",
+      "submit_query_plan",
+      "validate_query_plan",
+      "inspect_result",
+      "inspect_non_match",
+      "retrieve_replay_window"
+    ],
+    "include_exact_allowlist": true,
+    "path": "/Users/luisrevilla/.hermes-priori/config.yaml",
+    "present": true,
+    "prompts": false,
+    "resources": false,
+    "server_configured": true,
+    "server_name": "priori_tactical"
+  },
+  "live_hermes_validation": {
+    "bound_execution_profile": "generic",
+    "bound_handle_present": true,
+    "draft_handle_present": true,
+    "no_execution_handle_claimed": true,
+    "observed_final_response": {
+      "bound_plan_id": "bound_7094041d9225ea8c",
+      "draft_plan_id": "draft_92769e17bb25b809",
+      "error": null,
+      "plan_status": "experimental",
+      "stopped_before_execution": true,
+      "tools_used": [
+        "list_capabilities",
+        "search_recipes",
+        "describe_capability",
+        "submit_query_plan",
+        "validate_query_plan"
+      ]
+    },
+    "session_id": "20260621_212207_0f45e6"
+  },
+  "mcp_server": {
+    "allowlist": [
+      "list_capabilities",
+      "search_recipes",
+      "describe_capability",
+      "submit_query_plan",
+      "validate_query_plan",
+      "inspect_result",
+      "inspect_non_match",
+      "retrieve_replay_window"
+    ],
+    "args": [
+      "-m",
+      "tqe.workshop.mcp_server"
+    ],
+    "command": "/Users/luisrevilla/Documents/priori/.venv/bin/python",
+    "dependency": "mcp>=1.24,<2",
+    "host_only_tools": [
+      "host_confirm_bound_plan",
+      "execute_query_plan",
+      "record_feedback",
+      "compare_query_versions",
+      "save_experimental_recipe"
+    ],
+    "module": "tqe.workshop.mcp_server",
+    "output_root": "/Users/luisrevilla/Documents/priori/artifacts/m1.2/workshop"
+  },
+  "milestone": "M1.2",
+  "passed": true,
+  "schema_version": "1.0",
+  "slice": "S2I-C_tactical_mcp_adapter_validation",
+  "stdio_protocol_proof": {
+    "bound_plan_id": "bound_7094041d9225ea8c",
+    "draft_plan_id": "draft_92769e17bb25b809",
+    "elapsed_ms": 657,
+    "host_only_tools_absent": true,
+    "no_unknown_tools": true,
+    "ok": true,
+    "rows": [
+      {
+        "ok": true,
+        "tool_name": "tools/list",
+        "tool_names": [
+          "list_capabilities",
+          "search_recipes",
+          "describe_capability",
+          "submit_query_plan",
+          "validate_query_plan",
+          "inspect_result",
+          "inspect_non_match",
+          "retrieve_replay_window"
+        ]
+      },
+      {
+        "latency_ms": 27,
+        "ok": true,
+        "summary": {
+          "tool_count": 8,
+          "tools": [
+            "list_capabilities",
+            "search_recipes",
+            "describe_capability",
+            "submit_query_plan",
+            "validate_query_plan",
+            "inspect_result",
+            "inspect_non_match",
+            "retrieve_replay_window"
+          ]
+        },
+        "tool_name": "list_capabilities"
+      },
+      {
+        "latency_ms": 13,
+        "ok": true,
+        "summary": {
+          "count": 2,
+          "recipe_ids": [
+            "possession_corridor_availability_v1",
+            "opposite_corridor_after_shift_v1"
+          ]
+        },
+        "tool_name": "search_recipes"
+      },
+      {
+        "latency_ms": 16,
+        "ok": true,
+        "summary": {
+          "has_input_schema": true,
+          "kind": "tool",
+          "name": "submit_query_plan"
+        },
+        "tool_name": "describe_capability"
+      },
+      {
+        "latency_ms": 10,
+        "ok": true,
+        "summary": {
+          "draft_plan_id": "draft_92769e17bb25b809",
+          "plan_status": "experimental",
+          "recipe_id": "possession_corridor_availability_v1"
+        },
+        "tool_name": "submit_query_plan"
+      },
+      {
+        "latency_ms": 11,
+        "ok": true,
+        "summary": {
+          "bound_plan_id": "bound_7094041d9225ea8c",
+          "draft_plan_id": "draft_92769e17bb25b809",
+          "execution_profile": "generic",
+          "issue_count": 0,
+          "plan_status": "experimental"
+        },
+        "tool_name": "validate_query_plan"
+      }
+    ],
+    "stopped_before_execution": true,
+    "tool_names": [
+      "list_capabilities",
+      "search_recipes",
+      "describe_capability",
+      "submit_query_plan",
+      "validate_query_plan",
+      "inspect_result",
+      "inspect_non_match",
+      "retrieve_replay_window"
+    ],
+    "tool_names_exact_allowlist": true
+  }
+}
