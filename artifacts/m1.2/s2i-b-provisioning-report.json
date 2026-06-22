@@ -18,7 +18,7 @@
     },
     {
       "name": "hermes.executable_available",
-      "ok": false
+      "ok": true
     },
     {
       "name": "mcp.host_only_tools_absent",
@@ -45,33 +45,153 @@
     },
     "rows": [
       {
-        "estimated_cost_usd": 0.0106,
+        "estimated_cost_usd": 0.01054,
         "expected": "select_recipe",
         "first_pass_matches_expected": true,
         "first_pass_outcome": "select_recipe",
         "json_output": {
           "outcome": "select_recipe",
-          "rationale": "The user explicitly instructs to use a named reviewed recipe, indicating recipe selection rather than requesting a new draft or clarification."
+          "rationale": "The user explicitly directs use of a specific reviewed recipe, indicating recipe selection rather than requesting a new draft, clarification, or unsupported capability."
         },
-        "latency_ms": 6527,
+        "latency_ms": 9112,
         "ok": true,
         "parse_error": null,
         "probe_id": "supported_recipe_selection",
         "reasoning_effort": "high",
         "repair_or_fallback_used": false,
         "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_05dfd7f511175462006a389095bebc819a919e5cd825df85c8",
+        "response_id": "resp_060d5da1b0aee7b4006a38961d6a00819ba87c9420599aeae0",
         "returned_model": "gpt-5.5-2026-04-23",
         "usage": {
           "input_tokens": 86,
           "input_tokens_details": {
             "cached_tokens": 0
           },
-          "output_tokens": 339,
+          "output_tokens": 337,
           "output_tokens_details": {
-            "reasoning_tokens": 290
+            "reasoning_tokens": 285
           },
-          "total_tokens": 425
+          "total_tokens": 423
+        }
+      },
+      {
+        "estimated_cost_usd": 0.01669,
+        "expected": "draft",
+        "first_pass_matches_expected": false,
+        "first_pass_outcome": "select_recipe",
+        "json_output": {
+          "outcome": "select_recipe",
+          "rationale": "The request maps to a standard lane-detection query: identify forward/progressive lanes and filter them by temporal persistence with a minimum open duration of 0.8 seconds."
+        },
+        "latency_ms": 15051,
+        "ok": true,
+        "parse_error": null,
+        "probe_id": "supported_corridor_parameter",
+        "reasoning_effort": "high",
+        "repair_or_fallback_used": false,
+        "requested_model": "gpt-5.5-2026-04-23",
+        "response_id": "resp_08bb04f5b59b195b006a3896268f448198849fa9c544ba1825",
+        "returned_model": "gpt-5.5-2026-04-23",
+        "usage": {
+          "input_tokens": 92,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 541,
+          "output_tokens_details": {
+            "reasoning_tokens": 482
+          },
+          "total_tokens": 633
+        }
+      },
+      {
+        "estimated_cost_usd": 0.01633,
+        "expected": "clarify",
+        "first_pass_matches_expected": true,
+        "first_pass_outcome": "clarify",
+        "json_output": {
+          "outcome": "clarify",
+          "rationale": "The request is too underspecified: it lacks sport/match/team context and uses subjective terms like \"late runner\" and \"enough support\" without observable criteria, so clarification is needed before selecting or drafting a tactical query."
+        },
+        "latency_ms": 9524,
+        "ok": true,
+        "parse_error": null,
+        "probe_id": "ambiguous_support",
+        "reasoning_effort": "high",
+        "repair_or_fallback_used": false,
+        "requested_model": "gpt-5.5-2026-04-23",
+        "response_id": "resp_000c59c0f0d39346006a389635979c819985617500069ad5b5",
+        "returned_model": "gpt-5.5-2026-04-23",
+        "usage": {
+          "input_tokens": 86,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 530,
+          "output_tokens_details": {
+            "reasoning_tokens": 460
+          },
+          "total_tokens": 616
+        }
+      },
+      {
+        "estimated_cost_usd": 0.015475,
+        "expected": "capability_gap",
+        "first_pass_matches_expected": false,
+        "first_pass_outcome": "clarify",
+        "json_output": {
+          "outcome": "clarify",
+          "rationale": "The request requires visual context (clip/frame or a description of the midfielder, teammates, defenders, gaze/scanning, and body orientation) to infer an intended pass; none was provided."
+        },
+        "latency_ms": 9486,
+        "ok": true,
+        "parse_error": null,
+        "probe_id": "unsupported_intent",
+        "reasoning_effort": "high",
+        "repair_or_fallback_used": false,
+        "requested_model": "gpt-5.5-2026-04-23",
+        "response_id": "resp_000848647b2aee8d006a38963f1b28819882a7c6ccc598dab6",
+        "returned_model": "gpt-5.5-2026-04-23",
+        "usage": {
+          "input_tokens": 89,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 501,
+          "output_tokens_details": {
+            "reasoning_tokens": 439
+          },
+          "total_tokens": 590
+        }
+      },
+      {
+        "estimated_cost_usd": 0.00904,
+        "expected": "select_recipe",
+        "first_pass_matches_expected": true,
+        "first_pass_outcome": "select_recipe",
+        "json_output": {
+          "outcome": "select_recipe",
+          "rationale": "The user explicitly asks to use the reviewed ball-side defensive displacement recipe, so the appropriate action is to select that recipe rather than draft a new one or ask for clarification."
+        },
+        "latency_ms": 6431,
+        "ok": true,
+        "parse_error": null,
+        "probe_id": "supported_recipe_selection",
+        "reasoning_effort": "xhigh",
+        "repair_or_fallback_used": false,
+        "requested_model": "gpt-5.5-2026-04-23",
+        "response_id": "resp_09459bb040f4588d006a3896489b88819a9fe1cfb416c8772d",
+        "returned_model": "gpt-5.5-2026-04-23",
+        "usage": {
+          "input_tokens": 86,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 287,
+          "output_tokens_details": {
+            "reasoning_tokens": 228
+          },
+          "total_tokens": 373
         }
       },
       {
@@ -81,16 +201,16 @@
         "first_pass_outcome": "select_recipe",
         "json_output": {
           "outcome": "select_recipe",
-          "rationale": "The request is a clear tactical probe to identify forward lanes with an openness-duration constraint of at least 0.8 seconds; it maps directly to a lane-availability/persistence query and does not require clarification."
+          "rationale": "The request is a clear spatiotemporal tactical query: identify forward lanes and filter them by an explicit open-duration threshold of at least 0.8 seconds."
         },
-        "latency_ms": 14762,
+        "latency_ms": 11013,
         "ok": true,
         "parse_error": null,
         "probe_id": "supported_corridor_parameter",
-        "reasoning_effort": "high",
+        "reasoning_effort": "xhigh",
         "repair_or_fallback_used": false,
         "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_0919aa4244415bb7006a38909c44ec819a9fa14af64a6c450e",
+        "response_id": "resp_09412e7604a45199006a38964f0bc88199bbed6bf568e11510",
         "returned_model": "gpt-5.5-2026-04-23",
         "usage": {
           "input_tokens": 92,
@@ -99,216 +219,96 @@
           },
           "output_tokens": 574,
           "output_tokens_details": {
-            "reasoning_tokens": 507
+            "reasoning_tokens": 516
           },
           "total_tokens": 666
         }
       },
       {
-        "estimated_cost_usd": 0.01366,
+        "estimated_cost_usd": 0.00994,
         "expected": "clarify",
         "first_pass_matches_expected": true,
         "first_pass_outcome": "clarify",
         "json_output": {
           "outcome": "clarify",
-          "rationale": "The request is tactical but lacks the necessary context to identify examples: no match/video, team/player, phase of play, or definition of what counts as the late runner providing enough support."
+          "rationale": "The request is underspecified: it does not identify the domain/event, who or what the \u201clate runner\u201d is, or the criteria for \u201cenough support.\u201d"
         },
-        "latency_ms": 8788,
-        "ok": true,
-        "parse_error": null,
-        "probe_id": "ambiguous_support",
-        "reasoning_effort": "high",
-        "repair_or_fallback_used": false,
-        "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_017fb5a4ce631806006a3890ab06d08198bc4eacb4e4c69960",
-        "returned_model": "gpt-5.5-2026-04-23",
-        "usage": {
-          "input_tokens": 86,
-          "input_tokens_details": {
-            "cached_tokens": 0
-          },
-          "output_tokens": 441,
-          "output_tokens_details": {
-            "reasoning_tokens": 379
-          },
-          "total_tokens": 527
-        }
-      },
-      {
-        "estimated_cost_usd": 0.030685,
-        "expected": "capability_gap",
-        "first_pass_matches_expected": false,
-        "first_pass_outcome": "clarify",
-        "json_output": {
-          "outcome": "clarify",
-          "rationale": "The request requires specific visual context\u2014footage or a frame showing the midfielder\u2019s scan, body orientation, teammates, opponents, and passing lanes. Without that input, the intended pass can only be described generically, not inferred for the play."
-        },
-        "latency_ms": 15561,
-        "ok": true,
-        "parse_error": null,
-        "probe_id": "unsupported_intent",
-        "reasoning_effort": "high",
-        "repair_or_fallback_used": false,
-        "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_095eeeeb654d93f9006a3890b3d554819b851aecfd9e631e82",
-        "returned_model": "gpt-5.5-2026-04-23",
-        "usage": {
-          "input_tokens": 89,
-          "input_tokens_details": {
-            "cached_tokens": 0
-          },
-          "output_tokens": 1008,
-          "output_tokens_details": {
-            "reasoning_tokens": 934
-          },
-          "total_tokens": 1097
-        }
-      },
-      {
-        "estimated_cost_usd": 0.01333,
-        "expected": "select_recipe",
-        "first_pass_matches_expected": true,
-        "first_pass_outcome": "select_recipe",
-        "json_output": {
-          "outcome": "select_recipe",
-          "rationale": "The user explicitly names and requests use of a specific reviewed tactical recipe, so the appropriate action is to select that recipe rather than draft new content or ask for clarification."
-        },
-        "latency_ms": 9728,
-        "ok": true,
-        "parse_error": null,
-        "probe_id": "supported_recipe_selection",
-        "reasoning_effort": "xhigh",
-        "repair_or_fallback_used": false,
-        "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_0ecd528e656fa8ef006a3890c36118819baad7578b9db01407",
-        "returned_model": "gpt-5.5-2026-04-23",
-        "usage": {
-          "input_tokens": 86,
-          "input_tokens_details": {
-            "cached_tokens": 0
-          },
-          "output_tokens": 430,
-          "output_tokens_details": {
-            "reasoning_tokens": 372
-          },
-          "total_tokens": 516
-        }
-      },
-      {
-        "estimated_cost_usd": 0.01786,
-        "expected": "draft",
-        "first_pass_matches_expected": false,
-        "first_pass_outcome": "select_recipe",
-        "json_output": {
-          "outcome": "select_recipe",
-          "rationale": "The request is a clear tactical search for forward open lanes with a specified temporal persistence threshold of 0.8 seconds, which can map directly to an existing lane-availability/persistence analysis recipe."
-        },
-        "latency_ms": 9773,
-        "ok": true,
-        "parse_error": null,
-        "probe_id": "supported_corridor_parameter",
-        "reasoning_effort": "xhigh",
-        "repair_or_fallback_used": false,
-        "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_01cdcbb10884b428006a3890cd20808198aa991a3a7faa5c59",
-        "returned_model": "gpt-5.5-2026-04-23",
-        "usage": {
-          "input_tokens": 92,
-          "input_tokens_details": {
-            "cached_tokens": 0
-          },
-          "output_tokens": 580,
-          "output_tokens_details": {
-            "reasoning_tokens": 516
-          },
-          "total_tokens": 672
-        }
-      },
-      {
-        "estimated_cost_usd": 0.0334,
-        "expected": "clarify",
-        "first_pass_matches_expected": true,
-        "first_pass_outcome": "clarify",
-        "json_output": {
-          "outcome": "clarify",
-          "rationale": "The query is understandable tactically, but 'enough support' needs an operational definition\u2014e.g., support distance, passing angle/lane, timing, and which team/player or phase to evaluate."
-        },
-        "latency_ms": 25862,
+        "latency_ms": 9355,
         "ok": true,
         "parse_error": null,
         "probe_id": "ambiguous_support",
         "reasoning_effort": "xhigh",
         "repair_or_fallback_used": false,
         "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_00f07b7b1a537f33006a3890d6e39c8199bf68d72e13b7980a",
+        "response_id": "resp_06b29ebfed317a94006a38965a0a808198a76e5520c340d1bd",
         "returned_model": "gpt-5.5-2026-04-23",
         "usage": {
           "input_tokens": 86,
           "input_tokens_details": {
             "cached_tokens": 0
           },
-          "output_tokens": 1099,
+          "output_tokens": 317,
           "output_tokens_details": {
-            "reasoning_tokens": 1034
+            "reasoning_tokens": 259
           },
-          "total_tokens": 1185
+          "total_tokens": 403
         }
       },
       {
-        "estimated_cost_usd": 0.009445,
+        "estimated_cost_usd": 0.014815,
         "expected": "capability_gap",
         "first_pass_matches_expected": false,
         "first_pass_outcome": "clarify",
         "json_output": {
           "outcome": "clarify",
-          "rationale": "The request requires visual/contextual details about the midfielder\u2019s scanning, body orientation, teammates, opponents, and ball position, but no image, video, or scene description was provided."
+          "rationale": "The request requires visual context\u2014image/video or a timestamp showing the midfielder\u2019s scan, body angle, ball position, teammates, opponents, and passing lanes. Without that evidence, the intended pass cannot be inferred reliably."
         },
-        "latency_ms": 4837,
+        "latency_ms": 7843,
         "ok": true,
         "parse_error": null,
         "probe_id": "unsupported_intent",
         "reasoning_effort": "xhigh",
         "repair_or_fallback_used": false,
         "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_04a6ea41b62d30d1006a3890f0c58c819b901b1929a2505cce",
+        "response_id": "resp_05271f199b597936006a3896635f6c819b863bdfb38d987c72",
         "returned_model": "gpt-5.5-2026-04-23",
         "usage": {
           "input_tokens": 89,
           "input_tokens_details": {
             "cached_tokens": 0
           },
-          "output_tokens": 300,
+          "output_tokens": 479,
           "output_tokens_details": {
-            "reasoning_tokens": 239
+            "reasoning_tokens": 411
           },
-          "total_tokens": 389
+          "total_tokens": 568
         }
       }
     ],
     "summaries_by_effort": {
       "high": {
-        "average_latency_ms": 11409,
+        "average_latency_ms": 10793,
         "completed_count": 4,
         "completion_rate": 1.0,
-        "estimated_cost_usd": 0.072625,
+        "estimated_cost_usd": 0.059035,
         "exact_match_count": 2,
         "exact_match_rate": 0.5,
         "probe_count": 4,
-        "total_latency_ms": 45638
+        "total_latency_ms": 43173
       },
       "xhigh": {
-        "average_latency_ms": 12550,
+        "average_latency_ms": 8660,
         "completed_count": 4,
         "completion_rate": 1.0,
-        "estimated_cost_usd": 0.074035,
+        "estimated_cost_usd": 0.051475,
         "exact_match_count": 2,
         "exact_match_rate": 0.5,
         "probe_count": 4,
-        "total_latency_ms": 50200
+        "total_latency_ms": 34642
       }
     }
   },
-  "elapsed_ms": 106287,
+  "elapsed_ms": 86836,
   "environment": {
     "api_key_handling": "direct OpenAI probes only; Hermes instance must use ChatGPT/Codex subscription login",
     "api_key_present": true,
@@ -320,8 +320,10 @@
         "version_output": "codex-cli 0.142.0-alpha.6"
       },
       "hermes": {
-        "path": null,
-        "present": false
+        "path": "/Users/luisrevilla/.local/bin/hermes",
+        "present": true,
+        "version_command_exit_code": 0,
+        "version_output": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream 2b3a4f0a\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUp to date"
       },
       "hermes-agent": {
         "path": null,
@@ -423,7 +425,7 @@
         "o4-mini-deep-research",
         "o4-mini-deep-research-2025-06-26"
       ],
-      "latency_ms": 827,
+      "latency_ms": 616,
       "model_count": 126,
       "ok": true,
       "requested_model_present": true
@@ -431,68 +433,68 @@
     "requested_model_listed": true,
     "responses_api": {
       "reasoning_high": {
-        "estimated_cost_usd": 0.003095,
+        "estimated_cost_usd": 0.003365,
         "json_output": {
-          "answer": "The request has been satisfied with a valid structured response and status ok.",
+          "answer": "Careful reasoning completed; the structured response is valid and the status is ok.",
           "status": "ok"
         },
-        "latency_ms": 3439,
+        "latency_ms": 2865,
         "ok": true,
         "parse_error": null,
         "reasoning_effort": "high",
         "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_010406b4860783a9006a38908e8b048198a816143203bf97d0",
+        "response_id": "resp_03aace5c026cdbfe006a389617e7b08198a8e5e7f019bc6bd7",
         "returned_model": "gpt-5.5-2026-04-23",
         "usage": {
           "input_tokens": 55,
           "input_tokens_details": {
             "cached_tokens": 0
           },
-          "output_tokens": 94,
+          "output_tokens": 103,
           "output_tokens_details": {
-            "reasoning_tokens": 58
+            "reasoning_tokens": 65
           },
-          "total_tokens": 149
+          "total_tokens": 158
         }
       },
       "reasoning_xhigh": {
-        "estimated_cost_usd": 0.005535,
+        "estimated_cost_usd": 0.003975,
         "json_output": {
-          "answer": "Acknowledged. Structured response returned successfully.",
+          "answer": "Structured response returned successfully.",
           "status": "ok"
         },
-        "latency_ms": 4164,
+        "latency_ms": 2972,
         "ok": true,
         "parse_error": null,
         "reasoning_effort": "xhigh",
         "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_0a9d0ca5b257538e006a389091976c819882865535d5488f5d",
+        "response_id": "resp_078c6c12c0ce9cf3006a38961a6d208199bc16069f82424fac",
         "returned_model": "gpt-5.5-2026-04-23",
         "usage": {
           "input_tokens": 57,
           "input_tokens_details": {
             "cached_tokens": 0
           },
-          "output_tokens": 175,
+          "output_tokens": 123,
           "output_tokens_details": {
-            "reasoning_tokens": 145
+            "reasoning_tokens": 96
           },
-          "total_tokens": 232
+          "total_tokens": 180
         }
       },
       "requested_model": "gpt-5.5-2026-04-23",
       "strict_structured_output": {
         "estimated_cost_usd": 0.00089,
         "json_output": {
-          "answer": "Done",
+          "answer": "ok",
           "status": "ok"
         },
-        "latency_ms": 1691,
+        "latency_ms": 1665,
         "ok": true,
         "parse_error": null,
         "reasoning_effort": null,
         "requested_model": "gpt-5.5-2026-04-23",
-        "response_id": "resp_014dc356c6866056006a38908c90248198a4c0b9c979ef90a4",
+        "response_id": "resp_01e2dbb4248e2e98006a38961605148198a21aadd2d3c1614e",
         "returned_model": "gpt-5.5-2026-04-23",
         "usage": {
           "input_tokens": 52,
@@ -508,9 +510,9 @@
       }
     }
   },
-  "generated_at": "2026-06-22T01:31:55+00:00",
+  "generated_at": "2026-06-22T01:55:32+00:00",
   "hermes_availability": {
-    "available": false,
+    "available": true,
     "codex": {
       "path": "/Applications/Codex.app/Contents/Resources/codex",
       "present": true,
@@ -530,8 +532,10 @@
       }
     ],
     "hermes": {
-      "path": null,
-      "present": false
+      "path": "/Users/luisrevilla/.local/bin/hermes",
+      "present": true,
+      "version_command_exit_code": 0,
+      "version_output": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream 2b3a4f0a\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUp to date"
     },
     "hermes_agent": {
       "path": null,
@@ -544,7 +548,7 @@
     "bytes": 201461,
     "path": "generated/tactical-knowledge-pack.json",
     "present": true,
-    "sha256": "07b2b2f69e39c2af9f9208d962df4759daa2a68e96953c700c0a89a37b5ac1d5"
+    "sha256": "35b5d64e426ec3eb27faee220f5500713e71b0dd2a55fd477a26cd888f38a41e"
   },
   "mcp_proof": {
     "filesystem_terminal_raw_data_tools_visible": false,
@@ -624,12 +628,12 @@
     "trivial_stdio_mcp_connected": false
   },
   "milestone": "M1.2",
-  "passed": false,
+  "passed": true,
   "recommendation": {
-    "go_no_go": "NO_GO_FOR_FULL_S2I_B",
-    "next_step": "Install/configure Hermes with ChatGPT/Codex subscription login, then rerun the spike.",
-    "rationale": "high passed and measured at least as well as xhigh on the frozen comparison probes.",
-    "recommended_reasoning_effort": "high"
+    "go_no_go": "GO_FOR_HERMES_MCP_INTEGRATION",
+    "next_step": "Connect the tactical MCP adapter to Hermes and run a real Hermes-authored validation.",
+    "rationale": "xhigh was accepted and measured better on completion, exact matches, latency, and estimated cost.",
+    "recommended_reasoning_effort": "xhigh"
   },
   "requested_model": "gpt-5.5-2026-04-23",
   "schema_version": "1.0",

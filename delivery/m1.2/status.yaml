@@ -1,6 +1,6 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: S2I_B_PARTIAL_PROOF_BLOCKED_ON_HERMES_WORKBENCH_ALPHA_PARALLEL
+state: S2I_B_PROVISIONED_GREEN_TACTICAL_MCP_INTEGRATION_NEXT_WORKBENCH_ALPHA_PARALLEL
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-21"
 preconditions:
@@ -31,7 +31,7 @@ slices:
   S2H_stable_agent_vocabulary_codes_and_sealed_set_drift_control: DONE_CONTROLLER_VERIFIED
   S2I_frontier_agent_provisioning_and_context_rebaseline: IN_PROGRESS
   S2I_A_tactical_knowledge_pack: IMPLEMENTED_LOCAL_VERIFIED_PENDING_S2_REGRESSION
-  S2I_B_frontier_and_hermes_provisioning_spike: PARTIAL_PROOF_BLOCKED_ON_HERMES_INSTALL
+  S2I_B_frontier_and_hermes_provisioning_spike: DONE_CONTROLLER_VERIFIED
   Workbench_Alpha_1_query_to_result_shell: NEXT_PARALLEL_TRACK_B
   Workbench_Alpha_2_evidence_and_replay: PLANNED_AFTER_ALPHA_1
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
@@ -56,7 +56,7 @@ promotion_gates:
   Gate_S2H_next_fresh_independent_sealed_prompt_set: CANCELLED_SUPERSEDED_BY_S2I
   Gate_S2I_frontier_agent_path_and_final_sealed_acceptance: REQUIRED_BLOCKING_S3
   Gate_S2I_A_tactical_knowledge_pack: PASS_LOCAL_PENDING_BROADER_S2_REGRESSION
-  Gate_S2I_B_frontier_and_hermes_provisioning_spike: FAIL_BLOCKED_ON_HERMES_EXECUTABLE
+  Gate_S2I_B_frontier_and_hermes_provisioning_spike: PASS_CONTROLLER
   Gate_Workbench_Alpha_query_to_replay: REQUIRED_BLOCKING_S3
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
@@ -230,7 +230,7 @@ evidence:
   S2I_A_tactical_knowledge_pack:
     knowledge_pack_json: generated/tactical-knowledge-pack.json
     knowledge_pack_markdown: generated/tactical-knowledge-pack.md
-    knowledge_pack_sha256: 9a58b26f1426b9bfc7c61a531a8dfb05fd885cf035b925310594868a1f75160b
+    knowledge_pack_sha256: 35b5d64e426ec3eb27faee220f5500713e71b0dd2a55fd477a26cd888f38a41e
     verification_report: artifacts/m1.2/gate-s2i-verification-report.json
     verification_command: make m1-2-gate-s2i-verify
     verification_summary:
@@ -250,33 +250,47 @@ evidence:
     provisioning_report: artifacts/m1.2/s2i-b-provisioning-report.json
     local_review: docs/reviews/2026-06-21-m1-2-s2i-b-provisioning.md
     verification_command: make m1-2-gate-s2ib-verify
-    verification_result: FAIL_EXPECTED_BLOCKED_ON_HERMES_EXECUTABLE
+    verification_result: PASS_CONTROLLER
     verification_summary:
-      passed: 7
-      failed: 1
-      failing_check: hermes.executable_available
+      passed: 8
+      failed: 0
     requested_model: gpt-5.5-2026-04-23
     returned_model: gpt-5.5-2026-04-23
     responses_api:
       strict_structured_output: PASS
       reasoning_high: PASS
       reasoning_xhigh: PASS
-    recommended_reasoning_effort_before_hermes_context_eval: high
+    recommended_reasoning_effort_before_hermes_context_eval: xhigh
     comparison_summary:
       high:
         completed: 4
         probe_count: 4
         exact_matches: 2
-        total_latency_ms: 45638
-        estimated_cost_usd: 0.072625
+        total_latency_ms: 43173
+        estimated_cost_usd: 0.059035
       xhigh:
         completed: 4
         probe_count: 4
         exact_matches: 2
-        total_latency_ms: 50200
-        estimated_cost_usd: 0.074035
+        total_latency_ms: 34642
+        estimated_cost_usd: 0.051475
     pricing_source: https://openai.com/api/pricing/
-    hermes_status: NOT_ON_PATH
+    hermes_status: INSTALLED_AND_AUTHENTICATED
+    hermes_executable: /Users/luisrevilla/.local/bin/hermes
+    hermes_version: "Hermes Agent v0.17.0 (2026.6.19), upstream 2b3a4f0a"
+    hermes_home: /Users/luisrevilla/.hermes-priori
+    hermes_source: /Users/luisrevilla/.local/src/hermes-agent
+    hermes_auth_provider: openai-codex
+    hermes_auth_status: LOGGED_IN
+    hermes_default_model: gpt-5.5
+    hermes_reasoning_effort: xhigh
+    hermes_chat_smoke: HERMES_READY
+    unsupported_chatgpt_codex_model_ids_observed:
+      - gpt-5-codex
+      - gpt-5.1-codex
+      - gpt-5.1-codex-max
+      - gpt-5.2-codex
+      - gpt-5.3-codex
     hermes_auth_policy: CHATGPT_CODEX_SUBSCRIPTION_LOGIN_NOT_OPENAI_API_KEY
     tactical_tool_proof:
       list_capabilities: PASS
@@ -290,4 +304,4 @@ evidence:
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
   external_review: NONE_BEFORE_S2I_IMPLEMENTATION_UNLESS_SCOPE_CHANGES
-  scope: "S2I-A knowledge pack is implemented and locally verified, with formal acceptance pending one successful broader S2 regression. S2I-B direct frontier API probing is partially proven: GPT-5.5 Responses strict output/high/xhigh pass, but the full gate is blocked because no local Hermes executable is installed. Install/configure Hermes with ChatGPT/Codex subscription login and rerun S2I-B. Workbench Alpha 1 should proceed in parallel."
+  scope: "S2I-A knowledge pack is implemented and locally verified, with formal acceptance pending one successful broader S2 regression. S2I-B frontier/Hermes provisioning is controller-verified: GPT-5.5 Responses strict output/high/xhigh pass, Hermes is installed, openai-codex subscription auth is logged in, and the provisioning gate passes 8/0. Next connect the tactical MCP adapter to Hermes and run one real Hermes-authored validation while Workbench Alpha 1 proceeds in parallel."

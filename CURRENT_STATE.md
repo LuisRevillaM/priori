@@ -6,8 +6,8 @@ Date: 2026-06-21
 
 - Branch: `codex/m1-1-s1-ir-binder`
 - Latest committed controller checkpoint before this snapshot:
-  `bd67c96 Implement search_recipes and hold S2I-A acceptance`
-- Working tree: no tracked modifications at snapshot time; existing untracked review packets and `docs/learnings.zip` remain outside this snapshot.
+  `d745f6c Add S2I-B provisioning spike report`
+- Working tree: scoped S2I-B status/report updates; existing untracked review packets, primitive-audit artifacts, and `docs/learnings.zip` remain outside this snapshot.
 - Current product source of truth:
   - `delivery/m1.2/SPEC.md`
   - `delivery/m1.2/status.yaml`
@@ -128,10 +128,13 @@ The existing app directory is `apps/replay-proof`, used for earlier replay proof
 ## Agent And API Availability
 
 - `OPENAI_API_KEY`: present in the environment at snapshot time; key value was not inspected or logged.
-- GPT-5.5 snapshot access: not yet verified locally.
-- Responses API strict structured output call: not yet verified locally.
-- Hermes CLI/local install: no `hermes` or `hermes-agent` executable found on PATH during snapshot.
-- MCP support for Hermes: not yet verified locally.
+- GPT-5.5 snapshot access: verified through direct Responses API provisioning probes.
+- Responses API strict structured output call: verified for `gpt-5.5-2026-04-23`.
+- Hermes CLI/local install: verified at `/Users/luisrevilla/.local/bin/hermes`.
+- Hermes version: Hermes Agent v0.17.0 (2026.6.19), upstream `2b3a4f0a`.
+- Hermes auth: `openai-codex` logged in via ChatGPT/Codex subscription device auth under `HERMES_HOME=/Users/luisrevilla/.hermes-priori`.
+- Hermes model config: provider `openai-codex`, default `gpt-5.5`, reasoning effort `xhigh`.
+- MCP support for Hermes: base provisioning is now green; the tactical MCP adapter has not yet been connected to a real Hermes-authored validation.
 
 ## S2I-A Tactical Knowledge Pack
 
@@ -140,7 +143,7 @@ broader S2 regression run:
 
 - JSON: `generated/tactical-knowledge-pack.json`
 - Markdown: `generated/tactical-knowledge-pack.md`
-- Pack SHA-256: `9a58b26f1426b9bfc7c61a531a8dfb05fd885cf035b925310594868a1f75160b`
+- Pack SHA-256: `35b5d64e426ec3eb27faee220f5500713e71b0dd2a55fd477a26cd888f38a41e`
 - Verification: `make m1-2-gate-s2i-verify`
 - Local verification report:
   `docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md`
@@ -150,33 +153,33 @@ reference-harness tool surface from the S2I target Hermes/MCP allowlist. The S2I
 target keeps `execute_query_plan` and `host_confirm_bound_plan` host-only.
 `search_recipes` is implemented as a bounded schema-validated dispatcher tool.
 
-## Known Gaps Before S2I-B
+## Known Gaps After S2I-B
 
-- No real Hermes MCP adapter is wired to the bounded tool surface.
-- GPT-5.5 direct Responses API access has been probed successfully, but no
-  Hermes-backed adapter has run it yet.
-- Initial high/xhigh comparison has run outside Hermes context and recommends
-  `high` until Hermes-context evaluation proves otherwise.
+- No real Hermes MCP adapter is wired to the bounded tool surface yet.
+- No real Hermes-authored tactical request has run through list/search/describe,
+  plan submission, validation, and stop-before-host-execution.
+- Initial high/xhigh comparison has run outside Hermes context and currently
+  recommends `xhigh`; Hermes-context evaluation still needs to prove the final
+  runtime setting.
 - One broader S2 regression run must still complete successfully before S2I-A is
   formally accepted.
 - No final sealed acceptance set has been run against the intended frontier/Hermes path.
-- No local `hermes` or `hermes-agent` executable is currently available; Hermes
-  must be installed/configured with ChatGPT/Codex subscription login before the
-  full S2I-B gate can pass.
 
 ## S2I-B Provisioning Spike
 
-Partial proof exists:
+Provisioning proof is now green:
 
 - Report: `artifacts/m1.2/s2i-b-provisioning-report.json`
 - Local review: `docs/reviews/2026-06-21-m1-2-s2i-b-provisioning.md`
-- Result: `7 pass / 1 fail`
-- Failing check: `hermes.executable_available`
+- Result: `8 pass / 0 fail`
 - Requested model: `gpt-5.5-2026-04-23`
 - Returned model: `gpt-5.5-2026-04-23`
 - Strict structured output: pass
 - `high` reasoning: pass
 - `xhigh` reasoning: pass
+- Hermes executable: `/Users/luisrevilla/.local/bin/hermes`
+- Hermes auth: `openai-codex: logged in`
+- Hermes smoke: `hermes chat -q` returned `HERMES_READY`
 - Product MCP allowlist excludes host-only execution and confirmation tools.
 - Tactical tool proof submits and validates the experimental corridor plan, then
   stops before execution.
@@ -191,15 +194,18 @@ Partial proof exists:
 
 ## Next Roadmap State
 
-The next implementation milestone is S2I: Frontier Agent Provisioning and Context Rebaseline.
+The next implementation milestone is S2I tactical MCP integration on top of the
+now-provisioned frontier/Hermes path.
 
 S2I should:
 
-1. Generate a single Tactical Knowledge Pack from current sources of truth.
-2. Expose the bounded tactical tools through a Hermes-compatible MCP/tool boundary.
-3. Configure and test GPT-5.5 through the Responses API with strict structured outputs.
+1. Connect the tactical MCP adapter to Hermes without exposing host-only tools.
+2. Run one real Hermes-authored request through list/search/describe, submit,
+   validate, and stop before host execution.
+3. Record pack hash, Hermes version/config hashes, latency, and any model repair
+   or fallback use in session traces.
 4. Keep the direct model harness as a control/evaluation path only.
-5. Freeze the selected product runtime.
+5. Freeze the selected product runtime after Hermes-context validation.
 6. Run one final independent sealed acceptance set.
 
 Workbench Alpha should start in parallel against stable deterministic contracts:

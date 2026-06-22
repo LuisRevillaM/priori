@@ -9,7 +9,9 @@ Direct OpenAI Responses API access is available for `gpt-5.5-2026-04-23`, and
 the provider accepts strict structured output with both `high` and `xhigh`
 reasoning efforts.
 
-No local `hermes` or `hermes-agent` executable is currently available on PATH.
+Hermes is now installed locally at `/Users/luisrevilla/.local/bin/hermes` and
+authenticated with `openai-codex` through the ChatGPT/Codex subscription device
+login path under `HERMES_HOME=/Users/luisrevilla/.hermes-priori`.
 
 ## Decision
 
@@ -17,17 +19,22 @@ Use the local `OPENAI_API_KEY` only for direct provisioning probes and reference
 API evidence. Hermes instances must use the ChatGPT/Codex subscription-login
 path, per owner direction.
 
+Use Hermes provider `openai-codex`, model `gpt-5.5`, and reasoning effort
+`xhigh` for the next integration slice. The local ChatGPT/Codex account did not
+accept the tested `*-codex` model IDs through Hermes, while `gpt-5.5` produced a
+successful `HERMES_READY` smoke response.
+
 Treat the old S2 reference harness and the S2I product MCP surface as separate
 surfaces. The reference harness still exposes `execute_query_plan`; the S2I
 product MCP allowlist must not.
 
 ## Learning
 
-The first useful S2I-B report should be a **no-go report**, not another runtime
-repair cycle. Model access, structured output, reasoning effort, and tactical
-tool validation are all good enough to proceed in parallel, but full Hermes
-acceptance cannot be claimed until the real Hermes runtime exists and connects
-through the same bounded allowlist.
+The first S2I-B report was correctly a no-go report. After installing and
+logging in to Hermes, the same gate now passes and should become the baseline for
+Hermes MCP integration. The remaining question is no longer "can this account run
+Hermes?" but "can a real Hermes instance call only the bounded tactical MCP
+surface and stop before host execution?"
 
 ## Evidence
 
@@ -38,8 +45,7 @@ through the same bounded allowlist.
 
 ## Follow-Up
 
-Install/configure Hermes with subscription login, rerun S2I-B, then run one real
-Hermes-authored request through:
+Run one real Hermes-authored request through:
 
 ```text
 search/list/describe
