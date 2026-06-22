@@ -721,7 +721,7 @@ def hermes_python_executable(hermes: str) -> str:
         return sys.executable
     if first_line.startswith("#!"):
         executable = first_line[2:].strip()
-        if executable:
+        if executable and Path(executable).exists() and os.access(executable, os.X_OK):
             return executable
     return sys.executable
 

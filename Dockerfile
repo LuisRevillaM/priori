@@ -64,12 +64,13 @@ RUN apt-get update \
 RUN npm install -g n \
     && n 22 \
     && npm install -g @openai/codex@0.131.0 \
-    && python -m pip install --upgrade pip uv
+    && python -m pip install --upgrade pip
 
 RUN git clone --recurse-submodules https://github.com/NousResearch/hermes-agent.git /opt/hermes-agent \
     && cd /opt/hermes-agent \
-    && uv venv venv --python 3.11 \
-    && VIRTUAL_ENV=/opt/hermes-agent/venv uv pip install -e ".[all]" \
+    && python -m venv venv \
+    && /opt/hermes-agent/venv/bin/python -m pip install --upgrade pip \
+    && /opt/hermes-agent/venv/bin/python -m pip install -e ".[all]" \
     && ln -sf /opt/hermes-agent/venv/bin/hermes /usr/local/bin/hermes
 
 COPY pyproject.toml ./

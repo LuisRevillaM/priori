@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -170,6 +171,16 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
 
             with patch.dict("os.environ", {"WORKBENCH_HERMES_PYTHON": str(root / "missing-python")}, clear=False):
                 self.assertEqual(str(python_path), hermes_python_executable(str(hermes_path)))
+
+    def test_hermes_python_ignores_broken_shebang_when_configured_path_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            hermes_path = root / "hermes"
+            hermes_path.write_text(f"#!{root / 'missing-python3'}\n", encoding="utf-8")
+            hermes_path.chmod(0o755)
+
+            with patch.dict("os.environ", {"WORKBENCH_HERMES_PYTHON": str(root / "missing-python")}, clear=False):
+                self.assertEqual(sys.executable, hermes_python_executable(str(hermes_path)))
 
 
 if __name__ == "__main__":
