@@ -1,0 +1,70 @@
+{
+  "all_in_domain": true,
+  "contains_entry_mode_evidence": true,
+  "distribution": {
+    "ENTERED_AFTER_OPEN": 2,
+    "NOT_ENTERED": 0,
+    "PRESENT_AT_OPEN": 3,
+    "UNKNOWN": 0
+  },
+  "entry_before_open_analysis": "Entry-before-open is structurally impossible: ball_entry_evaluation_into_destination_region scans ball frames from open_frame_id forward, so the first in-region frame satisfies frame_id >= open_frame_id. time_to_entry_seconds is therefore always >= 0.0, and entry_mode is PRESENT_AT_OPEN exactly when the entry frame equals the open frame (time_to_entry_seconds == 0.0).",
+  "entry_before_open_anomalies": [],
+  "entry_before_open_count": 0,
+  "entry_mode_domain": [
+    "PRESENT_AT_OPEN",
+    "ENTERED_AFTER_OPEN",
+    "NOT_ENTERED",
+    "UNKNOWN"
+  ],
+  "out_of_domain": [],
+  "per_result": [
+    {
+      "classification": "DESTINATION_ENTERED",
+      "entry_frame_id": 11375,
+      "entry_mode": "PRESENT_AT_OPEN",
+      "entry_status": "PASS",
+      "observed_window_end_frame_id": 11500,
+      "result_id": "0b06e5f2a538ab8e",
+      "time_to_entry_seconds": 0.0
+    },
+    {
+      "classification": "DESTINATION_ENTERED",
+      "entry_frame_id": 16969,
+      "entry_mode": "ENTERED_AFTER_OPEN",
+      "entry_status": "PASS",
+      "observed_window_end_frame_id": 17090,
+      "result_id": "a950be165bcf2a01",
+      "time_to_entry_seconds": 0.16
+    },
+    {
+      "classification": "DESTINATION_ENTERED",
+      "entry_frame_id": 23375,
+      "entry_mode": "PRESENT_AT_OPEN",
+      "entry_status": "PASS",
+      "observed_window_end_frame_id": 23500,
+      "result_id": "f81740ea1ba517e4",
+      "time_to_entry_seconds": 0.0
+    },
+    {
+      "classification": "DESTINATION_ENTERED",
+      "entry_frame_id": 27460,
+      "entry_mode": "PRESENT_AT_OPEN",
+      "entry_status": "PASS",
+      "observed_window_end_frame_id": 27585,
+      "result_id": "ac61ba5a1fe73030",
+      "time_to_entry_seconds": 0.0
+    },
+    {
+      "classification": "DESTINATION_ENTERED",
+      "entry_frame_id": 27697,
+      "entry_mode": "ENTERED_AFTER_OPEN",
+      "entry_status": "PASS",
+      "observed_window_end_frame_id": 27815,
+      "result_id": "3e052a0bb2e6559d",
+      "time_to_entry_seconds": 0.28
+    }
+  ],
+  "present_at_open_zero_time_consistent": true,
+  "result_count": 5,
+  "time_zero_mismatch": []
+}
