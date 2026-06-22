@@ -1,9 +1,15 @@
-FROM node:22-bookworm-slim AS frontend
+FROM python:3.12-slim AS frontend
 
 WORKDIR /app
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 python3-venv python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      curl \
+      nodejs \
+      npm \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g n \
+    && n 22
 
 COPY pyproject.toml ./
 COPY src ./src
