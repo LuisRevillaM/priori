@@ -5,7 +5,7 @@ source_of_truth:
   roadmap: MILESTONES.md
   current_milestone_spec: delivery/m1.2/SPEC.md
   current_state_snapshot: CURRENT_STATE.md
-last_updated: "2026-06-21"
+last_updated: "2026-06-22"
 scope:
   dataset: IDSSE_DFL_PUBLIC
   integration: none
@@ -23,7 +23,7 @@ milestones:
     depends_on: M1
   M1.2:
     name: "Grounded Tactical Query Workshop"
-    state: IN_PROGRESS_S2I_PLANNED_WORKBENCH_ALPHA_PARALLEL
+    state: IN_PROGRESS_N1B_VERIFIED_HERO_RERUN_NEXT
     status_file: delivery/m1.2/status.yaml
     depends_on: M1.1
   M2:
@@ -75,3 +75,6 @@ current_decisions:
   s3_blocked_until:
     - S2I_frontier_agent_path_frozen_and_final_sealed_acceptance_passes
     - Workbench_Alpha_query_to_replay_proven_on_real_data
+  n1_next_step:
+    - Re-freeze Hermes/Tactical Knowledge Pack configuration after N1B
+    - Rerun the same frozen N1 hero question once without prompt or catalog tuning

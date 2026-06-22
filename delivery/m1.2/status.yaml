@@ -495,9 +495,37 @@ evidence:
       - "Validated plan omits runtime-required analysis_rate_hz and fails host execution before result emission."
       - "Plan compares relation_destination_entry.entry_status to DESTINATION_ENTERED instead of PASS."
     next_slice: "N1B — Capability Output Domains and Runtime Parameter Contract"
+  N1B_capability_output_domains_and_runtime_parameter_contract:
+    status: CONTROLLER_VERIFIED_HERO_RERUN_NEXT
+    verifier: src/tqe/verification/n1b.py
+    verification_command: PYTHONPATH=src .venv/bin/python -m tqe.verification.n1b
+    report: artifacts/n1b/n1b-verification-report.json
+    failed_plan_fixture: config/evaluation/n1b_failed_hermes_draft_412f54700786817a.json
+    corrected_plan_artifact: artifacts/n1b/n1b-corrected-failed-hermes-plan.json
+    implementation:
+      host_injected_runtime_globals:
+        - analysis_rate_hz
+        - minimum_possession_seconds
+        - maximum_analysis_gap_ms
+        - minimum_outfield_players_per_team
+      output_domains:
+        relation_destination_entry.entry_status:
+          - PASS
+          - FAIL
+          - UNKNOWN
+      validation_rejection:
+        impossible_enum_compare: compare_value_not_allowed
+    proof_claims:
+      exact_failed_plan_replayed: true
+      failed_plan_rejected_before_execution: true
+      corrected_plan_model_visible_submit_validate: true
+      corrected_plan_host_confirm_execute: true
+      corrected_plan_generic_real_results: true
+      hermes_execution_tool_absent: true
+      unknown_semantics_preserved: true
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: REVIEW_N1_LIVE_FAILURE_AND_N1B_CORRECTIVE_SCOPE
-  scope: "N1A local expressibility is green, but the first live Hermes N1 run failed honestly after validation: runtime-required global parameters were missing and entry_status was compared to a tactical label instead of PASS. Do not rerun the frozen hero until N1B is implemented and reviewed. Workbench Alpha query-to-replay is controller-verified at commit 36649b3. S2I-F final-evaluation harness remains ready and fails closed until an independently authored sealed set is supplied."
+  external_review: OPTIONAL_REVIEW_N1B_BEFORE_OR_AFTER_HERO_RERUN
+  scope: "N1B is controller-verified: the exact failed Hermes plan now fails validation before execution, host runtime globals are injected for authored plans, entry_status exposes PASS/FAIL/UNKNOWN, and a corrected version submits, validates, host-confirms, and executes generically over real data. Next: re-freeze pack/configuration and rerun the same frozen hero question once through live Hermes without prompt/catalog tuning."

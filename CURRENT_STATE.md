@@ -4,10 +4,10 @@ Date: 2026-06-22
 
 ## Repository State
 
-- Branch: `codex/m1-1-s1-ir-binder`
+- Branch: `codex/integrated-alpha`
 - Latest committed controller checkpoint before this snapshot:
-  `4c475cd Verify unseeded Hermes plan authoring`
-- Working tree: scoped S2I-E frontier configuration freeze; existing untracked review packets and `docs/learnings.zip` remain outside this snapshot.
+  `2dfb0b4 Record N1 live Hermes failure`
+- Working tree: scoped N1B capability-contract correction; existing untracked review packets, audits, test-results, and `docs/learnings.zip` remain outside this snapshot.
 - Current product source of truth:
   - `delivery/m1.2/SPEC.md`
   - `delivery/m1.2/status.yaml`
@@ -35,6 +35,7 @@ football language
 - M1 real-data spine: verified through canonical IDSSE/DFL tracking artifacts and replay proof.
 - M1.1 deterministic tactical runtime: accepted through the M1.1S S7R2 unblock path, with M1 parity isolated behind the explicit legacy helper.
 - M1.2 S0/S1/S2 safety harness: controller-verified through bounded tool schemas, host confirmation, opaque handles, model-visible caller profiles, manual workshop, model-backed compiler harness, provenance, sealed evaluation reports, and deterministic fallback reporting.
+- Workbench Alpha/Beta 0 product path: controller-verified through a real query-to-result-to-replay loop, manifest-backed match scope, honest provenance labels, host confirmation, canonical match context, and evidence-backed corridor overlays.
 - Small-model compiler baseline: frozen at `f9eb5d8`.
 
 The `gpt-4o-mini` compiler lane is now a reference compiler harness and fallback/evaluation control. It is not the target meeting runtime. No more synonym hardening or fresh sealed-set requests should be opened against that lane unless a concrete regression in the reference harness is found.
@@ -48,7 +49,11 @@ make m1-2-gate-s2-sealed-verify
 make m1-2-gate-s2-verify
 make m1-2-gate-s2id-verify
 make m1-2-gate-s2ie-verify
+make m1-2-gate-s0-verify
+make m1-2-gate-s2i-verify
 make m1-2-verify
+PYTHONPATH=src .venv/bin/python -m tqe.verification.n1a
+PYTHONPATH=src .venv/bin/python -m tqe.verification.n1b
 make m1-1-gate-s7r-verify
 make test
 ```
@@ -133,13 +138,17 @@ Execution contract:
 
 ## UI Surface Today
 
-There is a plain generated manual workshop, not the final React product UI:
+There is now a Workbench Alpha/Beta 0 React product surface over the host
+orchestrator contracts, plus the older generated manual workshop artifacts:
 
+- React app: `apps/workbench-alpha`
 - HTML: `artifacts/m1.2/workshop/index.html`
 - Data: `artifacts/m1.2/workshop/manual-workshop-data.json`
 - Replay windows: `artifacts/m1.2/workshop/replay-windows/*.json`
 
-The existing app directory is `apps/replay-proof`, used for earlier replay proof/verification. There is not yet a Workbench Alpha React UI over the M1.2 orchestrator.
+The Workbench path is still not the final meeting UI polish layer, but it can
+run real approved/manual and experimental corridor queries, confirm execution,
+show results, inspect evidence/traces, and open coordinate replay.
 
 ## Agent And API Availability
 
@@ -255,6 +264,48 @@ The freeze intentionally does not claim final sealed acceptance. It fixes the ta
   it is no longer a frontier-runtime acceptance blocker.
 - No final sealed acceptance set has been run against the intended frontier/Hermes path.
 
+## N1 Novel Composition Proof
+
+Frozen hero question:
+
+> Show possessions where a progressive corridor opens within four seconds of possession starting, remains available for at least 0.8 seconds, and the ball enters that corridor's destination region within five seconds of the corridor opening.
+
+N1A local expressibility is green:
+
+- Verifier: `src/tqe/verification/n1a.py`
+- Command: `PYTHONPATH=src .venv/bin/python -m tqe.verification.n1a`
+- Result: `8 pass / 0 fail`
+- Local candidate emits real generic results and uses `possession_segment`,
+  `geometric_progressive_corridor_from_anchor_set`,
+  `relation_destination_entry`, `exists`, and `eq`.
+
+First live Hermes attempt failed honestly:
+
+- Session: `20260622_131836_38c3fb`
+- Draft: `draft_412f54700786817a`
+- Bound: `bound_a4cdbc77075c85e7`
+- Failure: validated plan later failed execution because `analysis_rate_hz`
+  was absent, and it compared `entry_status` to `DESTINATION_ENTERED` instead
+  of `PASS`.
+
+N1B capability-contract correction is controller-verified:
+
+- Verifier: `src/tqe/verification/n1b.py`
+- Command: `PYTHONPATH=src .venv/bin/python -m tqe.verification.n1b`
+- Result: `7 pass / 0 fail`
+- Failed draft fixture:
+  `config/evaluation/n1b_failed_hermes_draft_412f54700786817a.json`
+- Report: `artifacts/n1b/n1b-verification-report.json`
+- Contract change: host runtime globals are injected, and
+  `relation_destination_entry.entry_status` now exposes `PASS`, `FAIL`, and
+  `UNKNOWN` as explicit allowed values.
+- Validation now rejects the exact failed draft with
+  `compare_value_not_allowed` before execution.
+
+Next N1 step: re-freeze the Tactical Knowledge Pack/Hermes configuration after
+this commit and rerun the same frozen hero question once through live Hermes
+without prompt, alias, primitive, operator, catalog, or recipe tuning.
+
 ## S2I-B Provisioning Spike
 
 Provisioning proof is now green:
@@ -274,27 +325,22 @@ Provisioning proof is now green:
 - Tactical tool proof submits and validates the experimental corridor plan, then
   stops before execution.
 
-## Known Gaps Before Workbench Alpha
-
-- No React Workbench Alpha over the M1.2 orchestrator.
-- No hosted/local HTTP orchestrator API for the UI.
-- Existing manual workshop is static/plain and generated from artifacts.
-- UI does not yet show the full product loop: query, interpretation, confirmation, results, replay, evidence, clarification, capability gap, feedback.
-- Result-to-replay artifacts exist, but UI readiness and replay performance have not been measured for the Workbench Alpha target.
-
 ## Next Roadmap State
 
-The next frontier milestone is final independent evaluation against the frozen
-S2I-E Hermes/frontier route. Workbench Alpha continues in parallel as the visible
-product path.
+The immediate frontier milestone is the N1 hero rerun after N1B. The broader
+S2I-F final independent evaluation remains the formal frontier acceptance gate.
+Workbench Alpha continues in parallel as the visible product path.
 
-S2I-E should:
+The N1 rerun should:
 
-1. Keep the Tactical MCP allowlist strict and host-owned.
-2. Freeze Hermes provider/model/reasoning/toolset/config hashes.
-3. Keep the direct small-model compiler harness as regression/control only.
-4. Run final frontier evaluation against the frozen Hermes path.
-5. Do not expose host confirmation or execution to Hermes.
+1. Preserve the same frozen hero question.
+2. Re-freeze Hermes provider/model/reasoning/toolset/config and the generated
+   knowledge pack.
+3. Run live Hermes once with only the `priori_tactical` MCP tools.
+4. Stop before host execution unless the controller separately confirms the
+   validated plan.
+5. Preserve failure honestly if Hermes still selects a recipe, authors an
+   invalid plan, or cannot compose the concept.
 
 Workbench Alpha should start in parallel against stable deterministic contracts:
 

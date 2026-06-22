@@ -53,6 +53,50 @@ class BindError(ValueError):
         super().__init__(message)
 
 
+HOST_RUNTIME_PARAMETER_DEFAULTS: dict[str, ParameterDefinition] = {
+    "analysis_rate_hz": ParameterDefinition(
+        name="analysis_rate_hz",
+        payload_type=PayloadType.NUMBER,
+        unit=Unit.HERTZ,
+        required=False,
+        default=TypedValue(payload_type=PayloadType.NUMBER, unit=Unit.HERTZ, value=5),
+        minimum=1.0,
+        maximum=25.0,
+        description="Host-owned analysis cadence injected when an authored recipe omits it.",
+    ),
+    "minimum_possession_seconds": ParameterDefinition(
+        name="minimum_possession_seconds",
+        payload_type=PayloadType.NUMBER,
+        unit=Unit.SECOND,
+        required=False,
+        default=TypedValue(payload_type=PayloadType.NUMBER, unit=Unit.SECOND, value=5.0),
+        minimum=0.2,
+        maximum=60.0,
+        description="Host-owned minimum active-ball possession duration.",
+    ),
+    "maximum_analysis_gap_ms": ParameterDefinition(
+        name="maximum_analysis_gap_ms",
+        payload_type=PayloadType.NUMBER,
+        unit=Unit.MILLISECOND,
+        required=False,
+        default=TypedValue(payload_type=PayloadType.NUMBER, unit=Unit.MILLISECOND, value=250),
+        minimum=40.0,
+        maximum=2000.0,
+        description="Host-owned maximum permitted gap in the analysis stream.",
+    ),
+    "minimum_outfield_players_per_team": ParameterDefinition(
+        name="minimum_outfield_players_per_team",
+        payload_type=PayloadType.NUMBER,
+        unit=Unit.COUNT,
+        required=False,
+        default=TypedValue(payload_type=PayloadType.NUMBER, unit=Unit.COUNT, value=9),
+        minimum=1.0,
+        maximum=11.0,
+        description="Host-owned tracking-quality floor for outfield players per team.",
+    ),
+}
+
+
 def load_tactical_query_document(path: Path) -> TacticalQueryDocument:
     return TacticalQueryDocument.model_validate_json(path.read_text(encoding="utf-8"))
 
@@ -250,6 +294,8 @@ class Binder:
         invocation: QueryInvocation,
     ) -> list[ResolvedParameter]:
         parameter_defs = {parameter.name: parameter for parameter in recipe.parameters}
+        for name, parameter in HOST_RUNTIME_PARAMETER_DEFAULTS.items():
+            parameter_defs.setdefault(name, parameter)
         resolved: list[ResolvedParameter] = []
 
         for name in invocation.parameters:
@@ -643,6 +689,19 @@ class Binder:
                         f"{compare.unit.value}"
                     ),
                     f"{path}.compare.unit",
+                )
+            if (
+                compare.payload_type == PayloadType.ENUM
+                and input_type.allowed_values is not None
+                and str(compare.value) not in set(input_type.allowed_values)
+            ):
+                self._issue(
+                    "compare_value_not_allowed",
+                    (
+                        f"{node.input.source_node_id}.{node.input.output_name} allows "
+                        f"{sorted(input_type.allowed_values)}, got {compare.value}"
+                    ),
+                    f"{path}.compare.value",
                 )
         if signature.duration_required and duration is None:
             self._issue(

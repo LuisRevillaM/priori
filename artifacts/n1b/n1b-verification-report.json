@@ -1,0 +1,742 @@
+{
+  "checks": [
+    {
+      "details": {
+        "bound_plan_id": "bound_a4cdbc77075c85e7",
+        "draft_plan_id": "draft_412f54700786817a",
+        "path": "config/evaluation/n1b_failed_hermes_draft_412f54700786817a.json"
+      },
+      "id": "n1b.failed_draft_fixture_present",
+      "message": "Exact failed Hermes draft fixture is present.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "issues": [
+          {
+            "code": "compare_value_not_allowed",
+            "message": "destination_entry.entry_status allows ['FAIL', 'PASS', 'UNKNOWN'], got DESTINATION_ENTERED",
+            "path": "draft_plan.nodes[4].compare.value"
+          }
+        ],
+        "ok": false,
+        "submitted": {
+          "draft_plan_hash": "412f54700786817ab9fa80053b6acf53bc7cf73780a0c4c7072945a34fd1324f",
+          "draft_plan_id": "draft_412f54700786817a",
+          "ok": true,
+          "plan_status": "experimental",
+          "recipe_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+          "recipe_version": "0.1.0"
+        },
+        "validated": {
+          "bound_plan_hash": null,
+          "bound_plan_id": null,
+          "draft_plan_id": "draft_412f54700786817a",
+          "execution_profile": null,
+          "issues": [
+            {
+              "code": "compare_value_not_allowed",
+              "message": "destination_entry.entry_status allows ['FAIL', 'PASS', 'UNKNOWN'], got DESTINATION_ENTERED",
+              "path": "draft_plan.nodes[4].compare.value"
+            }
+          ],
+          "ok": false,
+          "plan_id": null,
+          "plan_status": null,
+          "recipe_id": null
+        }
+      },
+      "id": "n1b.failed_draft_rejected_before_execution",
+      "message": "The exact failed Hermes plan is rejected by validation before execution.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "allowed_values": [
+          "PASS",
+          "FAIL",
+          "UNKNOWN"
+        ],
+        "cardinality": "single",
+        "entity_scope": "relation",
+        "evidence_fields": [
+          "entry_status",
+          "relation_id",
+          "anchor_id",
+          "destination_entry_frame_id",
+          "time_to_entry_seconds",
+          "destination_region",
+          "destination_region_type",
+          "destination_region_bounds",
+          "destination_side",
+          "destination_lane",
+          "observed_window_start_frame_id",
+          "observed_window_end_frame_id",
+          "unknown_reason",
+          "missing_ball_frame_count"
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "entry_status",
+        "payload_type": "enum",
+        "temporal_type": "frame_signal",
+        "unit": "none"
+      },
+      "id": "n1b.output_domain_visible",
+      "message": "relation_destination_entry.entry_status declares the PASS/FAIL/UNKNOWN domain.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "analysis_rate_hz": {
+          "name": "analysis_rate_hz",
+          "source": "default",
+          "value": {
+            "payload_type": "number",
+            "unit": "hertz",
+            "value": 5
+          }
+        },
+        "maximum_analysis_gap_ms": {
+          "name": "maximum_analysis_gap_ms",
+          "source": "default",
+          "value": {
+            "payload_type": "number",
+            "unit": "millisecond",
+            "value": 250
+          }
+        },
+        "minimum_outfield_players_per_team": {
+          "name": "minimum_outfield_players_per_team",
+          "source": "default",
+          "value": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 9
+          }
+        },
+        "minimum_possession_seconds": {
+          "name": "minimum_possession_seconds",
+          "source": "default",
+          "value": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 5.0
+          }
+        }
+      },
+      "id": "n1b.runtime_globals_host_injected",
+      "message": "Host runtime globals are present in the corrected bound plan.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "submitted": {
+          "draft_plan_hash": "1b0eea5e9c19ce0f69a2cc586825fbd15a86718fd84d0add71c3fed63b965ec9",
+          "draft_plan_id": "draft_1b0eea5e9c19ce0f",
+          "ok": true,
+          "plan_status": "experimental",
+          "recipe_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+          "recipe_version": "0.1.0"
+        },
+        "validated": {
+          "bound_plan_hash": "2c6e585d0f2f2c5440e1d80d5458a0002e45e4a1e4aabfe7bc6c95be023a46de",
+          "bound_plan_id": "bound_2c6e585d0f2f2c54",
+          "draft_plan_id": "draft_1b0eea5e9c19ce0f",
+          "execution_profile": "generic",
+          "issues": [],
+          "ok": true,
+          "plan_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+          "plan_status": "experimental",
+          "recipe_id": "possession_progressive_corridor_destination_entry_n1_live_v1"
+        }
+      },
+      "id": "n1b.model_visible_submit_validate_ok",
+      "message": "Corrected plan submits and validates through the model-visible dispatcher.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bound_plan_hash": "2c6e585d0f2f2c5440e1d80d5458a0002e45e4a1e4aabfe7bc6c95be023a46de",
+        "bound_plan_id": "bound_2c6e585d0f2f2c54",
+        "compatibility_profile": "generic",
+        "draft_plan_hash": "1b0eea5e9c19ce0f69a2cc586825fbd15a86718fd84d0add71c3fed63b965ec9",
+        "execution_id": "exec_28ad53b4bfa270d4",
+        "ok": true,
+        "plan_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+        "plan_status": "experimental",
+        "results": [
+          {
+            "anchor_frame_id": 11365,
+            "classification": "DESTINATION_ENTERED",
+            "match_id": "J03WOY",
+            "match_time_ms": 54600,
+            "period": "firstHalf",
+            "rank": 1,
+            "requested_evidence": {
+              "corridor_duration_seconds": 3.8,
+              "corridor_open_frame_id": 11375,
+              "destination_entry_frame_id": 11375,
+              "destination_region": "left_half_space",
+              "entry_status": "PASS",
+              "minimum_clearance_m": 4.35,
+              "possession_duration_seconds": null,
+              "possession_end_frame_id": null,
+              "possession_start_frame_id": null,
+              "relation_id": "dd74570708cce6a3",
+              "target_player_id": "DFL-OBJ-00028V",
+              "time_to_entry_seconds": 0.0
+            },
+            "result_id": "f9967445afb780fe"
+          },
+          {
+            "anchor_frame_id": 16905,
+            "classification": "DESTINATION_ENTERED",
+            "match_id": "J03WOY",
+            "match_time_ms": 276200,
+            "period": "firstHalf",
+            "rank": 2,
+            "requested_evidence": {
+              "corridor_duration_seconds": 1.2,
+              "corridor_open_frame_id": 16965,
+              "destination_entry_frame_id": 16969,
+              "destination_region": "left_central",
+              "entry_status": "PASS",
+              "minimum_clearance_m": 4.11,
+              "possession_duration_seconds": null,
+              "possession_end_frame_id": null,
+              "possession_start_frame_id": null,
+              "relation_id": "58c6ce9aaff0107f",
+              "target_player_id": "DFL-OBJ-0000F8",
+              "time_to_entry_seconds": 0.16
+            },
+            "result_id": "7e5d1b6c984c7ef4"
+          },
+          {
+            "anchor_frame_id": 23330,
+            "classification": "DESTINATION_ENTERED",
+            "match_id": "J03WOY",
+            "match_time_ms": 533200,
+            "period": "firstHalf",
+            "rank": 3,
+            "requested_evidence": {
+              "corridor_duration_seconds": 2.4,
+              "corridor_open_frame_id": 23375,
+              "destination_entry_frame_id": 23375,
+              "destination_region": "right_central",
+              "entry_status": "PASS",
+              "minimum_clearance_m": 4.129,
+              "possession_duration_seconds": null,
+              "possession_end_frame_id": null,
+              "possession_start_frame_id": null,
+              "relation_id": "d9344cc7b12728bf",
+              "target_player_id": "DFL-OBJ-00028V",
+              "time_to_entry_seconds": 0.0
+            },
+            "result_id": "3abbe5053041784e"
+          }
+        ],
+        "returned_result_count": 3,
+        "total_result_count": 5,
+        "trace_count": 10
+      },
+      "id": "n1b.host_confirm_execute_ok",
+      "message": "Host-confirmed corrected plan executes over real canonical data.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "confirmed": {
+          "bound_plan_id": "bound_2c6e585d0f2f2c54",
+          "execution_authorization_id": "auth_d7bce501941c4407",
+          "ok": true
+        },
+        "executed": {
+          "bound_plan_hash": "2c6e585d0f2f2c5440e1d80d5458a0002e45e4a1e4aabfe7bc6c95be023a46de",
+          "bound_plan_id": "bound_2c6e585d0f2f2c54",
+          "compatibility_profile": "generic",
+          "draft_plan_hash": "1b0eea5e9c19ce0f69a2cc586825fbd15a86718fd84d0add71c3fed63b965ec9",
+          "execution_id": "exec_28ad53b4bfa270d4",
+          "ok": true,
+          "plan_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+          "plan_status": "experimental",
+          "results": [
+            {
+              "anchor_frame_id": 11365,
+              "classification": "DESTINATION_ENTERED",
+              "match_id": "J03WOY",
+              "match_time_ms": 54600,
+              "period": "firstHalf",
+              "rank": 1,
+              "requested_evidence": {
+                "corridor_duration_seconds": 3.8,
+                "corridor_open_frame_id": 11375,
+                "destination_entry_frame_id": 11375,
+                "destination_region": "left_half_space",
+                "entry_status": "PASS",
+                "minimum_clearance_m": 4.35,
+                "possession_duration_seconds": null,
+                "possession_end_frame_id": null,
+                "possession_start_frame_id": null,
+                "relation_id": "dd74570708cce6a3",
+                "target_player_id": "DFL-OBJ-00028V",
+                "time_to_entry_seconds": 0.0
+              },
+              "result_id": "f9967445afb780fe"
+            },
+            {
+              "anchor_frame_id": 16905,
+              "classification": "DESTINATION_ENTERED",
+              "match_id": "J03WOY",
+              "match_time_ms": 276200,
+              "period": "firstHalf",
+              "rank": 2,
+              "requested_evidence": {
+                "corridor_duration_seconds": 1.2,
+                "corridor_open_frame_id": 16965,
+                "destination_entry_frame_id": 16969,
+                "destination_region": "left_central",
+                "entry_status": "PASS",
+                "minimum_clearance_m": 4.11,
+                "possession_duration_seconds": null,
+                "possession_end_frame_id": null,
+                "possession_start_frame_id": null,
+                "relation_id": "58c6ce9aaff0107f",
+                "target_player_id": "DFL-OBJ-0000F8",
+                "time_to_entry_seconds": 0.16
+              },
+              "result_id": "7e5d1b6c984c7ef4"
+            },
+            {
+              "anchor_frame_id": 23330,
+              "classification": "DESTINATION_ENTERED",
+              "match_id": "J03WOY",
+              "match_time_ms": 533200,
+              "period": "firstHalf",
+              "rank": 3,
+              "requested_evidence": {
+                "corridor_duration_seconds": 2.4,
+                "corridor_open_frame_id": 23375,
+                "destination_entry_frame_id": 23375,
+                "destination_region": "right_central",
+                "entry_status": "PASS",
+                "minimum_clearance_m": 4.129,
+                "possession_duration_seconds": null,
+                "possession_end_frame_id": null,
+                "possession_start_frame_id": null,
+                "relation_id": "d9344cc7b12728bf",
+                "target_player_id": "DFL-OBJ-00028V",
+                "time_to_entry_seconds": 0.0
+              },
+              "result_id": "3abbe5053041784e"
+            }
+          ],
+          "returned_result_count": 3,
+          "total_result_count": 5,
+          "trace_count": 10
+        }
+      },
+      "id": "n1b.execution_does_not_require_hermes_execution_tool",
+      "message": "Execution remains host-confirmed, not model-authorized.",
+      "status": "pass"
+    }
+  ],
+  "corrected_flow": {
+    "bound_outputs": {
+      "destination_entry.entry_status": {
+        "allowed_values": [
+          "PASS",
+          "FAIL",
+          "UNKNOWN"
+        ],
+        "cardinality": "single",
+        "entity_scope": "relation",
+        "evidence_fields": [
+          "entry_status",
+          "relation_id",
+          "anchor_id",
+          "destination_entry_frame_id",
+          "time_to_entry_seconds",
+          "destination_region",
+          "destination_region_type",
+          "destination_region_bounds",
+          "destination_side",
+          "destination_lane",
+          "observed_window_start_frame_id",
+          "observed_window_end_frame_id",
+          "unknown_reason",
+          "missing_ball_frame_count"
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "entry_status",
+        "payload_type": "enum",
+        "temporal_type": "frame_signal",
+        "unit": "none"
+      },
+      "possession.anchors": {
+        "cardinality": "collection",
+        "entity_scope": "anchor",
+        "evidence_fields": [
+          "anchor_id",
+          "anchor_frame_id",
+          "start_frame_id",
+          "end_frame_id"
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "anchors",
+        "payload_type": "anchor_ref",
+        "temporal_type": "episode_set",
+        "unit": "none"
+      },
+      "possession.episodes": {
+        "cardinality": "collection",
+        "entity_scope": "possession",
+        "evidence_fields": [
+          "possession_start_frame_id",
+          "possession_end_frame_id",
+          "possession_duration_seconds"
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "episodes",
+        "payload_type": "boolean",
+        "temporal_type": "episode_set",
+        "unit": "none"
+      },
+      "progressive_corridor.anchor_evaluations": {
+        "cardinality": "collection",
+        "entity_scope": "anchor",
+        "evidence_fields": [
+          "anchor_id",
+          "anchor_frame_id",
+          "evaluation_status",
+          "relation_count",
+          "witness_relation_id",
+          "unknown_reason",
+          "state_counts"
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "anchor_evaluations",
+        "payload_type": "boolean",
+        "temporal_type": "episode_set",
+        "unit": "none"
+      },
+      "progressive_corridor.episodes": {
+        "cardinality": "collection",
+        "entity_scope": "relation",
+        "evidence_fields": [
+          "relation_id",
+          "open_frame_id",
+          "open_confirm_frame_id",
+          "close_frame_id",
+          "duration_seconds",
+          "target_player_id",
+          "destination_side",
+          "destination_region",
+          "destination_region_type",
+          "destination_region_bounds",
+          "destination_lane",
+          "minimum_clearance_m",
+          "limiting_defender_id",
+          "source_open_point",
+          "target_open_point",
+          "source_close_point",
+          "target_close_point"
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "episodes",
+        "payload_type": "relation_ref",
+        "temporal_type": "relation_episode_set",
+        "unit": "none"
+      }
+    },
+    "bound_parameters": {
+      "analysis_rate_hz": {
+        "name": "analysis_rate_hz",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "hertz",
+          "value": 5
+        }
+      },
+      "corridor_close_after_frames": {
+        "name": "corridor_close_after_frames",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        }
+      },
+      "corridor_max_window_seconds": {
+        "name": "corridor_max_window_seconds",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 4.0
+        }
+      },
+      "corridor_maximum_segment_length_m": {
+        "name": "corridor_maximum_segment_length_m",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 45.0
+        }
+      },
+      "corridor_minimum_clearance_m": {
+        "name": "corridor_minimum_clearance_m",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 4.0
+        }
+      },
+      "corridor_minimum_duration_seconds": {
+        "name": "corridor_minimum_duration_seconds",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.8
+        }
+      },
+      "corridor_minimum_progression_m": {
+        "name": "corridor_minimum_progression_m",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 5.0
+        }
+      },
+      "corridor_minimum_segment_length_m": {
+        "name": "corridor_minimum_segment_length_m",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 6.0
+        }
+      },
+      "corridor_open_after_frames": {
+        "name": "corridor_open_after_frames",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        }
+      },
+      "destination_entry_horizon_seconds": {
+        "name": "destination_entry_horizon_seconds",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 5.0
+        }
+      },
+      "maximum_analysis_gap_ms": {
+        "name": "maximum_analysis_gap_ms",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "millisecond",
+          "value": 250
+        }
+      },
+      "minimum_outfield_players_per_team": {
+        "name": "minimum_outfield_players_per_team",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 9
+        }
+      },
+      "minimum_possession_seconds": {
+        "name": "minimum_possession_seconds",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 5.0
+        }
+      },
+      "result_id_seed_hash": {
+        "name": "result_id_seed_hash",
+        "source": "default",
+        "value": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "possession_progressive_corridor_destination_entry_n1_live_v1"
+        }
+      }
+    },
+    "confirmed": {
+      "bound_plan_id": "bound_2c6e585d0f2f2c54",
+      "execution_authorization_id": "auth_d7bce501941c4407",
+      "ok": true
+    },
+    "executed": {
+      "bound_plan_hash": "2c6e585d0f2f2c5440e1d80d5458a0002e45e4a1e4aabfe7bc6c95be023a46de",
+      "bound_plan_id": "bound_2c6e585d0f2f2c54",
+      "compatibility_profile": "generic",
+      "draft_plan_hash": "1b0eea5e9c19ce0f69a2cc586825fbd15a86718fd84d0add71c3fed63b965ec9",
+      "execution_id": "exec_28ad53b4bfa270d4",
+      "ok": true,
+      "plan_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+      "plan_status": "experimental",
+      "results": [
+        {
+          "anchor_frame_id": 11365,
+          "classification": "DESTINATION_ENTERED",
+          "match_id": "J03WOY",
+          "match_time_ms": 54600,
+          "period": "firstHalf",
+          "rank": 1,
+          "requested_evidence": {
+            "corridor_duration_seconds": 3.8,
+            "corridor_open_frame_id": 11375,
+            "destination_entry_frame_id": 11375,
+            "destination_region": "left_half_space",
+            "entry_status": "PASS",
+            "minimum_clearance_m": 4.35,
+            "possession_duration_seconds": null,
+            "possession_end_frame_id": null,
+            "possession_start_frame_id": null,
+            "relation_id": "dd74570708cce6a3",
+            "target_player_id": "DFL-OBJ-00028V",
+            "time_to_entry_seconds": 0.0
+          },
+          "result_id": "f9967445afb780fe"
+        },
+        {
+          "anchor_frame_id": 16905,
+          "classification": "DESTINATION_ENTERED",
+          "match_id": "J03WOY",
+          "match_time_ms": 276200,
+          "period": "firstHalf",
+          "rank": 2,
+          "requested_evidence": {
+            "corridor_duration_seconds": 1.2,
+            "corridor_open_frame_id": 16965,
+            "destination_entry_frame_id": 16969,
+            "destination_region": "left_central",
+            "entry_status": "PASS",
+            "minimum_clearance_m": 4.11,
+            "possession_duration_seconds": null,
+            "possession_end_frame_id": null,
+            "possession_start_frame_id": null,
+            "relation_id": "58c6ce9aaff0107f",
+            "target_player_id": "DFL-OBJ-0000F8",
+            "time_to_entry_seconds": 0.16
+          },
+          "result_id": "7e5d1b6c984c7ef4"
+        },
+        {
+          "anchor_frame_id": 23330,
+          "classification": "DESTINATION_ENTERED",
+          "match_id": "J03WOY",
+          "match_time_ms": 533200,
+          "period": "firstHalf",
+          "rank": 3,
+          "requested_evidence": {
+            "corridor_duration_seconds": 2.4,
+            "corridor_open_frame_id": 23375,
+            "destination_entry_frame_id": 23375,
+            "destination_region": "right_central",
+            "entry_status": "PASS",
+            "minimum_clearance_m": 4.129,
+            "possession_duration_seconds": null,
+            "possession_end_frame_id": null,
+            "possession_start_frame_id": null,
+            "relation_id": "d9344cc7b12728bf",
+            "target_player_id": "DFL-OBJ-00028V",
+            "time_to_entry_seconds": 0.0
+          },
+          "result_id": "3abbe5053041784e"
+        }
+      ],
+      "returned_result_count": 3,
+      "total_result_count": 5,
+      "trace_count": 10
+    },
+    "submitted": {
+      "draft_plan_hash": "1b0eea5e9c19ce0f69a2cc586825fbd15a86718fd84d0add71c3fed63b965ec9",
+      "draft_plan_id": "draft_1b0eea5e9c19ce0f",
+      "ok": true,
+      "plan_status": "experimental",
+      "recipe_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+      "recipe_version": "0.1.0"
+    },
+    "validated": {
+      "bound_plan_hash": "2c6e585d0f2f2c5440e1d80d5458a0002e45e4a1e4aabfe7bc6c95be023a46de",
+      "bound_plan_id": "bound_2c6e585d0f2f2c54",
+      "draft_plan_id": "draft_1b0eea5e9c19ce0f",
+      "execution_profile": "generic",
+      "issues": [],
+      "ok": true,
+      "plan_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+      "plan_status": "experimental",
+      "recipe_id": "possession_progressive_corridor_destination_entry_n1_live_v1"
+    }
+  },
+  "corrected_path": "artifacts/n1b/n1b-corrected-failed-hermes-plan.json",
+  "failed_hermes_session": {
+    "bind_summary": {
+      "bind_ok": false,
+      "error": "compare_value_not_allowed at draft_plan.nodes[4].compare.value: destination_entry.entry_status allows ['FAIL', 'PASS', 'UNKNOWN'], got DESTINATION_ENTERED",
+      "error_type": "BindError"
+    },
+    "bound_plan_id": "bound_a4cdbc77075c85e7",
+    "draft_path": "config/evaluation/n1b_failed_hermes_draft_412f54700786817a.json",
+    "draft_plan_id": "draft_412f54700786817a",
+    "failed_validation": {
+      "issues": [
+        {
+          "code": "compare_value_not_allowed",
+          "message": "destination_entry.entry_status allows ['FAIL', 'PASS', 'UNKNOWN'], got DESTINATION_ENTERED",
+          "path": "draft_plan.nodes[4].compare.value"
+        }
+      ],
+      "ok": false,
+      "submitted": {
+        "draft_plan_hash": "412f54700786817ab9fa80053b6acf53bc7cf73780a0c4c7072945a34fd1324f",
+        "draft_plan_id": "draft_412f54700786817a",
+        "ok": true,
+        "plan_status": "experimental",
+        "recipe_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+        "recipe_version": "0.1.0"
+      },
+      "validated": {
+        "bound_plan_hash": null,
+        "bound_plan_id": null,
+        "draft_plan_id": "draft_412f54700786817a",
+        "execution_profile": null,
+        "issues": [
+          {
+            "code": "compare_value_not_allowed",
+            "message": "destination_entry.entry_status allows ['FAIL', 'PASS', 'UNKNOWN'], got DESTINATION_ENTERED",
+            "path": "draft_plan.nodes[4].compare.value"
+          }
+        ],
+        "ok": false,
+        "plan_id": null,
+        "plan_status": null,
+        "recipe_id": null
+      }
+    },
+    "session_id": "20260622_131836_38c3fb"
+  },
+  "generated_at": "2026-06-22T21:12:05+00:00",
+  "schema_version": "n1b.verification.v1",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "pass": 7
+  }
+}

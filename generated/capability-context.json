@@ -107,7 +107,7 @@
     "result_row_mutation",
     "threshold_auto_tuning"
   ],
-  "generated_at": "2026-06-22T20:00:46+00:00",
+  "generated_at": "2026-06-22T20:53:25+00:00",
   "host_owned_complexity_ceilings": {
     "max_execution_cost": 100000,
     "max_nesting_depth": 12,
@@ -393,6 +393,7 @@
       "name": "possession_segment",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "possession",
           "evidence_fields": [
@@ -407,6 +408,7 @@
           "unit": "none"
         },
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "anchor",
           "evidence_fields": [
@@ -440,6 +442,7 @@
       "name": "ball_lateral_fraction",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "single",
           "entity_scope": "ball",
           "evidence_fields": [
@@ -471,6 +474,7 @@
       "name": "defensive_outfield_centroid",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "per_team",
           "entity_scope": "team",
           "evidence_fields": [
@@ -530,6 +534,7 @@
       "name": "signed_lateral_shift",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "single",
           "entity_scope": "team",
           "evidence_fields": [
@@ -546,6 +551,7 @@
           "unit": "metre"
         },
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "anchor",
           "evidence_fields": [
@@ -589,6 +595,7 @@
       "name": "outcome_classification",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "single",
           "entity_scope": "possession",
           "evidence_fields": [
@@ -653,6 +660,11 @@
       "name": "relation_destination_entry",
       "outputs": [
         {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
           "cardinality": "single",
           "entity_scope": "relation",
           "evidence_fields": [
@@ -743,6 +755,7 @@
       "name": "relation_destination_entry_classification",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "single",
           "entity_scope": "relation",
           "evidence_fields": [
@@ -844,6 +857,7 @@
       "name": "geometric_progressive_corridor",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "relation",
           "evidence_fields": [
@@ -872,6 +886,7 @@
           "unit": "none"
         },
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "anchor",
           "evidence_fields": [
@@ -1021,6 +1036,7 @@
       "name": "geometric_progressive_corridor_from_anchor_set",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "relation",
           "evidence_fields": [
@@ -1049,6 +1065,7 @@
           "unit": "none"
         },
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "anchor",
           "evidence_fields": [

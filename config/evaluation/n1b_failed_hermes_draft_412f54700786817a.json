@@ -1,0 +1,432 @@
+{
+  "bound_plan_hash": "a4cdbc77075c85e7d9c6d70ca63f00eb9838f03dd96e265c05b5b78c23996c5c",
+  "bound_plan_id": "bound_a4cdbc77075c85e7",
+  "document": {
+    "default_invocation": {
+      "execution_mode": "execute",
+      "invocation_id": "n1_live_possession_corridor_destination_entry_default",
+      "match_ids": [
+        "J03WOY",
+        "J03WPY",
+        "J03WQQ",
+        "J03WR9"
+      ],
+      "max_results": 64,
+      "periods": [
+        "firstHalf",
+        "secondHalf"
+      ],
+      "perspective_team_role": "home"
+    },
+    "draft_plan": {
+      "anchor_source": {
+        "output_name": "anchors",
+        "source_node_id": "possession"
+      },
+      "classification_mode": "partial_declared",
+      "classification_rules": [
+        {
+          "description": "A possession-start anchored progressive corridor opened within four seconds, persisted for at least 0.8 seconds, and the ball entered that corridor's destination region within five seconds of corridor opening.",
+          "label": "DESTINATION_ENTERED",
+          "predicate_ids": [
+            "has_progressive_corridor",
+            "destination_region_entered"
+          ]
+        }
+      ],
+      "complexity_limits": {
+        "max_execution_cost": 100000,
+        "max_nesting_depth": 4,
+        "max_plan_nodes": 20,
+        "max_relations_per_anchor": 1000,
+        "max_returned_moments": 64,
+        "max_temporal_horizon_seconds": 9.0
+      },
+      "nodes": [
+        {
+          "catalog_ref": "possession_segment",
+          "inputs": {},
+          "kind": "primitive",
+          "node_id": "possession",
+          "parameters": {},
+          "version": "0.1.0"
+        },
+        {
+          "catalog_ref": "geometric_progressive_corridor_from_anchor_set",
+          "inputs": {
+            "anchors": {
+              "output_name": "anchors",
+              "source_node_id": "possession"
+            }
+          },
+          "kind": "relation",
+          "node_id": "progressive_corridor",
+          "parameters": {
+            "close_after_frames": {
+              "kind": "parameter",
+              "name": "corridor_close_after_frames"
+            },
+            "max_window_seconds": {
+              "kind": "parameter",
+              "name": "corridor_max_window_seconds"
+            },
+            "maximum_segment_length_m": {
+              "kind": "parameter",
+              "name": "corridor_maximum_segment_length_m"
+            },
+            "minimum_clearance_m": {
+              "kind": "parameter",
+              "name": "corridor_minimum_clearance_m"
+            },
+            "minimum_duration_seconds": {
+              "kind": "parameter",
+              "name": "corridor_minimum_duration_seconds"
+            },
+            "minimum_progression_m": {
+              "kind": "parameter",
+              "name": "corridor_minimum_progression_m"
+            },
+            "minimum_segment_length_m": {
+              "kind": "parameter",
+              "name": "corridor_minimum_segment_length_m"
+            },
+            "open_after_frames": {
+              "kind": "parameter",
+              "name": "corridor_open_after_frames"
+            },
+            "side_filter": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "any"
+            }
+          },
+          "version": "0.1.0"
+        },
+        {
+          "catalog_ref": "relation_destination_entry",
+          "inputs": {
+            "relation_episodes": {
+              "output_name": "episodes",
+              "source_node_id": "progressive_corridor"
+            }
+          },
+          "kind": "primitive",
+          "node_id": "destination_entry",
+          "parameters": {
+            "destination_entry_horizon_seconds": {
+              "kind": "parameter",
+              "name": "destination_entry_horizon_seconds"
+            },
+            "episode_selection": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "entry_first_then_progression"
+            },
+            "result_id_seed": {
+              "kind": "parameter",
+              "name": "result_id_seed_hash"
+            }
+          },
+          "version": "0.1.0"
+        },
+        {
+          "compare": null,
+          "duration": null,
+          "input": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "progressive_corridor"
+          },
+          "kind": "predicate",
+          "node_id": "has_progressive_corridor",
+          "operator": {
+            "name": "exists",
+            "version": "1.0.0"
+          }
+        },
+        {
+          "compare": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "DESTINATION_ENTERED"
+          },
+          "duration": null,
+          "input": {
+            "output_name": "entry_status",
+            "source_node_id": "destination_entry"
+          },
+          "kind": "predicate",
+          "node_id": "destination_region_entered",
+          "operator": {
+            "name": "eq",
+            "version": "1.0.0"
+          }
+        }
+      ],
+      "plan_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+      "plan_version": "0.1.0",
+      "recipe_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+      "recipe_version": "0.1.0",
+      "requested_evidence": [
+        {
+          "alias": "possession_start_frame_id",
+          "field": "possession_start_frame_id",
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "possession"
+          }
+        },
+        {
+          "alias": "possession_end_frame_id",
+          "field": "possession_end_frame_id",
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "possession"
+          }
+        },
+        {
+          "alias": "possession_duration_seconds",
+          "field": "possession_duration_seconds",
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "possession"
+          }
+        },
+        {
+          "alias": "relation_id",
+          "field": "relation_id",
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "corridor_open_frame_id",
+          "field": "open_frame_id",
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "corridor_duration_seconds",
+          "field": "duration_seconds",
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "target_player_id",
+          "field": "target_player_id",
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "destination_region",
+          "field": "destination_region",
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "minimum_clearance_m",
+          "field": "minimum_clearance_m",
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "entry_status",
+          "field": "entry_status",
+          "source": {
+            "output_name": "entry_status",
+            "source_node_id": "destination_entry"
+          }
+        },
+        {
+          "alias": "destination_entry_frame_id",
+          "field": "destination_entry_frame_id",
+          "required": false,
+          "source": {
+            "output_name": "entry_status",
+            "source_node_id": "destination_entry"
+          }
+        },
+        {
+          "alias": "time_to_entry_seconds",
+          "field": "time_to_entry_seconds",
+          "required": false,
+          "source": {
+            "output_name": "entry_status",
+            "source_node_id": "destination_entry"
+          }
+        }
+      ],
+      "status": "experimental",
+      "unknown_evidence_policy": "exclude_candidate"
+    },
+    "recipe": {
+      "allowed_claims": [
+        "The team had an active-ball possession anchor.",
+        "A geometric progressive corridor appeared within the configured post-possession-start window and under the configured relation thresholds.",
+        "The geometric progressive corridor remained available for at least the configured minimum duration.",
+        "The ball entered the selected corridor destination region within the configured post-open horizon.",
+        "The replay coordinates come from canonical 25 Hz source frames."
+      ],
+      "default_unknown_evidence_policy": "exclude_candidate",
+      "description": "Experimental typed query plan composed from agent-authorable capabilities: start from active-ball possession anchors, find progressive corridor episodes opening within four seconds of possession start and persisting at least 0.8 seconds, then require ball entry into the selected corridor destination region within five seconds of corridor opening.",
+      "disallowed_claims": [
+        "The attack intentionally created the corridor.",
+        "A pass should have been played.",
+        "The corridor is optimal.",
+        "The result is a pass probability, decision-quality, causation, player-intent, or missed-opportunity claim.",
+        "The result is backed by licensed match video."
+      ],
+      "display_name": "Possession Progressive Corridor Destination Entry",
+      "limitations": [
+        "Experimental plan; not an approved recipe.",
+        "Destination entry is geometric ball-region entry only.",
+        "No offside, receiver body orientation, pressure, pass probability, optimality, or player-intent model is evaluated.",
+        "No match video is used."
+      ],
+      "output_classifications": [
+        "DESTINATION_ENTERED"
+      ],
+      "parameters": [
+        {
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "possession_progressive_corridor_destination_entry_n1_live_v1"
+          },
+          "description": "Plan-specific deterministic result ID seed.",
+          "name": "result_id_seed_hash",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 4.0
+          },
+          "description": "Maximum time after possession start in which the progressive corridor may open.",
+          "name": "corridor_max_window_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 5.0
+          },
+          "description": "Minimum forward progression for a corridor segment, using the ordinary possession-corridor threshold.",
+          "name": "corridor_minimum_progression_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 6.0
+          },
+          "description": "Minimum source-target segment length, using the ordinary possession-corridor threshold.",
+          "name": "corridor_minimum_segment_length_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 45.0
+          },
+          "description": "Maximum source-target segment length.",
+          "name": "corridor_maximum_segment_length_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 4.0
+          },
+          "description": "Minimum defender clearance from the corridor segment, using the ordinary possession-corridor threshold.",
+          "name": "corridor_minimum_clearance_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2
+          },
+          "description": "Consecutive passing relation frames required to open the corridor.",
+          "name": "corridor_open_after_frames",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2
+          },
+          "description": "Consecutive failing relation frames required to close the corridor.",
+          "name": "corridor_close_after_frames",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.8
+          },
+          "description": "Minimum open duration required by the frozen hero question.",
+          "name": "corridor_minimum_duration_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 5.0
+          },
+          "description": "Horizon after corridor opening to test ball entry into the corridor destination region.",
+          "name": "destination_entry_horizon_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        }
+      ],
+      "recipe_id": "possession_progressive_corridor_destination_entry_n1_live_v1",
+      "recipe_version": "0.1.0"
+    },
+    "schema_version": "1.0"
+  },
+  "draft_plan_id": "draft_412f54700786817a",
+  "schema_version": "n1b.failed_hermes_draft_fixture.v1",
+  "session_id": "20260622_131836_38c3fb",
+  "source_label": "hermes_mcp_n1_live_novel",
+  "source_message_id": 307,
+  "tool_name": "mcp_priori_tactical_submit_query_plan"
+}

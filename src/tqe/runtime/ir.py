@@ -355,6 +355,13 @@ class CatalogOutput(StrictModel):
     entity_scope: EntityScope = EntityScope.NONE
     missing_data_semantics: MissingDataSemantics
     evidence_fields: list[str] = Field(default_factory=list)
+    allowed_values: list[str] | None = None
+
+    @model_validator(mode="after")
+    def validate_allowed_values(self) -> "CatalogOutput":
+        if self.allowed_values is not None and self.payload_type != PayloadType.ENUM:
+            raise ValueError("allowed_values can only be declared for enum outputs")
+        return self
 
 
 class CatalogEntry(StrictModel):

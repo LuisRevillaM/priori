@@ -30,6 +30,7 @@ def output(
     unit: Unit = Unit.NONE,
     entity_scope: EntityScope = EntityScope.NONE,
     evidence_fields: list[str] | None = None,
+    allowed_values: list[str] | None = None,
     missing_data_semantics: MissingDataSemantics = MissingDataSemantics.UNKNOWN,
 ) -> CatalogOutput:
     return CatalogOutput(
@@ -41,6 +42,7 @@ def output(
         entity_scope=entity_scope,
         missing_data_semantics=missing_data_semantics,
         evidence_fields=evidence_fields or [],
+        allowed_values=allowed_values,
     )
 
 
@@ -342,6 +344,7 @@ def default_primitives() -> list[CatalogEntry]:
                     payload_type=PayloadType.ENUM,
                     cardinality=Cardinality.SINGLE,
                     entity_scope=EntityScope.RELATION,
+                    allowed_values=["PASS", "FAIL", "UNKNOWN"],
                     evidence_fields=[
                         "entry_status",
                         "relation_id",

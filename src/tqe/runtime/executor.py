@@ -22,7 +22,7 @@ import pyarrow.parquet as pq
 from lxml import etree
 
 from tqe.idsse.source_lock import SOURCE_VERSION
-from tqe.runtime.binder import bind_document_from_path
+from tqe.runtime.binder import HOST_RUNTIME_PARAMETER_DEFAULTS, bind_document_from_path
 from tqe.runtime.ir import (
     BoundCatalogNode,
     BoundPredicateNode,
@@ -593,8 +593,14 @@ class TacticalQueryExecutor:
 
 
 def runtime_parameters(bound_plan: BoundQueryPlan) -> RuntimeParameters:
+    values = {
+        name: parameter.default.value
+        for name, parameter in HOST_RUNTIME_PARAMETER_DEFAULTS.items()
+        if parameter.default is not None
+    }
+    values.update({item.name: item.value.value for item in bound_plan.resolved_parameters})
     return RuntimeParameters(
-        values={item.name: item.value.value for item in bound_plan.resolved_parameters}
+        values=values
     )
 
 

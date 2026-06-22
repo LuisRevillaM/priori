@@ -12,6 +12,9 @@ from tqe.runtime.binder import BindError, bind_document, bind_document_from_path
 from tqe.runtime.ir import TacticalQueryDocument
 
 PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
+N1_FAILED_HERMES_DRAFT_PATH = Path(
+    "config/evaluation/n1b_failed_hermes_draft_412f54700786817a.json"
+)
 
 
 def load_payload() -> dict:
@@ -111,6 +114,26 @@ class M11BinderTests(unittest.TestCase):
         }
 
         self.assertBindError(payload, "unknown_node_parameter")
+
+    def test_impossible_enum_compare_fails_at_bind_time(self) -> None:
+        payload = json.loads(N1_FAILED_HERMES_DRAFT_PATH.read_text(encoding="utf-8"))["document"]
+
+        self.assertBindError(payload, "compare_value_not_allowed")
+
+    def test_runtime_globals_are_host_injected_for_authored_plans(self) -> None:
+        payload = json.loads(N1_FAILED_HERMES_DRAFT_PATH.read_text(encoding="utf-8"))["document"]
+        for node in payload["draft_plan"]["nodes"]:
+            if node["node_id"] == "destination_region_entered":
+                node["compare"]["value"] = "PASS"
+
+        bound = bind_document(TacticalQueryDocument.model_validate(payload))
+        resolved = {item.name: item for item in bound.resolved_parameters}
+
+        self.assertEqual(5, resolved["analysis_rate_hz"].value.value)
+        self.assertEqual("default", resolved["analysis_rate_hz"].source)
+        self.assertEqual(5.0, resolved["minimum_possession_seconds"].value.value)
+        self.assertEqual(250, resolved["maximum_analysis_gap_ms"].value.value)
+        self.assertEqual(9, resolved["minimum_outfield_players_per_team"].value.value)
 
     def test_missing_required_node_input_fails_at_bind_time(self) -> None:
         payload = load_payload()
