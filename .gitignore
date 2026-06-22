@@ -6,6 +6,7 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 node_modules/
+*.tsbuildinfo
 .DS_Store
 
 # Generated evidence and large local data.
@@ -13,3 +14,6 @@ artifacts/
 data/raw/
 data/canonical/
 data/features/
+apps/workbench-alpha/dist/
+apps/workbench-alpha/vite.config.js
+apps/workbench-alpha/vite.config.d.ts
