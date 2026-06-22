@@ -174,7 +174,7 @@ def git_commit() -> str:
 
 
 def git_dirty() -> bool:
-    return bool(run_git(["status", "--porcelain"]))
+    return bool(run_git(["status", "--porcelain", "--untracked-files=no"]))
 
 
 def run_git(args: list[str]) -> str:
