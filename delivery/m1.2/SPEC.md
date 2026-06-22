@@ -220,6 +220,21 @@ tool boundary, and confirmation authority remain unchanged. S2I must:
   Hermes/tool config, repair policy, and deterministic fallback policy;
 - run one final independent sealed acceptance set after S2I freeze.
 
+S2I MCP posture:
+
+- MCP is the Hermes adapter over the host-owned application service, not the
+  application core.
+- The first demo transport is local `stdio`; remote/cloud MCP, auth platform,
+  service tokens, and production rate-limiting are deferred.
+- The target Hermes/MCP allowlist is `list_capabilities`, `search_recipes`,
+  `describe_capability`, `submit_query_plan`, `validate_query_plan`,
+  `inspect_result`, `inspect_non_match`, and `retrieve_replay_window`.
+- `host_confirm_bound_plan`, `execute_query_plan`, `record_feedback`,
+  `compare_query_versions`, and `save_experimental_recipe` remain host-only for
+  the S2I product path.
+- The current S2 reference harness may retain `execute_query_plan` for
+  regression coverage, but that is not the S2I Hermes product surface.
+
 Workbench Alpha starts in parallel with S2I. It should use the stable
 deterministic contracts to show the visible product loop: interpretation,
 confirmation, results, evidence, traces, coordinate replay, clarification, and

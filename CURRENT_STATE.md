@@ -132,11 +132,21 @@ The existing app directory is `apps/replay-proof`, used for earlier replay proof
 - Hermes CLI/local install: no `hermes` or `hermes-agent` executable found on PATH during snapshot.
 - MCP support for Hermes: not yet verified locally.
 
-## Known Gaps Before S2I
+## S2I-A Tactical Knowledge Pack
 
-- No generated `generated/tactical-knowledge-pack.json`.
-- No generated `generated/tactical-knowledge-pack.md`.
-- Tactical knowledge is still distributed across capability context, prompt text, compiler rules, schemas, recipes, docs, and evaluation code.
+Implemented and controller-verified:
+
+- JSON: `generated/tactical-knowledge-pack.json`
+- Markdown: `generated/tactical-knowledge-pack.md`
+- Pack SHA-256: `69cc6ed3160179643de2c5cf5ed7dcdb0c0ade35f8280178c8b22af1c7681866`
+- Verification: `make m1-2-gate-s2i-verify`
+
+The pack is generated from source hashes and distinguishes the current S2
+reference-harness tool surface from the S2I target Hermes/MCP allowlist. The S2I
+target keeps `execute_query_plan` and `host_confirm_bound_plan` host-only.
+
+## Known Gaps Before S2I-B
+
 - No real Hermes MCP adapter is wired to the bounded tool surface.
 - No GPT-5.5 Responses adapter has been implemented or benchmarked.
 - No high/xhigh effort comparison has been run.

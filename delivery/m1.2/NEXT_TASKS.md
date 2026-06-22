@@ -48,6 +48,31 @@ Scope:
    - MCP allowlisting of only selected tactical tools;
    - API billing/rate-limit readiness on the eventual demo machine.
 
+MCP posture:
+
+- MCP is the Hermes adapter, not the application core.
+- Build a host-owned application/orchestrator service first; the React
+  Workbench and the Tactical MCP adapter both call that same service.
+- Use local `stdio` MCP for the demo spike. Do not build remote/cloud MCP,
+  authentication, or service-token infrastructure yet.
+- The first Hermes/MCP allowlist is:
+  - `list_capabilities`
+  - `search_recipes`
+  - `describe_capability`
+  - `submit_query_plan`
+  - `validate_query_plan`
+  - `inspect_result`
+  - `inspect_non_match`
+  - `retrieve_replay_window`
+- Keep these host-only:
+  - `host_confirm_bound_plan`
+  - `execute_query_plan`
+  - `record_feedback`
+  - `compare_query_versions`
+  - `save_experimental_recipe`
+- The current S2 reference harness may still expose `execute_query_plan` for
+  regression tests, but the S2I product/Hermes path must not.
+
 Non-goals:
 
 - no runtime semantics changes;
@@ -63,6 +88,8 @@ Evidence required:
 - provisioning report with exact versions, configuration, latency, failures, and
   recommended next step;
 - no secrets in traces or reports.
+- proof that the generated pack distinguishes current reference-harness tools
+  from the S2I target Hermes/MCP allowlist.
 
 Stop condition:
 

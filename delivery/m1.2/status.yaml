@@ -29,8 +29,8 @@ slices:
   S2G_analyst_vocabulary_boundary_and_supported_family_fallback: DONE_CONTROLLER_VERIFIED
   S2G_first_fresh_sealed_set_run: DONE_FAILED_THEN_DIAGNOSTIC_AFTER_S2H
   S2H_stable_agent_vocabulary_codes_and_sealed_set_drift_control: DONE_CONTROLLER_VERIFIED
-  S2I_frontier_agent_provisioning_and_context_rebaseline: PLANNED
-  S2I_A_tactical_knowledge_pack: NEXT_PARALLEL_TRACK_A
+  S2I_frontier_agent_provisioning_and_context_rebaseline: IN_PROGRESS
+  S2I_A_tactical_knowledge_pack: DONE_CONTROLLER_VERIFIED
   S2I_B_frontier_and_hermes_provisioning_spike: NEXT_PARALLEL_TRACK_A
   Workbench_Alpha_1_query_to_result_shell: NEXT_PARALLEL_TRACK_B
   Workbench_Alpha_2_evidence_and_replay: PLANNED_AFTER_ALPHA_1
@@ -55,6 +55,7 @@ promotion_gates:
   Gate_S2G_first_fresh_independent_sealed_prompt_set: FAIL_BLOCKING_S3_THEN_PASS_DIAGNOSTIC_AFTER_S2H
   Gate_S2H_next_fresh_independent_sealed_prompt_set: CANCELLED_SUPERSEDED_BY_S2I
   Gate_S2I_frontier_agent_path_and_final_sealed_acceptance: REQUIRED_BLOCKING_S3
+  Gate_S2I_A_tactical_knowledge_pack: PASS_CONTROLLER
   Gate_Workbench_Alpha_query_to_replay: REQUIRED_BLOCKING_S3
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
@@ -204,14 +205,39 @@ evidence:
       - generated/tactical-knowledge-pack.json
       - generated/tactical-knowledge-pack.md
     required_runtime_path: "Hermes + GPT-5.5 + Tactical Knowledge Pack + bounded tool surface"
+    mcp_posture: "local stdio Tactical MCP adapter over host-owned application service; MCP is not the app core"
+    s2i_hermes_mcp_allowlist:
+      - list_capabilities
+      - search_recipes
+      - describe_capability
+      - submit_query_plan
+      - validate_query_plan
+      - inspect_result
+      - inspect_non_match
+      - retrieve_replay_window
+    s2i_host_only_tools:
+      - host_confirm_bound_plan
+      - execute_query_plan
+      - record_feedback
+      - compare_query_versions
+      - save_experimental_recipe
     direct_compiler_role: CONTROL_EVAL_DEBUG_FALLBACK_ONLY
     final_sealed_acceptance_required_after_s2i_freeze: true
     s3_ui_blocker_definition: "minimal query-to-replay workbench, not finished UI"
     immediate_work_orders:
       - delivery/m1.2/NEXT_TASKS.md
+  S2I_A_tactical_knowledge_pack:
+    knowledge_pack_json: generated/tactical-knowledge-pack.json
+    knowledge_pack_markdown: generated/tactical-knowledge-pack.md
+    knowledge_pack_sha256: 69cc6ed3160179643de2c5cf5ed7dcdb0c0ade35f8280178c8b22af1c7681866
+    verification_report: artifacts/m1.2/gate-s2i-verification-report.json
+    verification_command: make m1-2-gate-s2i-verify
+    verification_summary:
+      passed: 12
+      failed: 0
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
   external_review: NONE_BEFORE_S2I_IMPLEMENTATION_UNLESS_SCOPE_CHANGES
-  scope: "Stop the gpt-4o-mini sealed-set cycle. Freeze f9eb5d8 as the small-model compiler baseline. Implement S2I-A/B and Workbench Alpha 1 in parallel. S3 is blocked on a working frontier-agent path and minimal query-to-replay workbench, not a finished UI. Run one final independent sealed acceptance set only after the intended Hermes/frontier-model runtime is frozen."
+  scope: "S2I-A knowledge pack is generated and verified. Next Track A step is S2I-B provisioning: GPT-5.5 Responses strict structured output, high/xhigh reasoning, Hermes install/version, trivial local stdio MCP connectivity, and safe tool allowlisting. Workbench Alpha 1 may proceed in parallel."
