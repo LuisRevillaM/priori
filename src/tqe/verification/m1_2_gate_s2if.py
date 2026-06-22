@@ -14,6 +14,7 @@ import re
 import shutil
 import sqlite3
 import subprocess
+import sys
 import time
 from hashlib import sha256
 from pathlib import Path
@@ -35,8 +36,9 @@ HERMES_DB = HERMES_HOME / "state.db"
 HERMES_CONFIG_PATH = HERMES_HOME / "config.yaml"
 HERMES_MODEL = os.environ.get("S2I_FINAL_HERMES_MODEL", "gpt-5.5")
 HERMES_PROVIDER = os.environ.get("S2I_FINAL_HERMES_PROVIDER", "openai-codex")
-HERMES_TOOLSET = os.environ.get("S2I_FINAL_HERMES_TOOLSET", "priori_tactical")
+HERMES_TOOLSET = os.environ.get("S2I_FINAL_HERMES_TOOLSET", "mcp-priori_tactical")
 HERMES_TIMEOUT_SECONDS = int(os.environ.get("S2I_FINAL_HERMES_TIMEOUT_SECONDS", "240"))
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 OUTCOMES = {"select_recipe", "draft", "clarify", "capability_gap"}
 THRESHOLDS = {
@@ -142,8 +144,9 @@ def run_prompt(
     started = time.perf_counter()
     before = newest_session_started_at()
     completed = run_hermes(prompt)
+    invocation = parse_invocation_json(completed.stdout)
     session = newest_session_after(before)
-    final = parse_final_json(completed.stdout)
+    final = parse_final_json(str(invocation.get("stdout") or ""))
     observed = normalize_observed(final)
     tool_audit = session_tool_audit(session.get("id") if session else None)
     return {
@@ -154,11 +157,11 @@ def run_prompt(
         "observed": observed,
         "session": session_summary(session),
         "tool_audit": tool_audit,
-        "stdout_excerpt": completed.stdout[-4000:],
-        "stderr_excerpt": completed.stderr[-2000:],
+        "stdout_excerpt": str(invocation.get("stdout") or completed.stdout)[-4000:],
+        "stderr_excerpt": str(invocation.get("stderr") or completed.stderr)[-2000:],
         "exit_code": completed.returncode,
         "latency_ms": int((time.perf_counter() - started) * 1000),
-        "schema_valid_or_refusal": completed.returncode == 0 and observed.get("outcome") in OUTCOMES,
+        "schema_valid_or_refusal": completed.returncode == 0 and invocation.get("ok") is True and observed.get("outcome") in OUTCOMES,
         "outcome_ok": outcome_ok(expected, observed),
         "recipe_ok": recipe_ok(expected, observed),
         "parameters_ok": parameters_ok(expected, observed),
@@ -187,16 +190,20 @@ def run_hermes(prompt: str) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["HERMES_HOME"] = str(HERMES_HOME)
     env.setdefault("CODEX_HOME", "/Users/luisrevilla/.codex")
+    env["PYTHONPATH"] = hermes_pythonpath(env.get("PYTHONPATH"))
     return subprocess.run(
         [
-            hermes,
+            hermes_python_executable(hermes),
+            "-m",
+            "tqe.workshop.hermes_invocation",
+            "interpret",
             "--provider",
             HERMES_PROVIDER,
             "--model",
             HERMES_MODEL,
-            "--toolsets",
+            "--toolset",
             HERMES_TOOLSET,
-            "--oneshot",
+            "--prompt",
             evaluator_prompt(prompt),
         ],
         check=False,
@@ -204,6 +211,7 @@ def run_hermes(prompt: str) -> subprocess.CompletedProcess[str]:
         text=True,
         timeout=HERMES_TIMEOUT_SECONDS,
         env=env,
+        cwd=REPO_ROOT,
     )
 
 
@@ -215,6 +223,8 @@ Use only the priori_tactical MCP tools available to you. Do not ask for or use
 filesystem, terminal, Python, SQL, raw coordinate dumps, host confirmation, or
 execution. You may list/search/describe capabilities and may submit and validate
 an experimental plan when the request is supported. Stop before execution.
+When authoring a plan, keep default_invocation.execution_mode="execute";
+validate_query_plan binds and checks the plan without executing it.
 
 Return only one JSON object matching this shape:
 {{
@@ -241,6 +251,36 @@ def parse_final_json(text: str) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return parsed if isinstance(parsed, dict) else {}
+
+
+def parse_invocation_json(text: str) -> dict[str, Any]:
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def hermes_python_executable(hermes: str) -> str:
+    configured = os.environ.get("S2I_FINAL_HERMES_PYTHON") or os.environ.get("WORKBENCH_HERMES_PYTHON")
+    if configured:
+        return configured
+    try:
+        first_line = Path(hermes).read_text(encoding="utf-8").splitlines()[0]
+    except OSError:
+        return sys.executable
+    if first_line.startswith("#!"):
+        executable = first_line[2:].strip()
+        if executable:
+            return executable
+    return sys.executable
+
+
+def hermes_pythonpath(existing: str | None) -> str:
+    entries = [str(REPO_ROOT / "src"), "/Users/luisrevilla/.local/src/hermes-agent"]
+    if existing:
+        entries.append(existing)
+    return os.pathsep.join(entries)
 
 
 def normalize_observed(final: dict[str, Any]) -> dict[str, Any]:

@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9`
+SHA-256: `044b8565c6018921655b56d4fcdd939b5fc475c61868b5afba4d475cf23005e5`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -120,7 +120,7 @@ Disallowed claims:
 
 ## Source Hashes
 
-- `Makefile`: `364dd3dcb87d8265749b20071be15076d3f6112070652ae2dac09001e5bd7a97`
+- `Makefile`: `9bf5d9a81acff07a67de4ae60e9c4c91a7728970c6431c13f0f52a25d38e6035`
 - `config/query-plans/ball_side_block_shift.ir.v1.json`: `877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945`
 - `config/query-plans/opposite_corridor_after_shift.experimental.v1.json`: `9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74`
 - `config/query-plans/possession_corridor_availability.experimental.v1.json`: `81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde`
@@ -132,7 +132,7 @@ Disallowed claims:
 - `src/tqe/runtime/executor.py`: `487a717edfbfab44bc73e604f97644cd680de413967af29ae3693217da746815`
 - `src/tqe/runtime/ir.py`: `3fde1fe1e4fa61c596ab1579ecbd6c02df1fb63b503f13a6c146be206d642c3a`
 - `src/tqe/runtime/relations.py`: `6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee`
-- `src/tqe/verification/m1_2_gate_s2i.py`: `a8ce784b842dfe4f0e9a2a039d814fb29293b601dea9afa599c3a9a59f3aa5d8`
+- `src/tqe/verification/m1_2_gate_s2i.py`: `00cf3e665ef2096c44a4d28ba37284bb9207ca5412e2e6c564ef0d8d3042c99f`
 - `src/tqe/workshop/hermes_s2.py`: `ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591`
 - `src/tqe/workshop/knowledge_pack.py`: `d6329f79a5cc096616555c28baa205d97ec58702e78552460e1712e02dfb1143`
-- `src/tqe/workshop/m1_2.py`: `fdeaffb82dffc0d8a23b2783945a0d6a49fdd6576f384b707d6a937967863b0b`
+- `src/tqe/workshop/m1_2.py`: `a5af7d6c8e1052f9dfe854f302d629d0bf895efb4701dc783e929aa869d44a17`

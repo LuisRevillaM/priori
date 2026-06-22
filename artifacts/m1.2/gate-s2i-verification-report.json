@@ -2,8 +2,8 @@
   "checks": [
     {
       "details": {
-        "actual": "15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9",
-        "expected": "15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9"
+        "actual": "044b8565c6018921655b56d4fcdd939b5fc475c61868b5afba4d475cf23005e5",
+        "expected": "044b8565c6018921655b56d4fcdd939b5fc475c61868b5afba4d475cf23005e5"
       },
       "name": "pack.hash.matches_content",
       "ok": true
@@ -159,13 +159,70 @@
       },
       "name": "pack.size.recorded",
       "ok": true
+    },
+    {
+      "details": {
+        "execution_mode": "execute",
+        "match_ids": [
+          "J03WOY",
+          "J03WPY",
+          "J03WQQ",
+          "J03WR9"
+        ],
+        "max_results_ceiling": 64,
+        "periods": [
+          "firstHalf",
+          "secondHalf"
+        ],
+        "perspective_team_role": "home",
+        "validation_contract": "validate_query_plan binds and checks the plan but never executes it."
+      },
+      "name": "capability_contract.hermes_authors_execute_mode",
+      "ok": true
+    },
+    {
+      "details": {
+        "execution_mode": "execute",
+        "match_ids": [
+          "J03WOY",
+          "J03WPY",
+          "J03WQQ",
+          "J03WR9"
+        ],
+        "max_results_ceiling": 64,
+        "periods": [
+          "firstHalf",
+          "secondHalf"
+        ],
+        "perspective_team_role": "home",
+        "validation_contract": "validate_query_plan binds and checks the plan but never executes it."
+      },
+      "name": "capability_contract.validation_is_non_executing",
+      "ok": true
+    },
+    {
+      "details": {
+        "constraints": [
+          "The authored plan must keep status=experimental for Hermes.",
+          "Keep default_invocation.execution_mode=execute; host confirmation still controls whether execution may happen.",
+          "exists/count_at_least may only consume anchor_evaluations.",
+          "Do not request raw match dumps, primitive mutation, confirmation, or execution."
+        ]
+      },
+      "name": "capability_contract.constraints_keep_host_executable",
+      "ok": true
+    },
+    {
+      "details": {},
+      "name": "validator.rejects_hermes_bind_only_plan",
+      "ok": true
     }
   ],
   "gate": "S2I_A_tactical_knowledge_pack",
-  "generated_at": "2026-06-22T11:25:45+00:00",
+  "generated_at": "2026-06-22T13:49:27+00:00",
   "knowledge_pack_markdown_path": "generated/tactical-knowledge-pack.md",
   "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-  "knowledge_pack_sha256": "15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9",
+  "knowledge_pack_sha256": "044b8565c6018921655b56d4fcdd939b5fc475c61868b5afba4d475cf23005e5",
   "passed": true,
   "schema_version": "1.0"
 }

@@ -15,6 +15,7 @@ import re
 import shutil
 import sqlite3
 import subprocess
+import sys
 import time
 from hashlib import sha256
 from http import HTTPStatus
@@ -56,6 +57,7 @@ from tqe.workshop.m1_2 import (
     write_json,
 )
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
 APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
 DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
@@ -64,7 +66,7 @@ HERMES_DB = HERMES_HOME / "state.db"
 HERMES_WORKSHOP_ROOT = Path(os.environ.get("WORKBENCH_HERMES_WORKSHOP_ROOT", "artifacts/m1.2/workshop"))
 HERMES_PROVIDER = os.environ.get("WORKBENCH_HERMES_PROVIDER", "openai-codex")
 HERMES_MODEL = os.environ.get("WORKBENCH_HERMES_MODEL", "gpt-5.5")
-HERMES_TOOLSET = os.environ.get("WORKBENCH_HERMES_TOOLSET", "priori_tactical")
+HERMES_TOOLSET = os.environ.get("WORKBENCH_HERMES_TOOLSET", "mcp-priori_tactical")
 HERMES_TIMEOUT_SECONDS = int(os.environ.get("WORKBENCH_HERMES_TIMEOUT_SECONDS", "240"))
 HERMES_MCP_TOOL_NAMES = {
     "mcp_priori_tactical_list_capabilities",
@@ -75,21 +77,6 @@ HERMES_MCP_TOOL_NAMES = {
     "mcp_priori_tactical_inspect_result",
     "mcp_priori_tactical_inspect_non_match",
     "mcp_priori_tactical_retrieve_replay_window",
-}
-HERMES_FORBIDDEN_TOOL_FRAGMENTS = {
-    "terminal",
-    "process",
-    "shell",
-    "file",
-    "read_file",
-    "write_file",
-    "python",
-    "sql",
-    "execute",
-    "browser",
-    "web_",
-    "host_confirm_bound_plan",
-    "execute_query_plan",
 }
 
 
@@ -458,27 +445,25 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
             "Hermes did not expose the frozen priori_tactical-only tool surface. Manual mode remains available.",
         )
     started_at = newest_hermes_session_started_at()
-    completed = subprocess.run(
+    completed = run_hermes_invocation(
+        hermes,
         [
-            hermes,
+            "interpret",
             "--provider",
             HERMES_PROVIDER,
             "--model",
             HERMES_MODEL,
-            "--toolsets",
+            "--toolset",
             HERMES_TOOLSET,
-            "--oneshot",
+            "--prompt",
             hermes_interpret_prompt(query),
         ],
-        check=False,
-        capture_output=True,
-        text=True,
         timeout=HERMES_TIMEOUT_SECONDS,
-        env={**os.environ, "HERMES_HOME": str(HERMES_HOME), "CODEX_HOME": os.environ.get("CODEX_HOME", "/Users/luisrevilla/.codex")},
     )
     session = newest_hermes_session_after(started_at)
-    final = parse_final_json(completed.stdout)
-    if completed.returncode != 0 or not final:
+    invocation = parse_invocation_json(completed.stdout)
+    final = parse_final_json(str(invocation.get("stdout") or ""))
+    if completed.returncode != 0 or not invocation.get("ok") or not final:
         return hermes_unavailable(
             query,
             "Hermes did not return a valid structured interpretation. Manual mode remains available.",
@@ -487,49 +472,64 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
 
 
 def hermes_tool_surface(hermes: str) -> dict[str, Any]:
-    completed = subprocess.run(
-        [
-            hermes,
-            "--provider",
-            HERMES_PROVIDER,
-            "--model",
-            HERMES_MODEL,
-            "--toolsets",
-            HERMES_TOOLSET,
-            "--oneshot",
-            "Return only a JSON array of exact tool names you can call.",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=45,
-        env={**os.environ, "HERMES_HOME": str(HERMES_HOME), "CODEX_HOME": os.environ.get("CODEX_HOME", "/Users/luisrevilla/.codex")},
-    )
-    names = parse_tool_name_list(completed.stdout)
-    normalized = {name.removeprefix("functions.") for name in names}
-    forbidden = sorted(
-        name
-        for name in normalized
-        if any(fragment in name.lower() for fragment in HERMES_FORBIDDEN_TOOL_FRAGMENTS)
-    )
+    completed = run_hermes_invocation(hermes, ["probe", "--toolset", HERMES_TOOLSET], timeout=60)
+    payload = parse_invocation_json(completed.stdout)
+    names = {str(name).removeprefix("functions.") for name in payload.get("tool_names") or []}
+    forbidden = [str(name) for name in payload.get("forbidden") or []]
     return {
-        "safe": completed.returncode == 0 and HERMES_MCP_TOOL_NAMES.issubset(normalized) and not forbidden,
-        "tool_names": sorted(normalized),
+        "safe": completed.returncode == 0 and payload.get("safe") is True and names == HERMES_MCP_TOOL_NAMES and not forbidden,
+        "tool_names": sorted(names),
         "forbidden": forbidden,
+        "missing": payload.get("missing") or sorted(HERMES_MCP_TOOL_NAMES - names),
+        "extra": payload.get("extra") or sorted(names - HERMES_MCP_TOOL_NAMES),
     }
 
 
-def parse_tool_name_list(text: str) -> list[str]:
-    match = re.search(r"\[.*\]", text.strip(), flags=re.S)
-    if not match:
-        return []
+def run_hermes_invocation(hermes: str, args: list[str], *, timeout: int) -> subprocess.CompletedProcess[str]:
+    hermes_python = hermes_python_executable(hermes)
+    env = os.environ.copy()
+    env["HERMES_HOME"] = str(HERMES_HOME)
+    env.setdefault("CODEX_HOME", "/Users/luisrevilla/.codex")
+    env["PYTHONPATH"] = hermes_pythonpath(env.get("PYTHONPATH"))
+    return subprocess.run(
+        [hermes_python, "-m", "tqe.workshop.hermes_invocation", *args],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        env=env,
+        cwd=REPO_ROOT,
+    )
+
+
+def hermes_python_executable(hermes: str) -> str:
+    configured = os.environ.get("WORKBENCH_HERMES_PYTHON")
+    if configured:
+        return configured
     try:
-        parsed = json.loads(match.group(0))
+        first_line = Path(hermes).read_text(encoding="utf-8").splitlines()[0]
+    except OSError:
+        return sys.executable
+    if first_line.startswith("#!"):
+        executable = first_line[2:].strip()
+        if executable:
+            return executable
+    return sys.executable
+
+
+def hermes_pythonpath(existing: str | None) -> str:
+    entries = [str(REPO_ROOT / "src"), "/Users/luisrevilla/.local/src/hermes-agent"]
+    if existing:
+        entries.append(existing)
+    return os.pathsep.join(entries)
+
+
+def parse_invocation_json(text: str) -> dict[str, Any]:
+    try:
+        parsed = json.loads(text)
     except json.JSONDecodeError:
-        return []
-    if not isinstance(parsed, list):
-        return []
-    return [str(item) for item in parsed]
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
 
 
 def hermes_interpret_prompt(query: str) -> str:
@@ -542,6 +542,10 @@ execution. If the request is supported, either select an approved recipe or
 author an EXPERIMENTAL typed plan through submit_query_plan and validate it. If
 the request is ambiguous, ask for clarification. If unsupported, report stable
 capability gaps.
+
+When authoring a plan, keep default_invocation.execution_mode="execute".
+validate_query_plan binds and checks the plan without executing it; host
+confirmation remains the only path to execution.
 
 Return only one JSON object:
 {{

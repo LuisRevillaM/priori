@@ -32,6 +32,7 @@ from tqe.runtime.executor import (
 from tqe.runtime.ir import (
     BoundCatalogNode,
     BoundPredicateNode,
+    ExecutionMode,
     EvaluationTarget,
     NodeKind,
     PlanStatus,
@@ -672,7 +673,8 @@ def recipe_authoring_contract(document: dict[str, Any]) -> dict[str, Any]:
             "match_ids": default_invocation.get("match_ids", []),
             "periods": default_invocation.get("periods", []),
             "perspective_team_role": default_invocation.get("perspective_team_role"),
-            "execution_mode_for_validation": "bind_only",
+            "execution_mode": "execute",
+            "validation_contract": "validate_query_plan binds and checks the plan but never executes it.",
             "max_results_ceiling": default_invocation.get("max_results"),
         },
         "draft_plan_defaults": {
@@ -709,7 +711,7 @@ def recipe_authoring_contract(document: dict[str, Any]) -> dict[str, Any]:
         "requested_evidence": draft_plan.get("requested_evidence", []),
         "constraints": [
             "The authored plan must keep status=experimental for Hermes.",
-            "Use bind_only when validating interpretation; host execution is separate.",
+            "Keep default_invocation.execution_mode=execute; host confirmation still controls whether execution may happen.",
             "exists/count_at_least may only consume anchor_evaluations.",
             "Do not request raw match dumps, primitive mutation, confirmation, or execution.",
         ],
@@ -1105,6 +1107,8 @@ def validate_safe_agent_plan(
     trusted_m1 = is_trusted_m1_bound_plan(bound)
     if is_model_caller(caller_profile) and bound.plan_status != PlanStatus.EXPERIMENTAL:
         raise CapabilityGap("Hermes-authored query documents must be EXPERIMENTAL")
+    if is_model_caller(caller_profile) and bound.execution_mode != ExecutionMode.EXECUTE:
+        raise CapabilityGap("Hermes-authored query documents must keep execution_mode=execute; validation does not execute")
     if bound.plan_status == PlanStatus.APPROVED and not trusted_m1:
         raise CapabilityGap("Approved recipes must be loaded from trusted host records")
     for node in bound.nodes:
