@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import shutil
@@ -91,19 +92,21 @@ def copy_required_file(source: Path, destination: Path, logical_path: str) -> di
 def create_archive(source_root: Path, archive_path: Path) -> None:
     if archive_path.exists():
         archive_path.unlink()
-    with tarfile.open(archive_path, "w:gz", format=tarfile.PAX_FORMAT) as tar:
-        for path in sorted(source_root.rglob("*")):
-            info = tar.gettarinfo(str(path), arcname=path.relative_to(source_root).as_posix())
-            info.uid = 0
-            info.gid = 0
-            info.uname = ""
-            info.gname = ""
-            info.mtime = 0
-            if path.is_file():
-                with path.open("rb") as handle:
-                    tar.addfile(info, handle)
-            else:
-                tar.addfile(info)
+    with archive_path.open("wb") as raw_handle:
+        with gzip.GzipFile(fileobj=raw_handle, mode="wb", mtime=0) as gzip_handle:
+            with tarfile.open(fileobj=gzip_handle, mode="w", format=tarfile.PAX_FORMAT) as tar:
+                for path in sorted(source_root.rglob("*")):
+                    info = tar.gettarinfo(str(path), arcname=path.relative_to(source_root).as_posix())
+                    info.uid = 0
+                    info.gid = 0
+                    info.uname = ""
+                    info.gname = ""
+                    info.mtime = 0
+                    if path.is_file():
+                        with path.open("rb") as handle:
+                            tar.addfile(info, handle)
+                    else:
+                        tar.addfile(info)
 
 
 def build_bundle_manifest(
