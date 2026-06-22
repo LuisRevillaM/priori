@@ -69,7 +69,7 @@
       "ok": true
     }
   ],
-  "elapsed_ms": 384,
+  "elapsed_ms": 281,
   "freeze": {
     "direct_api_control_route": {
       "comparison_evidence": {
@@ -369,16 +369,16 @@
       "required_before_s3": true,
       "status": "PENDING_EXTERNAL_INDEPENDENT_SET"
     },
-    "generated_at": "2026-06-22T11:29:41+00:00",
+    "generated_at": "2026-06-22T14:30:08+00:00",
     "knowledge_and_schema_hashes": {
       "capability_context_path": "generated/capability-context.json",
       "capability_context_sha256": "4816ffb893c34ddcd587192f5690f179d51ba46d09df6706a040b373f35950e8",
       "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-      "knowledge_pack_sha256": "5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af",
+      "knowledge_pack_sha256": "85d59dcb8afaf7c9e0b383d9fb8c76eb44f73ee898b947a2105912ad1b4b3c1a",
       "mcp_server_path": "src/tqe/workshop/mcp_server.py",
       "mcp_server_sha256": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
       "workshop_service_path": "src/tqe/workshop/m1_2.py",
-      "workshop_service_sha256": "fdeaffb82dffc0d8a23b2783945a0d6a49fdd6576f384b707d6a937967863b0b"
+      "workshop_service_sha256": "481150ca1439006bc0c41b276aab62fa37960864e7d632cae660ff6f06c9c209"
     },
     "mcp_boundary": {
       "adapter_path": "src/tqe/workshop/mcp_server.py",
@@ -490,8 +490,8 @@
     "status": "FROZEN_PENDING_FINAL_INDEPENDENT_EVALUATION"
   },
   "freeze_path": "delivery/m1.2/frontier-runtime-freeze.json",
-  "freeze_sha256": "b072b8006ae60aba64e3a564d983dae30effbfccdb5ec091c2c1bcb001cd11b9",
-  "generated_at": "2026-06-22T11:29:41+00:00",
+  "freeze_sha256": "4710cd3f9e1212e9a2b9286d96d9696a9bc00d91f786109f30f150da7b3cb09f",
+  "generated_at": "2026-06-22T14:30:09+00:00",
   "milestone": "M1.2",
   "passed": true,
   "schema_version": "1.0",

@@ -452,8 +452,6 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
     hermes = shutil.which("hermes")
     if not hermes:
         return hermes_unavailable(query, "Hermes executable was not found. Manual mode remains available.")
-    if not HERMES_DB.exists():
-        return hermes_unavailable(query, "Hermes session store was not found. Manual mode remains available.")
     surface = hermes_tool_surface(hermes)
     if not surface["safe"]:
         return hermes_unavailable(
@@ -505,7 +503,7 @@ def run_hermes_invocation(hermes: str, args: list[str], *, timeout: int) -> subp
     hermes_python = hermes_python_executable(hermes)
     env = os.environ.copy()
     env["HERMES_HOME"] = str(HERMES_HOME)
-    env.setdefault("CODEX_HOME", "/Users/luisrevilla/.codex")
+    env.setdefault("CODEX_HOME", str(Path.home() / ".codex"))
     env["PYTHONPATH"] = hermes_pythonpath(env.get("PYTHONPATH"))
     return subprocess.run(
         [hermes_python, "-m", "tqe.workshop.hermes_invocation", *args],
@@ -534,7 +532,10 @@ def hermes_python_executable(hermes: str) -> str:
 
 
 def hermes_pythonpath(existing: str | None) -> str:
-    entries = [str(REPO_ROOT / "src"), "/Users/luisrevilla/.local/src/hermes-agent"]
+    entries = [str(REPO_ROOT / "src")]
+    hermes_source = os.environ.get("HERMES_AGENT_SOURCE")
+    if hermes_source:
+        entries.append(hermes_source)
     if existing:
         entries.append(existing)
     return os.pathsep.join(entries)

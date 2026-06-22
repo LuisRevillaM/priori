@@ -1,19 +1,37 @@
 services:
   - type: web
-    name: priori-manual-workbench-alpha
+    name: priori-integrated-alpha
     runtime: docker
     plan: starter
     dockerfilePath: ./Dockerfile
     healthCheckPath: /healthz
     disk:
-      name: priori-workbench-alpha-data
+      name: priori-integrated-alpha-data
       mountPath: /var/data
-      sizeGB: 10
+      sizeGB: 20
     envVars:
       - key: HOST
         value: 0.0.0.0
       - key: WORKBENCH_HERMES_ENABLED
-        value: "0"
+        value: "1"
+      - key: HOME
+        value: /var/data
+      - key: HERMES_HOME
+        value: /var/data/hermes-home
+      - key: HERMES_AGENT_SOURCE
+        value: /opt/hermes-agent
+      - key: CODEX_HOME
+        value: /var/data/.codex
+      - key: CODEX_AUTH_FILE
+        value: /var/data/.codex/auth.json
+      - key: WORKBENCH_HERMES_PROVIDER
+        value: openai-codex
+      - key: WORKBENCH_HERMES_MODEL
+        value: gpt-5.5
+      - key: WORKBENCH_HERMES_TOOLSET
+        value: mcp-priori_tactical
+      - key: WORKBENCH_HERMES_PYTHON
+        value: /opt/hermes-agent/venv/bin/python3
       - key: TQE_DATA_ROOT
         value: /var/data/dataset/canonical/v1
       - key: TQE_RAW_ROOT
@@ -27,12 +45,14 @@ services:
       - key: TQE_KNOWLEDGE_PACK_PATH
         value: /app/generated/tactical-knowledge-pack.json
       - key: TQE_EXPECTED_KNOWLEDGE_PACK_SHA256
-        value: e12bb814e3c5b355fe349a88aa810db1fee7b3519d227e746f3a5989c8e91bf4
+        value: 85d59dcb8afaf7c9e0b383d9fb8c76eb44f73ee898b947a2105912ad1b4b3c1a
       - key: TQE_DATA_BUNDLE_URL
         sync: false
       - key: TQE_DATA_BUNDLE_SHA256
         sync: false
       - key: TQE_DATA_BUNDLE_MANIFEST
+        sync: false
+      - key: CODEX_AUTH_JSON_B64
         sync: false
       - key: DEMO_ACCESS_TOKEN
         sync: false

@@ -219,7 +219,7 @@
     }
   ],
   "gate": "S2I_A_tactical_knowledge_pack",
-  "generated_at": "2026-06-22T14:08:04+00:00",
+  "generated_at": "2026-06-22T14:30:08+00:00",
   "knowledge_pack_markdown_path": "generated/tactical-knowledge-pack.md",
   "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
   "knowledge_pack_sha256": "e12bb814e3c5b355fe349a88aa810db1fee7b3519d227e746f3a5989c8e91bf4",

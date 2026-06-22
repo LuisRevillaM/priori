@@ -277,7 +277,10 @@ def hermes_python_executable(hermes: str) -> str:
 
 
 def hermes_pythonpath(existing: str | None) -> str:
-    entries = [str(REPO_ROOT / "src"), "/Users/luisrevilla/.local/src/hermes-agent"]
+    entries = [str(REPO_ROOT / "src")]
+    hermes_source = os.environ.get("HERMES_AGENT_SOURCE")
+    if hermes_source:
+        entries.append(hermes_source)
     if existing:
         entries.append(existing)
     return os.pathsep.join(entries)
