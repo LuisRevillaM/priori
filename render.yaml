@@ -27,10 +27,14 @@ services:
       - key: TQE_KNOWLEDGE_PACK_PATH
         value: /app/generated/tactical-knowledge-pack.json
       - key: TQE_EXPECTED_KNOWLEDGE_PACK_SHA256
-        value: fa1e9f6987ae063500af95a31eaea506aa5c3a07e3ca5c4df18b639548399ded
+        value: e12bb814e3c5b355fe349a88aa810db1fee7b3519d227e746f3a5989c8e91bf4
       - key: TQE_DATA_BUNDLE_URL
         sync: false
       - key: TQE_DATA_BUNDLE_SHA256
         sync: false
+      - key: TQE_DATA_BUNDLE_MANIFEST
+        sync: false
       - key: DEMO_ACCESS_TOKEN
         sync: false
+      - key: DEMO_ACCESS_QUERY_TOKEN_ENABLED
+        value: "0"

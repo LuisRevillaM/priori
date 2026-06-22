@@ -35,7 +35,20 @@ Required layout after provisioning:
 
 The manifest is `config/deploy/demo-data-manifest.json`.
 
-Create and upload a bundle shaped like this:
+Create the bundle from a committed source state:
+
+```bash
+make cloud-alpha-bundle
+```
+
+This writes:
+
+```text
+artifacts/cloud-alpha/priori-cloud-workbench-alpha-fortuna-v1.tar.gz
+artifacts/cloud-alpha/priori-cloud-workbench-alpha-fortuna-v1.manifest.json
+```
+
+The bundle is shaped like this:
 
 ```text
 dataset/
@@ -48,7 +61,9 @@ Then configure Render secrets:
 ```text
 TQE_DATA_BUNDLE_URL=<private tar.gz URL>
 TQE_DATA_BUNDLE_SHA256=<sha256 of tar.gz>
+TQE_DATA_BUNDLE_MANIFEST=<optional path to mounted per-file manifest>
 DEMO_ACCESS_TOKEN=<private alpha token>
+DEMO_ACCESS_QUERY_TOKEN_ENABLED=0
 ```
 
 The startup script verifies the bundle hash before unpacking and refuses to
@@ -85,10 +100,12 @@ Set `DEMO_ACCESS_TOKEN`. The service accepts:
 ```text
 Authorization: Basic base64(any-user:token)
 Authorization: Bearer token
-https://service.onrender.com/?access_token=token
 ```
 
-The query-token path sets an HTTP-only cookie and redirects to `/`.
+Query-string access tokens are disabled by default because they can leak through
+browser history, copied URLs, screenshots, proxy logs, and analytics. They are
+available only when `DEMO_ACCESS_QUERY_TOKEN_ENABLED=1`, which should not be
+used for the Render alpha unless there is no other temporary bootstrap option.
 
 ## Readiness
 

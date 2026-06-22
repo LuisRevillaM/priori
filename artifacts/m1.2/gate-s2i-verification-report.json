@@ -2,8 +2,8 @@
   "checks": [
     {
       "details": {
-        "actual": "fa1e9f6987ae063500af95a31eaea506aa5c3a07e3ca5c4df18b639548399ded",
-        "expected": "fa1e9f6987ae063500af95a31eaea506aa5c3a07e3ca5c4df18b639548399ded"
+        "actual": "e12bb814e3c5b355fe349a88aa810db1fee7b3519d227e746f3a5989c8e91bf4",
+        "expected": "e12bb814e3c5b355fe349a88aa810db1fee7b3519d227e746f3a5989c8e91bf4"
       },
       "name": "pack.hash.matches_content",
       "ok": true
@@ -219,10 +219,10 @@
     }
   ],
   "gate": "S2I_A_tactical_knowledge_pack",
-  "generated_at": "2026-06-22T13:58:30+00:00",
+  "generated_at": "2026-06-22T14:08:04+00:00",
   "knowledge_pack_markdown_path": "generated/tactical-knowledge-pack.md",
   "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-  "knowledge_pack_sha256": "fa1e9f6987ae063500af95a31eaea506aa5c3a07e3ca5c4df18b639548399ded",
+  "knowledge_pack_sha256": "e12bb814e3c5b355fe349a88aa810db1fee7b3519d227e746f3a5989c8e91bf4",
   "passed": true,
   "schema_version": "1.0"
 }

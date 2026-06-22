@@ -71,6 +71,7 @@ HERMES_MODEL = os.environ.get("WORKBENCH_HERMES_MODEL", "gpt-5.5")
 HERMES_TOOLSET = os.environ.get("WORKBENCH_HERMES_TOOLSET", "mcp-priori_tactical")
 HERMES_TIMEOUT_SECONDS = int(os.environ.get("WORKBENCH_HERMES_TIMEOUT_SECONDS", "240"))
 DEMO_ACCESS_TOKEN = os.environ.get("DEMO_ACCESS_TOKEN", "").strip()
+DEMO_ACCESS_QUERY_TOKEN_ENABLED = os.environ.get("DEMO_ACCESS_QUERY_TOKEN_ENABLED", "").strip() == "1"
 KNOWLEDGE_PACK_PATH = Path(os.environ.get("TQE_KNOWLEDGE_PACK_PATH", "generated/tactical-knowledge-pack.json"))
 EXPECTED_KNOWLEDGE_PACK_SHA256 = os.environ.get("TQE_EXPECTED_KNOWLEDGE_PACK_SHA256", "").strip()
 DATA_MANIFEST_PATH = Path(os.environ.get("TQE_DATA_MANIFEST_PATH", "config/deploy/demo-data-manifest.json"))
@@ -1206,7 +1207,7 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         if not DEMO_ACCESS_TOKEN:
             return True
         query_token = (parse_qs(parsed.query).get("access_token") or [""])[0]
-        if query_token and query_token == DEMO_ACCESS_TOKEN:
+        if DEMO_ACCESS_QUERY_TOKEN_ENABLED and query_token and query_token == DEMO_ACCESS_TOKEN:
             return True
         cookie = self.headers.get("Cookie", "")
         if any(part.strip() == f"demo_access_token={DEMO_ACCESS_TOKEN}" for part in cookie.split(";")):
@@ -1227,14 +1228,14 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         if not DEMO_ACCESS_TOKEN:
             return
         query_token = (parse_qs(parsed.query).get("access_token") or [""])[0]
-        if query_token == DEMO_ACCESS_TOKEN:
+        if DEMO_ACCESS_QUERY_TOKEN_ENABLED and query_token == DEMO_ACCESS_TOKEN:
             self.send_header("Set-Cookie", f"demo_access_token={DEMO_ACCESS_TOKEN}; Path=/; HttpOnly; SameSite=Lax")
 
     def redirect_with_demo_cookie(self, parsed: Any) -> bool:
         if not DEMO_ACCESS_TOKEN:
             return False
         query_token = (parse_qs(parsed.query).get("access_token") or [""])[0]
-        if query_token != DEMO_ACCESS_TOKEN:
+        if not DEMO_ACCESS_QUERY_TOKEN_ENABLED or query_token != DEMO_ACCESS_TOKEN:
             return False
         self.send_response(HTTPStatus.SEE_OTHER)
         self.send_header("Location", parsed.path or "/")

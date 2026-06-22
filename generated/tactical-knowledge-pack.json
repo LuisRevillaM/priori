@@ -371,7 +371,7 @@
     ]
   },
   "generated_at": "reproducible_from_source_hashes",
-  "knowledge_pack_sha256": "fa1e9f6987ae063500af95a31eaea506aa5c3a07e3ca5c4df18b639548399ded",
+  "knowledge_pack_sha256": "e12bb814e3c5b355fe349a88aa810db1fee7b3519d227e746f3a5989c8e91bf4",
   "knowledge_pack_version": "m1.2-s2i-a.0",
   "model_visible_tool_schemas": {
     "compare_query_versions": {
@@ -6739,7 +6739,7 @@
   },
   "schema_version": "1.0",
   "source_hashes": {
-    "Makefile": "e830f4424d13cfd97bc1281b467a1fe6526353dc978711b1a04d923ac4d3a876",
+    "Makefile": "a5a0781098af80b0ab877fd355688cf79bc4e6679e6b5d93b65d89dc67b3d5ce",
     "config/query-plans/ball_side_block_shift.ir.v1.json": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
     "config/query-plans/opposite_corridor_after_shift.experimental.v1.json": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
     "config/query-plans/possession_corridor_availability.experimental.v1.json": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
