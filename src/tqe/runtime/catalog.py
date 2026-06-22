@@ -329,6 +329,92 @@ def default_primitives() -> list[CatalogEntry]:
             limitations=["Does not infer intent, optimality, or missed opportunity."],
         ),
         primitive(
+            name="relation_destination_entry",
+            version="0.1.0",
+            purpose=(
+                "Measure whether the ball enters the exact destination region of a "
+                "relation episode inside a declared post-open window."
+            ),
+            outputs=[
+                output(
+                    name="entry_status",
+                    temporal_type=TemporalContainer.FRAME_SIGNAL,
+                    payload_type=PayloadType.ENUM,
+                    cardinality=Cardinality.SINGLE,
+                    entity_scope=EntityScope.RELATION,
+                    evidence_fields=[
+                        "entry_status",
+                        "relation_id",
+                        "anchor_id",
+                        "destination_entry_frame_id",
+                        "time_to_entry_seconds",
+                        "destination_region",
+                        "destination_region_type",
+                        "destination_region_bounds",
+                        "destination_side",
+                        "destination_lane",
+                        "observed_window_start_frame_id",
+                        "observed_window_end_frame_id",
+                        "unknown_reason",
+                        "missing_ball_frame_count",
+                    ],
+                )
+            ],
+            inputs=[
+                input_ref(
+                    name="relation_episodes",
+                    temporal_type=TemporalContainer.RELATION_EPISODE_SET,
+                    payload_type=PayloadType.RELATION_REF,
+                    cardinality=Cardinality.COLLECTION,
+                    entity_scope=EntityScope.RELATION,
+                )
+            ],
+            parameters=[
+                parameter(
+                    name="destination_entry_horizon_seconds",
+                    payload_type=PayloadType.NUMBER,
+                    unit=Unit.SECOND,
+                    required=True,
+                    minimum=0.2,
+                    maximum=30.0,
+                    description="Lookahead horizon for relation destination entry.",
+                ),
+                parameter(
+                    name="result_id_seed",
+                    payload_type=PayloadType.ENUM,
+                    required=True,
+                    description="Seed used to derive deterministic relation-entry record IDs.",
+                ),
+                parameter(
+                    name="episode_selection",
+                    payload_type=PayloadType.ENUM,
+                    required=True,
+                    allowed_values=["entry_first_then_progression", "first_by_duration_clearance"],
+                    description="Deterministic witness ordering when an anchor has multiple relation episodes.",
+                ),
+            ],
+            evidence_fields=[
+                "entry_status",
+                "relation_id",
+                "anchor_id",
+                "destination_entry_frame_id",
+                "time_to_entry_seconds",
+                "destination_region",
+                "destination_region_type",
+                "destination_region_bounds",
+                "destination_side",
+                "destination_lane",
+                "observed_window_start_frame_id",
+                "observed_window_end_frame_id",
+                "unknown_reason",
+                "missing_ball_frame_count",
+            ],
+            limitations=[
+                "Measures entry into relation destination geometry only.",
+                "No pass probability, optimality, decision-quality, intent, causation, or missed-opportunity claim.",
+            ],
+        ),
+        primitive(
             name="relation_destination_entry_classification",
             version="0.1.0",
             purpose=(
@@ -400,6 +486,7 @@ def default_primitives() -> list[CatalogEntry]:
                 "destination_lane",
             ],
             limitations=[
+                "Trusted recipe wrapper; agent-authored plans should use relation_destination_entry.",
                 "Requires an upstream relation episode set.",
                 "No pass probability, optimality, decision-quality, intent, or missed-opportunity claim.",
             ],

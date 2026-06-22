@@ -63,6 +63,22 @@
       "possession_end_frame_id",
       "possession_start_frame_id"
     ],
+    "relation_destination_entry": [
+      "anchor_id",
+      "destination_entry_frame_id",
+      "destination_lane",
+      "destination_region",
+      "destination_region_bounds",
+      "destination_region_type",
+      "destination_side",
+      "entry_status",
+      "missing_ball_frame_count",
+      "observed_window_end_frame_id",
+      "observed_window_start_frame_id",
+      "relation_id",
+      "time_to_entry_seconds",
+      "unknown_reason"
+    ],
     "relation_destination_entry_classification": [
       "base_result_id",
       "classification",
@@ -91,7 +107,7 @@
     "result_row_mutation",
     "threshold_auto_tuning"
   ],
-  "generated_at": "2026-06-22T11:25:45+00:00",
+  "generated_at": "2026-06-22T20:00:46+00:00",
   "host_owned_complexity_ceilings": {
     "max_execution_cost": 100000,
     "max_nesting_depth": 12,
@@ -603,6 +619,100 @@
     {
       "agent_authorable": true,
       "evidence_fields": [
+        "entry_status",
+        "relation_id",
+        "anchor_id",
+        "destination_entry_frame_id",
+        "time_to_entry_seconds",
+        "destination_region",
+        "destination_region_type",
+        "destination_region_bounds",
+        "destination_side",
+        "destination_lane",
+        "observed_window_start_frame_id",
+        "observed_window_end_frame_id",
+        "unknown_reason",
+        "missing_ball_frame_count"
+      ],
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "relation",
+          "name": "relation_episodes",
+          "payload_type": "relation_ref",
+          "required": true,
+          "temporal_type": "relation_episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Measures entry into relation destination geometry only.",
+        "No pass probability, optimality, decision-quality, intent, causation, or missed-opportunity claim."
+      ],
+      "name": "relation_destination_entry",
+      "outputs": [
+        {
+          "cardinality": "single",
+          "entity_scope": "relation",
+          "evidence_fields": [
+            "entry_status",
+            "relation_id",
+            "anchor_id",
+            "destination_entry_frame_id",
+            "time_to_entry_seconds",
+            "destination_region",
+            "destination_region_type",
+            "destination_region_bounds",
+            "destination_side",
+            "destination_lane",
+            "observed_window_start_frame_id",
+            "observed_window_end_frame_id",
+            "unknown_reason",
+            "missing_ball_frame_count"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "entry_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Lookahead horizon for relation destination entry.",
+          "maximum": 30.0,
+          "minimum": 0.2,
+          "name": "destination_entry_horizon_seconds",
+          "payload_type": "number",
+          "required": true,
+          "unit": "second"
+        },
+        {
+          "description": "Seed used to derive deterministic relation-entry record IDs.",
+          "name": "result_id_seed",
+          "payload_type": "enum",
+          "required": true,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "entry_first_then_progression",
+            "first_by_duration_clearance"
+          ],
+          "description": "Deterministic witness ordering when an anchor has multiple relation episodes.",
+          "name": "episode_selection",
+          "payload_type": "enum",
+          "required": true,
+          "unit": "none"
+        }
+      ],
+      "purpose": "Measure whether the ball enters the exact destination region of a relation episode inside a declared post-open window.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": false,
+      "evidence_fields": [
         "classification",
         "base_result_id",
         "relation_id",
@@ -626,6 +736,7 @@
       ],
       "kind": "primitive",
       "limitations": [
+        "Trusted recipe wrapper; agent-authored plans should use relation_destination_entry.",
         "Requires an upstream relation episode set.",
         "No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."
       ],

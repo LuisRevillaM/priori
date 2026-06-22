@@ -3,11 +3,18 @@ from __future__ import annotations
 import ast
 import json
 import unittest
+from copy import deepcopy
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+
+from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import (
     LEGACY_M1_PARITY_PROFILE,
+    PeriodState,
     TacticalQueryExecutor,
+    ball_entry_evaluation_into_destination_region,
     execute_legacy_m1_plan_from_path,
     execute_plan_from_path,
     execution_result_rows,
@@ -15,7 +22,7 @@ from tqe.runtime.executor import (
     runtime_parameters,
     select_proof_results,
 )
-from tqe.runtime.ir import EvaluationTarget, ExecutionMode, ExecutionStatus, PlanStatus
+from tqe.runtime.ir import EvaluationTarget, ExecutionMode, ExecutionStatus, PlanStatus, TacticalQueryDocument
 from tqe.runtime.relations import evaluate_geometric_progressive_corridors
 
 
@@ -181,6 +188,75 @@ class M11RuntimeTests(unittest.TestCase):
         self.assertTrue(all(row["destination_side"] != row["ball_side"] for row in rows))
         self.assertTrue(all(float(row["relation_duration_seconds"]) >= 0.8 for row in rows))
 
+    def test_relation_destination_entry_supports_possession_anchor_sources(self) -> None:
+        payload = n1_possession_corridor_destination_entry_payload()
+        bound = bind_document(TacticalQueryDocument.model_validate(payload))
+        execution = TacticalQueryExecutor().execute(bound)
+        rows = execution_result_rows(execution)
+
+        self.assertEqual(ExecutionStatus.PASS, execution.status)
+        self.assertEqual("generic", execution.provenance["compatibility_profile"])
+        self.assertGreater(len(rows), 0)
+        self.assertEqual({"DESTINATION_ENTERED"}, {row["classification"] for row in rows})
+        self.assertTrue(all(row["matched_classification_rules"] == ["DESTINATION_ENTERED"] for row in rows))
+        self.assertTrue(all(row["provenance"]["anchor_source"] == "possession.anchors" for row in rows))
+        self.assertTrue(all(row["requested_evidence"]["destination_entry_status"] == "PASS" for row in rows))
+        self.assertTrue(all(row["requested_evidence"]["destination_entry_frame_id"] is not None for row in rows))
+        self.assertFalse(
+            {"block_shift_score", "wide_entry_frame_id", "signed_shift_metres"}.intersection(rows[0])
+        )
+        destination_entry_node = next(
+            node
+            for node in payload["draft_plan"]["nodes"]
+            if node["node_id"] == "destination_entry"
+        )
+        self.assertEqual("relation_destination_entry", destination_entry_node["catalog_ref"])
+
+    def test_relation_destination_entry_evaluates_pass_fail_and_unknown(self) -> None:
+        episode = destination_entry_fixture_episode()
+        passing = ball_entry_evaluation_into_destination_region(
+            state=destination_entry_fixture_state(
+                frame_ids=range(100, 111),
+                ball_points={frame_id: 40.0 for frame_id in range(100, 103)}
+                | {103: 8.0}
+                | {frame_id: 40.0 for frame_id in range(104, 111)},
+            ),
+            episode=episode,
+            horizon_seconds=0.4,
+        )
+        failing = ball_entry_evaluation_into_destination_region(
+            state=destination_entry_fixture_state(
+                frame_ids=range(100, 111),
+                ball_points={frame_id: 40.0 for frame_id in range(100, 111)},
+            ),
+            episode=episode,
+            horizon_seconds=0.4,
+        )
+        unknown = ball_entry_evaluation_into_destination_region(
+            state=destination_entry_fixture_state(
+                frame_ids=range(100, 111),
+                ball_points={frame_id: 40.0 for frame_id in range(100, 111) if frame_id != 105},
+            ),
+            episode=episode,
+            horizon_seconds=0.4,
+        )
+        passing_before_gap = ball_entry_evaluation_into_destination_region(
+            state=destination_entry_fixture_state(
+                frame_ids=range(100, 111),
+                ball_points={100: 8.0}
+                | {frame_id: 40.0 for frame_id in range(101, 111) if frame_id != 105},
+            ),
+            episode=episode,
+            horizon_seconds=0.4,
+        )
+
+        self.assertEqual("PASS", passing["entry_status"])
+        self.assertEqual(103, passing["entry"]["frame_id"])
+        self.assertEqual("FAIL", failing["entry_status"])
+        self.assertEqual("UNKNOWN", unknown["entry_status"])
+        self.assertIn("missing_ball_frames", unknown["unknown_reason"])
+        self.assertEqual("PASS", passing_before_gap["entry_status"])
+
     def test_executor_does_not_branch_on_query_recipe_or_plan_identity(self) -> None:
         tree = ast.parse(Path("src/tqe/runtime/executor.py").read_text(encoding="utf-8"))
         guarded_names = {"query_id", "recipe_id", "plan_id"}
@@ -209,6 +285,168 @@ class M11RuntimeTests(unittest.TestCase):
                     hits.append((node.lineno, module))
 
         self.assertEqual([], hits)
+
+
+def n1_possession_corridor_destination_entry_payload() -> dict:
+    base = json.loads(
+        Path("config/query-plans/possession_corridor_availability.experimental.v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    opposite = json.loads(
+        Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    payload = deepcopy(base)
+    payload["recipe"]["recipe_id"] = "n1_test_possession_corridor_destination_entry_v1"
+    payload["recipe"]["recipe_version"] = "0.0.0-test"
+    payload["recipe"]["display_name"] = "N1 Test Possession Corridor Destination Entry"
+    payload["recipe"]["output_classifications"] = ["DESTINATION_ENTERED"]
+    payload["recipe"]["parameters"] = deepcopy(base["recipe"]["parameters"])
+    for parameter in opposite["recipe"]["parameters"]:
+        if parameter["name"] not in {"result_id_seed_hash", "destination_entry_horizon_seconds"}:
+            continue
+        copied = deepcopy(parameter)
+        if copied["name"] == "result_id_seed_hash":
+            copied["default"]["value"] = "n1_test_possession_corridor_destination_entry_v1"
+        elif copied["name"] == "destination_entry_horizon_seconds":
+            copied["default"]["value"] = 5.0
+        payload["recipe"]["parameters"].append(copied)
+    for parameter in payload["recipe"]["parameters"]:
+        if parameter["name"] == "corridor_max_window_seconds":
+            parameter["default"]["value"] = 4.0
+        elif parameter["name"] == "corridor_minimum_duration_seconds":
+            parameter["default"]["value"] = 0.8
+    payload["default_invocation"]["invocation_id"] = "n1_test_local_only"
+    payload["default_invocation"]["match_ids"] = ["J03WOY"]
+    payload["default_invocation"]["max_results"] = 3
+    payload["draft_plan"]["plan_id"] = "n1_test_possession_corridor_destination_entry_v1"
+    payload["draft_plan"]["recipe_id"] = payload["recipe"]["recipe_id"]
+    payload["draft_plan"]["recipe_version"] = payload["recipe"]["recipe_version"]
+
+    for node in opposite["draft_plan"]["nodes"]:
+        if node["node_id"] == "destination_entry":
+            destination_entry = deepcopy(node)
+            destination_entry["catalog_ref"] = "relation_destination_entry"
+            destination_entry["inputs"]["relation_episodes"] = {
+                "source_node_id": "progressive_corridor",
+                "output_name": "episodes",
+            }
+            destination_entry["parameters"]["episode_selection"] = {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "entry_first_then_progression",
+            }
+        elif node["node_id"] == "destination_region_entered":
+            destination_predicate = deepcopy(node)
+            destination_predicate["input"] = {
+                "source_node_id": "destination_entry",
+                "output_name": "entry_status",
+            }
+            destination_predicate["operator"] = {"name": "eq", "version": "1.0.0"}
+            destination_predicate["compare"] = {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "PASS",
+            }
+
+    payload["draft_plan"]["nodes"] = deepcopy(base["draft_plan"]["nodes"]) + [
+        destination_entry,
+        destination_predicate,
+    ]
+    payload["draft_plan"]["classification_rules"] = [
+        {
+            "label": "DESTINATION_ENTERED",
+            "predicate_ids": ["has_progressive_corridor", "destination_region_entered"],
+            "description": (
+                "A possession-anchored progressive corridor persisted and the ball entered "
+                "its destination region within the configured horizon."
+            ),
+        }
+    ]
+    payload["draft_plan"]["requested_evidence"] = deepcopy(base["draft_plan"]["requested_evidence"]) + [
+        {
+            "source": {"source_node_id": "destination_entry", "output_name": "entry_status"},
+            "field": "entry_status",
+            "alias": "destination_entry_status",
+        },
+        {
+            "source": {"source_node_id": "destination_entry", "output_name": "entry_status"},
+            "field": "destination_entry_frame_id",
+            "alias": "destination_entry_frame_id",
+            "required": False,
+        },
+    ]
+    payload["draft_plan"]["anchor_source"] = {"source_node_id": "possession", "output_name": "anchors"}
+    return payload
+
+
+def destination_entry_fixture_state(
+    *,
+    frame_ids: range,
+    ball_points: dict[int, float],
+) -> PeriodState:
+    frame_id_list = list(frame_ids)
+    positions = pd.DataFrame(
+        [
+            {
+                "frame_id": frame_id,
+                "entity_type": "ball",
+                "entity_id": "ball",
+                "team_id": "BALL",
+                "team_role": "ball",
+                "x_m": 0.0,
+                "y_m": y_m,
+            }
+            for frame_id, y_m in sorted(ball_points.items())
+        ]
+    )
+    return PeriodState(
+        match_id="FIXTURE",
+        period="firstHalf",
+        params=runtime_parameters(
+            bind_document(TacticalQueryDocument.model_validate(n1_possession_corridor_destination_entry_payload()))
+        ),
+        recipe_id="fixture",
+        recipe_version="0.0.0",
+        perspective_team_role="home",
+        perspective_team_id="home",
+        defending_team_role="away",
+        defending_team_id="away",
+        canonical_root=Path("unused"),
+        raw_tracking=Path("unused"),
+        positions=positions,
+        frame_ids=np.array(frame_id_list),
+        ball_y=np.array([ball_points.get(frame_id, np.nan) for frame_id in frame_id_list]),
+        possession_role=np.array(["home" for _ in frame_id_list]),
+        ball_alive=np.array([True for _ in frame_id_list]),
+        defender_count=pd.Series(dtype="int64"),
+        defender_centroid_y=pd.Series(dtype="float64"),
+    )
+
+
+def destination_entry_fixture_episode() -> dict:
+    return {
+        "relation_id": "fixture_relation",
+        "relation_version": "0.1.0",
+        "open_frame_id": 100,
+        "open_confirm_frame_id": 101,
+        "close_frame_id": 110,
+        "duration_seconds": 0.4,
+        "target_player_id": "target",
+        "minimum_clearance_m": 3.0,
+        "limiting_defender_id": "defender",
+        "destination_side": "left",
+        "destination_lane": "wide",
+        "destination_region": "left_wide",
+        "destination_region_type": "side_lane_band",
+        "destination_region_bounds": {"min_y_m": 0.0, "max_y_m": 10.0},
+        "source_open_point": {"x_m": 0.0, "y_m": 30.0},
+        "target_open_point": {"x_m": 12.0, "y_m": 5.0},
+        "source_close_point": {"x_m": 0.0, "y_m": 30.0},
+        "target_close_point": {"x_m": 12.0, "y_m": 5.0},
+    }
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `e12bb814e3c5b355fe349a88aa810db1fee7b3519d227e746f3a5989c8e91bf4`
+SHA-256: `b411d97abac15882391558544afc233bfdbfb3d9d7cffb86b2185483e0d952cb`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -124,15 +124,15 @@ Disallowed claims:
 - `config/query-plans/ball_side_block_shift.ir.v1.json`: `877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945`
 - `config/query-plans/opposite_corridor_after_shift.experimental.v1.json`: `9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74`
 - `config/query-plans/possession_corridor_availability.experimental.v1.json`: `81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde`
-- `generated/capability-context.json`: `4816ffb893c34ddcd587192f5690f179d51ba46d09df6706a040b373f35950e8`
+- `generated/capability-context.json`: `3c3d3207f81602bab38a8b371c9c352b6cf5e796ef678df31cc19408608dd7cf`
 - `generated/tactical-query-plan.schema.json`: `2e012f1500b19c4159f69e937e604562b1374ff972780f2c7b0478c52d8c61db`
 - `generated/tactical-query-plan.types.ts`: `58b25d3f41064565159dbcbcc52e8158217761cdb8b2c3ac142006d0fbf42d7f`
 - `src/tqe/runtime/binder.py`: `a6d9ab90e0d7b6e7ffb0bb1e8b3ca355b59f528c2f444d6750c5ffec7a5f4459`
-- `src/tqe/runtime/catalog.py`: `3ce519b65ecfa48c225c61897dfe9a921fba3892ac189326b77d902b4acc7d1b`
-- `src/tqe/runtime/executor.py`: `39f581c9ba63f16dc081f9116a49dbb4acf606a1db6f7c153945bcb26aa62bf2`
+- `src/tqe/runtime/catalog.py`: `59a3fc3f79ec2953a3d6c24151984c8ab8e4ade847b546a812d4815eb79ca140`
+- `src/tqe/runtime/executor.py`: `af776d056b562f7831d568513e3cf5b0239e2ed6dec6f32e7e4e39b4fbd1f0a4`
 - `src/tqe/runtime/ir.py`: `3fde1fe1e4fa61c596ab1579ecbd6c02df1fb63b503f13a6c146be206d642c3a`
 - `src/tqe/runtime/relations.py`: `6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee`
 - `src/tqe/verification/m1_2_gate_s2i.py`: `00cf3e665ef2096c44a4d28ba37284bb9207ca5412e2e6c564ef0d8d3042c99f`
 - `src/tqe/workshop/hermes_s2.py`: `ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591`
 - `src/tqe/workshop/knowledge_pack.py`: `d6329f79a5cc096616555c28baa205d97ec58702e78552460e1712e02dfb1143`
-- `src/tqe/workshop/m1_2.py`: `481150ca1439006bc0c41b276aab62fa37960864e7d632cae660ff6f06c9c209`
+- `src/tqe/workshop/m1_2.py`: `57e088c3cb732362ee7de530311558170b9236c8889db73b683af74a25ffbd16`

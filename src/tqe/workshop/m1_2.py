@@ -93,6 +93,7 @@ RECIPE_PLAN_PATHS = [
 ]
 NON_AUTHORABLE_CATALOG_REFS = {
     "outcome_classification",
+    "relation_destination_entry_classification",
     "shift_persistence",
     "wide_channel_dwell",
 }
@@ -1220,10 +1221,7 @@ def catalog_entry_summary(entry: Any) -> dict[str, Any]:
         "version": entry.version,
         "kind": entry.kind.value if hasattr(entry.kind, "value") else entry.kind,
         "purpose": entry.purpose,
-        "agent_authorable": not any(
-            token in entry.name
-            for token in ("outcome_classification", "shift_persistence", "wide_channel_dwell")
-        ),
+        "agent_authorable": entry.name not in NON_AUTHORABLE_CATALOG_REFS,
         "inputs": [item.model_dump(mode="json") for item in entry.inputs],
         "outputs": [output.model_dump(mode="json") for output in entry.outputs],
         "parameters": [parameter.model_dump(mode="json", exclude_none=True) for parameter in entry.parameters],

@@ -462,9 +462,25 @@ evidence:
       host_owned_execution_cache_and_progress: true
       honest_manual_source_labels: true
       host_authorization_required_for_cache_hits: true
+  N1A_generic_relation_destination_outcome:
+    status: LOCAL_PROOF_PASS_LIVE_HERMES_NEXT
+    verifier: src/tqe/verification/n1a.py
+    verification_command: PYTHONPATH=src .venv/bin/python -m tqe.verification.n1a
+    report: artifacts/n1-live-novel-composition-2026-06-22/N1A_REPORT.json
+    hero_question: "Show possessions where a progressive corridor opens within four seconds of possession starting, remains available for at least 0.8 seconds, and the ball enters that corridor's destination region within five seconds of the corridor opening."
+    capability_change:
+      agent_authorable: relation_destination_entry
+      trusted_recipe_only: relation_destination_entry_classification
+    local_result:
+      status: PASS
+      row_count: 5
+      compatibility_profile: generic
+      candidate_structural_fingerprint: 79b852cd4f392e1ab5dbcb0e12fd516ee9d678c71da26e5e90c6fc3e510bc0a0
+      contains_m1_fields: false
+    non_claim: "N1A proves local expressibility and runtime semantics only; it is not the live Hermes novel-composition proof."
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: REQUEST_FINAL_INDEPENDENT_S2I_EVALUATION_SET
-  scope: "Workbench Alpha query-to-replay is controller-verified at commit 36649b3. S2I-F final-evaluation harness is ready and fails closed until an independently authored sealed set is supplied. S3 remains blocked only on that final Hermes/frontier evaluation."
+  external_review: LIVE_HERMES_N1_PROOF_OR_FINAL_INDEPENDENT_S2I_EVALUATION_SET
+  scope: "N1A local expressibility is green after adding a generic relation_destination_entry capability. Next run the frozen hero once through live Hermes, preserving the outcome without post-run tuning. Workbench Alpha query-to-replay is controller-verified at commit 36649b3. S2I-F final-evaluation harness remains ready and fails closed until an independently authored sealed set is supplied."
