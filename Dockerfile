@@ -64,7 +64,7 @@ RUN apt-get update \
 RUN npm install -g n \
     && n 22 \
     && npm install -g @openai/codex@0.131.0 \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh
+    && python -m pip install --upgrade pip uv
 
 RUN git clone --recurse-submodules https://github.com/NousResearch/hermes-agent.git /opt/hermes-agent \
     && cd /opt/hermes-agent \
