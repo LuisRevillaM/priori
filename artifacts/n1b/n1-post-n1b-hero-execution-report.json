@@ -1,0 +1,147 @@
+{
+  "authorization": {
+    "bound_plan_id": "bound_f619f6c9677a4d2a",
+    "execution_authorization_id": "auth_c4f1f74cb2a2377e",
+    "ok": true
+  },
+  "bound_plan_hash": "f619f6c9677a4d2afdddcd72752ff9e5799b5fc7f2063aae5d0cf5a2104b4c76",
+  "bound_plan_id": "bound_f619f6c9677a4d2a",
+  "draft_plan_id": "draft_26912b2c452106e8",
+  "execution": {
+    "bound_plan_hash": "f619f6c9677a4d2afdddcd72752ff9e5799b5fc7f2063aae5d0cf5a2104b4c76",
+    "bound_plan_id": "bound_f619f6c9677a4d2a",
+    "compatibility_profile": "generic",
+    "draft_plan_hash": "26912b2c452106e864aa0a4e546fbaf1504d181737aa2bade9a4e77223d13c06",
+    "execution_id": "exec_5466f201a479ba0f",
+    "ok": true,
+    "plan_id": "possession_start_corridor_entry_plan_v1",
+    "plan_status": "experimental",
+    "results": [
+      {
+        "anchor_frame_id": 11365,
+        "classification": "DESTINATION_ENTERED",
+        "match_id": "J03WOY",
+        "match_time_ms": 54600,
+        "period": "firstHalf",
+        "rank": 1,
+        "requested_evidence": {
+          "corridor_duration_seconds": 3.8,
+          "corridor_open_frame_id": 11375,
+          "destination_entry_frame_id": 11375,
+          "destination_entry_status": "PASS",
+          "destination_region": "left_half_space",
+          "minimum_clearance_m": 4.35,
+          "possession_anchor_id": "211de48d59c35b99",
+          "possession_end_frame_id": 11885,
+          "possession_start_anchor_frame_id": 11365,
+          "possession_start_frame_id": 11365,
+          "relation_id": "dd74570708cce6a3",
+          "target_player_id": "DFL-OBJ-00028V",
+          "time_to_entry_seconds": 0.0
+        },
+        "result_id": "ab256488c8e9b408"
+      },
+      {
+        "anchor_frame_id": 16905,
+        "classification": "DESTINATION_ENTERED",
+        "match_id": "J03WOY",
+        "match_time_ms": 276200,
+        "period": "firstHalf",
+        "rank": 2,
+        "requested_evidence": {
+          "corridor_duration_seconds": 1.2,
+          "corridor_open_frame_id": 16965,
+          "destination_entry_frame_id": 16969,
+          "destination_entry_status": "PASS",
+          "destination_region": "left_central",
+          "minimum_clearance_m": 4.11,
+          "possession_anchor_id": "1d3b641c053d74c8",
+          "possession_end_frame_id": 17255,
+          "possession_start_anchor_frame_id": 16905,
+          "possession_start_frame_id": 16905,
+          "relation_id": "58c6ce9aaff0107f",
+          "target_player_id": "DFL-OBJ-0000F8",
+          "time_to_entry_seconds": 0.16
+        },
+        "result_id": "b7d9cbe7c1fcce94"
+      },
+      {
+        "anchor_frame_id": 23330,
+        "classification": "DESTINATION_ENTERED",
+        "match_id": "J03WOY",
+        "match_time_ms": 533200,
+        "period": "firstHalf",
+        "rank": 3,
+        "requested_evidence": {
+          "corridor_duration_seconds": 2.4,
+          "corridor_open_frame_id": 23375,
+          "destination_entry_frame_id": 23375,
+          "destination_entry_status": "PASS",
+          "destination_region": "right_central",
+          "minimum_clearance_m": 4.129,
+          "possession_anchor_id": "95dafc4247ba3ff0",
+          "possession_end_frame_id": 24520,
+          "possession_start_anchor_frame_id": 23330,
+          "possession_start_frame_id": 23330,
+          "relation_id": "d9344cc7b12728bf",
+          "target_player_id": "DFL-OBJ-00028V",
+          "time_to_entry_seconds": 0.0
+        },
+        "result_id": "a8617068b2cfc9cd"
+      },
+      {
+        "anchor_frame_id": 27450,
+        "classification": "DESTINATION_ENTERED",
+        "match_id": "J03WOY",
+        "match_time_ms": 698000,
+        "period": "firstHalf",
+        "rank": 4,
+        "requested_evidence": {
+          "corridor_duration_seconds": 1.8,
+          "corridor_open_frame_id": 27510,
+          "destination_entry_frame_id": 27460,
+          "destination_entry_status": "PASS",
+          "destination_region": "left_wide",
+          "minimum_clearance_m": 4.302,
+          "possession_anchor_id": "3048ec7fb90cd1a5",
+          "possession_end_frame_id": 27590,
+          "possession_start_anchor_frame_id": 27450,
+          "possession_start_frame_id": 27450,
+          "relation_id": "15b9e81493fe4539",
+          "target_player_id": "DFL-OBJ-J01KJ5",
+          "time_to_entry_seconds": 0.0
+        },
+        "result_id": "7da5a5226a08bfbf"
+      },
+      {
+        "anchor_frame_id": 27635,
+        "classification": "DESTINATION_ENTERED",
+        "match_id": "J03WOY",
+        "match_time_ms": 705400,
+        "period": "firstHalf",
+        "rank": 5,
+        "requested_evidence": {
+          "corridor_duration_seconds": 3.8,
+          "corridor_open_frame_id": 27645,
+          "destination_entry_frame_id": 27697,
+          "destination_entry_status": "PASS",
+          "destination_region": "left_wide",
+          "minimum_clearance_m": 8.292,
+          "possession_anchor_id": "76be5832ce3517e1",
+          "possession_end_frame_id": 27900,
+          "possession_start_anchor_frame_id": 27635,
+          "possession_start_frame_id": 27635,
+          "relation_id": "8368206dd6c3d568",
+          "target_player_id": "DFL-OBJ-J01H9X",
+          "time_to_entry_seconds": 0.28
+        },
+        "result_id": "67dfe657d4b25d7e"
+      }
+    ],
+    "returned_result_count": 5,
+    "total_result_count": 64,
+    "trace_count": 128
+  },
+  "schema_version": "n1.post_n1b_hero_execution.v1",
+  "session_id": "20260622_141849_63e2a6"
+}

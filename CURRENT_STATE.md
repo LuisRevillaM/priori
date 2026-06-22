@@ -6,8 +6,8 @@ Date: 2026-06-22
 
 - Branch: `codex/integrated-alpha`
 - Latest committed controller checkpoint before this snapshot:
-  `2dfb0b4 Record N1 live Hermes failure`
-- Working tree: scoped N1B capability-contract correction; existing untracked review packets, audits, test-results, and `docs/learnings.zip` remain outside this snapshot.
+  `2a541c2 Harden N1 capability validation contract`
+- Working tree: scoped post-N1B live Hermes proof evidence; existing untracked review packets, audits, test-results, and `docs/learnings.zip` remain outside this snapshot.
 - Current product source of truth:
   - `delivery/m1.2/SPEC.md`
   - `delivery/m1.2/status.yaml`
@@ -302,9 +302,23 @@ N1B capability-contract correction is controller-verified:
 - Validation now rejects the exact failed draft with
   `compare_value_not_allowed` before execution.
 
-Next N1 step: re-freeze the Tactical Knowledge Pack/Hermes configuration after
-this commit and rerun the same frozen hero question once through live Hermes
-without prompt, alias, primitive, operator, catalog, or recipe tuning.
+Post-N1B live Hermes proof is green:
+
+- Session: `20260622_141849_63e2a6`
+- Draft: `draft_26912b2c452106e8`
+- Bound: `bound_f619f6c9677a4d2a`
+- Bound hash:
+  `f619f6c9677a4d2afdddcd72752ff9e5799b5fc7f2063aae5d0cf5a2104b4c76`
+- Structural fingerprint:
+  `cd0a6b43b779ed63ec444a3adb5063d898517ac7aad8d7b1bc43ee73fe51893c`
+- Execution: `exec_5466f201a479ba0f`
+- Result count: `64`
+- First cache-aware execution: `MISS`, then `HIT`
+- First replay: `replay_63574966cd34b86d`
+- Review: `docs/reviews/2026-06-22-n1-post-n1b-live-hermes-result.md`
+
+This is a backend engine proof of the novel-composition loop. It does not claim
+the final Workbench experience is already polished around that loop.
 
 ## S2I-B Provisioning Spike
 
@@ -327,20 +341,17 @@ Provisioning proof is now green:
 
 ## Next Roadmap State
 
-The immediate frontier milestone is the N1 hero rerun after N1B. The broader
-S2I-F final independent evaluation remains the formal frontier acceptance gate.
-Workbench Alpha continues in parallel as the visible product path.
+The immediate frontier/product milestone is exposing the proven N1 loop honestly
+in Workbench. The broader S2I-F final independent evaluation remains the formal
+frontier acceptance gate. Workbench Alpha continues as the visible product path.
 
-The N1 rerun should:
+The Workbench N1 exposure should:
 
-1. Preserve the same frozen hero question.
-2. Re-freeze Hermes provider/model/reasoning/toolset/config and the generated
-   knowledge pack.
-3. Run live Hermes once with only the `priori_tactical` MCP tools.
-4. Stop before host execution unless the controller separately confirms the
-   validated plan.
-5. Preserve failure honestly if Hermes still selects a recipe, authors an
-   invalid plan, or cannot compose the concept.
+1. Preserve strict provenance: `HERMES_NOVEL_COMPOSITION`, not manual preset.
+2. Keep Hermes unable to confirm or execute.
+3. Show the typed interpretation and require host confirmation.
+4. Run the deterministic execution path with cache status.
+5. Surface evidence, PASS traces, and coordinate replay for real results.
 
 Workbench Alpha should start in parallel against stable deterministic contracts:
 

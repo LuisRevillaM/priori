@@ -1,0 +1,636 @@
+{
+  "bound_plan_id": "bound_f619f6c9677a4d2a",
+  "draft_plan_id": "draft_26912b2c452106e8",
+  "live_structural_fingerprint": {
+    "anchor_source": {
+      "output": "anchors",
+      "source": "n00"
+    },
+    "classification_rules": [
+      {
+        "label": "DESTINATION_ENTERED",
+        "predicates": [
+          "n03",
+          "n04"
+        ]
+      }
+    ],
+    "evidence_sources": [
+      "n00.anchors:anchor_frame_id",
+      "n00.anchors:anchor_id",
+      "n00.anchors:end_frame_id",
+      "n00.anchors:start_frame_id",
+      "n01.episodes:destination_region",
+      "n01.episodes:duration_seconds",
+      "n01.episodes:minimum_clearance_m",
+      "n01.episodes:open_frame_id",
+      "n01.episodes:relation_id",
+      "n01.episodes:target_player_id",
+      "n02.entry_status:destination_entry_frame_id",
+      "n02.entry_status:entry_status",
+      "n02.entry_status:time_to_entry_seconds"
+    ],
+    "fingerprint_hash": "cd0a6b43b779ed63ec444a3adb5063d898517ac7aad8d7b1bc43ee73fe51893c",
+    "nodes": [
+      {
+        "catalog_ref": "possession_segment",
+        "id": "n00",
+        "inputs": {},
+        "kind": "primitive",
+        "parameter_names": []
+      },
+      {
+        "catalog_ref": "geometric_progressive_corridor_from_anchor_set",
+        "id": "n01",
+        "inputs": {
+          "anchors": {
+            "output": "anchors",
+            "source": "n00"
+          }
+        },
+        "kind": "relation",
+        "parameter_names": [
+          "close_after_frames",
+          "max_window_seconds",
+          "maximum_segment_length_m",
+          "minimum_clearance_m",
+          "minimum_duration_seconds",
+          "minimum_progression_m",
+          "minimum_segment_length_m",
+          "open_after_frames",
+          "side_filter"
+        ]
+      },
+      {
+        "catalog_ref": "relation_destination_entry",
+        "id": "n02",
+        "inputs": {
+          "relation_episodes": {
+            "output": "episodes",
+            "source": "n01"
+          }
+        },
+        "kind": "primitive",
+        "parameter_names": [
+          "destination_entry_horizon_seconds",
+          "episode_selection",
+          "result_id_seed"
+        ]
+      },
+      {
+        "catalog_ref": null,
+        "compare_shape": null,
+        "duration_shape": null,
+        "id": "n03",
+        "input": {
+          "output": "anchor_evaluations",
+          "source": "n01"
+        },
+        "kind": "predicate",
+        "operator": "exists"
+      },
+      {
+        "catalog_ref": null,
+        "compare_shape": {
+          "kind": "literal",
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "<literal>"
+        },
+        "duration_shape": null,
+        "id": "n04",
+        "input": {
+          "output": "entry_status",
+          "source": "n02"
+        },
+        "kind": "predicate",
+        "operator": "eq"
+      }
+    ],
+    "schema_version": "n1.structural_fingerprint.v1"
+  },
+  "novel": true,
+  "registered_hashes": {
+    "ball_side_block_shift_v1": "327300f055b23a865532cfc645c033f35992538a5894097b3b4577dc7799b368",
+    "opposite_corridor_after_shift_v1": "577392987e6dc0e2fb6af1618d4342ff6e3fa342295c185b426591cecda3e62e",
+    "possession_corridor_availability_v1": "033a909cbc977f93a2c87f22d4a2bf130e53f77d64c40875ec79dd5d6ae5c1c7"
+  },
+  "registered_structural_fingerprints": [
+    {
+      "bound_plan_hash": "4a5a1dabc168ffcc511923700ddb28af67393fb13c7caccd7b92689289d8b4ce",
+      "document_stable_hash": "804b45319c45b8a4bf483e02f5cd0a435d52471d684f67afde7536332e46e029",
+      "file_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+      "plan_id": "ball_side_block_shift_ir_v1",
+      "plan_status": "approved",
+      "recipe_id": "ball_side_block_shift_v1",
+      "recipe_version": "1.0.0",
+      "source_path": "config/query-plans/ball_side_block_shift.ir.v1.json",
+      "structural_fingerprint": {
+        "anchor_source": {
+          "output": "anchors",
+          "source": "n05"
+        },
+        "classification_rules": [
+          {
+            "label": "SWITCHED",
+            "predicates": [
+              "n03",
+              "n07",
+              "n09"
+            ]
+          },
+          {
+            "label": "RETAINED_NO_SWITCH",
+            "predicates": [
+              "n03",
+              "n07",
+              "n09"
+            ]
+          },
+          {
+            "label": "LOST_BEFORE_SWITCH",
+            "predicates": [
+              "n03",
+              "n07",
+              "n09"
+            ]
+          },
+          {
+            "label": "STOPPAGE",
+            "predicates": [
+              "n03",
+              "n07"
+            ]
+          }
+        ],
+        "evidence_sources": [
+          "n00.episodes:possession_start_frame_id",
+          "n01.fraction:wide_entry_y_m",
+          "n05.signed_shift:anchor_frame_id",
+          "n05.signed_shift:signed_shift_metres",
+          "n08.classification:classification",
+          "n08.classification:outcome_frame_id"
+        ],
+        "fingerprint_hash": "327300f055b23a865532cfc645c033f35992538a5894097b3b4577dc7799b368",
+        "nodes": [
+          {
+            "catalog_ref": "possession_segment",
+            "id": "n00",
+            "inputs": {},
+            "kind": "primitive",
+            "parameter_names": []
+          },
+          {
+            "catalog_ref": "ball_lateral_fraction",
+            "id": "n01",
+            "inputs": {},
+            "kind": "primitive",
+            "parameter_names": []
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": {
+              "kind": "parameter",
+              "name": "<parameter>"
+            },
+            "duration_shape": null,
+            "id": "n02",
+            "input": {
+              "output": "fraction",
+              "source": "n01"
+            },
+            "kind": "predicate",
+            "operator": "gt"
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": null,
+            "duration_shape": {
+              "kind": "parameter",
+              "name": "<parameter>"
+            },
+            "id": "n03",
+            "input": {
+              "output": "predicate",
+              "source": "n02"
+            },
+            "kind": "predicate",
+            "operator": "persists_for"
+          },
+          {
+            "catalog_ref": "defensive_outfield_centroid",
+            "id": "n04",
+            "inputs": {},
+            "kind": "primitive",
+            "parameter_names": []
+          },
+          {
+            "catalog_ref": "signed_lateral_shift",
+            "id": "n05",
+            "inputs": {
+              "defensive_centroid": {
+                "output": "centroid_y",
+                "source": "n04"
+              },
+              "entry_episodes": {
+                "output": "predicate",
+                "source": "n03"
+              },
+              "possession_episodes": {
+                "output": "episodes",
+                "source": "n00"
+              }
+            },
+            "kind": "primitive",
+            "parameter_names": []
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": {
+              "kind": "parameter",
+              "name": "<parameter>"
+            },
+            "duration_shape": null,
+            "id": "n06",
+            "input": {
+              "output": "signed_shift",
+              "source": "n05"
+            },
+            "kind": "predicate",
+            "operator": "gte"
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": null,
+            "duration_shape": {
+              "kind": "parameter",
+              "name": "<parameter>"
+            },
+            "id": "n07",
+            "input": {
+              "output": "predicate",
+              "source": "n06"
+            },
+            "kind": "predicate",
+            "operator": "persists_for"
+          },
+          {
+            "catalog_ref": "outcome_classification",
+            "id": "n08",
+            "inputs": {
+              "accepted_shift_episodes": {
+                "output": "predicate",
+                "source": "n07"
+              }
+            },
+            "kind": "primitive",
+            "parameter_names": [
+              "horizon"
+            ]
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": {
+              "kind": "literal",
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "<literal>"
+            },
+            "duration_shape": null,
+            "id": "n09",
+            "input": {
+              "output": "classification",
+              "source": "n08"
+            },
+            "kind": "predicate",
+            "operator": "neq"
+          }
+        ],
+        "schema_version": "n1.structural_fingerprint.v1"
+      }
+    },
+    {
+      "bound_plan_hash": "7094041d9225ea8ccb21dba00ab65ae338bc215b072d8af7fce366b8a636fbe4",
+      "document_stable_hash": "db382d04656cb1b8e0eb01a52a167b6880e8eaac886de70060d0f2550fa4a19f",
+      "file_sha256": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
+      "plan_id": "possession_corridor_availability_experimental_v1",
+      "plan_status": "experimental",
+      "recipe_id": "possession_corridor_availability_v1",
+      "recipe_version": "0.1.0",
+      "source_path": "config/query-plans/possession_corridor_availability.experimental.v1.json",
+      "structural_fingerprint": {
+        "anchor_source": {
+          "output": "anchors",
+          "source": "n00"
+        },
+        "classification_rules": [
+          {
+            "label": "PROGRESSIVE_CORRIDOR_AVAILABLE",
+            "predicates": [
+              "n02"
+            ]
+          }
+        ],
+        "evidence_sources": [
+          "n01.episodes:destination_region",
+          "n01.episodes:duration_seconds",
+          "n01.episodes:minimum_clearance_m",
+          "n01.episodes:relation_id",
+          "n01.episodes:target_player_id"
+        ],
+        "fingerprint_hash": "033a909cbc977f93a2c87f22d4a2bf130e53f77d64c40875ec79dd5d6ae5c1c7",
+        "nodes": [
+          {
+            "catalog_ref": "possession_segment",
+            "id": "n00",
+            "inputs": {},
+            "kind": "primitive",
+            "parameter_names": []
+          },
+          {
+            "catalog_ref": "geometric_progressive_corridor_from_anchor_set",
+            "id": "n01",
+            "inputs": {
+              "anchors": {
+                "output": "anchors",
+                "source": "n00"
+              }
+            },
+            "kind": "relation",
+            "parameter_names": [
+              "close_after_frames",
+              "max_window_seconds",
+              "maximum_segment_length_m",
+              "minimum_clearance_m",
+              "minimum_duration_seconds",
+              "minimum_progression_m",
+              "minimum_segment_length_m",
+              "open_after_frames",
+              "side_filter"
+            ]
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": null,
+            "duration_shape": null,
+            "id": "n02",
+            "input": {
+              "output": "anchor_evaluations",
+              "source": "n01"
+            },
+            "kind": "predicate",
+            "operator": "exists"
+          }
+        ],
+        "schema_version": "n1.structural_fingerprint.v1"
+      }
+    },
+    {
+      "bound_plan_hash": "90cfc95eb70bc980a23894ee901fd7b25bd09e7de77b223d35362aebe20ab355",
+      "document_stable_hash": "79181efac84731215b1b563da5a425d43b5883aedbfbe086d70f06220765b9ff",
+      "file_sha256": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
+      "plan_id": "opposite_corridor_after_shift_experimental_v1",
+      "plan_status": "experimental",
+      "recipe_id": "opposite_corridor_after_shift_v1",
+      "recipe_version": "0.1.0",
+      "source_path": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json",
+      "structural_fingerprint": {
+        "anchor_source": {
+          "output": "anchors",
+          "source": "n05"
+        },
+        "classification_rules": [
+          {
+            "label": "DESTINATION_ENTERED",
+            "predicates": [
+              "n03",
+              "n07",
+              "n11",
+              "n13"
+            ]
+          },
+          {
+            "label": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+            "predicates": [
+              "n03",
+              "n07",
+              "n11"
+            ]
+          }
+        ],
+        "evidence_sources": [
+          "n10.episodes:destination_region",
+          "n10.episodes:duration_seconds",
+          "n10.episodes:relation_id",
+          "n12.classification:classification",
+          "n12.classification:destination_entry_frame_id"
+        ],
+        "fingerprint_hash": "577392987e6dc0e2fb6af1618d4342ff6e3fa342295c185b426591cecda3e62e",
+        "nodes": [
+          {
+            "catalog_ref": "possession_segment",
+            "id": "n00",
+            "inputs": {},
+            "kind": "primitive",
+            "parameter_names": []
+          },
+          {
+            "catalog_ref": "ball_lateral_fraction",
+            "id": "n01",
+            "inputs": {},
+            "kind": "primitive",
+            "parameter_names": []
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": {
+              "kind": "parameter",
+              "name": "<parameter>"
+            },
+            "duration_shape": null,
+            "id": "n02",
+            "input": {
+              "output": "fraction",
+              "source": "n01"
+            },
+            "kind": "predicate",
+            "operator": "gt"
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": null,
+            "duration_shape": {
+              "kind": "parameter",
+              "name": "<parameter>"
+            },
+            "id": "n03",
+            "input": {
+              "output": "predicate",
+              "source": "n02"
+            },
+            "kind": "predicate",
+            "operator": "persists_for"
+          },
+          {
+            "catalog_ref": "defensive_outfield_centroid",
+            "id": "n04",
+            "inputs": {},
+            "kind": "primitive",
+            "parameter_names": []
+          },
+          {
+            "catalog_ref": "signed_lateral_shift",
+            "id": "n05",
+            "inputs": {
+              "defensive_centroid": {
+                "output": "centroid_y",
+                "source": "n04"
+              },
+              "entry_episodes": {
+                "output": "predicate",
+                "source": "n03"
+              },
+              "possession_episodes": {
+                "output": "episodes",
+                "source": "n00"
+              }
+            },
+            "kind": "primitive",
+            "parameter_names": []
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": {
+              "kind": "parameter",
+              "name": "<parameter>"
+            },
+            "duration_shape": null,
+            "id": "n06",
+            "input": {
+              "output": "signed_shift",
+              "source": "n05"
+            },
+            "kind": "predicate",
+            "operator": "gte"
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": null,
+            "duration_shape": {
+              "kind": "parameter",
+              "name": "<parameter>"
+            },
+            "id": "n07",
+            "input": {
+              "output": "predicate",
+              "source": "n06"
+            },
+            "kind": "predicate",
+            "operator": "persists_for"
+          },
+          {
+            "catalog_ref": "outcome_classification",
+            "id": "n08",
+            "inputs": {
+              "accepted_shift_episodes": {
+                "output": "predicate",
+                "source": "n07"
+              }
+            },
+            "kind": "primitive",
+            "parameter_names": [
+              "horizon"
+            ]
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": {
+              "kind": "literal",
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "<literal>"
+            },
+            "duration_shape": null,
+            "id": "n09",
+            "input": {
+              "output": "classification",
+              "source": "n08"
+            },
+            "kind": "predicate",
+            "operator": "neq"
+          },
+          {
+            "catalog_ref": "geometric_progressive_corridor",
+            "id": "n10",
+            "inputs": {
+              "anchors": {
+                "output": "classification",
+                "source": "n08"
+              }
+            },
+            "kind": "relation",
+            "parameter_names": [
+              "close_after_frames",
+              "max_window_seconds",
+              "maximum_segment_length_m",
+              "minimum_clearance_m",
+              "minimum_duration_seconds",
+              "minimum_progression_m",
+              "minimum_segment_length_m",
+              "open_after_frames",
+              "side_filter"
+            ]
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": null,
+            "duration_shape": null,
+            "id": "n11",
+            "input": {
+              "output": "anchor_evaluations",
+              "source": "n10"
+            },
+            "kind": "predicate",
+            "operator": "exists"
+          },
+          {
+            "catalog_ref": "relation_destination_entry_classification",
+            "id": "n12",
+            "inputs": {
+              "relation_episodes": {
+                "output": "episodes",
+                "source": "n10"
+              }
+            },
+            "kind": "primitive",
+            "parameter_names": [
+              "destination_entry_horizon_seconds",
+              "episode_selection",
+              "result_id_seed"
+            ]
+          },
+          {
+            "catalog_ref": null,
+            "compare_shape": {
+              "kind": "literal",
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "<literal>"
+            },
+            "duration_shape": null,
+            "id": "n13",
+            "input": {
+              "output": "classification",
+              "source": "n12"
+            },
+            "kind": "predicate",
+            "operator": "neq"
+          }
+        ],
+        "schema_version": "n1.structural_fingerprint.v1"
+      }
+    }
+  ],
+  "schema_version": "n1.post_n1b_structural_novelty.v1",
+  "session_id": "20260622_141849_63e2a6"
+}

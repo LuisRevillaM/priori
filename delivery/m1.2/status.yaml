@@ -523,9 +523,41 @@ evidence:
       corrected_plan_generic_real_results: true
       hermes_execution_tool_absent: true
       unknown_semantics_preserved: true
+  N1_post_n1b_live_hermes_novel_composition:
+    status: PASS_CONTROLLER_VERIFIED_BACKEND_ENGINE_PROOF
+    review: docs/reviews/2026-06-22-n1-post-n1b-live-hermes-result.md
+    session_id: 20260622_141849_63e2a6
+    draft_plan_id: draft_26912b2c452106e8
+    bound_plan_id: bound_f619f6c9677a4d2a
+    bound_plan_hash: f619f6c9677a4d2afdddcd72752ff9e5799b5fc7f2063aae5d0cf5a2104b4c76
+    execution_id: exec_5466f201a479ba0f
+    result_count: 64
+    returned_result_count: 5
+    structural_fingerprint: cd0a6b43b779ed63ec444a3adb5063d898517ac7aad8d7b1bc43ee73fe51893c
+    cache_status_first_execution: MISS
+    cache_status_after_execution: HIT
+    first_result:
+      result_id: ab256488c8e9b408
+      match_id: J03WOY
+      period: firstHalf
+      match_time_ms: 54600
+      replay_window_id: replay_63574966cd34b86d
+      predicate_statuses:
+        has_progressive_corridor: PASS
+        destination_region_entered: PASS
+    proof_claims:
+      same_frozen_question: true
+      no_existing_recipe_selected: true
+      hermes_authored_experimental_plan: true
+      structurally_novel: true
+      generic_validation_passed: true
+      hermes_stopped_before_execution: true
+      host_confirmation_required: true
+      generic_execution_real_results: true
+      inspection_and_replay_available: true
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: OPTIONAL_REVIEW_N1B_BEFORE_OR_AFTER_HERO_RERUN
-  scope: "N1B is controller-verified: the exact failed Hermes plan now fails validation before execution, host runtime globals are injected for authored plans, entry_status exposes PASS/FAIL/UNKNOWN, and a corrected version submits, validates, host-confirms, and executes generically over real data. Next: re-freeze pack/configuration and rerun the same frozen hero question once through live Hermes without prompt/catalog tuning."
+  external_review: OPTIONAL_REVIEW_N1_POST_N1B_PROOF
+  scope: "N1 post-N1B is controller-verified as a backend engine proof: live Hermes authored a structurally novel experimental plan for the frozen hero question, validation passed, Hermes stopped before execution, host confirmation executed the plan generically over real data, cache MISS/HIT behavior was recorded, and inspection/replay evidence exists. Next product step: expose this capability honestly in Workbench rather than adding another runtime repair."

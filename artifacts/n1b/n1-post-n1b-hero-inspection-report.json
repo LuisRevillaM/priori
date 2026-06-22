@@ -1,0 +1,152 @@
+{
+  "execution_id": "exec_5466f201a479ba0f",
+  "inspection": {
+    "execution_id": "exec_5466f201a479ba0f",
+    "ok": true,
+    "predicate_traces": [
+      {
+        "frame_id": 11365,
+        "predicate_id": "has_progressive_corridor",
+        "source_evidence": {
+          "anchor_frame_id": 11365,
+          "anchor_id": "211de48d59c35b99",
+          "candidate_key": "211de48d59c35b99",
+          "evaluation_status": "PASS",
+          "match_id": "J03WOY",
+          "period": "firstHalf",
+          "relation_count": 6,
+          "result_id": "ab256488c8e9b408",
+          "source_node_id": "progressive_corridor",
+          "source_output_name": "anchor_evaluations",
+          "trace_source": "has_progressive_corridor.predicate",
+          "witness_relation_id": "dd74570708cce6a3"
+        },
+        "status": "PASS",
+        "unit": "none",
+        "value": {
+          "payload_type": "boolean",
+          "unit": "none",
+          "value": true
+        }
+      },
+      {
+        "frame_id": 11375,
+        "predicate_id": "destination_region_entered",
+        "source_evidence": {
+          "anchor_frame_id": 11365,
+          "anchor_id": "211de48d59c35b99",
+          "candidate_key": "211de48d59c35b99",
+          "match_id": "J03WOY",
+          "period": "firstHalf",
+          "result_id": "ab256488c8e9b408",
+          "source_node_id": "destination_entry",
+          "source_output_name": "entry_status",
+          "trace_source": "destination_region_entered.predicate",
+          "witness_relation_id": "dd74570708cce6a3"
+        },
+        "status": "PASS",
+        "threshold": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "unit": "none",
+        "value": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        }
+      }
+    ],
+    "requested_evidence": {
+      "corridor_duration_seconds": 3.8,
+      "corridor_open_frame_id": 11375,
+      "destination_entry_frame_id": 11375,
+      "destination_entry_status": "PASS",
+      "destination_region": "left_half_space",
+      "minimum_clearance_m": 4.35,
+      "possession_anchor_id": "211de48d59c35b99",
+      "possession_end_frame_id": 11885,
+      "possession_start_anchor_frame_id": 11365,
+      "possession_start_frame_id": 11365,
+      "relation_id": "dd74570708cce6a3",
+      "target_player_id": "DFL-OBJ-00028V",
+      "time_to_entry_seconds": 0.0
+    },
+    "result": {
+      "accepted": true,
+      "anchor_frame_id": 11365,
+      "anchor_id": "211de48d59c35b99",
+      "classification": "DESTINATION_ENTERED",
+      "classification_rule_decisions": [
+        {
+          "label": "DESTINATION_ENTERED",
+          "predicate_ids": [
+            "has_progressive_corridor",
+            "destination_region_entered"
+          ],
+          "rule_match_status": "PASS",
+          "unknown_required_predicates": []
+        }
+      ],
+      "defending_team_role": "away",
+      "match_id": "J03WOY",
+      "match_time_ms": 54600,
+      "matched_classification_rules": [
+        "DESTINATION_ENTERED"
+      ],
+      "period": "firstHalf",
+      "perspective_team_role": "home",
+      "plan_status": "experimental",
+      "provenance": {
+        "anchor_source": "possession.anchors",
+        "compatibility_profile": "generic",
+        "emitter": "generic_rule_emitter"
+      },
+      "requested_evidence": {
+        "corridor_duration_seconds": 3.8,
+        "corridor_open_frame_id": 11375,
+        "destination_entry_frame_id": 11375,
+        "destination_entry_status": "PASS",
+        "destination_region": "left_half_space",
+        "minimum_clearance_m": 4.35,
+        "possession_anchor_id": "211de48d59c35b99",
+        "possession_end_frame_id": 11885,
+        "possession_start_anchor_frame_id": 11365,
+        "possession_start_frame_id": 11365,
+        "relation_id": "dd74570708cce6a3",
+        "target_player_id": "DFL-OBJ-00028V",
+        "time_to_entry_seconds": 0.0
+      },
+      "result_id": "ab256488c8e9b408",
+      "rule_match_status": "PASS",
+      "unknown_required_predicates": []
+    }
+  },
+  "ok": true,
+  "replay_summary": {
+    "anchor_frame_id": 11365,
+    "end_frame_id": 11415,
+    "frame_count": 101,
+    "match_id": "J03WOY",
+    "period": "firstHalf",
+    "replay_window_id": "replay_63574966cd34b86d",
+    "start_frame_id": 11315
+  },
+  "replay_window": {
+    "anchor_frame_id": 11365,
+    "end_frame_id": 11415,
+    "entity_observation_count": 2323,
+    "execution_id": "exec_5466f201a479ba0f",
+    "frame_count": 101,
+    "match_id": "J03WOY",
+    "ok": true,
+    "period": "firstHalf",
+    "replay_window_id": "replay_63574966cd34b86d",
+    "source_kind": "result",
+    "start_frame_id": 11315
+  },
+  "result_id": "ab256488c8e9b408",
+  "schema_version": "n1.post_n1b_replay_inspection.v1",
+  "session_id": "20260622_141849_63e2a6"
+}

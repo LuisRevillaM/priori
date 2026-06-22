@@ -297,16 +297,16 @@
     "required_before_s3": true,
     "status": "PENDING_EXTERNAL_INDEPENDENT_SET"
   },
-  "generated_at": "2026-06-22T14:30:08+00:00",
+  "generated_at": "2026-06-22T21:18:31+00:00",
   "knowledge_and_schema_hashes": {
     "capability_context_path": "generated/capability-context.json",
-    "capability_context_sha256": "4816ffb893c34ddcd587192f5690f179d51ba46d09df6706a040b373f35950e8",
+    "capability_context_sha256": "0ef53564bf09c7b6e64d1ba8da1aff14bd7ce426b23e0dcb293eaf5256506fe4",
     "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-    "knowledge_pack_sha256": "85d59dcb8afaf7c9e0b383d9fb8c76eb44f73ee898b947a2105912ad1b4b3c1a",
+    "knowledge_pack_sha256": "34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6",
     "mcp_server_path": "src/tqe/workshop/mcp_server.py",
     "mcp_server_sha256": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
     "workshop_service_path": "src/tqe/workshop/m1_2.py",
-    "workshop_service_sha256": "481150ca1439006bc0c41b276aab62fa37960864e7d632cae660ff6f06c9c209"
+    "workshop_service_sha256": "57e088c3cb732362ee7de530311558170b9236c8889db73b683af74a25ffbd16"
   },
   "mcp_boundary": {
     "adapter_path": "src/tqe/workshop/mcp_server.py",
@@ -405,7 +405,7 @@
     "hermes_config_path": "/Users/luisrevilla/.hermes-priori/config.yaml",
     "hermes_config_sha256": "e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237",
     "hermes_home": "/Users/luisrevilla/.hermes-priori",
-    "hermes_version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream b4cb33cd\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUpdate available: 60 commits behind \u2014 run 'hermes update'",
+    "hermes_version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream 2a58fee1\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUpdate available: 91 commits behind \u2014 run 'hermes update'",
     "provider": "openai-codex",
     "reasoning_effort": "xhigh",
     "runtime": "Hermes Agent over local stdio Tactical MCP",

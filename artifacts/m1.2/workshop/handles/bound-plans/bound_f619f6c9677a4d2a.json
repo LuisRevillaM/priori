@@ -1,0 +1,1241 @@
+{
+  "bound_plan": {
+    "anchor_source": {
+      "output_name": "anchors",
+      "source_node_id": "possession"
+    },
+    "bound_plan_hash": "f619f6c9677a4d2afdddcd72752ff9e5799b5fc7f2063aae5d0cf5a2104b4c76",
+    "classification_mode": "partial_declared",
+    "classification_rules": [
+      {
+        "description": "A generic progressive corridor opened from possession start, persisted, and the ball entered that corridor destination region within the configured horizon.",
+        "label": "DESTINATION_ENTERED",
+        "predicate_ids": [
+          "has_progressive_corridor",
+          "destination_region_entered"
+        ]
+      }
+    ],
+    "complexity_limits": {
+      "max_execution_cost": 100000,
+      "max_nesting_depth": 4,
+      "max_plan_nodes": 20,
+      "max_relations_per_anchor": 1000,
+      "max_returned_moments": 64,
+      "max_temporal_horizon_seconds": 15.0
+    },
+    "execution_mode": "execute",
+    "invocation_id": "n1_live_possession_start_corridor_entry",
+    "match_ids": [
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9"
+    ],
+    "max_results": 64,
+    "nodes": [
+      {
+        "catalog_ref": "possession_segment",
+        "input_types": {},
+        "inputs": {},
+        "kind": "primitive",
+        "node_id": "possession",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "possession_start_frame_id",
+              "possession_end_frame_id",
+              "possession_duration_seconds"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "boolean",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "resolved_parameters": {},
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "geometric_progressive_corridor_from_anchor_set",
+        "input_types": {
+          "anchors": {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        },
+        "inputs": {
+          "anchors": {
+            "output_name": "anchors",
+            "source_node_id": "possession"
+          }
+        },
+        "kind": "relation",
+        "node_id": "progressive_corridor",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "relation",
+            "evidence_fields": [
+              "relation_id",
+              "open_frame_id",
+              "open_confirm_frame_id",
+              "close_frame_id",
+              "duration_seconds",
+              "target_player_id",
+              "destination_side",
+              "destination_region",
+              "destination_region_type",
+              "destination_region_bounds",
+              "destination_lane",
+              "minimum_clearance_m",
+              "limiting_defender_id",
+              "source_open_point",
+              "target_open_point",
+              "source_close_point",
+              "target_close_point"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "relation_ref",
+            "temporal_type": "relation_episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "evaluation_status",
+              "relation_count",
+              "witness_relation_id",
+              "unknown_reason",
+              "state_counts"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "boolean",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "resolved_parameters": {
+          "close_after_frames": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2
+          },
+          "max_window_seconds": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 4.0
+          },
+          "maximum_segment_length_m": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 45.0
+          },
+          "minimum_clearance_m": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 4.0
+          },
+          "minimum_duration_seconds": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.8
+          },
+          "minimum_progression_m": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 5.0
+          },
+          "minimum_segment_length_m": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 6.0
+          },
+          "open_after_frames": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2
+          },
+          "side_filter": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "any"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "relation_destination_entry",
+        "input_types": {
+          "relation_episodes": {
+            "cardinality": "collection",
+            "entity_scope": "relation",
+            "evidence_fields": [
+              "relation_id",
+              "open_frame_id",
+              "open_confirm_frame_id",
+              "close_frame_id",
+              "duration_seconds",
+              "target_player_id",
+              "destination_side",
+              "destination_region",
+              "destination_region_type",
+              "destination_region_bounds",
+              "destination_lane",
+              "minimum_clearance_m",
+              "limiting_defender_id",
+              "source_open_point",
+              "target_open_point",
+              "source_close_point",
+              "target_close_point"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "relation_ref",
+            "temporal_type": "relation_episode_set",
+            "unit": "none"
+          }
+        },
+        "inputs": {
+          "relation_episodes": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "destination_entry",
+        "outputs": [
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "relation",
+            "evidence_fields": [
+              "entry_status",
+              "relation_id",
+              "anchor_id",
+              "destination_entry_frame_id",
+              "time_to_entry_seconds",
+              "destination_region",
+              "destination_region_type",
+              "destination_region_bounds",
+              "destination_side",
+              "destination_lane",
+              "observed_window_start_frame_id",
+              "observed_window_end_frame_id",
+              "unknown_reason",
+              "missing_ball_frame_count"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "entry_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "resolved_parameters": {
+          "destination_entry_horizon_seconds": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 5.0
+          },
+          "episode_selection": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "entry_first_then_progression"
+          },
+          "result_id_seed": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "possession_start_corridor_entry_experimental_v1"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "input": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "progressive_corridor"
+        },
+        "input_type": {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "evaluation_status",
+            "relation_count",
+            "witness_relation_id",
+            "unknown_reason",
+            "state_counts"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "boolean",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        "kind": "predicate",
+        "node_id": "has_progressive_corridor",
+        "operator": {
+          "name": "exists",
+          "version": "1.0.0"
+        },
+        "operator_signature": {
+          "compare_payload_types": [],
+          "compare_required": false,
+          "compare_unit_must_match": false,
+          "duration_required": false,
+          "input_cardinalities": [
+            "collection"
+          ],
+          "input_payload_types": [
+            "boolean"
+          ],
+          "input_temporal_types": [
+            "episode_set"
+          ],
+          "limitations": [],
+          "name": "exists",
+          "output_cardinality": "single",
+          "output_payload_type": "boolean",
+          "output_temporal_type": "frame_signal",
+          "output_unit": "none",
+          "purpose": "Test whether a boolean episode or anchor-evaluation collection exists.",
+          "version": "1.0.0"
+        },
+        "output": {
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "predicate_status",
+            "predicate_value",
+            "predicate_threshold",
+            "predicate_unit"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "predicate",
+          "payload_type": "boolean",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "entry_status",
+          "source_node_id": "destination_entry"
+        },
+        "input_type": {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "relation",
+          "evidence_fields": [
+            "entry_status",
+            "relation_id",
+            "anchor_id",
+            "destination_entry_frame_id",
+            "time_to_entry_seconds",
+            "destination_region",
+            "destination_region_type",
+            "destination_region_bounds",
+            "destination_side",
+            "destination_lane",
+            "observed_window_start_frame_id",
+            "observed_window_end_frame_id",
+            "unknown_reason",
+            "missing_ball_frame_count"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "entry_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        },
+        "kind": "predicate",
+        "node_id": "destination_region_entered",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        },
+        "operator_signature": {
+          "compare_payload_types": [
+            "boolean",
+            "number",
+            "enum",
+            "entity_ref",
+            "team_ref",
+            "region_ref"
+          ],
+          "compare_required": true,
+          "compare_unit_must_match": true,
+          "duration_required": false,
+          "input_cardinalities": [
+            "single",
+            "per_player",
+            "per_team"
+          ],
+          "input_payload_types": [
+            "boolean",
+            "number",
+            "enum",
+            "entity_ref",
+            "team_ref",
+            "region_ref"
+          ],
+          "input_temporal_types": [
+            "scalar",
+            "frame_signal",
+            "episode_set"
+          ],
+          "limitations": [],
+          "name": "eq",
+          "output_cardinality": "single",
+          "output_payload_type": "boolean",
+          "output_temporal_type": "frame_signal",
+          "output_unit": "none",
+          "purpose": "Compare a signal to an equal typed value.",
+          "version": "1.0.0"
+        },
+        "output": {
+          "cardinality": "single",
+          "entity_scope": "relation",
+          "evidence_fields": [
+            "predicate_status",
+            "predicate_value",
+            "predicate_threshold",
+            "predicate_unit"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "predicate",
+          "payload_type": "boolean",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      }
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "plan_hash": "ceb5cac82f0b2fc2b56d5d1ed55f4d66448aacef9d194db0416f0aaf52f96af7",
+    "plan_id": "possession_start_corridor_entry_plan_v1",
+    "plan_status": "experimental",
+    "plan_version": "0.1.0",
+    "recipe_id": "possession_start_corridor_entry_v1",
+    "recipe_version": "0.1.0",
+    "requested_evidence": [
+      {
+        "alias": "possession_anchor_id",
+        "field": "anchor_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "possession"
+        }
+      },
+      {
+        "alias": "possession_start_anchor_frame_id",
+        "field": "anchor_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "possession"
+        }
+      },
+      {
+        "alias": "possession_start_frame_id",
+        "field": "start_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "possession"
+        }
+      },
+      {
+        "alias": "possession_end_frame_id",
+        "field": "end_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "possession"
+        }
+      },
+      {
+        "alias": "relation_id",
+        "field": "relation_id",
+        "required": true,
+        "source": {
+          "output_name": "episodes",
+          "source_node_id": "progressive_corridor"
+        }
+      },
+      {
+        "alias": "corridor_open_frame_id",
+        "field": "open_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "episodes",
+          "source_node_id": "progressive_corridor"
+        }
+      },
+      {
+        "alias": "corridor_duration_seconds",
+        "field": "duration_seconds",
+        "required": true,
+        "source": {
+          "output_name": "episodes",
+          "source_node_id": "progressive_corridor"
+        }
+      },
+      {
+        "alias": "target_player_id",
+        "field": "target_player_id",
+        "required": true,
+        "source": {
+          "output_name": "episodes",
+          "source_node_id": "progressive_corridor"
+        }
+      },
+      {
+        "alias": "destination_region",
+        "field": "destination_region",
+        "required": true,
+        "source": {
+          "output_name": "episodes",
+          "source_node_id": "progressive_corridor"
+        }
+      },
+      {
+        "alias": "minimum_clearance_m",
+        "field": "minimum_clearance_m",
+        "required": true,
+        "source": {
+          "output_name": "episodes",
+          "source_node_id": "progressive_corridor"
+        }
+      },
+      {
+        "alias": "destination_entry_status",
+        "field": "entry_status",
+        "required": true,
+        "source": {
+          "output_name": "entry_status",
+          "source_node_id": "destination_entry"
+        }
+      },
+      {
+        "alias": "destination_entry_frame_id",
+        "field": "destination_entry_frame_id",
+        "required": false,
+        "source": {
+          "output_name": "entry_status",
+          "source_node_id": "destination_entry"
+        }
+      },
+      {
+        "alias": "time_to_entry_seconds",
+        "field": "time_to_entry_seconds",
+        "required": false,
+        "source": {
+          "output_name": "entry_status",
+          "source_node_id": "destination_entry"
+        }
+      }
+    ],
+    "resolved_parameters": [
+      {
+        "name": "analysis_rate_hz",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "hertz",
+          "value": 5
+        }
+      },
+      {
+        "name": "corridor_close_after_frames",
+        "source": "invocation",
+        "value": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        }
+      },
+      {
+        "name": "corridor_max_window_seconds",
+        "source": "invocation",
+        "value": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 4.0
+        }
+      },
+      {
+        "name": "corridor_maximum_segment_length_m",
+        "source": "invocation",
+        "value": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 45.0
+        }
+      },
+      {
+        "name": "corridor_minimum_clearance_m",
+        "source": "invocation",
+        "value": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 4.0
+        }
+      },
+      {
+        "name": "corridor_minimum_duration_seconds",
+        "source": "invocation",
+        "value": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.8
+        }
+      },
+      {
+        "name": "corridor_minimum_progression_m",
+        "source": "invocation",
+        "value": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 5.0
+        }
+      },
+      {
+        "name": "corridor_minimum_segment_length_m",
+        "source": "invocation",
+        "value": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 6.0
+        }
+      },
+      {
+        "name": "corridor_open_after_frames",
+        "source": "invocation",
+        "value": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        }
+      },
+      {
+        "name": "destination_entry_horizon_seconds",
+        "source": "invocation",
+        "value": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 5.0
+        }
+      },
+      {
+        "name": "maximum_analysis_gap_ms",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "millisecond",
+          "value": 250
+        }
+      },
+      {
+        "name": "minimum_outfield_players_per_team",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 9
+        }
+      },
+      {
+        "name": "minimum_possession_seconds",
+        "source": "default",
+        "value": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 5.0
+        }
+      },
+      {
+        "name": "result_id_seed_hash",
+        "source": "invocation",
+        "value": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "possession_start_corridor_entry_experimental_v1"
+        }
+      }
+    ],
+    "schema_version": "1.0",
+    "unknown_evidence_policy": "exclude_candidate"
+  },
+  "bound_plan_hash": "f619f6c9677a4d2afdddcd72752ff9e5799b5fc7f2063aae5d0cf5a2104b4c76",
+  "bound_plan_id": "bound_f619f6c9677a4d2a",
+  "confirmed": false,
+  "created_at": "2026-06-22T21:21:22+00:00",
+  "document": {
+    "default_invocation": {
+      "execution_mode": "execute",
+      "invocation_id": "n1_live_possession_start_corridor_entry",
+      "match_ids": [
+        "J03WOY",
+        "J03WPY",
+        "J03WQQ",
+        "J03WR9"
+      ],
+      "max_results": 64,
+      "parameters": {
+        "corridor_close_after_frames": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        },
+        "corridor_max_window_seconds": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 4.0
+        },
+        "corridor_maximum_segment_length_m": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 45.0
+        },
+        "corridor_minimum_clearance_m": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 4.0
+        },
+        "corridor_minimum_duration_seconds": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.8
+        },
+        "corridor_minimum_progression_m": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 5.0
+        },
+        "corridor_minimum_segment_length_m": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 6.0
+        },
+        "corridor_open_after_frames": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        },
+        "destination_entry_horizon_seconds": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 5.0
+        },
+        "result_id_seed_hash": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "possession_start_corridor_entry_experimental_v1"
+        }
+      },
+      "periods": [
+        "firstHalf",
+        "secondHalf"
+      ],
+      "perspective_team_role": "home",
+      "schema_version": "1.0"
+    },
+    "draft_plan": {
+      "anchor_source": {
+        "output_name": "anchors",
+        "source_node_id": "possession"
+      },
+      "classification_mode": "partial_declared",
+      "classification_rules": [
+        {
+          "description": "A generic progressive corridor opened from possession start, persisted, and the ball entered that corridor destination region within the configured horizon.",
+          "label": "DESTINATION_ENTERED",
+          "predicate_ids": [
+            "has_progressive_corridor",
+            "destination_region_entered"
+          ]
+        }
+      ],
+      "complexity_limits": {
+        "max_execution_cost": 100000,
+        "max_nesting_depth": 4,
+        "max_plan_nodes": 20,
+        "max_relations_per_anchor": 1000,
+        "max_returned_moments": 64,
+        "max_temporal_horizon_seconds": 15.0
+      },
+      "nodes": [
+        {
+          "catalog_ref": "possession_segment",
+          "inputs": {},
+          "kind": "primitive",
+          "node_id": "possession",
+          "parameters": {},
+          "version": "0.1.0"
+        },
+        {
+          "catalog_ref": "geometric_progressive_corridor_from_anchor_set",
+          "inputs": {
+            "anchors": {
+              "output_name": "anchors",
+              "source_node_id": "possession"
+            }
+          },
+          "kind": "relation",
+          "node_id": "progressive_corridor",
+          "parameters": {
+            "close_after_frames": {
+              "kind": "parameter",
+              "name": "corridor_close_after_frames"
+            },
+            "max_window_seconds": {
+              "kind": "parameter",
+              "name": "corridor_max_window_seconds"
+            },
+            "maximum_segment_length_m": {
+              "kind": "parameter",
+              "name": "corridor_maximum_segment_length_m"
+            },
+            "minimum_clearance_m": {
+              "kind": "parameter",
+              "name": "corridor_minimum_clearance_m"
+            },
+            "minimum_duration_seconds": {
+              "kind": "parameter",
+              "name": "corridor_minimum_duration_seconds"
+            },
+            "minimum_progression_m": {
+              "kind": "parameter",
+              "name": "corridor_minimum_progression_m"
+            },
+            "minimum_segment_length_m": {
+              "kind": "parameter",
+              "name": "corridor_minimum_segment_length_m"
+            },
+            "open_after_frames": {
+              "kind": "parameter",
+              "name": "corridor_open_after_frames"
+            },
+            "side_filter": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "any"
+            }
+          },
+          "version": "0.1.0"
+        },
+        {
+          "catalog_ref": "relation_destination_entry",
+          "inputs": {
+            "relation_episodes": {
+              "output_name": "episodes",
+              "source_node_id": "progressive_corridor"
+            }
+          },
+          "kind": "primitive",
+          "node_id": "destination_entry",
+          "parameters": {
+            "destination_entry_horizon_seconds": {
+              "kind": "parameter",
+              "name": "destination_entry_horizon_seconds"
+            },
+            "episode_selection": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "entry_first_then_progression"
+            },
+            "result_id_seed": {
+              "kind": "parameter",
+              "name": "result_id_seed_hash"
+            }
+          },
+          "version": "0.1.0"
+        },
+        {
+          "input": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "progressive_corridor"
+          },
+          "kind": "predicate",
+          "node_id": "has_progressive_corridor",
+          "operator": {
+            "name": "exists",
+            "version": "1.0.0"
+          }
+        },
+        {
+          "compare": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "PASS"
+          },
+          "input": {
+            "output_name": "entry_status",
+            "source_node_id": "destination_entry"
+          },
+          "kind": "predicate",
+          "node_id": "destination_region_entered",
+          "operator": {
+            "name": "eq",
+            "version": "1.0.0"
+          }
+        }
+      ],
+      "plan_id": "possession_start_corridor_entry_plan_v1",
+      "plan_version": "0.1.0",
+      "recipe_id": "possession_start_corridor_entry_v1",
+      "recipe_version": "0.1.0",
+      "requested_evidence": [
+        {
+          "alias": "possession_anchor_id",
+          "field": "anchor_id",
+          "required": true,
+          "source": {
+            "output_name": "anchors",
+            "source_node_id": "possession"
+          }
+        },
+        {
+          "alias": "possession_start_anchor_frame_id",
+          "field": "anchor_frame_id",
+          "required": true,
+          "source": {
+            "output_name": "anchors",
+            "source_node_id": "possession"
+          }
+        },
+        {
+          "alias": "possession_start_frame_id",
+          "field": "start_frame_id",
+          "required": true,
+          "source": {
+            "output_name": "anchors",
+            "source_node_id": "possession"
+          }
+        },
+        {
+          "alias": "possession_end_frame_id",
+          "field": "end_frame_id",
+          "required": true,
+          "source": {
+            "output_name": "anchors",
+            "source_node_id": "possession"
+          }
+        },
+        {
+          "alias": "relation_id",
+          "field": "relation_id",
+          "required": true,
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "corridor_open_frame_id",
+          "field": "open_frame_id",
+          "required": true,
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "corridor_duration_seconds",
+          "field": "duration_seconds",
+          "required": true,
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "target_player_id",
+          "field": "target_player_id",
+          "required": true,
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "destination_region",
+          "field": "destination_region",
+          "required": true,
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "minimum_clearance_m",
+          "field": "minimum_clearance_m",
+          "required": true,
+          "source": {
+            "output_name": "episodes",
+            "source_node_id": "progressive_corridor"
+          }
+        },
+        {
+          "alias": "destination_entry_status",
+          "field": "entry_status",
+          "required": true,
+          "source": {
+            "output_name": "entry_status",
+            "source_node_id": "destination_entry"
+          }
+        },
+        {
+          "alias": "destination_entry_frame_id",
+          "field": "destination_entry_frame_id",
+          "required": false,
+          "source": {
+            "output_name": "entry_status",
+            "source_node_id": "destination_entry"
+          }
+        },
+        {
+          "alias": "time_to_entry_seconds",
+          "field": "time_to_entry_seconds",
+          "required": false,
+          "source": {
+            "output_name": "entry_status",
+            "source_node_id": "destination_entry"
+          }
+        }
+      ],
+      "schema_version": "1.0",
+      "status": "experimental",
+      "unknown_evidence_policy": "exclude_candidate"
+    },
+    "recipe": {
+      "allowed_claims": [
+        "The team had an active-ball possession anchor.",
+        "A geometric progressive corridor opened within the configured post-possession-start window and remained available for the configured minimum duration.",
+        "The ball entered the selected corridor destination region within the configured post-open horizon.",
+        "The replay coordinates come from canonical 25 Hz source frames."
+      ],
+      "default_unknown_evidence_policy": "exclude_candidate",
+      "description": "Experimental composition from possession-start anchors to generic geometric progressive corridor episodes and relation-destination ball entry.",
+      "disallowed_claims": [
+        "The attack intentionally created the corridor.",
+        "A pass should have been played.",
+        "The corridor is optimal.",
+        "The result is a pass probability, decision-quality, causation, player-intent, or missed-opportunity claim.",
+        "The result is backed by licensed match video."
+      ],
+      "display_name": "Possession Start Corridor Entry",
+      "limitations": [
+        "Experimental plan; not an approved recipe.",
+        "Destination entry is geometric ball-region entry only.",
+        "No offside, receiver body orientation, pressure, pass probability, or optimality model is evaluated.",
+        "No match video is used."
+      ],
+      "output_classifications": [
+        "DESTINATION_ENTERED"
+      ],
+      "parameters": [
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 4.0
+          },
+          "description": "Maximum time after possession-start anchor in which the corridor may open.",
+          "maximum": 15.0,
+          "minimum": 0.2,
+          "name": "corridor_max_window_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 5.0
+          },
+          "description": "Minimum forward progression for a progressive corridor segment.",
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "name": "corridor_minimum_progression_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 6.0
+          },
+          "description": "Minimum source-target segment length for a corridor.",
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "name": "corridor_minimum_segment_length_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 45.0
+          },
+          "description": "Maximum source-target segment length for a corridor.",
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "name": "corridor_maximum_segment_length_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 4.0
+          },
+          "description": "Minimum defender clearance from the corridor segment.",
+          "maximum": 40.0,
+          "minimum": 0.0,
+          "name": "corridor_minimum_clearance_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2
+          },
+          "description": "Consecutive passing frames required before a corridor is considered open.",
+          "maximum": 100.0,
+          "minimum": 1.0,
+          "name": "corridor_open_after_frames",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2
+          },
+          "description": "Consecutive failing frames required before a corridor is considered closed.",
+          "maximum": 100.0,
+          "minimum": 1.0,
+          "name": "corridor_close_after_frames",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.8
+          },
+          "description": "Minimum time a corridor must remain available.",
+          "maximum": 15.0,
+          "minimum": 0.0,
+          "name": "corridor_minimum_duration_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 5.0
+          },
+          "description": "Lookahead horizon after corridor opening for ball entry into the relation destination region.",
+          "maximum": 30.0,
+          "minimum": 0.2,
+          "name": "destination_entry_horizon_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "possession_start_corridor_entry_experimental_v1"
+          },
+          "description": "Plan-specific deterministic seed for relation-entry records.",
+          "name": "result_id_seed_hash",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        }
+      ],
+      "recipe_id": "possession_start_corridor_entry_v1",
+      "recipe_version": "0.1.0",
+      "schema_version": "1.0"
+    },
+    "schema_version": "1.0"
+  },
+  "draft_plan_hash": "26912b2c452106e864aa0a4e546fbaf1504d181737aa2bade9a4e77223d13c06",
+  "draft_plan_id": "draft_26912b2c452106e8",
+  "execution_profile": "generic",
+  "schema_version": "1.0"
+}
