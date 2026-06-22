@@ -87,9 +87,9 @@ function periodLabel(period: string | null | undefined) {
   return period === "secondHalf" ? "Second half" : period === "firstHalf" ? "First half" : "Period";
 }
 
-function frameTimeLabel(frameId: number | null | undefined, frameRateHz = 25) {
-  if (typeof frameId !== "number" || !Number.isFinite(frameId) || frameId < 0) return "";
-  const totalSeconds = Math.round(frameId / frameRateHz);
+function matchTimeLabel(matchTimeMs: number | null | undefined) {
+  if (typeof matchTimeMs !== "number" || !Number.isFinite(matchTimeMs) || matchTimeMs < 0) return "";
+  const totalSeconds = Math.round(matchTimeMs / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = String(totalSeconds % 60).padStart(2, "0");
   return `${minutes}:${seconds}`;
@@ -255,6 +255,17 @@ export function App() {
     }
   }
 
+  function clearScopeDependentState() {
+    setValidation(null);
+    setConfirmation(null);
+    setExecutionProgress(null);
+    setExecution(null);
+    setSelectedResultId(null);
+    setInspection(null);
+    setTimestampInspection(null);
+    setInspectionLoadingResultId(null);
+  }
+
   async function choosePreset(presetId: Preset["preset_id"]) {
     setSelectedPreset(presetId);
     const recipeId = presetId === "approved_block_shift" ? "ball_side_block_shift_v1" : "possession_corridor_availability_v1";
@@ -280,25 +291,14 @@ export function App() {
       capability_gaps: null,
       manual_available: null
     });
-    setValidation(null);
-    setConfirmation(null);
-    setExecutionProgress(null);
-    setExecution(null);
-    setInspection(null);
-    setTimestampInspection(null);
-    setInspectionLoadingResultId(null);
+    clearScopeDependentState();
   }
 
   function setAllMatches() {
     const allIds = matchLibrary?.default_match_ids ?? [];
     setSelectedMatchIds(allIds);
     if (planDocument) setPlanDocument(applyScopeToPlan(planDocument, allIds));
-    setValidation(null);
-    setConfirmation(null);
-    setExecutionProgress(null);
-    setExecution(null);
-    setInspection(null);
-    setTimestampInspection(null);
+    clearScopeDependentState();
   }
 
   function toggleMatch(matchId: string) {
@@ -306,15 +306,9 @@ export function App() {
     const next = selectedMatchIds.includes(matchId)
       ? selectedMatchIds.filter((id) => id !== matchId)
       : [...selectedMatchIds, matchId].sort((a, b) => allIds.indexOf(a) - allIds.indexOf(b));
-    const safeNext = next.length > 0 ? next : [matchId];
-    setSelectedMatchIds(safeNext);
-    if (planDocument) setPlanDocument(applyScopeToPlan(planDocument, safeNext));
-    setValidation(null);
-    setConfirmation(null);
-    setExecutionProgress(null);
-    setExecution(null);
-    setInspection(null);
-    setTimestampInspection(null);
+    setSelectedMatchIds(next);
+    if (planDocument) setPlanDocument(applyScopeToPlan(planDocument, next));
+    clearScopeDependentState();
   }
 
   async function handleInterpret() {
@@ -329,18 +323,12 @@ export function App() {
     setInterpretation(payload);
     if (payload.status === "PLAN_INTERPRETED" && payload.plan_document) {
       setPlanDocument(applyScopeToPlan(payload.plan_document, selectedMatchIds));
-      setValidation(null);
-      setConfirmation(null);
-      setExecutionProgress(null);
-      setExecution(null);
-      setInspection(null);
-      setTimestampInspection(null);
-      setInspectionLoadingResultId(null);
+      clearScopeDependentState();
     }
   }
 
   async function handleValidate() {
-    if (!planDocument) return;
+    if (!planDocument || selectedMatchIds.length === 0) return;
     const scopedPlan = applyScopeToPlan(planDocument, selectedMatchIds);
     setPlanDocument(scopedPlan);
     const payload = await runAction("validate", () => submitValidate(scopedPlan));
@@ -349,6 +337,7 @@ export function App() {
     setConfirmation(null);
     setExecutionProgress(null);
     setExecution(null);
+    setSelectedResultId(null);
     setInspection(null);
     setTimestampInspection(null);
     setInspectionLoadingResultId(null);
@@ -469,9 +458,21 @@ export function App() {
     selectedMatchIds.length === (matchLibrary?.default_match_ids.length ?? 0)
       ? `All ${selectedMatchIds.length || 0} available matches`
       : `${selectedMatchIds.length} selected ${selectedMatchIds.length === 1 ? "match" : "matches"}`;
+  const hasSelectedScope = selectedMatchIds.length > 0;
   const planRecipe = interpretation?.recipe ?? boot?.presets.find((preset) => preset.preset_id === selectedPreset)?.recipe ?? null;
   const interpretationItems = interpretationBullets(planRecipe, planDocument);
   const sourceTone = interpretation?.source?.includes("hermes") ? "good" : interpretation?.source ? "neutral" : "warn";
+  const overlayProof = (() => {
+    const evidence = evidenceResult?.requested_evidence ?? {};
+    const targetPlayerId = typeof evidence.target_player_id === "string" ? evidence.target_player_id : null;
+    const ball = currentFrame?.entities.find((entity) => entity.entity_type === "ball");
+    const targetEntity = targetPlayerId
+      ? currentFrame?.entities.find((entity) => entity.entity_id === targetPlayerId)
+      : null;
+    if (ball && targetEntity) return `Exact corridor overlay: ball to ${targetPlayerId}`;
+    if (evidenceResult) return "No exact overlay geometry available";
+    return "No selected result overlay";
+  })();
 
   return (
     <main className="appShell">
@@ -521,6 +522,11 @@ export function App() {
             </button>
           ))}
         </div>
+        {!hasSelectedScope ? (
+          <div className="scopeWarning" data-testid="scope-warning">
+            Select at least one match to validate or execute.
+          </div>
+        ) : null}
       </section>
 
       <section className="workspaceGrid">
@@ -563,7 +569,7 @@ export function App() {
               <div className="panelTitle">Validation</div>
               <StatusPill tone={validationTone}>{validation?.validation.ok ? "valid" : validation ? "invalid" : "not run"}</StatusPill>
             </div>
-            <button className="fullButton" data-testid="validate-button" onClick={() => void handleValidate()} disabled={!planDocument || busy !== null}>
+            <button className="fullButton" data-testid="validate-button" onClick={() => void handleValidate()} disabled={!planDocument || !hasSelectedScope || busy !== null}>
               Submit and validate
             </button>
             <button
@@ -650,8 +656,8 @@ export function App() {
               </StatusPill>
             </div>
             {interpretation?.source ? (
-              <div className="sourceLine" data-testid="interpretation-source">
-                Interpretation source: <strong>{sourceLabel(interpretation.source)}</strong> <code>{interpretation.source}</code>
+              <div className="sourceLine" data-testid="interpretation-source" data-raw-source={interpretation.source}>
+                Interpretation source: <strong>{sourceLabel(interpretation.source)}</strong>
               </div>
             ) : (
               <div className="sourceLine">
@@ -694,7 +700,7 @@ export function App() {
               </div>
             </div>
             <div className="actionStrip">
-              <button className="fullButton" onClick={() => void handleValidate()} disabled={!planDocument || busy !== null}>
+              <button className="fullButton" onClick={() => void handleValidate()} disabled={!planDocument || !hasSelectedScope || busy !== null}>
                 Confirm interpretation
               </button>
               <button className="fullButton" onClick={() => void handleConfirm()} disabled={!validation?.validation.bound_plan_id || busy !== null}>
@@ -723,7 +729,7 @@ export function App() {
                   <div className="replayContext" data-testid="replay-window-summary">
                     <strong>{matchLabel(selectedResultMatch, selectedResult.match_id)}</strong>
                     <span>
-                      {periodLabel(selectedResult.period)} · {frameTimeLabel(selectedResult.anchor_frame_id, replay?.frame_rate_hz ?? 25)} · Fortuna in possession
+                      {periodLabel(selectedResult.period)} · {matchTimeLabel(selectedResult.match_time_ms)} · Fortuna in possession
                     </span>
                     <span>
                       Result {selectedResultIndex + 1} of {execution?.execution.returned_result_count ?? 0}
@@ -739,6 +745,7 @@ export function App() {
               {currentFrame ? <StatusPill tone="neutral">frame {currentFrame.frame_id}</StatusPill> : null}
             </div>
             <PitchCanvas replay={replay} frameIndex={frameIndex} result={evidenceResult} />
+            <div className="overlayProof" data-testid="overlay-proof">{overlayProof}</div>
             <div className="replayControls">
               <button onClick={() => setFrameIndex((value) => Math.max(0, value - 1))} disabled={!replay}>
                 Prev
@@ -820,7 +827,7 @@ export function App() {
                 >
                   <span>#{result.rank} {result.classification.replaceAll("_", " ")}</span>
                   <small>{matchLabel(matchesById.get(result.match_id), result.match_id)}</small>
-                  <small>{periodLabel(result.period)} · {frameTimeLabel(result.anchor_frame_id)} · {result.result_id}</small>
+                  <small>{periodLabel(result.period)} · {matchTimeLabel(result.match_time_ms)} · {result.result_id}</small>
                 </button>
               ))}
               {!execution ? <div className="emptyState">Execute a confirmed bound plan to populate results.</div> : null}

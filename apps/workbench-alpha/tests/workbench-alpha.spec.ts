@@ -180,7 +180,9 @@ async function runRealQueryJourney(
   );
   expect(interpretation.status).toBe("PLAN_INTERPRETED");
   await expect(page.getByTestId("interpreted-plan-panel")).toContainText("PLAN_INTERPRETED");
-  await expect(page.getByTestId("interpretation-source")).toContainText("manual_host_interpreter");
+  await expect(page.getByTestId("interpretation-source")).toContainText(/Manual/);
+  await expect(page.getByTestId("interpretation-source").locator("code")).toHaveCount(0);
+  expect(await page.getByTestId("interpretation-source").getAttribute("data-raw-source")).toBe("manual_host_interpreter");
   await expect(page.getByTestId("confirm-button")).toBeDisabled();
   await expect(page.getByTestId("execute-button")).toBeDisabled();
   await capture(page, `${label}-interpretation`);
@@ -214,10 +216,19 @@ async function runRealQueryJourney(
 
   const executeStart = Date.now();
   const executeResponsePromise = page.waitForResponse(responsePath("/api/execute"));
-  const inspectResponsePromise = page.waitForResponse(responsePath("/api/inspect-result"));
   await page.getByTestId("execute-button").click();
   const executeResponse = await executeResponsePromise;
   const execution = (await executeResponse.json()) as Record<string, unknown>;
+  const executionBody = execution.execution as Record<string, unknown>;
+  expect(execution.ok).toBe(true);
+  expect(executionBody.ok).toBe(true);
+  const results = executionBody.results as Array<Record<string, unknown>>;
+  expect(results.length).toBeGreaterThan(0);
+
+  await expect(page.getByTestId("result-count")).toHaveText(String(results.length));
+  const firstResultId = String(results[0].result_id);
+  const inspectResponsePromise = waitForInspectionResponse(page, firstResultId);
+  await page.locator(`[data-testid="result-item"][data-result-id="${firstResultId}"]`).click();
   const inspectResponse = await inspectResponsePromise;
   const inspection = (await inspectResponse.json()) as Record<string, unknown>;
 
@@ -236,19 +247,17 @@ async function runRealQueryJourney(
     summary: summarizePayload(inspection)
   });
 
-  const executionBody = execution.execution as Record<string, unknown>;
-  const results = executionBody.results as Array<Record<string, unknown>>;
-  expect(executionBody.ok).toBe(true);
   expect(Number(executionBody.total_result_count)).toBeGreaterThan(0);
   expect(Number(executionBody.returned_result_count)).toBe(results.length);
-  await expect(page.getByTestId("result-count")).toHaveText(String(results.length));
   await expect(page.getByTestId("execution-result")).toContainText(String(executionBody.execution_id));
 
   const inspectionBody = inspection.inspection as Record<string, unknown>;
   const replay = inspection.replay as Record<string, unknown>;
   const replayFrames = replay.frames as unknown[];
   const selectedResult = inspectionBody.result as Record<string, unknown>;
+  const selectedEvidence = (selectedResult.requested_evidence ?? {}) as Record<string, unknown>;
   expect(replayFrames.length).toBeGreaterThan(0);
+  expect(typeof selectedResult.match_time_ms).toBe("number");
   expect(replay.plan_path).toBeUndefined();
   expect(JSON.stringify(replay.canonical_sources)).not.toContain("/Users/");
   expect(JSON.stringify(replay.canonical_sources)).not.toContain(".parquet");
@@ -260,6 +269,36 @@ async function runRealQueryJourney(
   await expect(page.getByTestId("replay-window-summary")).toContainText(String(selectedResult.result_id));
   await expect(page.locator(`[data-testid="result-item"][data-result-id="${selectedResult.result_id}"]`)).toHaveClass(/active/);
   await expect(page.getByTestId("evidence-alias").first()).toBeVisible();
+
+  let overlayEvidenceCorrelation: Record<string, unknown> = {
+    mode: "hidden",
+    reason: "no exact overlay geometry requested"
+  };
+  if (label === "experimental" && typeof selectedEvidence.target_player_id === "string") {
+    const targetPlayerId = selectedEvidence.target_player_id;
+    const exactFrameIndex = (replayFrames as Array<Record<string, unknown>>).findIndex((frame) => {
+      const entities = (frame.entities ?? []) as Array<Record<string, unknown>>;
+      return entities.some((entity) => entity.entity_type === "ball") &&
+        entities.some((entity) => entity.entity_id === targetPlayerId);
+    });
+    expect(exactFrameIndex).toBeGreaterThanOrEqual(0);
+    await page.getByTestId("replay-scrubber").evaluate((element, value) => {
+      const input = element as HTMLInputElement;
+      input.value = String(value);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }, exactFrameIndex);
+    await expect(page.getByTestId("overlay-proof")).toContainText(`ball to ${targetPlayerId}`);
+    overlayEvidenceCorrelation = {
+      mode: "exact_corridor",
+      targetPlayerId,
+      frameIndex: exactFrameIndex,
+      evidenceAlias: "target_player_id"
+    };
+    await capture(page, `${label}-overlay-evidence-correlation`);
+  } else {
+    await expect(page.getByTestId("overlay-proof")).toContainText("No exact overlay geometry available");
+  }
 
   const traces = inspectionBody.predicate_traces as Array<Record<string, unknown>>;
   expect(traces.length).toBeGreaterThan(0);
@@ -346,6 +385,7 @@ async function runRealQueryJourney(
     replayFrameCount: Array.isArray(selectedReplay.frames) ? selectedReplay.frames.length : 0,
     replayPayloadHash: sha256(stableStringify(selectedReplay)),
     replayPayloadBytes: Buffer.byteLength(stableStringify(selectedReplay), "utf8"),
+    overlayEvidenceCorrelation,
     performanceBaseline: {
       pageLoadReady: "asserted by visible heading and enabled interpret button",
       replayFrameCadenceHz: selectedReplay.frame_rate_hz,
@@ -460,6 +500,21 @@ test("clarification, capability-gap, and model-unavailable states remain explici
 });
 
 test("host authority is enforced through public API routes", async ({ request }) => {
+  const matchesResponse = await request.get("/api/matches");
+  expect(matchesResponse.ok()).toBe(true);
+  const matchesPayload = (await matchesResponse.json()) as Record<string, unknown>;
+  const matchIds = ((matchesPayload.matches ?? []) as Array<Record<string, unknown>>).map((item) => item.match_id);
+  expect(matchIds).toEqual(["J03WOY", "J03WPY", "J03WQQ", "J03WR9"]);
+  expect(matchIds).not.toContain("J03WOH");
+  expect(matchIds).not.toContain("J03WMX");
+  for (const match of (matchesPayload.matches ?? []) as Array<Record<string, unknown>>) {
+    expect(String(match.match_title ?? "")).not.toBe("");
+    expect(String(match.home_team ?? "")).not.toBe("");
+    expect(String(match.away_team ?? "")).not.toBe("");
+    expect(match).toHaveProperty("match_day");
+    expect(match).toHaveProperty("kickoff_time_utc");
+  }
+
   const bootstrapResponse = await request.get("/api/bootstrap");
   expect(bootstrapResponse.ok()).toBe(true);
   const bootstrapPayload = (await bootstrapResponse.json()) as Record<string, unknown>;
@@ -528,6 +583,84 @@ test("host authority is enforced through public API routes", async ({ request })
   }
 });
 
+test("scope transitions invalidate validation execution results and replay", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  await boot(page, consoleErrors);
+  await page.getByTestId("preset-approved_block_shift").click();
+  await page.getByTestId("query-input").fill("Show possessions where the ball goes wide and the defending block moves toward that side.");
+  await jsonAfterClick<Record<string, unknown>>(page, [], "scope.interpret", "interpret-button", "/api/interpret");
+
+  const selector = page.getByTestId("match-scope-selector");
+  const allButton = selector.getByRole("button").first();
+  const firstMatch = selector.getByRole("button").nth(1);
+  const secondMatch = selector.getByRole("button").nth(2);
+  const thirdMatch = selector.getByRole("button").nth(3);
+  const fourthMatch = selector.getByRole("button").nth(4);
+
+  await expect(page.getByTestId("analysis-scope")).toContainText("All 4 available matches");
+  await secondMatch.click();
+  await thirdMatch.click();
+  await fourthMatch.click();
+  await expect(page.getByTestId("analysis-scope")).toContainText("1 selected match");
+
+  await firstMatch.click();
+  await expect(page.getByTestId("analysis-scope")).toContainText("0 selected matches");
+  await expect(page.getByTestId("scope-warning")).toBeVisible();
+  await expect(page.getByTestId("validate-button")).toBeDisabled();
+  await expect(page.getByTestId("confirm-button")).toBeDisabled();
+  await expect(page.getByTestId("execute-button")).toBeDisabled();
+
+  await secondMatch.click();
+  await expect(page.getByTestId("analysis-scope")).toContainText("1 selected match");
+  await expect(page.getByTestId("scope-warning")).toHaveCount(0);
+
+  await allButton.click();
+  const validation = await jsonAfterClick<Record<string, unknown>>(
+    page,
+    [],
+    "scope.validate",
+    "validate-button",
+    "/api/submit-validate"
+  );
+  const boundPlanId = String((validation.validation as Record<string, unknown>).bound_plan_id);
+  await expect(page.getByTestId("validation-result")).toContainText(boundPlanId);
+  await expect(page.getByTestId("confirm-button")).toBeEnabled();
+
+  await firstMatch.click();
+  await expect(page.getByTestId("validation-result")).not.toContainText(boundPlanId);
+  await expect(page.getByTestId("confirm-button")).toBeDisabled();
+  await expect(page.getByTestId("execute-button")).toBeDisabled();
+  await expect(page.getByTestId("result-count")).toHaveText("0");
+  await expect(page.getByTestId("replay-window-summary")).toContainText("No replay window selected");
+
+  await allButton.click();
+  await jsonAfterClick<Record<string, unknown>>(page, [], "scope.revalidate", "validate-button", "/api/submit-validate");
+  await jsonAfterClick<Record<string, unknown>>(page, [], "scope.confirm", "confirm-button", "/api/confirm");
+  const executeResponsePromise = page.waitForResponse(responsePath("/api/execute"));
+  await page.getByTestId("execute-button").click();
+  const executeResponse = await executeResponsePromise;
+  const executionPayload = (await executeResponse.json()) as Record<string, unknown>;
+  expect(executionPayload.ok).toBe(true);
+  const executionBody = executionPayload.execution as Record<string, unknown>;
+  const results = executionBody.results as Array<Record<string, unknown>>;
+  expect(results.length).toBeGreaterThan(0);
+  const firstResultId = String(results[0].result_id);
+  await expect(page.getByTestId("result-count")).toHaveText(String(results.length));
+  const inspectResponsePromise = waitForInspectionResponse(page, firstResultId);
+  await page.locator(`[data-testid="result-item"][data-result-id="${firstResultId}"]`).click();
+  await inspectResponsePromise;
+  await expect(page.getByTestId("result-count")).not.toHaveText("0");
+  await expect(page.getByTestId("replay-window-summary")).not.toContainText("No replay window selected");
+
+  await firstMatch.click();
+  await expect(page.getByTestId("result-count")).toHaveText("0");
+  await expect(page.getByTestId("replay-window-summary")).toContainText("No replay window selected");
+  await expect(page.getByTestId("confirm-button")).toBeDisabled();
+  await expect(page.getByTestId("execute-button")).toBeDisabled();
+
+  expect(consoleErrors).toEqual([]);
+});
+
 test("backend execution artifacts are the source of result inspection", async ({ request }) => {
   const api = await requestFactory.newContext({ baseURL: "http://127.0.0.1:8765" });
   try {
@@ -586,7 +719,9 @@ async function executeOneResult(api: APIRequestContext): Promise<Record<string, 
       result_limit: 1
     }
   });
+  expect(executionResponse.ok()).toBe(true);
   const executionPayload = (await executionResponse.json()) as Record<string, unknown>;
+  expect(executionPayload).toMatchObject({ ok: true });
   expect((executionPayload.cache as Record<string, unknown>).cache_status).toMatch(/^(HIT|MISS)$/);
   const execution = executionPayload.execution as Record<string, unknown>;
   const first = (execution.results as Array<Record<string, unknown>>)[0];

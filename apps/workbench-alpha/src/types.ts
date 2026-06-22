@@ -122,6 +122,7 @@ export type ResultRow = {
   match_id: string;
   period: string;
   anchor_frame_id: number;
+  match_time_ms?: number | null;
   requested_evidence: Record<string, JsonValue>;
 };
 

@@ -11,6 +11,7 @@ import os
 import re
 from datetime import UTC, datetime
 from enum import StrEnum
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
@@ -431,6 +432,14 @@ def write_handle(
     if path.exists():
         existing = read_json(path)
         if canonical_identity(existing) == canonical_identity(payload):
+            return
+        if (
+            kind == "executions"
+            and existing.get("execution_id") == payload.get("execution_id") == handle_id
+            and existing.get("bound_plan_id") == payload.get("bound_plan_id")
+            and existing.get("bound_plan_hash") == payload.get("bound_plan_hash")
+        ):
+            write_json(path, payload)
             return
         raise CapabilityGap(f"{kind} handle collision: {handle_id}")
     write_json(path, payload)
@@ -1142,7 +1151,20 @@ def is_trusted_m1_bound_plan(bound_plan: Any) -> bool:
         trusted = bind_document_from_path(Path("config/query-plans/ball_side_block_shift.ir.v1.json"))
     except Exception:
         return False
-    return bound_plan.bound_plan_hash == trusted.bound_plan_hash
+    semantic_fields = (
+        "plan_hash",
+        "max_results",
+        "execution_mode",
+        "unknown_evidence_policy",
+        "classification_mode",
+        "classification_rules",
+        "anchor_source",
+        "requested_evidence",
+        "complexity_limits",
+        "resolved_parameters",
+        "nodes",
+    )
+    return all(stable_hash(getattr(bound_plan, field)) == stable_hash(getattr(trusted, field)) for field in semantic_fields)
 
 
 def execution_record_payload(
@@ -1154,6 +1176,9 @@ def execution_record_payload(
     execution_id: str,
 ) -> dict[str, Any]:
     traces = [trace.model_dump(mode="json", exclude_none=True) for trace in execution.predicate_traces]
+    document = bound_record["document"]
+    scope = selected_scope_from_document(document)
+    enriched_rows = [result_row_with_context(row) for row in rows]
     return {
         "schema_version": "1.0",
         "created_at": utc_now_iso(),
@@ -1167,10 +1192,11 @@ def execution_record_payload(
             "canonical_root": str(DEFAULT_CANONICAL_ROOT),
             "raw_root": str(DEFAULT_RAW_ROOT),
         },
-        "document": bound_record["document"],
+        "scope": scope,
+        "document": document,
         "execution": execution.model_dump(mode="json", exclude_none=True),
-        "rows": rows,
-        "result_ids": [str(row["result_id"]) for row in rows],
+        "rows": enriched_rows,
+        "result_ids": [str(row["result_id"]) for row in enriched_rows],
         "predicate_traces": traces,
     }
 
@@ -1421,15 +1447,61 @@ def response_model_for_tool(tool_name: str) -> type[BaseModel]:
 
 
 def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:
+    row = result_row_with_context(row)
+    match_id = str(row["match_id"])
+    period = str(row["period"])
+    anchor_frame_id = int(row["anchor_frame_id"])
     return {
         "rank": rank,
         "result_id": str(row["result_id"]),
         "classification": str(row["classification"]),
-        "match_id": str(row["match_id"]),
-        "period": str(row["period"]),
-        "anchor_frame_id": int(row["anchor_frame_id"]),
+        "match_id": match_id,
+        "period": period,
+        "anchor_frame_id": anchor_frame_id,
+        "match_time_ms": canonical_match_time_ms(match_id, period, anchor_frame_id),
         "requested_evidence": row.get("requested_evidence", {}),
     }
+
+
+def result_row_with_context(row: dict[str, Any]) -> dict[str, Any]:
+    next_row = dict(row)
+    match_id = str(next_row["match_id"])
+    period = str(next_row["period"])
+    anchor_frame_id = int(next_row["anchor_frame_id"])
+    next_row["match_time_ms"] = canonical_match_time_ms(match_id, period, anchor_frame_id)
+    return next_row
+
+
+def selected_scope_from_document(document: dict[str, Any]) -> dict[str, Any]:
+    invocation = document.get("default_invocation") if isinstance(document, dict) else {}
+    if not isinstance(invocation, dict):
+        invocation = {}
+    return {
+        "match_ids": invocation.get("match_ids"),
+        "periods": invocation.get("periods"),
+        "perspective_team_role": invocation.get("perspective_team_role"),
+    }
+
+
+@lru_cache(maxsize=128)
+def canonical_frame_time_lookup(match_id: str, period: str) -> dict[int, int]:
+    frame_path = DEFAULT_CANONICAL_ROOT / "frames" / f"match_id={match_id}" / f"period={period}.parquet"
+    frames_table = pq.ParquetFile(frame_path).read(columns=["frame_id"]).to_pandas()
+    frame_ids = sorted(int(item) for item in frames_table.frame_id.tolist())
+    if not frame_ids:
+        return {}
+    first_frame = frame_ids[0]
+    return {
+        frame_id: int(round((frame_id - first_frame) / FRAME_RATE_HZ * 1000))
+        for frame_id in frame_ids
+    }
+
+
+def canonical_match_time_ms(match_id: str, period: str, frame_id: int) -> int | None:
+    try:
+        return canonical_frame_time_lookup(match_id, period).get(frame_id)
+    except Exception:  # noqa: BLE001 - result ranking should not mask the original execution result.
+        return None
 
 
 def resolve_evaluation_target(target: EvaluationTarget) -> ResolvedEvaluationTarget:

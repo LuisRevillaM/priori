@@ -462,7 +462,7 @@ def host_owned_plan_document(plan_document: dict[str, Any]) -> TacticalQueryDocu
         canonical_invocation = canonical.setdefault("default_invocation", {})
         requested_invocation = plan_document.get("default_invocation") if isinstance(plan_document, dict) else None
         if isinstance(requested_invocation, dict):
-            for key in ("match_ids", "periods", "perspective_team_role", "max_results", "execution_mode"):
+            for key in ("match_ids", "periods", "perspective_team_role"):
                 if key in requested_invocation:
                     canonical_invocation[key] = requested_invocation[key]
         return TacticalQueryDocument.model_validate(canonical)
@@ -907,7 +907,7 @@ def cache_request_identity(request: ExecuteQueryPlanRequest, *, output_root: Pat
     invocation = document.get("default_invocation") if isinstance(document, dict) else {}
     return {
         "schema_version": "1.0",
-        "runtime_version": "workbench_alpha_execution_cache_v1",
+        "runtime_version": "workbench_beta0_execution_cache_v2",
         "canonical_data_hash": canonical_data_hash(),
         "bound_plan_hash": bound_record.get("bound_plan_hash"),
         "scope": {

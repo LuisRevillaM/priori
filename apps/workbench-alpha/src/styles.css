@@ -161,6 +161,17 @@ button:disabled {
   color: var(--accent-dark);
 }
 
+.scopeWarning {
+  grid-column: 1 / -1;
+  border: 1px solid #c9914f;
+  border-radius: 8px;
+  background: #fff8e6;
+  color: #694419;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .leftRail,
 .rightRail,
 .centerStage {
@@ -499,6 +510,12 @@ button:disabled {
 .canvasShell canvas {
   display: block;
   max-width: 100%;
+}
+
+.overlayProof {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .replayControls {
