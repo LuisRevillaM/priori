@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
-import type { ReplayPayload } from "./types";
+import type { ReplayPayload, ResultRow } from "./types";
 import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
 
 type PitchCanvasProps = {
   replay: ReplayPayload | null;
   frameIndex: number;
+  result?: ResultRow | null;
 };
 
-export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
+export function PitchCanvas({ replay, frameIndex, result }: PitchCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -86,13 +87,70 @@ export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
       ctx.stroke();
     }
 
+    const evidence = result?.requested_evidence ?? {};
+    const ball = frame.entities.find((entity) => entity.entity_type === "ball");
+    const targetPlayerId = typeof evidence.target_player_id === "string" ? evidence.target_player_id : null;
+    const target = targetPlayerId
+      ? frame.entities.find((entity) => entity.entity_id === targetPlayerId)
+      : null;
+    if (ball && target && typeof evidence.minimum_clearance_m === "number") {
+      const start = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
+      const end = pitchPointToPixel(target.x_m, target.y_m, replay.pitch, layout);
+      const clearancePx = Math.max(8, evidence.minimum_clearance_m * (layout.fieldWidth / replay.pitch.length_m));
+      ctx.save();
+      ctx.strokeStyle = "#f1d27a";
+      ctx.fillStyle = "rgba(241, 210, 122, 0.14)";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 5]);
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(end.x, end.y, clearancePx, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(241, 210, 122, 0.9)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = "#fff7d2";
+      ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.fillText(`clearance ${evidence.minimum_clearance_m.toFixed(1)}m`, end.x + 10, end.y - 10);
+      ctx.restore();
+    }
+
+    const wideY = evidence["ball_lateral.wide_entry_y_m"];
+    const shift = evidence["signed_shift.signed_shift_metres"];
+    if (typeof wideY === "number" && typeof shift === "number") {
+      const topSide = wideY < replay.pitch.width_m / 2;
+      const zoneY = topSide ? marginY : marginY + fieldH / 2;
+      ctx.save();
+      ctx.fillStyle = "rgba(241, 210, 122, 0.12)";
+      ctx.fillRect(marginX, zoneY, fieldW, fieldH / 2);
+      const from = pitchPointToPixel(replay.pitch.length_m * 0.48, replay.pitch.width_m / 2, replay.pitch, layout);
+      const to = pitchPointToPixel(replay.pitch.length_m * 0.48, Math.max(3, Math.min(replay.pitch.width_m - 3, replay.pitch.width_m / 2 + (topSide ? -shift : shift))), replay.pitch, layout);
+      ctx.strokeStyle = "#f1d27a";
+      ctx.fillStyle = "#f1d27a";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(to.x, to.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.fillText(`shift ${shift.toFixed(1)}m`, to.x + 10, to.y + 4);
+      ctx.restore();
+    }
+
     const anchorX = replay.frames.findIndex((item) => item.frame_id === replay.anchor_frame_id);
     if (anchorX >= 0 && anchorX === frameIndex) {
       ctx.strokeStyle = "#d6b35a";
       ctx.lineWidth = 2;
       ctx.strokeRect(marginX + 6, marginY + 6, fieldW - 12, fieldH - 12);
     }
-  }, [frameIndex, replay]);
+  }, [frameIndex, replay, result]);
 
   return (
     <div className="canvasShell">

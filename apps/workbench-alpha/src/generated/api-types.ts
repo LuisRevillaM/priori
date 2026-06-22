@@ -1143,6 +1143,109 @@ export const apiSchemas = {
     "title": "InterpretResponse",
     "type": "object"
   },
+  "MatchLibraryResponse": {
+    "$defs": {
+      "MatchSummaryResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "away_team": {
+            "title": "Away Team",
+            "type": "string"
+          },
+          "home_team": {
+            "title": "Home Team",
+            "type": "string"
+          },
+          "kickoff_time_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Kickoff Time Utc"
+          },
+          "match_day": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Match Day"
+          },
+          "match_id": {
+            "title": "Match Id",
+            "type": "string"
+          },
+          "match_title": {
+            "title": "Match Title",
+            "type": "string"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Result"
+          }
+        },
+        "required": [
+          "match_id",
+          "match_title",
+          "home_team",
+          "away_team"
+        ],
+        "title": "MatchSummaryResponse",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "default_match_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Default Match Ids",
+        "type": "array"
+      },
+      "matches": {
+        "items": {
+          "$ref": "#/$defs/MatchSummaryResponse"
+        },
+        "title": "Matches",
+        "type": "array"
+      },
+      "ok": {
+        "const": true,
+        "title": "Ok",
+        "type": "boolean"
+      },
+      "perspective_team": {
+        "title": "Perspective Team",
+        "type": "string"
+      }
+    },
+    "required": [
+      "ok",
+      "perspective_team",
+      "default_match_ids",
+      "matches"
+    ],
+    "title": "MatchLibraryResponse",
+    "type": "object"
+  },
   "PlanResponse": {
     "$defs": {
       "RecipeCardResponse": {
@@ -1285,5 +1388,6 @@ export type HealthResponse = FromSchema<typeof apiSchemas["HealthResponse"]>;
 export type InspectResultResponse = FromSchema<typeof apiSchemas["InspectResultResponse"]>;
 export type InspectTimestampResponse = FromSchema<typeof apiSchemas["InspectTimestampResponse"]>;
 export type InterpretResponse = FromSchema<typeof apiSchemas["InterpretResponse"]>;
+export type MatchLibraryResponse = FromSchema<typeof apiSchemas["MatchLibraryResponse"]>;
 export type PlanResponse = FromSchema<typeof apiSchemas["PlanResponse"]>;
 export type SubmitValidateResponse = FromSchema<typeof apiSchemas["SubmitValidateResponse"]>;

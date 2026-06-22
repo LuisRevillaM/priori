@@ -5,6 +5,7 @@ import {
   confirm,
   execute,
   executionCacheStatus,
+  fetchMatches,
   fetchPlan,
   inspectResult,
   inspectTimestamp,
@@ -22,6 +23,8 @@ import type {
   InspectTimestampResponse,
   InterpretResponse,
   JsonObject,
+  MatchLibraryResponse,
+  MatchSummary,
   Preset,
   ReplayPayload,
   ResultRow,
@@ -66,6 +69,68 @@ function requestedEvidence(planDocument: JsonObject | null) {
   });
 }
 
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function applyScopeToPlan(planDocument: JsonObject, matchIds: string[]): JsonObject {
+  const next = structuredClone(planDocument) as JsonObject;
+  const invocation = asRecord(next.default_invocation);
+  invocation.match_ids = matchIds;
+  invocation.periods = asArray(invocation.periods).length > 0 ? invocation.periods : ["firstHalf", "secondHalf"];
+  invocation.perspective_team_role = invocation.perspective_team_role || "home";
+  next.default_invocation = invocation;
+  return next;
+}
+
+function periodLabel(period: string | null | undefined) {
+  return period === "secondHalf" ? "Second half" : period === "firstHalf" ? "First half" : "Period";
+}
+
+function frameTimeLabel(frameId: number | null | undefined, frameRateHz = 25) {
+  if (typeof frameId !== "number" || !Number.isFinite(frameId) || frameId < 0) return "";
+  const totalSeconds = Math.round(frameId / frameRateHz);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function matchLabel(match: MatchSummary | undefined, fallbackId: string) {
+  if (!match) return fallbackId;
+  return match.match_title.replace(":", " vs ");
+}
+
+function sourceLabel(source: string | null | undefined) {
+  if (!source) return "Not interpreted";
+  if (source.includes("hermes")) return "Hermes frontier agent";
+  if (source === "manual_preset") return "Manual recipe";
+  if (source.includes("manual")) return "Manual fallback";
+  return source;
+}
+
+function interpretationBullets(recipe: InterpretResponse["recipe"] | null | undefined, planDocument: JsonObject | null) {
+  const invocation = asRecord(planDocument?.default_invocation);
+  const params = asRecord(invocation.parameters);
+  if (recipe?.recipe_id === "possession_corridor_availability_v1") {
+    return [
+      "Search possession anchors with a progressive geometric corridor ahead of the ball.",
+      `Minimum progression: ${String(params.corridor_minimum_progression_m ?? "recipe default")} metres.`,
+      `Minimum defender clearance: ${String(params.corridor_minimum_clearance_m ?? "recipe default")} metres.`,
+      `Available window: ${String(params.corridor_max_window_seconds ?? "recipe default")} seconds after the anchor.`,
+      "Does not establish that this was the optimal pass."
+    ];
+  }
+  if (recipe?.recipe_id === "ball_side_block_shift_v1") {
+    return [
+      "Find wide-possession moments where the defending block shifts toward the ball side.",
+      "Compare baseline defensive shape to the later maximum-shift shape.",
+      "Return moments whose displacement clears the approved block-shift threshold.",
+      "Does not infer player intent or coaching instruction."
+    ];
+  }
+  return ["Ask a tactical question or choose a recipe to load an interpretation."];
+}
+
 function StatusPill({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "good" | "warn" | "bad" }) {
   return <span className={`pill pill-${tone}`}>{children}</span>;
 }
@@ -76,6 +141,8 @@ function JsonBlock({ value, compact = false }: { value: unknown; compact?: boole
 
 export function App() {
   const [boot, setBoot] = useState<BootstrapResponse | null>(null);
+  const [matchLibrary, setMatchLibrary] = useState<MatchLibraryResponse | null>(null);
+  const [selectedMatchIds, setSelectedMatchIds] = useState<string[]>([]);
   const [query, setQuery] = useState(DEFAULT_QUERY);
   const [mode, setMode] = useState<"manual" | "model">("manual");
   const [selectedPreset, setSelectedPreset] = useState<Preset["preset_id"]>("approved_block_shift");
@@ -125,13 +192,18 @@ export function App() {
   const evidenceAliases = useMemo(() => requestedEvidence(planDocument), [planDocument]);
 
   useEffect(() => {
-    bootstrap()
-      .then((payload) => {
-        setBoot(payload);
-        return fetchPlan("ball_side_block_shift_v1");
+    Promise.all([bootstrap(), fetchMatches()])
+      .then(([bootPayload, matchPayload]) => {
+        setBoot(bootPayload);
+        setMatchLibrary(matchPayload);
+        setSelectedMatchIds(matchPayload.default_match_ids);
+        return fetchPlan("ball_side_block_shift_v1").then((planPayload) => ({
+          planPayload,
+          matchIds: matchPayload.default_match_ids
+        }));
       })
-      .then((payload) => {
-        setPlanDocument(payload.plan_document);
+      .then(({ planPayload, matchIds }) => {
+        setPlanDocument(applyScopeToPlan(planPayload.plan_document, matchIds));
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => setBusy(null));
@@ -188,7 +260,8 @@ export function App() {
     const recipeId = presetId === "approved_block_shift" ? "ball_side_block_shift_v1" : "possession_corridor_availability_v1";
     const payload = await runAction("interpret", () => fetchPlan(recipeId));
     if (!payload) return;
-    setPlanDocument(payload.plan_document);
+    const scopedPlan = applyScopeToPlan(payload.plan_document, selectedMatchIds);
+    setPlanDocument(scopedPlan);
     setInterpretation({
       ok: true,
       status: "PLAN_INTERPRETED",
@@ -200,7 +273,7 @@ export function App() {
       bound_plan_id: null,
       bound_plan_hash: null,
       recipe: payload.recipe,
-      plan_document: payload.plan_document,
+      plan_document: scopedPlan,
       plan_hash: payload.plan_hash,
       clarification_questions: null,
       clarification_codes: null,
@@ -216,6 +289,34 @@ export function App() {
     setInspectionLoadingResultId(null);
   }
 
+  function setAllMatches() {
+    const allIds = matchLibrary?.default_match_ids ?? [];
+    setSelectedMatchIds(allIds);
+    if (planDocument) setPlanDocument(applyScopeToPlan(planDocument, allIds));
+    setValidation(null);
+    setConfirmation(null);
+    setExecutionProgress(null);
+    setExecution(null);
+    setInspection(null);
+    setTimestampInspection(null);
+  }
+
+  function toggleMatch(matchId: string) {
+    const allIds = matchLibrary?.default_match_ids ?? [];
+    const next = selectedMatchIds.includes(matchId)
+      ? selectedMatchIds.filter((id) => id !== matchId)
+      : [...selectedMatchIds, matchId].sort((a, b) => allIds.indexOf(a) - allIds.indexOf(b));
+    const safeNext = next.length > 0 ? next : [matchId];
+    setSelectedMatchIds(safeNext);
+    if (planDocument) setPlanDocument(applyScopeToPlan(planDocument, safeNext));
+    setValidation(null);
+    setConfirmation(null);
+    setExecutionProgress(null);
+    setExecution(null);
+    setInspection(null);
+    setTimestampInspection(null);
+  }
+
   async function handleInterpret() {
     const payload = await runAction("interpret", () =>
       interpret({
@@ -227,7 +328,7 @@ export function App() {
     if (!payload) return;
     setInterpretation(payload);
     if (payload.status === "PLAN_INTERPRETED" && payload.plan_document) {
-      setPlanDocument(payload.plan_document);
+      setPlanDocument(applyScopeToPlan(payload.plan_document, selectedMatchIds));
       setValidation(null);
       setConfirmation(null);
       setExecutionProgress(null);
@@ -240,7 +341,9 @@ export function App() {
 
   async function handleValidate() {
     if (!planDocument) return;
-    const payload = await runAction("validate", () => submitValidate(planDocument));
+    const scopedPlan = applyScopeToPlan(planDocument, selectedMatchIds);
+    setPlanDocument(scopedPlan);
+    const payload = await runAction("validate", () => submitValidate(scopedPlan));
     if (!payload) return;
     setValidation(payload);
     setConfirmation(null);
@@ -359,6 +462,16 @@ export function App() {
 
   const validationTone = validation?.validation.ok ? "good" : validation ? "bad" : "neutral";
   const currentFrame = replay?.frames[Math.min(frameIndex, Math.max(0, replay.frames.length - 1))];
+  const matchesById = new Map((matchLibrary?.matches ?? []).map((match) => [match.match_id, match]));
+  const selectedResultIndex = execution?.execution.results.findIndex((result) => result.result_id === effectiveSelectedResultId) ?? -1;
+  const selectedResultMatch = selectedResult ? matchesById.get(selectedResult.match_id) : undefined;
+  const scopeLabel =
+    selectedMatchIds.length === (matchLibrary?.default_match_ids.length ?? 0)
+      ? `All ${selectedMatchIds.length || 0} available matches`
+      : `${selectedMatchIds.length} selected ${selectedMatchIds.length === 1 ? "match" : "matches"}`;
+  const planRecipe = interpretation?.recipe ?? boot?.presets.find((preset) => preset.preset_id === selectedPreset)?.recipe ?? null;
+  const interpretationItems = interpretationBullets(planRecipe, planDocument);
+  const sourceTone = interpretation?.source?.includes("hermes") ? "good" : interpretation?.source ? "neutral" : "warn";
 
   return (
     <main className="appShell">
@@ -376,6 +489,40 @@ export function App() {
 
       {error ? <div className="errorBanner" data-testid="error-banner">{error}</div> : null}
 
+      <section className="scopeBar" data-testid="analysis-scope">
+        <div className="scopeMetric">
+          <span>Perspective team</span>
+          <strong>{matchLibrary?.perspective_team ?? "Fortuna Düsseldorf"}</strong>
+        </div>
+        <div className="scopeMetric">
+          <span>Matches</span>
+          <strong>{scopeLabel}</strong>
+        </div>
+        <div className="scopeMetric">
+          <span>Periods</span>
+          <strong>All</strong>
+        </div>
+        <div className="scopeMetric">
+          <span>Possession</span>
+          <strong>Fortuna in possession</strong>
+        </div>
+        <div className="scopePicker" data-testid="match-scope-selector">
+          <button className={selectedMatchIds.length === (matchLibrary?.default_match_ids.length ?? 0) ? "active" : ""} onClick={setAllMatches}>
+            All matches
+          </button>
+          {(matchLibrary?.matches ?? []).map((match) => (
+            <button
+              key={match.match_id}
+              className={selectedMatchIds.includes(match.match_id) ? "active" : ""}
+              onClick={() => toggleMatch(match.match_id)}
+              title={match.match_title}
+            >
+              {match.away_team.replace("F.C. ", "").replace("1. FC ", "")}
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section className="workspaceGrid">
         <aside className="leftRail">
           <section className="panel">
@@ -385,13 +532,14 @@ export function App() {
               <textarea data-testid="query-input" value={query} onChange={(event) => setQuery(event.target.value)} />
             </label>
             <div className="segmented">
-              <button className={mode === "manual" ? "active" : ""} onClick={() => setMode("manual")}>
-                Manual
+              <button aria-label="Model" className={mode === "model" ? "active" : ""} onClick={() => setMode("model")}>
+                Ask Hermes
               </button>
-              <button className={mode === "model" ? "active" : ""} onClick={() => setMode("model")}>
-                Model
+              <button aria-label="Manual" className={mode === "manual" ? "active" : ""} onClick={() => setMode("manual")}>
+                Browse recipes
               </button>
             </div>
+            <div className="helperText">Browse recipes is deterministic/offline. Ask Hermes uses the frontier interpreter when available.</div>
             <div className="presetStack">
               {boot?.presets.map((preset) => (
                 <button
@@ -494,21 +642,28 @@ export function App() {
           <section className="panel interpreted" data-testid="interpreted-plan-panel">
             <div className="panelHeader">
               <div>
-                <div className="panelTitle">Interpreted Plan</div>
-                <div className="muted">{interpretation?.recipe?.display_name ?? "No interpreted plan loaded"}</div>
+                <div className="panelTitle">Interpreted as</div>
+                <div className="interpretTitle">{planRecipe?.display_name ?? "Choose a recipe or ask Hermes"}</div>
               </div>
-              {interpretation ? <StatusPill tone={interpretation.status === "PLAN_INTERPRETED" ? "good" : "warn"}>{interpretation.status}</StatusPill> : null}
+              <StatusPill tone={interpretation?.status === "PLAN_INTERPRETED" ? "good" : interpretation ? "warn" : "neutral"}>
+                {interpretation?.status ?? "ready"}
+              </StatusPill>
             </div>
             {interpretation?.source ? (
               <div className="sourceLine" data-testid="interpretation-source">
-                source: <strong>{interpretation.source}</strong>
+                Interpretation source: <strong>{sourceLabel(interpretation.source)}</strong> <code>{interpretation.source}</code>
               </div>
-            ) : null}
+            ) : (
+              <div className="sourceLine">
+                Interpretation source: <strong>{mode === "model" ? "Hermes frontier agent" : "Manual recipe"}</strong>
+              </div>
+            )}
             {interpretation?.status === "CLARIFICATION_REQUIRED" ? (
-              <StateList title="Clarification" items={interpretation.clarification_questions ?? []} />
+              <StateList title="I need clarification" items={interpretation.clarification_questions ?? []} />
             ) : null}
             {interpretation?.status === "CAPABILITY_GAP" ? (
               <div className="stateBox bad">
+                <strong>This cannot currently be measured</strong>
                 {(interpretation.capability_gaps ?? []).map((gap) => (
                   <p key={gap.concept}>
                     <strong>{gap.concept}</strong>: {gap.reason}
@@ -519,29 +674,71 @@ export function App() {
             {interpretation?.status === "MODEL_UNAVAILABLE" ? (
               <div className="stateBox warn">{interpretation.message}</div>
             ) : null}
-            <div className="planMeta">
-              <span>{planDocument ? String(asRecord(planDocument.recipe).recipe_id ?? "") : "no recipe"}</span>
-              <span>{planDocument ? String(asRecord(planDocument.draft_plan).status ?? "") : "no status"}</span>
-              <span>{interpretation?.plan_hash ?? ""}</span>
+            <div className="interpretSummary">
+              {interpretationItems.map((item) => (
+                <div key={item} className="interpretLine">{item}</div>
+              ))}
             </div>
-            <JsonBlock value={planDocument ?? {}} compact />
+            <div className="interpretMeta">
+              <div>
+                <span>Scope</span>
+                <strong>{scopeLabel}</strong>
+              </div>
+              <div>
+                <span>Status</span>
+                <strong>{planRecipe?.state ?? "not selected"}</strong>
+              </div>
+              <div>
+                <span>Source</span>
+                <StatusPill tone={sourceTone}>{sourceLabel(interpretation?.source)}</StatusPill>
+              </div>
+            </div>
+            <div className="actionStrip">
+              <button className="fullButton" onClick={() => void handleValidate()} disabled={!planDocument || busy !== null}>
+                Confirm interpretation
+              </button>
+              <button className="fullButton" onClick={() => void handleConfirm()} disabled={!validation?.validation.bound_plan_id || busy !== null}>
+                Host confirm
+              </button>
+              <button className="primaryAction" onClick={() => void handleExecute()} disabled={!confirmation?.confirmation.execution_authorization_id || busy !== null}>
+                Run query
+              </button>
+            </div>
+            <details className="developerDrawer">
+              <summary>Developer details</summary>
+              <div className="planMeta">
+                <span>{planDocument ? String(asRecord(planDocument.recipe).recipe_id ?? "") : "no recipe"}</span>
+                <span>{planDocument ? String(asRecord(planDocument.draft_plan).status ?? "") : "no status"}</span>
+                <span>{interpretation?.plan_hash ?? ""}</span>
+              </div>
+              <JsonBlock value={planDocument ?? {}} compact />
+            </details>
           </section>
 
           <section className="panel canvasPanel">
             <div className="panelHeader">
               <div>
                 <div className="panelTitle">Coordinate Replay</div>
-                <div className="muted" data-testid="replay-window-summary">
-                  {inspectionLoadingResultId
-                    ? `Loading result ${inspectionLoadingResultId}`
-                    : replay
-                    ? `${replay.replay_window_id} ${replay.source_id} ${replay.match_id} ${replay.period} ${replay.start_frame_id}-${replay.end_frame_id}`
-                    : "No replay window selected"}
-                </div>
+                {selectedResult ? (
+                  <div className="replayContext" data-testid="replay-window-summary">
+                    <strong>{matchLabel(selectedResultMatch, selectedResult.match_id)}</strong>
+                    <span>
+                      {periodLabel(selectedResult.period)} · {frameTimeLabel(selectedResult.anchor_frame_id, replay?.frame_rate_hz ?? 25)} · Fortuna in possession
+                    </span>
+                    <span>
+                      Result {selectedResultIndex + 1} of {execution?.execution.returned_result_count ?? 0}
+                    </span>
+                    <small>{replay?.replay_window_id} · {selectedResult.result_id}</small>
+                  </div>
+                ) : (
+                  <div className="muted" data-testid="replay-window-summary">
+                    {inspectionLoadingResultId ? `Loading result ${inspectionLoadingResultId}` : "No replay window selected"}
+                  </div>
+                )}
               </div>
               {currentFrame ? <StatusPill tone="neutral">frame {currentFrame.frame_id}</StatusPill> : null}
             </div>
-            <PitchCanvas replay={replay} frameIndex={frameIndex} />
+            <PitchCanvas replay={replay} frameIndex={frameIndex} result={evidenceResult} />
             <div className="replayControls">
               <button onClick={() => setFrameIndex((value) => Math.max(0, value - 1))} disabled={!replay}>
                 Prev
@@ -621,9 +818,9 @@ export function App() {
                   className={effectiveSelectedResultId === result.result_id ? "resultItem active" : "resultItem"}
                   onClick={() => void handleResultSelect(result.result_id)}
                 >
-                  <span>#{result.rank} {result.classification}</span>
-                  <small>{result.result_id}</small>
-                  <small>{result.match_id} / {result.period} / frame {result.anchor_frame_id}</small>
+                  <span>#{result.rank} {result.classification.replaceAll("_", " ")}</span>
+                  <small>{matchLabel(matchesById.get(result.match_id), result.match_id)}</small>
+                  <small>{periodLabel(result.period)} · {frameTimeLabel(result.anchor_frame_id)} · {result.result_id}</small>
                 </button>
               ))}
               {!execution ? <div className="emptyState">Execute a confirmed bound plan to populate results.</div> : null}
@@ -631,21 +828,7 @@ export function App() {
           </section>
 
           <section className="panel">
-            <div className="panelTitle">Validation Result</div>
-            <div data-testid="validation-result">
-              <JsonBlock value={validation?.validation ?? { status: "not_run" }} compact />
-            </div>
-          </section>
-
-          <section className="panel">
-            <div className="panelTitle">Host Confirmation</div>
-            <div data-testid="host-confirmation">
-              <JsonBlock value={confirmation?.confirmation ?? { status: "not_confirmed" }} compact />
-            </div>
-          </section>
-
-          <section className="panel">
-            <div className="panelTitle">Execution</div>
+            <div className="panelTitle">Run State</div>
             {executionProgress ? (
               <div className="progressBox" data-testid="execution-progress">
                 <div>
@@ -653,17 +836,24 @@ export function App() {
                 </div>
                 <small>{executionProgress.stages.join(" -> ")}</small>
               </div>
-            ) : null}
-            <div data-testid="execution-result">
-              <JsonBlock value={execution?.execution ?? { status: "not_executed" }} compact />
-            </div>
-          </section>
-
-          <section className="panel">
-            <div className="panelTitle">Timestamp Inspection</div>
-            <div data-testid="timestamp-inspection">
-              <JsonBlock value={timestampInspection?.inspection ?? { status: "not_run" }} compact />
-            </div>
+            ) : (
+              <div className="emptyState">Confirm and run an interpretation to populate moments.</div>
+            )}
+            <details className="developerDrawer">
+              <summary>Developer details</summary>
+              <div data-testid="validation-result">
+                <JsonBlock value={validation?.validation ?? { status: "not_run" }} compact />
+              </div>
+              <div data-testid="host-confirmation">
+                <JsonBlock value={confirmation?.confirmation ?? { status: "not_confirmed" }} compact />
+              </div>
+              <div data-testid="execution-result">
+                <JsonBlock value={execution?.execution ?? { status: "not_executed" }} compact />
+              </div>
+              <div data-testid="timestamp-inspection">
+                <JsonBlock value={timestampInspection?.inspection ?? { status: "not_run" }} compact />
+              </div>
+            </details>
           </section>
         </aside>
       </section>

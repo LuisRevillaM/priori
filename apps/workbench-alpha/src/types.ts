@@ -7,6 +7,7 @@ import type {
   InspectResultResponse as GeneratedInspectResultResponse,
   InspectTimestampResponse as GeneratedInspectTimestampResponse,
   InterpretResponse as GeneratedInterpretResponse,
+  MatchLibraryResponse as GeneratedMatchLibraryResponse,
   PlanResponse as GeneratedPlanResponse,
   SubmitValidateResponse as GeneratedSubmitValidateResponse
 } from "./generated/api-types";
@@ -38,6 +39,23 @@ export type Preset = {
   label: string;
   recipe: RecipeSummary;
   plan_hash: string;
+};
+
+export type MatchSummary = {
+  match_id: string;
+  match_title: string;
+  home_team: string;
+  away_team: string;
+  result?: string | null;
+  match_day?: string | null;
+  kickoff_time_utc?: string | null;
+};
+
+export type MatchLibraryResponse = Omit<GeneratedMatchLibraryResponse, "matches"> & {
+  ok: true;
+  perspective_team: string;
+  default_match_ids: string[];
+  matches: MatchSummary[];
 };
 
 export type BootstrapResponse = Omit<GeneratedBootstrapResponse, "presets" | "capabilities"> & {

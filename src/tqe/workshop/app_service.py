@@ -147,6 +147,23 @@ class CapabilitySummaryResponse(WorkbenchResponseModel):
     execute_tool_description: dict[str, Any]
 
 
+class MatchSummaryResponse(WorkbenchResponseModel):
+    match_id: str
+    match_title: str
+    home_team: str
+    away_team: str
+    result: str | None = None
+    match_day: str | None = None
+    kickoff_time_utc: str | None = None
+
+
+class MatchLibraryResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    perspective_team: str
+    default_match_ids: list[str]
+    matches: list[MatchSummaryResponse]
+
+
 class BootstrapResponse(WorkbenchResponseModel):
     ok: Literal[True]
     service: ServiceStatusResponse
@@ -273,6 +290,7 @@ WORKBENCH_RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     "ErrorResponse": ErrorResponse,
     "HealthResponse": HealthResponse,
     "BootstrapResponse": BootstrapResponse,
+    "MatchLibraryResponse": MatchLibraryResponse,
     "PlanResponse": PlanResponse,
     "InterpretResponse": InterpretResponse,
     "SubmitValidateResponse": SubmitValidateResponseEnvelope,
@@ -379,13 +397,75 @@ def load_plan_from_path(path: Path) -> dict[str, Any]:
     return payload
 
 
+def match_library() -> dict[str, Any]:
+    manifest = read_deploy_manifest(DATA_MANIFEST_PATH)
+    manifest_ids = [str(item) for item in manifest.get("match_ids", []) if str(item).strip()]
+    rows: list[dict[str, Any]] = []
+    matches_path = DEFAULT_CANONICAL_ROOT / "matches.parquet"
+    if matches_path.exists():
+        try:
+            import pandas as pd
+
+            frame = pd.read_parquet(matches_path)
+            if manifest_ids:
+                frame = frame[frame["match_id"].isin(manifest_ids)]
+            for record in frame.to_dict(orient="records"):
+                match_id = str(record.get("match_id") or "")
+                title = str(record.get("match_title") or match_id)
+                home_team, separator, away_team = title.partition(":")
+                rows.append(
+                    {
+                        "match_id": match_id,
+                        "match_title": title,
+                        "home_team": home_team if separator else "Fortuna Düsseldorf",
+                        "away_team": away_team if separator else title,
+                        "result": None if record.get("result") is None else str(record.get("result")),
+                        "match_day": None if record.get("match_day") is None else str(record.get("match_day")),
+                        "kickoff_time_utc": None
+                        if record.get("kickoff_time_utc") is None
+                        else str(record.get("kickoff_time_utc")),
+                    }
+                )
+        except Exception:  # noqa: BLE001 - display metadata must not break the workbench.
+            rows = []
+    if not rows:
+        rows = [
+            {
+                "match_id": match_id,
+                "match_title": f"Fortuna Düsseldorf match {match_id}",
+                "home_team": "Fortuna Düsseldorf",
+                "away_team": match_id,
+                "result": None,
+                "match_day": None,
+                "kickoff_time_utc": None,
+            }
+            for match_id in manifest_ids
+        ]
+    order = {match_id: index for index, match_id in enumerate(manifest_ids)}
+    rows.sort(key=lambda item: order.get(str(item["match_id"]), len(order)))
+    return ok(
+        {
+            "perspective_team": "Fortuna Düsseldorf",
+            "default_match_ids": manifest_ids or [str(item["match_id"]) for item in rows],
+            "matches": rows,
+        }
+    )
+
+
 def host_owned_plan_document(plan_document: dict[str, Any]) -> TacticalQueryDocument:
     candidate = TacticalQueryDocument.model_validate(plan_document)
     if (
         candidate.recipe.recipe_id == "ball_side_block_shift_v1"
         and candidate.draft_plan.status == "approved"
     ):
-        return TacticalQueryDocument.model_validate(load_plan_from_path(APPROVED_PLAN_PATH))
+        canonical = load_plan_from_path(APPROVED_PLAN_PATH)
+        canonical_invocation = canonical.setdefault("default_invocation", {})
+        requested_invocation = plan_document.get("default_invocation") if isinstance(plan_document, dict) else None
+        if isinstance(requested_invocation, dict):
+            for key in ("match_ids", "periods", "perspective_team_role", "max_results", "execution_mode"):
+                if key in requested_invocation:
+                    canonical_invocation[key] = requested_invocation[key]
+        return TacticalQueryDocument.model_validate(canonical)
     return candidate
 
 
@@ -1315,6 +1395,9 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/bootstrap":
             self.send_json(self.bootstrap())
+            return
+        if parsed.path == "/api/matches":
+            self.send_json(validate_public_response("MatchLibraryResponse", match_library()))
             return
         if parsed.path == "/api/plan":
             query = parse_qs(parsed.query)

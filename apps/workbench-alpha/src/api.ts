@@ -10,6 +10,7 @@ import type {
   InspectTimestampResponse,
   InterpretResponse,
   JsonObject,
+  MatchLibraryResponse,
   PlanResponse,
   SubmitValidateResponse,
   TimestampTarget
@@ -56,6 +57,10 @@ async function request<T>(schemaName: ApiSchemaName, path: string, options: Requ
 
 export function bootstrap(): Promise<BootstrapResponse> {
   return request<BootstrapResponse>("BootstrapResponse", "/api/bootstrap");
+}
+
+export function fetchMatches(): Promise<MatchLibraryResponse> {
+  return request<MatchLibraryResponse>("MatchLibraryResponse", "/api/matches");
 }
 
 export function fetchPlan(recipeId: string): Promise<PlanResponse> {
