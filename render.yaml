@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: priori-manual-workbench-alpha
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    disk:
+      name: priori-workbench-alpha-data
+      mountPath: /var/data
+      sizeGB: 10
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: WORKBENCH_HERMES_ENABLED
+        value: "0"
+      - key: TQE_DATA_ROOT
+        value: /var/data/dataset/canonical/v1
+      - key: TQE_RAW_ROOT
+        value: /var/data/dataset/raw/idsse/figshare-28196177-v1
+      - key: TQE_RUNTIME_ROOT
+        value: /var/data/runtime
+      - key: TQE_CACHE_ROOT
+        value: /var/data/cache
+      - key: TQE_DATA_MANIFEST_PATH
+        value: /app/config/deploy/demo-data-manifest.json
+      - key: TQE_KNOWLEDGE_PACK_PATH
+        value: /app/generated/tactical-knowledge-pack.json
+      - key: TQE_EXPECTED_KNOWLEDGE_PACK_SHA256
+        value: fa1e9f6987ae063500af95a31eaea506aa5c3a07e3ca5c4df18b639548399ded
+      - key: TQE_DATA_BUNDLE_URL
+        sync: false
+      - key: TQE_DATA_BUNDLE_SHA256
+        sync: false
+      - key: DEMO_ACCESS_TOKEN
+        sync: false

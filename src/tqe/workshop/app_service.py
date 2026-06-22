@@ -8,6 +8,7 @@ Hermes adapter boundary to the browser.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import mimetypes
 import os
@@ -31,6 +32,7 @@ from tqe.workshop.m1_2 import (
     CallerProfile,
     CapabilityGap,
     DEFAULT_CANONICAL_ROOT,
+    DEFAULT_RAW_ROOT,
     DEFAULT_WORKSHOP_ROOT,
     ExecuteQueryPlanRequest,
     ExecuteQueryPlanResponse,
@@ -68,6 +70,11 @@ HERMES_PROVIDER = os.environ.get("WORKBENCH_HERMES_PROVIDER", "openai-codex")
 HERMES_MODEL = os.environ.get("WORKBENCH_HERMES_MODEL", "gpt-5.5")
 HERMES_TOOLSET = os.environ.get("WORKBENCH_HERMES_TOOLSET", "mcp-priori_tactical")
 HERMES_TIMEOUT_SECONDS = int(os.environ.get("WORKBENCH_HERMES_TIMEOUT_SECONDS", "240"))
+DEMO_ACCESS_TOKEN = os.environ.get("DEMO_ACCESS_TOKEN", "").strip()
+KNOWLEDGE_PACK_PATH = Path(os.environ.get("TQE_KNOWLEDGE_PACK_PATH", "generated/tactical-knowledge-pack.json"))
+EXPECTED_KNOWLEDGE_PACK_SHA256 = os.environ.get("TQE_EXPECTED_KNOWLEDGE_PACK_SHA256", "").strip()
+DATA_MANIFEST_PATH = Path(os.environ.get("TQE_DATA_MANIFEST_PATH", "config/deploy/demo-data-manifest.json"))
+CACHE_ROOT = Path(os.environ["TQE_CACHE_ROOT"]) if os.environ.get("TQE_CACHE_ROOT") else None
 HERMES_MCP_TOOL_NAMES = {
     "mcp_priori_tactical_list_capabilities",
     "mcp_priori_tactical_search_recipes",
@@ -300,6 +307,14 @@ PLANNED_GAPS = {
 
 def json_response(payload: Any) -> bytes:
     return json.dumps(payload, indent=2, sort_keys=True, default=str).encode("utf-8")
+
+
+def file_sha256(path: Path) -> str:
+    digest = sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def ok(payload: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -827,11 +842,15 @@ def execution_cache_key(request: ExecuteQueryPlanRequest, *, output_root: Path) 
 
 
 def execution_cache_path(cache_key: str, *, output_root: Path) -> Path:
-    base = (output_root / "execution-cache").resolve()
+    base = cache_root(output_root).resolve()
     path = (base / f"{cache_key}.json").resolve()
     if base not in path.parents:
         raise CapabilityGap("Execution cache path escapes storage root.")
     return path
+
+
+def cache_root(output_root: Path) -> Path:
+    return CACHE_ROOT if CACHE_ROOT is not None else output_root / "execution-cache"
 
 
 def execution_cache_status(payload: dict[str, Any], *, output_root: Path) -> dict[str, Any]:
@@ -952,6 +971,146 @@ def timestamp_inspection(payload: dict[str, Any], *, output_root: Path) -> dict[
     )
 
 
+def readiness_report(*, static_root: Path, output_root: Path) -> dict[str, Any]:
+    checks = [
+        readiness_check(
+            "frontend.index",
+            (static_root / "index.html").exists(),
+            {"path": cloud_safe_path(static_root / "index.html")},
+        ),
+        readiness_check(
+            "runtime_root.writable",
+            directory_writable(output_root),
+            {"path": cloud_safe_path(output_root)},
+        ),
+        readiness_check(
+            "cache_root.writable",
+            directory_writable(cache_root(output_root)),
+            {"path": cloud_safe_path(cache_root(output_root))},
+        ),
+        *dataset_readiness_checks(),
+        *knowledge_pack_readiness_checks(),
+        *recipe_readiness_checks(),
+    ]
+    return {
+        "status": "READY" if all(item["ok"] for item in checks) else "NOT_READY",
+        "checks": checks,
+    }
+
+
+def readiness_check(name: str, passed: bool, details: dict[str, Any] | None = None) -> dict[str, Any]:
+    return {"name": name, "ok": bool(passed), "details": details or {}}
+
+
+def directory_writable(path: Path) -> bool:
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        probe = path / ".write-probe"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        return True
+    except OSError:
+        return False
+
+
+def dataset_readiness_checks() -> list[dict[str, Any]]:
+    checks = [
+        readiness_check(
+            "dataset.root.exists",
+            DEFAULT_CANONICAL_ROOT.exists(),
+            {"path": cloud_safe_path(DEFAULT_CANONICAL_ROOT)},
+        )
+    ]
+    manifest = read_deploy_manifest(DATA_MANIFEST_PATH)
+    required_paths = manifest.get("required_paths") if isinstance(manifest, dict) else None
+    if isinstance(required_paths, list):
+        missing = [
+            str(path)
+            for path in required_paths
+            if not (DEFAULT_CANONICAL_ROOT / str(path)).exists()
+        ]
+        checks.append(
+            readiness_check(
+                "dataset.required_paths.present",
+                not missing,
+                {"missing": missing[:20], "required_count": len(required_paths)},
+            )
+        )
+    else:
+        required = [
+            "matches.parquet",
+            "players.parquet",
+            "teams.parquet",
+            "orientation.parquet",
+        ]
+        missing = [path for path in required if not (DEFAULT_CANONICAL_ROOT / path).exists()]
+        checks.append(readiness_check("dataset.core_tables.present", not missing, {"missing": missing}))
+    required_raw = [
+        "J03WOY/tracking.xml",
+        "J03WPY/tracking.xml",
+        "J03WQQ/tracking.xml",
+        "J03WR9/tracking.xml",
+    ]
+    missing_raw = [path for path in required_raw if not (DEFAULT_RAW_ROOT / path).exists()]
+    checks.append(
+        readiness_check(
+            "dataset.raw_tracking.present",
+            not missing_raw,
+            {"missing": missing_raw, "path": cloud_safe_path(DEFAULT_RAW_ROOT)},
+        )
+    )
+    return checks
+
+
+def knowledge_pack_readiness_checks() -> list[dict[str, Any]]:
+    exists = KNOWLEDGE_PACK_PATH.exists()
+    checks = [
+        readiness_check(
+            "knowledge_pack.exists",
+            exists,
+            {"path": cloud_safe_path(KNOWLEDGE_PACK_PATH)},
+        )
+    ]
+    if exists and EXPECTED_KNOWLEDGE_PACK_SHA256:
+        actual = file_sha256(KNOWLEDGE_PACK_PATH)
+        checks.append(
+            readiness_check(
+                "knowledge_pack.sha256",
+                actual == EXPECTED_KNOWLEDGE_PACK_SHA256,
+                {"actual": actual, "expected": EXPECTED_KNOWLEDGE_PACK_SHA256},
+            )
+        )
+    return checks
+
+
+def recipe_readiness_checks() -> list[dict[str, Any]]:
+    checks = []
+    for recipe_id in ("ball_side_block_shift_v1", "possession_corridor_availability_v1"):
+        try:
+            plan_for_recipe(recipe_id)
+            checks.append(readiness_check(f"recipe.{recipe_id}.loadable", True, {}))
+        except Exception as exc:  # noqa: BLE001
+            checks.append(readiness_check(f"recipe.{recipe_id}.loadable", False, {"error": type(exc).__name__}))
+    return checks
+
+
+def read_deploy_manifest(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def cloud_safe_path(path: Path) -> str:
+    resolved = str(path)
+    if resolved.startswith("/Users/"):
+        return "<local-dev-path>"
+    return resolved
+
+
 class WorkbenchServer(ThreadingHTTPServer):
     def __init__(
         self,
@@ -977,6 +1136,33 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def send_demo_auth_required(self) -> None:
+        if self.path.startswith("/api/"):
+            self.send_response(HTTPStatus.UNAUTHORIZED)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("WWW-Authenticate", 'Basic realm="Manual Tactical Workbench Alpha"')
+            body = json_response(
+                error_response(
+                    "DEMO_ACCESS_REQUIRED",
+                    "Demo access token is required.",
+                )
+            )
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        body = (
+            "<!doctype html><title>Manual Tactical Workbench Alpha</title>"
+            "<body><h1>Manual Tactical Workbench Alpha</h1>"
+            "<p>Demo access token is required.</p></body>"
+        ).encode("utf-8")
+        self.send_response(HTTPStatus.UNAUTHORIZED)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("WWW-Authenticate", 'Basic realm="Manual Tactical Workbench Alpha"')
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -1016,8 +1202,61 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             return {}
         return json.loads(self.rfile.read(length).decode("utf-8"))
 
+    def demo_access_allowed(self, parsed: Any) -> bool:
+        if not DEMO_ACCESS_TOKEN:
+            return True
+        query_token = (parse_qs(parsed.query).get("access_token") or [""])[0]
+        if query_token and query_token == DEMO_ACCESS_TOKEN:
+            return True
+        cookie = self.headers.get("Cookie", "")
+        if any(part.strip() == f"demo_access_token={DEMO_ACCESS_TOKEN}" for part in cookie.split(";")):
+            return True
+        authorization = self.headers.get("Authorization", "")
+        if authorization == f"Bearer {DEMO_ACCESS_TOKEN}":
+            return True
+        if authorization.startswith("Basic "):
+            try:
+                decoded = base64.b64decode(authorization.removeprefix("Basic ").strip()).decode("utf-8")
+            except (ValueError, UnicodeDecodeError):
+                return False
+            _username, separator, password = decoded.partition(":")
+            return bool(separator) and password == DEMO_ACCESS_TOKEN
+        return False
+
+    def set_demo_cookie_if_needed(self, parsed: Any) -> None:
+        if not DEMO_ACCESS_TOKEN:
+            return
+        query_token = (parse_qs(parsed.query).get("access_token") or [""])[0]
+        if query_token == DEMO_ACCESS_TOKEN:
+            self.send_header("Set-Cookie", f"demo_access_token={DEMO_ACCESS_TOKEN}; Path=/; HttpOnly; SameSite=Lax")
+
+    def redirect_with_demo_cookie(self, parsed: Any) -> bool:
+        if not DEMO_ACCESS_TOKEN:
+            return False
+        query_token = (parse_qs(parsed.query).get("access_token") or [""])[0]
+        if query_token != DEMO_ACCESS_TOKEN:
+            return False
+        self.send_response(HTTPStatus.SEE_OTHER)
+        self.send_header("Location", parsed.path or "/")
+        self.set_demo_cookie_if_needed(parsed)
+        self.end_headers()
+        return True
+
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
+        if parsed.path == "/healthz":
+            self.send_json(ok({"service": "workbench_alpha_host", "status": "ALIVE"}))
+            return
+        if parsed.path == "/readyz":
+            report = readiness_report(static_root=self.server.static_root, output_root=self.server.output_root)
+            status = HTTPStatus.OK if report["status"] == "READY" else HTTPStatus.SERVICE_UNAVAILABLE
+            self.send_json(ok(report), status)
+            return
+        if self.redirect_with_demo_cookie(parsed):
+            return
+        if not self.demo_access_allowed(parsed):
+            self.send_demo_auth_required()
+            return
         if parsed.path == "/api/health":
             self.send_json(ok({"service": "workbench_alpha_host", "mcp_adapter": False}))
             return
@@ -1041,6 +1280,9 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+        if not self.demo_access_allowed(parsed):
+            self.send_demo_auth_required()
+            return
         try:
             payload = self.read_body()
             if parsed.path == "/api/interpret":
@@ -1155,8 +1397,8 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Serve Workbench Alpha host app.")
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--host", default=os.environ.get("HOST", "127.0.0.1"))
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8765")))
     parser.add_argument("--static-root", type=Path, default=DEFAULT_STATIC_ROOT)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_WORKSHOP_ROOT)
     args = parser.parse_args()

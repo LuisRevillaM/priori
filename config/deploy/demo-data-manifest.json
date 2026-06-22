@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "bundle_id": "priori-cloud-workbench-alpha-fortuna-v1",
+  "description": "Runtime data required for Manual Tactical Workbench Alpha C0: approved block-shift and experimental possession-corridor recipes over the four-match Fortuna demo set.",
+  "canonical_root": "canonical/v1",
+  "raw_root": "raw/idsse/figshare-28196177-v1",
+  "match_ids": [
+    "J03WOY",
+    "J03WPY",
+    "J03WQQ",
+    "J03WR9"
+  ],
+  "required_paths": [
+    "matches.parquet",
+    "players.parquet",
+    "teams.parquet",
+    "orientation.parquet",
+    "events/match_id=J03WOY.parquet",
+    "events/match_id=J03WPY.parquet",
+    "events/match_id=J03WQQ.parquet",
+    "events/match_id=J03WR9.parquet",
+    "frames/match_id=J03WOY/period=firstHalf.parquet",
+    "frames/match_id=J03WOY/period=secondHalf.parquet",
+    "frames/match_id=J03WPY/period=firstHalf.parquet",
+    "frames/match_id=J03WPY/period=secondHalf.parquet",
+    "frames/match_id=J03WQQ/period=firstHalf.parquet",
+    "frames/match_id=J03WQQ/period=secondHalf.parquet",
+    "frames/match_id=J03WR9/period=firstHalf.parquet",
+    "frames/match_id=J03WR9/period=secondHalf.parquet",
+    "positions/match_id=J03WOY/period=firstHalf.parquet",
+    "positions/match_id=J03WOY/period=secondHalf.parquet",
+    "positions/match_id=J03WPY/period=firstHalf.parquet",
+    "positions/match_id=J03WPY/period=secondHalf.parquet",
+    "positions/match_id=J03WQQ/period=firstHalf.parquet",
+    "positions/match_id=J03WQQ/period=secondHalf.parquet",
+    "positions/match_id=J03WR9/period=firstHalf.parquet",
+    "positions/match_id=J03WR9/period=secondHalf.parquet"
+  ],
+  "required_raw_paths": [
+    "J03WOY/tracking.xml",
+    "J03WPY/tracking.xml",
+    "J03WQQ/tracking.xml",
+    "J03WR9/tracking.xml"
+  ],
+  "excluded_from_image": [
+    "raw XML provider corpus",
+    "review packets",
+    "playwright reports",
+    "local execution artifacts",
+    "development notebooks"
+  ]
+}

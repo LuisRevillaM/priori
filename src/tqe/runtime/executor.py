@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -55,8 +56,8 @@ FRAME_RATE_HZ = 25
 PITCH_HALF_WIDTH_M = 34.0
 
 DEFAULT_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
-DEFAULT_CANONICAL_ROOT = Path("data/canonical/v1")
-DEFAULT_RAW_ROOT = Path("data/raw/idsse") / SOURCE_VERSION
+DEFAULT_CANONICAL_ROOT = Path(os.environ.get("TQE_DATA_ROOT", "data/canonical/v1"))
+DEFAULT_RAW_ROOT = Path(os.environ.get("TQE_RAW_ROOT", str(Path("data/raw/idsse") / SOURCE_VERSION)))
 GENERIC_EXECUTION_PROFILE = "generic"
 LEGACY_M1_PARITY_PROFILE = "legacy_m1_parity"
 

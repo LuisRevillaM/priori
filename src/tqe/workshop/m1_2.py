@@ -7,6 +7,7 @@ client of this surface, but S0/S1 keep every operation usable without an agent.
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -80,7 +81,7 @@ FORBIDDEN_SURFACES = [
 ]
 SAFE_ANCHOR_RELATIVE_OPERATORS = {"exists", "count_at_least"}
 SAFE_ANCHOR_RELATIVE_OUTPUT = "anchor_evaluations"
-DEFAULT_WORKSHOP_ROOT = Path("artifacts/m1.2/workshop")
+DEFAULT_WORKSHOP_ROOT = Path(os.environ.get("TQE_RUNTIME_ROOT", "artifacts/m1.2/workshop"))
 CAPABILITY_CONTEXT_PATH = Path("generated/capability-context.json")
 TRUSTED_M1_RECIPE_ID = "ball_side_block_shift_v1"
 TRUSTED_M1_RECIPE_VERSION = "1.0.0"

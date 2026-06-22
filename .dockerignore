@@ -1,0 +1,17 @@
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+node_modules
+apps/workbench-alpha/node_modules
+apps/workbench-alpha/dist
+apps/workbench-alpha/playwright-report
+apps/workbench-alpha/test-results
+artifacts
+data
+review-packets
+test-results
+docs/learnings.zip
+.DS_Store
