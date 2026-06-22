@@ -23,7 +23,7 @@ milestones:
     depends_on: M1
   M1.2:
     name: "Grounded Tactical Query Workshop"
-    state: IN_PROGRESS_N1_LIVE_PROOF_VERIFIED_WORKBENCH_EXPOSURE_NEXT
+    state: IN_PROGRESS_N1_PROOF_INTEGRITY_CLOSED_WORKBENCH_EXPOSURE_NEXT
     status_file: delivery/m1.2/status.yaml
     depends_on: M1.1
   M2:
@@ -76,5 +76,5 @@ current_decisions:
     - S2I_frontier_agent_path_frozen_and_final_sealed_acceptance_passes
     - Workbench_Alpha_query_to_replay_proven_on_real_data
   n1_next_step:
-    - Preserve post-N1B live Hermes proof artifacts for optional external review
+    - Preserve post-N1B live Hermes proof artifacts and Opus-required proof-integrity closure
     - Expose the N1 novel-composition loop honestly in Workbench with provenance, confirmation, evidence, and replay

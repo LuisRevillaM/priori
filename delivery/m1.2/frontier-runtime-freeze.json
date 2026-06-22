@@ -297,11 +297,14 @@
     "required_before_s3": true,
     "status": "PENDING_EXTERNAL_INDEPENDENT_SET"
   },
-  "generated_at": "2026-06-22T21:18:31+00:00",
+  "generated_at": "2026-06-22T21:55:07+00:00",
   "knowledge_and_schema_hashes": {
     "capability_context_path": "generated/capability-context.json",
     "capability_context_sha256": "0ef53564bf09c7b6e64d1ba8da1aff14bd7ce426b23e0dcb293eaf5256506fe4",
+    "knowledge_pack_file_sha256": "34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6",
+    "knowledge_pack_hash_kind": "file_sha256",
     "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
+    "knowledge_pack_semantic_sha256": "dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd",
     "knowledge_pack_sha256": "34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6",
     "mcp_server_path": "src/tqe/workshop/mcp_server.py",
     "mcp_server_sha256": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",

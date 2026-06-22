@@ -69,6 +69,8 @@ def build_freeze(s2ib: dict[str, Any], s2id: dict[str, Any], config: dict[str, A
     session_models = sorted({run.get("model") for run in runs if run.get("model")})
     session_instruction_hashes = sorted({run.get("system_instruction_sha256") for run in runs if run.get("system_instruction_sha256")})
     include = tools_config.get("include") or []
+    knowledge_pack_file_hash = file_sha256(KNOWLEDGE_PACK_PATH)
+    knowledge_pack_semantic_hash = knowledge_pack_semantic_sha256()
     return {
         "schema_version": "1.0",
         "milestone": "M1.2",
@@ -122,7 +124,10 @@ def build_freeze(s2ib: dict[str, Any], s2id: dict[str, Any], config: dict[str, A
         },
         "knowledge_and_schema_hashes": {
             "knowledge_pack_path": str(KNOWLEDGE_PACK_PATH),
-            "knowledge_pack_sha256": file_sha256(KNOWLEDGE_PACK_PATH),
+            "knowledge_pack_sha256": knowledge_pack_file_hash,
+            "knowledge_pack_hash_kind": "file_sha256",
+            "knowledge_pack_file_sha256": knowledge_pack_file_hash,
+            "knowledge_pack_semantic_sha256": knowledge_pack_semantic_hash,
             "capability_context_path": str(CAPABILITY_CONTEXT_PATH),
             "capability_context_sha256": file_sha256(CAPABILITY_CONTEXT_PATH),
             "mcp_server_path": str(MCP_SERVER_PATH),
@@ -183,6 +188,8 @@ def checks_for_freeze(freeze: dict[str, Any], s2ib: dict[str, Any], s2id: dict[s
         check("mcp.host_only_absent", set(boundary.get("host_only_tools") or []).isdisjoint(boundary.get("tool_allowlist") or [])),
         check("mcp.resources_and_prompts_disabled", boundary.get("resources_enabled") is False and boundary.get("prompts_enabled") is False),
         check("hashes.knowledge_pack_recorded", bool(hashes.get("knowledge_pack_sha256"))),
+        check("hashes.knowledge_pack_alias_is_file_hash", hashes.get("knowledge_pack_sha256") == hashes.get("knowledge_pack_file_sha256")),
+        check("hashes.knowledge_pack_semantic_recorded", bool(hashes.get("knowledge_pack_semantic_sha256"))),
         check("hashes.capability_context_recorded", bool(hashes.get("capability_context_sha256"))),
         check("s2id.two_live_unseeded_runs", s2id_proof.get("run_count") == 2),
         check("s2id.bound_hashes_differ", (s2id.get("plan_delta") or {}).get("bound_plan_hashes_differ")),
@@ -217,6 +224,12 @@ def read_yaml(path: Path) -> dict[str, Any]:
 
 def file_sha256(path: Path) -> str:
     return sha256(path.read_bytes()).hexdigest()
+
+
+def knowledge_pack_semantic_sha256() -> str:
+    data = read_json(KNOWLEDGE_PACK_PATH)
+    value = data.get("knowledge_pack_sha256")
+    return value if isinstance(value, str) else ""
 
 
 if __name__ == "__main__":

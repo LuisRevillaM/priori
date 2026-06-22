@@ -1,8 +1,10 @@
 # N1 Post-N1B Live Hermes Result
 
-Decision: `APPROVE_N1_LIVE_PROOF_AS_BACKEND_ENGINE_PROOF`
+Decision: `APPROVE_N1_BACKEND_ENGINE_PROOF_WITH_REQUIRED_CHANGES_CLOSED`
 
 The post-N1B rerun used the same frozen hero question and the same Hermes tool boundary. Hermes authored and validated a structurally novel experimental plan, stopped before host confirmation/execution, and the controller then executed the validated plan through the host-owned confirmation path.
+
+Opus later reviewed the post-N1B proof and accepted the backend novel-composition loop as genuinely demonstrated, with required integrity cleanups before Workbench exposure. Those cleanups are now recorded here: hash provenance is reconciled, UNKNOWN preservation is exercised by fixture, executor runtime-parameter access has a structural guard, enum-domain scope is documented, and `time_to_entry_seconds=0.0` is labeled honestly.
 
 ## Frozen Hero Question
 
@@ -47,6 +49,8 @@ Hermes did not call host confirmation, execution, filesystem, terminal, Python, 
 - Returned in proof call: `5`
 - First cache-aware execution: `MISS`
 - Cache status after execution: `HIT`
+- Knowledge pack file SHA-256: `34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6`
+- Knowledge pack semantic SHA-256: `dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd`
 
 First result:
 
@@ -61,7 +65,10 @@ First result:
 - Evidence relation: `dd74570708cce6a3`
 - Corridor open frame: `11375`
 - Destination-entry frame: `11375`
+- Time to entry: `0.0` seconds
 - Destination status: `PASS`
+
+`time_to_entry_seconds=0.0` means the ball was already present in the destination region at the corridor open frame, or entered on the same analysis sample. Workbench copy should describe this as immediate destination-region presence/entry at opening, not as a proven later transition after the corridor opened.
 
 ## Evidence Artifacts
 
@@ -71,6 +78,17 @@ First result:
 - `artifacts/n1b/n1-post-n1b-hero-inspection-report.json`
 - `artifacts/m1.2/workshop/handles/draft-plans/draft_26912b2c452106e8.json`
 - `artifacts/m1.2/workshop/handles/bound-plans/bound_f619f6c9677a4d2a.json`
+
+## Integrity Closure
+
+- N1B verifier: `artifacts/n1b/n1b-verification-report.json`
+- N1B result: `9 pass / 0 fail`
+- UNKNOWN fixture: missing ball evidence produces `entry_status=UNKNOWN`, `signal_values=[None]`, and `unknown_mask=[true]` through the generic destination-entry primitive.
+- Runtime-parameter guard: every executor `RuntimeParameters` access is declared by host defaults or a checked-in recipe parameter.
+- Freeze artifact: `delivery/m1.2/frontier-runtime-freeze.json`
+- Freeze result: `19 pass / 0 fail`
+
+Enum-domain validation is proven for catalog outputs that explicitly declare `allowed_values`. This review must not be read as claiming catalog-wide enum-domain safety for outputs that do not yet declare allowed domains.
 
 ## Boundary
 

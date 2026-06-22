@@ -6,8 +6,8 @@ Date: 2026-06-22
 
 - Branch: `codex/integrated-alpha`
 - Latest committed controller checkpoint before this snapshot:
-  `2a541c2 Harden N1 capability validation contract`
-- Working tree: scoped post-N1B live Hermes proof evidence; existing untracked review packets, audits, test-results, and `docs/learnings.zip` remain outside this snapshot.
+  `4d7ad5e Record N1 post-contract live proof`
+- Working tree: scoped N1 proof-integrity closure; existing untracked review packets, audits, test-results, and `docs/learnings.zip` remain outside this snapshot.
 - Current product source of truth:
   - `delivery/m1.2/SPEC.md`
   - `delivery/m1.2/status.yaml`
@@ -162,9 +162,9 @@ show results, inspect evidence/traces, and open coordinate replay.
 - MCP support for Hermes: tactical stdio MCP adapter is connected and verified through a real Hermes session that lists/searches/describes capabilities, submits a seeded experimental plan, validates it, and stops before execution.
 - Frontier freeze: `delivery/m1.2/frontier-runtime-freeze.json`.
 - Freeze status: `FROZEN_PENDING_FINAL_INDEPENDENT_EVALUATION`.
-- Freeze SHA-256: `b072b8006ae60aba64e3a564d983dae30effbfccdb5ec091c2c1bcb001cd11b9`.
+- Freeze SHA-256: `50573a029bb69ba9a92ca8a5de86b75a74584aaf10f5f51f285347ba76017f2a`.
 - Freeze report: `artifacts/m1.2/s2i-e-frontier-freeze-report.json`.
-- Freeze report SHA-256: `a55ae56fed08f1a379e85a9712e8de46ddcc603742101653d0e403571f4709d2`.
+- Freeze report SHA-256: `9863478c1ee6b1ba4ba8c9c6f091b390570a569b5084b250871688b841618f31`.
 - Important identity boundary: direct Responses API probes returned exact model `gpt-5.5-2026-04-23`; Hermes sessions currently report the product alias `gpt-5.5`, not the exact snapshot.
 - Final independent evaluation remains required before S3 acceptance. S2I-B probes and S2I-D live Hermes authoring are provisioning/authoring proof, not sealed acceptance.
 
@@ -174,8 +174,9 @@ Implemented and controller-verified for the frontier/Hermes path:
 
 - JSON: `generated/tactical-knowledge-pack.json`
 - Markdown: `generated/tactical-knowledge-pack.md`
-- Pack semantic SHA-256: `15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9`
-- Pack file SHA-256: `5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af`
+- Pack semantic SHA-256: `dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd`
+- Pack file SHA-256: `34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6`
+- Markdown file SHA-256: `40b54bfc7a90c4255674ed1458f10b7e08b58f2f720e6901853910d3e1c7b7fc`
 - Verification: `make m1-2-gate-s2i-verify`
 - Local verification report:
   `docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md`
@@ -217,7 +218,7 @@ Controller-verified:
 - Result: `20 pass / 0 fail`
 - Hermes provider/model: `openai-codex` / `gpt-5.5`
 - Reasoning effort: `xhigh`
-- Tactical Knowledge Pack SHA-256:
+- Historical S2I-D Tactical Knowledge Pack file SHA-256:
   `5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af`
 - Hermes config SHA-256:
   `e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237`
@@ -244,7 +245,7 @@ Controller-verified:
 - Freeze report: `artifacts/m1.2/s2i-e-frontier-freeze-report.json`
 - Local review: `docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md`
 - Verification: `make m1-2-gate-s2ie-verify`
-- Result: `17 pass / 0 fail`
+- Result: `19 pass / 0 fail`
 - Product route: Hermes Agent over local stdio Tactical MCP.
 - Provider/model: `openai-codex` / `gpt-5.5`.
 - Reasoning effort: `xhigh`.
@@ -292,7 +293,7 @@ N1B capability-contract correction is controller-verified:
 
 - Verifier: `src/tqe/verification/n1b.py`
 - Command: `PYTHONPATH=src .venv/bin/python -m tqe.verification.n1b`
-- Result: `7 pass / 0 fail`
+- Result: `9 pass / 0 fail`
 - Failed draft fixture:
   `config/evaluation/n1b_failed_hermes_draft_412f54700786817a.json`
 - Report: `artifacts/n1b/n1b-verification-report.json`
@@ -301,6 +302,10 @@ N1B capability-contract correction is controller-verified:
   `UNKNOWN` as explicit allowed values.
 - Validation now rejects the exact failed draft with
   `compare_value_not_allowed` before execution.
+- Additional proof-integrity checks now exercise a missing-ball-evidence fixture
+  that propagates `UNKNOWN` through the generic destination-entry signal, and
+  scan executor `RuntimeParameters` accesses so every accessed name is declared
+  by host defaults or a checked-in recipe.
 
 Post-N1B live Hermes proof is green:
 
@@ -319,6 +324,11 @@ Post-N1B live Hermes proof is green:
 
 This is a backend engine proof of the novel-composition loop. It does not claim
 the final Workbench experience is already polished around that loop.
+The enum-domain claim is currently scoped to catalog outputs that explicitly
+declare `allowed_values`, especially `relation_destination_entry.entry_status`.
+The first live result's `time_to_entry_seconds=0.0` means the ball was already
+present in the corridor destination region at the corridor open frame, not that
+a later post-open transition was proven.
 
 ## S2I-B Provisioning Spike
 

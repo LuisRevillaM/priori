@@ -338,6 +338,291 @@
       "id": "n1b.execution_does_not_require_hermes_execution_tool",
       "message": "Execution remains host-confirmed, not model-authorized.",
       "status": "pass"
+    },
+    {
+      "details": {
+        "entry_status": "UNKNOWN",
+        "frame_ids": [
+          102
+        ],
+        "missing_ball_frame_count": 3,
+        "node_id": "destination_entry",
+        "output_name": "entry_status",
+        "record_count": 1,
+        "signal_values": [
+          null
+        ],
+        "unknown_mask": [
+          true
+        ],
+        "unknown_reason": "window_extends_beyond_available_tracking,missing_ball_frames"
+      },
+      "id": "n1b.unknown_destination_entry_preserved",
+      "message": "Missing ball evidence propagates as UNKNOWN through the generic destination-entry primitive.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "access_count": 33,
+        "access_names": [
+          "accepted_per_match_limit",
+          "accepted_result_limit",
+          "analysis_rate_hz",
+          "baseline_window_seconds",
+          "dedupe_window_seconds",
+          "maximum_analysis_gap_ms",
+          "minimum_outfield_players_per_team",
+          "minimum_possession_seconds",
+          "minimum_wide_dwell_seconds",
+          "opposite_side_fraction",
+          "outcome_horizon_seconds",
+          "prior_central_fraction",
+          "result_id_seed_hash",
+          "retained_after_switch_seconds",
+          "shift_search_window_seconds"
+        ],
+        "accesses": [
+          {
+            "accessor": "integer",
+            "line": 3149,
+            "name": "accepted_per_match_limit",
+            "receiver": "params"
+          },
+          {
+            "accessor": "integer",
+            "line": 3148,
+            "name": "accepted_result_limit",
+            "receiver": "params"
+          },
+          {
+            "accessor": "integer",
+            "line": 556,
+            "name": "analysis_rate_hz",
+            "receiver": "params"
+          },
+          {
+            "accessor": "integer",
+            "line": 1288,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 1349,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 1546,
+            "name": "analysis_rate_hz",
+            "receiver": "context.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 1905,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 1972,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 1973,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 2057,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 2237,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 2786,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 2827,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 2838,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 2853,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 2858,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 2907,
+            "name": "analysis_rate_hz",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "integer",
+            "line": 3999,
+            "name": "analysis_rate_hz",
+            "receiver": "params"
+          },
+          {
+            "accessor": "integer",
+            "line": 4000,
+            "name": "analysis_rate_hz",
+            "receiver": "params"
+          },
+          {
+            "accessor": "number",
+            "line": 1972,
+            "name": "baseline_window_seconds",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "number",
+            "line": 2827,
+            "name": "baseline_window_seconds",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "number",
+            "line": 2058,
+            "name": "dedupe_window_seconds",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "number",
+            "line": 563,
+            "name": "maximum_analysis_gap_ms",
+            "receiver": "params"
+          },
+          {
+            "accessor": "integer",
+            "line": 2004,
+            "name": "minimum_outfield_players_per_team",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "number",
+            "line": 1905,
+            "name": "minimum_possession_seconds",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "number",
+            "line": 2907,
+            "name": "minimum_wide_dwell_seconds",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "number",
+            "line": 4001,
+            "name": "opposite_side_fraction",
+            "receiver": "params"
+          },
+          {
+            "accessor": "number",
+            "line": 3999,
+            "name": "outcome_horizon_seconds",
+            "receiver": "params"
+          },
+          {
+            "accessor": "number",
+            "line": 2828,
+            "name": "prior_central_fraction",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "text",
+            "line": 2056,
+            "name": "result_id_seed_hash",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "text",
+            "line": 2496,
+            "name": "result_id_seed_hash",
+            "receiver": "state.params"
+          },
+          {
+            "accessor": "number",
+            "line": 4000,
+            "name": "retained_after_switch_seconds",
+            "receiver": "params"
+          },
+          {
+            "accessor": "number",
+            "line": 1973,
+            "name": "shift_search_window_seconds",
+            "receiver": "state.params"
+          }
+        ],
+        "checked_in_recipe_parameters": [
+          "accepted_per_match_limit",
+          "accepted_result_limit",
+          "analysis_rate_hz",
+          "baseline_window_seconds",
+          "corridor_close_after_frames",
+          "corridor_max_window_seconds",
+          "corridor_maximum_segment_length_m",
+          "corridor_minimum_clearance_m",
+          "corridor_minimum_duration_seconds",
+          "corridor_minimum_progression_m",
+          "corridor_minimum_segment_length_m",
+          "corridor_open_after_frames",
+          "dedupe_window_seconds",
+          "destination_entry_horizon_seconds",
+          "maximum_analysis_gap_ms",
+          "minimum_outfield_players_per_team",
+          "minimum_possession_seconds",
+          "minimum_shift_metres",
+          "minimum_shift_persistence_seconds",
+          "minimum_wide_dwell_seconds",
+          "near_miss_limit",
+          "opposite_side_fraction",
+          "outcome_horizon_seconds",
+          "prior_central_fraction",
+          "result_id_seed_hash",
+          "retained_after_switch_seconds",
+          "shift_search_window_seconds",
+          "wide_entry_fraction"
+        ],
+        "executor_path": "src/tqe/runtime/executor.py",
+        "host_runtime_defaults": [
+          "analysis_rate_hz",
+          "maximum_analysis_gap_ms",
+          "minimum_outfield_players_per_team",
+          "minimum_possession_seconds"
+        ],
+        "undeclared_accesses": []
+      },
+      "id": "n1b.executor_runtime_parameters_declared",
+      "message": "Every executor RuntimeParameters access is declared by host defaults or a checked-in recipe.",
+      "status": "pass"
     }
   ],
   "corrected_flow": {
@@ -732,11 +1017,286 @@
     },
     "session_id": "20260622_131836_38c3fb"
   },
-  "generated_at": "2026-06-22T21:12:05+00:00",
+  "generated_at": "2026-06-22T21:54:57+00:00",
+  "runtime_parameter_contract": {
+    "access_count": 33,
+    "access_names": [
+      "accepted_per_match_limit",
+      "accepted_result_limit",
+      "analysis_rate_hz",
+      "baseline_window_seconds",
+      "dedupe_window_seconds",
+      "maximum_analysis_gap_ms",
+      "minimum_outfield_players_per_team",
+      "minimum_possession_seconds",
+      "minimum_wide_dwell_seconds",
+      "opposite_side_fraction",
+      "outcome_horizon_seconds",
+      "prior_central_fraction",
+      "result_id_seed_hash",
+      "retained_after_switch_seconds",
+      "shift_search_window_seconds"
+    ],
+    "accesses": [
+      {
+        "accessor": "integer",
+        "line": 3149,
+        "name": "accepted_per_match_limit",
+        "receiver": "params"
+      },
+      {
+        "accessor": "integer",
+        "line": 3148,
+        "name": "accepted_result_limit",
+        "receiver": "params"
+      },
+      {
+        "accessor": "integer",
+        "line": 556,
+        "name": "analysis_rate_hz",
+        "receiver": "params"
+      },
+      {
+        "accessor": "integer",
+        "line": 1288,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 1349,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 1546,
+        "name": "analysis_rate_hz",
+        "receiver": "context.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 1905,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 1972,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 1973,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 2057,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 2237,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 2786,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 2827,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 2838,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 2853,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 2858,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 2907,
+        "name": "analysis_rate_hz",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "integer",
+        "line": 3999,
+        "name": "analysis_rate_hz",
+        "receiver": "params"
+      },
+      {
+        "accessor": "integer",
+        "line": 4000,
+        "name": "analysis_rate_hz",
+        "receiver": "params"
+      },
+      {
+        "accessor": "number",
+        "line": 1972,
+        "name": "baseline_window_seconds",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "number",
+        "line": 2827,
+        "name": "baseline_window_seconds",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "number",
+        "line": 2058,
+        "name": "dedupe_window_seconds",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "number",
+        "line": 563,
+        "name": "maximum_analysis_gap_ms",
+        "receiver": "params"
+      },
+      {
+        "accessor": "integer",
+        "line": 2004,
+        "name": "minimum_outfield_players_per_team",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "number",
+        "line": 1905,
+        "name": "minimum_possession_seconds",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "number",
+        "line": 2907,
+        "name": "minimum_wide_dwell_seconds",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "number",
+        "line": 4001,
+        "name": "opposite_side_fraction",
+        "receiver": "params"
+      },
+      {
+        "accessor": "number",
+        "line": 3999,
+        "name": "outcome_horizon_seconds",
+        "receiver": "params"
+      },
+      {
+        "accessor": "number",
+        "line": 2828,
+        "name": "prior_central_fraction",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "text",
+        "line": 2056,
+        "name": "result_id_seed_hash",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "text",
+        "line": 2496,
+        "name": "result_id_seed_hash",
+        "receiver": "state.params"
+      },
+      {
+        "accessor": "number",
+        "line": 4000,
+        "name": "retained_after_switch_seconds",
+        "receiver": "params"
+      },
+      {
+        "accessor": "number",
+        "line": 1973,
+        "name": "shift_search_window_seconds",
+        "receiver": "state.params"
+      }
+    ],
+    "checked_in_recipe_parameters": [
+      "accepted_per_match_limit",
+      "accepted_result_limit",
+      "analysis_rate_hz",
+      "baseline_window_seconds",
+      "corridor_close_after_frames",
+      "corridor_max_window_seconds",
+      "corridor_maximum_segment_length_m",
+      "corridor_minimum_clearance_m",
+      "corridor_minimum_duration_seconds",
+      "corridor_minimum_progression_m",
+      "corridor_minimum_segment_length_m",
+      "corridor_open_after_frames",
+      "dedupe_window_seconds",
+      "destination_entry_horizon_seconds",
+      "maximum_analysis_gap_ms",
+      "minimum_outfield_players_per_team",
+      "minimum_possession_seconds",
+      "minimum_shift_metres",
+      "minimum_shift_persistence_seconds",
+      "minimum_wide_dwell_seconds",
+      "near_miss_limit",
+      "opposite_side_fraction",
+      "outcome_horizon_seconds",
+      "prior_central_fraction",
+      "result_id_seed_hash",
+      "retained_after_switch_seconds",
+      "shift_search_window_seconds",
+      "wide_entry_fraction"
+    ],
+    "executor_path": "src/tqe/runtime/executor.py",
+    "host_runtime_defaults": [
+      "analysis_rate_hz",
+      "maximum_analysis_gap_ms",
+      "minimum_outfield_players_per_team",
+      "minimum_possession_seconds"
+    ],
+    "undeclared_accesses": []
+  },
   "schema_version": "n1b.verification.v1",
   "status": "pass",
   "summary": {
     "fail": 0,
-    "pass": 7
+    "pass": 9
+  },
+  "unknown_fixture": {
+    "entry_status": "UNKNOWN",
+    "frame_ids": [
+      102
+    ],
+    "missing_ball_frame_count": 3,
+    "node_id": "destination_entry",
+    "output_name": "entry_status",
+    "record_count": 1,
+    "signal_values": [
+      null
+    ],
+    "unknown_mask": [
+      true
+    ],
+    "unknown_reason": "window_extends_beyond_available_tracking,missing_ball_frames"
   }
 }

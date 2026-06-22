@@ -10,6 +10,7 @@ from pathlib import Path
 from tqe.runtime.artifacts import expected_generated_artifacts
 from tqe.runtime.binder import BindError, bind_document, bind_document_from_path, bind_error_codes
 from tqe.runtime.ir import TacticalQueryDocument
+from tqe.verification.n1b import runtime_parameter_access_contract, unknown_destination_entry_fixture
 
 PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 N1_FAILED_HERMES_DRAFT_PATH = Path(
@@ -134,6 +135,19 @@ class M11BinderTests(unittest.TestCase):
         self.assertEqual(5.0, resolved["minimum_possession_seconds"].value.value)
         self.assertEqual(250, resolved["maximum_analysis_gap_ms"].value.value)
         self.assertEqual(9, resolved["minimum_outfield_players_per_team"].value.value)
+
+    def test_destination_entry_unknown_fixture_preserves_unknown_signal(self) -> None:
+        fixture = unknown_destination_entry_fixture()
+
+        self.assertEqual("UNKNOWN", fixture["entry_status"])
+        self.assertIn("missing_ball_frames", fixture["unknown_reason"])
+        self.assertEqual([None], fixture["signal_values"])
+        self.assertEqual([True], fixture["unknown_mask"])
+
+    def test_executor_runtime_parameter_accesses_are_declared(self) -> None:
+        contract = runtime_parameter_access_contract()
+
+        self.assertEqual([], contract["undeclared_accesses"])
 
     def test_missing_required_node_input_fails_at_bind_time(self) -> None:
         payload = load_payload()

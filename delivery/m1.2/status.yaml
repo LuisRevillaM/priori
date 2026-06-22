@@ -238,11 +238,13 @@ evidence:
   S2I_A_tactical_knowledge_pack:
     knowledge_pack_json: generated/tactical-knowledge-pack.json
     knowledge_pack_markdown: generated/tactical-knowledge-pack.md
-    knowledge_pack_sha256: 15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9
+    knowledge_pack_semantic_sha256: dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd
+    knowledge_pack_file_sha256: 34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6
+    knowledge_pack_markdown_sha256: 40b54bfc7a90c4255674ed1458f10b7e08b58f2f720e6901853910d3e1c7b7fc
     verification_report: artifacts/m1.2/gate-s2i-verification-report.json
     verification_command: make m1-2-gate-s2i-verify
     verification_summary:
-      passed: 16
+      passed: 20
       failed: 0
     local_review: docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md
     pack_size:
@@ -355,7 +357,7 @@ evidence:
     hermes_model: gpt-5.5
     hermes_reasoning_effort: xhigh
     hermes_config_sha256: e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237
-    knowledge_pack_sha256: 5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af
+    historical_session_knowledge_pack_file_sha256: 5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af
     report_sha256: bd8473822c37217553b19dad12e7431dd3adcbe806a290504568cfedaad7d03d
     live_runs:
       - label: any_progressive_corridor
@@ -387,14 +389,17 @@ evidence:
     implementation_note: "S2I-D required exposing recipe authoring contracts through describe_capability. This is knowledge-surface disclosure from existing recipe documents, not tactical runtime logic or execution authority."
   S2I_E_frontier_configuration_freeze:
     freeze_artifact: delivery/m1.2/frontier-runtime-freeze.json
-    freeze_sha256: b072b8006ae60aba64e3a564d983dae30effbfccdb5ec091c2c1bcb001cd11b9
+    freeze_sha256: 50573a029bb69ba9a92ca8a5de86b75a74584aaf10f5f51f285347ba76017f2a
     verification_report: artifacts/m1.2/s2i-e-frontier-freeze-report.json
-    report_sha256: a55ae56fed08f1a379e85a9712e8de46ddcc603742101653d0e403571f4709d2
+    report_sha256: 9863478c1ee6b1ba4ba8c9c6f091b390570a569b5084b250871688b841618f31
+    knowledge_pack_file_sha256: 34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6
+    knowledge_pack_semantic_sha256: dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd
+    knowledge_pack_hash_note: "knowledge_pack_sha256 in the freeze is a backwards-compatible alias for knowledge_pack_file_sha256; semantic hash is recorded separately."
     local_review: docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md
     verification_command: make m1-2-gate-s2ie-verify
     verification_result: PASS_CONTROLLER
     verification_summary:
-      passed: 17
+      passed: 19
       failed: 0
     product_route:
       runtime: "Hermes Agent over local stdio Tactical MCP"
@@ -496,7 +501,7 @@ evidence:
       - "Plan compares relation_destination_entry.entry_status to DESTINATION_ENTERED instead of PASS."
     next_slice: "N1B — Capability Output Domains and Runtime Parameter Contract"
   N1B_capability_output_domains_and_runtime_parameter_contract:
-    status: CONTROLLER_VERIFIED_HERO_RERUN_NEXT
+    status: CONTROLLER_VERIFIED_OPUS_REQUIRED_CHANGES_CLOSED
     verifier: src/tqe/verification/n1b.py
     verification_command: PYTHONPATH=src .venv/bin/python -m tqe.verification.n1b
     report: artifacts/n1b/n1b-verification-report.json
@@ -522,9 +527,11 @@ evidence:
       corrected_plan_host_confirm_execute: true
       corrected_plan_generic_real_results: true
       hermes_execution_tool_absent: true
-      unknown_semantics_preserved: true
+      unknown_semantics_preserved_through_fixture: true
+      executor_runtime_parameter_accesses_declared: true
+      enum_domain_scope: "Proven for catalog outputs that declare allowed_values; N1B specifically proves relation_destination_entry.entry_status."
   N1_post_n1b_live_hermes_novel_composition:
-    status: PASS_CONTROLLER_VERIFIED_BACKEND_ENGINE_PROOF
+    status: PASS_CONTROLLER_VERIFIED_BACKEND_ENGINE_PROOF_WITH_OPUS_CAVEATS_CLOSED
     review: docs/reviews/2026-06-22-n1-post-n1b-live-hermes-result.md
     session_id: 20260622_141849_63e2a6
     draft_plan_id: draft_26912b2c452106e8
@@ -555,9 +562,11 @@ evidence:
       host_confirmation_required: true
       generic_execution_real_results: true
       inspection_and_replay_available: true
+      time_to_entry_zero_semantics: "0.0 seconds means destination-region presence at the corridor open frame/immediate entry, not independently proven later transition."
+      enum_domain_scope: "Do not overclaim catalog-wide enum safety beyond declared allowed_values."
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: OPTIONAL_REVIEW_N1_POST_N1B_PROOF
-  scope: "N1 post-N1B is controller-verified as a backend engine proof: live Hermes authored a structurally novel experimental plan for the frozen hero question, validation passed, Hermes stopped before execution, host confirmation executed the plan generically over real data, cache MISS/HIT behavior was recorded, and inspection/replay evidence exists. Next product step: expose this capability honestly in Workbench rather than adding another runtime repair."
+  external_review: OPUS_REQUIRED_CHANGES_CLOSED_OPTIONAL_REVIEW_BEFORE_PRODUCT_EXPOSURE
+  scope: "N1 post-N1B is controller-verified as a backend engine proof with proof-integrity caveats closed: live Hermes authored a structurally novel experimental plan for the frozen hero question, validation passed, Hermes stopped before execution, host confirmation executed the plan generically over real data, cache MISS/HIT behavior was recorded, inspection/replay evidence exists, knowledge-pack hash provenance is reconciled, UNKNOWN preservation is exercised by fixture, and executor runtime-parameter access has a structural guard. Next product step: expose this capability honestly in Workbench rather than adding another runtime repair."
