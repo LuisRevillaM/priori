@@ -29,7 +29,7 @@ RUN npm --prefix apps/workbench-alpha run build
 FROM python:3.12-slim AS runtime
 
 ENV PYTHONUNBUFFERED=1 \
-    PATH=/root/.local/bin:/root/.cargo/bin:/opt/hermes-agent/venv/bin:$PATH \
+    PATH=/root/.local/bin:/root/.cargo/bin:$PATH \
     PYTHONPATH=/app/src \
     HOST=0.0.0.0 \
     WORKBENCH_HERMES_ENABLED=1 \
@@ -69,7 +69,8 @@ RUN npm install -g n \
 RUN git clone --recurse-submodules https://github.com/NousResearch/hermes-agent.git /opt/hermes-agent \
     && cd /opt/hermes-agent \
     && uv venv venv --python 3.11 \
-    && VIRTUAL_ENV=/opt/hermes-agent/venv uv pip install -e ".[all]"
+    && VIRTUAL_ENV=/opt/hermes-agent/venv uv pip install -e ".[all]" \
+    && ln -sf /opt/hermes-agent/venv/bin/hermes /usr/local/bin/hermes
 
 COPY pyproject.toml ./
 COPY src ./src
