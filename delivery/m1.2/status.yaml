@@ -478,9 +478,26 @@ evidence:
       candidate_structural_fingerprint: 79b852cd4f392e1ab5dbcb0e12fd516ee9d678c71da26e5e90c6fc3e510bc0a0
       contains_m1_fields: false
     non_claim: "N1A proves local expressibility and runtime semantics only; it is not the live Hermes novel-composition proof."
+  N1_live_hermes_novel_composition:
+    status: REJECT_KEEP_N1_BLOCKED
+    review: docs/reviews/2026-06-22-n1-live-hermes-result.md
+    session_id: 20260622_131836_38c3fb
+    draft_plan_id: draft_412f54700786817a
+    bound_plan_id: bound_a4cdbc77075c85e7
+    bound_plan_hash: a4cdbc77075c85e7d9c6d70ca63f00eb9838f03dd96e265c05b5b78c23996c5c
+    passed:
+      no_existing_recipe_selected: true
+      experimental_plan_authored: true
+      bounded_tools_only: true
+      stopped_before_execution: true
+      structurally_uses_generic_destination_entry: true
+    blockers:
+      - "Validated plan omits runtime-required analysis_rate_hz and fails host execution before result emission."
+      - "Plan compares relation_destination_entry.entry_status to DESTINATION_ENTERED instead of PASS."
+    next_slice: "N1B — Capability Output Domains and Runtime Parameter Contract"
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: LIVE_HERMES_N1_PROOF_OR_FINAL_INDEPENDENT_S2I_EVALUATION_SET
-  scope: "N1A local expressibility is green after adding a generic relation_destination_entry capability. Next run the frozen hero once through live Hermes, preserving the outcome without post-run tuning. Workbench Alpha query-to-replay is controller-verified at commit 36649b3. S2I-F final-evaluation harness remains ready and fails closed until an independently authored sealed set is supplied."
+  external_review: REVIEW_N1_LIVE_FAILURE_AND_N1B_CORRECTIVE_SCOPE
+  scope: "N1A local expressibility is green, but the first live Hermes N1 run failed honestly after validation: runtime-required global parameters were missing and entry_status was compared to a tactical label instead of PASS. Do not rerun the frozen hero until N1B is implemented and reviewed. Workbench Alpha query-to-replay is controller-verified at commit 36649b3. S2I-F final-evaluation harness remains ready and fails closed until an independently authored sealed set is supplied."
