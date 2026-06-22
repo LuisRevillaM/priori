@@ -582,6 +582,18 @@ def hermes_unavailable(
 def hermes_interpret_request(query: str) -> dict[str, Any]:
     try:
         hermes = shutil.which("hermes")
+        log_hermes_event(
+            "interpret_start",
+            {
+                "hermes": path_state(hermes),
+                "configured_python": path_state(os.environ.get("WORKBENCH_HERMES_PYTHON")),
+                "repo_root": path_state(str(REPO_ROOT)),
+                "hermes_home": path_state(str(HERMES_HOME)),
+                "toolset": HERMES_TOOLSET,
+                "provider": HERMES_PROVIDER,
+                "model": HERMES_MODEL,
+            },
+        )
         if not hermes:
             return hermes_unavailable(query, "Hermes executable was not found. Manual mode remains available.", fallback_reason="hermes_executable_missing")
         surface = hermes_tool_surface(hermes)
@@ -623,7 +635,22 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
             "Hermes interpretation timed out before returning a safe bounded response. Manual recipes remain available.",
             fallback_reason="hermes_timeout",
         )
+    except FileNotFoundError as exc:
+        detail = file_not_found_detail(exc)
+        log_hermes_event("file_not_found", detail)
+        return hermes_unavailable(
+            query,
+            "Hermes interpretation failed before returning a safe bounded response. Manual recipes remain available.",
+            fallback_reason=detail["fallback_reason"],
+        )
     except Exception as exc:  # noqa: BLE001 - model invocation failures must be typed product states.
+        log_hermes_event(
+            "exception",
+            {
+                "type": type(exc).__name__,
+                "message": short_text(str(exc), 240),
+            },
+        )
         return hermes_unavailable(
             query,
             "Hermes interpretation failed before returning a safe bounded response. Manual recipes remain available.",
@@ -651,7 +678,17 @@ def run_hermes_invocation(hermes: str, args: list[str], *, timeout: int) -> subp
     env["HERMES_HOME"] = str(HERMES_HOME)
     env.setdefault("CODEX_HOME", str(Path.home() / ".codex"))
     env["PYTHONPATH"] = hermes_pythonpath(env.get("PYTHONPATH"))
-    return subprocess.run(
+    log_hermes_event(
+        "subprocess_start",
+        {
+            "subcommand": args[0] if args else "",
+            "python": path_state(hermes_python),
+            "hermes": path_state(hermes),
+            "cwd": path_state(str(REPO_ROOT)),
+            "pythonpath_entries": len(env["PYTHONPATH"].split(os.pathsep)),
+        },
+    )
+    completed = subprocess.run(
         [hermes_python, "-m", "tqe.workshop.hermes_invocation", *args],
         check=False,
         capture_output=True,
@@ -660,13 +697,23 @@ def run_hermes_invocation(hermes: str, args: list[str], *, timeout: int) -> subp
         env=env,
         cwd=REPO_ROOT,
     )
+    log_hermes_event(
+        "subprocess_complete",
+        {
+            "subcommand": args[0] if args else "",
+            "returncode": completed.returncode,
+            "stdout_prefix": short_text(completed.stdout, 240),
+            "stderr_prefix": short_text(completed.stderr, 240),
+        },
+    )
+    return completed
 
 
 def hermes_python_executable(hermes: str) -> str:
     configured = os.environ.get("WORKBENCH_HERMES_PYTHON")
     if configured:
         configured_path = shutil.which(configured) or configured
-        if Path(configured_path).exists():
+        if Path(configured_path).exists() and os.access(configured_path, os.X_OK):
             return configured_path
     try:
         first_line = Path(hermes).read_text(encoding="utf-8").splitlines()[0]
@@ -677,6 +724,40 @@ def hermes_python_executable(hermes: str) -> str:
         if executable:
             return executable
     return sys.executable
+
+
+def path_state(path: str | None) -> dict[str, Any]:
+    if not path:
+        return {"path": None, "exists": False, "executable": False}
+    candidate = Path(path)
+    return {
+        "path": str(candidate),
+        "exists": candidate.exists(),
+        "executable": os.access(candidate, os.X_OK),
+        "is_symlink": candidate.is_symlink(),
+    }
+
+
+def short_text(text: str, limit: int) -> str:
+    cleaned = " ".join((text or "").split())
+    return cleaned[:limit]
+
+
+def file_not_found_detail(exc: FileNotFoundError) -> dict[str, Any]:
+    filename = str(exc.filename or "")
+    return {
+        "type": type(exc).__name__,
+        "filename": filename,
+        "filename_basename": Path(filename).name if filename else "",
+        "errno": exc.errno,
+        "strerror": exc.strerror,
+        "fallback_reason": f"FileNotFoundError:{Path(filename).name if filename else 'unknown'}",
+    }
+
+
+def log_hermes_event(event: str, details: dict[str, Any]) -> None:
+    payload = {"event": event, "details": details}
+    print(f"hermes_diagnostic={json.dumps(payload, sort_keys=True)}", flush=True)
 
 
 def hermes_pythonpath(existing: str | None) -> str:
