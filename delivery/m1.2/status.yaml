@@ -1,6 +1,6 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: S2I_C_MCP_INTEGRATION_CONTROLLER_VERIFIED_WORKBENCH_ALPHA_PARALLEL
+state: S2I_D_UNSEEDED_HERMES_AUTHORING_CONTROLLER_VERIFIED_FRONTIER_FREEZE_NEXT
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-21"
 preconditions:
@@ -30,9 +30,11 @@ slices:
   S2G_first_fresh_sealed_set_run: DONE_FAILED_THEN_DIAGNOSTIC_AFTER_S2H
   S2H_stable_agent_vocabulary_codes_and_sealed_set_drift_control: DONE_CONTROLLER_VERIFIED
   S2I_frontier_agent_provisioning_and_context_rebaseline: IN_PROGRESS
-  S2I_A_tactical_knowledge_pack: IMPLEMENTED_LOCAL_VERIFIED_PENDING_S2_REGRESSION
+  S2I_A_tactical_knowledge_pack: DONE_CONTROLLER_VERIFIED_FRONTIER_CONTEXT
   S2I_B_frontier_and_hermes_provisioning_spike: DONE_CONTROLLER_VERIFIED
   S2I_C_tactical_mcp_adapter_and_hermes_validation: DONE_CONTROLLER_VERIFIED
+  S2I_D_unseeded_frontier_agent_plan_authoring: DONE_CONTROLLER_VERIFIED
+  S2I_E_frontier_configuration_freeze_and_final_eval: NEXT_TRACK_A
   Workbench_Alpha_1_query_to_result_shell: NEXT_PARALLEL_TRACK_B
   Workbench_Alpha_2_evidence_and_replay: PLANNED_AFTER_ALPHA_1
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
@@ -56,9 +58,11 @@ promotion_gates:
   Gate_S2G_first_fresh_independent_sealed_prompt_set: FAIL_BLOCKING_S3_THEN_PASS_DIAGNOSTIC_AFTER_S2H
   Gate_S2H_next_fresh_independent_sealed_prompt_set: CANCELLED_SUPERSEDED_BY_S2I
   Gate_S2I_frontier_agent_path_and_final_sealed_acceptance: REQUIRED_BLOCKING_S3
-  Gate_S2I_A_tactical_knowledge_pack: PASS_LOCAL_PENDING_BROADER_S2_REGRESSION
+  Gate_S2I_A_tactical_knowledge_pack: PASS_CONTROLLER_FRONTIER_CONTEXT
   Gate_S2I_B_frontier_and_hermes_provisioning_spike: PASS_CONTROLLER
   Gate_S2I_C_tactical_mcp_adapter_and_hermes_validation: PASS_CONTROLLER
+  Gate_S2I_D_unseeded_frontier_agent_plan_authoring: PASS_CONTROLLER
+  Gate_S2I_E_frontier_configuration_freeze_and_final_eval: REQUIRED_BLOCKING_S3
   Gate_Workbench_Alpha_query_to_replay: REQUIRED_BLOCKING_S3
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
@@ -232,7 +236,7 @@ evidence:
   S2I_A_tactical_knowledge_pack:
     knowledge_pack_json: generated/tactical-knowledge-pack.json
     knowledge_pack_markdown: generated/tactical-knowledge-pack.md
-    knowledge_pack_sha256: 28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854
+    knowledge_pack_sha256: 49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e
     verification_report: artifacts/m1.2/gate-s2i-verification-report.json
     verification_command: make m1-2-gate-s2i-verify
     verification_summary:
@@ -247,7 +251,7 @@ evidence:
       compact_json_chars: 119542
       compact_json_approx_chars_per_4_tokens: 29885
     search_recipes_status: IMPLEMENTED_SCHEMA_VALIDATED_SAFE_SUMMARY_ONLY
-    acceptance_blocker: make_m1_2_gate_s2_verify_must_complete_once
+    small_model_regression_role: CONTROL_ONLY_NOT_FRONTIER_BLOCKER
   S2I_B_frontier_and_hermes_provisioning_spike:
     provisioning_report: artifacts/m1.2/s2i-b-provisioning-report.json
     local_review: docs/reviews/2026-06-21-m1-2-s2i-b-provisioning.md
@@ -336,9 +340,52 @@ evidence:
     stopped_before_execution: true
     autonomous_unseeded_plan_drafting_claimed: false
     report_sha256: 7fb6978013235d50b215dd2f05fcc41f6ba31bd6fc189de8c4bf4d550ca66e52
+  S2I_D_unseeded_frontier_agent_plan_authoring:
+    verification_report: artifacts/m1.2/s2i-d-unseeded-hermes-report.json
+    local_review: docs/reviews/2026-06-21-m1-2-s2i-d-unseeded-hermes-authoring.md
+    verification_command: make m1-2-gate-s2id-verify
+    verification_result: PASS_CONTROLLER
+    verification_summary:
+      passed: 20
+      failed: 0
+    hermes_version: "Hermes Agent v0.17.0 (2026.6.19), upstream 2b3a4f0a"
+    hermes_provider: openai-codex
+    hermes_model: gpt-5.5
+    hermes_reasoning_effort: xhigh
+    hermes_config_sha256: e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237
+    knowledge_pack_sha256: 49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e
+    report_sha256: bdb8eff6a75b5c4f8d4a44a1602c862ac740324a79e6a3a59996175f67d2fa72
+    live_runs:
+      - label: any_progressive_corridor
+        session_id: "20260621_220512_1d38ec"
+        draft_plan_id: draft_496efd224daf3c31
+        bound_plan_id: bound_2179b7a023359695
+        bound_plan_hash: 2179b7a0233596959d5122e17110cdc541bb79115d66b9676e012d2a1ff92336
+        parameters:
+          minimum_progression_m: 5.0
+          minimum_duration_seconds: 0.4
+      - label: twelve_metres_open_point_eight_seconds
+        session_id: "20260621_221026_2eacf0"
+        draft_plan_id: draft_4f4a534a0b4fd356
+        bound_plan_id: bound_a622811f41c9f5d0
+        bound_plan_hash: a622811f41c9f5d04b8f666e5d8b819164935523cbec1d1b470fd0f012777fd2
+        parameters:
+          minimum_progression_m: 12.0
+          minimum_duration_seconds: 0.8
+    proof_claims:
+      unseeded_prompt_no_plan_json: true
+      recipe_capability_discovery: true
+      hermes_authored_experimental_plan: true
+      deterministic_validation: true
+      material_parameter_delta: true
+      stopped_before_execution: true
+      host_only_tools_absent: true
+      no_filesystem_terminal_python_sql_raw_data_tools: true
+      mcp_adapter_still_thin: true
+    implementation_note: "S2I-D required exposing recipe authoring contracts through describe_capability. This is knowledge-surface disclosure from existing recipe documents, not tactical runtime logic or execution authority."
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: READY_FOR_NARROW_S2I_C_PACKET_IF_DESIRED
-  scope: "S2I-C Tactical MCP integration is controller-verified: Hermes sees exactly the bounded product allowlist, host-only execution and confirmation tools are absent, resources/prompts are disabled, and one live Hermes session listed/searched/described capabilities, submitted a seeded experimental plan, validated it, and stopped before execution. This does not claim fully autonomous unseeded plan drafting. Next start Workbench Alpha 1 against the host application service while preserving MCP as the Hermes adapter path."
+  external_review: READY_AFTER_FRONTIER_FREEZE_OR_NOW_IF_DESIRED
+  scope: "S2I-D is controller-verified: real Hermes under the restricted priori_tactical toolset handled two unseeded football-language requests, discovered recipe/capability context, authored EXPERIMENTAL typed plans, submitted and validated them deterministically, produced different bound-plan hashes for different tactical parameters, and stopped before execution. Next freeze frontier configuration and run final evaluation while Workbench Alpha proceeds in parallel."

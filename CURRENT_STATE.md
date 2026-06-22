@@ -6,8 +6,8 @@ Date: 2026-06-21
 
 - Branch: `codex/m1-1-s1-ir-binder`
 - Latest committed controller checkpoint before this snapshot:
-  `464b9a8 Verify Hermes install and S2I-B pass`
-- Working tree: scoped S2I-C Tactical MCP adapter integration; existing untracked review packets, primitive-audit artifacts, and `docs/learnings.zip` remain outside this snapshot.
+  `f2f5be8 Add primitive layer audit planning artifacts`
+- Working tree: scoped S2I-D frontier/Hermes authoring integration; existing untracked review packets and `docs/learnings.zip` remain outside this snapshot.
 - Current product source of truth:
   - `delivery/m1.2/SPEC.md`
   - `delivery/m1.2/status.yaml`
@@ -152,8 +152,7 @@ The existing app directory is `apps/replay-proof`, used for earlier replay proof
 
 ## S2I-A Tactical Knowledge Pack
 
-Implemented and locally verified; formal acceptance is pending one successful
-broader S2 regression run:
+Implemented and controller-verified for the frontier/Hermes path:
 
 - JSON: `generated/tactical-knowledge-pack.json`
 - Markdown: `generated/tactical-knowledge-pack.md`
@@ -189,15 +188,42 @@ adapter to submit and validate a seeded experimental plan through the host
 boundary, then stop before execution. It does not yet prove fully autonomous
 natural-language plan drafting from summary-only context.
 
-## Known Gaps After S2I-C
+## S2I-D Unseeded Hermes Authoring
 
-- Fully autonomous Hermes drafting from natural language, without a seeded plan
-  document, has not yet passed as a product claim.
+Controller-verified:
+
+- Report: `artifacts/m1.2/s2i-d-unseeded-hermes-report.json`
+- Local review: `docs/reviews/2026-06-21-m1-2-s2i-d-unseeded-hermes-authoring.md`
+- Verification: `make m1-2-gate-s2id-verify`
+- Result: `20 pass / 0 fail`
+- Hermes provider/model: `openai-codex` / `gpt-5.5`
+- Reasoning effort: `xhigh`
+- Tactical Knowledge Pack SHA-256:
+  `49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e`
+- Hermes config SHA-256:
+  `e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237`
+
+Live unseeded runs:
+
+- `20260621_220512_1d38ec`: "Find possession anchors with any progressive
+  corridor" -> `bound_2179b7a023359695`, default `5.0m` progression and `0.4s`
+  duration.
+- `20260621_221026_2eacf0`: "Find corridors progressing at least 12 metres,
+  remaining open for 0.8 seconds" -> `bound_a622811f41c9f5d0`, `12.0m`
+  progression and `0.8s` duration.
+
+S2I-D required one knowledge-surface repair: `describe_capability` now describes
+recipe IDs and returns a declarative authoring contract derived from checked-in
+recipe documents. This is not tactical runtime logic and does not expose host
+execution.
+
+## Known Gaps After S2I-D
+
 - Initial high/xhigh comparison has run outside full Workbench context and
   currently recommends `xhigh`; final product-runtime acceptance still needs the
   post-freeze sealed path.
-- One broader S2 regression run must still complete successfully before S2I-A is
-  formally accepted.
+- The old small-model S2 regression lane remains useful as control coverage, but
+  it is no longer a frontier-runtime acceptance blocker.
 - No final sealed acceptance set has been run against the intended frontier/Hermes path.
 
 ## S2I-B Provisioning Spike
@@ -229,20 +255,17 @@ Provisioning proof is now green:
 
 ## Next Roadmap State
 
-The next implementation milestone is Workbench Alpha 1, with the Tactical MCP
-adapter preserved as the Hermes path and the direct compiler harness preserved
-only as a control/evaluation fallback.
+The next frontier milestone is S2I-E: freeze the Hermes/frontier configuration
+and run final evaluation. Workbench Alpha 1 continues in parallel as the visible
+product path.
 
-S2I still needs final product-runtime acceptance after Workbench context is
-stable:
+S2I-E should:
 
 1. Keep the Tactical MCP allowlist strict and host-owned.
-2. Record the knowledge-pack hash in future Hermes session traces.
-3. Do not expose host confirmation or execution to Hermes.
-4. Add richer knowledge retrieval or explicit drafting support only if needed by
-   a bounded Hermes drafting milestone.
-5. Run one final independent sealed acceptance set after the product runtime is
-   frozen.
+2. Freeze Hermes provider/model/reasoning/toolset/config hashes.
+3. Keep the direct small-model compiler harness as regression/control only.
+4. Run final frontier evaluation against the frozen Hermes path.
+5. Do not expose host confirmation or execution to Hermes.
 
 Workbench Alpha should start in parallel against stable deterministic contracts:
 

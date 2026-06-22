@@ -575,6 +575,15 @@ def describe_capability(
             payload = item.model_dump(mode="json") if isinstance(item, BaseModel) else item
             if payload.get("name") == capability_name:
                 return {"kind": collection_name[:-1], **payload}
+    for path in RECIPE_PLAN_PATHS:
+        document = read_json(path)
+        recipe = document["recipe"]
+        if recipe.get("recipe_id") == capability_name:
+            return {
+                "kind": "recipe",
+                **recipe_summary_from_document(document),
+                "authoring_contract": recipe_authoring_contract(document),
+            }
     raise CapabilityGap(f"Unsupported capability: {capability_name}")
 
 
@@ -626,23 +635,85 @@ def recipe_summaries() -> list[dict[str, Any]]:
     summaries = []
     for path in RECIPE_PLAN_PATHS:
         document = read_json(path)
-        recipe = document["recipe"]
-        state = "APPROVED" if recipe["recipe_id"] == TRUSTED_M1_RECIPE_ID else "EXPERIMENTAL"
-        summaries.append(
-            {
-                "recipe_id": recipe["recipe_id"],
-                "recipe_version": recipe["recipe_version"],
-                "state": state,
-                "display_name": recipe["display_name"],
-                "description": recipe["description"],
-                "output_classifications": recipe.get("output_classifications", []),
-                "allowed_claims": recipe.get("allowed_claims", []),
-                "disallowed_claims": recipe.get("disallowed_claims", []),
-                "limitations": recipe.get("limitations", []),
-                "parameters": recipe.get("parameters", []),
-            }
-        )
+        summaries.append(recipe_summary_from_document(document))
     return summaries
+
+
+def recipe_summary_from_document(document: dict[str, Any]) -> dict[str, Any]:
+    recipe = document["recipe"]
+    state = "APPROVED" if recipe["recipe_id"] == TRUSTED_M1_RECIPE_ID else "EXPERIMENTAL"
+    return {
+        "recipe_id": recipe["recipe_id"],
+        "recipe_version": recipe["recipe_version"],
+        "state": state,
+        "display_name": recipe["display_name"],
+        "description": recipe["description"],
+        "output_classifications": recipe.get("output_classifications", []),
+        "allowed_claims": recipe.get("allowed_claims", []),
+        "disallowed_claims": recipe.get("disallowed_claims", []),
+        "limitations": recipe.get("limitations", []),
+        "parameters": recipe.get("parameters", []),
+    }
+
+
+def recipe_authoring_contract(document: dict[str, Any]) -> dict[str, Any]:
+    """Return the bounded schema contract for authoring a recipe-shaped plan.
+
+    This is intentionally declarative. It exposes names, refs, and safe wiring
+    already present in the recipe document, but no runtime calculation logic,
+    raw data, or execution authority.
+    """
+
+    draft_plan = document["draft_plan"]
+    default_invocation = document["default_invocation"]
+    return {
+        "plan_document_shape": ["schema_version", "recipe", "default_invocation", "draft_plan"],
+        "default_invocation_contract": {
+            "match_ids": default_invocation.get("match_ids", []),
+            "periods": default_invocation.get("periods", []),
+            "perspective_team_role": default_invocation.get("perspective_team_role"),
+            "execution_mode_for_validation": "bind_only",
+            "max_results_ceiling": default_invocation.get("max_results"),
+        },
+        "draft_plan_defaults": {
+            "recipe_id": draft_plan.get("recipe_id"),
+            "recipe_version": draft_plan.get("recipe_version"),
+            "status": draft_plan.get("status"),
+            "unknown_evidence_policy": draft_plan.get("unknown_evidence_policy"),
+            "classification_mode": draft_plan.get("classification_mode"),
+            "anchor_source": draft_plan.get("anchor_source"),
+            "complexity_limits": draft_plan.get("complexity_limits"),
+        },
+        "authorable_nodes": [
+            {
+                "kind": node.get("kind"),
+                "catalog_ref": node.get("catalog_ref"),
+                "version": node.get("version"),
+                "required_inputs": node.get("inputs", {}),
+                "parameters": node.get("parameters", {}),
+            }
+            for node in draft_plan.get("nodes", [])
+            if node.get("kind") in {"primitive", "relation"}
+        ],
+        "required_predicates": [
+            {
+                "input": node.get("input"),
+                "operator": node.get("operator"),
+                "compare": node.get("compare"),
+                "duration": node.get("duration"),
+            }
+            for node in draft_plan.get("nodes", [])
+            if node.get("kind") == "predicate"
+        ],
+        "classification_rules": draft_plan.get("classification_rules", []),
+        "requested_evidence": draft_plan.get("requested_evidence", []),
+        "constraints": [
+            "The authored plan must keep status=experimental for Hermes.",
+            "Use bind_only when validating interpretation; host execution is separate.",
+            "exists/count_at_least may only consume anchor_evaluations.",
+            "Do not request raw match dumps, primitive mutation, confirmation, or execution.",
+        ],
+    }
 
 
 def normalized_search_terms(query: str) -> list[str]:
