@@ -38,8 +38,16 @@ The acceptance suite covers:
   timestamp inspection;
 - experimental corridor query through the same path;
 - clarification, capability-gap, model-unavailable, and manual fallback states;
+- honest interpretation source labels for manual preset and manual host
+  interpreter paths;
+- generated success and error response contract validation;
+- host-owned execution cache status, cache-hit proof after execution, and
+  visible cache progress;
+- public replay DTO sanitization: no `plan_path`, no local filesystem paths, and
+  stable logical canonical-source IDs;
 - public API denial checks for forged authorization, compatibility-profile
-  override, unconfirmed execution, local artifact paths, and host-only routes;
+  override, unconfirmed execution, cache-hit authorization bypass, local artifact
+  paths, and host-only routes;
 - frontend source scanning for hardcoded result IDs, match timestamps,
   coordinates, replay frames, and fallback tactical moments.
 

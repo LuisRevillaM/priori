@@ -1,6 +1,6 @@
 milestone: M1.2
 name: "Grounded Tactical Query Workshop"
-state: S2I_E_FRONTIER_CONFIGURATION_FROZEN_FINAL_INDEPENDENT_EVAL_NEXT
+state: S2I_F_FINAL_INDEPENDENT_EVAL_HARNESS_READY_EXTERNAL_SET_REQUIRED
 source_of_truth: delivery/m1.2/SPEC.md
 last_updated: "2026-06-22"
 preconditions:
@@ -35,9 +35,9 @@ slices:
   S2I_C_tactical_mcp_adapter_and_hermes_validation: DONE_CONTROLLER_VERIFIED
   S2I_D_unseeded_frontier_agent_plan_authoring: DONE_CONTROLLER_VERIFIED
   S2I_E_frontier_configuration_freeze: DONE_CONTROLLER_VERIFIED_FINAL_EVAL_PENDING
-  S2I_E_final_independent_evaluation: REQUIRED_BLOCKING_S3
-  Workbench_Alpha_1_query_to_result_shell: NEXT_PARALLEL_TRACK_B
-  Workbench_Alpha_2_evidence_and_replay: PLANNED_AFTER_ALPHA_1
+  S2I_F_final_independent_frontier_evaluation: HARNESS_READY_EXTERNAL_SET_REQUIRED_BLOCKING_S3
+  Workbench_Alpha_1_query_to_result_shell: DONE_CONTROLLER_VERIFIED
+  Workbench_Alpha_2_evidence_and_replay: DONE_CONTROLLER_VERIFIED_MINIMAL_R1_HARDENED
   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
 promotion_gates:
   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
@@ -64,8 +64,8 @@ promotion_gates:
   Gate_S2I_C_tactical_mcp_adapter_and_hermes_validation: PASS_CONTROLLER
   Gate_S2I_D_unseeded_frontier_agent_plan_authoring: PASS_CONTROLLER
   Gate_S2I_E_frontier_configuration_freeze: PASS_CONTROLLER
-  Gate_S2I_E_final_independent_evaluation: REQUIRED_BLOCKING_S3
-  Gate_Workbench_Alpha_query_to_replay: REQUIRED_BLOCKING_S3
+  Gate_S2I_F_final_independent_frontier_evaluation: REQUIRED_BLOCKING_S3_EXTERNAL_SET_REQUIRED
+  Gate_Workbench_Alpha_query_to_replay: PASS_CONTROLLER
   Gate_S3_revision_recipe_loop: NOT_STARTED
 verification:
   automated: PASS_FOR_S0_S1_S2
@@ -428,9 +428,43 @@ evidence:
       status: PENDING_EXTERNAL_INDEPENDENT_SET
       required_before_s3: true
     non_claim: "S2I-E freezes configuration and provenance only; it does not claim final sealed acceptance."
+  S2I_F_final_independent_frontier_evaluation:
+    verifier: src/tqe/verification/m1_2_gate_s2if.py
+    verification_command: make m1-2-gate-s2if-verify
+    report: artifacts/m1.2/s2i-f-final-independent-evaluation-report.json
+    default_sealed_set_path: config/evaluation/m1_2_s2i_final_independent_set.json
+    env_override: S2I_FINAL_EVAL_SET
+    status: HARNESS_READY_FAILS_CLOSED_WITHOUT_EXTERNAL_SET
+    product_route: "Hermes Agent over local stdio Tactical MCP, provider openai-codex, model gpt-5.5, reasoning xhigh"
+    scoring:
+      supported_accuracy: ">= 0.90"
+      ambiguous_accuracy: ">= 0.90"
+      unsupported_accuracy: "1.00"
+      schema_valid_or_refusal: "1.00"
+      unauthorized_calls: 0
+      unconfirmed_executions: 0
+    non_claim: "The harness is executable gate infrastructure, not acceptance evidence until an independently authored sealed set is supplied and passes."
+  Workbench_Alpha_R1:
+    commit: 36649b3
+    verification_command: make workbench-alpha-verify
+    verification_result: PASS_CONTROLLER
+    local_acceptance_doc: apps/workbench-alpha/ACCEPTANCE.md
+    proof_claims:
+      query_to_replay_real_data: true
+      approved_recipe_flow: true
+      experimental_corridor_flow: true
+      coordinate_replay: true
+      evidence_panel: true
+      predicate_trace_panel: true
+      known_timestamp_inspection: true
+      sanitized_replay_public_dto: true
+      generated_contract_drift_check: true
+      host_owned_execution_cache_and_progress: true
+      honest_manual_source_labels: true
+      host_authorization_required_for_cache_hits: true
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: READY_FOR_FINAL_EVALUATION_SET_OR_S2I_PACKET
-  scope: "S2I-E is controller-verified: the intended Hermes product route is frozen as openai-codex/gpt-5.5/xhigh over the restricted priori_tactical MCP toolset, with direct API control evidence for exact gpt-5.5-2026-04-23 access. Final independent evaluation remains required before S3; Workbench Alpha proceeds in parallel."
+  external_review: REQUEST_FINAL_INDEPENDENT_S2I_EVALUATION_SET
+  scope: "Workbench Alpha query-to-replay is controller-verified at commit 36649b3. S2I-F final-evaluation harness is ready and fails closed until an independently authored sealed set is supplied. S3 remains blocked only on that final Hermes/frontier evaluation."

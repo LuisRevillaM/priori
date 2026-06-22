@@ -7,11 +7,17 @@ Source of truth: `CURRENT_STATE.md`, `delivery/m1.2/SPEC.md`,
 
 ## Current Decision
 
-Roadmap commit `4e78390` remains the active source of truth.
+Roadmap commit `4e78390` remains the active source of truth, amended by the
+accepted S2I rebaseline and Workbench Alpha R1 hardening commits through
+`36649b3`.
 
 Clarification from external review: S3 is blocked on a working frontier-agent
 path and a minimal query-to-replay workbench. It is not blocked on a finished,
 polished UI.
+
+As of commit `36649b3`, the Workbench side of that entry requirement is
+controller-verified with `make workbench-alpha-verify`. The remaining S3 blocker
+is the final independent evaluation against the frozen Hermes/frontier route.
 
 ## Track A - S2I-A/B
 
@@ -128,6 +134,8 @@ Scope:
 - capability-gap state;
 - model-unavailable state.
 
+Status: **DONE_CONTROLLER_VERIFIED** at commit `36649b3`.
+
 Hard acceptance:
 
 - one approved query and one experimental query execute end to end;
@@ -159,6 +167,58 @@ Add evidence and replay after Alpha 1:
 
 Replay should use real `execution_id`, `result_id`, and `replay_window_id`
 handles. The browser must not rerun or infer result moments.
+
+Status: **DONE_CONTROLLER_VERIFIED_MINIMAL_R1_HARDENED** at commit `36649b3`.
+The implementation also now sanitizes public replay DTOs, validates generated
+error contracts, exposes host-owned cache progress, and labels manual
+interpretation sources honestly.
+
+## Track A Final - S2I-F
+
+Outcome:
+
+> A fresh independently authored sealed set passes against the frozen
+> Hermes/frontier product route.
+
+The executable gate is:
+
+```bash
+make m1-2-gate-s2if-verify
+```
+
+By default it reads:
+
+```text
+config/evaluation/m1_2_s2i_final_independent_set.json
+```
+
+or a caller can provide:
+
+```bash
+S2I_FINAL_EVAL_SET=/path/to/external-set.json make m1-2-gate-s2if-verify
+```
+
+The gate fails closed when the external set is absent. It must run the frozen
+route:
+
+```text
+Hermes Agent
+-> openai-codex / gpt-5.5 / xhigh
+-> local stdio priori_tactical MCP
+-> bounded validate-only tactical tools
+```
+
+Acceptance remains:
+
+- supported accuracy at least 90%;
+- ambiguous accuracy at least 90%;
+- unsupported accuracy exactly 100%;
+- schema-valid-or-refusal exactly 100%;
+- unauthorized calls: 0;
+- unconfirmed executions: 0.
+
+Do not use old `gpt-4o-mini` sealed sets as final acceptance evidence. They are
+diagnostic history only.
 
 ## S3 Entry Criteria
 
