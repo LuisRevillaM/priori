@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `9a3adec72ec3350a7805491dd9b2cff30ec15f2af005e693d72840f47fd5b25d`
+SHA-256: `9a58b26f1426b9bfc7c61a531a8dfb05fd885cf035b925310594868a1f75160b`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -120,7 +120,7 @@ Disallowed claims:
 
 ## Source Hashes
 
-- `Makefile`: `e2fb538d4b3dc69f4f21912861562a9cc0372d1d8e74577005b89a5e7580f4b5`
+- `Makefile`: `9af6ba9c2274ea9bd2cf28035eb2ad6110f80369b02e123eec5d775fe8d8e459`
 - `config/query-plans/ball_side_block_shift.ir.v1.json`: `877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945`
 - `config/query-plans/opposite_corridor_after_shift.experimental.v1.json`: `9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74`
 - `config/query-plans/possession_corridor_availability.experimental.v1.json`: `81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde`

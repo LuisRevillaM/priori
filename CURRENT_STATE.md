@@ -5,7 +5,8 @@ Date: 2026-06-21
 ## Repository State
 
 - Branch: `codex/m1-1-s1-ir-binder`
-- Latest commit: `f9eb5d8 Harden M1.2 S2H vocabulary drift handling`
+- Latest committed controller checkpoint before this snapshot:
+  `bd67c96 Implement search_recipes and hold S2I-A acceptance`
 - Working tree: no tracked modifications at snapshot time; existing untracked review packets and `docs/learnings.zip` remain outside this snapshot.
 - Current product source of truth:
   - `delivery/m1.2/SPEC.md`
@@ -139,7 +140,7 @@ broader S2 regression run:
 
 - JSON: `generated/tactical-knowledge-pack.json`
 - Markdown: `generated/tactical-knowledge-pack.md`
-- Pack SHA-256: `44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6`
+- Pack SHA-256: `9a58b26f1426b9bfc7c61a531a8dfb05fd885cf035b925310594868a1f75160b`
 - Verification: `make m1-2-gate-s2i-verify`
 - Local verification report:
   `docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md`
@@ -152,11 +153,33 @@ target keeps `execute_query_plan` and `host_confirm_bound_plan` host-only.
 ## Known Gaps Before S2I-B
 
 - No real Hermes MCP adapter is wired to the bounded tool surface.
-- No GPT-5.5 Responses adapter has been implemented or benchmarked.
-- No high/xhigh effort comparison has been run.
+- GPT-5.5 direct Responses API access has been probed successfully, but no
+  Hermes-backed adapter has run it yet.
+- Initial high/xhigh comparison has run outside Hermes context and recommends
+  `high` until Hermes-context evaluation proves otherwise.
 - One broader S2 regression run must still complete successfully before S2I-A is
   formally accepted.
 - No final sealed acceptance set has been run against the intended frontier/Hermes path.
+- No local `hermes` or `hermes-agent` executable is currently available; Hermes
+  must be installed/configured with ChatGPT/Codex subscription login before the
+  full S2I-B gate can pass.
+
+## S2I-B Provisioning Spike
+
+Partial proof exists:
+
+- Report: `artifacts/m1.2/s2i-b-provisioning-report.json`
+- Local review: `docs/reviews/2026-06-21-m1-2-s2i-b-provisioning.md`
+- Result: `7 pass / 1 fail`
+- Failing check: `hermes.executable_available`
+- Requested model: `gpt-5.5-2026-04-23`
+- Returned model: `gpt-5.5-2026-04-23`
+- Strict structured output: pass
+- `high` reasoning: pass
+- `xhigh` reasoning: pass
+- Product MCP allowlist excludes host-only execution and confirmation tools.
+- Tactical tool proof submits and validates the experimental corridor plan, then
+  stops before execution.
 
 ## Known Gaps Before Workbench Alpha
 

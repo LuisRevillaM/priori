@@ -24,7 +24,8 @@ or initiate execution.
 - `src/tqe/workshop/knowledge_pack.py`
 - `src/tqe/verification/m1_2_gate_s2i.py`
 - `make m1-2-gate-s2i-verify`
-- Pack SHA-256: `44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6`
+- Current pack SHA-256 after S2I-B Makefile source-hash update:
+  `9a58b26f1426b9bfc7c61a531a8dfb05fd885cf035b925310594868a1f75160b`
 - S2I-A local review:
   `docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md`
 
