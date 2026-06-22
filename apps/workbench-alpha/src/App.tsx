@@ -336,6 +336,9 @@ export function App() {
     if (payload.status === "PLAN_INTERPRETED" && payload.plan_document) {
       setPlanDocument(applyScopeToPlan(payload.plan_document, selectedMatchIds));
       clearScopeDependentState();
+    } else {
+      setPlanDocument(null);
+      clearScopeDependentState();
     }
   }
 
@@ -483,13 +486,7 @@ export function App() {
     const targetEntity = targetPlayerId
       ? currentFrame?.entities.find((entity) => entity.entity_id === targetPlayerId)
       : null;
-    const witnessFrameId = targetPlayerId
-      ? replay?.frames.find((frame) => {
-          const hasBall = frame.entities.some((entity) => entity.entity_type === "ball");
-          const hasTarget = frame.entities.some((entity) => entity.entity_id === targetPlayerId);
-          return hasBall && hasTarget;
-        })?.frame_id
-      : null;
+    const witnessFrameId = targetPlayerId ? Number(replay?.anchor_frame_id) : null;
     if (ball && targetEntity && currentFrame?.frame_id === witnessFrameId) {
       return `Witness-frame corridor: ball to selected receiver`;
     }

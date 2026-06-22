@@ -100,6 +100,16 @@ async function capture(page: Page, name: string) {
   });
 }
 
+async function setReplayFrame(page: Page, frameIndex: number) {
+  await page.getByTestId("replay-scrubber").evaluate((element, value) => {
+    const input = element as HTMLInputElement;
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    setter?.call(input, String(value));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, frameIndex);
+}
+
 function summarizePayload(payload: unknown): Record<string, unknown> {
   const record = payload as Record<string, unknown>;
   const execution = record.execution as Record<string, unknown> | undefined;
@@ -180,13 +190,15 @@ async function runRealQueryJourney(
     "interpret-button",
     "/api/interpret"
   );
+  const expectedProvenance = label === "approved" ? "REVIEWED_RECIPE" : "MANUAL_PRESET";
+  const expectedSourceLabel = label === "approved" ? "Reviewed recipe" : "Manual preset";
   expect(interpretation.status).toBe("PLAN_INTERPRETED");
-  expect(interpretation.provenance_source).toBe("MANUAL_PRESET");
+  expect(interpretation.provenance_source).toBe(expectedProvenance);
   await expect(page.getByTestId("interpreted-plan-panel")).toContainText("PLAN_INTERPRETED");
-  await expect(page.getByTestId("interpretation-source")).toContainText("Manual preset");
+  await expect(page.getByTestId("interpretation-source")).toContainText(expectedSourceLabel);
   await expect(page.getByTestId("interpretation-source").locator("code")).toHaveCount(0);
   expect(await page.getByTestId("interpretation-source").getAttribute("data-raw-source")).toBe("manual_host_interpreter");
-  expect(await page.getByTestId("interpretation-source").getAttribute("data-provenance-source")).toBe("MANUAL_PRESET");
+  expect(await page.getByTestId("interpretation-source").getAttribute("data-provenance-source")).toBe(expectedProvenance);
   await expect(page.getByTestId("confirm-button")).toBeDisabled();
   await expect(page.getByTestId("execute-button")).toBeDisabled();
   await capture(page, `${label}-interpretation`);
@@ -280,7 +292,7 @@ async function runRealQueryJourney(
   };
   if (label === "experimental" && typeof selectedEvidence.target_player_id === "string") {
     const targetPlayerId = selectedEvidence.target_player_id;
-    const anchorFrameId = Number(selectedResult.anchor_frame_id);
+    const anchorFrameId = Number(replay.anchor_frame_id);
     const exactFrameIndex = (replayFrames as Array<Record<string, unknown>>).findIndex((frame) => {
       const entities = (frame.entities ?? []) as Array<Record<string, unknown>>;
       return frame.frame_id === anchorFrameId &&
@@ -288,12 +300,7 @@ async function runRealQueryJourney(
         entities.some((entity) => entity.entity_id === targetPlayerId);
     });
     expect(exactFrameIndex).toBeGreaterThanOrEqual(0);
-    await page.getByTestId("replay-scrubber").evaluate((element, value) => {
-      const input = element as HTMLInputElement;
-      input.value = String(value);
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      input.dispatchEvent(new Event("change", { bubbles: true }));
-    }, exactFrameIndex);
+    await setReplayFrame(page, exactFrameIndex);
     await expect(page.getByTestId("overlay-proof")).toContainText("Witness-frame corridor");
     overlayEvidenceCorrelation = {
       mode: "witness_frame_corridor",
@@ -318,12 +325,7 @@ async function runRealQueryJourney(
   await expect(page.getByTestId("play-pause-button")).toHaveText("Pause");
   await page.getByTestId("play-pause-button").click();
   await expect(page.getByTestId("play-pause-button")).toHaveText("Play");
-  await page.getByTestId("replay-scrubber").evaluate((element, value) => {
-    const input = element as HTMLInputElement;
-    input.value = String(value);
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-  }, Math.min(3, replayFrames.length - 1));
+  await setReplayFrame(page, Math.min(3, replayFrames.length - 1));
 
   const alternateResult = results[1];
   let selectedInspection = inspection;
@@ -498,8 +500,56 @@ test("model-unavailable UI and backend clarification/gap contracts remain explic
     "/api/interpret"
   );
   expect(manualInterpretation.status).toBe("PLAN_INTERPRETED");
-  expect(manualInterpretation.provenance_source).toBe("MANUAL_PRESET");
+  expect(manualInterpretation.provenance_source).toBe("REVIEWED_RECIPE");
   await expect(page.getByTestId("validate-button")).toBeEnabled();
+
+  const validation = await jsonAfterClick<Record<string, unknown>>(
+    page,
+    [],
+    "state.validate_before_non_plan_reinterpret",
+    "validate-button",
+    "/api/submit-validate"
+  );
+  const boundPlanId = String((validation.validation as Record<string, unknown>).bound_plan_id);
+  await expect(page.getByTestId("validation-result")).toContainText(boundPlanId);
+
+  let intercepted = false;
+  await page.route("**/api/interpret", async (route) => {
+    if (intercepted) {
+      await route.continue();
+      return;
+    }
+    intercepted = true;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        status: "MODEL_UNAVAILABLE",
+        provenance_source: "MODEL_UNAVAILABLE",
+        query: "",
+        source: "hermes_frontier_agent",
+        message: "Synthetic model-unavailable state.",
+        model_session_id: null,
+        manual_available: true,
+        repair_applied: false,
+        fallback_reason: "test_model_unavailable"
+      })
+    });
+  });
+  const staleClear = await jsonAfterClick<Record<string, unknown>>(
+    page,
+    [],
+    "state.non_plan_reinterpret_clears_validation",
+    "interpret-button",
+    "/api/interpret"
+  );
+  expect(staleClear.status).toBe("MODEL_UNAVAILABLE");
+  await expect(page.getByTestId("validation-result")).not.toContainText(boundPlanId);
+  await expect(page.getByTestId("validate-button")).toBeDisabled();
+  await expect(page.getByTestId("confirm-button")).toBeDisabled();
+  await expect(page.getByTestId("execute-button")).toBeDisabled();
+  await page.unroute("**/api/interpret");
   await capture(page, "state-model-unavailable-manual-recovery");
 
   expect(consoleErrors).toEqual([]);

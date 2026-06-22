@@ -4,11 +4,14 @@ from copy import deepcopy
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from tqe.runtime.ir import ExecutionStatus, QueryExecution, TacticalQueryDocument
 from tqe.workshop.app_service import (
     execution_cache_key,
+    hermes_python_executable,
     host_owned_plan_document,
+    interpret_request,
     load_plan_from_path,
     match_library,
 )
@@ -92,6 +95,17 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         self.assertTrue(all(item["match_title"] and item["home_team"] and item["away_team"] for item in payload["matches"]))
         self.assertTrue(all("match_day" in item and "kickoff_time_utc" in item for item in payload["matches"]))
 
+    def test_manual_interpretation_distinguishes_reviewed_recipe_from_manual_preset(self) -> None:
+        approved = interpret_request({"mode": "manual", "query": "", "preset_id": "approved_block_shift"})
+        experimental = interpret_request({"mode": "manual", "query": "", "preset_id": "experimental_corridor"})
+
+        self.assertEqual("PLAN_INTERPRETED", approved["status"])
+        self.assertEqual("REVIEWED_RECIPE", approved["provenance_source"])
+        self.assertEqual("ball_side_block_shift_v1", approved["recipe_id"])
+        self.assertEqual("PLAN_INTERPRETED", experimental["status"])
+        self.assertEqual("MANUAL_PRESET", experimental["provenance_source"])
+        self.assertEqual("possession_corridor_availability_v1", experimental["recipe_id"])
+
     def test_scope_changes_bound_hash_cache_key_and_execution_record_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output_root = Path(directory)
@@ -143,6 +157,19 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
                 },
                 record["scope"],
             )
+
+    def test_hermes_python_falls_back_to_shebang_when_configured_path_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            python_path = root / "python3"
+            python_path.write_text("#!/bin/sh\n", encoding="utf-8")
+            python_path.chmod(0o755)
+            hermes_path = root / "hermes"
+            hermes_path.write_text(f"#!{python_path}\n", encoding="utf-8")
+            hermes_path.chmod(0o755)
+
+            with patch.dict("os.environ", {"WORKBENCH_HERMES_PYTHON": str(root / "missing-python")}, clear=False):
+                self.assertEqual(str(python_path), hermes_python_executable(str(hermes_path)))
 
 
 if __name__ == "__main__":

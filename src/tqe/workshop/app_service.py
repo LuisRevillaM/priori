@@ -665,7 +665,9 @@ def run_hermes_invocation(hermes: str, args: list[str], *, timeout: int) -> subp
 def hermes_python_executable(hermes: str) -> str:
     configured = os.environ.get("WORKBENCH_HERMES_PYTHON")
     if configured:
-        return configured
+        configured_path = shutil.which(configured) or configured
+        if Path(configured_path).exists():
+            return configured_path
     try:
         first_line = Path(hermes).read_text(encoding="utf-8").splitlines()[0]
     except OSError:
@@ -937,10 +939,11 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
 
     plan_document = load_plan_from_path(path)
     state = "APPROVED" if path == APPROVED_PLAN_PATH else "EXPERIMENTAL"
+    provenance_source = "REVIEWED_RECIPE" if state == "APPROVED" else "MANUAL_PRESET"
     return ok(
         {
             "status": "PLAN_INTERPRETED",
-            "provenance_source": "MANUAL_PRESET",
+            "provenance_source": provenance_source,
             "query": query,
             "source": "manual_host_interpreter",
             "recipe_id": str(plan_document.get("recipe", {}).get("recipe_id") or ""),

@@ -93,13 +93,7 @@ export function PitchCanvas({ replay, frameIndex, result }: PitchCanvasProps) {
     const target = targetPlayerId
       ? frame.entities.find((entity) => entity.entity_id === targetPlayerId)
       : null;
-    const witnessFrameId = targetPlayerId
-      ? replay.frames.find((item) => {
-          const hasBall = item.entities.some((entity) => entity.entity_type === "ball");
-          const hasTarget = item.entities.some((entity) => entity.entity_id === targetPlayerId);
-          return hasBall && hasTarget;
-        })?.frame_id
-      : null;
+    const witnessFrameId = targetPlayerId ? Number(replay.anchor_frame_id) : null;
     if (ball && target && frame.frame_id === witnessFrameId) {
       const start = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
       const end = pitchPointToPixel(target.x_m, target.y_m, replay.pitch, layout);
