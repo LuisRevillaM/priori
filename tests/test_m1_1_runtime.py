@@ -252,10 +252,14 @@ class M11RuntimeTests(unittest.TestCase):
 
         self.assertEqual("PASS", passing["entry_status"])
         self.assertEqual(103, passing["entry"]["frame_id"])
+        self.assertEqual("ENTERED_AFTER_OPEN", passing["entry_mode"])
         self.assertEqual("FAIL", failing["entry_status"])
+        self.assertEqual("NOT_ENTERED", failing["entry_mode"])
         self.assertEqual("UNKNOWN", unknown["entry_status"])
+        self.assertEqual("UNKNOWN", unknown["entry_mode"])
         self.assertIn("missing_ball_frames", unknown["unknown_reason"])
         self.assertEqual("PASS", passing_before_gap["entry_status"])
+        self.assertEqual("PRESENT_AT_OPEN", passing_before_gap["entry_mode"])
 
     def test_executor_does_not_branch_on_query_recipe_or_plan_identity(self) -> None:
         tree = ast.parse(Path("src/tqe/runtime/executor.py").read_text(encoding="utf-8"))

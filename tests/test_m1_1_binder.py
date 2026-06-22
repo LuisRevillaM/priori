@@ -9,7 +9,9 @@ from pathlib import Path
 
 from tqe.runtime.artifacts import expected_generated_artifacts
 from tqe.runtime.binder import BindError, bind_document, bind_document_from_path, bind_error_codes
+from tqe.runtime.catalog import default_catalog
 from tqe.runtime.ir import TacticalQueryDocument
+from tqe.runtime.values import FrameSignal, runtime_value_from_raw
 from tqe.verification.n1b import runtime_parameter_access_contract, unknown_destination_entry_fixture
 
 PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
@@ -148,6 +150,34 @@ class M11BinderTests(unittest.TestCase):
         contract = runtime_parameter_access_contract()
 
         self.assertEqual([], contract["undeclared_accesses"])
+
+    def test_declared_enum_output_domains_are_enforced_at_runtime(self) -> None:
+        entry = next(item for item in default_catalog().primitives if item.name == "relation_destination_entry")
+        output = next(item for item in entry.outputs if item.name == "entry_status")
+
+        runtime_value_from_raw(
+            node_id="destination_entry",
+            output=output,
+            raw_value=FrameSignal(
+                frame_ids=[100, 101, 102],
+                values=["PASS", "FAIL", None],
+                unknown_mask=[False, False, True],
+                unit=output.unit,
+                entity_scope=output.entity_scope,
+            ),
+        )
+        with self.assertRaisesRegex(RuntimeError, "outside"):
+            runtime_value_from_raw(
+                node_id="destination_entry",
+                output=output,
+                raw_value=FrameSignal(
+                    frame_ids=[100],
+                    values=["DESTINATION_ENTERED"],
+                    unknown_mask=[False],
+                    unit=output.unit,
+                    entity_scope=output.entity_scope,
+                ),
+            )
 
     def test_missing_required_node_input_fails_at_bind_time(self) -> None:
         payload = load_payload()

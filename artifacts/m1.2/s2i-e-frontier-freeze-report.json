@@ -77,7 +77,7 @@
       "ok": true
     }
   ],
-  "elapsed_ms": 381,
+  "elapsed_ms": 408,
   "freeze": {
     "direct_api_control_route": {
       "comparison_evidence": {
@@ -377,15 +377,15 @@
       "required_before_s3": true,
       "status": "PENDING_EXTERNAL_INDEPENDENT_SET"
     },
-    "generated_at": "2026-06-22T21:55:07+00:00",
+    "generated_at": "2026-06-22T22:20:45+00:00",
     "knowledge_and_schema_hashes": {
       "capability_context_path": "generated/capability-context.json",
       "capability_context_sha256": "0ef53564bf09c7b6e64d1ba8da1aff14bd7ce426b23e0dcb293eaf5256506fe4",
-      "knowledge_pack_file_sha256": "34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6",
+      "knowledge_pack_file_sha256": "7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962",
       "knowledge_pack_hash_kind": "file_sha256",
       "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-      "knowledge_pack_semantic_sha256": "dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd",
-      "knowledge_pack_sha256": "34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6",
+      "knowledge_pack_semantic_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0",
+      "knowledge_pack_sha256": "7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962",
       "mcp_server_path": "src/tqe/workshop/mcp_server.py",
       "mcp_server_sha256": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
       "workshop_service_path": "src/tqe/workshop/m1_2.py",
@@ -501,8 +501,8 @@
     "status": "FROZEN_PENDING_FINAL_INDEPENDENT_EVALUATION"
   },
   "freeze_path": "delivery/m1.2/frontier-runtime-freeze.json",
-  "freeze_sha256": "50573a029bb69ba9a92ca8a5de86b75a74584aaf10f5f51f285347ba76017f2a",
-  "generated_at": "2026-06-22T21:55:07+00:00",
+  "freeze_sha256": "554f7415c3f5a08f7508f8fa3a168c0866c4f880c61594d59cb474c2a4d057bb",
+  "generated_at": "2026-06-22T22:20:45+00:00",
   "milestone": "M1.2",
   "passed": true,
   "schema_version": "1.0",

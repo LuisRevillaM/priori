@@ -2563,6 +2563,7 @@ def primitive_relation_destination_entry_classification(
                 "destination_entry_frame_id": int(entry["frame_id"]) if entry else None,
                 "destination_entry_point": entry["point"] if entry else None,
                 "time_to_entry_seconds": entry_evaluation["time_to_entry_seconds"],
+                "entry_mode": entry_evaluation["entry_mode"],
                 "destination_entry_horizon_seconds": horizon_seconds,
                 "observed_window_start_frame_id": entry_evaluation["observed_window_start_frame_id"],
                 "observed_window_end_frame_id": entry_evaluation["observed_window_end_frame_id"],
@@ -3641,6 +3642,9 @@ def ball_entry_evaluation_into_destination_region(
             return {
                 "entry_status": "PASS",
                 "entry": entry,
+                "entry_mode": "PRESENT_AT_OPEN"
+                if int(row.frame_id) == start_frame_id
+                else "ENTERED_AFTER_OPEN",
                 "time_to_entry_seconds": round((int(row.frame_id) - start_frame_id) / FRAME_RATE_HZ, 3),
                 "observed_window_start_frame_id": start_frame_id,
                 "observed_window_end_frame_id": observed_end_frame_id,
@@ -3666,6 +3670,7 @@ def ball_entry_evaluation_into_destination_region(
         return {
             "entry_status": "UNKNOWN",
             "entry": None,
+            "entry_mode": "UNKNOWN",
             "time_to_entry_seconds": None,
             "observed_window_start_frame_id": start_frame_id,
             "observed_window_end_frame_id": observed_end_frame_id,
@@ -3675,6 +3680,7 @@ def ball_entry_evaluation_into_destination_region(
     return {
         "entry_status": "FAIL",
         "entry": None,
+        "entry_mode": "NOT_ENTERED",
         "time_to_entry_seconds": None,
         "observed_window_start_frame_id": start_frame_id,
         "observed_window_end_frame_id": observed_end_frame_id,

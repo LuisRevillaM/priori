@@ -1,0 +1,148 @@
+{
+  "data": {
+    "canonical_inventory_sha256": "8386ac9ae7d028fa45db536a38ecd4c6dfeb098c0a837018daa152491e83392c",
+    "canonical_root": "data/canonical/v1",
+    "deploy_manifest": {
+      "exists": true,
+      "path": "config/deploy/demo-data-manifest.json",
+      "sha256": "b213fa333c0493335ff4405a6e38ed30bafac67108db54ecabfbf957bea16b80"
+    }
+  },
+  "generated_at": "2026-06-22T15:15:37-07:00",
+  "hermes": {
+    "config_sha256": "e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237",
+    "configured_model": "gpt-5.5",
+    "provider": "openai-codex",
+    "reasoning_effort": "xhigh",
+    "system_instruction_sha256_values": [
+      "e1252b6e66c41d8fb49d7414573d7f0cdee6f6fddbb2677cee7c2cb64cfd4039"
+    ],
+    "version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream 2a58fee1\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUpdate available: 91 commits behind \u2014 run 'hermes update'"
+  },
+  "hero_question": {
+    "sha256": "4c0341c50842ea253a19959ca656a36b97ef4fa3bfb181db60f8a8bd68031fcf",
+    "text": "Show possessions where a progressive corridor opens within four seconds of possession starting, remains available for at least 0.8 seconds, and the ball enters that corridor's destination region within five seconds of the corridor opening."
+  },
+  "knowledge_pack": {
+    "capability_context": {
+      "exists": true,
+      "path": "generated/capability-context.json",
+      "sha256": "0ef53564bf09c7b6e64d1ba8da1aff14bd7ce426b23e0dcb293eaf5256506fe4"
+    },
+    "file_sha256": "7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962",
+    "path": "generated/tactical-knowledge-pack.json",
+    "semantic_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0"
+  },
+  "mcp": {
+    "adapter": {
+      "exists": true,
+      "path": "src/tqe/workshop/mcp_server.py",
+      "sha256": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817"
+    },
+    "server_name": "priori_tactical",
+    "tool_allowlist": [
+      "list_capabilities",
+      "search_recipes",
+      "describe_capability",
+      "submit_query_plan",
+      "validate_query_plan",
+      "inspect_result",
+      "inspect_non_match",
+      "retrieve_replay_window"
+    ],
+    "tool_allowlist_sha256": "98c8984d70bd1bedc0b3912583706949c732316af311b66c1ed2eac5bdd33231"
+  },
+  "n1_live_artifacts": {
+    "bound_plan": {
+      "exists": true,
+      "path": "artifacts/m1.2/workshop/handles/bound-plans/bound_f619f6c9677a4d2a.json",
+      "sha256": "51049c09ef678fef134806c8a43948e3ff5d7d25fe354ba5ca3af260df71625f"
+    },
+    "draft_plan": {
+      "exists": true,
+      "path": "artifacts/m1.2/workshop/handles/draft-plans/draft_26912b2c452106e8.json",
+      "sha256": "67b333728979d3cc7f7ed426754851bea93812a9e6ec94e41ad31015fcffef22"
+    },
+    "execution_handle": {
+      "exists": true,
+      "path": "artifacts/m1.2/workshop/handles/executions/exec_5466f201a479ba0f.json",
+      "sha256": "115c1a792ae40e735740e5efe4ad66b9a79fe20c0878bb5028c5f198b9d0ee78"
+    },
+    "execution_report": {
+      "exists": true,
+      "path": "artifacts/n1b/n1-post-n1b-hero-execution-report.json",
+      "sha256": "d19f38ee8428ae4dafd51c650e673578b3fbc1b84cea0ec6b57c3d9ded90bdff"
+    },
+    "inspection_report": {
+      "exists": true,
+      "path": "artifacts/n1b/n1-post-n1b-hero-inspection-report.json",
+      "sha256": "8446006b7b62dc441404dfd0ed98b74450332247dfac70b94f574e55d1eb2b35"
+    },
+    "replay_window": {
+      "exists": true,
+      "path": "artifacts/m1.2/workshop/handles/replay-windows/replay_63574966cd34b86d.json",
+      "sha256": "dc484127d895c99af9828bbdcebd4f4a79f358190d377bdf0b913450bed9c99c"
+    },
+    "structural_novelty_report": {
+      "exists": true,
+      "path": "artifacts/n1b/n1-post-n1b-hero-structural-novelty-report.json",
+      "sha256": "61f65aa3b3f30588622fcd534e0399ec20c0102f5c6e07044aa484e23263eef3"
+    }
+  },
+  "n1_live_identity": {
+    "bound_plan_hash": "f619f6c9677a4d2afdddcd72752ff9e5799b5fc7f2063aae5d0cf5a2104b4c76",
+    "bound_plan_id": "bound_f619f6c9677a4d2a",
+    "cache_status_after_execution": "HIT",
+    "cache_status_first_execution": "MISS",
+    "draft_plan_hash": "26912b2c452106e864aa0a4e546fbaf1504d181737aa2bade9a4e77223d13c06",
+    "draft_plan_id": "draft_26912b2c452106e8",
+    "execution_id": "exec_5466f201a479ba0f",
+    "replay_window_id": "replay_63574966cd34b86d",
+    "result_id": "ab256488c8e9b408",
+    "session_id": "20260622_141849_63e2a6",
+    "structural_fingerprint": "cd0a6b43b779ed63ec444a3adb5063d898517ac7aad8d7b1bc43ee73fe51893c"
+  },
+  "runtime": {
+    "binder_sha256": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
+    "catalog_sha256": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
+    "compatibility_profile": "generic",
+    "executor_sha256": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446",
+    "values_sha256": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166"
+  },
+  "schema_version": "n1c.canonical_freeze_manifest.v1",
+  "source": {
+    "commit_at_manifest_generation": "0e560ac02d39b668e21f663a827d6c1d13ce164e",
+    "source_files": {
+      "mcp_server": {
+        "exists": true,
+        "path": "src/tqe/workshop/mcp_server.py",
+        "sha256": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817"
+      },
+      "runtime_binder": {
+        "exists": true,
+        "path": "src/tqe/runtime/binder.py",
+        "sha256": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210"
+      },
+      "runtime_catalog": {
+        "exists": true,
+        "path": "src/tqe/runtime/catalog.py",
+        "sha256": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677"
+      },
+      "runtime_executor": {
+        "exists": true,
+        "path": "src/tqe/runtime/executor.py",
+        "sha256": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446"
+      },
+      "runtime_values": {
+        "exists": true,
+        "path": "src/tqe/runtime/values.py",
+        "sha256": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166"
+      },
+      "workshop_service": {
+        "exists": true,
+        "path": "src/tqe/workshop/m1_2.py",
+        "sha256": "57e088c3cb732362ee7de530311558170b9236c8889db73b683af74a25ffbd16"
+      }
+    }
+  }
+}

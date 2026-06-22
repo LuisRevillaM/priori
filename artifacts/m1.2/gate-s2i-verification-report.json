@@ -2,8 +2,8 @@
   "checks": [
     {
       "details": {
-        "actual": "dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd",
-        "expected": "dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd"
+        "actual": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0",
+        "expected": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0"
       },
       "name": "pack.hash.matches_content",
       "ok": true
@@ -154,8 +154,8 @@
     },
     {
       "details": {
-        "approx_tokens": 30598,
-        "json_chars": 122395
+        "approx_tokens": 30609,
+        "json_chars": 122437
       },
       "name": "pack.size.recorded",
       "ok": true
@@ -219,10 +219,10 @@
     }
   ],
   "gate": "S2I_A_tactical_knowledge_pack",
-  "generated_at": "2026-06-22T21:55:11+00:00",
+  "generated_at": "2026-06-22T22:20:45+00:00",
   "knowledge_pack_markdown_path": "generated/tactical-knowledge-pack.md",
   "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-  "knowledge_pack_sha256": "dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd",
+  "knowledge_pack_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0",
   "passed": true,
   "schema_version": "1.0"
 }

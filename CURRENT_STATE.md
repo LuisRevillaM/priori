@@ -162,9 +162,9 @@ show results, inspect evidence/traces, and open coordinate replay.
 - MCP support for Hermes: tactical stdio MCP adapter is connected and verified through a real Hermes session that lists/searches/describes capabilities, submits a seeded experimental plan, validates it, and stops before execution.
 - Frontier freeze: `delivery/m1.2/frontier-runtime-freeze.json`.
 - Freeze status: `FROZEN_PENDING_FINAL_INDEPENDENT_EVALUATION`.
-- Freeze SHA-256: `50573a029bb69ba9a92ca8a5de86b75a74584aaf10f5f51f285347ba76017f2a`.
+- Freeze SHA-256: `554f7415c3f5a08f7508f8fa3a168c0866c4f880c61594d59cb474c2a4d057bb`.
 - Freeze report: `artifacts/m1.2/s2i-e-frontier-freeze-report.json`.
-- Freeze report SHA-256: `9863478c1ee6b1ba4ba8c9c6f091b390570a569b5084b250871688b841618f31`.
+- Freeze report SHA-256: `bb9078c15523d45036570923f691aed901ac724acc41e419f1409f11f6f8f570`.
 - Important identity boundary: direct Responses API probes returned exact model `gpt-5.5-2026-04-23`; Hermes sessions currently report the product alias `gpt-5.5`, not the exact snapshot.
 - Final independent evaluation remains required before S3 acceptance. S2I-B probes and S2I-D live Hermes authoring are provisioning/authoring proof, not sealed acceptance.
 
@@ -174,9 +174,9 @@ Implemented and controller-verified for the frontier/Hermes path:
 
 - JSON: `generated/tactical-knowledge-pack.json`
 - Markdown: `generated/tactical-knowledge-pack.md`
-- Pack semantic SHA-256: `dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd`
-- Pack file SHA-256: `34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6`
-- Markdown file SHA-256: `40b54bfc7a90c4255674ed1458f10b7e08b58f2f720e6901853910d3e1c7b7fc`
+- Pack semantic SHA-256: `fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0`
+- Pack file SHA-256: `7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962`
+- Markdown file SHA-256: `2e65fec4741dd6ab29e87a6d31364206ac5dbf6dbc47ae2d1db9e59d42e179e7`
 - Verification: `make m1-2-gate-s2i-verify`
 - Local verification report:
   `docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md`
@@ -329,6 +329,21 @@ declare `allowed_values`, especially `relation_destination_entry.entry_status`.
 The first live result's `time_to_entry_seconds=0.0` means the ball was already
 present in the corridor destination region at the corridor open frame, not that
 a later post-open transition was proven.
+
+N1C proof integrity is green:
+
+- Verifier: `src/tqe/verification/n1c.py`
+- Command: `make n1c-verify`
+- Result: `8 pass / 0 fail`
+- Manifest: `artifacts/n1c/n1c-canonical-freeze-manifest.json`
+- Manifest SHA-256: `423b80651cf53c2850c0558ed12c1334b703eb44946572c5dad48cbda2ffcd12`
+- Report: `artifacts/n1c/n1c-verification-report.json`
+- Report SHA-256: `7599dea004f267e9762f575e997e0f50f41b640f9daedba0fcada9eeeb94fcaa`
+- N1C adds a canonical provenance manifest, an end-to-end synthetic
+  `relation_destination_entry` PASS/FAIL/UNKNOWN fixture through actual bound
+  node execution, proof that `entry_status == PASS` preserves UNKNOWN, runtime
+  enum-domain enforcement for declared enum outputs, and `entry_mode` evidence:
+  `PRESENT_AT_OPEN`, `ENTERED_AFTER_OPEN`, `NOT_ENTERED`, `UNKNOWN`.
 
 ## S2I-B Provisioning Spike
 

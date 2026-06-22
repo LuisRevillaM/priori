@@ -265,6 +265,15 @@ def _assert_payload(
     allow_unknown: bool = False,
 ) -> None:
     if _matches_payload(output.payload_type, value, allow_unknown=allow_unknown):
+        if (
+            value is not None
+            and output.payload_type == PayloadType.ENUM
+            and output.allowed_values is not None
+            and str(value) not in set(output.allowed_values)
+        ):
+            raise RuntimeError(
+                f"{node_id}.{output.name} enum value {value} is outside {sorted(output.allowed_values)}"
+            )
         return
     raise RuntimeError(
         f"{node_id}.{output.name} does not conform to payload {output.payload_type.value}"

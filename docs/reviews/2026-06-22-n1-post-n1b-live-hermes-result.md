@@ -49,8 +49,8 @@ Hermes did not call host confirmation, execution, filesystem, terminal, Python, 
 - Returned in proof call: `5`
 - First cache-aware execution: `MISS`
 - Cache status after execution: `HIT`
-- Knowledge pack file SHA-256: `34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6`
-- Knowledge pack semantic SHA-256: `dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd`
+- Knowledge pack file SHA-256: `7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962`
+- Knowledge pack semantic SHA-256: `fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0`
 
 First result:
 
@@ -87,6 +87,11 @@ First result:
 - Runtime-parameter guard: every executor `RuntimeParameters` access is declared by host defaults or a checked-in recipe parameter.
 - Freeze artifact: `delivery/m1.2/frontier-runtime-freeze.json`
 - Freeze result: `19 pass / 0 fail`
+- N1C manifest: `artifacts/n1c/n1c-canonical-freeze-manifest.json`
+- N1C manifest SHA-256: `423b80651cf53c2850c0558ed12c1334b703eb44946572c5dad48cbda2ffcd12`
+- N1C verifier: `artifacts/n1c/n1c-verification-report.json`
+- N1C result: `8 pass / 0 fail`
+- N1C adds actual generic PASS/FAIL/UNKNOWN node execution, proves `entry_status == PASS` preserves UNKNOWN, and emits `entry_mode` evidence.
 
 Enum-domain validation is proven for catalog outputs that explicitly declare `allowed_values`. This review must not be read as claiming catalog-wide enum-domain safety for outputs that do not yet declare allowed domains.
 

@@ -238,9 +238,10 @@ evidence:
   S2I_A_tactical_knowledge_pack:
     knowledge_pack_json: generated/tactical-knowledge-pack.json
     knowledge_pack_markdown: generated/tactical-knowledge-pack.md
-    knowledge_pack_semantic_sha256: dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd
-    knowledge_pack_file_sha256: 34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6
-    knowledge_pack_markdown_sha256: 40b54bfc7a90c4255674ed1458f10b7e08b58f2f720e6901853910d3e1c7b7fc
+    knowledge_pack_semantic_sha256: fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0
+    knowledge_pack_file_sha256: 7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962
+    knowledge_pack_markdown_sha256: 2e65fec4741dd6ab29e87a6d31364206ac5dbf6dbc47ae2d1db9e59d42e179e7
+    capability_catalog_sha256: 210e338230642b989d0de5c5a0f17d8b1aef25a847336a3febf5d737a1b4b644
     verification_report: artifacts/m1.2/gate-s2i-verification-report.json
     verification_command: make m1-2-gate-s2i-verify
     verification_summary:
@@ -389,11 +390,11 @@ evidence:
     implementation_note: "S2I-D required exposing recipe authoring contracts through describe_capability. This is knowledge-surface disclosure from existing recipe documents, not tactical runtime logic or execution authority."
   S2I_E_frontier_configuration_freeze:
     freeze_artifact: delivery/m1.2/frontier-runtime-freeze.json
-    freeze_sha256: 50573a029bb69ba9a92ca8a5de86b75a74584aaf10f5f51f285347ba76017f2a
+    freeze_sha256: 554f7415c3f5a08f7508f8fa3a168c0866c4f880c61594d59cb474c2a4d057bb
     verification_report: artifacts/m1.2/s2i-e-frontier-freeze-report.json
-    report_sha256: 9863478c1ee6b1ba4ba8c9c6f091b390570a569b5084b250871688b841618f31
-    knowledge_pack_file_sha256: 34513124969c2a723565e0115ecf394613cc56e82c9136e6d68cee2fc3863ce6
-    knowledge_pack_semantic_sha256: dcbe5d433d8067a47a3fd7d627f2c9d978a49fff30f78357c5c2bae63ebd9efd
+    report_sha256: bb9078c15523d45036570923f691aed901ac724acc41e419f1409f11f6f8f570
+    knowledge_pack_file_sha256: 7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962
+    knowledge_pack_semantic_sha256: fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0
     knowledge_pack_hash_note: "knowledge_pack_sha256 in the freeze is a backwards-compatible alias for knowledge_pack_file_sha256; semantic hash is recorded separately."
     local_review: docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md
     verification_command: make m1-2-gate-s2ie-verify
@@ -564,9 +565,34 @@ evidence:
       inspection_and_replay_available: true
       time_to_entry_zero_semantics: "0.0 seconds means destination-region presence at the corridor open frame/immediate entry, not independently proven later transition."
       enum_domain_scope: "Do not overclaim catalog-wide enum safety beyond declared allowed_values."
+  N1C_novel_composition_proof_integrity:
+    status: PASS_CONTROLLER_VERIFIED_WORKBENCH_EXPOSURE_READY
+    verifier: src/tqe/verification/n1c.py
+    verification_command: make n1c-verify
+    manifest: artifacts/n1c/n1c-canonical-freeze-manifest.json
+    manifest_sha256: 423b80651cf53c2850c0558ed12c1334b703eb44946572c5dad48cbda2ffcd12
+    report: artifacts/n1c/n1c-verification-report.json
+    report_sha256: 7599dea004f267e9762f575e997e0f50f41b640f9daedba0fcada9eeeb94fcaa
+    verification_summary:
+      passed: 8
+      failed: 0
+    proof_claims:
+      canonical_manifest_created: true
+      knowledge_pack_hashes_reconciled: true
+      generic_pass_fail_unknown_exercised: true
+      eq_pass_preserves_unknown: true
+      declared_enum_output_domains_runtime_enforced: true
+      executor_runtime_parameter_accesses_declared: true
+      entry_mode_emitted:
+        - PRESENT_AT_OPEN
+        - ENTERED_AFTER_OPEN
+        - NOT_ENTERED
+        - UNKNOWN
+      data_manifest_sha256: b213fa333c0493335ff4405a6e38ed30bafac67108db54ecabfbf957bea16b80
+      canonical_data_inventory_sha256: 8386ac9ae7d028fa45db536a38ecd4c6dfeb098c0a837018daa152491e83392c
   capability_context: generated/capability-context.json
   workshop_html: artifacts/m1.2/workshop/index.html
   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
 next_step:
-  external_review: OPUS_REQUIRED_CHANGES_CLOSED_OPTIONAL_REVIEW_BEFORE_PRODUCT_EXPOSURE
-  scope: "N1 post-N1B is controller-verified as a backend engine proof with proof-integrity caveats closed: live Hermes authored a structurally novel experimental plan for the frozen hero question, validation passed, Hermes stopped before execution, host confirmation executed the plan generically over real data, cache MISS/HIT behavior was recorded, inspection/replay evidence exists, knowledge-pack hash provenance is reconciled, UNKNOWN preservation is exercised by fixture, and executor runtime-parameter access has a structural guard. Next product step: expose this capability honestly in Workbench rather than adding another runtime repair."
+  external_review: OPTIONAL_N1C_REVIEW_BEFORE_PRODUCT_EXPOSURE
+  scope: "N1C is controller-verified: live Hermes authored a structurally novel experimental plan for the frozen hero question, validation passed, Hermes stopped before execution, host confirmation executed generically over real data, cache MISS/HIT behavior was recorded, inspection/replay evidence exists, canonical manifest provenance is recorded, PASS/FAIL/UNKNOWN are exercised through actual generic node execution, UNKNOWN survives entry_status == PASS, declared enum output domains are runtime-enforced, and entry_mode prevents time_to_entry_seconds=0.0 overclaiming. Next product step: expose this capability honestly in Workbench."
