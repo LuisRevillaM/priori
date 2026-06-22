@@ -1,0 +1,504 @@
+{
+  "schemaVersion": "1.1.0",
+  "auditId": "primitive_layer_audit_v1",
+  "generatedAt": "2026-06-22T00:00:00-07:00",
+  "classificationLegend": [
+    "EXPRESSIBLE_NOW",
+    "EXPRESSIBLE_BY_NEW_COMPOSITION",
+    "MISSING_PRIMITIVE",
+    "MISSING_RELATION",
+    "MISSING_IR_CONSTRUCT",
+    "UNAVAILABLE_DATA",
+    "SUBJECTIVE_OR_CAUSAL"
+  ],
+  "entries": [
+    {
+      "questionId": "defending_block_moves_ball_side",
+      "question": "The defending block moves toward the ball side.",
+      "classification": "EXPRESSIBLE_NOW",
+      "usableCapabilities": [
+        "ball_side_block_shift_v1",
+        "ball_lateral_fraction",
+        "defensive_outfield_centroid",
+        "signed_lateral_shift",
+        "operator_persists_for"
+      ],
+      "missingCapabilities": [],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Does not prove attacking intent or that a switch should have been played."
+      ],
+      "recommendedNextStep": "Keep as the approved M1 family; document signed_lateral_shift as a high-level detector stage rather than a pure primitive."
+    },
+    {
+      "questionId": "progressive_corridor_opens_closes",
+      "question": "A progressive passing corridor opens and later closes.",
+      "classification": "EXPRESSIBLE_NOW",
+      "usableCapabilities": [
+        "possession_corridor_availability_v1",
+        "geometric_progressive_corridor",
+        "geometric_progressive_corridor_from_anchor_set",
+        "anchor_evaluations",
+        "operator_exists"
+      ],
+      "missingCapabilities": [],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Current implementation supports geometric corridor, not pass probability or receiver decision quality."
+      ],
+      "recommendedNextStep": "Use existing relation episodes and expose open_frame_id, open_confirm_frame_id, close_frame_id, duration_seconds, minimum_clearance_m, and limiting_defender_id as evidence."
+    },
+    {
+      "questionId": "controlled_line_break",
+      "question": "A controlled line break occurs.",
+      "classification": "MISSING_PRIMITIVE",
+      "usableCapabilities": [
+        "possession_segment",
+        "geometric_progressive_corridor"
+      ],
+      "missingCapabilities": [
+        "defensive_line_estimation",
+        "relative_position_to_defensive_line",
+        "line_crossing_or_line_break_episode"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Controlled must be defined as measurable possession/ball-active state, not subjective control quality."
+      ],
+      "recommendedNextStep": "Add defensive-line-relative position first; derive line-break episodes from a player or ball crossing from in-front to beyond the line."
+    },
+    {
+      "questionId": "support_after_line_break",
+      "question": "Support arrives after a line break.",
+      "classification": "MISSING_RELATION",
+      "usableCapabilities": [
+        "possession_segment",
+        "anchor_ref"
+      ],
+      "missingCapabilities": [
+        "line_break_episode",
+        "support_arrival_relation",
+        "lane_occupancy"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Support must be defined by distance, lane, or progressive option criteria."
+      ],
+      "recommendedNextStep": "After line-break anchors exist, implement support_arrival_relation as an anchor-relative relation with arrival delay, support count, and lane diversity evidence."
+    },
+    {
+      "questionId": "wide_carrier_isolated",
+      "question": "A wide ball carrier becomes isolated.",
+      "classification": "MISSING_PRIMITIVE",
+      "usableCapabilities": [
+        "ball_lateral_fraction",
+        "possession_segment"
+      ],
+      "missingCapabilities": [
+        "ball_carrier_or_nearest_attacker",
+        "support_count_or_nearest_support_distance",
+        "pressure_signal"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Isolation should be measured by support distance/count and pressure, not asserted as decision quality."
+      ],
+      "recommendedNextStep": "Define wide isolation as wide ball location plus low progressive/inside support count and optionally rising nearest-defender pressure."
+    },
+    {
+      "questionId": "local_attacking_overload_forms",
+      "question": "A local attacking overload forms.",
+      "classification": "MISSING_PRIMITIVE",
+      "usableCapabilities": [
+        "possession_segment",
+        "anchor_ref"
+      ],
+      "missingCapabilities": [
+        "local_numerical_difference",
+        "region_or_radius_selector",
+        "team_entity_count"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Overload should be thresholded as an attacker-minus-defender count, not a qualitative shape judgment."
+      ],
+      "recommendedNextStep": "Add an anchor-relative local numerical difference primitive that returns attacker count, defender count, and delta for a region/radius."
+    },
+    {
+      "questionId": "pressing_trap_touchline",
+      "question": "A pressing trap develops near the touchline.",
+      "classification": "MISSING_RELATION",
+      "usableCapabilities": [
+        "ball_lateral_fraction",
+        "possession_segment"
+      ],
+      "missingCapabilities": [
+        "pressure_increase_relation",
+        "distance_to_touchline",
+        "local_numerical_difference",
+        "exit_corridor_count"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Trap is causal/tactical language; deterministic query should lower to touchline proximity, pressure increase, and reduced exits."
+      ],
+      "recommendedNextStep": "Do not add a trap detector first; add measurable pressure and local-number components, then compose a recipe."
+    },
+    {
+      "questionId": "runner_attacks_space_behind_last_line",
+      "question": "A runner attacks the space behind the last line.",
+      "classification": "MISSING_PRIMITIVE",
+      "usableCapabilities": [
+        "canonical_player_coordinates",
+        "orientation_attack_x_sign"
+      ],
+      "missingCapabilities": [
+        "defensive_line_estimation",
+        "relative_position_to_defensive_line",
+        "forward_run_episode"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Attacks space should be represented as a progressive movement episode crossing or moving beyond a line."
+      ],
+      "recommendedNextStep": "Add defensive-line-relative position before forward-run episode; the run can lower to velocity/progression plus line-relative destination."
+    },
+    {
+      "questionId": "complementary_vertical_lanes",
+      "question": "Attackers occupy complementary vertical lanes.",
+      "classification": "MISSING_PRIMITIVE",
+      "usableCapabilities": [
+        "geometric_progressive_corridor destination_lane evidence"
+      ],
+      "missingCapabilities": [
+        "lane_occupancy",
+        "attacker_lane_assignment",
+        "distinct_lane_count"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [],
+      "recommendedNextStep": "Add lane occupancy as a general L2 capability; current lane fields only exist inside corridor relation evidence."
+    },
+    {
+      "questionId": "rest_defence_insufficient",
+      "question": "Rest-defence numbers are insufficient during possession.",
+      "classification": "MISSING_PRIMITIVE",
+      "usableCapabilities": [
+        "possession_segment",
+        "canonical_player_coordinates"
+      ],
+      "missingCapabilities": [
+        "rest_defence_count",
+        "behind_ball_or_behind_attack_line_selector",
+        "local_numerical_difference"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Insufficient must be a declared numeric threshold."
+      ],
+      "recommendedNextStep": "Implement local/rest-defence numerical counts with explicit thresholds and evidence, not a qualitative insufficient-shape primitive."
+    },
+    {
+      "questionId": "support_after_attacking_regain",
+      "question": "Support arrives after an attacking regain.",
+      "classification": "MISSING_PRIMITIVE",
+      "usableCapabilities": [
+        "possession_segment",
+        "anchor_ref"
+      ],
+      "missingCapabilities": [
+        "regain_anchor",
+        "support_arrival_relation"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Attacking regain should be measured from possession/team-role transition, not inferred intent."
+      ],
+      "recommendedNextStep": "Add regain anchors from possession transition, then reuse support_arrival_relation."
+    },
+    {
+      "questionId": "passing_option_appears_persists_disappears_unused",
+      "question": "A passing option appears, persists, and disappears unused.",
+      "classification": "EXPRESSIBLE_BY_NEW_COMPOSITION",
+      "usableCapabilities": [
+        "geometric_progressive_corridor",
+        "geometric_progressive_corridor_from_anchor_set",
+        "relation_destination_entry_classification",
+        "operator_exists",
+        "operator_neq"
+      ],
+      "missingCapabilities": [],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Unused can currently mean ball did not enter the destination region; it cannot prove a pass was available or intentionally declined."
+      ],
+      "recommendedNextStep": "Create an experimental composition anchored on possession/carry with corridor open/close evidence and destination-not-entered classification."
+    },
+    {
+      "questionId": "weak_side_access_after_lateral_circulation",
+      "question": "A weak-side access route opens after lateral circulation.",
+      "classification": "MISSING_PRIMITIVE",
+      "usableCapabilities": [
+        "opposite_corridor_after_shift_v1",
+        "geometric_progressive_corridor",
+        "ball_lateral_fraction"
+      ],
+      "missingCapabilities": [
+        "lateral_circulation_episode",
+        "weak_side_relative_to_ball",
+        "ball_lateral_movement_delta"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Weak-side access can be geometric; lateral circulation needs an explicit ball-movement definition."
+      ],
+      "recommendedNextStep": "Reuse opposite-side corridor logic after adding a lateral-circulation anchor derived from ball-side changes over time."
+    },
+    {
+      "questionId": "third_player_supporting_run",
+      "question": "A third-player / third-man supporting run develops.",
+      "classification": "MISSING_RELATION",
+      "usableCapabilities": [
+        "canonical_player_coordinates",
+        "possession_segment"
+      ],
+      "missingCapabilities": [
+        "support_arrival_relation",
+        "forward_run_episode",
+        "pass_or_ball-movement anchor"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [
+        "Canonical event data exists in the pipeline, but current runtime catalog does not expose pass/event anchors."
+      ],
+      "subjectiveClaims": [
+        "Third-man is tactical language; deterministic version should be a third attacker entering a support lane/window after an anchor."
+      ],
+      "recommendedNextStep": "Implement support arrival and lane occupancy first; avoid claiming third-man intent."
+    },
+    {
+      "questionId": "counterpress_local_superiority",
+      "question": "A counterpress produces or fails to produce local numerical superiority.",
+      "classification": "MISSING_RELATION",
+      "usableCapabilities": [
+        "possession_segment",
+        "anchor_ref"
+      ],
+      "missingCapabilities": [
+        "loss_or_turnover_anchor",
+        "counterpress_window",
+        "local_numerical_difference",
+        "pressure_increase_relation"
+      ],
+      "missingIRConstructs": [],
+      "dataLimitations": [],
+      "subjectiveClaims": [
+        "Produces is causal wording; deterministic query can compare local numerical difference before/after loss in a fixed window."
+      ],
+      "recommendedNextStep": "Add local numerical difference and turnover/counterpress anchors before any counterpress recipe."
+    }
+  ],
+  "summary": {
+    "EXPRESSIBLE_NOW": 2,
+    "EXPRESSIBLE_BY_NEW_COMPOSITION": 1,
+    "MISSING_PRIMITIVE": 8,
+    "MISSING_RELATION": 4,
+    "MISSING_IR_CONSTRUCT": 0,
+    "UNAVAILABLE_DATA": 0,
+    "SUBJECTIVE_OR_CAUSAL": 0,
+    "missingCapabilityTotal": 12,
+    "notes": [
+      "Several questions contain subjective football wording, but none are subjective-only if rephrased into measurable thresholds.",
+      "No question requires pausing S2I or Workbench Alpha for an IR redesign; missing vocabulary can be added incrementally as primitives or relations."
+    ]
+  },
+  "sourceCommit": "7ec9163a6d3fcd2e1c4f197f1a2d8da24de44341",
+  "sourceCommitDate": "2026-06-21 21:39:42 -0700",
+  "sourceState": "clean_committed_source_snapshot",
+  "sourceHashMethod": "sha256(git show HEAD:<path>)",
+  "sourceHashes": {
+    "CURRENT_STATE.md": "c879c4d3fee407f46c5843f84f35ea6d55122d210ac86fa2484cb297aa3c7551",
+    "PROJECT_CHARTER.md": "b1fd51df6c2b7dc183192b80b841010810a9c292368e29605b6fd8479ad3a57c",
+    "MILESTONES.md": "2b3ed226978812f4838d9918c067bbe1a4a6d41410bc9f2c447641c7543f906a",
+    "delivery/status.yaml": "d814b7c9f35f03ed877872d7032f1004a46b09bbfdb55a006791301d97415b5e",
+    "delivery/ledger.jsonl": "a10ae19a824ed8a8dbe71ba23442067f4559656000fc742b788a39cb25fe8042",
+    "delivery/m1.2/SPEC.md": "e00349df87e6c511f81b5467669af034c15256f71b53246f8dd3fc5c6247f114",
+    "delivery/m1.2/NEXT_TASKS.md": "8f76c0d04a4683153f307f5ed0d96dcd56e390b9509a35666d5811ded8aee422",
+    "delivery/m1.2/status.yaml": "1f46778afedfe759e096495caae00e6c3b97ff3c7464d0fd0c4b189534ac46f1",
+    "generated/capability-context.json": "69653ebbd7749af66b67b9e3661fcca609850ec1a4f9fe7d81acd380238fbac8",
+    "generated/tactical-knowledge-pack.json": "28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854",
+    "generated/tactical-knowledge-pack.md": "5fc9966e8499be40f0d74966d1166853bcbc8cccb52aa56fdf5465c9a8d6f8f7",
+    "generated/tactical-query-plan.schema.json": "2e012f1500b19c4159f69e937e604562b1374ff972780f2c7b0478c52d8c61db",
+    "generated/tactical-query-plan.types.ts": "58b25d3f41064565159dbcbcc52e8158217761cdb8b2c3ac142006d0fbf42d7f",
+    "docs/primitives/registry.yaml": "9c162f2448a57d0bb5d3c11e537d49651757f60a7451803549818f2765945abb",
+    "docs/queries/ball-side-block-shift/definition.md": "a0a48908acad208efc32d2f573893ecb493df653e40d36102bd259247f1689e6",
+    "docs/queries/ball-side-block-shift/calibration-log.md": "3f5557ea0f2afc108ead0a80540611e7815ba5f8683cf276825ef33fa6dbbb41",
+    "docs/queries/ball-side-block-shift/semantic-gold-set.v1.json": "c38e26f5ecb937f99d79db2c96fb775fc6f0d4b4ab9a1b9f8fa0b929a11c1220",
+    "config/query-plans/ball_side_block_shift.ir.v1.json": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+    "config/query-plans/possession_corridor_availability.experimental.v1.json": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
+    "config/query-plans/opposite_corridor_after_shift.experimental.v1.json": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
+    "src/tqe/runtime/catalog.py": "3ce519b65ecfa48c225c61897dfe9a921fba3892ac189326b77d902b4acc7d1b",
+    "src/tqe/runtime/ir.py": "3fde1fe1e4fa61c596ab1579ecbd6c02df1fb63b503f13a6c146be206d642c3a",
+    "src/tqe/runtime/binder.py": "a6d9ab90e0d7b6e7ffb0bb1e8b3ca355b59f528c2f444d6750c5ffec7a5f4459",
+    "src/tqe/runtime/executor.py": "487a717edfbfab44bc73e604f97644cd680de413967af29ae3693217da746815",
+    "src/tqe/runtime/relations.py": "6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee",
+    "src/tqe/runtime/values.py": "75c7c82e20059d0cadd0a68f591e0816f5a4bfcc3e6b8d2206c5a4cfd836417a",
+    "src/tqe/workshop/m1_2.py": "ec11d3c0d9a9a0f2e6215d539ed72f058f4ab51cee83293a2745c4055306dd3a",
+    "src/tqe/workshop/knowledge_pack.py": "d6329f79a5cc096616555c28baa205d97ec58702e78552460e1712e02dfb1143",
+    "src/tqe/workshop/hermes_s2.py": "ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591",
+    "tests/test_m1_1_binder.py": "dd77b3d41726dd477bfb78df9b5f551082f0d7d7ec8a19d561d4cfdbbc0722ac",
+    "tests/test_m1_1_runtime.py": "0be172af490bef424bd2c7a58eb24d4f9088cec53b96947d0411ef89cbb96154",
+    "src/tqe/verification/m1_1_gate_s7r.py": "9f66a6db3eb37254f63cba38758172b96403c81a66bcdc49bfa86284cce61fc9",
+    "src/tqe/verification/m1_2_gate_s0.py": "e3ac1dec53b1c23c04b272713301d68615087f8f3585ad7338e9fcc705310a8e",
+    "src/tqe/verification/m1_2_gate_s1.py": "3752fc6fb39212daee479c60a0146de03c4042227eef34399a16bfe3770a6432",
+    "src/tqe/verification/m1_2_gate_s2i.py": "a8ce784b842dfe4f0e9a2a039d814fb29293b601dea9afa599c3a9a59f3aa5d8"
+  },
+  "tacticalKnowledgePack": {
+    "auditedPath": "generated/tactical-knowledge-pack.json",
+    "auditedSha256": "28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854",
+    "requestedExternalReviewHash": "44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6",
+    "reconciliation": "The external review referenced 44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6, which is recorded in delivery/ledger.jsonl and docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md for an earlier S2I-A local-verification state. The clean committed source snapshot audited here is 7ec9163a6d3fcd2e1c4f197f1a2d8da24de44341, where generated/tactical-knowledge-pack.json hashes to 28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854. This regenerated audit treats 28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854 as the exact audited pack hash and records 44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6 as the historical review-reference hash.",
+    "hashMethod": "sha256(git show HEAD:generated/tactical-knowledge-pack.json)"
+  },
+  "reviewStatus": {
+    "externalDecision": "ACCEPTED_FOR_ARCHITECTURAL_PLANNING",
+    "verdict": "SUFFICIENT_WITH_TARGETED_ADDITIONS",
+    "implementationAuthorization": "DOES_NOT_AUTHORIZE_IMPLEMENTING_ALL_PROPOSED_PRIMITIVES",
+    "pauseRequired": false,
+    "runtimeRedesignRequired": false,
+    "broadPrimitiveCampaignRequired": false
+  },
+  "visibilityTierLegend": {
+    "USER_TACTICAL": "Named concepts appropriate for direct user-facing recipes.",
+    "AGENT_COMPOSABLE": "Safe building blocks Hermes may use in experimental plans after their contracts are complete.",
+    "COMPILER_LOWERING": "Low-level geometry, kinematics, predicate, or source-fact lowering vocabulary not normally shown in recipe discovery.",
+    "TRUSTED_RECIPE_ONLY": "High-level bundled logic usable only inside a reviewed recipe until hidden dependencies are formalized or split.",
+    "LEGACY_DOCUMENTATION": "Historical or compatibility-only behavior, not a current authoring target."
+  },
+  "standardLibraryExtensionChecklist": [
+    "stable capability ID and version",
+    "visibility tier",
+    "typed inputs and outputs",
+    "units",
+    "entity scope",
+    "temporal behavior",
+    "UNKNOWN semantics",
+    "host-owned cost limit",
+    "deterministic lowering path",
+    "positive / negative / UNKNOWN tests",
+    "visual evidence representation",
+    "limitations and prohibited claims",
+    "at least one real tactical consumer"
+  ],
+  "hiddenDependencyTreatments": [
+    {
+      "capabilityId": "possession_segment",
+      "treatment": "A_FORMALIZE_CONTRACT",
+      "hiddenDependencies": [
+        "minimum_possession_seconds",
+        "analysis_rate_hz"
+      ],
+      "visibilityTierUntilComplete": "TRUSTED_RECIPE_ONLY_FOR_UNDECLARED_PARAMETER_USE",
+      "recommendedVisibilityAfterFormalization": "AGENT_COMPOSABLE",
+      "note": "Formalize all shared runtime parameters in the catalog contract before broad direct Hermes exposure; existing reviewed recipes may keep supplying them at recipe level."
+    },
+    {
+      "capabilityId": "signed_lateral_shift",
+      "treatment": "B_TRUSTED_RECIPE_ONLY",
+      "hiddenDependencies": [
+        "baseline_window_seconds",
+        "shift_search_window_seconds",
+        "minimum_outfield_players_per_team",
+        "prior_central_fraction",
+        "minimum_wide_dwell_seconds",
+        "anchor selection policy",
+        "quality gate"
+      ],
+      "visibilityTierUntilComplete": "TRUSTED_RECIPE_ONLY",
+      "recommendedVisibilityAfterFormalization": "AGENT_COMPOSABLE_OR_SPLIT_INTO_SMALLER_CAPABILITIES",
+      "note": "Keep restricted until its actual detector-stage inputs and selection policy are explicit, or split it into lower-level reusable capabilities."
+    },
+    {
+      "capabilityId": "outcome_classification",
+      "treatment": "B_TRUSTED_RECIPE_ONLY",
+      "hiddenDependencies": [
+        "result_id_seed_hash",
+        "analysis_rate_hz",
+        "dedupe_window_seconds",
+        "opposite_side_fraction",
+        "retained_after_switch_seconds",
+        "M1 outcome vocabulary"
+      ],
+      "visibilityTierUntilComplete": "TRUSTED_RECIPE_ONLY",
+      "recommendedVisibilityAfterFormalization": "TRUSTED_RECIPE_ONLY_OR_REPLACED_BY_GENERIC_LOSS_SWITCH_OUTCOME_RELATION",
+      "note": "Keep restricted because this is high-level M1 recipe logic, not a general primitive contract."
+    },
+    {
+      "capabilityId": "geometric_progressive_corridor",
+      "treatment": "A_FORMALIZE_CONTRACT",
+      "hiddenDependencies": [
+        "analysis_rate_hz",
+        "distance_point_to_segment kernel",
+        "destination lane assignment",
+        "destination region bounds"
+      ],
+      "visibilityTierUntilComplete": "AGENT_COMPOSABLE_WITH_REVIEWED_RELATION_CONTRACT_ONLY",
+      "recommendedVisibilityAfterFormalization": "AGENT_COMPOSABLE",
+      "note": "Make shared timing and internal geometric lowering dependencies explicit without exposing raw coordinate internals as user-facing recipe vocabulary."
+    },
+    {
+      "capabilityId": "geometric_progressive_corridor_from_anchor_set",
+      "treatment": "A_FORMALIZE_CONTRACT",
+      "hiddenDependencies": [
+        "analysis_rate_hz",
+        "anchor_evaluations adapter semantics"
+      ],
+      "visibilityTierUntilComplete": "AGENT_COMPOSABLE_WITH_REVIEWED_RELATION_CONTRACT_ONLY",
+      "recommendedVisibilityAfterFormalization": "AGENT_COMPOSABLE",
+      "note": "Document this as an input-contract adapter for the same relation, not a separate football concept."
+    }
+  ],
+  "planningAcceptance": "Accepted for architectural planning only; this matrix is not authorization to implement every missing primitive or relation.",
+  "secondFamilyLikelyPackage": [
+    "defensive_line_model",
+    "relative_position_to_defensive_line",
+    "controlled_line_break_episode",
+    "lane_occupancy",
+    "support_arrival_relation"
+  ],
+  "deferredCapabilities": [
+    {
+      "id": "local_numerical_difference",
+      "note": "Valuable; may become part of the support-arrival relation or the next addition after the second-family package."
+    },
+    {
+      "id": "pressure_change",
+      "note": "Wait until wide-isolation, pressing, and counterpress queries justify the exact metric."
+    }
+  ],
+  "restrictedCurrentCapabilities": [
+    {
+      "id": "signed_lateral_shift",
+      "visibilityTier": "TRUSTED_RECIPE_ONLY",
+      "reason": "Hidden detector-stage dependencies are supplied by the reviewed M1 recipe."
+    },
+    {
+      "id": "outcome_classification",
+      "visibilityTier": "TRUSTED_RECIPE_ONLY",
+      "reason": "Hidden M1 outcome dependencies are supplied by the reviewed M1 recipe."
+    }
+  ]
+}

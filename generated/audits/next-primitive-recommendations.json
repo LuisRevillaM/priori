@@ -1,0 +1,370 @@
+{
+  "schemaVersion": "1.1.0",
+  "auditId": "primitive_layer_audit_v1",
+  "generatedAt": "2026-06-22T00:00:00-07:00",
+  "recommendations": [
+    {
+      "priority": 1,
+      "id": "defensive_line_model",
+      "layer": "L2",
+      "visibilityTier": "COMPILER_LOWERING",
+      "whyNeeded": "Line-break and relative-position capabilities need a deterministic defensive-line reference before exposing user-facing line-break concepts.",
+      "questionsUnlocked": [
+        "controlled_line_break",
+        "support_after_line_break",
+        "runner_attacks_space_behind_last_line",
+        "rest_defence_insufficient"
+      ],
+      "dependencies": [
+        "canonical_player_coordinates",
+        "orientation_attack_x_sign",
+        "team_role",
+        "outfield-player selector",
+        "line-selection policy"
+      ],
+      "outputType": "frame_signal or anchor-local record containing line_x_m, line_type, defender_ids_used, quality flags, and confidence-free deterministic evidence.",
+      "unknownBehavior": "UNKNOWN when orientation, defender identity, or sufficient outfield-player positions are unavailable under declared quality rules.",
+      "visualEvidence": [
+        "defensive line overlay",
+        "source defender IDs",
+        "line quality/eligibility flags"
+      ],
+      "implementationComplexity": "medium",
+      "validationPlan": [
+        "Positive tests for clear back-line and second-line frames.",
+        "Negative tests for non-line player distributions.",
+        "UNKNOWN tests for missing orientation or insufficient defenders.",
+        "Visual overlays for representative positive, negative, and borderline examples."
+      ],
+      "implementationStatus": "DO_NOT_IMPLEMENT_IN_AUDIT"
+    },
+    {
+      "priority": 2,
+      "id": "relative_position_to_defensive_line",
+      "layer": "L2",
+      "visibilityTier": "AGENT_COMPOSABLE",
+      "whyNeeded": "Line breaks, runs behind the last line, rest-defence framing, and support-after-line-break questions need player/ball position relative to a deterministic line model.",
+      "questionsUnlocked": [
+        "controlled_line_break",
+        "support_after_line_break",
+        "runner_attacks_space_behind_last_line",
+        "rest_defence_insufficient"
+      ],
+      "dependencies": [
+        "defensive_line_model",
+        "canonical_player_coordinates",
+        "canonical_ball_coordinates",
+        "orientation_attack_x_sign",
+        "team_role"
+      ],
+      "outputType": "frame_signal or anchor-relative record containing line_x_m, entity_x_relative_m, side_of_line, line_type, and evidence entity IDs",
+      "unknownBehavior": "UNKNOWN when the line model is UNKNOWN, entity positions are missing, or attacking direction cannot be resolved.",
+      "visualEvidence": [
+        "defensive line overlay",
+        "entity point relative to line",
+        "source defender IDs used for line estimate"
+      ],
+      "implementationComplexity": "medium",
+      "validationPlan": [
+        "Unit-test orientation-normalized ahead/behind signs.",
+        "Golden-frame tests for clear back-line and second-line cases.",
+        "UNKNOWN tests for missing orientation, line model, and entity positions.",
+        "Replay overlays for positive, negative, and borderline examples."
+      ],
+      "implementationStatus": "DO_NOT_IMPLEMENT_IN_AUDIT"
+    },
+    {
+      "priority": 3,
+      "id": "controlled_line_break_episode",
+      "layer": "L3",
+      "visibilityTier": "USER_TACTICAL",
+      "whyNeeded": "The second tactical family needs a reviewed, measurable line-break anchor instead of ad hoc x-thresholds or subjective labels.",
+      "questionsUnlocked": [
+        "controlled_line_break",
+        "support_after_line_break",
+        "runner_attacks_space_behind_last_line"
+      ],
+      "dependencies": [
+        "possession_segment",
+        "defensive_line_model",
+        "relative_position_to_defensive_line",
+        "ball/player crossing policy",
+        "control/active-ball rules"
+      ],
+      "outputType": "episode_set<anchor_ref> with break_frame_id, breaking_entity_id, crossed_line_type, pre/post relative positions, and control evidence",
+      "unknownBehavior": "UNKNOWN when possession/control, line model, entity tracking, or before/after window completeness cannot be established.",
+      "visualEvidence": [
+        "before/after line overlay",
+        "breaking entity trace",
+        "control/active-ball state evidence"
+      ],
+      "implementationComplexity": "medium",
+      "validationPlan": [
+        "Positive examples for controlled line breaks.",
+        "Negative examples for uncontrolled clearances or no crossing.",
+        "UNKNOWN tests for incomplete before/after windows.",
+        "Visual replay evidence for each accepted anchor."
+      ],
+      "implementationStatus": "DO_NOT_IMPLEMENT_IN_AUDIT"
+    },
+    {
+      "priority": 4,
+      "id": "lane_occupancy",
+      "layer": "L2",
+      "visibilityTier": "AGENT_COMPOSABLE",
+      "whyNeeded": "General lane occupancy is needed for complementary lanes, support diversity, wide isolation, and line-break response recipes.",
+      "questionsUnlocked": [
+        "complementary_vertical_lanes",
+        "support_after_line_break",
+        "wide_carrier_isolated",
+        "third_player_supporting_run"
+      ],
+      "dependencies": [
+        "canonical_player_coordinates",
+        "pitch_width",
+        "attacking direction",
+        "team/player selector"
+      ],
+      "outputType": "episode_set or frame_signal records with lane_id, lane_bounds, occupying_entity_ids, occupied_lane_count, and distinct_lane_count",
+      "unknownBehavior": "UNKNOWN when player positions, pitch dimensions, attacking direction, or team selectors are unavailable for the evaluated frame/window.",
+      "visualEvidence": [
+        "lane-band pitch overlay",
+        "occupying player IDs",
+        "occupied lane count"
+      ],
+      "implementationComplexity": "low",
+      "validationPlan": [
+        "Boundary tests at central/half-space/wide lane edges.",
+        "Count tests with synthetic frame slices from real canonical rows.",
+        "UNKNOWN tests for missing player frame data.",
+        "Replay overlay review for at least three matches."
+      ],
+      "implementationStatus": "DO_NOT_IMPLEMENT_IN_AUDIT"
+    },
+    {
+      "priority": 5,
+      "id": "support_arrival_relation",
+      "layer": "L3",
+      "visibilityTier": "AGENT_COMPOSABLE",
+      "whyNeeded": "Several tactical questions ask whether teammates arrive after an anchor; this should be an anchor-relative relation with explicit delay, distance/lane criteria, and witness players.",
+      "questionsUnlocked": [
+        "support_after_line_break",
+        "support_after_attacking_regain",
+        "passing_option_appears_persists_disappears_unused",
+        "third_player_supporting_run",
+        "line_break_support_response_worked_example"
+      ],
+      "dependencies": [
+        "anchor_ref",
+        "lane_occupancy",
+        "relative_position_to_defensive_line",
+        "canonical_player_coordinates",
+        "time window parameter"
+      ],
+      "outputType": "relation_episode_set with arrival_frame_id, arrival_delay_seconds, support_player_id, support_lane, support_distance_m, and anchor_evaluations",
+      "unknownBehavior": "UNKNOWN when anchor/player frames are unavailable or support criteria cannot be evaluated through the full window.",
+      "visualEvidence": [
+        "anchor frame and arrival frame",
+        "support path or before/after positions",
+        "support lane/distance evidence"
+      ],
+      "implementationComplexity": "medium",
+      "validationPlan": [
+        "Positive tests for arrivals inside the window.",
+        "Negative tests for no arrival and late arrival.",
+        "UNKNOWN tests for incomplete anchor windows.",
+        "Replay examples showing distinct support lanes."
+      ],
+      "implementationStatus": "DO_NOT_IMPLEMENT_IN_AUDIT"
+    }
+  ],
+  "excludedNearTermCandidates": [
+    {
+      "id": "forward_run_episode",
+      "reason": "Valuable after defensive-line-relative position exists, but lower priority than support, lane, local-number, and pressure capabilities for the second tactical family."
+    },
+    {
+      "id": "general_sequence_operator",
+      "reason": "Current anchor-relative relation pattern can express the next needed temporal questions without redesigning the IR."
+    },
+    {
+      "id": "body_orientation_or_scanning",
+      "reason": "Unavailable from current tracking data and explicitly outside the current deterministic evidence boundary."
+    },
+    {
+      "id": "pressure_change",
+      "reason": "Deferred until wide-isolation, pressing, and counterpress queries justify the exact deterministic metric."
+    }
+  ],
+  "summary": {
+    "recommendationCount": 5,
+    "implementationPosture": "Record as the likely second tactical-family package only; do not implement during this audit and do not redesign the query IR first.",
+    "auditAcceptance": {
+      "externalDecision": "ACCEPTED_FOR_ARCHITECTURAL_PLANNING",
+      "verdict": "SUFFICIENT_WITH_TARGETED_ADDITIONS",
+      "implementationAuthorization": "DOES_NOT_AUTHORIZE_IMPLEMENTING_ALL_PROPOSED_PRIMITIVES",
+      "pauseRequired": false,
+      "runtimeRedesignRequired": false,
+      "broadPrimitiveCampaignRequired": false
+    }
+  },
+  "sourceCommit": "7ec9163a6d3fcd2e1c4f197f1a2d8da24de44341",
+  "sourceCommitDate": "2026-06-21 21:39:42 -0700",
+  "sourceState": "clean_committed_source_snapshot",
+  "sourceHashMethod": "sha256(git show HEAD:<path>)",
+  "sourceHashes": {
+    "CURRENT_STATE.md": "c879c4d3fee407f46c5843f84f35ea6d55122d210ac86fa2484cb297aa3c7551",
+    "PROJECT_CHARTER.md": "b1fd51df6c2b7dc183192b80b841010810a9c292368e29605b6fd8479ad3a57c",
+    "MILESTONES.md": "2b3ed226978812f4838d9918c067bbe1a4a6d41410bc9f2c447641c7543f906a",
+    "delivery/status.yaml": "d814b7c9f35f03ed877872d7032f1004a46b09bbfdb55a006791301d97415b5e",
+    "delivery/ledger.jsonl": "a10ae19a824ed8a8dbe71ba23442067f4559656000fc742b788a39cb25fe8042",
+    "delivery/m1.2/SPEC.md": "e00349df87e6c511f81b5467669af034c15256f71b53246f8dd3fc5c6247f114",
+    "delivery/m1.2/NEXT_TASKS.md": "8f76c0d04a4683153f307f5ed0d96dcd56e390b9509a35666d5811ded8aee422",
+    "delivery/m1.2/status.yaml": "1f46778afedfe759e096495caae00e6c3b97ff3c7464d0fd0c4b189534ac46f1",
+    "generated/capability-context.json": "69653ebbd7749af66b67b9e3661fcca609850ec1a4f9fe7d81acd380238fbac8",
+    "generated/tactical-knowledge-pack.json": "28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854",
+    "generated/tactical-knowledge-pack.md": "5fc9966e8499be40f0d74966d1166853bcbc8cccb52aa56fdf5465c9a8d6f8f7",
+    "generated/tactical-query-plan.schema.json": "2e012f1500b19c4159f69e937e604562b1374ff972780f2c7b0478c52d8c61db",
+    "generated/tactical-query-plan.types.ts": "58b25d3f41064565159dbcbcc52e8158217761cdb8b2c3ac142006d0fbf42d7f",
+    "docs/primitives/registry.yaml": "9c162f2448a57d0bb5d3c11e537d49651757f60a7451803549818f2765945abb",
+    "docs/queries/ball-side-block-shift/definition.md": "a0a48908acad208efc32d2f573893ecb493df653e40d36102bd259247f1689e6",
+    "docs/queries/ball-side-block-shift/calibration-log.md": "3f5557ea0f2afc108ead0a80540611e7815ba5f8683cf276825ef33fa6dbbb41",
+    "docs/queries/ball-side-block-shift/semantic-gold-set.v1.json": "c38e26f5ecb937f99d79db2c96fb775fc6f0d4b4ab9a1b9f8fa0b929a11c1220",
+    "config/query-plans/ball_side_block_shift.ir.v1.json": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+    "config/query-plans/possession_corridor_availability.experimental.v1.json": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
+    "config/query-plans/opposite_corridor_after_shift.experimental.v1.json": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
+    "src/tqe/runtime/catalog.py": "3ce519b65ecfa48c225c61897dfe9a921fba3892ac189326b77d902b4acc7d1b",
+    "src/tqe/runtime/ir.py": "3fde1fe1e4fa61c596ab1579ecbd6c02df1fb63b503f13a6c146be206d642c3a",
+    "src/tqe/runtime/binder.py": "a6d9ab90e0d7b6e7ffb0bb1e8b3ca355b59f528c2f444d6750c5ffec7a5f4459",
+    "src/tqe/runtime/executor.py": "487a717edfbfab44bc73e604f97644cd680de413967af29ae3693217da746815",
+    "src/tqe/runtime/relations.py": "6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee",
+    "src/tqe/runtime/values.py": "75c7c82e20059d0cadd0a68f591e0816f5a4bfcc3e6b8d2206c5a4cfd836417a",
+    "src/tqe/workshop/m1_2.py": "ec11d3c0d9a9a0f2e6215d539ed72f058f4ab51cee83293a2745c4055306dd3a",
+    "src/tqe/workshop/knowledge_pack.py": "d6329f79a5cc096616555c28baa205d97ec58702e78552460e1712e02dfb1143",
+    "src/tqe/workshop/hermes_s2.py": "ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591",
+    "tests/test_m1_1_binder.py": "dd77b3d41726dd477bfb78df9b5f551082f0d7d7ec8a19d561d4cfdbbc0722ac",
+    "tests/test_m1_1_runtime.py": "0be172af490bef424bd2c7a58eb24d4f9088cec53b96947d0411ef89cbb96154",
+    "src/tqe/verification/m1_1_gate_s7r.py": "9f66a6db3eb37254f63cba38758172b96403c81a66bcdc49bfa86284cce61fc9",
+    "src/tqe/verification/m1_2_gate_s0.py": "e3ac1dec53b1c23c04b272713301d68615087f8f3585ad7338e9fcc705310a8e",
+    "src/tqe/verification/m1_2_gate_s1.py": "3752fc6fb39212daee479c60a0146de03c4042227eef34399a16bfe3770a6432",
+    "src/tqe/verification/m1_2_gate_s2i.py": "a8ce784b842dfe4f0e9a2a039d814fb29293b601dea9afa599c3a9a59f3aa5d8"
+  },
+  "tacticalKnowledgePack": {
+    "auditedPath": "generated/tactical-knowledge-pack.json",
+    "auditedSha256": "28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854",
+    "requestedExternalReviewHash": "44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6",
+    "reconciliation": "The external review referenced 44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6, which is recorded in delivery/ledger.jsonl and docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md for an earlier S2I-A local-verification state. The clean committed source snapshot audited here is 7ec9163a6d3fcd2e1c4f197f1a2d8da24de44341, where generated/tactical-knowledge-pack.json hashes to 28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854. This regenerated audit treats 28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854 as the exact audited pack hash and records 44a9b5fb3f3748c0e8a7bc80a4134fe3cb062dd66807ca20a671cb980529b7c6 as the historical review-reference hash.",
+    "hashMethod": "sha256(git show HEAD:generated/tactical-knowledge-pack.json)"
+  },
+  "reviewStatus": {
+    "externalDecision": "ACCEPTED_FOR_ARCHITECTURAL_PLANNING",
+    "verdict": "SUFFICIENT_WITH_TARGETED_ADDITIONS",
+    "implementationAuthorization": "DOES_NOT_AUTHORIZE_IMPLEMENTING_ALL_PROPOSED_PRIMITIVES",
+    "pauseRequired": false,
+    "runtimeRedesignRequired": false,
+    "broadPrimitiveCampaignRequired": false
+  },
+  "visibilityTierLegend": {
+    "USER_TACTICAL": "Named concepts appropriate for direct user-facing recipes.",
+    "AGENT_COMPOSABLE": "Safe building blocks Hermes may use in experimental plans after their contracts are complete.",
+    "COMPILER_LOWERING": "Low-level geometry, kinematics, predicate, or source-fact lowering vocabulary not normally shown in recipe discovery.",
+    "TRUSTED_RECIPE_ONLY": "High-level bundled logic usable only inside a reviewed recipe until hidden dependencies are formalized or split.",
+    "LEGACY_DOCUMENTATION": "Historical or compatibility-only behavior, not a current authoring target."
+  },
+  "standardLibraryExtensionChecklist": [
+    "stable capability ID and version",
+    "visibility tier",
+    "typed inputs and outputs",
+    "units",
+    "entity scope",
+    "temporal behavior",
+    "UNKNOWN semantics",
+    "host-owned cost limit",
+    "deterministic lowering path",
+    "positive / negative / UNKNOWN tests",
+    "visual evidence representation",
+    "limitations and prohibited claims",
+    "at least one real tactical consumer"
+  ],
+  "hiddenDependencyTreatments": [
+    {
+      "capabilityId": "possession_segment",
+      "treatment": "A_FORMALIZE_CONTRACT",
+      "hiddenDependencies": [
+        "minimum_possession_seconds",
+        "analysis_rate_hz"
+      ],
+      "visibilityTierUntilComplete": "TRUSTED_RECIPE_ONLY_FOR_UNDECLARED_PARAMETER_USE",
+      "recommendedVisibilityAfterFormalization": "AGENT_COMPOSABLE",
+      "note": "Formalize all shared runtime parameters in the catalog contract before broad direct Hermes exposure; existing reviewed recipes may keep supplying them at recipe level."
+    },
+    {
+      "capabilityId": "signed_lateral_shift",
+      "treatment": "B_TRUSTED_RECIPE_ONLY",
+      "hiddenDependencies": [
+        "baseline_window_seconds",
+        "shift_search_window_seconds",
+        "minimum_outfield_players_per_team",
+        "prior_central_fraction",
+        "minimum_wide_dwell_seconds",
+        "anchor selection policy",
+        "quality gate"
+      ],
+      "visibilityTierUntilComplete": "TRUSTED_RECIPE_ONLY",
+      "recommendedVisibilityAfterFormalization": "AGENT_COMPOSABLE_OR_SPLIT_INTO_SMALLER_CAPABILITIES",
+      "note": "Keep restricted until its actual detector-stage inputs and selection policy are explicit, or split it into lower-level reusable capabilities."
+    },
+    {
+      "capabilityId": "outcome_classification",
+      "treatment": "B_TRUSTED_RECIPE_ONLY",
+      "hiddenDependencies": [
+        "result_id_seed_hash",
+        "analysis_rate_hz",
+        "dedupe_window_seconds",
+        "opposite_side_fraction",
+        "retained_after_switch_seconds",
+        "M1 outcome vocabulary"
+      ],
+      "visibilityTierUntilComplete": "TRUSTED_RECIPE_ONLY",
+      "recommendedVisibilityAfterFormalization": "TRUSTED_RECIPE_ONLY_OR_REPLACED_BY_GENERIC_LOSS_SWITCH_OUTCOME_RELATION",
+      "note": "Keep restricted because this is high-level M1 recipe logic, not a general primitive contract."
+    },
+    {
+      "capabilityId": "geometric_progressive_corridor",
+      "treatment": "A_FORMALIZE_CONTRACT",
+      "hiddenDependencies": [
+        "analysis_rate_hz",
+        "distance_point_to_segment kernel",
+        "destination lane assignment",
+        "destination region bounds"
+      ],
+      "visibilityTierUntilComplete": "AGENT_COMPOSABLE_WITH_REVIEWED_RELATION_CONTRACT_ONLY",
+      "recommendedVisibilityAfterFormalization": "AGENT_COMPOSABLE",
+      "note": "Make shared timing and internal geometric lowering dependencies explicit without exposing raw coordinate internals as user-facing recipe vocabulary."
+    },
+    {
+      "capabilityId": "geometric_progressive_corridor_from_anchor_set",
+      "treatment": "A_FORMALIZE_CONTRACT",
+      "hiddenDependencies": [
+        "analysis_rate_hz",
+        "anchor_evaluations adapter semantics"
+      ],
+      "visibilityTierUntilComplete": "AGENT_COMPOSABLE_WITH_REVIEWED_RELATION_CONTRACT_ONLY",
+      "recommendedVisibilityAfterFormalization": "AGENT_COMPOSABLE",
+      "note": "Document this as an input-contract adapter for the same relation, not a separate football concept."
+    }
+  ],
+  "deferredNearTermCandidates": [
+    {
+      "id": "local_numerical_difference",
+      "visibilityTier": "AGENT_COMPOSABLE",
+      "reason": "Valuable and likely necessary soon, but may be folded into support_arrival_relation or added immediately after the second-family package proves the exact region/count contracts."
+    },
+    {
+      "id": "pressure_change",
+      "visibilityTier": "AGENT_COMPOSABLE",
+      "reason": "Wait for wide-isolation, pressing, and counterpress query work so the pressure metric is not overfit or overclaimed."
+    }
+  ],
+  "implementationBoundary": "Do not implement these during the audit. The recommendations are planning candidates, not authorization for a broad primitive campaign."
+}
