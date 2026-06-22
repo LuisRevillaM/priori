@@ -1,3 +1,5 @@
+import Ajv, { type ValidateFunction } from "ajv";
+import { apiSchemas } from "./generated/api-types";
 import type {
   BootstrapResponse,
   ConfirmationResponse,
@@ -11,7 +13,29 @@ import type {
   TimestampTarget
 } from "./types";
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+type ApiSchemaName = keyof typeof apiSchemas;
+
+const ajv = new Ajv({ allErrors: true, strict: false });
+const validators = new Map<ApiSchemaName, ValidateFunction>();
+
+function validatorFor(schemaName: ApiSchemaName) {
+  const cached = validators.get(schemaName);
+  if (cached) return cached;
+  const compiled = ajv.compile(apiSchemas[schemaName]);
+  validators.set(schemaName, compiled);
+  return compiled;
+}
+
+function assertValidResponse<T>(schemaName: ApiSchemaName, payload: unknown): T {
+  const validate = validatorFor(schemaName);
+  if (!validate(payload)) {
+    const details = ajv.errorsText(validate.errors, { separator: "; " });
+    throw new Error(`Host response schema invalid for ${schemaName}: ${details}`);
+  }
+  return payload as T;
+}
+
+async function request<T>(schemaName: ApiSchemaName, path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(path, {
     ...options,
     headers: {
@@ -24,15 +48,15 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const message = payload.message ?? payload.error_code ?? `Request failed: ${path}`;
     throw new Error(message);
   }
-  return payload;
+  return assertValidResponse<T>(schemaName, payload);
 }
 
 export function bootstrap(): Promise<BootstrapResponse> {
-  return request<BootstrapResponse>("/api/bootstrap");
+  return request<BootstrapResponse>("BootstrapResponse", "/api/bootstrap");
 }
 
 export function fetchPlan(recipeId: string): Promise<{ ok: boolean; recipe: RecipeSummary; plan_document: JsonObject; plan_hash: string }> {
-  return request(`/api/plan?recipe_id=${encodeURIComponent(recipeId)}`);
+  return request("PlanResponse", `/api/plan?recipe_id=${encodeURIComponent(recipeId)}`);
 }
 
 export function interpret(input: {
@@ -42,21 +66,21 @@ export function interpret(input: {
   preset_id?: string;
   clarifications?: string[];
 }): Promise<InterpretResponse> {
-  return request<InterpretResponse>("/api/interpret", {
+  return request<InterpretResponse>("InterpretResponse", "/api/interpret", {
     method: "POST",
     body: JSON.stringify(input)
   });
 }
 
 export function submitValidate(planDocument: JsonObject): Promise<SubmitValidateResponse> {
-  return request<SubmitValidateResponse>("/api/submit-validate", {
+  return request<SubmitValidateResponse>("SubmitValidateResponse", "/api/submit-validate", {
     method: "POST",
     body: JSON.stringify({ plan_document: planDocument })
   });
 }
 
 export function confirm(boundPlanId: string): Promise<ConfirmationResponse> {
-  return request<ConfirmationResponse>("/api/confirm", {
+  return request<ConfirmationResponse>("ConfirmationResponse", "/api/confirm", {
     method: "POST",
     body: JSON.stringify({ bound_plan_id: boundPlanId, reviewer: "workbench_alpha_host" })
   });
@@ -67,7 +91,7 @@ export function execute(input: {
   execution_authorization_id: string;
   result_limit: number;
 }): Promise<ExecutionResponse> {
-  return request<ExecutionResponse>("/api/execute", {
+  return request<ExecutionResponse>("ExecutionResponse", "/api/execute", {
     method: "POST",
     body: JSON.stringify(input)
   });
@@ -78,7 +102,7 @@ export function inspectResult(input: {
   result_id: string;
   padding_seconds?: number;
 }): Promise<InspectResultResponse> {
-  return request<InspectResultResponse>("/api/inspect-result", {
+  return request<InspectResultResponse>("InspectResultResponse", "/api/inspect-result", {
     method: "POST",
     body: JSON.stringify(input)
   });
@@ -89,7 +113,7 @@ export function inspectTimestamp(input: {
   target: TimestampTarget;
   padding_seconds?: number;
 }): Promise<InspectTimestampResponse> {
-  return request<InspectTimestampResponse>("/api/inspect-timestamp", {
+  return request<InspectTimestampResponse>("InspectTimestampResponse", "/api/inspect-timestamp", {
     method: "POST",
     body: JSON.stringify(input)
   });

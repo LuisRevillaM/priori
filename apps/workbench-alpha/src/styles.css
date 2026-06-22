@@ -354,15 +354,29 @@ button:disabled {
 
 .replayControls {
   display: grid;
-  grid-template-columns: 74px 74px 74px minmax(160px, 1fr);
+  grid-template-columns: 74px 74px minmax(132px, auto) 74px minmax(160px, 1fr);
   gap: 8px;
   align-items: center;
   margin-top: 10px;
 }
 
-.replayControls button {
+.replayControls button,
+.speedControls button {
   height: 32px;
   border-radius: 7px;
+}
+
+.speedControls {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  gap: 5px;
+}
+
+.speedControls button.active {
+  border-color: var(--accent-dark);
+  background: #edf4ee;
+  color: var(--accent-dark);
+  font-weight: 750;
 }
 
 .replayControls input {
@@ -494,7 +508,12 @@ button:disabled {
   }
 
   .replayControls {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .speedControls {
+    grid-column: span 2;
+    grid-template-columns: repeat(3, minmax(38px, 1fr));
   }
 
   .replayControls input {

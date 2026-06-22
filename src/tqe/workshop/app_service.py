@@ -13,10 +13,10 @@ import mimetypes
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import parse_qs, urlparse
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from tqe.runtime.ir import TacticalQueryDocument, stable_hash
 from tqe.workshop.m1_2 import (
@@ -47,6 +47,179 @@ from tqe.workshop.m1_2 import (
 APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
 DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
+
+
+class WorkbenchResponseModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class ErrorResponse(WorkbenchResponseModel):
+    ok: Literal[False]
+    error_code: str
+    message: str
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class RecipeCardResponse(WorkbenchResponseModel):
+    recipe_id: str
+    recipe_version: str
+    state: Literal["APPROVED", "EXPERIMENTAL", "USER_SAVED", "DEPRECATED"]
+    display_name: str
+    description: str
+    allowed_claims: list[str]
+    disallowed_claims: list[str]
+    limitations: list[str]
+    output_classifications: list[str]
+
+
+class ServiceStatusResponse(WorkbenchResponseModel):
+    name: str
+    mcp_adapter: bool
+
+
+class ModelStatusResponse(WorkbenchResponseModel):
+    available: bool
+    status: str
+    message: str
+
+
+class PresetResponse(WorkbenchResponseModel):
+    preset_id: Literal["approved_block_shift", "experimental_corridor"]
+    label: str
+    recipe: RecipeCardResponse
+    plan_hash: str
+
+
+class CapabilitySummaryResponse(WorkbenchResponseModel):
+    primitive_count: int
+    relation_count: int
+    operator_count: int
+    tools: list[str]
+    execute_tool_description: dict[str, Any]
+
+
+class BootstrapResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    service: ServiceStatusResponse
+    model: ModelStatusResponse
+    presets: list[PresetResponse]
+    capabilities: CapabilitySummaryResponse
+
+
+class HealthResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    service: str
+    mcp_adapter: bool
+
+
+class PlanResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    recipe: RecipeCardResponse
+    plan_document: dict[str, Any]
+    plan_hash: str
+
+
+class CapabilityGapResponse(WorkbenchResponseModel):
+    concept: str
+    reason: str
+
+
+class InterpretResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    status: Literal["PLAN_INTERPRETED", "CLARIFICATION_REQUIRED", "CAPABILITY_GAP", "MODEL_UNAVAILABLE"]
+    query: str | None = None
+    message: str | None = None
+    source: str | None = None
+    recipe: RecipeCardResponse | None = None
+    plan_document: dict[str, Any] | None = None
+    plan_hash: str | None = None
+    clarification_questions: list[str] | None = None
+    clarification_codes: list[str] | None = None
+    capability_gaps: list[CapabilityGapResponse] | None = None
+    manual_available: bool | None = None
+
+
+class SubmitValidateResponseEnvelope(WorkbenchResponseModel):
+    ok: Literal[True]
+    submit: dict[str, Any]
+    validation: dict[str, Any]
+
+
+class ConfirmationResponseEnvelope(WorkbenchResponseModel):
+    ok: Literal[True]
+    confirmation: dict[str, Any]
+
+
+class ExecutionResponseEnvelope(WorkbenchResponseModel):
+    ok: Literal[True]
+    execution: dict[str, Any]
+
+
+class ReplayEntityResponse(WorkbenchResponseModel):
+    team_id: str
+    team_role: str
+    entity_id: str
+    entity_type: str
+    x_m: float
+    y_m: float
+
+
+class ReplayFrameResponse(WorkbenchResponseModel):
+    frame_id: int
+    timestamp_utc: str | None = None
+    entities: list[ReplayEntityResponse]
+
+
+class PitchResponse(WorkbenchResponseModel):
+    length_m: float
+    width_m: float
+    coordinate_contract: str
+
+
+class ReplayPayloadResponse(WorkbenchResponseModel):
+    schema_version: str
+    replay_window_id: str
+    source_kind: Literal["result", "target"]
+    source_id: str
+    match_id: str
+    period: str
+    frame_rate_hz: float
+    start_frame_id: int
+    end_frame_id: int
+    anchor_frame_id: int
+    generated_at: str
+    canonical_sources: dict[str, str]
+    plan_path: str
+    pitch: PitchResponse
+    frames: list[ReplayFrameResponse]
+
+
+class InspectResultResponseEnvelope(WorkbenchResponseModel):
+    ok: Literal[True]
+    inspection: dict[str, Any]
+    replay_window: dict[str, Any]
+    replay: ReplayPayloadResponse
+
+
+class InspectTimestampResponseEnvelope(WorkbenchResponseModel):
+    ok: Literal[True]
+    inspection: dict[str, Any]
+    replay_window: dict[str, Any]
+    replay: ReplayPayloadResponse
+
+
+WORKBENCH_RESPONSE_MODELS: dict[str, type[BaseModel]] = {
+    "ErrorResponse": ErrorResponse,
+    "HealthResponse": HealthResponse,
+    "BootstrapResponse": BootstrapResponse,
+    "PlanResponse": PlanResponse,
+    "InterpretResponse": InterpretResponse,
+    "SubmitValidateResponse": SubmitValidateResponseEnvelope,
+    "ConfirmationResponse": ConfirmationResponseEnvelope,
+    "ExecutionResponse": ExecutionResponseEnvelope,
+    "InspectResultResponse": InspectResultResponseEnvelope,
+    "InspectTimestampResponse": InspectTimestampResponseEnvelope,
+}
 
 UNSUPPORTED_CONCEPTS = {
     "body orientation": "No body-orientation primitive is exposed.",
@@ -91,6 +264,21 @@ def ok(payload: dict[str, Any] | None = None) -> dict[str, Any]:
 
 def error_response(code: str, message: str, *, details: dict[str, Any] | None = None) -> dict[str, Any]:
     return {"ok": False, "error_code": code, "message": message, "details": details or {}}
+
+
+PUBLIC_ERROR_MESSAGES = {
+    "REQUEST_SCHEMA_INVALID": "Request payload does not match the API contract.",
+    "UNKNOWN_HANDLE": "Requested handle is unavailable.",
+    "NO_REPLAY_WINDOW": "No replay window is available for that request.",
+    "EXECUTION_NOT_CONFIRMED": "Execution requires host-generated confirmation authorization.",
+    "CAPABILITY_GAP": "Requested capability is unavailable through this API.",
+    "PLAN_NOT_FOUND": "Requested plan was not found.",
+    "INTERNAL_ERROR": "Internal host service error.",
+}
+
+
+def public_error_message(code: str) -> str:
+    return PUBLIC_ERROR_MESSAGES.get(code, "Request could not be completed.")
 
 
 def plan_for_recipe(recipe_id: str) -> dict[str, Any]:
@@ -388,8 +576,8 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                 plan = plan_for_recipe(recipe_id)
                 state = "APPROVED" if recipe_id == "ball_side_block_shift_v1" else "EXPERIMENTAL"
                 self.send_json(ok({"recipe": recipe_card(plan, state), "plan_document": plan, "plan_hash": stable_hash(plan)}))
-            except Exception as exc:
-                self.send_json(error_response("PLAN_NOT_FOUND", str(exc)), HTTPStatus.NOT_FOUND)
+            except Exception:
+                self.send_json(error_response("PLAN_NOT_FOUND", public_error_message("PLAN_NOT_FOUND")), HTTPStatus.NOT_FOUND)
             return
         if parsed.path.startswith("/api/"):
             self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
@@ -441,16 +629,23 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                 self.send_json(timestamp_inspection(payload, output_root=self.server.output_root))
             else:
                 self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
-        except (KeyError, ValueError, ValidationError) as exc:
-            self.send_json(error_response("REQUEST_SCHEMA_INVALID", str(exc)), HTTPStatus.BAD_REQUEST)
-        except CapabilityGap as exc:
+        except (KeyError, ValueError, ValidationError):
             self.send_json(
-                error_response(stable_tool_error_code(exc), str(exc)),
+                error_response(
+                    "REQUEST_SCHEMA_INVALID",
+                    public_error_message("REQUEST_SCHEMA_INVALID"),
+                ),
+                HTTPStatus.BAD_REQUEST,
+            )
+        except CapabilityGap as exc:
+            code = stable_tool_error_code(exc)
+            self.send_json(
+                error_response(code, public_error_message(code)),
                 HTTPStatus.FORBIDDEN,
             )
-        except Exception as exc:
+        except Exception:
             self.send_json(
-                error_response(type(exc).__name__.upper(), str(exc)),
+                error_response("INTERNAL_ERROR", public_error_message("INTERNAL_ERROR")),
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
@@ -463,7 +658,6 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                 "service": {
                     "name": "workbench_alpha_host",
                     "mcp_adapter": False,
-                    "output_root": str(self.server.output_root),
                 },
                 "model": {
                     "available": False,

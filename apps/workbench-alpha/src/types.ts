@@ -32,7 +32,6 @@ export type BootstrapResponse = {
   service: {
     name: string;
     mcp_adapter: boolean;
-    output_root: string;
   };
   model: {
     available: boolean;

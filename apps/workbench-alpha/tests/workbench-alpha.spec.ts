@@ -143,6 +143,20 @@ async function boot(page: Page, consoleErrors: string[]) {
   await expect(page.getByTestId("execute-button")).toBeDisabled();
 }
 
+async function waitForInspectionResponse(page: Page, resultId: string) {
+  return page.waitForResponse(async (response) => {
+    if (new URL(response.url()).pathname !== "/api/inspect-result") return false;
+    try {
+      const payload = (await response.json()) as Record<string, unknown>;
+      const inspection = payload.inspection as Record<string, unknown> | undefined;
+      const result = inspection?.result as Record<string, unknown> | undefined;
+      return result?.result_id === resultId;
+    } catch {
+      return false;
+    }
+  });
+}
+
 async function runRealQueryJourney(
   page: Page,
   label: "approved" | "experimental",
@@ -276,12 +290,42 @@ async function runRealQueryJourney(
     await expect(page.getByTestId("replay-window-summary")).toContainText(String(alternateResult.result_id));
   }
 
+  const rapidTargets = results.slice(2, Math.min(5, results.length));
+  const finalRapidTarget = rapidTargets.at(-1);
+  if (finalRapidTarget) {
+    const rapidStart = Date.now();
+    const finalInspectPromise = waitForInspectionResponse(page, String(finalRapidTarget.result_id));
+    for (const result of rapidTargets) {
+      await page.locator(`[data-testid="result-item"][data-result-id="${result.result_id}"]`).click();
+    }
+    const finalInspectResponse = await finalInspectPromise;
+    selectedInspection = (await finalInspectResponse.json()) as Record<string, unknown>;
+    trace.push({
+      label: `${label}.inspect_rapid_final_result`,
+      path: "/api/inspect-result",
+      status: finalInspectResponse.status(),
+      duration_ms: Date.now() - rapidStart,
+      summary: summarizePayload(selectedInspection)
+    });
+    await expect(page.getByTestId("replay-window-summary")).toContainText(String(finalRapidTarget.result_id));
+    await expect(page.locator(`[data-testid="result-item"][data-result-id="${finalRapidTarget.result_id}"]`)).toHaveClass(/active/);
+    await expect(page.getByTestId("inspection-loading")).toHaveCount(0);
+    await expect(page.getByTestId("evidence-alias").first().locator("code")).not.toHaveText("");
+    await expect(page.getByTestId("predicate-trace").first()).toBeVisible();
+    await page.waitForTimeout(250);
+    await expect(page.getByTestId("replay-window-summary")).toContainText(String(finalRapidTarget.result_id));
+  }
+
   const selectedReplay = selectedInspection.replay as Record<string, unknown>;
   const proof = {
     label,
     sourceCommit: git(["rev-parse", "HEAD"]),
+    workbenchCommit: git(["rev-parse", "HEAD"]),
+    hostRuntimeCommit: git(["rev-parse", "HEAD"]),
     hostServiceCommit: git(["rev-parse", "HEAD"]),
+    cleanGitStatus: git(["status", "--short", "--untracked-files=all"]),
     trackedDirtyStatus: git(["status", "--short", "--untracked-files=no"]),
+    tacticalKnowledgePackHash: hashFile(join(repoRoot, "generated/tactical-knowledge-pack.json")),
     appSourceHashes: hashDirectory(join(appRoot, "src")),
     browserBuildHashes: hashDirectory(join(appRoot, "dist")),
     apiTracePath: relative(repoRoot, join(proofRoot, "api-traces", `${label}.json`)),
@@ -408,6 +452,12 @@ test("clarification, capability-gap, and model-unavailable states remain explici
 });
 
 test("host authority is enforced through public API routes", async ({ request }) => {
+  const bootstrapResponse = await request.get("/api/bootstrap");
+  expect(bootstrapResponse.ok()).toBe(true);
+  const bootstrapPayload = (await bootstrapResponse.json()) as Record<string, unknown>;
+  expect(String(JSON.stringify(bootstrapPayload))).not.toContain("output_root");
+  expect(String(JSON.stringify(bootstrapPayload))).not.toContain("/Users/");
+
   const planResponse = await request.get("/api/plan?recipe_id=ball_side_block_shift_v1");
   expect(planResponse.ok()).toBe(true);
   const planPayload = (await planResponse.json()) as Record<string, unknown>;
@@ -427,7 +477,10 @@ test("host authority is enforced through public API routes", async ({ request })
     }
   });
   expect(unconfirmedExecution.status()).toBe(403);
-  expect(await unconfirmedExecution.json()).toMatchObject({ ok: false });
+  const unconfirmedPayload = await unconfirmedExecution.json();
+  expect(unconfirmedPayload).toMatchObject({ ok: false });
+  expect(JSON.stringify(unconfirmedPayload)).not.toContain("auth_deadbeefdeadbeef");
+  expect(JSON.stringify(unconfirmedPayload)).not.toContain("/Users/");
 
   const forgedConfirmation = await request.post("/api/confirm", {
     data: {
@@ -451,7 +504,10 @@ test("host authority is enforced through public API routes", async ({ request })
     }
   });
   expect(profileOverride.status()).toBe(400);
-  expect(await profileOverride.json()).toMatchObject({ ok: false, error_code: "REQUEST_SCHEMA_INVALID" });
+  const profileOverridePayload = await profileOverride.json();
+  expect(profileOverridePayload).toMatchObject({ ok: false, error_code: "REQUEST_SCHEMA_INVALID" });
+  expect(JSON.stringify(profileOverridePayload)).not.toContain("compatibility_profile");
+  expect(JSON.stringify(profileOverridePayload)).not.toContain("/Users/");
 
   const localArtifact = await request.get("/artifacts/m1.2/workshop/handles/executions/exec_deadbeefdeadbeef.json");
   expect(localArtifact.status()).toBe(404);

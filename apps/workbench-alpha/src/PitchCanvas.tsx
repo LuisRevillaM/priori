@@ -1,21 +1,11 @@
 import { useEffect, useRef } from "react";
 import type { ReplayPayload } from "./types";
+import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
 
 type PitchCanvasProps = {
   replay: ReplayPayload | null;
   frameIndex: number;
 };
-
-function transformPoint(x: number, y: number, replay: ReplayPayload, width: number, height: number) {
-  const marginX = width * 0.035;
-  const marginY = height * 0.055;
-  const fieldW = width - marginX * 2;
-  const fieldH = height - marginY * 2;
-  return {
-    x: marginX + ((x + replay.pitch.length_m / 2) / replay.pitch.length_m) * fieldW,
-    y: marginY + ((replay.pitch.width_m / 2 - y) / replay.pitch.width_m) * fieldH
-  };
-}
 
 export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -25,8 +15,10 @@ export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
     if (!canvas) return;
 
     const parent = canvas.parentElement;
-    const width = parent?.clientWidth ? Math.max(parent.clientWidth, 720) : 960;
-    const height = Math.round(width * 0.58);
+    const pitch = replay?.pitch ?? { length_m: 105, width_m: 68 };
+    const layout = layoutPitch(pitch, parent?.clientWidth);
+    const width = layout.canvasWidth;
+    const height = layout.canvasHeight;
     const ratio = window.devicePixelRatio || 1;
     canvas.width = Math.round(width * ratio);
     canvas.height = Math.round(height * ratio);
@@ -41,10 +33,10 @@ export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
     ctx.fillStyle = "#477556";
     ctx.fillRect(0, 0, width, height);
 
-    const marginX = width * 0.035;
-    const marginY = height * 0.055;
-    const fieldW = width - marginX * 2;
-    const fieldH = height - marginY * 2;
+    const marginX = layout.marginX;
+    const marginY = layout.marginY;
+    const fieldW = layout.fieldWidth;
+    const fieldH = layout.fieldHeight;
 
     ctx.strokeStyle = "rgba(255,255,255,0.84)";
     ctx.lineWidth = 1.6;
@@ -74,7 +66,7 @@ export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
     );
 
     for (const entity of frame.entities) {
-      const point = transformPoint(entity.x_m, entity.y_m, replay, width, height);
+      const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
       const isBall = entity.entity_type === "ball";
       const radius = isBall ? 4.4 : 7.5;
       ctx.beginPath();

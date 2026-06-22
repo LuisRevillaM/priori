@@ -4,22 +4,28 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "generate:contracts": "PYTHONPATH=../../src ../../.venv/bin/python ../../scripts/workbench_alpha/generate_contracts.py",
     "dev": "vite --host 127.0.0.1 --port 5174",
-    "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "build": "npm run generate:contracts && tsc --noEmit -p tsconfig.json && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4174",
+    "test:contracts": "npm run generate:contracts && git diff --exit-code -- src/generated/api-schemas.json src/generated/api-types.ts",
     "test:fixtures": "node tests/check-no-tactical-fixtures.mjs",
+    "test:unit": "tsx tests/geometry.test.ts && tsx tests/playback.test.ts",
     "test:e2e": "npm run build && playwright test",
-    "test:acceptance": "npm run test:fixtures && npm run test:e2e"
+    "test:acceptance": "npm run test:contracts && npm run test:fixtures && npm run test:unit && npm run test:e2e"
   },
   "dependencies": {
+    "ajv": "^8.20.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^5.1.2",
     "@playwright/test": "^1.57.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "json-schema-to-ts": "^3.1.1",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3",
     "vite": "^7.3.0"
   }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import {
   bootstrap,
@@ -11,6 +11,7 @@ import {
   submitValidate
 } from "./api";
 import { PitchCanvas } from "./PitchCanvas";
+import { advancePlaybackFrame } from "./playback";
 import type {
   BootstrapResponse,
   ConfirmationResponse,
@@ -94,15 +95,30 @@ export function App() {
   });
   const [frameIndex, setFrameIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState<0.5 | 1 | 2>(1);
+  const [inspectionLoadingResultId, setInspectionLoadingResultId] = useState<string | null>(null);
   const [busy, setBusy] = useState<BusyKey | null>("bootstrap");
   const [error, setError] = useState<string | null>(null);
+  const inspectionGenerationRef = useRef(0);
+  const playbackRef = useRef<{ previousTimestamp: number | null; carriedMs: number }>({
+    previousTimestamp: null,
+    carriedMs: 0
+  });
+
+  const inspectedResultId = inspection?.inspection.result.result_id ?? null;
+  const effectiveSelectedResultId = selectedResultId ?? inspectedResultId;
 
   const selectedResult = useMemo<ResultRow | null>(() => {
     const rows = execution?.execution.results ?? [];
-    return rows.find((item) => item.result_id === selectedResultId) ?? rows[0] ?? null;
-  }, [execution, selectedResultId]);
+    return rows.find((item) => item.result_id === effectiveSelectedResultId) ?? rows[0] ?? null;
+  }, [execution, effectiveSelectedResultId]);
 
-  const replay: ReplayPayload | null = inspection?.replay ?? timestampInspection?.replay ?? null;
+  const correlatedInspection =
+    inspection && effectiveSelectedResultId && inspection.inspection.result.result_id === effectiveSelectedResultId
+      ? inspection
+      : null;
+  const replay: ReplayPayload | null = timestampInspection?.replay ?? correlatedInspection?.replay ?? null;
+  const evidenceResult = correlatedInspection ? selectedResult : null;
   const evidenceAliases = useMemo(() => requestedEvidence(planDocument), [planDocument]);
 
   useEffect(() => {
@@ -120,16 +136,36 @@ export function App() {
 
   useEffect(() => {
     if (!playing || !replay || replay.frames.length === 0) return;
-    const timer = window.setInterval(() => {
-      setFrameIndex((current) => (current + 1) % replay.frames.length);
-    }, 120);
-    return () => window.clearInterval(timer);
-  }, [playing, replay]);
+    let animationFrame = 0;
+    const tick = (timestamp: number) => {
+      const previous = playbackRef.current.previousTimestamp;
+      playbackRef.current.previousTimestamp = timestamp;
+      if (previous !== null) {
+        const elapsedMs = timestamp - previous;
+        setFrameIndex((current) => {
+          const step = advancePlaybackFrame({
+            currentFrameIndex: current,
+            frameCount: replay.frames.length,
+            frameRateHz: replay.frame_rate_hz,
+            playbackSpeed,
+            elapsedMs,
+            carriedMs: playbackRef.current.carriedMs
+          });
+          playbackRef.current.carriedMs = step.carriedMs;
+          return step.frameIndex;
+        });
+      }
+      animationFrame = window.requestAnimationFrame(tick);
+    };
+    animationFrame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [playing, replay, playbackSpeed]);
 
   useEffect(() => {
     setFrameIndex(0);
     setPlaying(false);
-  }, [inspection?.replay?.replay_window_id, timestampInspection?.replay?.replay_window_id]);
+    playbackRef.current = { previousTimestamp: null, carriedMs: 0 };
+  }, [replay?.replay_window_id]);
 
   async function runAction<T>(key: BusyKey, action: () => Promise<T>): Promise<T | null> {
     setBusy(key);
@@ -162,6 +198,7 @@ export function App() {
     setExecution(null);
     setInspection(null);
     setTimestampInspection(null);
+    setInspectionLoadingResultId(null);
   }
 
   async function handleInterpret() {
@@ -181,6 +218,7 @@ export function App() {
       setExecution(null);
       setInspection(null);
       setTimestampInspection(null);
+      setInspectionLoadingResultId(null);
     }
   }
 
@@ -193,6 +231,7 @@ export function App() {
     setExecution(null);
     setInspection(null);
     setTimestampInspection(null);
+    setInspectionLoadingResultId(null);
   }
 
   async function handleConfirm() {
@@ -229,6 +268,11 @@ export function App() {
   }
 
   async function inspectSpecificResult(executionId: string, resultId: string) {
+    const generation = inspectionGenerationRef.current + 1;
+    inspectionGenerationRef.current = generation;
+    setInspection(null);
+    setTimestampInspection(null);
+    setInspectionLoadingResultId(resultId);
     const payload = await runAction("inspect", () =>
       inspectResult({
         execution_id: executionId,
@@ -236,9 +280,16 @@ export function App() {
         padding_seconds: 2
       })
     );
-    if (!payload) return;
+    if (!payload) {
+      if (inspectionGenerationRef.current === generation) {
+        setInspectionLoadingResultId(null);
+      }
+      return;
+    }
+    if (inspectionGenerationRef.current !== generation) return;
+    if (payload.inspection.result.result_id !== resultId) return;
     setInspection(payload);
-    setTimestampInspection(null);
+    setInspectionLoadingResultId(null);
   }
 
   async function handleResultSelect(resultId: string) {
@@ -259,8 +310,10 @@ export function App() {
       })
     );
     if (!payload) return;
+    inspectionGenerationRef.current += 1;
     setTimestampInspection(payload);
     setInspection(null);
+    setInspectionLoadingResultId(null);
   }
 
   const validationTone = validation?.validation.ok ? "good" : validation ? "bad" : "neutral";
@@ -433,7 +486,9 @@ export function App() {
               <div>
                 <div className="panelTitle">Coordinate Replay</div>
                 <div className="muted" data-testid="replay-window-summary">
-                  {replay
+                  {inspectionLoadingResultId
+                    ? `Loading result ${inspectionLoadingResultId}`
+                    : replay
                     ? `${replay.replay_window_id} ${replay.source_id} ${replay.match_id} ${replay.period} ${replay.start_frame_id}-${replay.end_frame_id}`
                     : "No replay window selected"}
                 </div>
@@ -448,6 +503,18 @@ export function App() {
               <button data-testid="play-pause-button" onClick={() => setPlaying((value) => !value)} disabled={!replay}>
                 {playing ? "Pause" : "Play"}
               </button>
+              <div className="speedControls" data-testid="playback-speed-controls">
+                {([0.5, 1, 2] as const).map((speed) => (
+                  <button
+                    key={speed}
+                    className={playbackSpeed === speed ? "active" : ""}
+                    onClick={() => setPlaybackSpeed(speed)}
+                    disabled={!replay}
+                  >
+                    {speed}x
+                  </button>
+                ))}
+              </div>
               <button
                 onClick={() => setFrameIndex((value) => Math.min((replay?.frames.length ?? 1) - 1, value + 1))}
                 disabled={!replay}
@@ -474,14 +541,19 @@ export function App() {
                   <div key={item.id} className="evidenceRow" data-testid="evidence-alias">
                     <span>{item.alias}</span>
                     <small>{item.source} / {item.field}</small>
-                    <code>{String(selectedResult?.requested_evidence[item.alias] ?? "")}</code>
+                    <code>{String(evidenceResult?.requested_evidence[item.alias] ?? "")}</code>
                   </div>
                 ))}
+                {inspectionLoadingResultId ? (
+                  <div className="emptyState" data-testid="inspection-loading">
+                    Loading selected result evidence.
+                  </div>
+                ) : null}
               </div>
             </div>
             <div className="panel">
               <div className="panelTitle">Predicate Trace</div>
-              <TraceList traces={inspection?.inspection.predicate_traces ?? []} />
+              <TraceList traces={correlatedInspection?.inspection.predicate_traces ?? []} />
             </div>
           </section>
         </section>
@@ -500,7 +572,7 @@ export function App() {
                   key={result.result_id}
                   data-testid="result-item"
                   data-result-id={result.result_id}
-                  className={selectedResultId === result.result_id ? "resultItem active" : "resultItem"}
+                  className={effectiveSelectedResultId === result.result_id ? "resultItem active" : "resultItem"}
                   onClick={() => void handleResultSelect(result.result_id)}
                 >
                   <span>#{result.rank} {result.classification}</span>
