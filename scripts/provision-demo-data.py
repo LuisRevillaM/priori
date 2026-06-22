@@ -11,6 +11,7 @@ The script is intentionally conservative:
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import json
 import os
@@ -153,10 +154,19 @@ def replace_tree(source: Path, destination: Path) -> None:
     if backup.exists():
         shutil.rmtree(backup)
     if destination.exists():
-        destination.rename(backup)
-    source.rename(destination)
+        move_tree(destination, backup)
+    move_tree(source, destination)
     if backup.exists():
         shutil.rmtree(backup)
+
+
+def move_tree(source: Path, destination: Path) -> None:
+    try:
+        source.rename(destination)
+    except OSError as exc:
+        if exc.errno != errno.EXDEV:
+            raise
+        shutil.move(str(source), str(destination))
 
 
 if __name__ == "__main__":
