@@ -73,14 +73,48 @@ prompt). Run N1E there:
    `destination_time_to_entry_seconds`; re-run the host-authority path; re-freeze.
 5. `make n1d1-verify` → target VERIFIED.
 
-## Open decision for the controller
+## Option A attempt (deploy/runtime environment) — outcome: BLOCKED, stopped per Task 9
 
-This environment cannot run the faithful live compile. Choose one:
-- **(A) Run N1E in the deploy/runtime environment** with the frozen `hermes interpret` compile
-  contract (recommended; only path that yields a faithful, hash-matching origin).
-- **(B) Authorize a local live run via the general agent interface** — accepting a paid call on the
-  personal Codex account and that it will **not** match the frozen `system_prompt_hash` (not a
-  faithful frozen-origin re-run; would need an explicit prompt, which N1E currently forbids).
-- **(C) Hold N1E**; keep Beta 1C blocked at the honest N1D.1 BLOCKED state.
+Controller approved Option A (run in the deploy environment; paid frontier calls authorized; do **not**
+use the local general-agent workaround; if the deploy is unavailable or does not expose the frozen
+contract, stop and report — do not relax). Outcome:
 
-No fabrication was performed. Beta 1C remains blocked.
+- **Frozen compile source absent locally**: `/opt/hermes-agent` and `/var/data` do not exist in this
+  sandbox; `WORKBENCH_HERMES_PYTHON` (`/opt/hermes-agent/venv/bin/python`) is absent. The only local
+  `hermes` is the personal agent without the `interpret`/`probe` contract (above).
+- **Deploy reachable and contract configured**: `https://priori-integrated-alpha.onrender.com`
+  `/api/health` → ok; `/api/bootstrap` → `model.available: true`, `status: HERMES_CONFIGURED`
+  ("each interpretation is probed and validated at request time"). So the frozen compile contract
+  exists on the deploy host.
+- **But the deploy does not EXPOSE the origin trace for export**:
+  - `/api/interpret` (product response) does not carry the raw model decision or the ordered MCP
+    tool-call trace; those are written to server-side `artifacts/.../hermes-traces/` files.
+  - There is no artifact/trace retrieval endpoint: `/api/hermes-trace`, `/api/origin`, `/api/export`,
+    `/api/n1`, `/api/retrieve_replay_window` → 404; concrete artifact `.json` (e.g. a hermes-trace or
+    an execution handle) → 404 `STATIC_NOT_FOUND`. The `/artifacts/.../` `200` is only the SPA
+    `index.html` fallback (`content-type: text/html`), not a file listing.
+  - No shell/file access to the Render host is available from this sandbox to extract the trace bundle.
+
+Therefore the deploy **has** the frozen contract but **does not expose** its origin-trace artifacts
+in any way I can export into the repo. Firing the paid `/api/interpret` compile on the deploy would
+author a session whose raw decision + tool-call trace I could not retrieve — producing no in-repo
+VERIFIED attestation and wasting a paid call. Per the controller's explicit fallback, I stopped and
+did not relax N1E. **No fabrication. No prompt tuning. No local general-agent workaround.**
+
+## What is required to complete N1E faithfully
+
+A runner that has BOTH (1) the frozen compile contract (`hermes interpret --toolset
+mcp-priori_tactical`, `--provider openai-codex --model gpt-5.5`, frozen system prompt, via
+`scripts/bootstrap-hermes.sh` / `/opt/hermes-agent`) AND (2) write access to this repo (or a defined
+export channel). Concretely, one of:
+- a job executed **on the deploy host** (Render SSH/one-off job) that runs the frozen compile + the
+  host-authority path, persists the origin trace, and exports the bundle below into the repo; or
+- a locally provisioned `/opt/hermes-agent` compile environment with the same frozen contract.
+
+The exported bundle must contain: raw model decision; ordered MCP tool-call trace; submitted Hermes
+draft + draft hash; host-augmented N1D plan with exactly the two aliases
+(`destination_entry_mode`, `destination_time_to_entry_seconds`); validate/confirm/execute/inspect/
+replay IDs; and the `n1d1-verify` VERIFIED attestation + hashes. Then re-pin N1D and re-run
+`make n1d1-verify` → VERIFIED.
+
+No fabrication was performed. N1D.1 remains BLOCKED; Beta 1C remains blocked.
