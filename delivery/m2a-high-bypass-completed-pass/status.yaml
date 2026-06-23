@@ -1,0 +1,25 @@
+milestone: M2A
+name: High-Bypass Completed Pass
+status: SPEC_DRAFTED
+created_at: "2026-06-23"
+branch: main
+source_of_truth:
+  - docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md
+  - delivery/m2a-high-bypass-completed-pass/SPEC.md
+depends_on:
+  - Beta 1C accepted
+  - canonical event and tracking data in data/canonical/v1
+scope:
+  includes:
+    - controlled_pass_episode
+    - opponents_bypassed_by_action
+    - high_bypass_completed_pass_v1
+    - exact replay evidence for human verification
+  excludes:
+    - defensive_line_model
+    - controlled_line_break_episode
+    - support_arrival_relation
+    - pass probability
+    - optimality
+    - player intent
+next_action: Implement M2A-S0 data alignment preflight before runtime or UI changes.
