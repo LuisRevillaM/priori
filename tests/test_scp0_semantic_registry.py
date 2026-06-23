@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tqe.semantic_registry import generate as scpgen
 from tqe.semantic_registry.generate import (
     build_plan_artifact_index,
     build_projections,
@@ -13,6 +14,7 @@ from tqe.semantic_registry.generate import (
     generate_runtime_manifest,
     load_registry,
     make_registry_lock,
+    validate_projection_parity,
     validate_projection_identities,
     validate_registry,
 )
@@ -181,6 +183,106 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
 
         self.assertNotIn("controlled_pass_episode", product_ids)
 
+    def test_projection_policy_requires_value_changes_projection(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        for policy in registry.projection_policies:
+            if policy.target.value == "product":
+                policy.requires["product_maturity"] = "NOT_EXPOSED"
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        projections = build_projections(registry, runtime_manifest, lock)
+
+        self.assertEqual([], projections["product"]["capabilities"])
+        self.assertEqual([], projections["product"]["recipes"])
+        self.assertEqual([], projections["product"]["validated_compositions"])
+
+    def test_missing_baseline_file_fails_projection_parity(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+        original_paths = scpgen.BASELINE_PATHS
+        original_capability_path = scpgen.CAPABILITY_CATALOG_BASELINE_PATH
+        try:
+            scpgen.CAPABILITY_CATALOG_BASELINE_PATH = Path("generated/missing-baseline.json")
+            scpgen.BASELINE_PATHS = {
+                **original_paths,
+                "capability_catalog": scpgen.CAPABILITY_CATALOG_BASELINE_PATH,
+            }
+
+            codes = finding_codes(
+                validate_projection_parity(registry, runtime_manifest, projections)
+            )
+        finally:
+            scpgen.CAPABILITY_CATALOG_BASELINE_PATH = original_capability_path
+            scpgen.BASELINE_PATHS = original_paths
+
+        self.assertIn("projection_baseline_missing", codes)
+
+    def test_canonical_product_shared_records_have_no_contract_drift(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+
+        differences = scpgen.build_projection_differences(runtime_manifest, projections)
+
+        self.assertEqual([], differences["product"]["contract_changed"])
+        self.assertEqual(15, differences["product"]["shared_count"])
+
+    def test_unapproved_baseline_add_remove_or_contract_change_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+
+        added_projection = copy.deepcopy(projections)
+        added_projection["product"]["capabilities"].append(
+            {
+                "id": "fake_capability",
+                "version": "0.1.0",
+                "kind": "primitive",
+                "runtime_contract": {
+                    "kind": "primitive",
+                    "name": "fake_capability",
+                    "version": "0.1.0",
+                    "inputs": [],
+                    "outputs": [],
+                    "parameters": [],
+                    "evidence_fields": [],
+                    "missing_data_semantics": "unknown",
+                    "limitations": [],
+                    "purpose": "fake",
+                },
+            }
+        )
+        removed_projection = copy.deepcopy(projections)
+        removed_projection["product"]["capabilities"] = removed_projection["product"][
+            "capabilities"
+        ][1:]
+        changed_projection = copy.deepcopy(projections)
+        changed_projection["product"]["capabilities"][0]["runtime_contract"][
+            "purpose"
+        ] = "mutated purpose"
+
+        self.assertIn(
+            "projection_parity_unapproved_difference",
+            finding_codes(validate_projection_parity(registry, runtime_manifest, added_projection)),
+        )
+        self.assertIn(
+            "projection_parity_unapproved_difference",
+            finding_codes(
+                validate_projection_parity(registry, runtime_manifest, removed_projection)
+            ),
+        )
+        self.assertIn(
+            "projection_parity_unapproved_difference",
+            finding_codes(
+                validate_projection_parity(registry, runtime_manifest, changed_projection)
+            ),
+        )
+
     def test_recipe_dependency_disagreement_fails(self) -> None:
         registry = load_registry()
         runtime_manifest = generate_runtime_manifest()
@@ -193,6 +295,35 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
 
         self.assertIn("recipe_dependency_mismatch", codes)
+
+    def test_recipe_omitting_profile_claim_or_evidence_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        recipe = next(
+            item
+            for item in registry.recipe_definitions
+            if item.id == "recipe.opposite_corridor_after_shift.v1"
+        )
+        recipe.claim_contract_ref = "claim.ai_corridor_destination_composition.v1"
+        recipe.evidence_contract_ref = "evidence.ai_corridor_destination_composition.v1"
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("recipe_claim_omits_profile_contract", codes)
+        self.assertIn("recipe_evidence_omits_profile_contract", codes)
+
+    def test_every_recipe_and_composition_requires_top_level_concept(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        registry.recipe_definitions[0].concept_ref = "concept.missing"
+        registry.composition_instances[0].concept_ref = "concept.missing"
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("recipe_missing_concept", codes)
+        self.assertIn("composition_missing_concept", codes)
 
     def test_plan_threshold_change_without_profile_update_changes_lock_and_fails(self) -> None:
         registry = load_registry()
@@ -219,6 +350,33 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
 
         self.assertIn("profile_binding_plan_parameter_mismatch", codes)
 
+    def test_origin_bundle_byte_change_changes_source_artifact_hash(self) -> None:
+        registry = load_registry()
+        artifact = next(
+            item
+            for item in registry.plan_artifacts
+            if item.id == "plan.ai_corridor_destination.2026_06_23"
+        )
+        baseline = build_plan_artifact_index(registry)["artifacts"][artifact.id]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "n1f-origin-bundle.json"
+            path.write_text(
+                Path(artifact.exact_typed_plan_ref).read_text(encoding="utf-8") + "\n",
+                encoding="utf-8",
+            )
+            artifact.exact_typed_plan_ref = str(path)
+            changed = build_plan_artifact_index(registry)["artifacts"][artifact.id]
+
+        self.assertNotEqual(
+            baseline["source_artifact_sha256"],
+            changed["source_artifact_sha256"],
+        )
+        self.assertEqual(
+            baseline["normalized_selected_document_hash"],
+            changed["normalized_selected_document_hash"],
+        )
+
     def test_composition_cannot_point_to_arbitrary_valid_plan_file(self) -> None:
         registry = load_registry()
         runtime_manifest = generate_runtime_manifest()
@@ -231,6 +389,29 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
 
         self.assertIn("composition_artifact_not_origin_bundle", codes)
+
+    def test_composition_with_unbound_capability_or_undefined_operator_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        artifact = next(
+            item
+            for item in registry.plan_artifacts
+            if item.id == "plan.ai_corridor_destination.2026_06_23"
+        )
+        payload = json.loads(Path(artifact.exact_typed_plan_ref).read_text(encoding="utf-8"))
+        document = payload["host_augmentation"]["augmented_document"]
+        document["draft_plan"]["nodes"][0]["catalog_ref"] = "missing_capability"
+        document["draft_plan"]["nodes"][-1]["operator"]["name"] = "missing_operator"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "n1f-origin-bundle-mutated.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            artifact.exact_typed_plan_ref = str(path)
+            lock = make_registry_lock(registry, runtime_manifest)
+            codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("composition_references_unbound_runtime_capability", codes)
+        self.assertIn("composition_references_unregistered_operator", codes)
 
     def test_concept_missing_claim_contract_fails(self) -> None:
         registry = load_registry()
@@ -290,6 +471,48 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
 
         self.assertIn("operator_signature_mismatch", codes)
+
+    def test_exact_binding_missing_runtime_or_semantic_port_or_parameter_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        op = next(
+            item
+            for item in registry.operationalizations
+            if item.id == "op.relation_destination_entry.v1"
+        )
+        op.outputs[0].name = "missing_runtime_output"
+        binding = next(
+            item
+            for item in registry.runtime_bindings
+            if item.id == "binding.primitive.relation_destination_entry.0_1_0"
+        )
+        del binding.parameter_mapping["episode_selection"]
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("runtime_signature_mismatch", codes)
+        self.assertIn("runtime_parameter_signature_mismatch", codes)
+
+    def test_failed_generation_leaves_last_valid_projection_untouched(self) -> None:
+        registry = load_registry()
+        registry.runtime_bindings = registry.runtime_bindings[:-1]
+        with tempfile.TemporaryDirectory() as tmp:
+            registry_path = Path(tmp) / "registry.yaml"
+            output_root = Path(tmp) / "generated"
+            output_root.mkdir()
+            product_projection = output_root / "product-projection.json"
+            product_projection.write_text('{"sentinel": true}\n', encoding="utf-8")
+            payload = registry.model_dump(mode="json", exclude_none=True)
+            payload["atlas_entries"] = []
+            registry_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            _, _, _, report = generate_scp0_artifacts(
+                registry_path=registry_path, output_root=output_root, write=True
+            )
+
+            self.assertEqual("FAIL", report.status)
+            self.assertEqual('{"sentinel": true}\n', product_projection.read_text(encoding="utf-8"))
 
     def test_pilot_paths_are_discovered_from_plan_artifacts(self) -> None:
         registry, _, _, report = generate_scp0_artifacts(write=False)

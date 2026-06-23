@@ -165,6 +165,10 @@ class RuntimeBinding(CommonEnvelope):
     implements: list[str] = Field(min_length=1)
     conformance_status: ConformanceStatus
     known_deviations: list[str] = Field(default_factory=list)
+    field_mapping: dict[str, str] = Field(default_factory=dict)
+    parameter_mapping: dict[str, str] = Field(default_factory=dict)
+    uncovered_runtime_fields: list[str] = Field(default_factory=list)
+    uncovered_semantic_fields: list[str] = Field(default_factory=list)
 
 
 class OperatorParameter(StrictModel):
@@ -217,6 +221,7 @@ class ProjectionPolicy(CommonEnvelope):
     target: ProjectionTarget
     requires: dict[str, Any] = Field(default_factory=dict)
     excludes: list[str] = Field(default_factory=list)
+    accepted_differences: dict[str, list[str]] = Field(default_factory=dict)
 
 
 class MaturityAssessment(CommonEnvelope):
@@ -233,6 +238,7 @@ class RecipeDefinitionMapping(CommonEnvelope):
     kind: Literal[ObjectKind.RECIPE_DEFINITION] = ObjectKind.RECIPE_DEFINITION
     recipe_id: str
     recipe_version: str
+    concept_ref: str
     plan_artifact_ref: str
     dependency_refs: list[str] = Field(default_factory=list)
     profile_refs: list[str] = Field(default_factory=list)
@@ -256,6 +262,7 @@ class PlanArtifact(CommonEnvelope):
 class CompositionInstance(CommonEnvelope):
     kind: Literal[ObjectKind.COMPOSITION_INSTANCE] = ObjectKind.COMPOSITION_INSTANCE
     plan_artifact_ref: str
+    concept_ref: str
     origin: Literal["AI_AUTHORED", "MANUAL_PRESET"]
     promotion_status: Literal["VALIDATED_COMPOSITION", "EXPERIMENTAL"]
     claim_contract_ref: str
@@ -356,6 +363,7 @@ class RegistryLock(StrictModel):
     registry_revision: str
     runtime_manifest_revision: str
     plan_artifact_revision: str
+    baseline_artifact_revision: str
     generator_version: str
     product_projection_policy: str
     ai_projection_policy: str

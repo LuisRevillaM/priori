@@ -83,6 +83,14 @@ concepts:
     evidence_contract_ref: evidence.high_bypass_completed_pass.v1
     tags: [bypass, pass, recipe]
 
+  - id: concept.ball_side_block_shift
+    kind: Concept
+    display_name: Ball-Side Block Shift
+    description: A reviewed ball-side entry and defensive block-shift pattern with saved-plan outcome classification.
+    claim_contract_ref: claim.ball_side_block_shift.v1
+    evidence_contract_ref: evidence.ball_side_block_shift.v1
+    tags: [block_shift, recipe, reviewed]
+
   - id: concept.progressive_connection_followed_by_destination_entry
     kind: Concept
     display_name: Progressive Connection Followed By Destination Entry
@@ -90,6 +98,13 @@ concepts:
     claim_contract_ref: claim.ai_corridor_destination_composition.v1
     evidence_contract_ref: evidence.ai_corridor_destination_composition.v1
     tags: [corridor, destination_entry, composition]
+  - id: concept.opposite_corridor_after_shift
+    kind: Concept
+    display_name: Opposite Corridor After Shift
+    description: A ball-side block-shift context followed by a progressive corridor and destination-entry evaluation on the opposite-side relation.
+    claim_contract_ref: claim.opposite_corridor_after_shift.v1
+    evidence_contract_ref: evidence.opposite_corridor_after_shift.v1
+    tags: [corridor, block_shift, destination_entry, recipe]
 
 operationalizations:
   - id: op.possession_segment_intervals.v1
@@ -444,6 +459,9 @@ runtime_bindings:
     implements: [op.event_seeded_tracking_confirmed_pass.v1]
     conformance_status: PARTIAL
     known_deviations: [Control candidates are currently collapsed into final status rather than retained as a candidate distribution.]
+    field_mapping: {controlled_pass_status: controlled_pass_status, forward_progression_m: forward_progression_m, anchors: anchors}
+    uncovered_runtime_fields: [episodes]
+    uncovered_semantic_fields: []
   - id: binding.primitive.ball_lateral_fraction.0_1_0
     kind: RuntimeBinding
     display_name: ball_lateral_fraction runtime binding
@@ -461,6 +479,9 @@ runtime_bindings:
     implements: [op.defensive_outfield_centroid.v1]
     conformance_status: PARTIAL
     known_deviations: [Active-player membership is derived from current implementation behavior rather than a standalone authoritative active-player timeline.]
+    field_mapping: {centroid_y: centroid_y}
+    uncovered_runtime_fields: []
+    uncovered_semantic_fields: [defending_outfield_positions]
   - id: binding.primitive.signed_lateral_shift.0_1_0
     kind: RuntimeBinding
     display_name: signed_lateral_shift runtime binding
@@ -478,6 +499,9 @@ runtime_bindings:
     implements: [op.reviewed_block_shift_outcome.v1]
     conformance_status: LEGACY_APPROXIMATION
     known_deviations: [Reviewed-plan-specific classifier is intentionally not a general-purpose authorable primitive.]
+    field_mapping: {accepted_shift_episodes: accepted_shift_episodes, classification: classification}
+    uncovered_runtime_fields: [horizon]
+    uncovered_semantic_fields: []
   - id: binding.primitive.relation_destination_entry.0_1_0
     kind: RuntimeBinding
     display_name: relation_destination_entry runtime binding
@@ -486,6 +510,10 @@ runtime_bindings:
     implementation_ref: impl.relation_destination_entry.python.v1
     implements: [op.relation_destination_entry.v1]
     conformance_status: EXACT
+    parameter_mapping:
+      destination_entry_horizon_seconds: destination_entry_horizon_seconds
+      result_id_seed: result_id_seed
+      episode_selection: episode_selection
   - id: binding.primitive.relation_destination_entry_classification.0_1_0
     kind: RuntimeBinding
     display_name: relation_destination_entry_classification runtime binding
@@ -495,6 +523,9 @@ runtime_bindings:
     implements: [op.reviewed_relation_destination_entry_classification.v1]
     conformance_status: LEGACY_APPROXIMATION
     known_deviations: [Reviewed-plan-specific wrapper; AI-authored plans should use relation_destination_entry.]
+    field_mapping: {relation_episodes: relation_episodes, classification: classification}
+    uncovered_runtime_fields: [destination_entry_horizon_seconds, result_id_seed, episode_selection]
+    uncovered_semantic_fields: []
   - id: binding.relation.geometric_progressive_corridor.0_1_0
     kind: RuntimeBinding
     display_name: geometric_progressive_corridor runtime binding
@@ -503,6 +534,16 @@ runtime_bindings:
     implementation_ref: impl.geometric_progressive_corridor.python.v1
     implements: [op.geometric_progressive_corridor.v1]
     conformance_status: EXACT
+    parameter_mapping:
+      max_window_seconds: max_window_seconds
+      minimum_progression_m: minimum_progression_m
+      minimum_segment_length_m: minimum_segment_length_m
+      maximum_segment_length_m: maximum_segment_length_m
+      minimum_clearance_m: minimum_clearance_m
+      open_after_frames: open_after_frames
+      close_after_frames: close_after_frames
+      minimum_duration_seconds: minimum_duration_seconds
+      side_filter: side_filter
   - id: binding.relation.geometric_progressive_corridor_from_anchor_set.0_1_0
     kind: RuntimeBinding
     display_name: geometric_progressive_corridor_from_anchor_set runtime binding
@@ -511,6 +552,16 @@ runtime_bindings:
     implementation_ref: impl.geometric_progressive_corridor_anchor_set.python.v1
     implements: [op.geometric_progressive_corridor_anchor_set.v1]
     conformance_status: EXACT
+    parameter_mapping:
+      max_window_seconds: max_window_seconds
+      minimum_progression_m: minimum_progression_m
+      minimum_segment_length_m: minimum_segment_length_m
+      maximum_segment_length_m: maximum_segment_length_m
+      minimum_clearance_m: minimum_clearance_m
+      open_after_frames: open_after_frames
+      close_after_frames: close_after_frames
+      minimum_duration_seconds: minimum_duration_seconds
+      side_filter: side_filter
   - id: binding.relation.opponents_bypassed_by_action.0_1_0
     kind: RuntimeBinding
     display_name: opponents_bypassed_by_action runtime binding
@@ -520,6 +571,9 @@ runtime_bindings:
     implements: [op.release_reception_opponent_transition_count.v1]
     conformance_status: PARTIAL
     known_deviations: [Active-opponent denominator is implemented for current data shape but not yet backed by a standalone authoritative active-player timeline.]
+    field_mapping: {controlled_pass_episodes: controlled_pass_episodes, controlled_pass_anchors: controlled_pass_anchors, opponents_bypassed_count: opponents_bypassed_count, evaluation_status: evaluation_status}
+    uncovered_runtime_fields: [anchor_evaluations, forward_progression_m, goal_side_buffer_m, bypassed_buffer_m]
+    uncovered_semantic_fields: []
 
 operator_definitions:
   - id: operator.gt.1_0_0
@@ -702,6 +756,14 @@ claim_contracts:
     permitted: [possession_anchor_had_progressive_corridor, ball_entry_into_corridor_destination_region_evaluated]
     prohibited: [proves_pass_should_be_played, proves_optimality, proves_player_intent]
     unknown_conditions: [corridor_relation_missing, destination_entry_coverage_incomplete]
+  - id: claim.opposite_corridor_after_shift.v1
+    kind: ClaimContract
+    display_name: Opposite Corridor After Shift Claims
+    description: Claims permitted for the opposite-corridor-after-shift experimental recipe.
+    inherits: [claim.ball_side_block_shift.v1, claim.progressive_connection_availability.v1, claim.relation_destination_entry.v1]
+    permitted: [ball_side_shift_context_identified, opposite_side_progressive_corridor_identified, destination_entry_evaluated_after_shift]
+    prohibited: [proves_switch_was_available, proves_not_switching_was_mistake, proves_pass_should_be_played, proves_optimality, proves_player_intent]
+    unknown_conditions: [shift_context_unresolved, corridor_relation_missing, destination_entry_coverage_incomplete]
 
 evidence_contracts:
   - id: evidence.possession_context.v1
@@ -780,6 +842,13 @@ evidence_contracts:
     inherits: [evidence.possession_context.v1, evidence.progressive_connection_availability.v1, evidence.relation_destination_entry.v1]
     required: [match_id, period, anchor_id, anchor_frame_id, possession_start_frame_id, possession_end_frame_id, relation_id, open_frame_id, target_player_id, destination_region, minimum_clearance_m, entry_status, entry_mode, witness_frame_id]
     replay_projection: [possession_window, corridor_geometry, destination_region, ball_path]
+  - id: evidence.opposite_corridor_after_shift.v1
+    kind: EvidenceContract
+    display_name: Opposite Corridor After Shift Evidence
+    description: Evidence required for the opposite-corridor-after-shift experimental recipe.
+    inherits: [evidence.ball_side_block_shift.v1, evidence.progressive_connection_availability.v1, evidence.relation_destination_entry.v1]
+    required: [match_id, period, anchor_id, anchor_frame_id, ball_side, wide_entry_y_m, baseline_defensive_centroid_y_m, defending_outfield_player_ids, signed_shift_metres, shift_frame_id, classification, outcome_window_start_frame_id, outcome_window_end_frame_id, relation_id, open_frame_id, target_player_id, destination_region, minimum_clearance_m, entry_status, entry_mode, witness_frame_id]
+    replay_projection: [ball_position, centroid_shift, corridor_geometry, destination_region, ball_path]
 
 exposure_policies:
   - id: exposure.runtime.possession_segment.0_1_0
@@ -910,6 +979,10 @@ projection_policies:
     target: product
     requires: {runtime_binding: VERIFIED, product_exposure: ALLOWED, product_maturity: EXPOSED, validation: VERIFIED}
     excludes: [PROPOSED_ATLAS, DEPRECATED]
+    accepted_differences:
+      added: [composition:composition.ai_corridor_destination.2026_06_23]
+      removed: []
+      contract_changed: []
   - id: projection.ai.v1
     kind: ProjectionPolicy
     display_name: AI Projection Policy
@@ -917,6 +990,10 @@ projection_policies:
     target: ai
     requires: {runtime_binding: VERIFIED, agent_safety: APPROVED, ai_compiler: ALLOWED, validation: VERIFIED}
     excludes: [PROPOSED_ATLAS, REVIEWED_PLAN_ONLY, DEPRECATED]
+    accepted_differences:
+      added: [composition:composition.ai_corridor_destination.2026_06_23]
+      removed: []
+      contract_changed: [recipe:ball_side_block_shift_v1:1.0.0, recipe:high_bypass_completed_pass_v1:0.1.0, recipe:opposite_corridor_after_shift_v1:0.1.0, recipe:possession_corridor_availability_v1:0.1.0]
   - id: projection.recipe_library.v1
     kind: ProjectionPolicy
     display_name: Recipe Library Projection Policy
@@ -1149,6 +1226,7 @@ recipe_definitions:
     description: Semantic mapping for the reviewed ball-side block-shift recipe.
     recipe_id: ball_side_block_shift_v1
     recipe_version: 1.0.0
+    concept_ref: concept.ball_side_block_shift
     plan_artifact_ref: plan.ball_side_block_shift.v1
     dependency_refs: [possession_segment, ball_lateral_fraction, gt, persists_for, defensive_outfield_centroid, signed_lateral_shift, gte, outcome_classification, neq]
     profile_refs: [profile.ball_side_block_shift_reviewed.v1]
@@ -1160,6 +1238,7 @@ recipe_definitions:
     description: Semantic mapping for the possession corridor availability experimental recipe.
     recipe_id: possession_corridor_availability_v1
     recipe_version: 0.1.0
+    concept_ref: concept.progressive_connection_availability
     plan_artifact_ref: plan.possession_corridor_availability.v1
     dependency_refs: [possession_segment, geometric_progressive_corridor_from_anchor_set, exists]
     profile_refs: [profile.progressive_corridor_default.v1]
@@ -1171,17 +1250,19 @@ recipe_definitions:
     description: Semantic mapping for the opposite corridor after shift experimental recipe.
     recipe_id: opposite_corridor_after_shift_v1
     recipe_version: 0.1.0
+    concept_ref: concept.opposite_corridor_after_shift
     plan_artifact_ref: plan.opposite_corridor_after_shift.v1
     dependency_refs: [possession_segment, ball_lateral_fraction, gt, persists_for, defensive_outfield_centroid, signed_lateral_shift, gte, outcome_classification, neq, geometric_progressive_corridor, exists, relation_destination_entry_classification]
     profile_refs: [profile.ball_side_block_shift_reviewed.v1, profile.progressive_corridor_default.v1, profile.destination_entry_default.v1]
-    claim_contract_ref: claim.ai_corridor_destination_composition.v1
-    evidence_contract_ref: evidence.ai_corridor_destination_composition.v1
+    claim_contract_ref: claim.opposite_corridor_after_shift.v1
+    evidence_contract_ref: evidence.opposite_corridor_after_shift.v1
   - id: recipe.high_bypass_completed_pass.v1
     kind: RecipeDefinition
     display_name: High-Bypass Completed Pass Recipe Mapping
     description: Semantic mapping for the high-bypass completed pass experimental recipe.
     recipe_id: high_bypass_completed_pass_v1
     recipe_version: 0.1.0
+    concept_ref: concept.high_bypass_completed_pass
     plan_artifact_ref: plan.high_bypass_completed_pass.v1
     dependency_refs: [controlled_pass_episode, opponents_bypassed_by_action, gte]
     profile_refs: [profile.high_bypass_default.v1]
@@ -1194,6 +1275,7 @@ composition_instances:
     display_name: AI Corridor Destination Composition
     description: Validated AI-authored corridor destination composition. It remains a composition instance, not a registered recipe.
     plan_artifact_ref: plan.ai_corridor_destination.2026_06_23
+    concept_ref: concept.progressive_connection_followed_by_destination_entry
     origin: AI_AUTHORED
     promotion_status: VALIDATED_COMPOSITION
     claim_contract_ref: claim.ai_corridor_destination_composition.v1
