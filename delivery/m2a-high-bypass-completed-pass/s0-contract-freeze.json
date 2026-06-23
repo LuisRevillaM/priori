@@ -1,0 +1,329 @@
+{
+  "contract_sha256": "ffa4c63bd127eb9ba232e6666bafc8e96c7a371f347d8fe6cac05d7466119ef7",
+  "decision": "PROCEED_TO_S1",
+  "decision_scope": {
+    "accepted_match_ids": [
+      "J03WOY"
+    ],
+    "accepted_periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "accepted_scope_reason": "J03WOY has successful event/tracking pass reconstruction and no active-set or unusable-denominator issues in the 593 provisional controlled pass windows.",
+    "excluded_until_reclassified": [
+      "Full-corpus periods with reduced player counts or incomplete tracking must not be treated as complete denominators without S0C-equivalent coverage classification."
+    ]
+  },
+  "evidence_summary": {
+    "bypass_smoke": {
+      "attack_x_sign": 1,
+      "bypassed_buffer_m": 1.0,
+      "bypassed_player_ids": [
+        "a",
+        "b"
+      ],
+      "candidate_goal_side_ids": [
+        "a",
+        "b"
+      ],
+      "coverage_status": "COMPLETE",
+      "evaluated_opponent_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "evaluation_status": "PASS",
+      "expected_active_opponent_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "failure_reason": null,
+      "goal_side_buffer_m": 1.0,
+      "missing_active_opponent_ids": [],
+      "opponents_bypassed_count": 2,
+      "reception_ball_attack_x_m": 12.0,
+      "release_ball_attack_x_m": 0.0
+    },
+    "candidate_completed_pass_events": 639,
+    "controlled_pass_status_counts": {
+      "FAIL": 11,
+      "PASS": 593,
+      "UNKNOWN": 35
+    },
+    "event_frame_offset_ms": {
+      "count": 637,
+      "max": 19.0,
+      "min": -20.0,
+      "p50": 0.0,
+      "p90": 16.0,
+      "p95": 18.0
+    },
+    "full_corpus_frame_count_deviation_count": 183934,
+    "full_corpus_incomplete_period_role_samples": [
+      {
+        "active_players_at_period_end": 10,
+        "active_players_at_period_start": 11,
+        "interval_count": 11,
+        "match_id": "J03WN1",
+        "outfield_at_period_end": 9,
+        "outfield_at_period_start": 10,
+        "period": "firstHalf",
+        "team_role": "away",
+        "unique_tracked_players": 11,
+        "unknown_metadata_player_ids": []
+      },
+      {
+        "active_players_at_period_end": 10,
+        "active_players_at_period_start": 10,
+        "interval_count": 12,
+        "match_id": "J03WN1",
+        "outfield_at_period_end": 9,
+        "outfield_at_period_start": 9,
+        "period": "secondHalf",
+        "team_role": "away",
+        "unique_tracked_players": 12,
+        "unknown_metadata_player_ids": []
+      },
+      {
+        "active_players_at_period_end": 10,
+        "active_players_at_period_start": 11,
+        "interval_count": 16,
+        "match_id": "J03WQQ",
+        "outfield_at_period_end": 9,
+        "outfield_at_period_start": 10,
+        "period": "secondHalf",
+        "team_role": "away",
+        "unique_tracked_players": 16,
+        "unknown_metadata_player_ids": []
+      }
+    ],
+    "j03woy_pass_window_analysis": {
+      "pass_records_path": "artifacts/m2a/s0a-event-preflight-J03WOY-records.csv",
+      "samples": [],
+      "status": "PASS",
+      "window_count": 593,
+      "windows_with_active_set_change": 0,
+      "windows_with_unusable_defending_outfield_denominator": 0
+    },
+    "reception_delta_seconds_from_release": {
+      "count": 593,
+      "max": 5.16,
+      "min": 0.04,
+      "p50": 1.72,
+      "p90": 3.4,
+      "p95": 3.76
+    },
+    "release_delta_seconds_from_event": {
+      "count": 604,
+      "max": 3.0,
+      "min": -1.0,
+      "p50": 1.08,
+      "p90": 2.12,
+      "p95": 2.32
+    }
+  },
+  "frozen_contract": {
+    "active_player_policy": {
+      "active_set_change_inside_pass_window": "UNKNOWN",
+      "denominator_source": "initial accepted scope uses tracking-derived active on-pitch players cross-checked with players.parquet metadata; all-corpus expansion should reconcile lineup/substitution/dismissal events as the authoritative roster-change explanation",
+      "expected_opposition_set": "active defending outfield players at release and reception",
+      "goalkeeper_policy": "exclude known goalkeepers; unknown goalkeeper metadata makes denominator UNKNOWN",
+      "reduced_player_period_policy": "A reduced active outfield denominator may be valid after dismissal, but S1 accepted scope is J03WOY only. Other periods require explicit coverage classification before acceptance.",
+      "roster_not_denominator": true
+    },
+    "bypass_measurement_policy": {
+      "bypassed_buffer_m": 1.0,
+      "capability": "opponents_bypassed_by_action",
+      "goal_side_buffer_m": 1.0,
+      "missing_expected_active_opponent": "UNKNOWN, never silently reduced count",
+      "opponent_bypassed_definition": "opponent is goal-side of the ball at release AND behind the ball at controlled reception",
+      "recipe_thresholds_owned_by": "high_bypass_completed_pass_v1",
+      "threshold_free": true
+    },
+    "controlled_pass_episode_schema": {
+      "identity": "pass_episode_id, not frame-only correlation",
+      "predicate_record": "ControlledPassEvaluation",
+      "required_anchor_relative_output": "controlled_pass_episode.anchor_evaluations",
+      "required_fields": [
+        "anchor_id",
+        "pass_episode_id",
+        "event_anchor_frame_id",
+        "physical_release_frame_id",
+        "event_to_release_offset_ms",
+        "release_detection_status",
+        "release_detection_reason",
+        "controlled_pass_status",
+        "release_control_status",
+        "controlled_reception_status",
+        "possession_continuity_status",
+        "forward_progression_m",
+        "controlled_reception_frame_id",
+        "passer_id",
+        "receiver_id",
+        "evaluation_status"
+      ],
+      "rich_record": "ControlledPassEpisode"
+    },
+    "controlled_reception_policy": {
+      "control_distance_m": 2.5,
+      "fail_condition": "complete coverage and contradictory evidence prove no controlled reception",
+      "minimum_dwell_seconds": 0.24,
+      "nearest_teammate_margin_m": 1.0,
+      "pass_condition": "named receiver controls ball for the dwell window before a disqualifying stop",
+      "required_reason_codes": [
+        "receiver_controlled_first",
+        "another_player_controlled_first",
+        "possession_definitively_broke",
+        "reception_window_expired",
+        "missing_tracking",
+        "identity_unresolved",
+        "excessive_frame_gap"
+      ],
+      "search_window_seconds_after_release": 6.0,
+      "termination_order": [
+        "controlled reception by named receiver",
+        "another player controls ball first with incompatible possession evidence",
+        "known stoppage or incompatible event before reception",
+        "period end",
+        "maximum search window"
+      ],
+      "unknown_condition": "release not proven, missing tracking coverage, ambiguous first controller, or unresolved event conflict"
+    },
+    "decision_table": [
+      {
+        "bypass_coverage_status": "PASS",
+        "case": "all required evidence proven",
+        "controlled_pass_status": "PASS",
+        "result": "PASS or FAIL according to recipe thresholds"
+      },
+      {
+        "case": "complete evidence contradicts pass, reception, or threshold",
+        "result": "FAIL"
+      },
+      {
+        "case": "missing/insufficient tracking, metadata, active-set, orientation, or endpoint evidence could change answer",
+        "result": "UNKNOWN"
+      },
+      {
+        "case": "active-player membership changes between release and reception",
+        "result": "UNKNOWN"
+      }
+    ],
+    "event_timestamp_policy": {
+      "alignment_method": "nearest canonical frame timestamp in UTC",
+      "alignment_source": "events.timestamp",
+      "gameclock_seconds_usage": "reporting/fallback only; not primary alignment",
+      "not_release_frame": true,
+      "observed_j03woy_p95_offset_ms": 18.0
+    },
+    "explicit_non_claims": [
+      "Does not prove a formal defensive line was broken.",
+      "Does not prove the pass alone caused every highlighted opponent to be bypassed.",
+      "Does not infer player intent, optimality, pass probability, body orientation, or scanning."
+    ],
+    "high_bypass_recipe_policy": {
+      "classification_label": "HIGH_BYPASS_COMPLETED_PASS",
+      "conditions": [
+        "controlled_pass_episode.anchor_evaluations.controlled_pass_status == PASS",
+        "controlled_pass_episode.anchor_evaluations.forward_progression_m >= 8.0",
+        "opponents_bypassed_by_action.anchor_evaluations.opponents_bypassed_count >= 5"
+      ],
+      "more_than_four_translation": ">= 5",
+      "recipe_id": "high_bypass_completed_pass_v1"
+    },
+    "release_control_policy": {
+      "control_distance_m": 2.5,
+      "event_anchor_frame_id_definition": "nearest canonical frame to events.timestamp in UTC",
+      "fail_condition": "complete tracking coverage proves passer does not control ball in window or transition evidence contradicts the event",
+      "nearest_teammate_margin_m": 1.0,
+      "pass_condition": "named passer controls ball in the event-derived action window and a unique physical release transition is identified",
+      "physical_release_frame_id_definition": "last frame in the bounded action window where the named passer uniquely controls the ball before the ball-departure transition toward the completed pass",
+      "required_reason_codes": [
+        "release_not_confirmed",
+        "unique_release_transition_not_found",
+        "missing_tracking",
+        "identity_unresolved",
+        "excessive_frame_gap"
+      ],
+      "s0a_preflight_limitation": "S0A release_frame_id is a provisional passer-control proxy. S1 must emit physical_release_frame_id only after transition detection and must keep event_anchor_frame_id separate.",
+      "search_window_seconds_from_event": [
+        -1.0,
+        3.0
+      ],
+      "unknown_condition": "event frame, passer identity, ball, or passer tracking unavailable"
+    }
+  },
+  "gate_checks": [
+    {
+      "check_id": "s0a_schema",
+      "detail": "m2a.s0a.event_preflight.v1",
+      "status": "PASS"
+    },
+    {
+      "check_id": "s0a_positive_controlled_passes",
+      "detail": "593 provisional controlled-pass PASS records",
+      "status": "PASS"
+    },
+    {
+      "check_id": "s0a_timestamp_alignment",
+      "detail": "event-frame offset p95=18.0ms",
+      "status": "PASS"
+    },
+    {
+      "check_id": "s0a_event_is_not_release_frame",
+      "detail": "physical release delta p50=1.08s; S1 must derive release from tracking",
+      "status": "PASS"
+    },
+    {
+      "check_id": "s0b_schema",
+      "detail": "m2a.s0b.active_players.v1",
+      "status": "PASS"
+    },
+    {
+      "check_id": "s0b_j03woy_pass_window_count_matches_s0a",
+      "detail": "S0B windows=593 S0A pass=593",
+      "status": "PASS"
+    },
+    {
+      "check_id": "s0b_no_active_change_in_accepted_scope",
+      "detail": "0 J03WOY pass windows cross active-set changes",
+      "status": "PASS"
+    },
+    {
+      "check_id": "s0b_no_unusable_denominator_in_accepted_scope",
+      "detail": "0 J03WOY pass windows have empty/unusable defending denominator",
+      "status": "PASS"
+    },
+    {
+      "check_id": "s0b_full_corpus_caution_recorded",
+      "detail": "183934 full-corpus frame/team count deviations require coverage policy",
+      "status": "PASS"
+    },
+    {
+      "check_id": "s0c_bypass_smoke",
+      "detail": "{\"attack_x_sign\": 1, \"bypassed_buffer_m\": 1.0, \"bypassed_player_ids\": [\"a\", \"b\"], \"candidate_goal_side_ids\": [\"a\", \"b\"], \"coverage_status\": \"COMPLETE\", \"evaluated_opponent_ids\": [\"a\", \"b\", \"c\"], \"evaluation_status\": \"PASS\", \"expected_active_opponent_ids\": [\"a\", \"b\", \"c\"], \"failure_reason\": null, \"goal_side_buffer_m\": 1.0, \"missing_active_opponent_ids\": [], \"opponents_bypassed_count\": 2, \"reception_ball_attack_x_m\": 12.0, \"release_ball_attack_x_m\": 0.0}",
+      "status": "PASS"
+    }
+  ],
+  "s1_unlock": {
+    "allowed_initial_runtime_scope": [
+      "controlled_pass_episode for J03WOY accepted scope",
+      "opponents_bypassed_by_action using active defending outfield sets",
+      "high_bypass_completed_pass_v1 result emission"
+    ],
+    "blocked_until_later": [
+      "all-corpus M2A execution without reduced-player/tracking-gap coverage classification",
+      "Hermes exposure",
+      "defensive-line or support-response semantics"
+    ],
+    "unlocked": true
+  },
+  "schema_version": "m2a.s0.contract_freeze.v1",
+  "source_artifacts": {
+    "s0a_event_preflight_path": "artifacts/m2a/s0a-event-preflight-J03WOY.json",
+    "s0a_event_preflight_sha256": "59bfebdd3018f6ec6ba17e3a319dcfc0161421d12808e272b395e7bac7b95323",
+    "s0b_active_players_path": "artifacts/m2a/s0b-active-player-timeline-all.json",
+    "s0b_active_players_sha256": "6f980c778e31303981b4fafbe923d2e7ce1602828110a9b0f24f1cb64b19344d"
+  }
+}

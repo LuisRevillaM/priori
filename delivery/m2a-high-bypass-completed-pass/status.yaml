@@ -1,6 +1,6 @@
 milestone: M2A
 name: High-Bypass Completed Pass
-status: S0_IN_PROGRESS
+status: S0_ACCEPTED
 created_at: "2026-06-23"
 branch: main
 source_of_truth:
@@ -32,6 +32,8 @@ progress:
     item: Worker C pure threshold-free bypass evaluator implemented and tested at src/tqe/runtime/bypass.py and tests/test_m2a_bypass.py.
   - date: "2026-06-23"
     item: Preliminary S0B active-player timeline preflight ran across canonical matches, with J03WOY pass-window intersection; summary recorded at delivery/m2a-high-bypass-completed-pass/M2A_S0B_ACTIVE_PLAYERS.md.
+  - date: "2026-06-23"
+    item: S0C integrated contract freeze emitted PROCEED_TO_S1 for J03WOY only; report recorded at delivery/m2a-high-bypass-completed-pass/M2A_S0C_CONTRACT_FREEZE.md.
 latest_preflight:
   slice: M2A-S0A
   scope: single canonical match J03WOY
@@ -63,4 +65,22 @@ active_player_preflight:
   durable_summary: delivery/m2a-high-bypass-completed-pass/M2A_S0B_ACTIVE_PLAYERS.md
   local_ignored_artifacts:
     - artifacts/m2a/s0b-active-player-timeline-all.json
-next_action: Integrate S0A/S0B/S0C pure bypass into artifacts/m2a/s0-contract-freeze.json, including accepted match-window policy for reduced-player or incomplete-tracking periods; do not begin S1 until the controller gate emits PROCEED_TO_S1.
+s0_contract_freeze:
+  slice: M2A-S0C
+  status: PROCEED_TO_S1
+  accepted_match_ids:
+    - J03WOY
+  accepted_periods:
+    - firstHalf
+    - secondHalf
+  contract_sha256: ffa4c63bd127eb9ba232e6666bafc8e96c7a371f347d8fe6cac05d7466119ef7
+  pinned_json: delivery/m2a-high-bypass-completed-pass/s0-contract-freeze.json
+  durable_summary: delivery/m2a-high-bypass-completed-pass/M2A_S0C_CONTRACT_FREEZE.md
+  local_ignored_artifacts:
+    - artifacts/m2a/s0-contract-freeze.json
+  explicit_boundaries:
+    - Event timestamp is event_anchor_frame_id, not physical_release_frame_id.
+    - S1 must derive physical_release_frame_id from tracking transition evidence.
+    - Initial runtime scope is J03WOY only.
+    - All-corpus execution, Hermes exposure, defensive-line semantics, and support-response semantics remain blocked.
+next_action: Begin M2A-S1 runtime implementation for the accepted J03WOY scope only: controlled_pass_episode with explicit anchor_evaluations and physical release semantics, then opponents_bypassed_by_action wiring. Do not expose Hermes or all-corpus execution yet.
