@@ -303,7 +303,7 @@ async function runRealQueryJourney(
     String(selectedResult.result_id)
   );
   await expect(page.locator(`[data-testid="result-item"][data-result-id="${selectedResult.result_id}"]`)).toHaveClass(/active/);
-  await expect(page.getByTestId("evidence-alias").first()).toBeVisible();
+  await expect(page.getByTestId("evidence-alias").first()).toHaveAttribute("data-source", /.+/);
 
   let overlayEvidenceCorrelation: Record<string, unknown> = {
     mode: "hidden",
@@ -390,6 +390,7 @@ async function runRealQueryJourney(
     );
     await expect(page.locator(`[data-testid="result-item"][data-result-id="${finalRapidTarget.result_id}"]`)).toHaveClass(/active/);
     await expect(page.getByTestId("inspection-loading")).toHaveCount(0);
+    await page.getByText("Evidence aliases", { exact: true }).click();
     await expect(page.getByTestId("evidence-alias").first().locator("code")).not.toHaveText("");
     await expect(page.getByTestId("predicate-trace").first()).toBeVisible();
     await page.waitForTimeout(250);

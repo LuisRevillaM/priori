@@ -407,6 +407,7 @@ export function App() {
   const evidenceFailureCount = execution?.execution.requested_evidence_failure_count ?? 0;
 
   const selectedEvidence = selectedResult?.requested_evidence ?? null;
+  const selectedMeasurement = selectedEvidence ? principalMeasurement(selectedEvidence) : null;
   const selectedEntryMode = entryModePresentation(
     selectedEvidence?.["destination_entry_mode"] ?? selectedEvidence?.["entry_mode"] ?? asRecord(selectedResult).entry_mode,
     selectedEvidence?.["destination_time_to_entry_seconds"] ?? selectedEvidence?.["time_to_entry_seconds"]
@@ -415,6 +416,13 @@ export function App() {
     () => corridorOverlayState(evidenceResult?.requested_evidence ?? null, replay),
     [evidenceResult, replay]
   );
+  const evidenceHighlights = [
+    selectedMeasurement ? { label: "Principal measure", value: selectedMeasurement.label } : null,
+    selectedEntryMode ? { label: "Destination entry", value: selectedEntryMode.label } : null,
+    overlayState.kind !== "none"
+      ? { label: "Corridor evidence", value: overlayState.kind === "interval" ? "Active interval" : "Witness frame" }
+      : null
+  ].filter((item): item is { label: string; value: string } => Boolean(item));
   const overlayProof = overlayProofText(overlayState, currentFrame?.frame_id);
   const overlayLegend = overlayLegendLines(overlayState);
   const timestampOutcome = timestampOutcomeSummary(timestampInspection?.inspection ?? null);
@@ -777,20 +785,6 @@ export function App() {
                     </div>
                   ))}
                 </div>
-                <div className="interpretMeta">
-                  <div>
-                    <span>Scope</span>
-                    <strong>{scopeLabel}</strong>
-                  </div>
-                  <div>
-                    <span>Validation</span>
-                    <strong>{validation?.validation.ok ? "valid" : validation ? "invalid" : "not run"}</strong>
-                  </div>
-                  <div>
-                    <span>Plan source</span>
-                    <StatusPill tone={sourceTone}>{provenanceLabel(provenance)}</StatusPill>
-                  </div>
-                </div>
                 <div className="actionStrip single">
                   <button
                     className="primaryAction"
@@ -891,31 +885,43 @@ export function App() {
               </section>
 
               <section className="detailGrid">
-                <div className="panel">
-                  <div className="panelTitle">Evidence Aliases</div>
-                  <div className="evidenceGrid" data-testid="evidence-aliases">
-                    {evidenceAliases.map((item) => (
-                      <div
-                        key={item.id}
-                        className="evidenceRow"
-                        data-testid="evidence-alias"
-                        data-source={item.source}
-                        data-field={item.field}
-                      >
-                        <span>{item.alias}</span>
-                        <code>{String(evidenceResult?.requested_evidence[item.alias] ?? "")}</code>
-                      </div>
-                    ))}
-                    {inspectionLoadingResultId ? (
-                      <div className="emptyState" data-testid="inspection-loading">
-                        Loading selected result evidence.
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="panel">
-                  <div className="panelTitle">Predicate Trace</div>
+                <div className="panel whyMatchedPanel">
+                  <div className="panelTitle">Why it matched</div>
+                  {evidenceHighlights.length ? (
+                    <div className="evidenceHighlights" data-testid="evidence-highlights">
+                      {evidenceHighlights.map((item) => (
+                        <div key={item.label} className="evidenceHighlight">
+                          <span>{item.label}</span>
+                          <strong>{item.value}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  ) : selectedResult ? (
+                    <div className="emptyState">No projected measurements for this result.</div>
+                  ) : null}
                   <TraceList traces={correlatedInspection?.inspection.predicate_traces ?? []} />
+                  <details className="developerDrawer evidenceDrawer">
+                    <summary>Evidence aliases</summary>
+                    <div className="evidenceGrid" data-testid="evidence-aliases">
+                      {evidenceAliases.map((item) => (
+                        <div
+                          key={item.id}
+                          className="evidenceRow"
+                          data-testid="evidence-alias"
+                          data-source={item.source}
+                          data-field={item.field}
+                        >
+                          <span>{item.alias}</span>
+                          <code>{String(evidenceResult?.requested_evidence[item.alias] ?? "")}</code>
+                        </div>
+                      ))}
+                      {inspectionLoadingResultId ? (
+                        <div className="emptyState" data-testid="inspection-loading">
+                          Loading selected result evidence.
+                        </div>
+                      ) : null}
+                    </div>
+                  </details>
                   {correlatedInspection?.inspection.predicate_traces?.length ? (
                     <details className="developerDrawer">
                       <summary>Trace details</summary>
