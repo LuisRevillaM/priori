@@ -16,13 +16,20 @@ class N1D1AttestationTests(unittest.TestCase):
         attestation = json.loads(n1d1.ATTESTATION_PATH.read_text(encoding="utf-8"))
         self.assertEqual(attestation["status"], "BLOCKED")
         self.assertNotEqual(attestation["status"], "VERIFIED")
-        self.assertIn("n1d1.origin_trace_persisted", attestation["blocking_reasons"])
 
-        # The missing raw decision and ordered tool-call trace are recorded as null, never invented.
         origin = attestation["hermes_origin"]
-        self.assertIsNone(origin["ordered_tool_call_trace_sha256"])
-        self.assertIsNone(origin["raw_hermes_decision_sha256"])
-        self.assertFalse(origin["trace_persisted"])
+        if n1d1.N1E_ORIGIN_BUNDLE_PATH.exists():
+            self.assertTrue(origin["trace_persisted"])
+            self.assertIsNotNone(origin["ordered_tool_call_trace_sha256"])
+            self.assertIsNotNone(origin["raw_hermes_decision_sha256"])
+            self.assertIn("n1d1.origin_compile_tools_present", attestation["blocking_reasons"])
+            self.assertIn("n1d1.augmentation_diff_allowed", attestation["blocking_reasons"])
+        else:
+            self.assertIn("n1d1.origin_trace_persisted", attestation["blocking_reasons"])
+            # The missing raw decision and ordered tool-call trace are recorded as null, never invented.
+            self.assertIsNone(origin["ordered_tool_call_trace_sha256"])
+            self.assertIsNone(origin["raw_hermes_decision_sha256"])
+            self.assertFalse(origin["trace_persisted"])
 
         # The Beta 1C unlock contract is published for later enforcement.
         contract = attestation["beta_1c_unlock_contract"]

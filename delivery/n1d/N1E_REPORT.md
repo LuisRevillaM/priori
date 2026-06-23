@@ -1,120 +1,154 @@
-# N1E — Live Hermes Origin Re-run (STOP-AND-REPORT: not executable in this environment)
+# N1E — Live Hermes Origin Re-run
 
 Date: 2026-06-22
-Baseline: N1D.1 `fe7645c` (attestation BLOCKED). Beta 1C remains blocked.
-Scope guardrails honored: no `HERMES_NOVEL_COMPOSITION` exposure; no changes to primitives,
-operators, tactical semantics, MCP auth, or Hermes prompts.
 
-## Headline
+## Decision
 
-Task 9 is explicit: *"If Hermes selects a recipe, fails, or produces unsupported/invalid output,
-preserve the failure honestly and stop. Do not tune prompts or vocabulary."* The live re-run cannot
-be performed faithfully in this environment, so I stopped without fabricating a session or altering
-prompts. **No VERIFIED attestation was produced. N1D.1 stays BLOCKED; Beta 1C stays blocked.**
+**BLOCKED.** The faithful deploy-side N1E compile ran against the Render runtime, but Hermes returned a typed clarification instead of an executable novel plan. No prompt tuning, vocabulary changes, local general-agent workaround, or fabricated origin evidence was used.
 
-## What I verified (no model call was made)
+Beta 1C remains blocked.
 
-The frozen N1 origin was authored by **Hermes Agent v0.17.0** via provider `openai-codex`,
-model `gpt-5.5`, toolset `mcp-priori_tactical`, with a pinned `system_prompt_hash`
-(see `delivery/m1.2/frontier-runtime-freeze.json` and the N1C manifest).
+## Runtime Path
 
-The workbench's frozen compile path (`src/tqe/workshop/app_service.py:hermes_interpret_request`)
-invokes the agent as:
+The protected deploy runner was added behind:
 
-```
-hermes interpret --provider openai-codex --model gpt-5.5 --toolset mcp-priori_tactical --prompt <frozen prompt>
-hermes probe --toolset mcp-priori_tactical
+```text
+ENABLE_N1E_RUNNER=1
+N1E_RUN_TOKEN=<runner token>
 ```
 
-and is gated by `WORKBENCH_HERMES_ENABLED=1`.
+It ran inside the deployed Render service:
 
-Findings in this environment:
-- `hermes` resolves to `/Users/luisrevilla/.local/bin/hermes` — the user's **personal Hermes Agent
-  v0.17.0** (general assistant: `chat`, `model`, `slack`, `cron`, `memory`, `mcp`, …).
-- It has **no `interpret` subcommand** and **no `probe` subcommand** (argparse rejects both). The
-  frozen workbench compile contract is therefore **not reachable** through the installed binary.
-- `WORKBENCH_HERMES_ENABLED` is unset (live model mode is disabled, as the Beta 1A tests assert via
-  `MODEL_UNAVAILABLE`).
-- The `priori_tactical` MCP server *is* registered in `~/.hermes-priori/config.yaml`
-  (`mcp_servers.priori_tactical → tqe.workshop.mcp_server`), so the tool surface exists — but the
-  dedicated frozen compile CLI does not.
+```text
+service: priori-integrated-alpha
+deploy commit: 9cac5a6a450177cdfdbec1b180c64ba3131464d0
+Hermes project: /opt/hermes-agent
+Hermes version: Hermes Agent v0.17.0 (2026.6.19) · upstream 5937b951
+Python: /opt/hermes-agent/venv/bin/python
+toolset: mcp-priori_tactical
+provider: openai-codex
+model: gpt-5.5
+```
 
-## Why I did not force a run
+The runner used the existing Workbench compile contract:
 
-Reproducing the compile via the agent's general interface
-(`hermes -z "<prompt>" -t mcp-priori_tactical -m gpt-5.5 --provider openai-codex --yolo`) would require:
-1. **Supplying a compile system prompt** to turn the general agent into the tactical compiler — that
-   is altering Hermes prompts, which the N1E baseline and Task 9 explicitly forbid, and it would not
-   match the pinned `system_prompt_hash` (so the result would not be a faithful frozen-origin re-run).
-2. A **paid, outward-facing frontier call on the user's personal Codex account**, running their
-   personal agent with `--yolo` tool auto-accept.
-3. Driving MCP `submit_query_plan/validate/confirm/execute` from that personal agent.
+```text
+python -m tqe.workshop.hermes_invocation probe --toolset mcp-priori_tactical
+python -m tqe.workshop.hermes_invocation interpret --provider openai-codex --model gpt-5.5 --toolset mcp-priori_tactical --prompt <frozen Workbench prompt>
+```
 
-None of that produces a faithful, in-contract origin, and items 1–2 violate the guardrails. So per
-Task 9 I preserved the failure and stopped. I did **not** fabricate a session, decision, or trace.
+## Result
 
-## Current proof state (unchanged)
+Job:
 
-- `n1d1-verify`: **BLOCKED** (origin trace not persisted; N1D plan ≠ Hermes draft + the two aliases).
-- `n1d-verify`: pass 12/12. `n1c-verify`: pass 8/8.
-- Entry-mode presentation fix from N1D.1 remains in place (PRESENT_AT_OPEN honest at t=0.0).
+```text
+n1e_736b1f4814444f45
+```
 
-## Remediation (the intended N1E environment)
+Status:
 
-The frozen compile contract exists in the **deploy/runtime environment** provisioned by
-`scripts/bootstrap-hermes.sh` (installs `/opt/hermes-agent` exposing the `interpret`/`probe`
-compile CLI, registers the `priori_tactical` MCP, pins `gpt-5.5`/`openai-codex` and the frozen system
-prompt). Run N1E there:
-1. `WORKBENCH_HERMES_ENABLED=1`, with the deploy Hermes compile wrapper on PATH.
-2. Re-run the exact frozen hero question; persist the origin trace (session id, question + hash,
-   ordered MCP tool calls, raw structured decision, submitted draft + hash).
-3. Confirm Hermes authors a structurally novel experimental plan (not a recipe selection).
-4. Re-pin N1D on the Hermes-submitted draft + exactly `destination_entry_mode` and
-   `destination_time_to_entry_seconds`; re-run the host-authority path; re-freeze.
-5. `make n1d1-verify` → target VERIFIED.
+```text
+failed
+```
 
-## Option A attempt (deploy/runtime environment) — outcome: BLOCKED, stopped per Task 9
+Concrete failure:
 
-Controller approved Option A (run in the deploy environment; paid frontier calls authorized; do **not**
-use the local general-agent workaround; if the deploy is unavailable or does not expose the frozen
-contract, stop and report — do not relax). Outcome:
+```text
+Hermes did not return an executable plan: CLARIFICATION_REQUIRED
+```
 
-- **Frozen compile source absent locally**: `/opt/hermes-agent` and `/var/data` do not exist in this
-  sandbox; `WORKBENCH_HERMES_PYTHON` (`/opt/hermes-agent/venv/bin/python`) is absent. The only local
-  `hermes` is the personal agent without the `interpret`/`probe` contract (above).
-- **Deploy reachable and contract configured**: `https://priori-integrated-alpha.onrender.com`
-  `/api/health` → ok; `/api/bootstrap` → `model.available: true`, `status: HERMES_CONFIGURED`
-  ("each interpretation is probed and validated at request time"). So the frozen compile contract
-  exists on the deploy host.
-- **But the deploy does not EXPOSE the origin trace for export**:
-  - `/api/interpret` (product response) does not carry the raw model decision or the ordered MCP
-    tool-call trace; those are written to server-side `artifacts/.../hermes-traces/` files.
-  - There is no artifact/trace retrieval endpoint: `/api/hermes-trace`, `/api/origin`, `/api/export`,
-    `/api/n1`, `/api/retrieve_replay_window` → 404; concrete artifact `.json` (e.g. a hermes-trace or
-    an execution handle) → 404 `STATIC_NOT_FOUND`. The `/artifacts/.../` `200` is only the SPA
-    `index.html` fallback (`content-type: text/html`), not a file listing.
-  - No shell/file access to the Render host is available from this sandbox to extract the trace bundle.
+Recovered origin bundle:
 
-Therefore the deploy **has** the frozen contract but **does not expose** its origin-trace artifacts
-in any way I can export into the repo. Firing the paid `/api/interpret` compile on the deploy would
-author a session whose raw decision + tool-call trace I could not retrieve — producing no in-repo
-VERIFIED attestation and wasting a paid call. Per the controller's explicit fallback, I stopped and
-did not relax N1E. **No fabrication. No prompt tuning. No local general-agent workaround.**
+```text
+delivery/n1d/n1e-origin-bundle.json
+local sha256: 4a5ec3ec1f974930ae2b6857679f7a50bdd5c0d5bb33558e198bc797f9e2a649
+server-side bundle sha256 before API reserialization: befc2d0fae799519c031433d9fb6645d3838355690348b209a0924e0349a0f81
+recovered job id: n1e_recovered_20260623_025323_a63774
+session id: 20260623_025323_a63774
+```
 
-## What is required to complete N1E faithfully
+The byte hashes differ because the API returns a JSON reserialization of the server-side file. The committed local bundle is valid JSON and contains the recovered Hermes session trace.
 
-A runner that has BOTH (1) the frozen compile contract (`hermes interpret --toolset
-mcp-priori_tactical`, `--provider openai-codex --model gpt-5.5`, frozen system prompt, via
-`scripts/bootstrap-hermes.sh` / `/opt/hermes-agent`) AND (2) write access to this repo (or a defined
-export channel). Concretely, one of:
-- a job executed **on the deploy host** (Render SSH/one-off job) that runs the frozen compile + the
-  host-authority path, persists the origin trace, and exports the bundle below into the repo; or
-- a locally provisioned `/opt/hermes-agent` compile environment with the same frozen contract.
+## Hermes Decision
 
-The exported bundle must contain: raw model decision; ordered MCP tool-call trace; submitted Hermes
-draft + draft hash; host-augmented N1D plan with exactly the two aliases
-(`destination_entry_mode`, `destination_time_to_entry_seconds`); validate/confirm/execute/inspect/
-replay IDs; and the `n1d1-verify` VERIFIED attestation + hashes. Then re-pin N1D and re-run
-`make n1d1-verify` → VERIFIED.
+Hermes returned:
 
-No fabrication was performed. N1D.1 remains BLOCKED; Beta 1C remains blocked.
+```json
+{
+  "outcome": "clarify",
+  "recipe_id": null,
+  "draft_plan_id": null,
+  "bound_plan_id": null,
+  "bound_plan_hash": null,
+  "clarification_dimensions": [
+    "match_ids",
+    "periods",
+    "perspective_team_role"
+  ],
+  "clarification_questions": [
+    "Which match_ids should the default invocation bind to?",
+    "Which periods should be included?",
+    "Should the perspective_team_role be \"home\" or \"away\"?"
+  ],
+  "stopped_before_execution": true
+}
+```
+
+It also reported that no approved recipe exactly matches the requested possession-anchored progressive corridor plus destination-region ball-entry concept, and that the closest support requires an experimental typed plan. However, it did not produce a validated draft.
+
+## Tool Trace
+
+The recovered bundle contains a persisted Hermes session trace. The ordered MCP calls were:
+
+```text
+mcp_priori_tactical_list_capabilities
+mcp_priori_tactical_search_recipes
+mcp_priori_tactical_search_recipes
+mcp_priori_tactical_describe_capability
+mcp_priori_tactical_describe_capability
+mcp_priori_tactical_describe_capability
+mcp_priori_tactical_search_recipes
+mcp_priori_tactical_describe_capability
+mcp_priori_tactical_describe_capability
+mcp_priori_tactical_describe_capability
+mcp_priori_tactical_submit_query_plan
+mcp_priori_tactical_submit_query_plan
+```
+
+Hashes:
+
+```text
+ordered_tool_call_trace_sha256: 818d3636966f497e4da07ac91e2cfd13dd7fb1a1e3062a86a8a1081fe305450a
+raw_hermes_decision_sha256: 9b27b511d2249e0bf62d92d3aa126d28eab3369db13d9842a65cca8bd0cce0d6
+```
+
+Hermes called `submit_query_plan`, but it never produced a valid submitted draft handle or reached `validate_query_plan`.
+
+## Verification
+
+`n1d1-verify` now consumes the recovered bundle and still fails closed:
+
+```text
+attestation_status: BLOCKED
+blocking_reasons:
+  - n1d1.origin_compile_tools_present
+  - n1d1.augmentation_diff_allowed
+```
+
+Interpretation:
+
+* `n1d1.origin_trace_persisted` is now satisfied by the recovered bundle.
+* `n1d1.origin_compile_tools_present` remains blocked because the trace does not contain a successful `validate_query_plan` call.
+* `n1d1.augmentation_diff_allowed` remains blocked because no Hermes-submitted draft exists, so there is no valid base plan to augment with exactly `destination_entry_mode` and `destination_time_to_entry_seconds`.
+
+## Boundary
+
+This is a good failure, not an infrastructure failure:
+
+* Render had `/opt/hermes-agent`.
+* The frozen MCP tool surface probed successfully.
+* The paid Hermes compile returned structured output.
+* The origin trace was recovered and committed.
+* The model chose clarification instead of authoring a valid executable experimental plan.
+
+Per the N1E guardrail, the result is preserved as evidence. No second attempt should be interpreted as the same frozen acceptance run unless it is explicitly rebaselined as a new N1F/N1E2 attempt with its own frozen conditions.
