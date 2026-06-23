@@ -1373,6 +1373,62 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
         )
 
 
+def recover_latest_n1e_failure_bundle(*, output_root: Path) -> dict[str, Any]:
+    from tqe.verification.n1c import HERO_QUESTION, git_output
+    from tqe.verification.n1d import runtime_hashes
+
+    session = newest_hermes_session_after(0.0)
+    if not session:
+        raise CapabilityGap("No Hermes session is available to recover.")
+    session_id = str(session["id"])
+    trace = export_hermes_session_trace(session_id, invocation={}, final_decision={})
+    raw = trace.get("raw_model_output") if isinstance(trace, dict) else {}
+    final_text = str(raw.get("final_assistant_content") or raw.get("invocation_stdout") or "")
+    final_decision = parse_final_json(final_text)
+    trace = export_hermes_session_trace(session_id, invocation={"stdout": final_text}, final_decision=final_decision)
+    job_id = "n1e_recovered_" + session_id.replace("/", "_").replace(":", "_")[-24:]
+    bundle = {
+        "schema_version": "n1e.origin_bundle.v1",
+        "status": "failed_compile_recovered",
+        "generated_at": utc_now_iso(),
+        "job_id": job_id,
+        "hero_question": {"text": HERO_QUESTION, "sha256": sha256(HERO_QUESTION.encode("utf-8")).hexdigest()},
+        "compile_contract": {
+            "provider": HERMES_PROVIDER,
+            "model": HERMES_MODEL,
+            "toolset": HERMES_TOOLSET,
+            "prompt_sha256": sha256(hermes_interpret_prompt(HERO_QUESTION).encode("utf-8")).hexdigest(),
+        },
+        "source": {
+            "repo_commit": git_output("rev-parse", "HEAD"),
+            "runtime_hashes": runtime_hashes(),
+            "output_root": cloud_safe_path(output_root),
+            "hermes_workshop_root": cloud_safe_path(HERMES_WORKSHOP_ROOT),
+        },
+        "hermes_origin": {
+            "session_id": session_id,
+            "final_decision": final_decision,
+            "session_trace": trace,
+            "ordered_tool_call_trace_sha256": stable_json_sha256(trace["ordered_tool_calls"]),
+            "raw_hermes_decision_sha256": stable_json_sha256(trace["raw_model_output"]),
+        },
+        "blocking_reason": "Hermes returned clarification/capability-gap/no-plan, so no host execution was performed.",
+    }
+    write_json(n1e_bundle_path(output_root, job_id), bundle)
+    write_n1e_status(
+        output_root,
+        job_id,
+        {
+            "status": "failed",
+            "stage": "recovered_failure_bundle",
+            "bundle_sha256": file_sha256(n1e_bundle_path(output_root, job_id)),
+            "session_id": session_id,
+            "message": "Recovered latest Hermes session as a failed N1E origin bundle.",
+        },
+    )
+    return {"job_id": job_id, "bundle_sha256": file_sha256(n1e_bundle_path(output_root, job_id))}
+
+
 def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> dict[str, Any]:
     query = str(payload.get("query") or "").strip()
     mode = str(payload.get("mode") or "manual")
@@ -1986,6 +2042,9 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
     def handle_n1e_post(self, parsed: Any) -> None:
         if not self.n1e_access_allowed():
             self.send_n1e_forbidden()
+            return
+        if parsed.path == "/api/n1e/recover-latest":
+            self.send_json(ok(recover_latest_n1e_failure_bundle(output_root=self.server.output_root)))
             return
         if parsed.path != "/api/n1e/run":
             self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
