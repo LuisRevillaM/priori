@@ -81,6 +81,9 @@ COPY generated ./generated
 COPY docs ./docs
 RUN mkdir -p /app/delivery/n1d
 COPY delivery/n1d/n1e-origin-bundle.json ./delivery/n1d/n1e-origin-bundle.json
+COPY delivery/n1d/n1f-origin-bundle.json ./delivery/n1d/n1f-origin-bundle.json
+COPY delivery/n1d/n1d1-attestation.json ./delivery/n1d/n1d1-attestation.json
+COPY delivery/n1d/n1d-canonical-freeze-manifest.json ./delivery/n1d/n1d-canonical-freeze-manifest.json
 COPY --from=frontend /app/apps/workbench-alpha/dist ./apps/workbench-alpha/dist
 RUN python -m pip install --upgrade pip \
     && python -m pip install -e . \
