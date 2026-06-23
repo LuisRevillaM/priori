@@ -65,10 +65,52 @@ Expected blocked before live rerun:
 
 ## Faithful Rerun
 
-Status: `pending deploy-side rerun`.
+Status: `blocked by runner handle persistence`.
 
-The next step is to deploy this commit, run the existing N1F faithful scoped Hermes path once, and preserve the result without prompt, synonym, vocabulary, MCP auth, model-config, or hero-question changes.
+- Runtime commit deployed: `649c5d9b898273796ebcdeb15c141b0af81c93e7`
+- Enable-runner deploy: `dep-d8t0qb6rnols73a0gnvg`
+- Runner job: `n1f_e73bdbc336b34b22`
+- Disable-runner deploy: `dep-d8t0u0reo5us73d6tid0`
+- Runner-disabled verification: `/api/n1f/status` returned `403 N1E_RUNNER_UNAVAILABLE`.
+
+The deploy-side faithful path reached Hermes and Hermes returned a draft outcome for the new destination-entry recipe family. Render logs show the `interpret` subprocess completed successfully and began returning:
+
+```text
+outcome=draft
+recipe_id=possession_corridor_destination_entry_v1
+draft_plan_id=draft_d6feb3859f859fec
+bound_plan_id=bound_81ff8d852d5cdef6
+```
+
+The runner then failed before exporting a bundle:
+
+```json
+{
+  "error_type": "CapabilityGap",
+  "job_id": "n1f_e73bdbc336b34b22",
+  "message": "Unknown draft-plans handle: draft_d6feb3859f859fec",
+  "stage": "failed",
+  "status": "failed"
+}
+```
+
+The bundle endpoint returned:
+
+```json
+{
+  "error_code": "N1F_BUNDLE_NOT_FOUND",
+  "message": "N1F origin bundle is not available.",
+  "ok": false
+}
+```
+
+Evidence files:
+
+- `delivery/n1d/n1g-faithful-rerun-status.json`
+- `delivery/n1d/n1g-faithful-rerun-bundle-response.json`
+
+No prompt, synonym, vocabulary, MCP auth, model-config, or hero-question changes were made after the N1G freeze. The result is not a verified origin attestation: the new blocker is that the deploy runner cannot resolve or export the Hermes-returned draft handle after `interpret`.
 
 ## Next Required Step
 
-Deploy this capability-contract fix, rerun the faithful scoped Hermes origin path, and preserve either a VERIFIED n1d1 attestation or the new blocker. Beta 1C remains blocked until n1d1-verify is VERIFIED.
+Fix the faithful runner's draft-handle persistence/export path, then rerun the same frozen scoped hero once. Beta 1C remains blocked until n1d1-verify is VERIFIED.

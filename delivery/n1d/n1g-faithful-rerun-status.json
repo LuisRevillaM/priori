@@ -1,0 +1,10 @@
+{
+  "error_type": "CapabilityGap",
+  "job_id": "n1f_e73bdbc336b34b22",
+  "message": "Unknown draft-plans handle: draft_d6feb3859f859fec",
+  "ok": true,
+  "schema_version": "n1f.job_status.v1",
+  "stage": "failed",
+  "status": "failed",
+  "updated_at": "2026-06-23T04:42:27+00:00"
+}
