@@ -69,7 +69,12 @@ CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.e
 DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", "/Users/luisrevilla/.hermes-priori"))
 HERMES_DB = HERMES_HOME / "state.db"
-HERMES_WORKSHOP_ROOT = Path(os.environ.get("WORKBENCH_HERMES_WORKSHOP_ROOT", "artifacts/m1.2/workshop"))
+HERMES_WORKSHOP_ROOT = Path(
+    os.environ.get("WORKBENCH_HERMES_WORKSHOP_ROOT")
+    or os.environ.get("TQE_WORKSHOP_OUTPUT_ROOT")
+    or os.environ.get("TQE_RUNTIME_ROOT")
+    or "artifacts/m1.2/workshop"
+)
 HERMES_PROVIDER = os.environ.get("WORKBENCH_HERMES_PROVIDER", "openai-codex")
 HERMES_MODEL = os.environ.get("WORKBENCH_HERMES_MODEL", "gpt-5.5")
 HERMES_TOOLSET = os.environ.get("WORKBENCH_HERMES_TOOLSET", "mcp-priori_tactical")
@@ -593,7 +598,7 @@ def hermes_unavailable(
     )
 
 
-def hermes_interpret_request(query: str) -> dict[str, Any]:
+def hermes_interpret_request(query: str, *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> dict[str, Any]:
     try:
         hermes = shutil.which("hermes")
         log_hermes_event(
@@ -610,7 +615,7 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
         )
         if not hermes:
             return hermes_unavailable(query, "Hermes executable was not found. Manual mode remains available.", fallback_reason="hermes_executable_missing")
-        surface = hermes_tool_surface(hermes)
+        surface = hermes_tool_surface(hermes, output_root=output_root)
         if not surface["safe"]:
             return hermes_unavailable(
                 query,
@@ -632,6 +637,7 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
                 hermes_interpret_prompt(query),
             ],
             timeout=HERMES_TIMEOUT_SECONDS,
+            output_root=output_root,
         )
         session = newest_hermes_session_after(started_at)
         invocation = parse_invocation_json(completed.stdout)
@@ -642,7 +648,7 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
                 "Hermes did not return a valid structured interpretation. Manual mode remains available.",
                 fallback_reason="invalid_structured_interpretation",
             )
-        return hermes_final_to_interpretation(query, final, session)
+        return hermes_final_to_interpretation(query, final, session, output_root=output_root)
     except subprocess.TimeoutExpired:
         return hermes_unavailable(
             query,
@@ -672,8 +678,8 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
         )
 
 
-def hermes_tool_surface(hermes: str) -> dict[str, Any]:
-    completed = run_hermes_invocation(hermes, ["probe", "--toolset", HERMES_TOOLSET], timeout=60)
+def hermes_tool_surface(hermes: str, *, output_root: Path | None = None) -> dict[str, Any]:
+    completed = run_hermes_invocation(hermes, ["probe", "--toolset", HERMES_TOOLSET], timeout=60, output_root=output_root)
     payload = parse_invocation_json(completed.stdout)
     names = {str(name).removeprefix("functions.") for name in payload.get("tool_names") or []}
     forbidden = [str(name) for name in payload.get("forbidden") or []]
@@ -686,11 +692,25 @@ def hermes_tool_surface(hermes: str) -> dict[str, Any]:
     }
 
 
-def run_hermes_invocation(hermes: str, args: list[str], *, timeout: int) -> subprocess.CompletedProcess[str]:
+def hermes_invocation_output_root(output_root: Path | None = None) -> Path:
+    return (output_root or HERMES_WORKSHOP_ROOT).resolve()
+
+
+def run_hermes_invocation(
+    hermes: str,
+    args: list[str],
+    *,
+    timeout: int,
+    output_root: Path | None = None,
+) -> subprocess.CompletedProcess[str]:
     hermes_python = hermes_python_executable(hermes)
+    workshop_output_root = hermes_invocation_output_root(output_root)
     env = os.environ.copy()
     env["HERMES_HOME"] = str(HERMES_HOME)
     env.setdefault("CODEX_HOME", str(Path.home() / ".codex"))
+    env["TQE_WORKSHOP_OUTPUT_ROOT"] = str(workshop_output_root)
+    env.setdefault("TQE_RUNTIME_ROOT", str(workshop_output_root))
+    env.setdefault("WORKBENCH_HERMES_WORKSHOP_ROOT", str(workshop_output_root))
     env["PYTHONPATH"] = hermes_pythonpath(env.get("PYTHONPATH"))
     log_hermes_event(
         "subprocess_start",
@@ -700,6 +720,7 @@ def run_hermes_invocation(hermes: str, args: list[str], *, timeout: int) -> subp
             "hermes": path_state(hermes),
             "cwd": path_state(str(REPO_ROOT)),
             "pythonpath_entries": len(env["PYTHONPATH"].split(os.pathsep)),
+            "workshop_output_root": cloud_safe_path(workshop_output_root),
         },
     )
     completed = subprocess.run(
@@ -837,7 +858,13 @@ def parse_final_json(text: str) -> dict[str, Any]:
     return parsed if isinstance(parsed, dict) else {}
 
 
-def hermes_final_to_interpretation(query: str, final: dict[str, Any], session: dict[str, Any] | None) -> dict[str, Any]:
+def hermes_final_to_interpretation(
+    query: str,
+    final: dict[str, Any],
+    session: dict[str, Any] | None,
+    *,
+    output_root: Path | None = None,
+) -> dict[str, Any]:
     outcome = normalize_outcome(final.get("outcome"))
     session_id = str(session.get("id")) if session else None
     base = {
@@ -896,7 +923,7 @@ def hermes_final_to_interpretation(query: str, final: dict[str, Any], session: d
         )
     if outcome == "draft":
         bound_plan_id = str(final.get("bound_plan_id") or "")
-        plan_document = hermes_bound_plan_document(bound_plan_id)
+        plan_document = hermes_bound_plan_document(bound_plan_id, output_root=output_root)
         if plan_document is None:
             return hermes_unavailable(query, "Hermes validated a draft but the host could not recover its bound plan handle.")
         return ok(
@@ -934,10 +961,14 @@ def hermes_plan_provenance(plan_document: dict[str, Any]) -> str:
     return "HERMES_NOVEL_COMPOSITION"
 
 
-def hermes_bound_plan_document(bound_plan_id: str) -> dict[str, Any] | None:
+def hermes_bound_plan_document(bound_plan_id: str, *, output_root: Path | None = None) -> dict[str, Any] | None:
     if not bound_plan_id:
         return None
-    for root in (HERMES_WORKSHOP_ROOT, DEFAULT_WORKSHOP_ROOT):
+    roots: list[Path] = []
+    for candidate in (output_root, HERMES_WORKSHOP_ROOT, DEFAULT_WORKSHOP_ROOT):
+        if candidate is not None and candidate not in roots:
+            roots.append(candidate)
+    for root in roots:
         try:
             record = read_handle("bound-plans", bound_plan_id, output_root=root)
         except CapabilityGap:
@@ -1258,7 +1289,8 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
         hermes = shutil.which("hermes")
         if not hermes:
             raise CapabilityGap("Hermes executable is not available in the deploy runtime.")
-        surface = hermes_tool_surface(hermes)
+        hermes_workshop_root = hermes_invocation_output_root(output_root)
+        surface = hermes_tool_surface(hermes, output_root=hermes_workshop_root)
         if not surface["safe"]:
             raise CapabilityGap(f"Unsafe Hermes tool surface: {surface}")
 
@@ -1279,6 +1311,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
                 prompt,
             ],
             timeout=HERMES_TIMEOUT_SECONDS,
+            output_root=hermes_workshop_root,
         )
         session = newest_hermes_session_after(started_at)
         invocation = parse_invocation_json(completed.stdout)
@@ -1286,7 +1319,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
         if completed.returncode != 0 or not invocation.get("ok") or not final:
             raise CapabilityGap("Hermes did not return a valid structured N1E interpretation.")
 
-        interpretation = hermes_final_to_interpretation(HERO_QUESTION, final, session)
+        interpretation = hermes_final_to_interpretation(HERO_QUESTION, final, session, output_root=hermes_workshop_root)
         if interpretation.get("status") != "PLAN_INTERPRETED":
             raise CapabilityGap(f"Hermes did not return an executable plan: {interpretation.get('status')}")
         if interpretation.get("provenance_source") != "HERMES_NOVEL_COMPOSITION":
@@ -1296,7 +1329,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
         draft_plan_id = str(final.get("draft_plan_id") or interpretation.get("draft_plan_id") or "")
         if not draft_plan_id:
             raise CapabilityGap("Hermes final decision did not include draft_plan_id.")
-        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=HERMES_WORKSHOP_ROOT)
+        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=hermes_workshop_root)
         hermes_draft_document = hermes_draft_record.get("document")
         if not isinstance(hermes_draft_document, dict):
             raise CapabilityGap("Hermes draft handle did not contain a plan document.")
@@ -1333,7 +1366,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
                 "repo_commit": runtime_commit_identifier(),
                 "runtime_hashes": runtime_hashes(),
                 "output_root": cloud_safe_path(output_root),
-                "hermes_workshop_root": cloud_safe_path(HERMES_WORKSHOP_ROOT),
+                "hermes_workshop_root": cloud_safe_path(hermes_workshop_root),
             },
             "hermes_origin": {
                 "session_id": str(session.get("id")) if session else None,
@@ -1427,7 +1460,7 @@ def recover_latest_n1e_failure_bundle(*, output_root: Path) -> dict[str, Any]:
             "repo_commit": runtime_commit_identifier(),
             "runtime_hashes": runtime_hashes(),
             "output_root": cloud_safe_path(output_root),
-            "hermes_workshop_root": cloud_safe_path(HERMES_WORKSHOP_ROOT),
+            "hermes_workshop_root": cloud_safe_path(hermes_invocation_output_root(output_root)),
         },
         "hermes_origin": {
             "session_id": session_id,
@@ -1622,6 +1655,32 @@ def n1f_trace_draft_plan_id(bundle: dict[str, Any]) -> str:
     return ""
 
 
+def n1f_trace_tool_response(bundle: dict[str, Any], tool_name: str) -> dict[str, Any] | None:
+    trace = bundle.get("hermes_origin", {}).get("session_trace", {})
+    responses = trace.get("tool_responses") if isinstance(trace, dict) else None
+    if not isinstance(responses, list):
+        return None
+    expected = tool_name.removeprefix("functions.")
+    for response in reversed(responses):
+        if not isinstance(response, dict):
+            continue
+        actual = str(response.get("tool_name") or "").removeprefix("functions.")
+        if actual != expected:
+            continue
+        content = response.get("content")
+        if isinstance(content, dict):
+            return content
+    return None
+
+
+def n1f_trace_submit_response_draft_plan_id(bundle: dict[str, Any]) -> str:
+    content = n1f_trace_tool_response(bundle, "mcp_priori_tactical_submit_query_plan")
+    if not isinstance(content, dict):
+        return ""
+    draft_plan_id = content.get("draft_plan_id")
+    return str(draft_plan_id).strip() if draft_plan_id else ""
+
+
 def n1f_trace_submitted_plan_document(bundle: dict[str, Any]) -> dict[str, Any] | None:
     trace = bundle.get("hermes_origin", {}).get("session_trace", {})
     calls = trace.get("ordered_tool_calls") if isinstance(trace, dict) else None
@@ -1639,20 +1698,76 @@ def n1f_trace_submitted_plan_document(bundle: dict[str, Any]) -> dict[str, Any] 
     return None
 
 
-def attach_n1f_hermes_draft_if_present(bundle: dict[str, Any], final_decision: dict[str, Any]) -> None:
-    draft_plan_id = str(final_decision.get("draft_plan_id") or "").strip() or n1f_trace_draft_plan_id(bundle)
+def recover_n1f_hermes_draft_record(
+    draft_plan_id: str,
+    bundle: dict[str, Any],
+    *,
+    output_root: Path,
+    hermes_workshop_root: Path,
+) -> dict[str, Any]:
+    lookup_errors: list[dict[str, str]] = []
+    roots: list[Path] = []
+    for candidate in (hermes_workshop_root, output_root, HERMES_WORKSHOP_ROOT, DEFAULT_WORKSHOP_ROOT):
+        if candidate not in roots:
+            roots.append(candidate)
+    for root in roots:
+        try:
+            record = read_handle("draft-plans", draft_plan_id, output_root=root)
+        except Exception as exc:  # noqa: BLE001 - preserve all lookup attempts for origin diagnostics.
+            lookup_errors.append(
+                {
+                    "root": cloud_safe_path(root),
+                    "error_type": type(exc).__name__,
+                    "message": short_text(str(exc), 300),
+                }
+            )
+            continue
+        record = dict(record)
+        record["draft_record_source"] = "handle"
+        record["draft_record_root"] = cloud_safe_path(root)
+        return record
+
+    submitted_document = n1f_trace_submitted_plan_document(bundle)
+    if submitted_document is not None:
+        submit_response = n1f_trace_tool_response(bundle, "mcp_priori_tactical_submit_query_plan") or {}
+        draft_hash = str(submit_response.get("draft_plan_hash") or "").strip() or stable_hash(submitted_document)
+        return {
+            "schema_version": "1.0",
+            "draft_plan_id": draft_plan_id,
+            "draft_plan_hash": draft_hash,
+            "document": submitted_document,
+            "draft_record_source": "persisted_mcp_trace",
+            "draft_document_source": "submit_query_plan.arguments.plan_document",
+            "draft_hash_source": "submit_query_plan.response.draft_plan_hash"
+            if submit_response.get("draft_plan_hash")
+            else "recomputed_from_submit_query_plan.arguments.plan_document",
+            "draft_lookup_errors": lookup_errors,
+        }
+    raise CapabilityGap(f"Unknown draft-plans handle: {draft_plan_id}")
+
+
+def attach_n1f_hermes_draft_if_present(
+    bundle: dict[str, Any],
+    final_decision: dict[str, Any],
+    *,
+    output_root: Path,
+    hermes_workshop_root: Path,
+) -> None:
+    draft_plan_id = (
+        str(final_decision.get("draft_plan_id") or "").strip()
+        or n1f_trace_draft_plan_id(bundle)
+        or n1f_trace_submit_response_draft_plan_id(bundle)
+    )
     if not draft_plan_id:
         return
     try:
-        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=HERMES_WORKSHOP_ROOT)
+        hermes_draft_record = recover_n1f_hermes_draft_record(
+            draft_plan_id,
+            bundle,
+            output_root=output_root,
+            hermes_workshop_root=hermes_workshop_root,
+        )
     except Exception as exc:  # noqa: BLE001 - diagnostic bundle should preserve absence rather than fail.
-        submitted_document = n1f_trace_submitted_plan_document(bundle)
-        if submitted_document is not None:
-            hermes_origin = bundle.setdefault("hermes_origin", {})
-            hermes_origin["draft_plan_id"] = draft_plan_id
-            hermes_origin["draft_plan_hash"] = stable_json_sha256(submitted_document)
-            hermes_origin["draft_document"] = submitted_document
-            hermes_origin["draft_hash_source"] = "submitted_tool_arguments"
         bundle.setdefault("hermes_origin", {})["draft_lookup_error"] = {
             "draft_plan_id": draft_plan_id,
             "error_type": type(exc).__name__,
@@ -1662,6 +1777,15 @@ def attach_n1f_hermes_draft_if_present(bundle: dict[str, Any], final_decision: d
     hermes_origin = bundle.setdefault("hermes_origin", {})
     hermes_origin["draft_plan_id"] = draft_plan_id
     hermes_origin["draft_plan_hash"] = hermes_draft_record.get("draft_plan_hash")
+    hermes_origin["draft_record_source"] = hermes_draft_record.get("draft_record_source")
+    if hermes_draft_record.get("draft_record_root"):
+        hermes_origin["draft_record_root"] = hermes_draft_record.get("draft_record_root")
+    if hermes_draft_record.get("draft_document_source"):
+        hermes_origin["draft_document_source"] = hermes_draft_record.get("draft_document_source")
+    if hermes_draft_record.get("draft_hash_source"):
+        hermes_origin["draft_hash_source"] = hermes_draft_record.get("draft_hash_source")
+    if hermes_draft_record.get("draft_lookup_errors"):
+        hermes_origin["draft_lookup_errors"] = hermes_draft_record.get("draft_lookup_errors")
     document = hermes_draft_record.get("document")
     if isinstance(document, dict):
         hermes_origin["draft_document"] = document
@@ -1679,7 +1803,8 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
         hermes = shutil.which("hermes")
         if not hermes:
             raise CapabilityGap("Hermes executable is not available in the deploy runtime.")
-        surface = hermes_tool_surface(hermes)
+        hermes_workshop_root = hermes_invocation_output_root(output_root)
+        surface = hermes_tool_surface(hermes, output_root=hermes_workshop_root)
         if not surface["safe"]:
             raise CapabilityGap(f"Unsafe Hermes tool surface: {surface}")
 
@@ -1701,6 +1826,7 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
                 prompt,
             ],
             timeout=HERMES_TIMEOUT_SECONDS,
+            output_root=hermes_workshop_root,
         )
         session = newest_hermes_session_after(started_at)
         invocation = parse_invocation_json(completed.stdout)
@@ -1727,10 +1853,15 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
             )
             return
 
-        interpretation = hermes_final_to_interpretation(clarified_query, final, session)
+        interpretation = hermes_final_to_interpretation(clarified_query, final, session, output_root=hermes_workshop_root)
         base_bundle["hermes_origin"]["interpretation"] = interpretation
         if interpretation.get("status") != "PLAN_INTERPRETED":
-            attach_n1f_hermes_draft_if_present(base_bundle, final)
+            attach_n1f_hermes_draft_if_present(
+                base_bundle,
+                final,
+                output_root=output_root,
+                hermes_workshop_root=hermes_workshop_root,
+            )
             write_failed_n1f_bundle(
                 output_root=output_root,
                 job_id=job_id,
@@ -1759,7 +1890,12 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
                 stage="missing_draft_plan_id",
             )
             return
-        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=HERMES_WORKSHOP_ROOT)
+        hermes_draft_record = recover_n1f_hermes_draft_record(
+            draft_plan_id,
+            base_bundle,
+            output_root=output_root,
+            hermes_workshop_root=hermes_workshop_root,
+        )
         hermes_draft_document = hermes_draft_record.get("document")
         if not isinstance(hermes_draft_document, dict):
             write_failed_n1f_bundle(
@@ -1786,6 +1922,11 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
                 **base_bundle["hermes_origin"],
                 "draft_plan_id": draft_plan_id,
                 "draft_plan_hash": hermes_draft_record.get("draft_plan_hash"),
+                "draft_record_source": hermes_draft_record.get("draft_record_source"),
+                "draft_record_root": hermes_draft_record.get("draft_record_root"),
+                "draft_document_source": hermes_draft_record.get("draft_document_source"),
+                "draft_hash_source": hermes_draft_record.get("draft_hash_source"),
+                "draft_lookup_errors": hermes_draft_record.get("draft_lookup_errors"),
                 "draft_document": hermes_draft_document,
             },
             "host_augmentation": {
@@ -1848,7 +1989,7 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
     if mode == "model":
         if not hermes_enabled():
             return hermes_unavailable(query, fallback_reason="hermes_disabled")
-        return hermes_interpret_request(query)
+        return hermes_interpret_request(query, output_root=output_root)
 
     text = normalized(query)
     gaps = unsupported_gaps(text)

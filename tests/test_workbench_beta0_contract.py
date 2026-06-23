@@ -10,11 +10,13 @@ from unittest.mock import patch
 from tqe.runtime.ir import ExecutionStatus, QueryExecution, TacticalQueryDocument
 from tqe.workshop.app_service import (
     execution_cache_key,
+    hermes_invocation_output_root,
     hermes_python_executable,
     host_owned_plan_document,
     interpret_request,
     load_plan_from_path,
     match_library,
+    recover_n1f_hermes_draft_record,
 )
 from tqe.workshop.m1_2 import (
     CallerProfile,
@@ -26,6 +28,7 @@ from tqe.workshop.m1_2 import (
     read_handle,
     submit_query_plan,
     validate_query_plan,
+    write_handle,
 )
 
 
@@ -181,6 +184,81 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
 
             with patch.dict("os.environ", {"WORKBENCH_HERMES_PYTHON": str(root / "missing-python")}, clear=False):
                 self.assertEqual(sys.executable, hermes_python_executable(str(hermes_path)))
+
+    def test_hermes_invocation_uses_active_output_root(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.assertEqual(root.resolve(), hermes_invocation_output_root(root))
+
+    def test_n1f_draft_recovery_prefers_active_handle_root(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output_root = Path(directory)
+            document = host_owned_plan_document(scoped_approved_plan(["J03WOY"])).model_dump(mode="json")
+            draft_id = "draft_deadbeefdeadbeef"
+            write_handle(
+                "draft-plans",
+                draft_id,
+                {
+                    "schema_version": "1.0",
+                    "draft_plan_id": draft_id,
+                    "draft_plan_hash": "handle_hash",
+                    "document": document,
+                },
+                output_root=output_root,
+            )
+
+            recovered = recover_n1f_hermes_draft_record(
+                draft_id,
+                {"hermes_origin": {"session_trace": {"ordered_tool_calls": [], "tool_responses": []}}},
+                output_root=output_root,
+                hermes_workshop_root=output_root,
+            )
+
+            self.assertEqual("handle", recovered["draft_record_source"])
+            self.assertEqual("handle_hash", recovered["draft_plan_hash"])
+            self.assertEqual(document, recovered["document"])
+
+    def test_n1f_draft_recovery_falls_back_to_persisted_mcp_trace(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output_root = Path(directory)
+            document = host_owned_plan_document(scoped_approved_plan(["J03WOY"])).model_dump(mode="json")
+            draft_id = "draft_deadbeefdeadbeef"
+            bundle = {
+                "hermes_origin": {
+                    "session_trace": {
+                        "ordered_tool_calls": [
+                            {
+                                "name": "mcp_priori_tactical_submit_query_plan",
+                                "arguments": {"plan_document": document, "source_label": "hermes_mcp"},
+                            }
+                        ],
+                        "tool_responses": [
+                            {
+                                "tool_name": "mcp_priori_tactical_submit_query_plan",
+                                "content": {
+                                    "ok": True,
+                                    "draft_plan_id": draft_id,
+                                    "draft_plan_hash": "response_hash",
+                                },
+                            }
+                        ],
+                    }
+                }
+            }
+
+            recovered = recover_n1f_hermes_draft_record(
+                draft_id,
+                bundle,
+                output_root=output_root,
+                hermes_workshop_root=output_root,
+            )
+
+            self.assertEqual("persisted_mcp_trace", recovered["draft_record_source"])
+            self.assertEqual("submit_query_plan.arguments.plan_document", recovered["draft_document_source"])
+            self.assertEqual("submit_query_plan.response.draft_plan_hash", recovered["draft_hash_source"])
+            self.assertEqual("response_hash", recovered["draft_plan_hash"])
+            self.assertEqual(document, recovered["document"])
+            self.assertTrue(recovered["draft_lookup_errors"])
 
 
 if __name__ == "__main__":
