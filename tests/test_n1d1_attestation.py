@@ -18,7 +18,12 @@ class N1D1AttestationTests(unittest.TestCase):
         self.assertNotEqual(attestation["status"], "VERIFIED")
 
         origin = attestation["hermes_origin"]
-        if n1d1.N1E_ORIGIN_BUNDLE_PATH.exists():
+        if n1d1.N1F_ORIGIN_BUNDLE_PATH.exists():
+            self.assertTrue(origin["trace_persisted"])
+            self.assertIsNotNone(origin["ordered_tool_call_trace_sha256"])
+            self.assertIsNotNone(origin["raw_hermes_decision_sha256"])
+            self.assertIn("n1d1.augmentation_diff_allowed", attestation["blocking_reasons"])
+        elif n1d1.N1E_ORIGIN_BUNDLE_PATH.exists():
             self.assertTrue(origin["trace_persisted"])
             self.assertIsNotNone(origin["ordered_tool_call_trace_sha256"])
             self.assertIsNotNone(origin["raw_hermes_decision_sha256"])

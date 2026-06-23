@@ -1606,6 +1606,27 @@ def write_failed_n1f_bundle(
     )
 
 
+def attach_n1f_hermes_draft_if_present(bundle: dict[str, Any], final_decision: dict[str, Any]) -> None:
+    draft_plan_id = str(final_decision.get("draft_plan_id") or "").strip()
+    if not draft_plan_id:
+        return
+    try:
+        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=HERMES_WORKSHOP_ROOT)
+    except Exception as exc:  # noqa: BLE001 - diagnostic bundle should preserve absence rather than fail.
+        bundle.setdefault("hermes_origin", {})["draft_lookup_error"] = {
+            "draft_plan_id": draft_plan_id,
+            "error_type": type(exc).__name__,
+            "message": short_text(str(exc), 500),
+        }
+        return
+    hermes_origin = bundle.setdefault("hermes_origin", {})
+    hermes_origin["draft_plan_id"] = draft_plan_id
+    hermes_origin["draft_plan_hash"] = hermes_draft_record.get("draft_plan_hash")
+    document = hermes_draft_record.get("document")
+    if isinstance(document, dict):
+        hermes_origin["draft_document"] = document
+
+
 def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
     job_dir = n1f_job_dir(output_root, job_id)
     job_dir.mkdir(parents=True, exist_ok=True)
@@ -1669,6 +1690,7 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
         interpretation = hermes_final_to_interpretation(clarified_query, final, session)
         base_bundle["hermes_origin"]["interpretation"] = interpretation
         if interpretation.get("status") != "PLAN_INTERPRETED":
+            attach_n1f_hermes_draft_if_present(base_bundle, final)
             write_failed_n1f_bundle(
                 output_root=output_root,
                 job_id=job_id,
