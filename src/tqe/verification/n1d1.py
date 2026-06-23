@@ -31,6 +31,7 @@ from tqe.verification.n1c import (
 PINNED_ROOT = Path("delivery/n1d")
 N1D_PLAN_PATH = PINNED_ROOT / "n1d-hero-plan.json"
 N1D_MANIFEST_PATH = PINNED_ROOT / "n1d-canonical-freeze-manifest.json"
+N1F_ORIGIN_BUNDLE_PATH = PINNED_ROOT / "n1f-origin-bundle.json"
 N1E_ORIGIN_BUNDLE_PATH = PINNED_ROOT / "n1e-origin-bundle.json"
 VERIFIED_ATTESTATION_PATH = PINNED_ROOT / "n1d1-attestation.json"
 # The attestation is a generated artifact while BLOCKED (gitignored). It is promoted to
@@ -101,7 +102,15 @@ def bundle_bound_plan_hash(bundle: dict[str, Any]) -> str | None:
     return None
 
 
-def audit_n1e_origin_bundle(n1d_plan: dict[str, Any], bundle: dict[str, Any]) -> dict[str, Any]:
+def origin_bundle_path() -> Path | None:
+    if N1F_ORIGIN_BUNDLE_PATH.exists():
+        return N1F_ORIGIN_BUNDLE_PATH
+    if N1E_ORIGIN_BUNDLE_PATH.exists():
+        return N1E_ORIGIN_BUNDLE_PATH
+    return None
+
+
+def audit_origin_bundle(n1d_plan: dict[str, Any], bundle: dict[str, Any], bundle_path: Path) -> dict[str, Any]:
     hermes = bundle.get("hermes_origin") if isinstance(bundle.get("hermes_origin"), dict) else {}
     session_trace = hermes.get("session_trace") if isinstance(hermes.get("session_trace"), dict) else {}
     hermes_doc = hermes.get("draft_document") if isinstance(hermes.get("draft_document"), dict) else {}
@@ -143,7 +152,7 @@ def audit_n1e_origin_bundle(n1d_plan: dict[str, Any], bundle: dict[str, Any]) ->
             "contains_submit_and_validate": required_tools.issubset(set(compile_tool_names)),
         },
         "notes": [],
-        "origin_bundle_path": str(N1E_ORIGIN_BUNDLE_PATH),
+        "origin_bundle_path": str(bundle_path),
         "origin_bundle_sha256": sha256(
             json.dumps(bundle, sort_keys=True, separators=(",", ":")).encode("utf-8")
         ).hexdigest(),
@@ -151,8 +160,9 @@ def audit_n1e_origin_bundle(n1d_plan: dict[str, Any], bundle: dict[str, Any]) ->
 
 
 def audit_hermes_origin(n1d_plan: dict[str, Any]) -> dict[str, Any]:
-    if N1E_ORIGIN_BUNDLE_PATH.exists():
-        return audit_n1e_origin_bundle(n1d_plan, read_json(N1E_ORIGIN_BUNDLE_PATH))
+    path = origin_bundle_path()
+    if path is not None:
+        return audit_origin_bundle(n1d_plan, read_json(path), path)
 
     origin: dict[str, Any] = {
         "original_question_sha256": sha256(HERO_QUESTION.encode("utf-8")).hexdigest(),
@@ -242,7 +252,8 @@ def main() -> None:
         print(json.dumps({"status": "fail", "reason": "n1d_pins_missing"}, sort_keys=True))
         raise SystemExit(1)
 
-    origin_bundle = read_json(N1E_ORIGIN_BUNDLE_PATH) if N1E_ORIGIN_BUNDLE_PATH.exists() else None
+    bundle_path = origin_bundle_path()
+    origin_bundle = read_json(bundle_path) if bundle_path is not None else None
     bundle_plan = bundle_host_augmented_plan(origin_bundle) if isinstance(origin_bundle, dict) else None
     n1d_plan = bundle_plan or read_json(N1D_PLAN_PATH)
     manifest = read_json(N1D_MANIFEST_PATH)
@@ -251,7 +262,8 @@ def main() -> None:
     if not bound_plan_hash:
         bound_plan_hash = pinned.get("plan", {}).get("bound_plan_hash")
     freeze_manifest_source = origin_bundle if isinstance(origin_bundle, dict) else pinned
-    freeze_manifest_id = ("n1e-" if isinstance(origin_bundle, dict) else "n1d-") + stable_json_sha256(freeze_manifest_source)[:16]
+    prefix = bundle_path.stem.split("-")[0] if bundle_path is not None else "n1d"
+    freeze_manifest_id = f"{prefix}-" + stable_json_sha256(freeze_manifest_source)[:16]
 
     origin = audit_hermes_origin(n1d_plan)
     novelty = attest_structural_novelty(n1d_plan)

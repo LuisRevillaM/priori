@@ -76,6 +76,7 @@ N1D_PLAN_PATH = PINNED_ROOT / "n1d-hero-plan.json"
 MANIFEST_PATH = PINNED_ROOT / "n1d-canonical-freeze-manifest.json"
 AUDIT_PATH = PINNED_ROOT / "n1d-entry-mode-audit.json"
 REPORT_PATH = N1D_ROOT / "n1d-verification-report.json"
+N1F_ORIGIN_BUNDLE_PATH = PINNED_ROOT / "n1f-origin-bundle.json"
 
 CANDIDATE_PATH = Path("artifacts/n1-live-novel-composition-2026-06-22/n1-local-only-candidate-plan.json")
 
@@ -124,9 +125,23 @@ def write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def n1f_augmented_plan_document() -> dict[str, Any] | None:
+    if not N1F_ORIGIN_BUNDLE_PATH.exists():
+        return None
+    bundle = read_json(N1F_ORIGIN_BUNDLE_PATH)
+    if bundle.get("status") != "exported":
+        return None
+    host = bundle.get("host_augmentation") if isinstance(bundle.get("host_augmentation"), dict) else {}
+    document = host.get("augmented_document")
+    return document if isinstance(document, dict) else None
+
+
 def build_n1d_plan_document() -> dict[str, Any]:
     """Frozen N1A candidate plus the two runtime-emitted destination-entry evidence fields."""
-    if CANDIDATE_PATH.exists():
+    n1f_document = n1f_augmented_plan_document()
+    if n1f_document is not None:
+        document = n1f_document
+    elif CANDIDATE_PATH.exists():
         document = read_json(CANDIDATE_PATH)
     else:
         # Reproduce the frozen candidate deterministically from the N1A builder if absent.

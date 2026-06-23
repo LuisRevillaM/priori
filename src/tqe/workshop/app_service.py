@@ -105,6 +105,11 @@ HERMES_MCP_TOOL_NAMES = {
 }
 N1E_JOB_THREADS: dict[str, threading.Thread] = {}
 N1E_JOB_THREADS_LOCK = threading.Lock()
+N1F_CLARIFICATION_ANSWER: dict[str, Any] = {
+    "match_ids": ["J03WOY"],
+    "periods": ["firstHalf"],
+    "perspective_team_role": "home",
+}
 
 
 class WorkbenchResponseModel(BaseModel):
@@ -1448,6 +1453,330 @@ def recover_latest_n1e_failure_bundle(*, output_root: Path) -> dict[str, Any]:
     return {"job_id": job_id, "bundle_sha256": file_sha256(n1e_bundle_path(output_root, job_id))}
 
 
+def n1f_job_root(output_root: Path) -> Path:
+    return output_root / "n1f"
+
+
+def n1f_job_dir(output_root: Path, job_id: str) -> Path:
+    return n1f_job_root(output_root) / "jobs" / job_id
+
+
+def n1f_status_path(output_root: Path, job_id: str) -> Path:
+    return n1f_job_dir(output_root, job_id) / "status.json"
+
+
+def n1f_bundle_path(output_root: Path, job_id: str) -> Path:
+    return n1f_job_dir(output_root, job_id) / "n1f-origin-bundle.json"
+
+
+def n1f_latest_path(output_root: Path) -> Path:
+    return n1f_job_root(output_root) / "latest.json"
+
+
+def write_n1f_status(output_root: Path, job_id: str, payload: dict[str, Any]) -> None:
+    status = {"schema_version": "n1f.job_status.v1", "job_id": job_id, "updated_at": utc_now_iso(), **payload}
+    write_json(n1f_status_path(output_root, job_id), status)
+    write_json(n1f_latest_path(output_root), {"job_id": job_id, "status": status.get("status"), "updated_at": status["updated_at"]})
+
+
+def read_n1f_status(output_root: Path, job_id: str | None = None) -> dict[str, Any]:
+    selected = job_id
+    if not selected and n1f_latest_path(output_root).exists():
+        selected = str(read_json(n1f_latest_path(output_root)).get("job_id") or "")
+    if not selected:
+        return error_response("N1F_JOB_NOT_FOUND", "No N1F runner job has been started.")
+    path = n1f_status_path(output_root, selected)
+    if not path.exists():
+        return error_response("N1F_JOB_NOT_FOUND", "N1F runner job was not found.")
+    return ok(read_json(path))
+
+
+def n1f_clarified_query(hero_question: str) -> str:
+    return "\n".join(
+        [
+            hero_question,
+            "",
+            "Clarification answer for invocation binding only, not tactical semantics:",
+            f"match_ids: {json.dumps(N1F_CLARIFICATION_ANSWER['match_ids'], separators=(',', ':'))}",
+            f"periods: {json.dumps(N1F_CLARIFICATION_ANSWER['periods'], separators=(',', ':'))}",
+            f"perspective_team_role: {json.dumps(N1F_CLARIFICATION_ANSWER['perspective_team_role'])}",
+        ]
+    )
+
+
+def committed_n1e_origin_chain() -> dict[str, Any] | None:
+    path = REPO_ROOT / "delivery/n1d/n1e-origin-bundle.json"
+    if not path.exists():
+        return None
+    bundle = read_json(path)
+    hermes = bundle.get("hermes_origin") if isinstance(bundle.get("hermes_origin"), dict) else {}
+    trace = hermes.get("session_trace") if isinstance(hermes.get("session_trace"), dict) else {}
+    return {
+        "bundle_path": "delivery/n1d/n1e-origin-bundle.json",
+        "bundle_sha256": file_sha256(path),
+        "job_id": bundle.get("job_id"),
+        "session_id": hermes.get("session_id"),
+        "first_turn_decision": hermes.get("final_decision"),
+        "ordered_tool_calls": trace.get("ordered_tool_calls") if isinstance(trace.get("ordered_tool_calls"), list) else [],
+        "ordered_tool_call_trace_sha256": hermes.get("ordered_tool_call_trace_sha256"),
+        "raw_hermes_decision_sha256": hermes.get("raw_hermes_decision_sha256"),
+    }
+
+
+def n1f_base_bundle(
+    *,
+    job_id: str,
+    status: str,
+    output_root: Path,
+    hero_question: str,
+    clarified_query: str,
+    prompt: str,
+    surface: dict[str, Any],
+    session: dict[str, Any] | None,
+    invocation: dict[str, Any],
+    final_decision: dict[str, Any],
+) -> dict[str, Any]:
+    from tqe.verification.n1d import runtime_hashes
+
+    session_trace = export_hermes_session_trace(
+        str(session.get("id")) if session else None,
+        invocation=invocation,
+        final_decision=final_decision,
+    )
+    return {
+        "schema_version": "n1f.origin_bundle.v1",
+        "status": status,
+        "generated_at": utc_now_iso(),
+        "job_id": job_id,
+        "hero_question": {"text": hero_question, "sha256": sha256(hero_question.encode("utf-8")).hexdigest()},
+        "first_turn_origin": committed_n1e_origin_chain(),
+        "clarification_answer": {
+            "kind": "invocation_binding",
+            "answer": N1F_CLARIFICATION_ANSWER,
+            "answer_sha256": stable_json_sha256(N1F_CLARIFICATION_ANSWER),
+            "not_tactical_semantics": True,
+        },
+        "second_turn_request": {
+            "text": clarified_query,
+            "sha256": sha256(clarified_query.encode("utf-8")).hexdigest(),
+        },
+        "compile_contract": {
+            "provider": HERMES_PROVIDER,
+            "model": HERMES_MODEL,
+            "toolset": HERMES_TOOLSET,
+            "prompt_sha256": sha256(prompt.encode("utf-8")).hexdigest(),
+            "tool_surface": surface,
+        },
+        "source": {
+            "repo_commit": runtime_commit_identifier(),
+            "runtime_hashes": runtime_hashes(),
+            "output_root": cloud_safe_path(output_root),
+            "hermes_workshop_root": cloud_safe_path(HERMES_WORKSHOP_ROOT),
+        },
+        "hermes_origin": {
+            "session_id": str(session.get("id")) if session else None,
+            "final_decision": final_decision,
+            "session_trace": session_trace,
+            "ordered_tool_call_trace_sha256": stable_json_sha256(session_trace["ordered_tool_calls"]),
+            "raw_hermes_decision_sha256": stable_json_sha256(session_trace["raw_model_output"]),
+        },
+    }
+
+
+def write_failed_n1f_bundle(
+    *,
+    output_root: Path,
+    job_id: str,
+    bundle: dict[str, Any],
+    reason: str,
+    stage: str,
+) -> None:
+    payload = {**bundle, "status": "failed_compile", "blocking_reason": reason}
+    write_json(n1f_bundle_path(output_root, job_id), payload)
+    write_n1f_status(
+        output_root,
+        job_id,
+        {
+            "status": "failed",
+            "stage": stage,
+            "bundle_sha256": file_sha256(n1f_bundle_path(output_root, job_id)),
+            "session_id": payload.get("hermes_origin", {}).get("session_id"),
+            "message": reason,
+        },
+    )
+
+
+def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
+    job_dir = n1f_job_dir(output_root, job_id)
+    job_dir.mkdir(parents=True, exist_ok=True)
+    source_label = "n1f_scoped_origin_refresh"
+    try:
+        from tqe.verification.n1c import HERO_QUESTION
+        from tqe.verification.n1d import ENTRY_BEFORE_OPEN_ANALYSIS, entry_mode_audit
+
+        write_n1f_status(output_root, job_id, {"status": "running", "stage": "probing_hermes"})
+        hermes = shutil.which("hermes")
+        if not hermes:
+            raise CapabilityGap("Hermes executable is not available in the deploy runtime.")
+        surface = hermes_tool_surface(hermes)
+        if not surface["safe"]:
+            raise CapabilityGap(f"Unsafe Hermes tool surface: {surface}")
+
+        clarified_query = n1f_clarified_query(HERO_QUESTION)
+        prompt = hermes_interpret_prompt(clarified_query)
+        started_at = newest_hermes_session_started_at()
+        write_n1f_status(output_root, job_id, {"status": "running", "stage": "compiling_with_hermes_second_turn"})
+        completed = run_hermes_invocation(
+            hermes,
+            [
+                "interpret",
+                "--provider",
+                HERMES_PROVIDER,
+                "--model",
+                HERMES_MODEL,
+                "--toolset",
+                HERMES_TOOLSET,
+                "--prompt",
+                prompt,
+            ],
+            timeout=HERMES_TIMEOUT_SECONDS,
+        )
+        session = newest_hermes_session_after(started_at)
+        invocation = parse_invocation_json(completed.stdout)
+        final = parse_final_json(str(invocation.get("stdout") or ""))
+        base_bundle = n1f_base_bundle(
+            job_id=job_id,
+            status="compiled",
+            output_root=output_root,
+            hero_question=HERO_QUESTION,
+            clarified_query=clarified_query,
+            prompt=prompt,
+            surface=surface,
+            session=session,
+            invocation=invocation,
+            final_decision=final,
+        )
+        if completed.returncode != 0 or not invocation.get("ok") or not final:
+            write_failed_n1f_bundle(
+                output_root=output_root,
+                job_id=job_id,
+                bundle=base_bundle,
+                reason="Hermes did not return a valid structured N1F interpretation.",
+                stage="invalid_structured_interpretation",
+            )
+            return
+
+        interpretation = hermes_final_to_interpretation(clarified_query, final, session)
+        base_bundle["hermes_origin"]["interpretation"] = interpretation
+        if interpretation.get("status") != "PLAN_INTERPRETED":
+            write_failed_n1f_bundle(
+                output_root=output_root,
+                job_id=job_id,
+                bundle=base_bundle,
+                reason=f"Hermes did not return an executable plan: {interpretation.get('status')}",
+                stage="non_plan_outcome",
+            )
+            return
+        if interpretation.get("provenance_source") != "HERMES_NOVEL_COMPOSITION":
+            write_failed_n1f_bundle(
+                output_root=output_root,
+                job_id=job_id,
+                bundle=base_bundle,
+                reason=f"Hermes did not produce novel-composition provenance: {interpretation.get('provenance_source')}",
+                stage="non_novel_outcome",
+            )
+            return
+
+        draft_plan_id = str(final.get("draft_plan_id") or interpretation.get("draft_plan_id") or "")
+        if not draft_plan_id:
+            write_failed_n1f_bundle(
+                output_root=output_root,
+                job_id=job_id,
+                bundle=base_bundle,
+                reason="Hermes final decision did not include draft_plan_id.",
+                stage="missing_draft_plan_id",
+            )
+            return
+        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=HERMES_WORKSHOP_ROOT)
+        hermes_draft_document = hermes_draft_record.get("document")
+        if not isinstance(hermes_draft_document, dict):
+            write_failed_n1f_bundle(
+                output_root=output_root,
+                job_id=job_id,
+                bundle=base_bundle,
+                reason="Hermes draft handle did not contain a plan document.",
+                stage="missing_draft_document",
+            )
+            return
+
+        host_augmented_document = add_n1e_entry_mode_evidence(hermes_draft_document)
+        write_n1f_status(output_root, job_id, {"status": "running", "stage": "executing_host_authority_pipeline"})
+        records = run_host_authority_pipeline(
+            host_augmented_document,
+            output_root=output_root,
+            source_label=source_label,
+        )
+        audit = entry_mode_audit(records["execution_record"])
+        bundle = {
+            **base_bundle,
+            "status": "exported",
+            "hermes_origin": {
+                **base_bundle["hermes_origin"],
+                "draft_plan_id": draft_plan_id,
+                "draft_plan_hash": hermes_draft_record.get("draft_plan_hash"),
+                "draft_document": hermes_draft_document,
+            },
+            "host_augmentation": {
+                "allowed_added_aliases": ["destination_entry_mode", "destination_time_to_entry_seconds"],
+                "augmented_document": host_augmented_document,
+                "augmented_document_sha256": stable_json_sha256(host_augmented_document),
+                "source_label": source_label,
+            },
+            "host_pipeline": {
+                "submit": records["submit"],
+                "validation": records["validation"],
+                "confirmation": records["confirmation"],
+                "cache_before": records["cache_before"],
+                "execution": records["execution"],
+                "cache_after_execute": records["cache_after_execute"],
+                "inspection": records["inspection"],
+                "replay_window": records["replay_window"],
+            },
+            "artifact_records": {
+                "draft_record": records["draft_record"],
+                "bound_record": records["bound_record"],
+                "execution_record": records["execution_record"],
+                "replay_record": records["replay_record"],
+            },
+            "entry_mode_audit": audit,
+            "entry_before_open_analysis": ENTRY_BEFORE_OPEN_ANALYSIS,
+        }
+        write_json(n1f_bundle_path(output_root, job_id), bundle)
+        write_n1f_status(
+            output_root,
+            job_id,
+            {
+                "status": "succeeded",
+                "stage": "bundle_exported",
+                "bundle_sha256": file_sha256(n1f_bundle_path(output_root, job_id)),
+                "session_id": bundle["hermes_origin"]["session_id"],
+                "bound_plan_hash": records["validation"].get("bound_plan_hash"),
+                "execution_id": records["execution"].get("execution_id"),
+            },
+        )
+    except Exception as exc:  # noqa: BLE001 - diagnostic job must preserve failure details.
+        write_n1f_status(
+            output_root,
+            job_id,
+            {
+                "status": "failed",
+                "stage": "failed",
+                "error_type": type(exc).__name__,
+                "message": short_text(str(exc), 1000),
+            },
+        )
+
+
 def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> dict[str, Any]:
     query = str(payload.get("query") or "").strip()
     mode = str(payload.get("mode") or "manual")
@@ -2081,6 +2410,49 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         thread.start()
         self.send_json(ok({"job_id": job_id, "status": "queued"}), HTTPStatus.ACCEPTED)
 
+    def handle_n1f_get(self, parsed: Any) -> None:
+        if not self.n1e_access_allowed():
+            self.send_n1e_forbidden()
+            return
+        query = parse_qs(parsed.query)
+        job_id = (query.get("job_id") or [""])[0] or None
+        if parsed.path == "/api/n1f/status":
+            self.send_json(read_n1f_status(self.server.output_root, job_id))
+            return
+        if parsed.path == "/api/n1f/bundle":
+            status = read_n1f_status(self.server.output_root, job_id)
+            selected_job_id = status.get("job_id") if status.get("ok") else None
+            if not selected_job_id:
+                self.send_json(status, HTTPStatus.NOT_FOUND)
+                return
+            path = n1f_bundle_path(self.server.output_root, str(selected_job_id))
+            if not path.exists():
+                self.send_json(error_response("N1F_BUNDLE_NOT_FOUND", "N1F origin bundle is not available."), HTTPStatus.NOT_FOUND)
+                return
+            self.send_json(read_json(path))
+            return
+        self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
+
+    def handle_n1f_post(self, parsed: Any) -> None:
+        if not self.n1e_access_allowed():
+            self.send_n1e_forbidden()
+            return
+        if parsed.path != "/api/n1f/run":
+            self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
+            return
+        job_id = "n1f_" + uuid.uuid4().hex[:16]
+        write_n1f_status(self.server.output_root, job_id, {"status": "queued", "stage": "queued"})
+        thread = threading.Thread(
+            target=run_n1f_origin_bundle,
+            kwargs={"job_id": job_id, "output_root": self.server.output_root},
+            name=f"n1f-runner-{job_id}",
+            daemon=True,
+        )
+        with N1E_JOB_THREADS_LOCK:
+            N1E_JOB_THREADS[job_id] = thread
+        thread.start()
+        self.send_json(ok({"job_id": job_id, "status": "queued"}), HTTPStatus.ACCEPTED)
+
     def set_demo_cookie_if_needed(self, parsed: Any) -> None:
         if not DEMO_ACCESS_TOKEN:
             return
@@ -2112,6 +2484,9 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             return
         if parsed.path.startswith("/api/n1e/"):
             self.handle_n1e_get(parsed)
+            return
+        if parsed.path.startswith("/api/n1f/"):
+            self.handle_n1f_get(parsed)
             return
         if self.redirect_with_demo_cookie(parsed):
             return
@@ -2146,6 +2521,9 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path.startswith("/api/n1e/"):
             self.handle_n1e_post(parsed)
+            return
+        if parsed.path.startswith("/api/n1f/"):
+            self.handle_n1f_post(parsed)
             return
         if not self.demo_access_allowed(parsed):
             self.send_demo_auth_required()
