@@ -1,0 +1,11 @@
+{
+  "bundle_sha256": "a9358a0033341748ff128923ba20ce3cb7d8a34b6b61ed8d4f14873bb9923798",
+  "job_id": "n1f_2c1a7baed5ef4fad",
+  "message": "Hermes did not return an executable plan: CAPABILITY_GAP",
+  "ok": true,
+  "schema_version": "n1f.job_status.v1",
+  "session_id": "20260623_050002_1e983b",
+  "stage": "non_plan_outcome",
+  "status": "failed",
+  "updated_at": "2026-06-23T05:02:52+00:00"
+}
