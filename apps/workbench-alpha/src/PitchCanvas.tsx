@@ -1,14 +1,16 @@
 import { useEffect, useRef } from "react";
 import type { ReplayPayload, ResultRow } from "./types";
 import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
+import { overlayVisibleAtFrame, type CorridorOverlay } from "./overlay";
 
 type PitchCanvasProps = {
   replay: ReplayPayload | null;
   frameIndex: number;
   result?: ResultRow | null;
+  overlay?: CorridorOverlay;
 };
 
-export function PitchCanvas({ replay, frameIndex, result }: PitchCanvasProps) {
+export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -89,12 +91,15 @@ export function PitchCanvas({ replay, frameIndex, result }: PitchCanvasProps) {
 
     const evidence = result?.requested_evidence ?? {};
     const ball = frame.entities.find((entity) => entity.entity_type === "ball");
-    const targetPlayerId = typeof evidence.target_player_id === "string" ? evidence.target_player_id : null;
-    const target = targetPlayerId
-      ? frame.entities.find((entity) => entity.entity_id === targetPlayerId)
+    // Draw the corridor only inside its valid evidence interval (or at the witness frame). Never
+    // infer geometry: if the overlay state is "none" or the frame is outside the interval, hide it.
+    const overlayTargetId =
+      overlay && overlay.kind !== "none" ? overlay.targetPlayerId : typeof evidence.target_player_id === "string" ? evidence.target_player_id : null;
+    const target = overlayTargetId
+      ? frame.entities.find((entity) => entity.entity_id === overlayTargetId)
       : null;
-    const witnessFrameId = targetPlayerId ? Number(replay.anchor_frame_id) : null;
-    if (ball && target && frame.frame_id === witnessFrameId) {
+    const overlayVisible = overlay ? overlayVisibleAtFrame(overlay, frame.frame_id) : frame.frame_id === Number(replay.anchor_frame_id);
+    if (ball && target && overlayVisible) {
       const start = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
       const end = pitchPointToPixel(target.x_m, target.y_m, replay.pitch, layout);
       ctx.save();

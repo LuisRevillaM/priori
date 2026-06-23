@@ -124,6 +124,42 @@ export function principalMeasurement(
   return null;
 }
 
+const PREDICATE_SUBJECTS: Record<string, string> = {
+  has_progressive_corridor: "Progressive corridor exists",
+  destination_region_entered: "Ball entered the destination region",
+  ball_side_block_shift: "Ball-side block shift cleared the threshold",
+  wide_possession: "Wide possession"
+};
+
+// Readable subject for a predicate id (product language); falls back to a humanized id.
+export function humanizePredicate(predicateId: string | undefined): string {
+  if (!predicateId) return "Predicate";
+  if (PREDICATE_SUBJECTS[predicateId]) return PREDICATE_SUBJECTS[predicateId];
+  const spaced = predicateId.replaceAll("_", " ").trim();
+  return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : "Predicate";
+}
+
+// Readable "why matched / why not" phrase, backed by the trace measurement. Raw JSON stays in
+// Developer details; this is the default-view summary.
+export function predicateWhy(status: string | undefined, value: unknown, threshold: unknown, unit?: string | null): string {
+  const measurement = describeMeasurement(value, threshold, unit);
+  const detail = measurement === "Measurement detail in developer view" ? "" : ` (${measurement})`;
+  if (status === "PASS") return `Matched${detail}`;
+  if (status === "FAIL") return `Did not match${detail}`;
+  return `Could not be determined${detail}`;
+}
+
+// Readable outcome for a known-timestamp / non-match inspection. Raw payload stays in Developer tools.
+export function timestampOutcomeSummary(inspection: Record<string, unknown> | null | undefined): string | null {
+  if (!inspection) return null;
+  if (JSON.stringify(inspection).includes("NO_COMPATIBLE_ANCHOR")) {
+    return "No matching moment at this timestamp for the current plan.";
+  }
+  const status = typeof inspection.status === "string" ? inspection.status : null;
+  if (status) return `Timestamp inspection: ${status.replaceAll("_", " ").toLowerCase()}.`;
+  return "Timestamp inspected — see Developer details for the raw record.";
+}
+
 // Honest rendering of relation destination-entry mode. Only the four backend enum values are
 // recognised; an absent value returns null so the UI never infers entry from time_to_entry_seconds.
 export function entryModeLabel(mode: unknown): { label: string; tone: Tone; value: EntryMode } | null {

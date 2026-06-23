@@ -14,6 +14,30 @@ function responsePath(path: string) {
   return (response: { url(): string }) => new URL(response.url()).pathname === path;
 }
 
+async function setReplayFrame(page: Page, frameIndex: number) {
+  await page.getByTestId("replay-scrubber").evaluate((element, value) => {
+    const input = element as HTMLInputElement;
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    setter?.call(input, String(value));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, frameIndex);
+}
+
+function inspectResponseFor(page: Page, resultId: string) {
+  return page.waitForResponse(async (response) => {
+    if (new URL(response.url()).pathname !== "/api/inspect-result") return false;
+    try {
+      const payload = (await response.json()) as Record<string, unknown>;
+      const inspection = payload.inspection as Record<string, unknown> | undefined;
+      const result = inspection?.result as Record<string, unknown> | undefined;
+      return result?.result_id === resultId;
+    } catch {
+      return false;
+    }
+  });
+}
+
 async function expandAllDetails(page: Page) {
   await page.evaluate(() => {
     document.querySelectorAll("details").forEach((node) => node.setAttribute("open", "true"));
@@ -125,4 +149,53 @@ test("beta1a.1 state screenshots: booting and cold-run", async ({ page }) => {
   await expect(page.getByTestId("result-count")).not.toHaveText("0");
   await expect(page.getByTestId("result-measurement").first()).toBeVisible();
   await shot(page, "b11-05-result-measurement");
+});
+
+test("beta1b comprehension screenshots", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByTestId("path-chooser")).toBeVisible();
+  await expect(page.getByTestId("analysis-scope")).toContainText("All 4 available matches");
+
+  await page.getByTestId("preset-experimental_corridor").click();
+  const interpretPromise = page.waitForResponse(responsePath("/api/interpret"));
+  await page.getByTestId("interpret-button").click();
+  await interpretPromise;
+
+  const executePromise = page.waitForResponse(responsePath("/api/execute"));
+  await page.getByTestId("primary-action").click();
+  const execution = (await (await executePromise).json()) as Record<string, unknown>;
+  const results = (execution.execution as Record<string, unknown>).results as Array<Record<string, unknown>>;
+  const firstResultId = String(results[0].result_id);
+
+  const inspectPromise = inspectResponseFor(page, firstResultId);
+  await page.locator(`[data-testid="result-item"][data-result-id="${firstResultId}"]`).click();
+  const inspection = (await (await inspectPromise).json()) as Record<string, unknown>;
+  const replay = inspection.replay as Record<string, unknown>;
+  const frames = replay.frames as Array<Record<string, unknown>>;
+  const evidence = ((inspection.inspection as Record<string, unknown>).result as Record<string, unknown>).requested_evidence as
+    | Record<string, unknown>
+    | undefined;
+
+  // 3) result rail grouping + measurements; 4) why-matched summary
+  await expect(page.getByTestId("result-group-header").first()).toBeVisible();
+  await shot(page, "b1b-03-result-grouping");
+  await expect(page.getByTestId("predicate-why").first()).toBeVisible();
+  await shot(page, "b1b-04-why-matched");
+
+  // 1) overlay visible within valid interval (witness frame); 2) hidden outside
+  if (evidence && typeof evidence.target_player_id === "string") {
+    const anchorFrameId = Number(replay.anchor_frame_id);
+    const witnessIdx = frames.findIndex((frame) => frame.frame_id === anchorFrameId);
+    await setReplayFrame(page, witnessIdx);
+    await expect(page.getByTestId("overlay-proof")).toContainText("Witness-frame corridor");
+    await shot(page, "b1b-01-overlay-valid");
+    const otherIdx = frames.findIndex((_frame, index) => index !== witnessIdx);
+    await setReplayFrame(page, otherIdx);
+    await expect(page.getByTestId("overlay-proof")).toContainText("hidden");
+    await shot(page, "b1b-02-overlay-hidden");
+  }
+
+  // 5) Developer details still expose raw internals
+  await expandAllDetails(page);
+  await shot(page, "b1b-05-developer-details");
 });

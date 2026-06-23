@@ -14,13 +14,16 @@ import {
 import { PitchCanvas } from "./PitchCanvas";
 import { advancePlaybackFrame } from "./playback";
 import {
-  describeMeasurement,
   entryModeLabel,
+  humanizePredicate,
+  predicateWhy,
   principalMeasurement,
   provenanceLabel,
   provenanceTone,
-  tacticalHeadline
+  tacticalHeadline,
+  timestampOutcomeSummary
 } from "./presentation";
+import { corridorOverlayState, overlayLegendLines, overlayProofText, type CorridorOverlay } from "./overlay";
 import {
   initialState,
   reducer,
@@ -393,21 +396,33 @@ export function App() {
     ? selectedResult.requested_evidence?.["entry_mode"] ?? asRecord(selectedResult)["entry_mode"]
     : null;
   const selectedEntryMode = entryModeLabel(selectedEntryModeRaw);
-  const overlayProof = (() => {
-    const evidence = evidenceResult?.requested_evidence ?? {};
-    const targetPlayerId = typeof evidence.target_player_id === "string" ? evidence.target_player_id : null;
-    const ball = currentFrame?.entities.find((entity) => entity.entity_type === "ball");
-    const targetEntity = targetPlayerId
-      ? currentFrame?.entities.find((entity) => entity.entity_id === targetPlayerId)
-      : null;
-    const witnessFrameId = targetPlayerId ? Number(replay?.anchor_frame_id) : null;
-    if (ball && targetEntity && currentFrame?.frame_id === witnessFrameId) {
-      return `Witness-frame corridor: ball to selected receiver`;
+  const overlayState: CorridorOverlay = useMemo(
+    () => corridorOverlayState(evidenceResult?.requested_evidence ?? null, replay),
+    [evidenceResult, replay]
+  );
+  const overlayProof = overlayProofText(overlayState, currentFrame?.frame_id);
+  const overlayLegend = overlayLegendLines(overlayState);
+  const timestampOutcome = timestampOutcomeSummary(timestampInspection?.inspection ?? null);
+
+  // Group results by match for scanability, preserving the deterministic result order within and
+  // across groups (groups appear in first-seen order; rows keep their original rank order).
+  const resultGroups = useMemo(() => {
+    const rows = execution?.execution.results ?? [];
+    const groups: Array<{ matchId: string; label: string; rows: ResultRow[] }> = [];
+    const indexByMatch = new Map<string, number>();
+    for (const row of rows) {
+      let index = indexByMatch.get(row.match_id);
+      if (index === undefined) {
+        index = groups.length;
+        indexByMatch.set(row.match_id, index);
+        groups.push({ matchId: row.match_id, label: matchLabel(matchesById.get(row.match_id), row.match_id), rows: [] });
+      }
+      groups[index].rows.push(row);
     }
-    if (targetPlayerId) return "Corridor witness hidden outside the witness frame";
-    if (evidenceResult) return "No exact corridor witness available";
-    return "No selected result overlay";
-  })();
+    return groups;
+    // matchesById is rebuilt each render; depend on the data that actually changes it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [execution, matchLibrary]);
 
   function setAllMatches() {
     dispatch({ type: "SET_SCOPE", ids: matchLibrary?.default_match_ids ?? [] });
@@ -639,6 +654,11 @@ export function App() {
                 >
                   Inspect timestamp
                 </button>
+                {timestampOutcome ? (
+                  <p className="muted devNote" data-testid="timestamp-outcome">
+                    {timestampOutcome}
+                  </p>
+                ) : null}
               </details>
             </aside>
 
@@ -798,13 +818,14 @@ export function App() {
                   </div>
                   {currentFrame ? <StatusPill tone="neutral">frame {currentFrame.frame_id}</StatusPill> : null}
                 </div>
-                <PitchCanvas replay={replay} frameIndex={frameIndex} result={evidenceResult} />
-                <div className="overlayProof" data-testid="overlay-proof">
+                <PitchCanvas replay={replay} frameIndex={frameIndex} result={evidenceResult} overlay={overlayState} />
+                <div className="overlayProof" data-testid="overlay-proof" data-overlay-kind={overlayState.kind}>
                   {overlayProof}
                 </div>
-                <div className="overlayLegend">
-                  A geometric corridor is a sufficiently clear forward connection from the ball to a teammate. It does not
-                  establish that this was the optimal pass.
+                <div className="overlayLegend" data-testid="overlay-legend">
+                  {overlayLegend.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
                 </div>
                 <div className="replayControls">
                   <button onClick={() => setFrameIndex((value) => Math.max(0, value - 1))} disabled={!replay}>
@@ -861,6 +882,12 @@ export function App() {
                 <div className="panel">
                   <div className="panelTitle">Predicate Trace</div>
                   <TraceList traces={correlatedInspection?.inspection.predicate_traces ?? []} />
+                  {correlatedInspection?.inspection.predicate_traces?.length ? (
+                    <details className="developerDrawer">
+                      <summary>Trace details</summary>
+                      <JsonBlock value={correlatedInspection.inspection.predicate_traces} compact />
+                    </details>
+                  ) : null}
                 </div>
               </section>
             </section>
@@ -874,37 +901,46 @@ export function App() {
                   </StatusPill>
                 </div>
                 <div className="resultList" data-testid="result-rail">
-                  {(execution?.execution.results ?? []).map((result) => {
-                    const measurement = principalMeasurement(result.requested_evidence);
-                    return (
-                      <button
-                        key={result.result_id}
-                        data-testid="result-item"
-                        data-result-id={result.result_id}
-                        data-classification={result.classification}
-                        className={effectiveSelectedResultId === result.result_id ? "resultItem active" : "resultItem"}
-                        onClick={() => void handleResultSelect(result.result_id)}
-                      >
-                        <span>
-                          #{result.rank} · {tacticalHeadline(result.classification)}
-                        </span>
-                        <small>{matchLabel(matchesById.get(result.match_id), result.match_id)}</small>
+                  {resultGroups.map((group) => (
+                    <div key={group.matchId} className="resultGroup" data-testid="result-group" data-match-id={group.matchId}>
+                      <div className="resultGroupHeader" data-testid="result-group-header">
+                        <span>{group.label}</span>
                         <small>
-                          {periodLabel(result.period)} · {matchTimeLabel(result.match_time_ms)}
+                          {group.rows.length} {group.rows.length === 1 ? "moment" : "moments"}
                         </small>
-                        {measurement ? (
-                          <small
-                            className="resultMeasurement"
-                            data-testid="result-measurement"
-                            data-measurement-key={measurement.key}
-                            data-measurement-raw={measurement.raw}
+                      </div>
+                      {group.rows.map((result) => {
+                        const measurement = principalMeasurement(result.requested_evidence);
+                        return (
+                          <button
+                            key={result.result_id}
+                            data-testid="result-item"
+                            data-result-id={result.result_id}
+                            data-classification={result.classification}
+                            className={effectiveSelectedResultId === result.result_id ? "resultItem active" : "resultItem"}
+                            onClick={() => void handleResultSelect(result.result_id)}
                           >
-                            {measurement.label}
-                          </small>
-                        ) : null}
-                      </button>
-                    );
-                  })}
+                            <span>
+                              #{result.rank} · {tacticalHeadline(result.classification)}
+                            </span>
+                            <small>
+                              {periodLabel(result.period)} · {matchTimeLabel(result.match_time_ms)}
+                            </small>
+                            {measurement ? (
+                              <small
+                                className="resultMeasurement"
+                                data-testid="result-measurement"
+                                data-measurement-key={measurement.key}
+                                data-measurement-raw={measurement.raw}
+                              >
+                                {measurement.label}
+                              </small>
+                            ) : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ))}
                   {!execution ? <div className="emptyState">Confirm and run an interpretation to populate results.</div> : null}
                 </div>
               </section>
@@ -991,11 +1027,12 @@ function TraceList({
             key={`${trace.predicate_id ?? "trace"}-${index}`}
             className="traceRow"
             data-testid="predicate-trace"
+            data-predicate-id={trace.predicate_id ?? ""}
             data-raw={pretty({ value: trace.value, threshold: trace.threshold })}
           >
             <StatusPill tone={tone}>{status}</StatusPill>
-            <span>{trace.predicate_id ?? "predicate"}</span>
-            <small>{describeMeasurement(trace.value, trace.threshold, trace.unit)}</small>
+            <span>{humanizePredicate(trace.predicate_id)}</span>
+            <small data-testid="predicate-why">{predicateWhy(status, trace.value, trace.threshold, trace.unit)}</small>
           </div>
         );
       })}

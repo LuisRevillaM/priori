@@ -872,6 +872,69 @@ test("beta1a novel composition is surfaced as pending proof refresh, not a runna
   expect(consoleErrors).toEqual([]);
 });
 
+test("beta1b corridor overlay shows only within its valid interval, with a legend", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  await boot(page, consoleErrors);
+  await page.getByTestId("preset-experimental_corridor").click();
+  await jsonAfterClick<Record<string, unknown>>(page, [], "ov.interpret", "interpret-button", "/api/interpret");
+  const { execution } = await confirmAndRun(page, [], "ov");
+  const results = (execution.execution as Record<string, unknown>).results as Array<Record<string, unknown>>;
+  const firstResultId = String(results[0].result_id);
+  const inspectPromise = waitForInspectionResponse(page, firstResultId);
+  await page.locator(`[data-testid="result-item"][data-result-id="${firstResultId}"]`).click();
+  const inspection = (await (await inspectPromise).json()) as Record<string, unknown>;
+  const replay = inspection.replay as Record<string, unknown>;
+  const frames = replay.frames as Array<Record<string, unknown>>;
+  const evidence = ((inspection.inspection as Record<string, unknown>).result as Record<string, unknown>).requested_evidence as
+    | Record<string, unknown>
+    | undefined;
+
+  // The legend is always present with the non-optimality disclaimer.
+  await expect(page.getByTestId("overlay-legend")).toContainText("optimal pass");
+
+  if (evidence && typeof evidence.target_player_id === "string") {
+    const anchorFrameId = Number(replay.anchor_frame_id);
+    const witnessIdx = frames.findIndex((frame) => frame.frame_id === anchorFrameId);
+    expect(witnessIdx).toBeGreaterThanOrEqual(0);
+
+    await setReplayFrame(page, witnessIdx);
+    await expect(page.getByTestId("overlay-proof")).toContainText("Witness-frame corridor");
+    await expect(page.getByTestId("overlay-proof")).toHaveAttribute("data-overlay-kind", "witness");
+    await expect(page.getByTestId("overlay-legend")).toContainText("witness frame");
+
+    const otherIdx = frames.findIndex((_frame, index) => index !== witnessIdx);
+    await setReplayFrame(page, otherIdx);
+    await expect(page.getByTestId("overlay-proof")).toContainText("hidden outside the witness frame");
+  }
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test("beta1b result rail groups by match and shows readable why-matched summaries", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  await boot(page, consoleErrors);
+  await page.getByTestId("preset-approved_block_shift").click();
+  await jsonAfterClick<Record<string, unknown>>(page, [], "wm.interpret", "interpret-button", "/api/interpret");
+  const { execution } = await confirmAndRun(page, [], "wm");
+  const results = (execution.execution as Record<string, unknown>).results as Array<Record<string, unknown>>;
+  const firstResultId = String(results[0].result_id);
+
+  // grouping + principal measurement are visible without inspecting
+  await expect(page.getByTestId("result-group-header").first()).toBeVisible();
+  await expect(page.getByTestId("result-measurement").first()).toBeVisible();
+
+  // inspect -> readable why-matched summary backed by the trace; raw JSON only in Developer details
+  const inspectPromise = waitForInspectionResponse(page, firstResultId);
+  await page.locator(`[data-testid="result-item"][data-result-id="${firstResultId}"]`).click();
+  await inspectPromise;
+  await expect(page.getByTestId("predicate-why").first()).toBeVisible();
+  const why = await page.getByTestId("predicate-why").first().textContent();
+  expect(why && /Matched|Did not match|Could not be determined/.test(why)).toBeTruthy();
+  await expect(page.getByText("Trace details")).toBeVisible();
+
+  expect(consoleErrors).toEqual([]);
+});
+
 test("beta1a.1 booting state shows a loading view with no false empty/scope warning", async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on("console", (message) => {

@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import {
   describeMeasurement,
   entryModeLabel,
+  humanizePredicate,
+  predicateWhy,
   principalMeasurement,
   provenanceLabel,
   provenanceTone,
-  tacticalHeadline
+  tacticalHeadline,
+  timestampOutcomeSummary
 } from "../src/presentation";
 
 // --- Provenance honesty: a preset/recipe must never read as AI-authored ---
@@ -69,5 +72,18 @@ assert.equal(principalMeasurement({ "signed_shift.signed_shift_metres": -3.4 })?
 assert.equal(principalMeasurement({ minimum_clearance_m: 4.35, signed_shift_metres: 2 })?.key, "signed_shift_metres");
 // raw value preserved for tooling
 assert.equal(principalMeasurement({ signed_shift_metres: 4.2109 })?.raw, "4.2109");
+
+// --- product-language predicate summaries ---
+assert.equal(humanizePredicate("has_progressive_corridor"), "Progressive corridor exists");
+assert.equal(humanizePredicate("some_other_predicate"), "Some other predicate");
+assert.equal(humanizePredicate(undefined), "Predicate");
+assert.equal(predicateWhy("PASS", 4.35, 3, "m"), "Matched (measured 4.35 m · threshold 3 m)");
+assert.equal(predicateWhy("FAIL", 1, 3), "Did not match (measured 1 · threshold 3)");
+assert.equal(predicateWhy("UNKNOWN", null, null), "Could not be determined");
+
+// --- timestamp outcome summary ---
+assert.match(String(timestampOutcomeSummary({ status: "NO_COMPATIBLE_ANCHOR" })), /No matching moment/);
+assert.equal(timestampOutcomeSummary(null), null);
+assert.match(String(timestampOutcomeSummary({ status: "MATCHED" })), /matched/);
 
 console.log("presentation tests passed");
