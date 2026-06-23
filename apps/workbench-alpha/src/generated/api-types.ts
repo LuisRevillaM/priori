@@ -1221,9 +1221,15 @@ export const apiSchemas = {
             "title": "Away Team",
             "type": "string"
           },
+          "away_team_brand": {
+            "$ref": "#/$defs/TeamBrandResponse"
+          },
           "home_team": {
             "title": "Home Team",
             "type": "string"
+          },
+          "home_team_brand": {
+            "$ref": "#/$defs/TeamBrandResponse"
           },
           "kickoff_time_utc": {
             "anyOf": [
@@ -1274,9 +1280,95 @@ export const apiSchemas = {
           "match_id",
           "match_title",
           "home_team",
-          "away_team"
+          "away_team",
+          "home_team_brand",
+          "away_team_brand"
         ],
         "title": "MatchSummaryResponse",
+        "type": "object"
+      },
+      "TeamBrandResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "abbreviation": {
+            "title": "Abbreviation",
+            "type": "string"
+          },
+          "logo_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Logo Source"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Logo Url"
+          },
+          "primary_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Primary Color"
+          },
+          "secondary_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Secondary Color"
+          },
+          "short_name": {
+            "title": "Short Name",
+            "type": "string"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Team Id"
+          },
+          "team_name": {
+            "title": "Team Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "team_name",
+          "short_name",
+          "abbreviation"
+        ],
+        "title": "TeamBrandResponse",
         "type": "object"
       }
     },
@@ -1304,11 +1396,15 @@ export const apiSchemas = {
       "perspective_team": {
         "title": "Perspective Team",
         "type": "string"
+      },
+      "perspective_team_brand": {
+        "$ref": "#/$defs/TeamBrandResponse"
       }
     },
     "required": [
       "ok",
       "perspective_team",
+      "perspective_team_brand",
       "default_match_ids",
       "matches"
     ],

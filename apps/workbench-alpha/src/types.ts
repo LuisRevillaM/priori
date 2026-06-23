@@ -41,11 +41,24 @@ export type Preset = {
   plan_hash: string;
 };
 
+export type TeamBrand = {
+  team_id?: string | null;
+  team_name: string;
+  short_name: string;
+  abbreviation: string;
+  logo_url?: string | null;
+  logo_source?: string | null;
+  primary_color?: string | null;
+  secondary_color?: string | null;
+};
+
 export type MatchSummary = {
   match_id: string;
   match_title: string;
   home_team: string;
   away_team: string;
+  home_team_brand: TeamBrand;
+  away_team_brand: TeamBrand;
   result?: string | null;
   match_day?: string | null;
   kickoff_time_utc?: string | null;
@@ -54,6 +67,7 @@ export type MatchSummary = {
 export type MatchLibraryResponse = Omit<GeneratedMatchLibraryResponse, "matches"> & {
   ok: true;
   perspective_team: string;
+  perspective_team_brand: TeamBrand;
   default_match_ids: string[];
   matches: MatchSummary[];
 };

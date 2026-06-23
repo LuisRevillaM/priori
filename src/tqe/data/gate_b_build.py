@@ -23,6 +23,7 @@ from tqe.data.gate_a_build import (
     write_json,
     write_table,
 )
+from tqe.data.team_branding import team_branding_fields
 from tqe.idsse.source_lock import EXPECTED_MATCH_IDS, SOURCE_VERSION
 
 DEFAULT_ARTIFACT_DIR = Path("artifacts/m1/gate-b")
@@ -66,6 +67,7 @@ def metadata_rows(match_meta: MatchMeta) -> dict[str, list[dict[str, Any]]]:
                 "team_name": team.team_name,
                 "team_role": team.role,
                 "floodlight_key": team.floodlight_key,
+                **team_branding_fields(team.team_id, team.team_name),
             }
             for team in match_meta.teams.values()
         ],

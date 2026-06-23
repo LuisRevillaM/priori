@@ -115,6 +115,13 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         self.assertNotIn("J03WOH", ids)
         self.assertTrue(all(item["match_title"] and item["home_team"] and item["away_team"] for item in payload["matches"]))
         self.assertTrue(all("match_day" in item and "kickoff_time_utc" in item for item in payload["matches"]))
+        self.assertEqual("Fortuna", payload["perspective_team_brand"]["short_name"])
+        self.assertTrue(payload["perspective_team_brand"]["logo_url"].endswith("Fortuna_D%C3%BCsseldorf.svg"))
+        for item in payload["matches"]:
+            self.assertTrue(item["home_team_brand"]["short_name"])
+            self.assertTrue(item["away_team_brand"]["short_name"])
+            self.assertTrue(item["home_team_brand"]["logo_url"])
+            self.assertTrue(item["away_team_brand"]["logo_url"])
 
     def test_manual_interpretation_distinguishes_reviewed_recipe_from_manual_preset(self) -> None:
         approved = interpret_request({"mode": "manual", "query": "", "preset_id": "approved_block_shift"})

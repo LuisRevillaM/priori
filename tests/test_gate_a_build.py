@@ -4,7 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tqe.data.gate_a_build import TeamMeta, extract_orientation, extract_raw_samples
+from tqe.data.gate_a_build import MatchMeta, TeamMeta, extract_orientation, extract_raw_samples
+from tqe.data.gate_b_build import metadata_rows
 
 
 class GateABuildTests(unittest.TestCase):
@@ -69,6 +70,35 @@ class GateABuildTests(unittest.TestCase):
             samples = extract_raw_samples(path, match_meta)
 
         self.assertEqual(["home", "BALL"], [sample.team_id for sample in samples])
+
+    def test_metadata_rows_enriches_known_team_branding(self) -> None:
+        match_meta = MatchMeta(
+            match_id="TEST",
+            competition_id=None,
+            competition_name=None,
+            season=None,
+            match_day=None,
+            match_title="Fortuna Düsseldorf:F.C. Hansa Rostock",
+            kickoff_time_utc=None,
+            result=None,
+            pitch_length_m=105.0,
+            pitch_width_m=68.0,
+            teams={
+                "home": TeamMeta("DFL-CLU-00000P", "Fortuna Düsseldorf", "home", "Home"),
+                "away": TeamMeta("DFL-CLU-00000Q", "F.C. Hansa Rostock", "away", "Away"),
+            },
+            players=[],
+        )
+
+        rows = metadata_rows(match_meta)
+        home = next(team for team in rows["teams"] if team["team_role"] == "home")
+        away = next(team for team in rows["teams"] if team["team_role"] == "away")
+
+        self.assertEqual("Fortuna", home["team_short_name"])
+        self.assertEqual("F95", home["team_abbreviation"])
+        self.assertIn("Fortuna_D%C3%BCsseldorf.svg", home["logo_url"])
+        self.assertEqual("Hansa Rostock", away["team_short_name"])
+        self.assertIn("F.C._Hansa_Rostock_Logo.svg", away["logo_url"])
 
 
 if __name__ == "__main__":
