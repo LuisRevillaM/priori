@@ -326,6 +326,8 @@ def pinned_identity(document: dict[str, Any], records: dict[str, Any], audit: di
 def build_manifest(document: dict[str, Any], records: dict[str, Any], audit: dict[str, Any], pinned: dict[str, Any]) -> dict[str, Any]:
     freeze = read_json(FREEZE_PATH)
     tool_allowlist = freeze["mcp_boundary"]["tool_allowlist"]
+    origin_bundle = read_json(N1F_ORIGIN_BUNDLE_PATH) if N1F_ORIGIN_BUNDLE_PATH.exists() else {}
+    hermes_origin = origin_bundle.get("hermes_origin") if isinstance(origin_bundle.get("hermes_origin"), dict) else {}
     return {
         "schema_version": "n1d.canonical_freeze_manifest.v1",
         "generated_at": utc_now_iso(),
@@ -359,7 +361,17 @@ def build_manifest(document: dict[str, Any], records: dict[str, Any], audit: dic
         "hero_question": {"text": HERO_QUESTION, "sha256": pinned["hero_question_sha256"]},
         "hero_plan": {
             "path": str(N1D_PLAN_PATH),
-            "derived_from": str(CANDIDATE_PATH),
+            "origin": {
+                "source": "hermes",
+                "session_id": hermes_origin.get("session_id"),
+                "draft_plan_hash": hermes_origin.get("draft_plan_hash"),
+                "origin_bundle_path": str(N1F_ORIGIN_BUNDLE_PATH) if origin_bundle else None,
+                "origin_bundle_sha256": stable_json_sha256(origin_bundle) if origin_bundle else None,
+            },
+            "deterministic_predecessor_reference": {
+                "path": str(CANDIDATE_PATH),
+                "role": "local candidate/reference used before the Hermes-origin bundle was recovered",
+            },
             "added_evidence_fields": [item["field"] for item in ENTRY_MODE_EVIDENCE],
             "document_sha256": pinned["plan"]["document_sha256"],
             "document_stable_sha256": pinned["plan"]["document_stable_sha256"],

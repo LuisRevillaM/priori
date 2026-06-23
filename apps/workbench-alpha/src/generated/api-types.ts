@@ -1132,6 +1132,7 @@ export const apiSchemas = {
           "MANUAL_PRESET",
           "HERMES_RECIPE_SELECTION",
           "HERMES_NOVEL_COMPOSITION",
+          "HERMES_EXPERIMENTAL_UNVERIFIED",
           "DETERMINISTIC_REPAIR",
           "CAPABILITY_GAP",
           "MODEL_UNAVAILABLE"

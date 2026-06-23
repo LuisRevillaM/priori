@@ -31,6 +31,7 @@ import {
   selectCanRun,
   selectHasSelectedScope,
   selectIsNovelComposition,
+  selectIsUnverifiedExperimental,
   selectPlanReady
 } from "./workbenchState";
 import type {
@@ -183,6 +184,8 @@ export function App() {
   const canRun = selectCanRun(state);
   const hasSelectedScope = selectHasSelectedScope(state);
   const isNovelComposition = selectIsNovelComposition(state);
+  const isUnverifiedExperimental = selectIsUnverifiedExperimental(state);
+  const scopeLocked = isNovelComposition;
   const booting = phase === "booting";
   const running = phase === "confirming" || phase === "executing";
 
@@ -496,7 +499,11 @@ export function App() {
               <strong>Fortuna in possession</strong>
             </div>
             <div className="scopePicker" data-testid="match-scope-selector">
-              <button className={selectedMatchIds.length === allMatchCount ? "active" : ""} onClick={setAllMatches}>
+              <button
+                className={selectedMatchIds.length === allMatchCount ? "active" : ""}
+                onClick={setAllMatches}
+                disabled={scopeLocked}
+              >
                 All matches
               </button>
               {(matchLibrary?.matches ?? []).map((match) => (
@@ -504,12 +511,18 @@ export function App() {
                   key={match.match_id}
                   className={selectedMatchIds.includes(match.match_id) ? "active" : ""}
                   onClick={() => toggleMatch(match.match_id)}
+                  disabled={scopeLocked}
                   title={match.match_title}
                 >
                   {match.away_team.replace("F.C. ", "").replace("1. FC ", "")}
                 </button>
               ))}
             </div>
+            {scopeLocked ? (
+              <div className="scopeWarning verified" data-testid="attested-scope-lock">
+                Verified Hermes composition is locked to the attested scope.
+              </div>
+            ) : null}
             {matchLibraryLoaded && !hasSelectedScope ? (
               <div className="scopeWarning" data-testid="scope-warning">
                 Select at least one match to validate or execute.
@@ -729,11 +742,20 @@ export function App() {
                   </div>
                 ) : null}
                 {isNovelComposition ? (
-                  <div className="stateBox warn" data-testid="novel-composition-pending">
-                    <strong>Novel composition is not product-ready yet</strong>
+                  <div className="stateBox good" data-testid="novel-composition-verified">
+                    <strong>Hermes-authored experimental composition</strong>
                     <p>
-                      Live model-authored composition is held back pending an N1C runtime proof refresh. This
-                      interpretation is shown for transparency only and cannot be run as a product result here.
+                      No saved tactical recipe matched. Hermes composed a new plan from supported capabilities,
+                      and the host verified it against the committed N1D.1 attestation before enabling execution.
+                    </p>
+                  </div>
+                ) : null}
+                {isUnverifiedExperimental ? (
+                  <div className="stateBox warn" data-testid="experimental-unverified-state">
+                    <strong>Experimental draft is not attested</strong>
+                    <p>
+                      Hermes returned a bounded plan, but the host could not match it to the committed novel-composition
+                      attestation. It remains visible for inspection and cannot be run from this Workbench path.
                     </p>
                   </div>
                 ) : null}

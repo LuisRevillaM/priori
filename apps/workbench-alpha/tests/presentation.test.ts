@@ -18,13 +18,11 @@ assert.equal(provenanceLabel("HERMES_RECIPE_SELECTION"), "Hermes selected recipe
 assert.equal(provenanceTone("REVIEWED_RECIPE"), "neutral");
 assert.equal(provenanceTone("MANUAL_PRESET"), "neutral");
 
-// --- Novel composition is held back as pending/not-product-ready (never a success claim) ---
-assert.match(provenanceLabel("HERMES_NOVEL_COMPOSITION"), /pending proof refresh/i);
-assert.equal(
-  provenanceTone("HERMES_NOVEL_COMPOSITION"),
-  "warn",
-  "novel composition must read as a caution, not a success"
-);
+// --- Verified novel composition reads as attested model authorship; unverified drafts stay cautious ---
+assert.equal(provenanceLabel("HERMES_NOVEL_COMPOSITION"), "Hermes-authored experimental composition");
+assert.equal(provenanceTone("HERMES_NOVEL_COMPOSITION"), "good");
+assert.equal(provenanceLabel("HERMES_EXPERIMENTAL_UNVERIFIED"), "Experimental draft · unverified");
+assert.equal(provenanceTone("HERMES_EXPERIMENTAL_UNVERIFIED"), "warn");
 
 // --- Capability gap / model unavailable read honestly ---
 assert.equal(provenanceTone("CAPABILITY_GAP"), "bad");

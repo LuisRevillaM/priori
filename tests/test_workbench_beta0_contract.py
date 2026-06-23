@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from copy import deepcopy
 from pathlib import Path
 import sys
@@ -10,6 +11,7 @@ from unittest.mock import patch
 from tqe.runtime.ir import ExecutionStatus, QueryExecution, TacticalQueryDocument
 from tqe.workshop.app_service import (
     execution_cache_key,
+    hermes_draft_provenance,
     hermes_invocation_output_root,
     hermes_python_executable,
     host_owned_plan_document,
@@ -20,6 +22,7 @@ from tqe.workshop.app_service import (
 )
 from tqe.workshop.m1_2 import (
     CallerProfile,
+    CapabilityGap,
     ExecuteQueryPlanRequest,
     SubmitQueryPlanRequest,
     ValidateQueryPlanRequest,
@@ -33,6 +36,8 @@ from tqe.workshop.m1_2 import (
 
 
 APPROVED_PLAN = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
+N1I_ORIGIN_BUNDLE = Path("delivery/n1d/n1f-origin-bundle.json")
+N1D1_ATTESTATION = Path("delivery/n1d/n1d1-attestation.json")
 
 
 def scoped_approved_plan(match_ids: list[str]) -> dict:
@@ -55,6 +60,16 @@ def submit_and_validate(plan_document: dict, output_root: Path) -> dict:
     )
     assert validation.ok
     return read_handle("bound-plans", str(validation.bound_plan_id), output_root=output_root)
+
+
+def n1i_attested_document() -> dict:
+    bundle = json.loads(N1I_ORIGIN_BUNDLE.read_text(encoding="utf-8"))
+    return deepcopy(bundle["host_augmentation"]["augmented_document"])
+
+
+def n1d1_plan_hash() -> str:
+    attestation = json.loads(N1D1_ATTESTATION.read_text(encoding="utf-8"))
+    return str(attestation["plan_hash"])
 
 
 class WorkbenchBeta0ContractTests(unittest.TestCase):
@@ -109,6 +124,33 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         self.assertEqual("PLAN_INTERPRETED", experimental["status"])
         self.assertEqual("MANUAL_PRESET", experimental["provenance_source"])
         self.assertEqual("possession_corridor_availability_v1", experimental["recipe_id"])
+
+    def test_attested_novel_composition_requires_verified_plan_hash(self) -> None:
+        document = n1i_attested_document()
+
+        source, details = hermes_draft_provenance(document, n1d1_plan_hash())
+        self.assertEqual("HERMES_NOVEL_COMPOSITION", source)
+        self.assertTrue(details["verified"])
+
+        mismatch_source, mismatch_details = hermes_draft_provenance(document, "wrong_hash")
+        self.assertEqual("HERMES_EXPERIMENTAL_UNVERIFIED", mismatch_source)
+        self.assertIn("plan_hash", mismatch_details["failures"])
+
+        mutated = deepcopy(document)
+        mutated["draft_plan"]["nodes"] = mutated["draft_plan"]["nodes"][:-1]
+        structure_source, structure_details = hermes_draft_provenance(mutated, n1d1_plan_hash())
+        self.assertEqual("HERMES_EXPERIMENTAL_UNVERIFIED", structure_source)
+        self.assertIn("structural_fingerprint_hash", structure_details["failures"])
+
+    def test_attested_novel_composition_scope_mutation_is_rejected(self) -> None:
+        document = n1i_attested_document()
+        accepted = host_owned_plan_document(document)
+        self.assertEqual("possession_corridor_destination_entry_v1", accepted.recipe.recipe_id)
+
+        mutated = deepcopy(document)
+        mutated["default_invocation"]["match_ids"] = ["J03WPY"]
+        with self.assertRaises(CapabilityGap):
+            host_owned_plan_document(mutated)
 
     def test_scope_changes_bound_hash_cache_key_and_execution_record_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

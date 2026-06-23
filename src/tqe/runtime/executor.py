@@ -1975,6 +1975,12 @@ def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) -> 
             "end_index": end,
             "start_frame_id": int(state.frame_ids[start]),
             "end_frame_id": int(state.frame_ids[end]),
+            "possession_start_frame_id": int(state.frame_ids[start]),
+            "possession_end_frame_id": int(state.frame_ids[end]),
+            "possession_duration_seconds": round(
+                float((end - start + 1) / state.params.integer("analysis_rate_hz")),
+                3,
+            ),
             "entity_refs": [state.perspective_team_id],
         }
         for start, end in segment_true(possession_mask, minimum_frames)

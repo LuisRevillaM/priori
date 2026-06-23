@@ -98,6 +98,9 @@ KNOWLEDGE_PACK_PATH = Path(os.environ.get("TQE_KNOWLEDGE_PACK_PATH", "generated/
 EXPECTED_KNOWLEDGE_PACK_SHA256 = os.environ.get("TQE_EXPECTED_KNOWLEDGE_PACK_SHA256", "").strip()
 DATA_MANIFEST_PATH = Path(os.environ.get("TQE_DATA_MANIFEST_PATH", "config/deploy/demo-data-manifest.json"))
 CACHE_ROOT = Path(os.environ["TQE_CACHE_ROOT"]) if os.environ.get("TQE_CACHE_ROOT") else None
+N1D_ATTESTATION_PATH = Path("delivery/n1d/n1d1-attestation.json")
+N1D_MANIFEST_PATH = Path("delivery/n1d/n1d-canonical-freeze-manifest.json")
+N1D_ORIGIN_BUNDLE_PATH = Path("delivery/n1d/n1f-origin-bundle.json")
 HERMES_MCP_TOOL_NAMES = {
     "mcp_priori_tactical_list_capabilities",
     "mcp_priori_tactical_search_recipes",
@@ -214,6 +217,7 @@ ProvenanceSource = Literal[
     "MANUAL_PRESET",
     "HERMES_RECIPE_SELECTION",
     "HERMES_NOVEL_COMPOSITION",
+    "HERMES_EXPERIMENTAL_UNVERIFIED",
     "DETERMINISTIC_REPAIR",
     "CAPABILITY_GAP",
     "MODEL_UNAVAILABLE",
@@ -517,6 +521,8 @@ def host_owned_plan_document(plan_document: dict[str, Any]) -> TacticalQueryDocu
                 if key in requested_invocation:
                     canonical_invocation[key] = requested_invocation[key]
         return TacticalQueryDocument.model_validate(canonical)
+    if candidate.recipe.recipe_id == "possession_corridor_destination_entry_v1" and not attested_scope_matches(plan_document):
+        raise CapabilityGap("Attested Hermes novel-composition proof is locked to its frozen match, period, perspective, and result-limit scope")
     return candidate
 
 
@@ -923,19 +929,26 @@ def hermes_final_to_interpretation(
         )
     if outcome == "draft":
         bound_plan_id = str(final.get("bound_plan_id") or "")
+        bound_plan_hash = str(final.get("bound_plan_hash") or "") or None
         plan_document = hermes_bound_plan_document(bound_plan_id, output_root=output_root)
         if plan_document is None:
             return hermes_unavailable(query, "Hermes validated a draft but the host could not recover its bound plan handle.")
+        provenance_source, attestation_details = hermes_draft_provenance(plan_document, bound_plan_hash)
+        fallback_reason = None
+        if provenance_source == "HERMES_EXPERIMENTAL_UNVERIFIED":
+            failures = attestation_details.get("failures") if isinstance(attestation_details, dict) else None
+            fallback_reason = "attestation_not_verified" + (f":{','.join(failures)}" if failures else "")
         return ok(
             {
                 **base,
                 "status": "PLAN_INTERPRETED",
-                "provenance_source": hermes_plan_provenance(plan_document),
+                "provenance_source": provenance_source,
                 "recipe_id": str(plan_document.get("recipe", {}).get("recipe_id") or ""),
                 "recipe": recipe_card(plan_document, "EXPERIMENTAL"),
                 "plan_document": plan_document,
                 "plan_hash": stable_hash(plan_document),
                 "draft_plan_hash": stable_hash(plan_document),
+                "fallback_reason": fallback_reason,
             }
         )
     return hermes_unavailable(query, "Hermes returned an unsupported interpretation outcome. Manual mode remains available.")
@@ -958,7 +971,132 @@ def hermes_plan_provenance(plan_document: dict[str, Any]) -> str:
     recipe_id = str(recipe.get("recipe_id") or "") if isinstance(recipe, dict) else ""
     if recipe_id in {"ball_side_block_shift_v1", "possession_corridor_availability_v1"}:
         return "HERMES_RECIPE_SELECTION"
-    return "HERMES_NOVEL_COMPOSITION"
+    return "HERMES_EXPERIMENTAL_UNVERIFIED"
+
+
+def read_committed_json(path: Path) -> dict[str, Any]:
+    try:
+        payload = read_json(path)
+    except Exception:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def attested_invocation_scope() -> dict[str, Any]:
+    bundle = read_committed_json(N1D_ORIGIN_BUNDLE_PATH)
+    document = bundle.get("host_augmentation", {}).get("augmented_document") if isinstance(bundle.get("host_augmentation"), dict) else None
+    invocation = document.get("default_invocation") if isinstance(document, dict) else None
+    if not isinstance(invocation, dict):
+        return {}
+    return {
+        "match_ids": list(invocation.get("match_ids") or []),
+        "periods": list(invocation.get("periods") or []),
+        "perspective_team_role": invocation.get("perspective_team_role"),
+        "max_results": invocation.get("max_results"),
+    }
+
+
+def is_attested_novel_recipe(plan_document: dict[str, Any]) -> bool:
+    recipe = plan_document.get("recipe") if isinstance(plan_document, dict) else None
+    return isinstance(recipe, dict) and recipe.get("recipe_id") == "possession_corridor_destination_entry_v1"
+
+
+def attested_scope_matches(plan_document: dict[str, Any]) -> bool:
+    invocation = plan_document.get("default_invocation") if isinstance(plan_document, dict) else None
+    expected = attested_invocation_scope()
+    if not isinstance(invocation, dict) or not expected:
+        return False
+    return (
+        list(invocation.get("match_ids") or []) == expected["match_ids"]
+        and list(invocation.get("periods") or []) == expected["periods"]
+        and invocation.get("perspective_team_role") == expected["perspective_team_role"]
+        and invocation.get("max_results") == expected["max_results"]
+    )
+
+
+def current_manifest_identity_failures(manifest: dict[str, Any]) -> list[str]:
+    failures: list[str] = []
+    pinned = manifest.get("pinned_identity") if isinstance(manifest.get("pinned_identity"), dict) else {}
+    knowledge_pack = pinned.get("knowledge_pack") if isinstance(pinned.get("knowledge_pack"), dict) else {}
+    expected_pack_sha = knowledge_pack.get("file_sha256")
+    if expected_pack_sha and (not KNOWLEDGE_PACK_PATH.exists() or file_sha256(KNOWLEDGE_PACK_PATH) != expected_pack_sha):
+        failures.append("knowledge_pack_sha256")
+    data = pinned.get("data") if isinstance(pinned.get("data"), dict) else {}
+    expected_manifest_sha = data.get("deploy_manifest_sha256")
+    if expected_manifest_sha and (not DATA_MANIFEST_PATH.exists() or file_sha256(DATA_MANIFEST_PATH) != expected_manifest_sha):
+        failures.append("deploy_manifest_sha256")
+    source_files = manifest.get("source", {}).get("source_files") if isinstance(manifest.get("source"), dict) else {}
+    if isinstance(source_files, dict):
+        for name, identity in source_files.items():
+            if not isinstance(identity, dict):
+                failures.append(f"source_file.{name}")
+                continue
+            path = Path(str(identity.get("path") or ""))
+            expected = str(identity.get("sha256") or "")
+            if not expected or not path.exists() or file_sha256(path) != expected:
+                failures.append(f"source_file.{name}")
+    return failures
+
+
+def verified_novel_attestation(plan_document: dict[str, Any], bound_plan_hash: str | None) -> dict[str, Any]:
+    attestation = read_committed_json(N1D_ATTESTATION_PATH)
+    manifest = read_committed_json(N1D_MANIFEST_PATH)
+    origin_bundle = read_committed_json(N1D_ORIGIN_BUNDLE_PATH)
+    failures: list[str] = []
+    if attestation.get("status") != "VERIFIED":
+        failures.append("attestation_status")
+    if not bound_plan_hash or attestation.get("plan_hash") != bound_plan_hash:
+        failures.append("plan_hash")
+    if (
+        attestation.get("freeze_manifest_sha256")
+        and (not N1D_MANIFEST_PATH.exists() or file_sha256(N1D_MANIFEST_PATH) != attestation.get("freeze_manifest_sha256"))
+    ):
+        failures.append("freeze_manifest_sha256")
+    elif not attestation.get("freeze_manifest_sha256"):
+        failures.append("freeze_manifest_sha256_missing")
+    origin = attestation.get("hermes_origin") if isinstance(attestation.get("hermes_origin"), dict) else {}
+    expected_origin_path = str(N1D_ORIGIN_BUNDLE_PATH)
+    if origin.get("origin_bundle_path") != expected_origin_path:
+        failures.append("origin_bundle_path")
+    if origin.get("origin_bundle_sha256") != stable_json_sha256(origin_bundle):
+        failures.append("origin_bundle_sha256")
+    try:
+        from tqe.verification.n1a import structural_fingerprint
+
+        fingerprint = structural_fingerprint(plan_document)
+    except Exception:
+        fingerprint = {}
+        failures.append("structural_fingerprint")
+    expected_fingerprint = (
+        attestation.get("structural_novelty", {}).get("fingerprint_hash")
+        if isinstance(attestation.get("structural_novelty"), dict)
+        else None
+    )
+    if not expected_fingerprint or fingerprint.get("fingerprint_hash") != expected_fingerprint:
+        failures.append("structural_fingerprint_hash")
+    if not attested_scope_matches(plan_document):
+        failures.append("attested_scope")
+    failures.extend(current_manifest_identity_failures(manifest))
+    return {
+        "verified": not failures,
+        "failures": sorted(set(failures)),
+        "attestation_status": attestation.get("status"),
+        "attested_plan_hash": attestation.get("plan_hash"),
+        "structural_fingerprint_hash": fingerprint.get("fingerprint_hash"),
+        "attested_structural_fingerprint_hash": expected_fingerprint,
+    }
+
+
+def hermes_draft_provenance(plan_document: dict[str, Any], bound_plan_hash: str | None) -> tuple[str, dict[str, Any]]:
+    base_source = hermes_plan_provenance(plan_document)
+    if base_source != "HERMES_EXPERIMENTAL_UNVERIFIED":
+        return base_source, {"verified": False, "reason": "registered_recipe_selection"}
+    if not is_attested_novel_recipe(plan_document):
+        return "HERMES_EXPERIMENTAL_UNVERIFIED", {"verified": False, "failures": ["unattested_experimental_recipe"]}
+    attestation = verified_novel_attestation(plan_document, bound_plan_hash)
+    if attestation["verified"]:
+        return "HERMES_NOVEL_COMPOSITION", attestation
+    return "HERMES_EXPERIMENTAL_UNVERIFIED", attestation
 
 
 def hermes_bound_plan_document(bound_plan_id: str, *, output_root: Path | None = None) -> dict[str, Any] | None:

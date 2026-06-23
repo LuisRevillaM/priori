@@ -37,8 +37,9 @@ export function provenanceLabel(source: ProvenanceSource | null | undefined) {
     case "HERMES_RECIPE_SELECTION":
       return "Hermes selected recipe";
     case "HERMES_NOVEL_COMPOSITION":
-      // Not product-ready: live N1 novel-composition proof is pending a runtime-provenance refresh.
-      return "Novel composition · pending proof refresh";
+      return "Hermes-authored experimental composition";
+    case "HERMES_EXPERIMENTAL_UNVERIFIED":
+      return "Experimental draft · unverified";
     case "DETERMINISTIC_REPAIR":
       return "Safety repair applied";
     case "CAPABILITY_GAP":
@@ -52,8 +53,8 @@ export function provenanceLabel(source: ProvenanceSource | null | undefined) {
 
 export function provenanceTone(source: ProvenanceSource | null | undefined): Tone {
   if (source === "CAPABILITY_GAP") return "bad";
-  // Novel composition is held back as pending/not-product-ready, so it reads as a caution, not success.
-  if (source === "MODEL_UNAVAILABLE" || source === "DETERMINISTIC_REPAIR" || source === "HERMES_NOVEL_COMPOSITION") {
+  if (source === "HERMES_NOVEL_COMPOSITION") return "good";
+  if (source === "MODEL_UNAVAILABLE" || source === "DETERMINISTIC_REPAIR" || source === "HERMES_EXPERIMENTAL_UNVERIFIED") {
     return "warn";
   }
   return source ? "neutral" : "warn";

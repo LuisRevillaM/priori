@@ -154,6 +154,10 @@ export function selectIsNovelComposition(state: WorkbenchState): boolean {
   return state.interpretation?.provenance_source === "HERMES_NOVEL_COMPOSITION";
 }
 
+export function selectIsUnverifiedExperimental(state: WorkbenchState): boolean {
+  return state.interpretation?.provenance_source === "HERMES_EXPERIMENTAL_UNVERIFIED";
+}
+
 export function selectBusy(state: WorkbenchState): boolean {
   return state.inFlight;
 }
@@ -162,9 +166,14 @@ export function selectCanRun(state: WorkbenchState): boolean {
   return (
     selectPlanReady(state) &&
     selectHasSelectedScope(state) &&
-    !selectIsNovelComposition(state) &&
+    !selectIsUnverifiedExperimental(state) &&
     !state.inFlight
   );
+}
+
+function scopeFromPlan(planDocument: JsonObject): string[] {
+  const invocation = asRecord(planDocument.default_invocation);
+  return asArray(invocation.match_ids).filter((item): item is string => typeof item === "string");
 }
 
 // Phase a settled (non-in-flight) state should rest in, given its data.
@@ -197,6 +206,9 @@ export function reducer(state: WorkbenchState, action: WorkbenchAction): Workben
     case "SET_PRESET":
       return { ...state, selectedPreset: action.preset, ...INTERPRETATION_RESET, phase: "idle", error: null };
     case "SET_SCOPE": {
+      if (selectIsNovelComposition(state)) {
+        return state;
+      }
       const planDocument = state.planDocument ? applyScopeToPlan(state.planDocument, action.ids) : null;
       const next = { ...state, selectedMatchIds: action.ids, planDocument, ...SCOPE_DEPENDENT_RESET };
       return { ...next, phase: settledPhase(next) };
@@ -205,11 +217,13 @@ export function reducer(state: WorkbenchState, action: WorkbenchAction): Workben
       return { ...state, phase: "interpreting", inFlight: true, error: null };
     case "INTERPRET_RESULT": {
       const interpretation = action.interpretation;
+      const incomingPlan =
+        interpretation.status === "PLAN_INTERPRETED" && interpretation.plan_document ? interpretation.plan_document : null;
+      const isNovel = interpretation.provenance_source === "HERMES_NOVEL_COMPOSITION";
       const planDocument =
-        interpretation.status === "PLAN_INTERPRETED" && interpretation.plan_document
-          ? applyScopeToPlan(interpretation.plan_document, state.selectedMatchIds)
-          : null;
-      const next = { ...state, interpretation, planDocument, ...SCOPE_DEPENDENT_RESET, inFlight: false };
+        incomingPlan && isNovel ? incomingPlan : incomingPlan ? applyScopeToPlan(incomingPlan, state.selectedMatchIds) : null;
+      const selectedMatchIds = incomingPlan && isNovel ? scopeFromPlan(incomingPlan) : state.selectedMatchIds;
+      const next = { ...state, interpretation, selectedMatchIds, planDocument, ...SCOPE_DEPENDENT_RESET, inFlight: false };
       return { ...next, phase: settledPhase(next) };
     }
     case "RUN_STEP":

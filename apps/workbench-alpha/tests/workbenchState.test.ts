@@ -4,6 +4,7 @@ import {
   reducer,
   selectCanRun,
   selectPlanReady,
+  selectIsUnverifiedExperimental,
   type WorkbenchState
 } from "../src/workbenchState";
 import type {
@@ -34,6 +35,12 @@ const novel = cast<InterpretResponse>({
   ok: true,
   status: "PLAN_INTERPRETED",
   provenance_source: "HERMES_NOVEL_COMPOSITION",
+  plan_document: { draft_plan: {}, default_invocation: { match_ids: ["J03WOY"], periods: ["firstHalf"], perspective_team_role: "home" } }
+});
+const unverified = cast<InterpretResponse>({
+  ok: true,
+  status: "PLAN_INTERPRETED",
+  provenance_source: "HERMES_EXPERIMENTAL_UNVERIFIED",
   plan_document: { draft_plan: {}, default_invocation: {} }
 });
 const modelUnavailable = cast<InterpretResponse>({
@@ -121,11 +128,21 @@ assert.equal(mu.planDocument, null);
 assert.equal(mu.phase, "idle");
 assert.equal(selectPlanReady(mu), false);
 
-// --- novel composition is plan-ready but never runnable ---
+// --- verified novel composition is plan-ready, runnable, and scope-locked to the attested invocation ---
 let nv = reducer(readyState(), { type: "INTERPRET_START" });
 nv = reducer(nv, { type: "INTERPRET_RESULT", interpretation: novel });
 assert.equal(selectPlanReady(nv), true);
-assert.equal(selectCanRun(nv), false, "novel composition is held back");
+assert.equal(selectCanRun(nv), true, "verified novel composition is runnable");
+assert.deepEqual(nv.selectedMatchIds, ["J03WOY"]);
+const novelScopeAttempt = reducer(nv, { type: "SET_SCOPE", ids: ["J03WPY"] });
+assert.equal(novelScopeAttempt, nv, "verified novel scope is locked");
+
+// --- unverified experimental draft is plan-ready but not runnable ---
+let uv = reducer(readyState(), { type: "INTERPRET_START" });
+uv = reducer(uv, { type: "INTERPRET_RESULT", interpretation: unverified });
+assert.equal(selectPlanReady(uv), true);
+assert.equal(selectIsUnverifiedExperimental(uv), true);
+assert.equal(selectCanRun(uv), false, "unverified experimental draft is blocked");
 
 // --- result selection keeps execution ---
 const selected = reducer(ran, { type: "SELECT_RESULT", resultId: "r1" });

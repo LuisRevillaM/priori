@@ -23,6 +23,7 @@ from tqe.verification.n1a import registered_fingerprints, structural_fingerprint
 from tqe.verification.n1c import (
     HERO_QUESTION,
     check,
+    file_sha256,
     read_json,
     stable_json_sha256,
 )
@@ -332,6 +333,7 @@ def main() -> None:
         "status": status,
         "plan_hash": bound_plan_hash,
         "freeze_manifest_id": freeze_manifest_id,
+        "freeze_manifest_sha256": file_sha256(N1D_MANIFEST_PATH),
         "commit_at_manifest_generation": manifest.get("source", {}).get("commit_at_manifest_generation"),
         "hermes_origin": origin,
         "structural_novelty": novelty,

@@ -12,8 +12,9 @@
     "required_status": "VERIFIED"
   },
   "blocking_reasons": [],
-  "commit_at_manifest_generation": "7b7bf8424f9f2d440315aa8a6cdbcf44b923f95d",
+  "commit_at_manifest_generation": "54eef2e6f6d90f4004fcb6e6020241774e552de7",
   "freeze_manifest_id": "n1f-14c6104cec50703c",
+  "freeze_manifest_sha256": "ef67c05e11c2dd062049e64f2a0d646f52e4b1590bf9dfd3bca6f65691271155",
   "hermes_origin": {
     "allowed_augmentation_diff": {
       "added_aliases": [],

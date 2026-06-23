@@ -172,6 +172,12 @@ button:disabled {
   font-weight: 700;
 }
 
+.scopeWarning.verified {
+  border-color: #8fac9a;
+  background: #eef6f0;
+  color: #294d37;
+}
+
 .leftRail,
 .rightRail,
 .centerStage {
@@ -870,6 +876,11 @@ button:disabled {
 .stateBox.warn {
   border-color: #d5bc83;
   background: #fbf5e8;
+}
+
+.stateBox.good {
+  border-color: #8fac9a;
+  background: #eef6f0;
 }
 
 .stateBox.bad,

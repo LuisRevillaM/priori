@@ -830,14 +830,13 @@ test("beta1a product surface hides developer internals by default", async ({ pag
   expect(consoleErrors).toEqual([]);
 });
 
-test("beta1a novel composition is surfaced as pending proof refresh, not a runnable product success", async ({
+test("unverified Hermes experimental draft is inspectable but not runnable", async ({
   page,
   request
 }) => {
   const consoleErrors: string[] = [];
   await boot(page, consoleErrors);
 
-  // Inject a synthetic HERMES_NOVEL_COMPOSITION interpretation (live N1 proof is held back).
   const planResponse = await request.get("/api/plan?recipe_id=possession_corridor_availability_v1");
   const planPayload = (await planResponse.json()) as Record<string, unknown>;
   await page.route("**/api/interpret", async (route) => {
@@ -847,8 +846,8 @@ test("beta1a novel composition is surfaced as pending proof refresh, not a runna
       body: JSON.stringify({
         ok: true,
         status: "PLAN_INTERPRETED",
-        provenance_source: "HERMES_NOVEL_COMPOSITION",
-        query: "synthetic novel composition",
+        provenance_source: "HERMES_EXPERIMENTAL_UNVERIFIED",
+        query: "synthetic unverified experimental draft",
         source: "hermes_frontier_agent",
         recipe: planPayload.recipe,
         plan_document: planPayload.plan_document,
@@ -860,12 +859,11 @@ test("beta1a novel composition is surfaced as pending proof refresh, not a runna
   });
   await page.getByTestId("path-ask-hermes").click();
   await page.getByTestId("query-input").fill("Compose a brand new tactical pattern.");
-  const novel = await jsonAfterClick<Record<string, unknown>>(page, [], "novel.interpret", "interpret-button", "/api/interpret");
-  expect(novel.provenance_source).toBe("HERMES_NOVEL_COMPOSITION");
+  const draft = await jsonAfterClick<Record<string, unknown>>(page, [], "unverified.interpret", "interpret-button", "/api/interpret");
+  expect(draft.provenance_source).toBe("HERMES_EXPERIMENTAL_UNVERIFIED");
 
-  await expect(page.getByTestId("novel-composition-pending")).toBeVisible();
-  await expect(page.getByTestId("interpretation-source")).toContainText("pending proof refresh");
-  // It is shown for transparency but must never be runnable as a product success.
+  await expect(page.getByTestId("experimental-unverified-state")).toBeVisible();
+  await expect(page.getByTestId("interpretation-source")).toContainText("unverified");
   await expect(page.getByTestId("primary-action")).toBeDisabled();
   await page.unroute("**/api/interpret");
 
