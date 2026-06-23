@@ -563,11 +563,14 @@ The next work is explicitly sequenced:
 M2A
 controlled pass + opponents bypassed + High-Bypass Completed Pass
 
-M2B+
-defensive-line and Line-Break Support package
+M2B
+defensive-line model + relative position + controlled line break
+
+M2C
+lane occupancy + support arrival + local numbers + Line-Break Support Response
 ```
 
-This is a sequencing change, not an architectural contradiction. M2A is the first vertical football-knowledge expansion because it introduces an event-plus-tracking action measured at two endpoints. M2B+ then builds the true defensive-line and support-response vocabulary on top of the same action foundations.
+This is a sequencing change, not an architectural contradiction. M2A is the first vertical football-knowledge expansion because it introduces an event-plus-tracking action measured at two endpoints. M2B then builds true defensive-line semantics on top of those action foundations. M2C adds support-response context and the reviewed Line-Break Support family.
 
 The first visible M2A family should be:
 
@@ -587,7 +590,7 @@ synchronized event + tracking data
 → evidence and replay
 ```
 
-Then add the true M2B+ line-breaking and support-response package:
+Then add the true M2B line-breaking package:
 
 ```text
 controlled_pass_episode
@@ -595,6 +598,11 @@ opponents_bypassed_by_action
 defensive_line_model
 relative_position_to_defensive_line
 controlled_line_break_episode
+```
+
+Then add the M2C support-response package:
+
+```text
 lane_occupancy
 support_arrival_relation
 local_number_relation
@@ -721,9 +729,25 @@ forward_progression_m
 event_id
 event_type
 event_evaluation
+coverage_status: PASS | UNKNOWN
 possession_continuity_status: PASS | FAIL | UNKNOWN
 controlled_reception_status: PASS | FAIL | UNKNOWN
 release_control_status: PASS | FAIL | UNKNOWN
+```
+
+Predicate-facing output:
+
+```text
+ControlledPassEvaluation
+anchor_id
+pass_episode_id
+controlled_pass_status: PASS | FAIL | UNKNOWN
+release_control_status: PASS | UNKNOWN
+controlled_reception_status: PASS | UNKNOWN
+possession_continuity_status: PASS | FAIL | UNKNOWN
+forward_progression_m
+coverage_status: PASS | UNKNOWN
+unknown_reason
 ```
 
 ### Unknown Behavior
@@ -747,7 +771,8 @@ pass release point
 controlled reception point
 passer marker
 receiver marker
-ball trajectory or release-to-reception segment
+observed ball trajectory
+optional labelled release-to-reception pass vector
 event/tracking alignment timestamps
 ```
 

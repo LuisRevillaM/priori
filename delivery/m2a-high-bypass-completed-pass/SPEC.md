@@ -184,7 +184,9 @@ controlled_pass_episode measures:
   controlled_pass_status
   release_control_status
   controlled_reception_status
+  possession_continuity_status
   forward_progression_m
+  coverage_status
 
 opponents_bypassed_by_action measures:
   opponents_bypassed_count
@@ -204,7 +206,7 @@ Implementation may use host-owned pruning limits for performance, but returned m
 The initial tactical family is:
 
 ```text
-controlled_pass_episode.controlled_pass_status == PASS
+controlled_pass_episode.anchor_evaluations.controlled_pass_status == PASS
 AND forward_progression_m >= 8.0
 AND opponents_bypassed_count >= 5
 -> HIGH_BYPASS_COMPLETED_PASS
@@ -234,11 +236,34 @@ controlled_pass_episode.anchors
   cardinality: collection
   entity_scope: anchor
   missing_data_semantics: unknown
+
+controlled_pass_episode.anchor_evaluations
+  temporal_type: anchor_evaluations or episode_set with anchor-relative semantics
+  payload_schema: ControlledPassEvaluation
+  cardinality: collection
+  entity_scope: anchor
+  missing_data_semantics: unknown
 ```
 
 Do not add a new IR temporal container for M2A unless the existing typed containers cannot honestly represent the required records. It is acceptable to implement named payload schemas on top of the current containers, but the catalog must not declare a boolean payload while hiding rich records in sidecars. Each episode record must contain an explicit `pass_episode_id` so downstream predicates and evidence can correlate by action identity, not by frame only.
 
 Generic predicates and result emission must use the `anchors`/anchor-relative outputs, not raw pass episode records. Raw episode records may exist as runtime payload for inspection/evidence, but they must not be the direct source of `exists` or `count_at_least`.
+
+`ControlledPassEpisode` is the rich evidence/replay record. `ControlledPassEvaluation` is the predicate-facing anchor-relative record. Generic predicates must consume declared fields from `controlled_pass_episode.anchor_evaluations`, not fields hidden inside episode sidecars.
+
+`ControlledPassEvaluation` must declare:
+
+```text
+anchor_id
+pass_episode_id
+controlled_pass_status        # PASS | FAIL | UNKNOWN
+release_control_status        # PASS | UNKNOWN
+controlled_reception_status   # PASS | UNKNOWN
+possession_continuity_status  # PASS | FAIL | UNKNOWN
+forward_progression_m
+coverage_status               # PASS | UNKNOWN
+unknown_reason
+```
 
 ### Inputs
 
@@ -257,6 +282,7 @@ possession state
 analysis cadence
 maximum frame-gap policy
 event/tracking alignment policy version
+reception-search stop policy version
 ```
 
 If the binder accepts `controlled_pass_episode`, execution must not later fail because any of those host resources are unavailable.
@@ -323,6 +349,31 @@ For each selected match/period/perspective team:
 8. Reject or mark `UNKNOWN` when passer or receiver cannot be mapped to a tracked player in `players.parquet`.
 
 M2A's initial pass family is successfully completed `Play_Pass` events. Do not describe this as "open play" unless M2A-S0 proves that `Play_Pass` plus the source qualifiers reliably excludes restarts/set pieces. Set pieces can be added later through a formal host-owned pass-family mapping.
+
+### Controlled Pass Status Semantics
+
+Use `PASS`, `FAIL`, and `UNKNOWN` distinctly:
+
+```text
+PASS
+  Release and controlled reception are positively established for the named passer/receiver inside the same possession.
+
+FAIL
+  Sufficient evidence contradicts the candidate:
+  wrong receiver controls first,
+  another attacking player clearly controls the ball first,
+  an opponent clearly controls the ball first,
+  possession definitively breaks,
+  ball out/stoppage occurs before controlled reception,
+  or event completion conflicts with tracking.
+
+UNKNOWN
+  Missing frames, unresolved player identity, excessive frame gaps,
+  unbounded event/tracking alignment, incomplete possession evidence,
+  or incomplete active-player evidence prevents a definitive decision.
+```
+
+Non-match inspection should preserve these distinctions; do not collapse all non-PASS paths into UNKNOWN.
 
 ### Release Frame Alignment
 
@@ -411,6 +462,33 @@ Possession continuity can initially use the runtime's existing ball possession/t
 
 M2A-S0 must report false-positive risk for this controlled-reception heuristic. If visual spot checks show that ball-near-receiver does not reliably indicate controlled reception, stop and tighten the reception definition before implementing S1.
 
+The reception search must stop at the earliest of:
+
+```text
+max_reception_search_seconds
+possession loss
+ball out or stoppage
+next incompatible on-ball event
+another attacking player clearly controlling the ball first
+opposition player clearly controlling the ball first
+active-player membership change inside the pass window
+```
+
+If another player controls the ball before the named recipient, emit:
+
+```text
+controlled_pass_status = FAIL
+unknown_reason = "receiver_not_first_controller"
+```
+
+If active-player membership changes between release and reception because of substitution, dismissal, or an unresolved active-player timeline transition, emit:
+
+```text
+controlled_pass_status = UNKNOWN
+coverage_status = UNKNOWN
+unknown_reason = "active_player_set_changed_during_pass"
+```
+
 If no reception frame is found, emit:
 
 ```text
@@ -452,6 +530,7 @@ release_match_time_ms
 reception_match_time_ms
 anchor_id
 anchor_frame_id
+coverage_status               # PASS | UNKNOWN
 release_control_status       # PASS | UNKNOWN
 controlled_reception_status  # PASS | UNKNOWN
 control_window_start_frame_id
@@ -552,6 +631,8 @@ For each `controlled_pass_episode`:
    evaluation_coverage_status = PASS if the active opposition endpoint set is complete, otherwise UNKNOWN
    ```
 
+If substitution, dismissal, or active-player membership changes inside the pass episode window, set `evaluation_coverage_status = UNKNOWN` for M2A. Do not choose release set, reception set, union, or intersection silently.
+
 Missing evidence rule:
 
 ```text
@@ -565,6 +646,15 @@ measured count >= recipe threshold -> threshold predicate PASS
 measured count < threshold and coverage UNKNOWN -> threshold predicate UNKNOWN
 measured count < threshold and coverage PASS -> threshold predicate FAIL
 ```
+
+Semantic limitation:
+
+```text
+The metric counts opponents whose ball-relative position changed across the completed action.
+It does not attribute each change solely to the pass; opponents also move during the action.
+```
+
+The product label "High-Bypass Completed Pass" remains valid. Do not claim "the pass alone bypassed every highlighted opponent" or "the pass caused each opponent to be bypassed."
 
 ### Output Record Fields
 
@@ -661,9 +751,9 @@ node: opponents_bypassed_by_action
     bypassed_buffer_m = $bypassed_buffer_m
 
 predicates:
-  - source = controlled_pass_episode.controlled_pass_status
+  - source = controlled_pass_episode.anchor_evaluations.controlled_pass_status
     operator = eq PASS over anchor-relative evaluation status
-  - source = controlled_pass_episode.forward_progression_m
+  - source = controlled_pass_episode.anchor_evaluations.forward_progression_m
     operator = gte $minimum_forward_progression_m
   - source = opponents_bypassed_by_action.opponents_bypassed_count
     operator = gte $minimum_bypassed_opponents
@@ -702,6 +792,11 @@ release_frame_id
 reception_frame_id
 release_match_time_ms
 reception_match_time_ms
+controlled_pass_status
+release_control_status
+controlled_reception_status
+possession_continuity_status
+coverage_status
 release_ball_point
 reception_ball_point
 release_passer_point
@@ -836,7 +931,8 @@ Overlay data must come only from resolved evidence. If release/reception points 
 Replay rendering:
 
 ```text
-solid line: release_ball_point -> reception_ball_point
+observed ball trail: tracked ball positions from release to reception
+optional straight vector: release_ball_point -> reception_ball_point, labelled "pass vector"
 highlight: passer at release
 highlight: receiver at reception
 highlight: bypassed opponents at reception
@@ -853,7 +949,8 @@ before release:
   no pass line
 
 release -> reception:
-  animate actual ball path or the release-to-reception segment
+  animate observed ball trail
+  optionally show a straight pass vector as a separate labelled guide
 
 at reception:
   highlight receiver
@@ -863,6 +960,7 @@ at reception:
 ```
 
 Do not display the bypass count before controlled reception has been established.
+Do not call a straight release-to-reception chord the actual ball path.
 
 Copy:
 
@@ -944,22 +1042,24 @@ Required automated checks:
 6. Physical pass-release confirmation failure produces `UNKNOWN`.
 7. Missing controlled reception produces `UNKNOWN`.
 8. Controlled-reception dwell/nearest-player checks use canonical timestamps and reject at least one synthetic near-ball-but-not-controlled case.
-9. Excessive frame gaps interrupt dwell and produce `UNKNOWN`.
-10. Broken possession continuity does not count as a completed controlled pass.
-11. Attacking-direction mirroring produces identical bypass counts.
-12. Player record ordering does not change bypass counts or result IDs.
-13. A player inside either positional buffer is not spuriously bypassed.
-14. Expected active/evaluated/missing opposition outfield denominators are recorded for every evaluation.
-15. Missing active opponent positions do not silently reduce the count when coverage could affect a threshold predicate.
-16. Measured count above recipe threshold can pass while coverage remains explicitly recorded.
-17. Measured count below recipe threshold with incomplete coverage yields UNKNOWN, not FAIL.
-18. Goalkeepers are excluded and listed in `excluded_goalkeeper_ids`.
-19. Generic predicates consume `anchor_evaluations`, not raw episode sidecars.
-20. Every highlighted opponent in replay evidence appears in `bypassed_player_ids`.
-21. Every positive result resolves all required evidence aliases.
-22. Repeated execution is deterministic for the same match scope.
-23. Demo-data manifest, `/readyz`, execution/cache identity, and cloud smoke include event-data and alignment hashes.
-24. M1.2 Workbench, N1C, N1D.1/N1I, and existing unit suites remain green or are explicitly explained if a known generated-artifact footgun dirties tracked files.
+9. Receiver-not-first-controller produces `FAIL`, not delayed PASS.
+10. Active-player membership changes inside the pass window produce `UNKNOWN`.
+11. Excessive frame gaps interrupt dwell and produce `UNKNOWN`.
+12. Broken possession continuity does not count as a completed controlled pass.
+13. Attacking-direction mirroring produces identical bypass counts.
+14. Player record ordering does not change bypass counts or result IDs.
+15. A player inside either positional buffer is not spuriously bypassed.
+16. Expected active/evaluated/missing opposition outfield denominators are recorded for every evaluation.
+17. Missing active opponent positions do not silently reduce the count when coverage could affect a threshold predicate.
+18. Measured count above recipe threshold can pass while coverage remains explicitly recorded.
+19. Measured count below recipe threshold with incomplete coverage yields UNKNOWN, not FAIL.
+20. Goalkeepers are excluded and listed in `excluded_goalkeeper_ids`.
+21. Generic predicates consume `anchor_evaluations`, not raw episode sidecars.
+22. Every highlighted opponent in replay evidence appears in `bypassed_player_ids`.
+23. Every positive result resolves all required evidence aliases.
+24. Repeated execution is deterministic for the same match scope.
+25. Demo-data manifest, `/readyz`, execution/cache identity, and cloud smoke include event-data and alignment hashes.
+26. M1.2 Workbench, N1C, N1D.1/N1I, and existing unit suites remain green or are explicitly explained if a known generated-artifact footgun dirties tracked files.
 
 Suggested command bundle:
 
@@ -976,6 +1076,28 @@ python -m unittest discover -s tests
 If `n1c-verify` dirties tracked artifacts, restore only those generated artifacts after recording the known footgun in the report. Do not mix generated-artifact churn into the M2A implementation commit.
 
 ## Preflight Requirement
+
+M2A-S0 must answer:
+
+```text
+Can event passer/receiver IDs map reliably to tracking entities?
+What does events.timestamp physically represent?
+How close is the named passer to the ball at the aligned event frame?
+How often is the named receiver the first confirmed controller?
+How often does active-player membership change inside candidate windows?
+How many candidates are PASS, FAIL, and UNKNOWN?
+What are the progression and bypass-count distributions?
+How many real positives satisfy progression >= 8m and count >= 5?
+```
+
+M2A-S0 visual inspection must include:
+
+```text
+clear successful receptions
+wrong-recipient or deflection cases
+near-ball but not controlled cases
+incomplete tracking cases
+```
 
 Before building Workbench UI exposure, run a real-data distribution preflight across the deployed match manifest:
 
