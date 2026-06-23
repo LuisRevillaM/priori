@@ -31,6 +31,7 @@ from urllib.parse import parse_qs, urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from tqe.data.team_branding import team_branding_for
 from tqe.runtime.ir import TacticalQueryDocument, stable_hash
 from tqe.workshop.m1_2 import (
     CallerProfile,
@@ -170,11 +171,24 @@ class CapabilitySummaryResponse(WorkbenchResponseModel):
     execute_tool_description: dict[str, Any]
 
 
+class TeamBrandResponse(WorkbenchResponseModel):
+    team_id: str | None = None
+    team_name: str
+    short_name: str
+    abbreviation: str
+    logo_url: str | None = None
+    logo_source: str | None = None
+    primary_color: str | None = None
+    secondary_color: str | None = None
+
+
 class MatchSummaryResponse(WorkbenchResponseModel):
     match_id: str
     match_title: str
     home_team: str
     away_team: str
+    home_team_brand: TeamBrandResponse
+    away_team_brand: TeamBrandResponse
     result: str | None = None
     match_day: str | None = None
     kickoff_time_utc: str | None = None
@@ -183,6 +197,7 @@ class MatchSummaryResponse(WorkbenchResponseModel):
 class MatchLibraryResponse(WorkbenchResponseModel):
     ok: Literal[True]
     perspective_team: str
+    perspective_team_brand: TeamBrandResponse
     default_match_ids: list[str]
     matches: list[MatchSummaryResponse]
 
@@ -462,6 +477,7 @@ def match_library() -> dict[str, Any]:
     manifest_ids = [str(item) for item in manifest.get("match_ids", []) if str(item).strip()]
     rows: list[dict[str, Any]] = []
     matches_path = DEFAULT_CANONICAL_ROOT / "matches.parquet"
+    teams_by_match_role = canonical_team_records_by_match_role()
     if matches_path.exists():
         try:
             import pandas as pd
@@ -473,12 +489,18 @@ def match_library() -> dict[str, Any]:
                 match_id = str(record.get("match_id") or "")
                 title = str(record.get("match_title") or match_id)
                 home_team, separator, away_team = title.partition(":")
+                home_record = teams_by_match_role.get((match_id, "home"), {})
+                away_record = teams_by_match_role.get((match_id, "away"), {})
+                home_name = clean_optional_string(home_record.get("team_name")) or (home_team if separator else "Fortuna Düsseldorf")
+                away_name = clean_optional_string(away_record.get("team_name")) or (away_team if separator else title)
                 rows.append(
                     {
                         "match_id": match_id,
                         "match_title": title,
-                        "home_team": home_team if separator else "Fortuna Düsseldorf",
-                        "away_team": away_team if separator else title,
+                        "home_team": home_name,
+                        "away_team": away_name,
+                        "home_team_brand": team_brand_payload(home_record, fallback_name=home_name),
+                        "away_team_brand": team_brand_payload(away_record, fallback_name=away_name),
                         "result": None if record.get("result") is None else str(record.get("result")),
                         "match_day": None if record.get("match_day") is None else str(record.get("match_day")),
                         "kickoff_time_utc": None
@@ -495,6 +517,8 @@ def match_library() -> dict[str, Any]:
                 "match_title": f"Fortuna Düsseldorf match {match_id}",
                 "home_team": "Fortuna Düsseldorf",
                 "away_team": match_id,
+                "home_team_brand": team_brand_payload({"team_id": "DFL-CLU-00000P", "team_name": "Fortuna Düsseldorf"}),
+                "away_team_brand": team_brand_payload({"team_name": match_id}),
                 "result": None,
                 "match_day": None,
                 "kickoff_time_utc": None,
@@ -503,13 +527,77 @@ def match_library() -> dict[str, Any]:
         ]
     order = {match_id: index for index, match_id in enumerate(manifest_ids)}
     rows.sort(key=lambda item: order.get(str(item["match_id"]), len(order)))
+    perspective_brand = team_brand_payload({"team_id": "DFL-CLU-00000P", "team_name": "Fortuna Düsseldorf"})
     return ok(
         {
             "perspective_team": "Fortuna Düsseldorf",
+            "perspective_team_brand": perspective_brand,
             "default_match_ids": manifest_ids or [str(item["match_id"]) for item in rows],
             "matches": rows,
         }
     )
+
+
+def canonical_team_records_by_match_role() -> dict[tuple[str, str], dict[str, Any]]:
+    teams_path = DEFAULT_CANONICAL_ROOT / "teams.parquet"
+    if not teams_path.exists():
+        return {}
+    try:
+        import pandas as pd
+
+        frame = pd.read_parquet(teams_path)
+    except Exception:  # noqa: BLE001 - logos are display metadata; never break query execution.
+        return {}
+    records: dict[tuple[str, str], dict[str, Any]] = {}
+    for record in frame.to_dict(orient="records"):
+        match_id = clean_optional_string(record.get("match_id"))
+        team_role = clean_optional_string(record.get("team_role"))
+        if match_id and team_role:
+            records[(match_id, team_role)] = record
+    return records
+
+
+def team_brand_payload(record: dict[str, Any], *, fallback_name: str | None = None) -> dict[str, Any]:
+    team_id = clean_optional_string(record.get("team_id"))
+    team_name = clean_optional_string(record.get("team_name")) or fallback_name or "Unknown team"
+    branding = team_branding_for(team_id, team_name)
+    return {
+        "team_id": team_id or (branding.team_id if branding else None),
+        "team_name": team_name,
+        "short_name": clean_optional_string(record.get("team_short_name"))
+        or (branding.short_name if branding else short_team_name(team_name)),
+        "abbreviation": clean_optional_string(record.get("team_abbreviation"))
+        or (branding.abbreviation if branding else team_initials(team_name)),
+        "logo_url": clean_optional_string(record.get("logo_url")) or (branding.logo_url if branding else None),
+        "logo_source": clean_optional_string(record.get("logo_source")) or (branding.logo_source if branding else None),
+        "primary_color": clean_optional_string(record.get("primary_color")) or (branding.primary_color if branding else None),
+        "secondary_color": clean_optional_string(record.get("secondary_color")) or (branding.secondary_color if branding else None),
+    }
+
+
+def clean_optional_string(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text or text.casefold() in {"nan", "none", "null"}:
+        return None
+    return text
+
+
+def short_team_name(value: str) -> str:
+    return (
+        value.replace("F.C. ", "")
+        .replace("1. FC ", "")
+        .replace("FC ", "")
+        .replace(" 1848", "")
+        .strip()
+        or value
+    )
+
+
+def team_initials(value: str) -> str:
+    parts = [part for part in value.replace(".", " ").split() if part]
+    return "".join(part[0].upper() for part in parts[:3]) or "?"
 
 
 def host_owned_plan_document(plan_document: dict[str, Any]) -> TacticalQueryDocument:

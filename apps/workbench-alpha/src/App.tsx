@@ -43,6 +43,7 @@ import type {
   Preset,
   ReplayPayload,
   ResultRow,
+  TeamBrand,
   TimestampTarget
 } from "./types";
 
@@ -94,6 +95,27 @@ function matchTimeLabel(matchTimeMs: number | null | undefined) {
 function matchLabel(match: MatchSummary | undefined, fallbackId: string) {
   if (!match) return fallbackId;
   return match.match_title.replace(":", " vs ");
+}
+
+function TeamCrest({ brand, compact = false }: { brand: TeamBrand | null | undefined; compact?: boolean }) {
+  const fallback = brand?.abbreviation || "?";
+  const label = brand?.team_name || "Unknown team";
+  return (
+    <span className={compact ? "teamCrest compact" : "teamCrest"} title={label} aria-label={`${label} crest`}>
+      <span className="teamCrestFallback">{fallback}</span>
+      {brand?.logo_url ? (
+        <img
+          src={brand.logo_url}
+          alt=""
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+      ) : null}
+    </span>
+  );
 }
 
 function modelStatusCopy(boot: BootstrapResponse | null) {
@@ -449,14 +471,15 @@ export function App() {
   // across groups (groups appear in first-seen order; rows keep their original rank order).
   const resultGroups = useMemo(() => {
     const rows = execution?.execution.results ?? [];
-    const groups: Array<{ matchId: string; label: string; rows: ResultRow[] }> = [];
+    const groups: Array<{ matchId: string; label: string; match?: MatchSummary; rows: ResultRow[] }> = [];
     const indexByMatch = new Map<string, number>();
     for (const row of rows) {
       let index = indexByMatch.get(row.match_id);
       if (index === undefined) {
         index = groups.length;
         indexByMatch.set(row.match_id, index);
-        groups.push({ matchId: row.match_id, label: matchLabel(matchesById.get(row.match_id), row.match_id), rows: [] });
+        const match = matchesById.get(row.match_id);
+        groups.push({ matchId: row.match_id, label: matchLabel(match, row.match_id), match, rows: [] });
       }
       groups[index].rows.push(row);
     }
@@ -521,7 +544,10 @@ export function App() {
           <section className="scopeBar" data-testid="analysis-scope">
             <div className="scopeMetric">
               <span>Perspective team</span>
-              <strong>{matchLibrary?.perspective_team ?? "Fortuna Düsseldorf"}</strong>
+              <div className="teamIdentity">
+                <TeamCrest brand={matchLibrary?.perspective_team_brand} compact />
+                <strong>{matchLibrary?.perspective_team_brand.short_name ?? matchLibrary?.perspective_team ?? "Fortuna Düsseldorf"}</strong>
+              </div>
             </div>
             <div className="scopeMetric">
               <span>Matches</span>
@@ -551,7 +577,8 @@ export function App() {
                   disabled={scopeLocked}
                   title={match.match_title}
                 >
-                  {match.away_team.replace("F.C. ", "").replace("1. FC ", "")}
+                  <TeamCrest brand={match.away_team_brand} compact />
+                  <span>{match.away_team_brand.short_name}</span>
                 </button>
               ))}
             </div>
@@ -967,7 +994,10 @@ export function App() {
                   {resultGroups.map((group) => (
                     <div key={group.matchId} className="resultGroup" data-testid="result-group" data-match-id={group.matchId}>
                       <div className="resultGroupHeader" data-testid="result-group-header">
-                        <span>{group.label}</span>
+                        <span className="teamIdentity">
+                          <TeamCrest brand={group.match?.away_team_brand} compact />
+                          <span>{group.label}</span>
+                        </span>
                         <small>
                           {group.rows.length} {group.rows.length === 1 ? "moment" : "moments"}
                         </small>

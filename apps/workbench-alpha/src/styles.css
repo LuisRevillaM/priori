@@ -171,6 +171,53 @@ summary:focus-visible {
   line-height: 1.25;
 }
 
+.teamIdentity {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 7px;
+}
+
+.teamIdentity > span:last-child {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teamCrest {
+  position: relative;
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.teamCrest.compact {
+  width: 22px;
+  height: 22px;
+}
+
+.teamCrestFallback {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: var(--fw-strong);
+  letter-spacing: 0;
+}
+
+.teamCrest img {
+  position: absolute;
+  inset: 3px;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  object-fit: contain;
+}
+
 .scopePicker {
   display: flex;
   flex-wrap: wrap;
@@ -179,6 +226,9 @@ summary:focus-visible {
 }
 
 .scopePicker button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   min-height: var(--control-h-sm);
   border-radius: 999px;
   padding: 4px 9px;
@@ -655,7 +705,7 @@ summary:focus-visible {
   border-bottom: 1px solid var(--line);
 }
 
-.resultGroupHeader span {
+.resultGroupHeader > span {
   font-size: var(--fs-caption);
   font-weight: var(--fw-label);
   color: var(--ink-strong);
