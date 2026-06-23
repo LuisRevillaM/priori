@@ -30,6 +30,8 @@ progress:
     item: Preliminary S0A event/tracking preflight ran on canonical match J03WOY; summary recorded at delivery/m2a-high-bypass-completed-pass/M2A_S0A_EVENT_PREFLIGHT.md.
   - date: "2026-06-23"
     item: Worker C pure threshold-free bypass evaluator implemented and tested at src/tqe/runtime/bypass.py and tests/test_m2a_bypass.py.
+  - date: "2026-06-23"
+    item: Preliminary S0B active-player timeline preflight ran across canonical matches, with J03WOY pass-window intersection; summary recorded at delivery/m2a-high-bypass-completed-pass/M2A_S0B_ACTIVE_PLAYERS.md.
 latest_preflight:
   slice: M2A-S0A
   scope: single canonical match J03WOY
@@ -49,4 +51,16 @@ completed_isolated_work:
     report: delivery/m2a-high-bypass-completed-pass/M2A_S0C_BYPASS_ENGINE.md
     tests:
       - ./.venv/bin/python -m unittest tests.test_m2a_bypass
-next_action: Dispatch or run M2A-S0B active-player timeline next, then integrate S0A/S0B/S0C into artifacts/m2a/s0-contract-freeze.json; do not begin S1 until the controller gate emits PROCEED_TO_S1.
+active_player_preflight:
+  slice: M2A-S0B
+  scope: all canonical matches for active timeline; J03WOY for S0A pass-window intersection
+  status: PRELIMINARY_NOT_CONTRACT_FREEZE
+  tracked_player_interval_count: 368
+  frame_count_deviation_count: 183934
+  j03woy_controlled_pass_windows_checked: 593
+  j03woy_windows_with_active_set_change: 0
+  j03woy_windows_with_unusable_defending_outfield_denominator: 0
+  durable_summary: delivery/m2a-high-bypass-completed-pass/M2A_S0B_ACTIVE_PLAYERS.md
+  local_ignored_artifacts:
+    - artifacts/m2a/s0b-active-player-timeline-all.json
+next_action: Integrate S0A/S0B/S0C pure bypass into artifacts/m2a/s0-contract-freeze.json, including accepted match-window policy for reduced-player or incomplete-tracking periods; do not begin S1 until the controller gate emits PROCEED_TO_S1.
