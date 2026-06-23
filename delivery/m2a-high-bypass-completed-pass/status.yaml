@@ -6,6 +6,7 @@ branch: main
 source_of_truth:
   - docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md
   - delivery/m2a-high-bypass-completed-pass/SPEC.md
+  - delivery/m2a-high-bypass-completed-pass/PARALLEL_EXECUTION.md
 depends_on:
   - Beta 1C accepted
   - canonical event and tracking data in data/canonical/v1
@@ -22,4 +23,4 @@ scope:
     - pass probability
     - optimality
     - player intent
-next_action: Implement M2A-S0 data alignment preflight before runtime or UI changes.
+next_action: Start M2A-S0A/S0B/S0C-prep in parallel per PARALLEL_EXECUTION.md; do not begin S1 until S0C freezes artifacts/m2a/s0-contract-freeze.json and emits PROCEED_TO_S1.

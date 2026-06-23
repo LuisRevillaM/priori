@@ -1077,6 +1077,16 @@ If `n1c-verify` dirties tracked artifacts, restore only those generated artifact
 
 ## Preflight Requirement
 
+M2A-S0 is split into parallel preflight work plus a controller-owned integration gate:
+
+```text
+M2A-S0A  Event/tracking and controlled-reception preflight
+M2A-S0B  Active-player timeline and denominator proof
+M2A-S0C  Integrated Data Truth gate
+```
+
+Worker A may report provisional observed-player distributions, but accepted bypass distributions and positive counts at declared thresholds belong to S0C after event/reception evidence, active-player denominator, and pure bypass evaluator are integrated.
+
 M2A-S0 must answer:
 
 ```text
@@ -1099,6 +1109,29 @@ near-ball but not controlled cases
 incomplete tracking cases
 ```
 
+S0C must produce:
+
+```text
+artifacts/m2a/s0-contract-freeze.json
+```
+
+The freeze must pin:
+
+```text
+pass-family definition
+event timestamp alignment policy/version
+release-control definition
+reception-control definition
+reception search stop conditions
+PASS / FAIL / UNKNOWN decision table
+active-player timeline policy/version/hash
+goalkeeper policy
+ControlledPassEpisode schema
+ControlledPassEvaluation schema
+BypassedOpponentsEvaluation schema
+pure bypass evaluator version/hash
+```
+
 Before building Workbench UI exposure, run a real-data distribution preflight across the deployed match manifest:
 
 ```text
@@ -1114,6 +1147,8 @@ event/tracking alignment error distribution
 ```
 
 If there are zero positives across deployed matches, stop and report. Do not silently lower the threshold. The user may decide whether to use the broader seven-match corpus or adjust the product claim.
+
+Do not begin M2A-S1 runtime implementation until S0C emits `PROCEED_TO_S1`. If S0C cannot freeze the contract or prove at least one real positive at declared thresholds, stop and report rather than weakening semantics.
 
 ## Implementation Slices
 
@@ -1131,6 +1166,20 @@ distribution report
 ```
 
 Stop if player IDs, event timing, or tracking positions cannot be joined reliably.
+
+### M2A-S0C - Integrated Data Truth
+
+Deliver:
+
+```text
+A event/reception evidence
+B active-player timeline
+C pure bypass evaluator
+combined real-data distribution
+visual inspection samples
+artifacts/m2a/s0-contract-freeze.json
+PROCEED_TO_S1 or STOP_AND_REPORT_DATA_GAP
+```
 
 ### M2A-S1 - Controlled Pass Episode
 
