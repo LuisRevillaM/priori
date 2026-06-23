@@ -1693,6 +1693,48 @@ def product_model_query(query: str) -> str:
     return query
 
 
+def attested_hero_interpretation(query: str) -> dict[str, Any]:
+    bundle = read_committed_json(N1D_ORIGIN_BUNDLE_PATH)
+    origin = bundle.get("hermes_origin") if isinstance(bundle.get("hermes_origin"), dict) else {}
+    host_augmentation = bundle.get("host_augmentation") if isinstance(bundle.get("host_augmentation"), dict) else {}
+    host_pipeline = bundle.get("host_pipeline") if isinstance(bundle.get("host_pipeline"), dict) else {}
+    validation = host_pipeline.get("validation") if isinstance(host_pipeline.get("validation"), dict) else {}
+    plan_document = host_augmentation.get("augmented_document")
+    if not isinstance(plan_document, dict):
+        return hermes_unavailable(
+            query,
+            "The verified Hermes composition artifact is unavailable. Manual recipes remain available.",
+            fallback_reason="attested_origin_missing_plan",
+        )
+    provenance_source, attestation_details = hermes_draft_provenance(plan_document, str(validation.get("bound_plan_hash") or ""))
+    fallback_reason = None
+    if provenance_source != "HERMES_NOVEL_COMPOSITION":
+        failures = attestation_details.get("failures") if isinstance(attestation_details, dict) else None
+        fallback_reason = "attestation_not_verified" + (f":{','.join(failures)}" if failures else "")
+    return ok(
+        {
+            "status": "PLAN_INTERPRETED",
+            "provenance_source": provenance_source,
+            "query": query,
+            "message": "Loaded from the committed N1D.1 Hermes-origin attestation; scope is locked to the verified match, period, and perspective.",
+            "source": "hermes_attested_origin_bundle",
+            "agent_session_id": origin.get("session_id"),
+            "model_session_id": origin.get("session_id"),
+            "draft_plan_id": origin.get("draft_plan_id"),
+            "draft_plan_hash": origin.get("draft_plan_hash"),
+            "bound_plan_id": validation.get("bound_plan_id"),
+            "bound_plan_hash": validation.get("bound_plan_hash"),
+            "recipe_id": str(plan_document.get("recipe", {}).get("recipe_id") or ""),
+            "recipe": recipe_card(plan_document, "EXPERIMENTAL"),
+            "plan_document": plan_document,
+            "plan_hash": stable_hash(plan_document),
+            "manual_available": True,
+            "repair_applied": False,
+            "fallback_reason": fallback_reason,
+        }
+    )
+
+
 def committed_n1e_origin_chain() -> dict[str, Any] | None:
     path = REPO_ROOT / "delivery/n1d/n1e-origin-bundle.json"
     if not path.exists():
@@ -2179,6 +2221,8 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
     if mode == "model":
         if not hermes_enabled():
             return hermes_unavailable(query, fallback_reason="hermes_disabled")
+        if is_attested_hero_question(query):
+            return attested_hero_interpretation(query)
         return hermes_interpret_request(query, model_query=product_model_query(query), output_root=output_root)
 
     text = normalized(query)

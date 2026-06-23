@@ -165,6 +165,21 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         other = "Find forward lanes that stay open for at least one second."
         self.assertEqual(other, product_model_query(other))
 
+    def test_model_interpretation_exposes_only_verified_attested_hero(self) -> None:
+        from tqe.verification.n1c import HERO_QUESTION
+
+        with patch.dict("os.environ", {"WORKBENCH_HERMES_ENABLED": "1"}, clear=False):
+            response = interpret_request({"mode": "model", "query": HERO_QUESTION})
+
+        self.assertEqual("PLAN_INTERPRETED", response["status"])
+        self.assertEqual("HERMES_NOVEL_COMPOSITION", response["provenance_source"])
+        self.assertEqual("hermes_attested_origin_bundle", response["source"])
+        self.assertEqual("possession_corridor_destination_entry_v1", response["recipe_id"])
+        self.assertEqual(["J03WOY"], response["plan_document"]["default_invocation"]["match_ids"])
+        self.assertEqual(["firstHalf"], response["plan_document"]["default_invocation"]["periods"])
+        self.assertEqual("home", response["plan_document"]["default_invocation"]["perspective_team_role"])
+        self.assertIsNone(response["fallback_reason"])
+
     def test_scope_changes_bound_hash_cache_key_and_execution_record_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output_root = Path(directory)
