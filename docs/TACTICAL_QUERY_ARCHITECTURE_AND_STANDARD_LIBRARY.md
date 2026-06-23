@@ -6,9 +6,21 @@ Status: source-of-truth architecture brief for the current Workbench/Hermes demo
 
 Current generated Tactical Knowledge Pack: `generated/tactical-knowledge-pack.json`
 
-Current pack SHA-256 recorded in the pack: `2fc0ed6e97fd8e23d08b050e45e915ed327d38648cc1c15a56544291bb961115`
+Architecture identity note: do not treat manually copied hashes in prose as authoritative. For exact current identity, inspect the generated artifacts and future architecture freeze manifest. The freeze manifest should pin source commit, Tactical Knowledge Pack hash, catalog hash, query-schema hash, tool-schema hash, runtime version, and data-manifest hash.
 
-## Purpose
+## Status Labels
+
+This document intentionally contains both architecture invariants and proposed standard-library design. Every major claim should be read through these labels:
+
+| Label | Meaning |
+| --- | --- |
+| `NORMATIVE` | Defines an invariant or required boundary of the architecture. |
+| `IMPLEMENTED` | Exists in the current code path and is executable today. |
+| `PROVEN` | Demonstrated for a bounded accepted proof, not necessarily general across all tactics. |
+| `PROPOSED` | Design target for the next standard-library expansion; not implemented yet. |
+| `DEFERRED` | Intentionally outside the current demo scope. |
+
+## Purpose `[NORMATIVE]`
 
 This document explains the architecture of the tactical query system in terms of the layers that sit above tracking data, the concepts Hermes can compile to, the deterministic runtime contracts that execute those concepts, and the next standard-library capabilities required to make the product feel like a football tactical language rather than a narrow set of demos.
 
@@ -21,7 +33,25 @@ We are expanding the typed football vocabulary from which Hermes can construct q
 
 Hermes should compile natural language into bounded typed plans. The deterministic host should measure those plans over canonical tracking data, emit evidence-backed moments, and provide replay for human inspection.
 
-## Claim Boundary
+## Glossary `[NORMATIVE]`
+
+| Term | Definition |
+| --- | --- |
+| Primitive / capability | A deterministic reusable measurement, relation, operator, or tactical operation with typed inputs and outputs. |
+| Measurement | A deterministic value computed from canonical match state, such as a scalar, enum, or frame signal. |
+| Relation | A typed relationship between entities or regions over time. |
+| Episode | A bounded interval satisfying declared conditions. |
+| Anchor | A reference moment or interval used for downstream evaluation. |
+| Predicate | A tri-state condition over a typed value or relation output. |
+| Recipe | A saved plan graph with reviewed defaults and known claim boundaries. |
+| Draft plan | An untrusted Hermes-authored tactical structure before binding. |
+| Invocation | Host-owned scope and concrete parameter context. |
+| Bound plan | Host-validated executable form with resolved capabilities, versions, types, units, and dependencies. |
+| Query execution | Deterministic result artifact containing results, traces, evidence, provenance, timing, and cache status. |
+| Evidence alias | A stable projection from runtime output to result/UI. |
+| Witness | The exact relation, entity, episode, or anchor grounding a predicate/result. |
+
+## Claim Boundary `[NORMATIVE]`
 
 The system can truthfully claim:
 
@@ -31,6 +61,8 @@ It can execute reviewed recipes.
 It can execute one verified Hermes-authored experimental composition with deterministic provenance.
 It can replay evidence-backed moments for human inspection.
 ```
+
+One Hermes-authored experimental composition has been origin-attested, structurally compared against registered recipes, executed, and replayed. This proves the bounded AI-authoring path for that accepted case. It does not yet establish reliable arbitrary composition across the full tactical domain.
 
 The system must not claim:
 
@@ -48,7 +80,7 @@ complete football ontology coverage
 
 Those claims require data or models not currently in the system.
 
-## Layer Model
+## Layer Model `[NORMATIVE]`
 
 The clean architecture is:
 
@@ -359,7 +391,37 @@ MODEL_UNAVAILABLE
 
 No plan should appear AI-authored if it was a preset, reviewed recipe, deterministic fallback, or manually selected plan.
 
-## What Hermes Actually Compiles To
+## Runtime Object Model `[NORMATIVE]`
+
+The system should distinguish these objects explicitly:
+
+| Object | Owner | Meaning |
+| --- | --- | --- |
+| `RecipeDefinition` | Host/reviewer | Reusable tactical program with defaults, placeholders, provenance, limitations, and claim boundaries. |
+| `DraftQueryPlan` | Hermes or host preset adapter | Untrusted tactical structure before deterministic binding. |
+| `QueryInvocation` | Host | Selected matches, perspective team, periods, result limit, and concrete scope/parameter overrides. |
+| `BoundQueryPlan` | Binder | Validated executable form with resolved capabilities, versions, units, enum domains, dependencies, and host-owned limits. |
+| `QueryExecution` | Executor | Result rows, predicate traces, evidence aliases, provenance, cache status, and replay references. |
+
+Authority flow:
+
+```text
+RecipeDefinition or DraftQueryPlan
+        +
+Host-owned QueryInvocation
+        ↓
+Deterministic binding
+        ↓
+BoundQueryPlan
+        ↓
+Human confirmation
+        ↓
+QueryExecution
+```
+
+Hermes can author or select the tactical structure. The host owns scope, binding, confirmation, execution, provenance, and artifact identity.
+
+## What Hermes Actually Compiles To `[NORMATIVE]`
 
 Hermes compiles natural language into a typed query plan graph. It does not compile to Python, SQL, or runtime code.
 
@@ -397,7 +459,7 @@ max result limits
 
 Hermes can compose from registered capabilities only. If the concept cannot be represented using the visible catalog and safe operators, Hermes should say capability gap rather than inventing a hidden primitive.
 
-## Recipes / Detectors
+## Recipes / Detectors `[NORMATIVE]`
 
 A recipe or detector is a saved plan graph. It is not the primitive layer.
 
@@ -411,7 +473,7 @@ Current tracked recipes:
 
 The architecture goal is not to keep adding one-off recipes. The goal is to add reusable football vocabulary so Hermes can author new recipes safely.
 
-## Visibility Tiers
+## Visibility Tiers `[NORMATIVE]`
 
 Every capability should be assigned one of these tiers:
 
@@ -424,7 +486,7 @@ Every capability should be assigned one of these tiers:
 
 The tiering prevents Hermes from treating an opaque recipe macro as a universal primitive.
 
-## Current Capability Posture
+## Current Capability Posture `[IMPLEMENTED / PROVEN]`
 
 ### Strong Foundation
 
@@ -461,11 +523,63 @@ relation destination entry
 
 That is enough to prove the architecture. It is not enough to feel like a broad tactical language.
 
-## Standard Library Expansion
+### Agent-Composable Today `[IMPLEMENTED]`
 
-The next work should add the Line-Break Support package:
+Hermes-safe authoring should distinguish currently composable concepts from trusted recipe logic and compiler-lowering details.
+
+Agent-composable today:
 
 ```text
+possession_segment
+geometric_progressive_corridor_from_anchor_set
+geometric_progressive_corridor
+relation_destination_entry
+safe predicates/operators over supported anchor-relative inputs
+```
+
+Trusted recipe logic today:
+
+```text
+signed_lateral_shift
+outcome_classification
+relation_destination_entry_classification
+M1 block-shift-specific predicate spine
+```
+
+Compiler-lowering details today:
+
+```text
+ball_lateral_fraction
+defensive_outfield_centroid
+point-to-segment clearance geometry
+lane/region geometry kernels inside corridor evaluation
+```
+
+## Standard Library Expansion `[PROPOSED]`
+
+The next work should add a staged line-breaking package. The first visible family should be:
+
+```text
+High-Bypass Completed Pass
+```
+
+Use that name deliberately. Until the defensive-line model exists, a completed pass that bypasses five opponents is highly relevant to line breaking, but it does not mathematically prove which defensive line was crossed.
+
+The first implementation package is:
+
+```text
+synchronized event + tracking data
+→ controlled_pass_episode
+→ opponents_bypassed_by_action
+→ High-Bypass Completed Pass
+→ evidence and replay
+```
+
+Then add the true line-breaking and support-response package:
+
+```text
+controlled_pass_episode
+opponents_bypassed_by_action
 defensive_line_model
 relative_position_to_defensive_line
 controlled_line_break_episode
@@ -474,7 +588,16 @@ support_arrival_relation
 local_number_relation
 ```
 
-These capabilities are deliberately orthogonal. Together, they support a second tactical family:
+These capabilities are deliberately orthogonal. Together, they support two new tactical families:
+
+```text
+High-Bypass Completed Pass
+
+completed controlled pass
+→ forward progression clears a threshold
+→ declared number of opponents bypassed
+→ evidence-backed pass result and replay
+```
 
 ```text
 Line-Break Support Response
@@ -487,7 +610,7 @@ controlled line break
 → evidence-backed result and replay
 ```
 
-This is the right next proof because it moves beyond the current corridor/block-shift center of gravity.
+This is the right next proof because it moves beyond the current corridor/block-shift center of gravity while adding an action-spanning capability: a pass evaluated at release and controlled reception, not merely a state at one anchor.
 
 ## Capability Contract Template
 
@@ -496,8 +619,10 @@ Every new capability must define:
 ```yaml
 id:
 version:
+status:
 visibility_tier:
-layer:
+runtime_layer:
+capability_kind:
 purpose:
 inputs:
 parameters:
@@ -526,19 +651,213 @@ execution must not later fail because of missing runtime globals,
 undeclared parameters, unsupported output domains, or hidden node assumptions.
 ```
 
+## Proposed Capability: controlled_pass_episode
+
+```yaml
+id: controlled_pass_episode
+version: 0.1.0
+status: PROPOSED
+visibility_tier: AGENT_COMPOSABLE
+runtime_layer: L4
+capability_kind: ACTION_EPISODE
+purpose: Identify completed passes by the perspective team and align event-reported pass endpoints with physical tracking evidence.
+```
+
+### Why It Exists
+
+High-bypass and true line-break questions need an observed action with two endpoints: pass release and controlled reception. A possession anchor alone is not enough.
+
+The dataset includes synchronized event data with pass-like events and recipient metadata, but event timestamp alone should not be treated as the controlled reception frame. The capability must align event and tracking evidence.
+
+### Inputs
+
+```text
+canonical events
+canonical ball/player coordinates
+canonical frame timing
+team role / attacking team
+possession continuity state
+attacking direction
+```
+
+### Parameters
+
+```text
+event_types: Play_Pass | FreeKick_Play_Pass | ThrowIn_Play_Pass | GoalKick_Play_Pass | KickOff_Play_Pass
+completion_policy: event_success_plus_tracking_confirmation
+maximum_event_tracking_alignment_seconds: second
+maximum_reception_ball_distance_m: metre
+minimum_forward_progression_m: metre
+exclude_set_pieces: boolean
+minimum_same_possession_after_reception_seconds: second
+```
+
+### Outputs
+
+```text
+pass_episode_id
+passer_id
+receiver_id
+release_frame_id
+reception_frame_id
+release_point
+reception_point
+forward_progression_m
+event_id
+event_type
+event_evaluation
+possession_continuity_status: PASS | FAIL | UNKNOWN
+controlled_reception_status: PASS | FAIL | UNKNOWN
+```
+
+### Unknown Behavior
+
+Return `UNKNOWN` when:
+
+```text
+event endpoint cannot be aligned to tracking frames
+pass recipient is absent or cannot be matched to a tracked player
+release or reception frame is outside reliable tracking coverage
+ball/receiver distance cannot be evaluated
+possession continuity cannot be established
+event and tracking evidence conflict beyond declared tolerance
+```
+
+### Visual Evidence
+
+```text
+pass release point
+controlled reception point
+passer marker
+receiver marker
+ball trajectory or release-to-reception segment
+event/tracking alignment timestamps
+```
+
+### Limitations
+
+```text
+Does not infer intent.
+Does not score pass quality.
+Does not estimate pass probability.
+Does not prove that a better pass existed.
+```
+
+## Proposed Capability: opponents_bypassed_by_action
+
+```yaml
+id: opponents_bypassed_by_action
+version: 0.1.0
+status: PROPOSED
+visibility_tier: AGENT_COMPOSABLE
+runtime_layer: L4
+capability_kind: ACTION_RELATION
+purpose: Count opposition outfield players who move from goal-side of the ball at pass release to behind the ball at controlled reception.
+```
+
+### Why It Exists
+
+This is the first highly legible line-breaking-adjacent metric. It can support "passes bypassing five opponents" before the system has a formal defensive-line model.
+
+### Operational Definition
+
+All positions must be normalized to attacking direction.
+
+```text
+opponent is goal-side of ball at release
+AND
+opponent is behind ball at controlled reception
+→ opponent bypassed
+```
+
+Use a declared positional buffer so players level with the ball do not oscillate between bypassed and not bypassed because of frame noise.
+
+### Inputs
+
+```text
+controlled_pass_episode
+canonical player coordinates
+canonical ball coordinates
+attacking direction
+opposition outfield player selector
+```
+
+### Parameters
+
+```text
+goal_side_buffer_m: metre
+bypassed_buffer_m: metre
+exclude_goalkeeper: boolean
+minimum_forward_progression_m: metre
+```
+
+### Outputs
+
+```text
+opponents_bypassed_count
+bypassed_player_ids
+release_frame_id
+reception_frame_id
+passer_id
+receiver_id
+forward_progression_m
+release_ball_x_m
+reception_ball_x_m
+evaluation_status: PASS | FAIL | UNKNOWN
+unknown_reason
+```
+
+### Unknown Behavior
+
+Return `UNKNOWN` when:
+
+```text
+controlled_pass_episode is UNKNOWN
+attacking direction is unavailable
+release or reception frame has missing ball position
+any opposition outfield player needed for a definitive count has missing endpoint positions
+goalkeeper exclusion cannot be resolved
+event/tracking endpoint uncertainty could change the threshold decision
+```
+
+### Visual Evidence
+
+```text
+solid release-to-reception pass line
+passer and receiver highlights
+bypassed opponents highlighted
+faint release-position ghosts for bypassed opponents
+reception-position markers for bypassed opponents
+badge with opponents_bypassed_count
+forward_progression_m label
+```
+
+### Limitations
+
+```text
+Does not prove a formal defensive line was crossed.
+Does not infer the pass was optimal.
+Does not infer defensive intent or pressure.
+Does not include goalkeeper unless explicitly configured.
+```
+
 ## Proposed Capability: defensive_line_model
 
 ```yaml
 id: defensive_line_model
 version: 0.1.0
+status: PROPOSED
 visibility_tier: COMPILER_LOWERING
-layer: L2
-purpose: Build a deterministic defensive-line reference from defending outfield players.
+runtime_layer: L3
+capability_kind: MEASUREMENT
+purpose: Build a deterministic defensive-line reference model from defending outfield players.
 ```
 
 ### Why It Exists
 
-Line-break concepts need a reference line. Without a deterministic defensive line, "break the line" becomes subjective.
+Line-break concepts need a reference line. Without a deterministic defensive line reference model, "break the line" becomes subjective.
+
+This capability does not discover a universally objective second line. It applies a declared operational policy that the rest of the line-break package inherits.
 
 ### Inputs
 
@@ -547,7 +866,7 @@ canonical player coordinates
 team role / defending team
 attacking direction
 outfield-player selector
-line-selection policy
+line_policy
 frame or anchor window
 ```
 
@@ -555,6 +874,7 @@ frame or anchor window
 
 ```text
 line_type: back_line | second_line
+line_policy: ordered_depth_clustering | fixed_player_count_partition | density_clustering | provider_position_labels
 minimum_defenders: count
 maximum_line_depth_spread_m: metre
 lookback_window_seconds: second
@@ -566,7 +886,9 @@ lookahead_window_seconds: second
 ```text
 line_x_m
 line_type
+line_policy
 defender_ids_used
+line_membership_confidence
 line_quality_status: PASS | FAIL | UNKNOWN
 line_depth_spread_m
 source_frame_id
@@ -589,6 +911,8 @@ line spread exceeds declared quality policy
 ```text
 line overlay
 source defender markers
+line policy label
+line membership evidence
 line quality/status
 ```
 
@@ -605,8 +929,10 @@ Does not prove offside line correctness.
 ```yaml
 id: relative_position_to_defensive_line
 version: 0.1.0
+status: PROPOSED
 visibility_tier: AGENT_COMPOSABLE
-layer: L2
+runtime_layer: L3
+capability_kind: RELATIVE_MEASUREMENT
 purpose: Measure whether an entity is in front of, on, or beyond a defensive line.
 ```
 
@@ -632,6 +958,7 @@ entity_selector: ball | player | receiver | relation_target
 relative_x_m
 side_of_line: IN_FRONT | ON_LINE | BEYOND | UNKNOWN
 line_x_m
+line_policy
 entity_id
 frame_id
 ```
@@ -668,8 +995,10 @@ Does not establish tactical intent.
 ```yaml
 id: controlled_line_break_episode
 version: 0.1.0
+status: PROPOSED
 visibility_tier: AGENT_COMPOSABLE
-layer: L3
+runtime_layer: L4
+capability_kind: EPISODE
 purpose: Create anchor episodes where the ball or active attacking entity crosses from in front of a defensive line to beyond it under measurable control conditions.
 ```
 
@@ -701,6 +1030,7 @@ line_break_episodes: episode_set<anchor_ref>
 break_frame_id
 breaking_entity_id
 crossed_line_type
+line_policy
 pre_relative_x_m
 post_relative_x_m
 control_status
@@ -742,8 +1072,10 @@ Does not prove offside legality.
 ```yaml
 id: lane_occupancy
 version: 0.1.0
+status: PROPOSED
 visibility_tier: AGENT_COMPOSABLE
-layer: L2
+runtime_layer: L3
+capability_kind: ANCHOR_EVALUATION
 purpose: Measure which pitch lanes are occupied by selected entities during an anchor-relative window.
 ```
 
@@ -770,11 +1102,13 @@ minimum_presence_seconds: second
 ### Outputs
 
 ```text
-occupied_lanes: entity_set or enum collection
+lane_occupancy_evaluations: anchor_evaluation_set<LaneOccupancyEvaluation>
+anchor_id
 lane_count
 lane_ids
 player_ids_by_lane
 occupancy_status: PASS | FAIL | UNKNOWN
+coverage_status: COMPLETE | PARTIAL | UNKNOWN
 ```
 
 ### Unknown Behavior
@@ -809,8 +1143,10 @@ Lane occupation does not establish optimal spacing.
 ```yaml
 id: support_arrival_relation
 version: 0.1.0
+status: PROPOSED
 visibility_tier: AGENT_COMPOSABLE
-layer: L3
+runtime_layer: L4
+capability_kind: RELATION
 purpose: Detect teammates arriving into a support region within a declared time window after an anchor.
 ```
 
@@ -838,7 +1174,9 @@ exclude_anchor_entity: boolean
 ### Outputs
 
 ```text
-support_relation_episodes: relation_episode_set
+support_relation_episodes: relation_episode_set<SupportArrivalEpisode>
+support_arrival_evaluations: anchor_evaluation_set<SupportArrivalEvaluation>
+anchor_id
 arrival_status: PASS | FAIL | UNKNOWN
 arriving_player_ids
 arrival_frame_id
@@ -883,8 +1221,10 @@ Does not infer passing availability unless combined with corridor or lane capabi
 ```yaml
 id: local_number_relation
 version: 0.1.0
+status: PROPOSED
 visibility_tier: AGENT_COMPOSABLE
-layer: L3
+runtime_layer: L4
+capability_kind: ANCHOR_EVALUATION
 purpose: Count attackers and defenders inside a declared local region around an anchor or entity.
 ```
 
@@ -912,6 +1252,8 @@ minimum_attacker_advantage: count
 ### Outputs
 
 ```text
+local_number_evaluations: anchor_evaluation_set<LocalNumberEvaluation>
+anchor_id
 attacker_count
 defender_count
 local_difference
@@ -948,9 +1290,71 @@ Numerical advantage does not prove tactical superiority.
 Does not measure pressure unless combined with a pressure capability.
 ```
 
-## First New Tactical Family: Line-Break Support Response
+## First New Tactical Family: High-Bypass Completed Pass `[PROPOSED]`
 
-After the standard-library capabilities exist, the first consumer should be a tactical family:
+The first consumer of the expanded library should be:
+
+```text
+High-Bypass Completed Pass
+```
+
+Definition sketch:
+
+```text
+controlled_pass_episode == PASS
+AND forward_progression_m >= 8
+AND opponents_bypassed_count >= 5
+→ emit HIGH_BYPASS_COMPLETED_PASS
+```
+
+Naming rule:
+
+```text
+Call this "high-bypass" until defensive-line capabilities exist.
+Do not call it a definitive line break yet.
+```
+
+Example user questions this family should support:
+
+```text
+Show completed passes that bypassed at least five opponents.
+Find passes where more than four defenders were left behind the ball.
+Show high-bypass passes with at least eight metres of forward progression.
+Find completed passes that bypassed many opponents but did not enter the box.
+```
+
+Workbench explanation target:
+
+```text
+USER ASKED
+"Show completed passes that bypassed at least five opponents."
+
+INTERPRETED TACTICALLY
+Completed controlled pass
++ forward progression at least 8m
++ opponents bypassed count at least 5
+
+MEASURED AS
+Pass completed at 42:18
+Passer: DFL-...
+Receiver: DFL-...
+Forward progression: 17.4m
+Opponents bypassed: 5
+```
+
+Replay target:
+
+```text
+solid pass line from release to controlled reception
+passer and receiver highlighted
+bypassed opponents highlighted
+faint release-position ghosts for bypassed opponents
+badge: 5 opponents bypassed
+```
+
+## Later Tactical Family: Line-Break Support Response `[PROPOSED]`
+
+After defensive-line and support capabilities exist, add:
 
 ```text
 Line-Break Support Response
@@ -997,7 +1401,7 @@ Occupied support lanes: 1
 Local numbers: 2 attackers vs 4 defenders
 ```
 
-## Standard-Library Acceptance Gates
+## Standard-Library Acceptance Gates `[NORMATIVE FOR NEW CAPABILITIES]`
 
 Each new capability must pass:
 
@@ -1028,45 +1432,75 @@ For each capability, acceptance requires:
 10. The Workbench explains limitations and does not overclaim.
 ```
 
-## Recommended Implementation Order
+For `controlled_pass_episode` and `opponents_bypassed_by_action`, acceptance additionally requires:
+
+```text
+1. Attacking-direction mirroring produces identical bypass counts.
+2. Ordering of player records does not change result IDs, counts, or bypassed_player_ids.
+3. Release/reception frame uncertainty produces UNKNOWN when it could change the answer.
+4. Broken possession continuity prevents PASS for the controlled action.
+5. Players inside the positional buffer are not spuriously bypassed.
+6. Missing opponent endpoint positions do not silently reduce the count.
+7. Event and tracking endpoints are visibly aligned in proof artifacts.
+8. Every highlighted opponent in replay appears in bypassed_player_ids.
+9. The goalkeeper exclusion policy is explicit and tested.
+10. Repeat execution is deterministic across all selected matches.
+```
+
+## Recommended Implementation Order `[PROPOSED]`
 
 Do not start with a polished recipe. Build the vocabulary bottom-up:
 
 ```text
-1. defensive_line_model
+1. controlled_pass_episode
+   - event/tracking alignment
+   - completed controlled pass endpoint proof
+   - positive/negative/UNKNOWN tests
+
+2. opponents_bypassed_by_action
+   - direction-normalized endpoint comparison
+   - explicit buffer semantics
+   - bypassed_player_ids evidence
+
+3. High-Bypass Completed Pass
+   - first visible new football family
+   - actual completed pass replay
+   - no defensive-line overclaim
+
+4. defensive_line_model
    - compiler-lowering only
    - visual debug overlays
    - positive/negative/UNKNOWN tests
 
-2. relative_position_to_defensive_line
+5. relative_position_to_defensive_line
    - agent-composable
    - proves line-relative entity measurement
 
-3. controlled_line_break_episode
+6. controlled_line_break_episode
    - anchor-producing tactical capability
    - first line-break event surface
 
-4. lane_occupancy
+7. lane_occupancy
    - reusable spatial context
    - needed for support/spacing questions
 
-5. support_arrival_relation
+8. support_arrival_relation
    - anchor-relative relation after line break
    - supports "left unsupported" and "runner arrived" questions
 
-6. local_number_relation
+9. local_number_relation
    - optional but high-value
    - supports overload/rest-defence framing
 
-7. Line-Break Support Response
-   - first reviewed/experimental consumer of the new package
+10. Line-Break Support Response
+   - later reviewed/experimental consumer of the full package
 
-8. Hermes novel composition rerun
+11. Hermes novel composition rerun
    - ask Hermes to compose a new question from the expanded library
    - no prompt/code tuning after question freeze
 ```
 
-## What Not To Do
+## What Not To Do `[NORMATIVE]`
 
 Do not:
 
@@ -1081,7 +1515,7 @@ turn UNKNOWN into FAIL
 use UI labels to hide provenance
 ```
 
-## Practical Mental Model
+## Practical Mental Model `[NORMATIVE]`
 
 The tactical system should feel like this:
 
