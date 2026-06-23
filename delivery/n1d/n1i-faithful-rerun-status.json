@@ -1,0 +1,12 @@
+{
+  "bound_plan_hash": "68e7d1a7cd29d7bd0490765694d8f4700c882046510e78a2579b8845358f1bb0",
+  "bundle_sha256": "bdd4854bff8528cc7527b63bb150d618e56a0e0cf5817c6d57d763b89b7f6be2",
+  "execution_id": "exec_c4feb86ed01eaa93",
+  "job_id": "n1f_7a1f1b8013294534",
+  "ok": true,
+  "schema_version": "n1f.job_status.v1",
+  "session_id": "20260623_061107_59df89",
+  "stage": "bundle_exported",
+  "status": "succeeded",
+  "updated_at": "2026-06-23T06:12:48+00:00"
+}

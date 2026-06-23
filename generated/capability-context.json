@@ -3522,7 +3522,7 @@
     "result_row_mutation",
     "threshold_auto_tuning"
   ],
-  "generated_at": "2026-06-23T06:05:48+00:00",
+  "generated_at": "reproducible_from_source_hashes",
   "host_owned_complexity_ceilings": {
     "max_execution_cost": 100000,
     "max_nesting_depth": 12,

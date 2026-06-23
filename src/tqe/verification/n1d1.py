@@ -66,6 +66,41 @@ def evidence_aliases(document: dict[str, Any]) -> set[str]:
     }
 
 
+def audit_augmentation_diff(final_document: dict[str, Any], hermes_document: dict[str, Any]) -> dict[str, Any]:
+    """Audit the only allowed difference between Hermes draft and the pinned N1D plan.
+
+    Earlier N1D paths expected the host to add exactly two aliases after Hermes submitted the
+    draft. After N1I, those aliases are part of the generated authoring contract, so Hermes may
+    author them directly. That is a stronger origin claim, not a weaker one. The invariant is:
+    no structural edits after Hermes submission, no removed Hermes evidence, any host-added aliases
+    are limited to the two approved fields, and the final plan contains both required fields.
+    """
+    final_stripped = strip_requested_evidence(final_document)
+    hermes_stripped = strip_requested_evidence(hermes_document)
+    final_aliases = evidence_aliases(final_document)
+    hermes_aliases = evidence_aliases(hermes_document)
+    added = sorted(final_aliases - hermes_aliases)
+    removed = sorted(hermes_aliases - final_aliases)
+    required_present = ALLOWED_AUGMENTATION.issubset(final_aliases)
+    added_within_allowed = set(added).issubset(ALLOWED_AUGMENTATION)
+    diff_allowed = (
+        final_stripped == hermes_stripped
+        and not removed
+        and added_within_allowed
+        and required_present
+    )
+    return {
+        "structure_identical_after_strip": final_stripped == hermes_stripped,
+        "added_aliases": added,
+        "removed_aliases": removed,
+        "added_equals_allowed": set(added) == ALLOWED_AUGMENTATION and not removed,
+        "added_within_allowed": added_within_allowed,
+        "required_aliases_present": required_present,
+        "required_aliases_authored_by_hermes": sorted(ALLOWED_AUGMENTATION.intersection(hermes_aliases)),
+        "diff_allowed": diff_allowed,
+    }
+
+
 def locate_hermes_trace(session_id: str, draft_plan_id: str | None) -> dict[str, Any] | None:
     """Find the persisted Hermes trace for the live session. Returns None if not present."""
     if not HERMES_TRACES_DIR.exists():
@@ -119,10 +154,6 @@ def audit_origin_bundle(n1d_plan: dict[str, Any], bundle: dict[str, Any], bundle
     if not isinstance(tool_calls, list):
         tool_calls = []
 
-    n1d_stripped = strip_requested_evidence(n1d_plan)
-    hermes_stripped = strip_requested_evidence(hermes_doc)
-    added = sorted(evidence_aliases(n1d_plan) - evidence_aliases(hermes_doc))
-    removed = sorted(evidence_aliases(hermes_doc) - evidence_aliases(n1d_plan))
     compile_tool_names = [
         str(call.get("name") or "").removeprefix("functions.")
         for call in tool_calls
@@ -139,12 +170,7 @@ def audit_origin_bundle(n1d_plan: dict[str, Any], bundle: dict[str, Any], bundle
         "hermes_submitted_draft_plan_hash": hermes.get("draft_plan_hash"),
         "ordered_tool_call_trace_sha256": stable_json_sha256(tool_calls) if tool_calls else None,
         "raw_hermes_decision_sha256": stable_json_sha256(raw_model_output) if raw_model_output else None,
-        "allowed_augmentation_diff": {
-            "structure_identical_after_strip": n1d_stripped == hermes_stripped,
-            "added_aliases": added,
-            "removed_aliases": removed,
-            "added_equals_allowed": set(added) == ALLOWED_AUGMENTATION and not removed,
-        },
+        "allowed_augmentation_diff": audit_augmentation_diff(n1d_plan, hermes_doc),
         "origin_artifacts_present": True,
         "trace_persisted": bool(session_trace.get("trace_persisted") and tool_calls and raw_model_output),
         "compile_tool_trace": {
@@ -194,16 +220,7 @@ def audit_hermes_origin(n1d_plan: dict[str, Any]) -> dict[str, Any]:
     origin["hermes_submitted_draft_plan_hash"] = hermes_handle.get("draft_plan_hash")
 
     # Allowed-augmentation diff vs the genuine Hermes draft.
-    n1d_stripped = strip_requested_evidence(n1d_plan)
-    hermes_stripped = strip_requested_evidence(hermes_doc)
-    added = sorted(evidence_aliases(n1d_plan) - evidence_aliases(hermes_doc))
-    removed = sorted(evidence_aliases(hermes_doc) - evidence_aliases(n1d_plan))
-    origin["allowed_augmentation_diff"] = {
-        "structure_identical_after_strip": n1d_stripped == hermes_stripped,
-        "added_aliases": added,
-        "removed_aliases": removed,
-        "added_equals_allowed": set(added) == ALLOWED_AUGMENTATION and not removed,
-    }
+    origin["allowed_augmentation_diff"] = audit_augmentation_diff(n1d_plan, hermes_doc)
 
     # Locate the raw decision + ordered tool-call trace. NEVER fabricate if missing.
     trace = locate_hermes_trace(session_id, draft_plan_id) if session_id else None
@@ -290,8 +307,8 @@ def main() -> None:
         ),
         check(
             "n1d1.augmentation_diff_allowed",
-            bool(aug and aug["structure_identical_after_strip"] and aug["added_equals_allowed"]),
-            "N1D plan equals the Hermes draft plus exactly the two allowed evidence aliases.",
+            bool(aug and aug["diff_allowed"]),
+            "N1D plan equals the Hermes draft except for optional host addition of the two allowed evidence aliases, and the final plan contains both.",
             aug or {"reason": "origin artifacts absent"},
         ),
         check(

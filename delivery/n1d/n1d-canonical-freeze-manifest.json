@@ -12,9 +12,9 @@
     "all_in_domain": true,
     "contains_entry_mode_evidence": true,
     "distribution": {
-      "ENTERED_AFTER_OPEN": 2,
+      "ENTERED_AFTER_OPEN": 7,
       "NOT_ENTERED": 0,
-      "PRESENT_AT_OPEN": 3,
+      "PRESENT_AT_OPEN": 7,
       "UNKNOWN": 0
     },
     "entry_before_open_analysis": "Entry-before-open is structurally impossible: ball_entry_evaluation_into_destination_region scans ball frames from open_frame_id forward, so the first in-region frame satisfies frame_id >= open_frame_id. time_to_entry_seconds is therefore always >= 0.0, and entry_mode is PRESENT_AT_OPEN exactly when the entry frame equals the open frame (time_to_entry_seconds == 0.0).",
@@ -30,55 +30,136 @@
     "per_result": [
       {
         "classification": "DESTINATION_ENTERED",
-        "entry_frame_id": 11375,
+        "entry_frame_id": null,
         "entry_mode": "PRESENT_AT_OPEN",
         "entry_status": "PASS",
-        "observed_window_end_frame_id": 11500,
-        "result_id": "0b06e5f2a538ab8e",
+        "observed_window_end_frame_id": null,
+        "result_id": "f67bf5b49f15d09e",
         "time_to_entry_seconds": 0.0
       },
       {
         "classification": "DESTINATION_ENTERED",
-        "entry_frame_id": 16969,
+        "entry_frame_id": null,
         "entry_mode": "ENTERED_AFTER_OPEN",
         "entry_status": "PASS",
-        "observed_window_end_frame_id": 17090,
-        "result_id": "a950be165bcf2a01",
+        "observed_window_end_frame_id": null,
+        "result_id": "ec410f5570ac97ec",
         "time_to_entry_seconds": 0.16
       },
       {
         "classification": "DESTINATION_ENTERED",
-        "entry_frame_id": 23375,
+        "entry_frame_id": null,
         "entry_mode": "PRESENT_AT_OPEN",
         "entry_status": "PASS",
-        "observed_window_end_frame_id": 23500,
-        "result_id": "f81740ea1ba517e4",
+        "observed_window_end_frame_id": null,
+        "result_id": "cff61cd385bc937a",
         "time_to_entry_seconds": 0.0
       },
       {
         "classification": "DESTINATION_ENTERED",
-        "entry_frame_id": 27460,
+        "entry_frame_id": null,
         "entry_mode": "PRESENT_AT_OPEN",
         "entry_status": "PASS",
-        "observed_window_end_frame_id": 27585,
-        "result_id": "ac61ba5a1fe73030",
+        "observed_window_end_frame_id": null,
+        "result_id": "adaf9684209d2467",
         "time_to_entry_seconds": 0.0
       },
       {
         "classification": "DESTINATION_ENTERED",
-        "entry_frame_id": 27697,
+        "entry_frame_id": null,
         "entry_mode": "ENTERED_AFTER_OPEN",
         "entry_status": "PASS",
-        "observed_window_end_frame_id": 27815,
-        "result_id": "3e052a0bb2e6559d",
+        "observed_window_end_frame_id": null,
+        "result_id": "5bac851f327a4223",
         "time_to_entry_seconds": 0.28
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": null,
+        "entry_mode": "ENTERED_AFTER_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": null,
+        "result_id": "159dc35654cc60fd",
+        "time_to_entry_seconds": 0.72
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": null,
+        "entry_mode": "PRESENT_AT_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": null,
+        "result_id": "0e5b626bf6c4e7c6",
+        "time_to_entry_seconds": 0.0
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": null,
+        "entry_mode": "PRESENT_AT_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": null,
+        "result_id": "2a80a5e865b62510",
+        "time_to_entry_seconds": 0.0
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": null,
+        "entry_mode": "ENTERED_AFTER_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": null,
+        "result_id": "b03bc84de76a1ec2",
+        "time_to_entry_seconds": 1.4
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": null,
+        "entry_mode": "PRESENT_AT_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": null,
+        "result_id": "d9e16a39014d6ddf",
+        "time_to_entry_seconds": 0.0
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": null,
+        "entry_mode": "ENTERED_AFTER_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": null,
+        "result_id": "dc16f4ad882b5331",
+        "time_to_entry_seconds": 0.72
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": null,
+        "entry_mode": "ENTERED_AFTER_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": null,
+        "result_id": "b36e924674bb8b44",
+        "time_to_entry_seconds": 0.2
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": null,
+        "entry_mode": "PRESENT_AT_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": null,
+        "result_id": "fb61e569ba8b73e2",
+        "time_to_entry_seconds": 0.0
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": null,
+        "entry_mode": "ENTERED_AFTER_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": null,
+        "result_id": "9b0941c4982a2ff1",
+        "time_to_entry_seconds": 1.92
       }
     ],
     "present_at_open_zero_time_consistent": true,
-    "result_count": 5,
+    "result_count": 14,
     "time_zero_mismatch": []
   },
-  "generated_at": "2026-06-22T23:54:52+00:00",
+  "generated_at": "2026-06-23T06:20:03+00:00",
   "hermes": {
     "config_sha256": "e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237",
     "configured_model": "gpt-5.5",
@@ -92,8 +173,8 @@
       "time_to_entry_seconds"
     ],
     "derived_from": "artifacts/n1-live-novel-composition-2026-06-22/n1-local-only-candidate-plan.json",
-    "document_sha256": "064be47c06cce4aeb4b87d2600397daa06ce1a168495e91126e25e235396f23a",
-    "document_stable_sha256": "c3876c0dd17369a7aa372fabf2c95c442ee78feca1977aa3090044285d4bf17d",
+    "document_sha256": "ebfc2780635849143a6eca57774096d3cab6939a569737087059656bce848909",
+    "document_stable_sha256": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
     "path": "delivery/n1d/n1d-hero-plan.json"
   },
   "hero_question": {
@@ -104,11 +185,11 @@
     "capability_context": {
       "exists": true,
       "path": "generated/capability-context.json",
-      "sha256": "0ef53564bf09c7b6e64d1ba8da1aff14bd7ce426b23e0dcb293eaf5256506fe4"
+      "sha256": "54629bad914fd3fa44df0d7195ba2d0a78c29824919c2de569b5204431eb4172"
     },
-    "file_sha256": "7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962",
+    "file_sha256": "05bc2b57b6bc399c5e9a1d10b5cad3213a1f70215b42941b21b7d8cee34b482f",
     "path": "generated/tactical-knowledge-pack.json",
-    "semantic_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0"
+    "semantic_sha256": "87d78d0f57bd829f4b8e391649e82b890d44a30d481f9bf702b71df10d9d3c39"
   },
   "mcp": {
     "server_name": "priori_tactical",
@@ -126,28 +207,28 @@
   },
   "n1d_live_artifacts": {
     "bound_plan": {
-      "content_sha256": "017f27e44889526461838375ee25681083baab889e54d3c7c127ab666703504d",
-      "relative_path": "artifacts/n1d/workshop/bound-plans/bound_73d049710392394d.json"
+      "content_sha256": "e122aa204599a1fea6f6068a63709af02f83ff67849c837af8a585c40e5a17a0",
+      "relative_path": "artifacts/n1d/workshop/bound-plans/bound_68e7d1a7cd29d7bd.json"
     },
     "draft_plan": {
-      "content_sha256": "5cb5069726cde62e416851e3f04f6d11eb394361a3022f237e8922dbd5dd3e7f",
-      "relative_path": "artifacts/n1d/workshop/draft-plans/draft_55983414d43845f3.json"
+      "content_sha256": "0c4c4c73a3528b1c28eb88c503edde8cda8a3600d587fdcd70fdc929b1ec3e2d",
+      "relative_path": "artifacts/n1d/workshop/draft-plans/draft_cca93c8cac63ef66.json"
     },
     "execution_handle": {
-      "content_sha256": "4c8c56e45b84eddad4c5444c9ed8a33c53892e410eb9b766fba058e0c34cb581",
-      "relative_path": "artifacts/n1d/workshop/executions/exec_d549f238bbc6ef39.json"
+      "content_sha256": "ef55b991de506a476fe7a919752ecce64fad7b3a3925a4eb330a84af4935715c",
+      "relative_path": "artifacts/n1d/workshop/executions/exec_c4feb86ed01eaa93.json"
     },
     "replay_window": {
-      "content_sha256": "f7d0551e46157a1003efe72d6ca3ff915ab0a3ef463059a01891476d6e92a86e",
-      "relative_path": "artifacts/n1d/workshop/replay-windows/replay_a9d17b6b632465e9.json"
+      "content_sha256": "ed22f9381c2ffc58b03bdcd178d25d2880c6906076cf2b71c1b7c90a0790ea6f",
+      "relative_path": "artifacts/n1d/workshop/replay-windows/replay_7ac23fe56e56df68.json"
     }
   },
   "pinned_identity": {
     "artifacts": {
-      "bound_plan": "017f27e44889526461838375ee25681083baab889e54d3c7c127ab666703504d",
-      "draft_plan": "5cb5069726cde62e416851e3f04f6d11eb394361a3022f237e8922dbd5dd3e7f",
-      "execution": "4c8c56e45b84eddad4c5444c9ed8a33c53892e410eb9b766fba058e0c34cb581",
-      "replay_window": "f7d0551e46157a1003efe72d6ca3ff915ab0a3ef463059a01891476d6e92a86e"
+      "bound_plan": "e122aa204599a1fea6f6068a63709af02f83ff67849c837af8a585c40e5a17a0",
+      "draft_plan": "0c4c4c73a3528b1c28eb88c503edde8cda8a3600d587fdcd70fdc929b1ec3e2d",
+      "execution": "ef55b991de506a476fe7a919752ecce64fad7b3a3925a4eb330a84af4935715c",
+      "replay_window": "ed22f9381c2ffc58b03bdcd178d25d2880c6906076cf2b71c1b7c90a0790ea6f"
     },
     "data": {
       "canonical_inventory_sha256": "8386ac9ae7d028fa45db536a38ecd4c6dfeb098c0a837018daa152491e83392c",
@@ -157,9 +238,9 @@
       "all_in_domain": true,
       "contains_entry_mode_evidence": true,
       "distribution": {
-        "ENTERED_AFTER_OPEN": 2,
+        "ENTERED_AFTER_OPEN": 7,
         "NOT_ENTERED": 0,
-        "PRESENT_AT_OPEN": 3,
+        "PRESENT_AT_OPEN": 7,
         "UNKNOWN": 0
       },
       "entry_before_open_count": 0,
@@ -167,37 +248,46 @@
     },
     "hero_question_sha256": "4c0341c50842ea253a19959ca656a36b97ef4fa3bfb181db60f8a8bd68031fcf",
     "identity": {
-      "bound_plan_id": "bound_73d049710392394d",
-      "draft_plan_id": "draft_55983414d43845f3",
-      "execution_id": "exec_d549f238bbc6ef39",
-      "first_result_id": "0b06e5f2a538ab8e",
-      "replay_window_id": "replay_a9d17b6b632465e9",
-      "result_fingerprint": "d97ef1a2656ead4b53546ca274bbb74bcca037fc261d22e52ab4e2c369f5b284",
+      "bound_plan_id": "bound_68e7d1a7cd29d7bd",
+      "draft_plan_id": "draft_cca93c8cac63ef66",
+      "execution_id": "exec_c4feb86ed01eaa93",
+      "first_result_id": "f67bf5b49f15d09e",
+      "replay_window_id": "replay_7ac23fe56e56df68",
+      "result_fingerprint": "0f5eb3f51fc2b86693b061d8e7c5f152f5c4ca31cbd76641c366edf2eec69cf9",
       "result_ids": [
-        "0b06e5f2a538ab8e",
-        "a950be165bcf2a01",
-        "f81740ea1ba517e4",
-        "ac61ba5a1fe73030",
-        "3e052a0bb2e6559d"
+        "f67bf5b49f15d09e",
+        "ec410f5570ac97ec",
+        "cff61cd385bc937a",
+        "adaf9684209d2467",
+        "5bac851f327a4223",
+        "159dc35654cc60fd",
+        "0e5b626bf6c4e7c6",
+        "2a80a5e865b62510",
+        "b03bc84de76a1ec2",
+        "d9e16a39014d6ddf",
+        "dc16f4ad882b5331",
+        "b36e924674bb8b44",
+        "fb61e569ba8b73e2",
+        "9b0941c4982a2ff1"
       ]
     },
     "knowledge_pack": {
-      "file_sha256": "7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962",
-      "semantic_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0"
+      "file_sha256": "05bc2b57b6bc399c5e9a1d10b5cad3213a1f70215b42941b21b7d8cee34b482f",
+      "semantic_sha256": "87d78d0f57bd829f4b8e391649e82b890d44a30d481f9bf702b71df10d9d3c39"
     },
     "plan": {
-      "bound_plan_hash": "73d049710392394dfc4dbcdf46b09a282761708a3922bda7c208f9361a46c6b4",
-      "document_sha256": "064be47c06cce4aeb4b87d2600397daa06ce1a168495e91126e25e235396f23a",
-      "document_stable_sha256": "c3876c0dd17369a7aa372fabf2c95c442ee78feca1977aa3090044285d4bf17d",
-      "draft_plan_hash": "55983414d43845f3190ff1b6d11db3e17e82a09ddf9f6af5c46f76a2852b3358"
+      "bound_plan_hash": "68e7d1a7cd29d7bd0490765694d8f4700c882046510e78a2579b8845358f1bb0",
+      "document_sha256": "ebfc2780635849143a6eca57774096d3cab6939a569737087059656bce848909",
+      "document_stable_sha256": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+      "draft_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c"
     },
     "runtime": {
       "mcp_server": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
       "runtime_binder": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
       "runtime_catalog": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
-      "runtime_executor": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446",
+      "runtime_executor": "ee098ad11bad98a315aa007e4a1e17eb1b7cd17722b2699a89dd7d2676665eae",
       "runtime_values": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166",
-      "workshop_service": "57e088c3cb732362ee7de530311558170b9236c8889db73b683af74a25ffbd16"
+      "workshop_service": "8c6857259244cb3951b8e28a1e38dc6fc8557db5938df7e61c35e05743176ebd"
     }
   },
   "refresh_reason": "N1B/N1C live hero artifacts predate the runtime entry_mode contract. N1D re-executes the frozen hero under current HEAD so result evidence carries honest entry_mode.",
@@ -205,12 +295,12 @@
     "binder_sha256": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
     "catalog_sha256": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
     "compatibility_profile": "generic",
-    "executor_sha256": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446",
+    "executor_sha256": "ee098ad11bad98a315aa007e4a1e17eb1b7cd17722b2699a89dd7d2676665eae",
     "values_sha256": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166"
   },
   "schema_version": "n1d.canonical_freeze_manifest.v1",
   "source": {
-    "commit_at_manifest_generation": "59b67499f37c595028fdb5952f4cf71ff5175fa1",
+    "commit_at_manifest_generation": "7b7bf8424f9f2d440315aa8a6cdbcf44b923f95d",
     "source_files": {
       "mcp_server": {
         "exists": true,
@@ -230,7 +320,7 @@
       "runtime_executor": {
         "exists": true,
         "path": "src/tqe/runtime/executor.py",
-        "sha256": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446"
+        "sha256": "ee098ad11bad98a315aa007e4a1e17eb1b7cd17722b2699a89dd7d2676665eae"
       },
       "runtime_values": {
         "exists": true,
@@ -240,7 +330,7 @@
       "workshop_service": {
         "exists": true,
         "path": "src/tqe/workshop/m1_2.py",
-        "sha256": "57e088c3cb732362ee7de530311558170b9236c8889db73b683af74a25ffbd16"
+        "sha256": "8c6857259244cb3951b8e28a1e38dc6fc8557db5938df7e61c35e05743176ebd"
       }
     }
   },

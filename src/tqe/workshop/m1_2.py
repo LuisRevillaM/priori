@@ -864,7 +864,7 @@ def list_capabilities(caller_profile: CallerProfile = CallerProfile.HERMES_S2) -
     tool_names = visible_tool_names(caller_profile)
     authoring_contracts = generated_authoring_contracts(catalog)
     return CapabilityContext(
-        generated_at=utc_now_iso(),
+        generated_at="reproducible_from_source_hashes",
         tools=[tool_spec(name) for name in tool_names],
         primitives=primitives,
         relations=relations,
