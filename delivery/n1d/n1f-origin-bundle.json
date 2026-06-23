@@ -678,7 +678,7 @@
       "bound_plan_hash": "68e7d1a7cd29d7bd0490765694d8f4700c882046510e78a2579b8845358f1bb0",
       "bound_plan_id": "bound_68e7d1a7cd29d7bd",
       "confirmed": false,
-      "created_at": "2026-06-23T11:43:00+00:00",
+      "created_at": "2026-06-23T16:47:38+00:00",
       "document": {
         "default_invocation": {
           "execution_mode": "execute",
@@ -1113,7 +1113,7 @@
       "schema_version": "1.0"
     },
     "draft_record": {
-      "created_at": "2026-06-23T11:43:00+00:00",
+      "created_at": "2026-06-23T16:47:38+00:00",
       "document": {
         "default_invocation": {
           "execution_mode": "execute",
@@ -1551,7 +1551,7 @@
       "bound_plan_hash": "68e7d1a7cd29d7bd0490765694d8f4700c882046510e78a2579b8845358f1bb0",
       "bound_plan_id": "bound_68e7d1a7cd29d7bd",
       "compatibility_profile": "generic",
-      "created_at": "2026-06-23T11:43:06+00:00",
+      "created_at": "2026-06-23T16:47:44+00:00",
       "dataset_identity": {
         "canonical_root": "data/canonical/v1",
         "raw_root": "data/raw/idsse/figshare-28196177-v1"
@@ -3242,7 +3242,7 @@
           "canonical_root": "data/canonical/v1",
           "compatibility_profile": "generic",
           "execution_mode": "execute",
-          "generated_at": "2026-06-23T11:43:06+00:00",
+          "generated_at": "2026-06-23T16:47:44+00:00",
           "max_results": 64,
           "plan_id": "possession_corridor_destination_entry_plan",
           "plan_status": "experimental",
@@ -5876,7 +5876,7 @@
     "replay_record": {
       "anchor_frame_id": 11365,
       "artifact_path": "artifacts/n1d/workshop/replay-windows/replay_7ac23fe56e56df68.json",
-      "created_at": "2026-06-23T11:43:06+00:00",
+      "created_at": "2026-06-23T16:47:44+00:00",
       "end_frame_id": 11415,
       "execution_id": "exec_c4feb86ed01eaa93",
       "frame_count": 101,
@@ -9377,16 +9377,16 @@
   "source": {
     "hermes_workshop_root": "/var/data/runtime",
     "host_pipeline_refresh_reason": "Beta 1C.1 required-evidence contract closure.",
-    "host_pipeline_refreshed_at": "2026-06-23T11:43:06+00:00",
+    "host_pipeline_refreshed_at": "2026-06-23T16:47:44+00:00",
     "output_root": "/var/data/runtime",
-    "repo_commit": "b4e102857de462673704bfb2f46735f4fba05c55",
+    "repo_commit": "3a81181988d57fa9c97be1bad68d531628d263fc",
     "runtime_hashes": {
       "mcp_server": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
       "runtime_binder": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
-      "runtime_catalog": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
-      "runtime_executor": "ccb1562340d83ecb16faa13a73cace47b7d89e725fc2a755c4f8c22d0245a253",
+      "runtime_catalog": "fe6e5084ada62a6dc27ca87e46d0fb0574dfc63fb4c93542eb0e2fb81bb8f8ab",
+      "runtime_executor": "be47107ce2524641c8b4938dedb3721bf92257c758025527195f1b9431bd8128",
       "runtime_values": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166",
-      "workshop_service": "3f6fe0c9fe1cb014341caef21c947a79a1067e851ac556fe3a4eda1f00318829"
+      "workshop_service": "117062b9c072b5eb9321907bcc4bd73db61d18924515dcccc9fac0c9704daed6"
     }
   },
   "status": "exported"

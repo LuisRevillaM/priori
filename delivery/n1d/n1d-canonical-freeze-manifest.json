@@ -159,7 +159,7 @@
     "result_count": 14,
     "time_zero_mismatch": []
   },
-  "generated_at": "2026-06-23T11:43:06+00:00",
+  "generated_at": "2026-06-23T16:47:44+00:00",
   "hermes": {
     "config_sha256": "e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237",
     "configured_model": "gpt-5.5",
@@ -181,7 +181,7 @@
     "origin": {
       "draft_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
       "origin_bundle_path": "delivery/n1d/n1f-origin-bundle.json",
-      "origin_bundle_sha256": "64b10b16cfc424a17a3df2396772546557c4f75b89aa22ad07424fc918e0be98",
+      "origin_bundle_sha256": "6593f69ad0fce90b4c2a14826c21f4cb172d865582ab71e942dfaface9d26431",
       "session_id": "20260623_061107_59df89",
       "source": "hermes"
     },
@@ -197,9 +197,9 @@
       "path": "generated/capability-context.json",
       "sha256": "5020ae139fb1f92c237c4be167410a7486395ea580622f747fedb9f9a90f40de"
     },
-    "file_sha256": "ebb45c66041f244e34d0f0aa9fef9ee0f970dfdd4cd32032899f3bd99389cdb1",
+    "file_sha256": "1f19535aebebe8cc43615f288853e03b0c14018c696d07a84321091287917201",
     "path": "generated/tactical-knowledge-pack.json",
-    "semantic_sha256": "2fc0ed6e97fd8e23d08b050e45e915ed327d38648cc1c15a56544291bb961115"
+    "semantic_sha256": "1b794ec044cc2925e5b691226a6863c8967704c4bd33bb72b9488ec114a7a074"
   },
   "mcp": {
     "server_name": "priori_tactical",
@@ -282,8 +282,8 @@
       ]
     },
     "knowledge_pack": {
-      "file_sha256": "ebb45c66041f244e34d0f0aa9fef9ee0f970dfdd4cd32032899f3bd99389cdb1",
-      "semantic_sha256": "2fc0ed6e97fd8e23d08b050e45e915ed327d38648cc1c15a56544291bb961115"
+      "file_sha256": "1f19535aebebe8cc43615f288853e03b0c14018c696d07a84321091287917201",
+      "semantic_sha256": "1b794ec044cc2925e5b691226a6863c8967704c4bd33bb72b9488ec114a7a074"
     },
     "plan": {
       "bound_plan_hash": "68e7d1a7cd29d7bd0490765694d8f4700c882046510e78a2579b8845358f1bb0",
@@ -310,23 +310,23 @@
     "runtime": {
       "mcp_server": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
       "runtime_binder": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
-      "runtime_catalog": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
-      "runtime_executor": "ccb1562340d83ecb16faa13a73cace47b7d89e725fc2a755c4f8c22d0245a253",
+      "runtime_catalog": "fe6e5084ada62a6dc27ca87e46d0fb0574dfc63fb4c93542eb0e2fb81bb8f8ab",
+      "runtime_executor": "be47107ce2524641c8b4938dedb3721bf92257c758025527195f1b9431bd8128",
       "runtime_values": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166",
-      "workshop_service": "3f6fe0c9fe1cb014341caef21c947a79a1067e851ac556fe3a4eda1f00318829"
+      "workshop_service": "117062b9c072b5eb9321907bcc4bd73db61d18924515dcccc9fac0c9704daed6"
     }
   },
   "refresh_reason": "N1B/N1C live hero artifacts predate the runtime entry_mode contract. N1D re-executes the frozen hero under current HEAD so result evidence carries honest entry_mode.",
   "runtime": {
     "binder_sha256": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
-    "catalog_sha256": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
+    "catalog_sha256": "fe6e5084ada62a6dc27ca87e46d0fb0574dfc63fb4c93542eb0e2fb81bb8f8ab",
     "compatibility_profile": "generic",
-    "executor_sha256": "ccb1562340d83ecb16faa13a73cace47b7d89e725fc2a755c4f8c22d0245a253",
+    "executor_sha256": "be47107ce2524641c8b4938dedb3721bf92257c758025527195f1b9431bd8128",
     "values_sha256": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166"
   },
   "schema_version": "n1d.canonical_freeze_manifest.v1",
   "source": {
-    "commit_at_manifest_generation": "b4e102857de462673704bfb2f46735f4fba05c55",
+    "commit_at_manifest_generation": "3a81181988d57fa9c97be1bad68d531628d263fc",
     "source_files": {
       "mcp_server": {
         "exists": true,
@@ -341,12 +341,12 @@
       "runtime_catalog": {
         "exists": true,
         "path": "src/tqe/runtime/catalog.py",
-        "sha256": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677"
+        "sha256": "fe6e5084ada62a6dc27ca87e46d0fb0574dfc63fb4c93542eb0e2fb81bb8f8ab"
       },
       "runtime_executor": {
         "exists": true,
         "path": "src/tqe/runtime/executor.py",
-        "sha256": "ccb1562340d83ecb16faa13a73cace47b7d89e725fc2a755c4f8c22d0245a253"
+        "sha256": "be47107ce2524641c8b4938dedb3721bf92257c758025527195f1b9431bd8128"
       },
       "runtime_values": {
         "exists": true,
@@ -356,7 +356,7 @@
       "workshop_service": {
         "exists": true,
         "path": "src/tqe/workshop/m1_2.py",
-        "sha256": "3f6fe0c9fe1cb014341caef21c947a79a1067e851ac556fe3a4eda1f00318829"
+        "sha256": "117062b9c072b5eb9321907bcc4bd73db61d18924515dcccc9fac0c9704daed6"
       }
     }
   },
