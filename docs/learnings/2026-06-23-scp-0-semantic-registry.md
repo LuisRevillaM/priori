@@ -55,3 +55,26 @@ successfully after the generated catalog refresh.
 
 **Follow-up:** Consider adding generated-contract freshness to future semantic
 registry verification if SCP-0 graduates from shadow mode.
+
+## 2026-06-23 - SCP-0C Hardening
+
+**Fact:** External review approved the SCP-0 direction but correctly found that
+the first implementation demonstrated registry coverage and atlas isolation
+more strongly than true parity/policy execution.
+
+**Decision:** Add SCP-0C as a corrective gate before SCP-1. The registry now
+executes projection policy filters, reports real baseline projection
+differences, hashes parsed plan artifacts into the lock, validates recipe and
+composition plan integrity, checks transitive claim/evidence contracts, and
+builds pilot reports through graph traversal.
+
+**Learning:** A semantic control plane needs executable governance. Declaring
+policy, provenance, and contract lineage is not enough; each declaration must
+change projections, lock hashes, validation status, or generated evidence.
+
+**Evidence:** `make scp-0-verify`; `make test` with 104 tests OK;
+`generated/semantic-registry/plan-artifact-index.json`;
+`generated/semantic-registry/semantic-parity-report.json`.
+
+**Follow-up:** Produce an SCP-0C delta review packet. SCP-1 should wait until
+the reviewer accepts this hardening or provides a focused correction.
