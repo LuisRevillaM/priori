@@ -19,7 +19,7 @@ assert.equal(provenanceTone("REVIEWED_RECIPE"), "neutral");
 assert.equal(provenanceTone("MANUAL_PRESET"), "neutral");
 
 // --- Verified novel composition reads as attested model authorship; unverified drafts stay cautious ---
-assert.equal(provenanceLabel("HERMES_NOVEL_COMPOSITION"), "Hermes-authored experimental composition");
+assert.equal(provenanceLabel("HERMES_NOVEL_COMPOSITION"), "Verified Hermes-authored composition");
 assert.equal(provenanceTone("HERMES_NOVEL_COMPOSITION"), "good");
 assert.equal(provenanceLabel("HERMES_EXPERIMENTAL_UNVERIFIED"), "Experimental draft · unverified");
 assert.equal(provenanceTone("HERMES_EXPERIMENTAL_UNVERIFIED"), "warn");

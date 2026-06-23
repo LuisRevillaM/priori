@@ -12,9 +12,9 @@
     "required_status": "VERIFIED"
   },
   "blocking_reasons": [],
-  "commit_at_manifest_generation": "54eef2e6f6d90f4004fcb6e6020241774e552de7",
-  "freeze_manifest_id": "n1f-14c6104cec50703c",
-  "freeze_manifest_sha256": "ef67c05e11c2dd062049e64f2a0d646f52e4b1590bf9dfd3bca6f65691271155",
+  "commit_at_manifest_generation": "b4e102857de462673704bfb2f46735f4fba05c55",
+  "freeze_manifest_id": "n1f-64b10b16cfc424a1",
+  "freeze_manifest_sha256": "f6d6b07c9e4858cd4d22a9bb3801f1f24baf49333011f96a1180c9601e0559be",
   "hermes_origin": {
     "allowed_augmentation_diff": {
       "added_aliases": [],
@@ -54,7 +54,7 @@
     "ordered_tool_call_trace_sha256": "b6073d4a98ac5200549b34b8088f00dad05690cf6ee8150ccc6cebf89d995d3d",
     "origin_artifacts_present": true,
     "origin_bundle_path": "delivery/n1d/n1f-origin-bundle.json",
-    "origin_bundle_sha256": "14c6104cec50703ca8f161925b1ef8fce047647d43dbebd5c42fa86e3ca55060",
+    "origin_bundle_sha256": "64b10b16cfc424a17a3df2396772546557c4f75b89aa22ad07424fc918e0be98",
     "original_question_sha256": "4c0341c50842ea253a19959ca656a36b97ef4fa3bfb181db60f8a8bd68031fcf",
     "raw_hermes_decision_sha256": "c2b0c61fbad6c0f34d2a04cd051d6a229122436ec64b075f93adbc400e0699f3",
     "session_id": "20260623_061107_59df89",

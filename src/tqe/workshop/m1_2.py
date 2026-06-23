@@ -41,6 +41,7 @@ from tqe.runtime.ir import (
     BoundPredicateNode,
     ClassificationMode,
     ExecutionMode,
+    ExecutionStatus,
     EvaluationTarget,
     NodeKind,
     PayloadType,
@@ -323,6 +324,10 @@ class ExecuteQueryPlanRequest(StrictModel):
 class ExecuteQueryPlanResponse(StrictModel):
     ok: bool
     execution_id: str
+    execution_status: str
+    execution_complete: bool
+    requested_evidence_failure_count: int
+    requested_evidence_failures: list[dict[str, Any]] = Field(default_factory=list)
     bound_plan_id: str
     plan_id: str
     plan_status: str
@@ -1231,9 +1236,15 @@ def execute_query_plan(
         execution_id=execution_id,
     )
     write_handle("executions", execution_id, execution_record, output_root=output_root)
+    evidence_failure_count = int(execution.provenance.get("requested_evidence_failure_count") or 0)
+    evidence_failures = execution.provenance.get("requested_evidence_failures")
     return ExecuteQueryPlanResponse(
         ok=True,
         execution_id=execution_id,
+        execution_status=execution.status.value,
+        execution_complete=execution.status == ExecutionStatus.PASS and evidence_failure_count == 0,
+        requested_evidence_failure_count=evidence_failure_count,
+        requested_evidence_failures=evidence_failures if isinstance(evidence_failures, list) else [],
         bound_plan_id=request.bound_plan_id,
         plan_id=bound.plan_id,
         plan_status=bound.plan_status.value,
@@ -1543,10 +1554,16 @@ def execution_record_payload(
     document = bound_record["document"]
     scope = selected_scope_from_document(document)
     enriched_rows = [result_row_with_context(row) for row in rows]
+    evidence_failure_count = int(execution.provenance.get("requested_evidence_failure_count") or 0)
+    evidence_failures = execution.provenance.get("requested_evidence_failures")
     return {
         "schema_version": "1.0",
         "created_at": utc_now_iso(),
         "execution_id": execution_id,
+        "execution_status": execution.status.value,
+        "execution_complete": execution.status == ExecutionStatus.PASS and evidence_failure_count == 0,
+        "requested_evidence_failure_count": evidence_failure_count,
+        "requested_evidence_failures": evidence_failures if isinstance(evidence_failures, list) else [],
         "draft_plan_id": bound_record["draft_plan_id"],
         "draft_plan_hash": bound_record["draft_plan_hash"],
         "bound_plan_id": bound_record["bound_plan_id"],

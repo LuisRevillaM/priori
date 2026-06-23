@@ -403,6 +403,8 @@ export function App() {
   const sourceTone = provenanceTone(provenance);
   const manualRecipeDescription = recipeDescription(displayRecipe);
   const elapsedSeconds = runStartedAt ? Math.max(0, Math.round((nowTs - runStartedAt) / 1000)) : 0;
+  const executionIncomplete = Boolean(execution && !execution.execution.execution_complete);
+  const evidenceFailureCount = execution?.execution.requested_evidence_failure_count ?? 0;
 
   const selectedEvidence = selectedResult?.requested_evidence ?? null;
   const selectedEntryMode = entryModePresentation(
@@ -752,10 +754,10 @@ export function App() {
                 ) : null}
                 {isNovelComposition ? (
                   <div className="stateBox good" data-testid="novel-composition-verified">
-                    <strong>Hermes-authored experimental composition</strong>
+                    <strong>Verified Hermes-authored composition</strong>
                     <p>
-                      No saved tactical recipe matched. Hermes composed a new plan from supported capabilities,
-                      and the host verified it against the committed N1D.1 attestation before enabling execution.
+                      Loaded from a previously attested Hermes session. No saved tactical recipe matched, and the host
+                      verified the committed N1D.1 attestation before enabling execution.
                     </p>
                   </div>
                 ) : null}
@@ -991,6 +993,15 @@ export function App() {
                     </div>
                     <small>First run may take longer; repeat runs are cached.</small>
                     <small className="muted">This runs on the host and cannot be canceled once started.</small>
+                  </div>
+                ) : executionIncomplete ? (
+                  <div className="stateBox warn" data-testid="execution-incomplete-state">
+                    <strong>Execution incomplete</strong>
+                    <p>
+                      The deterministic runtime returned results, but {evidenceFailureCount} required evidence{" "}
+                      {evidenceFailureCount === 1 ? "alias is" : "aliases are"} missing. Treat this run as diagnostic
+                      until the evidence contract is complete.
+                    </p>
                   </div>
                 ) : executionProgress ? (
                   <div className="progressBox" data-testid="execution-progress">

@@ -20,6 +20,7 @@ from tqe.workshop.app_service import (
     match_library,
     product_model_query,
     recover_n1f_hermes_draft_record,
+    run_host_authority_pipeline,
 )
 from tqe.workshop.m1_2 import (
     CallerProfile,
@@ -179,6 +180,36 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         self.assertEqual(["firstHalf"], response["plan_document"]["default_invocation"]["periods"])
         self.assertEqual("home", response["plan_document"]["default_invocation"]["perspective_team_role"])
         self.assertIsNone(response["fallback_reason"])
+
+    def test_attested_hero_execution_resolves_every_required_evidence_alias(self) -> None:
+        document = n1i_attested_document()
+        required_aliases = [
+            str(item.get("alias") or f"{item['source']['source_node_id']}.{item['field']}")
+            for item in document["draft_plan"]["requested_evidence"]
+            if item.get("required")
+        ]
+
+        with tempfile.TemporaryDirectory() as directory:
+            records = run_host_authority_pipeline(
+                document,
+                output_root=Path(directory),
+                source_label="beta1c1_required_evidence_contract",
+            )
+
+        execution = records["execution"]
+        execution_record = records["execution_record"]
+        rows = execution_record["rows"]
+        self.assertEqual("pass", execution["execution_status"])
+        self.assertTrue(execution["execution_complete"])
+        self.assertEqual(0, execution["requested_evidence_failure_count"])
+        self.assertEqual("pass", execution_record["execution_status"])
+        self.assertTrue(execution_record["execution_complete"])
+        self.assertEqual(0, execution_record["requested_evidence_failure_count"])
+        self.assertEqual(14, len(rows))
+        for row in rows:
+            evidence = row["requested_evidence"]
+            for alias in required_aliases:
+                self.assertIsNotNone(evidence.get(alias), f"{row['result_id']} missing {alias}")
 
     def test_scope_changes_bound_hash_cache_key_and_execution_record_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

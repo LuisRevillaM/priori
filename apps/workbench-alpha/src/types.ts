@@ -156,6 +156,10 @@ export type ExecutionResponse = Omit<GeneratedExecutionResponse, "execution" | "
   execution: {
     ok: boolean;
     execution_id: string;
+    execution_status: string;
+    execution_complete: boolean;
+    requested_evidence_failure_count: number;
+    requested_evidence_failures: JsonObject[];
     bound_plan_id: string;
     plan_id: string;
     plan_status: string;

@@ -159,7 +159,7 @@
     "result_count": 14,
     "time_zero_mismatch": []
   },
-  "generated_at": "2026-06-23T10:09:40+00:00",
+  "generated_at": "2026-06-23T11:43:06+00:00",
   "hermes": {
     "config_sha256": "e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237",
     "configured_model": "gpt-5.5",
@@ -181,7 +181,7 @@
     "origin": {
       "draft_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
       "origin_bundle_path": "delivery/n1d/n1f-origin-bundle.json",
-      "origin_bundle_sha256": "14c6104cec50703ca8f161925b1ef8fce047647d43dbebd5c42fa86e3ca55060",
+      "origin_bundle_sha256": "64b10b16cfc424a17a3df2396772546557c4f75b89aa22ad07424fc918e0be98",
       "session_id": "20260623_061107_59df89",
       "source": "hermes"
     },
@@ -195,11 +195,11 @@
     "capability_context": {
       "exists": true,
       "path": "generated/capability-context.json",
-      "sha256": "54629bad914fd3fa44df0d7195ba2d0a78c29824919c2de569b5204431eb4172"
+      "sha256": "5020ae139fb1f92c237c4be167410a7486395ea580622f747fedb9f9a90f40de"
     },
-    "file_sha256": "859159a41aac6b3c7eb77a032247758dbb8888edbbbc77ecfc81cec1079952d6",
+    "file_sha256": "ebb45c66041f244e34d0f0aa9fef9ee0f970dfdd4cd32032899f3bd99389cdb1",
     "path": "generated/tactical-knowledge-pack.json",
-    "semantic_sha256": "0ede7a0a508a16dc18bb24ad08f6e1a74c5a419326e300b392e3aaece9a9eeb7"
+    "semantic_sha256": "2fc0ed6e97fd8e23d08b050e45e915ed327d38648cc1c15a56544291bb961115"
   },
   "mcp": {
     "server_name": "priori_tactical",
@@ -225,7 +225,7 @@
       "relative_path": "artifacts/n1d/workshop/draft-plans/draft_cca93c8cac63ef66.json"
     },
     "execution_handle": {
-      "content_sha256": "cc4051316fa1b833c1a8b3869cbe9b5b3f4772150d1dee2c21a56ddac5857081",
+      "content_sha256": "1479fa9566ce8d019abeb430eb4f35c912aa3a775c5111bbaba0f05498216b39",
       "relative_path": "artifacts/n1d/workshop/executions/exec_c4feb86ed01eaa93.json"
     },
     "replay_window": {
@@ -237,7 +237,7 @@
     "artifacts": {
       "bound_plan": "e122aa204599a1fea6f6068a63709af02f83ff67849c837af8a585c40e5a17a0",
       "draft_plan": "0c4c4c73a3528b1c28eb88c503edde8cda8a3600d587fdcd70fdc929b1ec3e2d",
-      "execution": "cc4051316fa1b833c1a8b3869cbe9b5b3f4772150d1dee2c21a56ddac5857081",
+      "execution": "1479fa9566ce8d019abeb430eb4f35c912aa3a775c5111bbaba0f05498216b39",
       "replay_window": "ed22f9381c2ffc58b03bdcd178d25d2880c6906076cf2b71c1b7c90a0790ea6f"
     },
     "data": {
@@ -282,8 +282,8 @@
       ]
     },
     "knowledge_pack": {
-      "file_sha256": "859159a41aac6b3c7eb77a032247758dbb8888edbbbc77ecfc81cec1079952d6",
-      "semantic_sha256": "0ede7a0a508a16dc18bb24ad08f6e1a74c5a419326e300b392e3aaece9a9eeb7"
+      "file_sha256": "ebb45c66041f244e34d0f0aa9fef9ee0f970dfdd4cd32032899f3bd99389cdb1",
+      "semantic_sha256": "2fc0ed6e97fd8e23d08b050e45e915ed327d38648cc1c15a56544291bb961115"
     },
     "plan": {
       "bound_plan_hash": "68e7d1a7cd29d7bd0490765694d8f4700c882046510e78a2579b8845358f1bb0",
@@ -291,13 +291,29 @@
       "document_stable_sha256": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
       "draft_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c"
     },
+    "required_evidence": {
+      "acceptance_pass": true,
+      "all_required_aliases_resolved": true,
+      "execution_status": "pass",
+      "requested_evidence_failure_count": 0,
+      "required_aliases": [
+        "corridor_duration_seconds",
+        "corridor_open_frame_id",
+        "destination_entry_status",
+        "destination_region",
+        "destination_time_to_entry_seconds",
+        "possession_start_frame_id",
+        "relation_id"
+      ],
+      "result_count": 14
+    },
     "runtime": {
       "mcp_server": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
       "runtime_binder": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
       "runtime_catalog": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
       "runtime_executor": "ccb1562340d83ecb16faa13a73cace47b7d89e725fc2a755c4f8c22d0245a253",
       "runtime_values": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166",
-      "workshop_service": "8c6857259244cb3951b8e28a1e38dc6fc8557db5938df7e61c35e05743176ebd"
+      "workshop_service": "3f6fe0c9fe1cb014341caef21c947a79a1067e851ac556fe3a4eda1f00318829"
     }
   },
   "refresh_reason": "N1B/N1C live hero artifacts predate the runtime entry_mode contract. N1D re-executes the frozen hero under current HEAD so result evidence carries honest entry_mode.",
@@ -310,7 +326,7 @@
   },
   "schema_version": "n1d.canonical_freeze_manifest.v1",
   "source": {
-    "commit_at_manifest_generation": "54eef2e6f6d90f4004fcb6e6020241774e552de7",
+    "commit_at_manifest_generation": "b4e102857de462673704bfb2f46735f4fba05c55",
     "source_files": {
       "mcp_server": {
         "exists": true,
@@ -340,7 +356,7 @@
       "workshop_service": {
         "exists": true,
         "path": "src/tqe/workshop/m1_2.py",
-        "sha256": "8c6857259244cb3951b8e28a1e38dc6fc8557db5938df7e61c35e05743176ebd"
+        "sha256": "3f6fe0c9fe1cb014341caef21c947a79a1067e851ac556fe3a4eda1f00318829"
       }
     }
   },

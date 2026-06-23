@@ -7222,8 +7222,16 @@
                 "title": "Draft Plan Hash",
                 "type": "string"
               },
+              "execution_complete": {
+                "title": "Execution Complete",
+                "type": "boolean"
+              },
               "execution_id": {
                 "title": "Execution Id",
+                "type": "string"
+              },
+              "execution_status": {
+                "title": "Execution Status",
                 "type": "string"
               },
               "ok": {
@@ -7237,6 +7245,18 @@
               "plan_status": {
                 "title": "Plan Status",
                 "type": "string"
+              },
+              "requested_evidence_failure_count": {
+                "title": "Requested Evidence Failure Count",
+                "type": "integer"
+              },
+              "requested_evidence_failures": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "title": "Requested Evidence Failures",
+                "type": "array"
               },
               "results": {
                 "items": {
@@ -7262,6 +7282,9 @@
             "required": [
               "ok",
               "execution_id",
+              "execution_status",
+              "execution_complete",
+              "requested_evidence_failure_count",
               "bound_plan_id",
               "plan_id",
               "plan_status",

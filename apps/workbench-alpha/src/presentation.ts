@@ -37,7 +37,7 @@ export function provenanceLabel(source: ProvenanceSource | null | undefined) {
     case "HERMES_RECIPE_SELECTION":
       return "Hermes selected recipe";
     case "HERMES_NOVEL_COMPOSITION":
-      return "Hermes-authored experimental composition";
+      return "Verified Hermes-authored composition";
     case "HERMES_EXPERIMENTAL_UNVERIFIED":
       return "Experimental draft · unverified";
     case "DETERMINISTIC_REPAIR":

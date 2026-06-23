@@ -2335,7 +2335,8 @@ def cache_request_identity(request: ExecuteQueryPlanRequest, *, output_root: Pat
     invocation = document.get("default_invocation") if isinstance(document, dict) else {}
     return {
         "schema_version": "1.0",
-        "runtime_version": "workbench_beta0_execution_cache_v2",
+        "runtime_version": "workbench_beta1c1_required_evidence_cache_v3",
+        "execution_contract": "required_evidence_complete_v1",
         "canonical_data_hash": canonical_data_hash(),
         "bound_plan_hash": bound_record.get("bound_plan_hash"),
         "scope": {

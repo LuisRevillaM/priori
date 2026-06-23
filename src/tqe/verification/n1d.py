@@ -185,7 +185,7 @@ def run_pipeline(document: dict[str, Any], output_root: Path) -> dict[str, Any]:
     if not execution.results:
         raise RuntimeError("N1D hero execution produced no results")
     first_result_id = str(execution.results[0]["result_id"])
-    inspect_result(
+    inspection = inspect_result(
         InspectResultRequest(execution_id=execution.execution_id, result_id=first_result_id),
         output_root=output_root,
     )
@@ -194,6 +194,12 @@ def run_pipeline(document: dict[str, Any], output_root: Path) -> dict[str, Any]:
         output_root=output_root,
     )
     return {
+        "submit": submit.model_dump(mode="json"),
+        "validation": validation.model_dump(mode="json"),
+        "confirmation": confirmation.model_dump(mode="json"),
+        "execution": execution.model_dump(mode="json"),
+        "inspection": inspection.model_dump(mode="json"),
+        "replay_window": replay.model_dump(mode="json"),
         "draft_plan_id": submit.draft_plan_id,
         "draft_plan_hash": submit.draft_plan_hash,
         "bound_plan_id": validation.bound_plan_id,
@@ -206,6 +212,47 @@ def run_pipeline(document: dict[str, Any], output_root: Path) -> dict[str, Any]:
         "bound_record": read_handle("bound-plans", validation.bound_plan_id, output_root=output_root),
         "execution_record": read_handle("executions", execution.execution_id, output_root=output_root),
         "replay_record": read_handle("replay-windows", replay.replay_window_id, output_root=output_root),
+    }
+
+
+def required_evidence_aliases(document: dict[str, Any]) -> list[str]:
+    return sorted(
+        str(item.get("alias") or f"{item.get('source', {}).get('source_node_id')}.{item.get('field')}")
+        for item in document.get("draft_plan", {}).get("requested_evidence", [])
+        if item.get("required")
+    )
+
+
+def required_evidence_audit(execution_record: dict[str, Any], document: dict[str, Any]) -> dict[str, Any]:
+    rows = execution_record.get("rows", [])
+    required_aliases = required_evidence_aliases(document)
+    execution = execution_record.get("execution") if isinstance(execution_record.get("execution"), dict) else {}
+    provenance = execution.get("provenance") if isinstance(execution.get("provenance"), dict) else {}
+    execution_status = str(execution.get("status") or execution_record.get("execution_status") or "")
+    failure_count = int(
+        provenance.get(
+            "requested_evidence_failure_count",
+            execution_record.get("requested_evidence_failure_count", 0),
+        )
+        or 0
+    )
+    missing_by_result: list[dict[str, Any]] = []
+    for row in rows:
+        evidence = row.get("requested_evidence") if isinstance(row.get("requested_evidence"), dict) else {}
+        missing = [alias for alias in required_aliases if evidence.get(alias) is None]
+        if missing:
+            missing_by_result.append({"result_id": row.get("result_id"), "missing_aliases": missing})
+    all_required_aliases_resolved = bool(rows) and not missing_by_result
+    return {
+        "execution_status": execution_status,
+        "requested_evidence_failure_count": failure_count,
+        "required_aliases": required_aliases,
+        "result_count": len(rows),
+        "all_required_aliases_resolved": all_required_aliases_resolved,
+        "missing_by_result": missing_by_result,
+        "acceptance_pass": execution_status == "pass"
+        and failure_count == 0
+        and all_required_aliases_resolved,
     }
 
 
@@ -275,7 +322,12 @@ def runtime_hashes() -> dict[str, str]:
     return {name: file_sha256(path) for name, path in RUNTIME_SOURCE_FILES.items()}
 
 
-def pinned_identity(document: dict[str, Any], records: dict[str, Any], audit: dict[str, Any]) -> dict[str, Any]:
+def pinned_identity(
+    document: dict[str, Any],
+    records: dict[str, Any],
+    audit: dict[str, Any],
+    required_audit: dict[str, Any],
+) -> dict[str, Any]:
     """The deterministic subset the freeze gate recomputes and compares. Any drift fails the gate."""
     rows = records["execution_record"].get("rows", [])
     knowledge_pack = read_json(KNOWLEDGE_PACK_PATH)
@@ -320,7 +372,58 @@ def pinned_identity(document: dict[str, Any], records: dict[str, Any], audit: di
             "entry_before_open_count": audit["entry_before_open_count"],
             "contains_entry_mode_evidence": audit["contains_entry_mode_evidence"],
         },
+        "required_evidence": {
+            "execution_status": required_audit["execution_status"],
+            "requested_evidence_failure_count": required_audit["requested_evidence_failure_count"],
+            "required_aliases": required_audit["required_aliases"],
+            "result_count": required_audit["result_count"],
+            "all_required_aliases_resolved": required_audit["all_required_aliases_resolved"],
+            "acceptance_pass": required_audit["acceptance_pass"],
+        },
     }
+
+
+def refresh_origin_bundle_host_pipeline(records: dict[str, Any], audit: dict[str, Any], required_audit: dict[str, Any]) -> None:
+    if not N1F_ORIGIN_BUNDLE_PATH.exists():
+        return
+    bundle = read_json(N1F_ORIGIN_BUNDLE_PATH)
+    if bundle.get("status") != "exported":
+        return
+    source = bundle.get("source") if isinstance(bundle.get("source"), dict) else {}
+    source.update(
+        {
+            "repo_commit": git_output("rev-parse", "HEAD"),
+            "runtime_hashes": runtime_hashes(),
+            "host_pipeline_refreshed_at": utc_now_iso(),
+            "host_pipeline_refresh_reason": "Beta 1C.1 required-evidence contract closure.",
+        }
+    )
+    bundle["source"] = source
+    bundle["host_pipeline"] = {
+        "submit": records["submit"],
+        "validation": records["validation"],
+        "confirmation": records["confirmation"],
+        "cache_before": {
+            "cache_status": "NOT_USED",
+            "message": "N1D freeze uses direct deterministic execution to pin corrected artifacts.",
+        },
+        "execution": records["execution"],
+        "cache_after_execute": {
+            "cache_status": "NOT_USED",
+            "message": "N1D freeze uses direct deterministic execution to pin corrected artifacts.",
+        },
+        "inspection": records["inspection"],
+        "replay_window": records["replay_window"],
+    }
+    bundle["artifact_records"] = {
+        "draft_record": records["draft_record"],
+        "bound_record": records["bound_record"],
+        "execution_record": records["execution_record"],
+        "replay_record": records["replay_record"],
+    }
+    bundle["entry_mode_audit"] = audit
+    bundle["required_evidence_audit"] = required_audit
+    write_json(N1F_ORIGIN_BUNDLE_PATH, bundle)
 
 
 def build_manifest(document: dict[str, Any], records: dict[str, Any], audit: dict[str, Any], pinned: dict[str, Any]) -> dict[str, Any]:
@@ -424,7 +527,11 @@ def freeze() -> int:
     write_json(N1D_PLAN_PATH, document)
     records = run_pipeline(document, N1D_WORKSHOP_ROOT)
     audit = entry_mode_audit(records["execution_record"])
-    pinned = pinned_identity(document, records, audit)
+    required_audit = required_evidence_audit(records["execution_record"], document)
+    if not required_audit["acceptance_pass"]:
+        raise RuntimeError(f"N1D required-evidence contract failed: {required_audit}")
+    refresh_origin_bundle_host_pipeline(records, audit, required_audit)
+    pinned = pinned_identity(document, records, audit, required_audit)
     manifest = build_manifest(document, records, audit, pinned)
     write_json(MANIFEST_PATH, manifest)
     write_json(AUDIT_PATH, audit)
@@ -436,6 +543,7 @@ def freeze() -> int:
         "manifest_path": str(MANIFEST_PATH),
         "manifest_sha256": file_sha256(MANIFEST_PATH),
         "entry_mode_distribution": audit["distribution"],
+        "required_evidence": required_audit,
     }
     write_json(REPORT_PATH, report)
     print(json.dumps({"mode": "freeze", "status": "frozen", "entry_mode": audit["distribution"]}, sort_keys=True))
@@ -466,6 +574,7 @@ def gate() -> int:
     )
     drift: list[dict[str, Any]] = []
     audit: dict[str, Any] = {}
+    required_audit: dict[str, Any] = {}
     if manifest_present:
         manifest = read_json(MANIFEST_PATH)
         document = read_json(N1D_PLAN_PATH)
@@ -473,7 +582,8 @@ def gate() -> int:
         try:
             records = run_pipeline(document, scratch)
             audit = entry_mode_audit(records["execution_record"])
-            current = pinned_identity(document, records, audit)
+            required_audit = required_evidence_audit(records["execution_record"], document)
+            current = pinned_identity(document, records, audit, required_audit)
         finally:
             shutil.rmtree(scratch, ignore_errors=True)
         drift = diff_pinned(manifest.get("pinned_identity", {}), current)
@@ -523,6 +633,33 @@ def gate() -> int:
                 audit["entry_before_open_count"] == 0,
                 "No result reports entry before the corridor open frame (negative time_to_entry).",
                 {"anomalies": audit["entry_before_open_anomalies"], "analysis": ENTRY_BEFORE_OPEN_ANALYSIS},
+            )
+        )
+        checks.append(
+            check(
+                "n1d.execution_status_pass",
+                required_audit["execution_status"] == "pass",
+                "The frozen hero execution is complete and passes the deterministic runtime status gate.",
+                {"execution_status": required_audit["execution_status"]},
+            )
+        )
+        checks.append(
+            check(
+                "n1d.required_evidence_failure_count_zero",
+                required_audit["requested_evidence_failure_count"] == 0,
+                "The frozen hero execution reports zero requested-evidence failures.",
+                {
+                    "requested_evidence_failure_count": required_audit["requested_evidence_failure_count"],
+                    "required_aliases": required_audit["required_aliases"],
+                },
+            )
+        )
+        checks.append(
+            check(
+                "n1d.required_evidence_aliases_resolve",
+                required_audit["all_required_aliases_resolved"],
+                "Every required evidence alias is non-null for every returned hero result.",
+                {"missing_by_result": required_audit["missing_by_result"]},
             )
         )
 
@@ -589,6 +726,7 @@ def gate() -> int:
         "manifest_path": str(MANIFEST_PATH),
         "drift": drift,
         "entry_mode_audit": audit,
+        "required_evidence_audit": required_audit,
         "checks": checks,
     }
     write_json(REPORT_PATH, report)

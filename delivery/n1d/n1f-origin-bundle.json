@@ -678,7 +678,7 @@
       "bound_plan_hash": "68e7d1a7cd29d7bd0490765694d8f4700c882046510e78a2579b8845358f1bb0",
       "bound_plan_id": "bound_68e7d1a7cd29d7bd",
       "confirmed": false,
-      "created_at": "2026-06-23T06:12:23+00:00",
+      "created_at": "2026-06-23T11:43:00+00:00",
       "document": {
         "default_invocation": {
           "execution_mode": "execute",
@@ -1113,7 +1113,7 @@
       "schema_version": "1.0"
     },
     "draft_record": {
-      "created_at": "2026-06-23T06:12:20+00:00",
+      "created_at": "2026-06-23T11:43:00+00:00",
       "document": {
         "default_invocation": {
           "execution_mode": "execute",
@@ -1545,16 +1545,16 @@
       "draft_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
       "draft_plan_id": "draft_cca93c8cac63ef66",
       "schema_version": "1.0",
-      "source_label": "hermes_mcp"
+      "source_label": "n1d_refresh"
     },
     "execution_record": {
       "bound_plan_hash": "68e7d1a7cd29d7bd0490765694d8f4700c882046510e78a2579b8845358f1bb0",
       "bound_plan_id": "bound_68e7d1a7cd29d7bd",
       "compatibility_profile": "generic",
-      "created_at": "2026-06-23T06:12:47+00:00",
+      "created_at": "2026-06-23T11:43:06+00:00",
       "dataset_identity": {
-        "canonical_root": "/var/data/dataset/canonical/v1",
-        "raw_root": "/var/data/dataset/raw/idsse/figshare-28196177-v1"
+        "canonical_root": "data/canonical/v1",
+        "raw_root": "data/raw/idsse/figshare-28196177-v1"
       },
       "document": {
         "default_invocation": {
@@ -3239,115 +3239,16 @@
           }
         ],
         "provenance": {
-          "canonical_root": "/var/data/dataset/canonical/v1",
+          "canonical_root": "data/canonical/v1",
           "compatibility_profile": "generic",
           "execution_mode": "execute",
-          "generated_at": "2026-06-23T06:12:47+00:00",
+          "generated_at": "2026-06-23T11:43:06+00:00",
           "max_results": 64,
           "plan_id": "possession_corridor_destination_entry_plan",
           "plan_status": "experimental",
-          "raw_root": "/var/data/dataset/raw/idsse/figshare-28196177-v1",
-          "requested_evidence_failure_count": 14,
-          "requested_evidence_failures": [
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "f67bf5b49f15d09e"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "ec410f5570ac97ec"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "cff61cd385bc937a"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "adaf9684209d2467"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "5bac851f327a4223"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "159dc35654cc60fd"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "0e5b626bf6c4e7c6"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "2a80a5e865b62510"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "b03bc84de76a1ec2"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "d9e16a39014d6ddf"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "dc16f4ad882b5331"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "b36e924674bb8b44"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "fb61e569ba8b73e2"
-            },
-            {
-              "classification": "DESTINATION_ENTERED",
-              "missing_aliases": [
-                "possession_start_frame_id"
-              ],
-              "result_id": "9b0941c4982a2ff1"
-            }
-          ],
+          "raw_root": "data/raw/idsse/figshare-28196177-v1",
+          "requested_evidence_failure_count": 0,
+          "requested_evidence_failures": [],
           "runtime_result_count": 14,
           "runtime_trace_hash": "1551167c7834064f8ef0e1faa097e328c84bc96b41f2f6b8076c92ad6ec7cbe8",
           "runtime_value_count": 7,
@@ -3394,7 +3295,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "left_half_space",
                 "destination_time_to_entry_seconds": 0.0,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 11365,
                 "relation_id": "dd74570708cce6a3",
                 "target_player_id": "DFL-OBJ-00028V"
               },
@@ -3444,7 +3345,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "left_central",
                 "destination_time_to_entry_seconds": 0.16,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 16905,
                 "relation_id": "58c6ce9aaff0107f",
                 "target_player_id": "DFL-OBJ-0000F8"
               },
@@ -3494,7 +3395,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "right_central",
                 "destination_time_to_entry_seconds": 0.0,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 23330,
                 "relation_id": "d9344cc7b12728bf",
                 "target_player_id": "DFL-OBJ-00028V"
               },
@@ -3544,7 +3445,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "left_half_space",
                 "destination_time_to_entry_seconds": 0.0,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 27450,
                 "relation_id": "6ea5eaf8f1a0927e",
                 "target_player_id": "DFL-OBJ-00028V"
               },
@@ -3594,7 +3495,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "left_central",
                 "destination_time_to_entry_seconds": 0.28,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 27635,
                 "relation_id": "0b70de0fec398d1e",
                 "target_player_id": "DFL-OBJ-00028V"
               },
@@ -3644,7 +3545,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "right_central",
                 "destination_time_to_entry_seconds": 0.72,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 29285,
                 "relation_id": "02923052a863b62f",
                 "target_player_id": "DFL-OBJ-0000NZ"
               },
@@ -3694,7 +3595,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "right_central",
                 "destination_time_to_entry_seconds": 0.0,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 30530,
                 "relation_id": "68e521ec5fa60248",
                 "target_player_id": "DFL-OBJ-0000NZ"
               },
@@ -3744,7 +3645,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "left_half_space",
                 "destination_time_to_entry_seconds": 0.0,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 36895,
                 "relation_id": "20193ab3c420fa2a",
                 "target_player_id": "DFL-OBJ-00028V"
               },
@@ -3794,7 +3695,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "right_central",
                 "destination_time_to_entry_seconds": 1.4,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 37545,
                 "relation_id": "6f14ab7ab0c31e91",
                 "target_player_id": "DFL-OBJ-002FXT"
               },
@@ -3844,7 +3745,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "left_half_space",
                 "destination_time_to_entry_seconds": 0.0,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 47415,
                 "relation_id": "52b50e8787ee8a9c",
                 "target_player_id": "DFL-OBJ-002G5J"
               },
@@ -3894,7 +3795,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "right_half_space",
                 "destination_time_to_entry_seconds": 0.72,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 48270,
                 "relation_id": "0ac430d9fd556624",
                 "target_player_id": "DFL-OBJ-0000F8"
               },
@@ -3944,7 +3845,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "right_central",
                 "destination_time_to_entry_seconds": 0.2,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 60890,
                 "relation_id": "e6c7368ecc3feb4f",
                 "target_player_id": "DFL-OBJ-00028V"
               },
@@ -3994,7 +3895,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "right_half_space",
                 "destination_time_to_entry_seconds": 0.0,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 64535,
                 "relation_id": "7e6b59708871674e",
                 "target_player_id": "DFL-OBJ-0000F8"
               },
@@ -4044,7 +3945,7 @@
                 "destination_entry_status": "PASS",
                 "destination_region": "left_half_space",
                 "destination_time_to_entry_seconds": 1.92,
-                "possession_start_frame_id": null,
+                "possession_start_frame_id": 77705,
                 "relation_id": "fd609cd0a198437f",
                 "target_player_id": "DFL-OBJ-J01KJ5"
               },
@@ -4057,10 +3958,12 @@
           }
         ],
         "schema_version": "1.0",
-        "status": "incomplete",
+        "status": "pass",
         "timing_ms": {}
       },
+      "execution_complete": true,
       "execution_id": "exec_c4feb86ed01eaa93",
+      "execution_status": "pass",
       "predicate_traces": [
         {
           "frame_id": 11365,
@@ -5309,6 +5212,8 @@
           "unit": "none"
         }
       ],
+      "requested_evidence_failure_count": 0,
+      "requested_evidence_failures": [],
       "result_ids": [
         "f67bf5b49f15d09e",
         "ec410f5570ac97ec",
@@ -5363,7 +5268,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_half_space",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 11365,
             "relation_id": "dd74570708cce6a3",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -5408,7 +5313,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_central",
             "destination_time_to_entry_seconds": 0.16,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 16905,
             "relation_id": "58c6ce9aaff0107f",
             "target_player_id": "DFL-OBJ-0000F8"
           },
@@ -5453,7 +5358,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_central",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 23330,
             "relation_id": "d9344cc7b12728bf",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -5498,7 +5403,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_half_space",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 27450,
             "relation_id": "6ea5eaf8f1a0927e",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -5543,7 +5448,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_central",
             "destination_time_to_entry_seconds": 0.28,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 27635,
             "relation_id": "0b70de0fec398d1e",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -5588,7 +5493,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_central",
             "destination_time_to_entry_seconds": 0.72,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 29285,
             "relation_id": "02923052a863b62f",
             "target_player_id": "DFL-OBJ-0000NZ"
           },
@@ -5633,7 +5538,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_central",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 30530,
             "relation_id": "68e521ec5fa60248",
             "target_player_id": "DFL-OBJ-0000NZ"
           },
@@ -5678,7 +5583,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_half_space",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 36895,
             "relation_id": "20193ab3c420fa2a",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -5723,7 +5628,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_central",
             "destination_time_to_entry_seconds": 1.4,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 37545,
             "relation_id": "6f14ab7ab0c31e91",
             "target_player_id": "DFL-OBJ-002FXT"
           },
@@ -5768,7 +5673,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_half_space",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 47415,
             "relation_id": "52b50e8787ee8a9c",
             "target_player_id": "DFL-OBJ-002G5J"
           },
@@ -5813,7 +5718,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_half_space",
             "destination_time_to_entry_seconds": 0.72,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 48270,
             "relation_id": "0ac430d9fd556624",
             "target_player_id": "DFL-OBJ-0000F8"
           },
@@ -5858,7 +5763,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_central",
             "destination_time_to_entry_seconds": 0.2,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 60890,
             "relation_id": "e6c7368ecc3feb4f",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -5903,7 +5808,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_half_space",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 64535,
             "relation_id": "7e6b59708871674e",
             "target_player_id": "DFL-OBJ-0000F8"
           },
@@ -5948,7 +5853,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_half_space",
             "destination_time_to_entry_seconds": 1.92,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 77705,
             "relation_id": "fd609cd0a198437f",
             "target_player_id": "DFL-OBJ-J01KJ5"
           },
@@ -5970,8 +5875,8 @@
     },
     "replay_record": {
       "anchor_frame_id": 11365,
-      "artifact_path": "/var/data/runtime/replay-windows/replay_7ac23fe56e56df68.json",
-      "created_at": "2026-06-23T06:12:48+00:00",
+      "artifact_path": "artifacts/n1d/workshop/replay-windows/replay_7ac23fe56e56df68.json",
+      "created_at": "2026-06-23T11:43:06+00:00",
       "end_frame_id": 11415,
       "execution_id": "exec_c4feb86ed01eaa93",
       "frame_count": 101,
@@ -8987,32 +8892,16 @@
   },
   "host_pipeline": {
     "cache_after_execute": {
-      "cache_key": "634d5464cffc8860835955bdd3dfbf05316682ce19645916235d4aab4af66eae",
-      "cache_status": "MISS",
-      "message": "Executed deterministic runtime and stored host-owned cache record.",
-      "ok": true,
-      "stages": [
-        "authorization_checked",
-        "cache_miss",
-        "deterministic_runtime_execution",
-        "cache_record_written"
-      ]
+      "cache_status": "NOT_USED",
+      "message": "N1D freeze uses direct deterministic execution to pin corrected artifacts."
     },
     "cache_before": {
-      "cache_key": "634d5464cffc8860835955bdd3dfbf05316682ce19645916235d4aab4af66eae",
-      "cache_status": "MISS",
-      "message": "Cache miss; deterministic runtime will execute on confirmation.",
-      "ok": true,
-      "stages": [
-        "authorization_checked",
-        "cache_miss",
-        "deterministic_runtime_execution",
-        "cache_record_written"
-      ]
+      "cache_status": "NOT_USED",
+      "message": "N1D freeze uses direct deterministic execution to pin corrected artifacts."
     },
     "confirmation": {
       "bound_plan_id": "bound_68e7d1a7cd29d7bd",
-      "execution_authorization_id": "auth_6d227bd0f993cd1a",
+      "execution_authorization_id": "auth_3bd04080ed602747",
       "ok": true
     },
     "execution": {
@@ -9020,10 +8909,14 @@
       "bound_plan_id": "bound_68e7d1a7cd29d7bd",
       "compatibility_profile": "generic",
       "draft_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+      "execution_complete": true,
       "execution_id": "exec_c4feb86ed01eaa93",
+      "execution_status": "pass",
       "ok": true,
       "plan_id": "possession_corridor_destination_entry_plan",
       "plan_status": "experimental",
+      "requested_evidence_failure_count": 0,
+      "requested_evidence_failures": [],
       "results": [
         {
           "anchor_frame_id": 11365,
@@ -9039,7 +8932,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_half_space",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 11365,
             "relation_id": "dd74570708cce6a3",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -9059,7 +8952,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_central",
             "destination_time_to_entry_seconds": 0.16,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 16905,
             "relation_id": "58c6ce9aaff0107f",
             "target_player_id": "DFL-OBJ-0000F8"
           },
@@ -9079,7 +8972,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_central",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 23330,
             "relation_id": "d9344cc7b12728bf",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -9099,7 +8992,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_half_space",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 27450,
             "relation_id": "6ea5eaf8f1a0927e",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -9119,7 +9012,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_central",
             "destination_time_to_entry_seconds": 0.28,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 27635,
             "relation_id": "0b70de0fec398d1e",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -9139,7 +9032,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_central",
             "destination_time_to_entry_seconds": 0.72,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 29285,
             "relation_id": "02923052a863b62f",
             "target_player_id": "DFL-OBJ-0000NZ"
           },
@@ -9159,7 +9052,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_central",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 30530,
             "relation_id": "68e521ec5fa60248",
             "target_player_id": "DFL-OBJ-0000NZ"
           },
@@ -9179,7 +9072,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_half_space",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 36895,
             "relation_id": "20193ab3c420fa2a",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -9199,7 +9092,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_central",
             "destination_time_to_entry_seconds": 1.4,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 37545,
             "relation_id": "6f14ab7ab0c31e91",
             "target_player_id": "DFL-OBJ-002FXT"
           },
@@ -9219,7 +9112,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_half_space",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 47415,
             "relation_id": "52b50e8787ee8a9c",
             "target_player_id": "DFL-OBJ-002G5J"
           },
@@ -9239,7 +9132,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_half_space",
             "destination_time_to_entry_seconds": 0.72,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 48270,
             "relation_id": "0ac430d9fd556624",
             "target_player_id": "DFL-OBJ-0000F8"
           },
@@ -9259,7 +9152,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_central",
             "destination_time_to_entry_seconds": 0.2,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 60890,
             "relation_id": "e6c7368ecc3feb4f",
             "target_player_id": "DFL-OBJ-00028V"
           },
@@ -9279,7 +9172,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "right_half_space",
             "destination_time_to_entry_seconds": 0.0,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 64535,
             "relation_id": "7e6b59708871674e",
             "target_player_id": "DFL-OBJ-0000F8"
           },
@@ -9299,7 +9192,7 @@
             "destination_entry_status": "PASS",
             "destination_region": "left_half_space",
             "destination_time_to_entry_seconds": 1.92,
-            "possession_start_frame_id": null,
+            "possession_start_frame_id": 77705,
             "relation_id": "fd609cd0a198437f",
             "target_player_id": "DFL-OBJ-J01KJ5"
           },
@@ -9375,7 +9268,7 @@
         "destination_entry_status": "PASS",
         "destination_region": "left_half_space",
         "destination_time_to_entry_seconds": 0.0,
-        "possession_start_frame_id": null,
+        "possession_start_frame_id": 11365,
         "relation_id": "dd74570708cce6a3",
         "target_player_id": "DFL-OBJ-00028V"
       },
@@ -9416,7 +9309,7 @@
           "destination_entry_status": "PASS",
           "destination_region": "left_half_space",
           "destination_time_to_entry_seconds": 0.0,
-          "possession_start_frame_id": null,
+          "possession_start_frame_id": 11365,
           "relation_id": "dd74570708cce6a3",
           "target_player_id": "DFL-OBJ-00028V"
         },
@@ -9459,6 +9352,23 @@
     }
   },
   "job_id": "n1f_7a1f1b8013294534",
+  "required_evidence_audit": {
+    "acceptance_pass": true,
+    "all_required_aliases_resolved": true,
+    "execution_status": "pass",
+    "missing_by_result": [],
+    "requested_evidence_failure_count": 0,
+    "required_aliases": [
+      "corridor_duration_seconds",
+      "corridor_open_frame_id",
+      "destination_entry_status",
+      "destination_region",
+      "destination_time_to_entry_seconds",
+      "possession_start_frame_id",
+      "relation_id"
+    ],
+    "result_count": 14
+  },
   "schema_version": "n1f.origin_bundle.v1",
   "second_turn_request": {
     "sha256": "5fa66c8976623f268604a61208dfef9f59dea6795220c4a046070252384ea590",
@@ -9466,15 +9376,17 @@
   },
   "source": {
     "hermes_workshop_root": "/var/data/runtime",
+    "host_pipeline_refresh_reason": "Beta 1C.1 required-evidence contract closure.",
+    "host_pipeline_refreshed_at": "2026-06-23T11:43:06+00:00",
     "output_root": "/var/data/runtime",
-    "repo_commit": "7b7bf8424f9f2d440315aa8a6cdbcf44b923f95d",
+    "repo_commit": "b4e102857de462673704bfb2f46735f4fba05c55",
     "runtime_hashes": {
       "mcp_server": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
       "runtime_binder": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
       "runtime_catalog": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
-      "runtime_executor": "ee098ad11bad98a315aa007e4a1e17eb1b7cd17722b2699a89dd7d2676665eae",
+      "runtime_executor": "ccb1562340d83ecb16faa13a73cace47b7d89e725fc2a755c4f8c22d0245a253",
       "runtime_values": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166",
-      "workshop_service": "5334286293049c04c621f65ab7428bdd92b7273a6aa5a207c59856f4e4919fea"
+      "workshop_service": "3f6fe0c9fe1cb014341caef21c947a79a1067e851ac556fe3a4eda1f00318829"
     }
   },
   "status": "exported"

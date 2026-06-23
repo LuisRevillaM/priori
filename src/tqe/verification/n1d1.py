@@ -138,6 +138,29 @@ def bundle_bound_plan_hash(bundle: dict[str, Any]) -> str | None:
     return None
 
 
+def bundle_required_evidence_audit(bundle: dict[str, Any]) -> dict[str, Any]:
+    audit = bundle.get("required_evidence_audit")
+    if isinstance(audit, dict):
+        return audit
+    pipeline = bundle.get("host_pipeline") if isinstance(bundle.get("host_pipeline"), dict) else {}
+    execution = pipeline.get("execution") if isinstance(pipeline.get("execution"), dict) else {}
+    artifact_records = bundle.get("artifact_records") if isinstance(bundle.get("artifact_records"), dict) else {}
+    execution_record = artifact_records.get("execution_record") if isinstance(artifact_records.get("execution_record"), dict) else {}
+    nested_execution = (
+        execution_record.get("execution") if isinstance(execution_record.get("execution"), dict) else {}
+    )
+    provenance = nested_execution.get("provenance") if isinstance(nested_execution.get("provenance"), dict) else {}
+    return {
+        "execution_status": execution.get("execution_status") or nested_execution.get("status"),
+        "requested_evidence_failure_count": execution.get("requested_evidence_failure_count")
+        if execution.get("requested_evidence_failure_count") is not None
+        else provenance.get("requested_evidence_failure_count"),
+        "all_required_aliases_resolved": False,
+        "acceptance_pass": False,
+        "reason": "origin bundle predates explicit required_evidence_audit",
+    }
+
+
 def origin_bundle_path() -> Path | None:
     if N1F_ORIGIN_BUNDLE_PATH.exists():
         return N1F_ORIGIN_BUNDLE_PATH
@@ -286,6 +309,10 @@ def main() -> None:
     origin = audit_hermes_origin(n1d_plan)
     novelty = attest_structural_novelty(n1d_plan)
     aug = origin.get("allowed_augmentation_diff")
+    manifest_required_evidence = pinned.get("required_evidence", {})
+    bundle_required_evidence = (
+        bundle_required_evidence_audit(origin_bundle) if isinstance(origin_bundle, dict) else {}
+    )
 
     checks = [
         check(
@@ -323,6 +350,18 @@ def main() -> None:
             novelty["existing_recipe_selected"] is False,
             "existing_recipe_selected is false (the plan is not a registered recipe selection).",
             {"existing_recipe_selected": novelty["existing_recipe_selected"]},
+        ),
+        check(
+            "n1d1.freeze_required_evidence_complete",
+            manifest_required_evidence.get("acceptance_pass") is True,
+            "The N1D freeze proves execution.status == pass, zero requested-evidence failures, and non-null required aliases.",
+            manifest_required_evidence,
+        ),
+        check(
+            "n1d1.origin_host_pipeline_required_evidence_complete",
+            bundle_required_evidence.get("acceptance_pass") is True,
+            "The committed Hermes-origin bundle host pipeline was refreshed with complete required evidence.",
+            bundle_required_evidence,
         ),
     ]
     blocking_reasons = [item["id"] for item in checks if item["status"] != "pass"]
