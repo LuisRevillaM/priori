@@ -39,6 +39,9 @@ test("beta1a product screenshots", async ({ page }) => {
 
   // 3) Browse recipes selection + interpretation (Reviewed recipe provenance)
   await page.getByTestId("preset-approved_block_shift").click();
+  // recipe preview before interpretation must be clearly labeled "Preview — not yet interpreted"
+  await expect(page.getByTestId("recipe-preview-badge")).toBeVisible();
+  await shot(page, "b11-03-recipe-preview");
   const interpretPromise = page.waitForResponse(responsePath("/api/interpret"));
   await page.getByTestId("interpret-button").click();
   await interpretPromise;
@@ -87,4 +90,39 @@ test("beta1a product screenshots", async ({ page }) => {
   await expect(page.getByTestId("model-unavailable-state")).toBeVisible();
   await shot(page, "02-ask-hermes-state");
   await shot(page, "06-model-unavailable");
+});
+
+test("beta1a.1 state screenshots: booting and cold-run", async ({ page }) => {
+  // boot/loading state (delay the match library so it is observable)
+  await page.route("**/api/matches", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    await route.continue();
+  });
+  await page.goto("/");
+  await expect(page.getByTestId("booting-state")).toBeVisible();
+  await shot(page, "b11-00-booting");
+  await expect(page.getByTestId("path-chooser")).toBeVisible();
+  await page.unroute("**/api/matches");
+
+  // executing cold-run state (hold the execute response)
+  await page.getByTestId("preset-approved_block_shift").click();
+  const interpretPromise = page.waitForResponse(responsePath("/api/interpret"));
+  await page.getByTestId("interpret-button").click();
+  await interpretPromise;
+
+  await page.route("**/api/execute", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await route.continue();
+  });
+  const executePromise = page.waitForResponse(responsePath("/api/execute"));
+  await page.getByTestId("primary-action").click();
+  await expect(page.getByTestId("cold-run-state")).toBeVisible();
+  await shot(page, "b11-04-cold-run");
+  await executePromise;
+  await page.unroute("**/api/execute");
+
+  // result rail with principal measurement
+  await expect(page.getByTestId("result-count")).not.toHaveText("0");
+  await expect(page.getByTestId("result-measurement").first()).toBeVisible();
+  await shot(page, "b11-05-result-measurement");
 });

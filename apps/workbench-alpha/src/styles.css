@@ -531,6 +531,79 @@ button:disabled {
   margin-top: 8px;
 }
 
+.bootingState {
+  display: grid;
+  place-items: center;
+  min-height: 60dvh;
+  padding: 24px;
+}
+
+.bootingCard {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 28px 36px;
+  text-align: center;
+}
+
+.bootingCard strong {
+  font-size: 15px;
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 999px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.coldRunState {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #d5bc83;
+  border-radius: 8px;
+  background: #fbf5e8;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.coldRunHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coldRunHeader .spinner {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+.coldRunMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.resultMeasurement {
+  color: var(--accent-dark) !important;
+  font-weight: 700;
+}
+
 .planMeta {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);

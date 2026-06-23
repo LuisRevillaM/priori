@@ -78,6 +78,52 @@ export function describeMeasurement(value: unknown, threshold: unknown, unit?: s
   return "Measurement detail in developer view";
 }
 
+function numericText(value: unknown): string | null {
+  if (typeof value === "number" && Number.isFinite(value)) return String(Math.round(value * 1000) / 1000);
+  if (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value))) {
+    return String(Math.round(Number(value) * 1000) / 1000);
+  }
+  return null;
+}
+
+// Find an evidence key matching a known field name. Evidence aliases may be plain ("minimum_clearance_m")
+// or node-prefixed ("signed_shift.signed_shift_metres"), so match on exact name or dotted suffix.
+function findEvidenceKey(evidence: Record<string, unknown>, names: string[]): string | null {
+  for (const key of Object.keys(evidence)) {
+    for (const name of names) {
+      if (key === name || key.endsWith(`.${name}`)) return key;
+    }
+  }
+  return null;
+}
+
+// First available principal measurement for a result card, in priority order. Never infers a missing
+// value — returns null if none of the known evidence fields are present. Raw value preserved in `raw`.
+export function principalMeasurement(
+  evidence: Record<string, unknown> | null | undefined
+): { key: string; label: string; raw: string } | null {
+  if (!evidence) return null;
+  const groups: Array<{ names: string[]; kind: "num" | "entry"; fmt?: (n: string) => string }> = [
+    { names: ["signed_shift_metres", "block_shift_metres", "signed_lateral_shift_m"], kind: "num", fmt: (n) => `Shift ${n} m` },
+    { names: ["destination_time_to_entry_seconds", "time_to_entry_seconds"], kind: "num", fmt: (n) => `Entry in ${n} s` },
+    { names: ["destination_entry_mode", "entry_mode"], kind: "entry" },
+    { names: ["minimum_clearance_m", "corridor_minimum_clearance_m", "clearance_m"], kind: "num", fmt: (n) => `Clearance ${n} m` },
+    { names: ["relation_duration_seconds", "corridor_duration_seconds", "duration_seconds"], kind: "num", fmt: (n) => `Held ${n} s` }
+  ];
+  for (const group of groups) {
+    const key = findEvidenceKey(evidence, group.names);
+    if (!key) continue;
+    if (group.kind === "num" && group.fmt) {
+      const text = numericText(evidence[key]);
+      if (text !== null) return { key, label: group.fmt(text), raw: String(evidence[key]) };
+    } else if (group.kind === "entry") {
+      const info = entryModeLabel(evidence[key]);
+      if (info) return { key, label: `Entry: ${info.label}`, raw: String(evidence[key]) };
+    }
+  }
+  return null;
+}
+
 // Honest rendering of relation destination-entry mode. Only the four backend enum values are
 // recognised; an absent value returns null so the UI never infers entry from time_to_entry_seconds.
 export function entryModeLabel(mode: unknown): { label: string; tone: Tone; value: EntryMode } | null {

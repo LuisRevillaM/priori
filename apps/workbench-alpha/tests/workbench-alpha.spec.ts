@@ -872,6 +872,69 @@ test("beta1a novel composition is surfaced as pending proof refresh, not a runna
   expect(consoleErrors).toEqual([]);
 });
 
+test("beta1a.1 booting state shows a loading view with no false empty/scope warning", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  page.on("pageerror", (errorEvent) => consoleErrors.push(errorEvent.message));
+
+  // Delay the match library so the booting state is observable.
+  await page.route("**/api/matches", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    await route.continue();
+  });
+  await page.goto("/");
+
+  await expect(page.getByTestId("booting-state")).toBeVisible();
+  await expect(page.getByTestId("booting-state")).toContainText("Loading workbench");
+  // No misleading empty/scope state before the library resolves.
+  await expect(page.getByTestId("scope-warning")).toHaveCount(0);
+  await expect(page.getByTestId("analysis-scope")).toHaveCount(0);
+  await expect(page.getByText("0 selected matches")).toHaveCount(0);
+
+  // After load: full UI, all matches selected, still no scope warning, booting gone.
+  await expect(page.getByTestId("path-chooser")).toBeVisible();
+  await expect(page.getByTestId("booting-state")).toHaveCount(0);
+  await expect(page.getByTestId("analysis-scope")).toContainText("All 4 available matches");
+  await expect(page.getByTestId("scope-warning")).toHaveCount(0);
+  await expect(page.getByTestId("primary-action")).toBeDisabled();
+  await page.unroute("**/api/matches");
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test("beta1a.1 cold-run state shows step, elapsed, and non-cancelable honesty while executing", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  await boot(page, consoleErrors);
+  await page.getByTestId("preset-approved_block_shift").click();
+  await jsonAfterClick<Record<string, unknown>>(page, [], "cold.interpret", "interpret-button", "/api/interpret");
+
+  // Hold the execute response so the executing phase is observable.
+  await page.route("**/api/execute", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await route.continue();
+  });
+  const executePromise = page.waitForResponse(responsePath("/api/execute"));
+  await page.getByTestId("primary-action").click();
+
+  const coldRun = page.getByTestId("cold-run-state");
+  await expect(coldRun).toBeVisible();
+  await expect(coldRun).toHaveAttribute("data-run-step", "executing");
+  await expect(coldRun).toContainText("Executing over selected matches");
+  await expect(page.getByTestId("cold-run-elapsed")).toContainText("Elapsed");
+  await expect(coldRun).toContainText("First run may take longer");
+  await expect(coldRun).toContainText("cannot be canceled once started");
+  await expect(page.getByTestId("primary-action")).toBeDisabled();
+
+  await executePromise;
+  await expect(page.getByTestId("cold-run-state")).toHaveCount(0);
+  await expect(page.getByTestId("result-count")).not.toHaveText("0");
+  await page.unroute("**/api/execute");
+
+  expect(consoleErrors).toEqual([]);
+});
+
 test("backend execution artifacts are the source of result inspection", async ({ request }) => {
   const api = await requestFactory.newContext({ baseURL: "http://127.0.0.1:8765" });
   try {
