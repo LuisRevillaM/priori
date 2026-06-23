@@ -976,6 +976,25 @@ def stable_json_sha256(payload: Any) -> str:
     return sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")).hexdigest()
 
 
+def runtime_commit_identifier() -> str:
+    for key in ("RENDER_GIT_COMMIT", "RENDER_COMMIT", "SOURCE_VERSION", "GIT_COMMIT"):
+        value = os.environ.get(key, "").strip()
+        if value:
+            return value
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            cwd=REPO_ROOT,
+        )
+    except Exception:  # noqa: BLE001 - commit metadata is useful but non-critical.
+        return "unknown"
+    return completed.stdout.strip() if completed.returncode == 0 and completed.stdout.strip() else "unknown"
+
+
 def utc_now_iso() -> str:
     return datetime.now(UTC).replace(microsecond=0).isoformat()
 
@@ -1227,7 +1246,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
     job_dir.mkdir(parents=True, exist_ok=True)
     source_label = "n1e_origin_refresh"
     try:
-        from tqe.verification.n1c import HERO_QUESTION, git_output
+        from tqe.verification.n1c import HERO_QUESTION
         from tqe.verification.n1d import ENTRY_BEFORE_OPEN_ANALYSIS, entry_mode_audit, runtime_hashes
 
         write_n1e_status(output_root, job_id, {"status": "running", "stage": "probing_hermes"})
@@ -1306,7 +1325,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
                 "hermes_executable": path_state(hermes),
             },
             "source": {
-                "repo_commit": git_output("rev-parse", "HEAD"),
+                "repo_commit": runtime_commit_identifier(),
                 "runtime_hashes": runtime_hashes(),
                 "output_root": cloud_safe_path(output_root),
                 "hermes_workshop_root": cloud_safe_path(HERMES_WORKSHOP_ROOT),
@@ -1374,7 +1393,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
 
 
 def recover_latest_n1e_failure_bundle(*, output_root: Path) -> dict[str, Any]:
-    from tqe.verification.n1c import HERO_QUESTION, git_output
+    from tqe.verification.n1c import HERO_QUESTION
     from tqe.verification.n1d import runtime_hashes
 
     session = newest_hermes_session_after(0.0)
@@ -1400,7 +1419,7 @@ def recover_latest_n1e_failure_bundle(*, output_root: Path) -> dict[str, Any]:
             "prompt_sha256": sha256(hermes_interpret_prompt(HERO_QUESTION).encode("utf-8")).hexdigest(),
         },
         "source": {
-            "repo_commit": git_output("rev-parse", "HEAD"),
+            "repo_commit": runtime_commit_identifier(),
             "runtime_hashes": runtime_hashes(),
             "output_root": cloud_safe_path(output_root),
             "hermes_workshop_root": cloud_safe_path(HERMES_WORKSHOP_ROOT),
