@@ -2548,7 +2548,8 @@ def primitive_relation_destination_entry_classification(
         source_results_by_id.setdefault(source_result_id, source_result)
 
     horizon_seconds = node_parameter_number(node, "destination_entry_horizon_seconds", 6.0)
-    seed = node_parameter_text(node, "result_id_seed", state.params.text("result_id_seed_hash"))
+    result_seed = node.resolved_parameters.get("result_id_seed")
+    seed = str(result_seed.value) if result_seed is not None else state.params.text("result_id_seed_hash")
     episode_selection = node_parameter_text(
         node,
         "episode_selection",

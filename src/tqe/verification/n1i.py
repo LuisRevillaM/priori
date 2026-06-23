@@ -18,6 +18,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tqe.runtime.binder import bind_document
+from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import TacticalQueryDocument, stable_hash
 from tqe.verification.n1g import n1g_manual_document
 from tqe.workshop.knowledge_pack import (
@@ -194,6 +196,47 @@ def model_profile_validation(document: dict[str, Any]) -> dict[str, Any]:
         }
 
 
+def inline_result_seed_document(document: dict[str, Any]) -> dict[str, Any]:
+    updated = json.loads(json.dumps(document))
+    updated["recipe"]["parameters"] = [
+        parameter
+        for parameter in updated["recipe"].get("parameters", [])
+        if parameter.get("name") != "result_id_seed_hash"
+    ]
+    for node in updated["draft_plan"].get("nodes", []):
+        if node.get("node_id") == "destination_entry":
+            node.setdefault("parameters", {})["result_id_seed"] = {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "n1i_inline_seed_regression",
+            }
+    return updated
+
+
+def execute_inline_result_seed_regression(document: dict[str, Any]) -> dict[str, Any]:
+    regression_document = inline_result_seed_document(document)
+    bound = bind_document(TacticalQueryDocument.model_validate(regression_document))
+    execution = TacticalQueryExecutor().execute(bound)
+    rows = execution_result_rows(execution)
+    return {
+        "bound_plan_hash": bound.bound_plan_hash,
+        "execution_status": execution.status.value,
+        "row_count": len(rows),
+        "has_result_id_seed_hash_recipe_parameter": any(
+            parameter.get("name") == "result_id_seed_hash"
+            for parameter in regression_document["recipe"].get("parameters", [])
+        ),
+        "destination_entry_result_seed": next(
+            (
+                node.get("parameters", {}).get("result_id_seed")
+                for node in regression_document["draft_plan"].get("nodes", [])
+                if node.get("node_id") == "destination_entry"
+            ),
+            None,
+        ),
+    }
+
+
 def document_refs_and_operators(document: dict[str, Any]) -> dict[str, list[str]]:
     refs: list[str] = []
     operators: list[str] = []
@@ -233,6 +276,7 @@ def build_report() -> dict[str, Any]:
 
     document = n1g_manual_document()
     validation = model_profile_validation(document)
+    inline_seed_regression = execute_inline_result_seed_regression(document)
     refs = document_refs_and_operators(document)
     authorable_refs = set(nodes_contract["authorable_catalog_refs"])
     contract_operators = set(nodes_contract["operators"])
@@ -306,6 +350,14 @@ def build_report() -> dict[str, Any]:
             validation["validation"],
         ),
         check(
+            "n1i.inline_result_seed_executes_without_global_fallback",
+            inline_seed_regression["execution_status"] == "pass"
+            and inline_seed_regression["row_count"] > 0
+            and inline_seed_regression["has_result_id_seed_hash_recipe_parameter"] is False,
+            "relation_destination_entry executes with inline result_id_seed and no result_id_seed_hash global.",
+            inline_seed_regression,
+        ),
+        check(
             "n1i.knowledge_pack_checks_pass",
             all(item["ok"] for item in pack_checks),
             "The regenerated tactical knowledge pack passes its safety and consistency checks.",
@@ -334,6 +386,7 @@ def build_report() -> dict[str, Any]:
         "manual_ast_hash": stable_hash(document),
         "manual_ast_refs_and_operators": refs,
         "model_profile_validation": validation,
+        "inline_result_seed_regression": inline_seed_regression,
         "pack_checks": pack_checks,
         "checks": checks,
     }

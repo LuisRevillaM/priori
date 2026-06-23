@@ -1909,11 +1909,45 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
 
         host_augmented_document = add_n1e_entry_mode_evidence(hermes_draft_document)
         write_n1f_status(output_root, job_id, {"status": "running", "stage": "executing_host_authority_pipeline"})
-        records = run_host_authority_pipeline(
-            host_augmented_document,
-            output_root=output_root,
-            source_label=source_label,
-        )
+        try:
+            records = run_host_authority_pipeline(
+                host_augmented_document,
+                output_root=output_root,
+                source_label=source_label,
+            )
+        except Exception as exc:  # noqa: BLE001 - preserve validated draft origin on host failures.
+            failure_bundle = {
+                **base_bundle,
+                "hermes_origin": {
+                    **base_bundle["hermes_origin"],
+                    "draft_plan_id": draft_plan_id,
+                    "draft_plan_hash": hermes_draft_record.get("draft_plan_hash"),
+                    "draft_record_source": hermes_draft_record.get("draft_record_source"),
+                    "draft_record_root": hermes_draft_record.get("draft_record_root"),
+                    "draft_document_source": hermes_draft_record.get("draft_document_source"),
+                    "draft_hash_source": hermes_draft_record.get("draft_hash_source"),
+                    "draft_lookup_errors": hermes_draft_record.get("draft_lookup_errors"),
+                    "draft_document": hermes_draft_document,
+                },
+                "host_augmentation": {
+                    "allowed_added_aliases": ["destination_entry_mode", "destination_time_to_entry_seconds"],
+                    "augmented_document": host_augmented_document,
+                    "augmented_document_sha256": stable_json_sha256(host_augmented_document),
+                    "source_label": source_label,
+                },
+                "host_pipeline_error": {
+                    "error_type": type(exc).__name__,
+                    "message": short_text(str(exc), 1000),
+                },
+            }
+            write_failed_n1f_bundle(
+                output_root=output_root,
+                job_id=job_id,
+                bundle=failure_bundle,
+                reason=f"N1F host authority pipeline failed after Hermes validation: {type(exc).__name__}: {short_text(str(exc), 500)}",
+                stage="host_authority_pipeline_failed",
+            )
+            return
         audit = entry_mode_audit(records["execution_record"])
         bundle = {
             **base_bundle,

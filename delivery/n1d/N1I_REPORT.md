@@ -1,8 +1,8 @@
 # N1I — Agent AST Authoring Contract Repair
 
 Status: `pass`
-Generated: `2026-06-23T05:51:17+00:00`
-Git head: `9fb13374ffb5661a2ac05ddda3efa8919ee79439`
+Generated: `2026-06-23T06:05:54+00:00`
+Git head: `437ee70c0c5a8fea936943a749a92f5157c861f5`
 
 ## N1H Failure Mapping
 
@@ -16,8 +16,8 @@ Git head: `9fb13374ffb5661a2ac05ddda3efa8919ee79439`
 ## Regenerated Knowledge Pack
 
 - Path: `generated/tactical-knowledge-pack.json`
-- File SHA-256: `f70c525e78fc400620aa0dafaca933b95e08f4a9231cb520ba2affb986591164`
-- Semantic SHA-256: `91cdd954deb702f224590369abdb3e79790e8cdf860b25a73d2a15c1ae748526`
+- File SHA-256: `339861d93c36d7b69218c8366bd7fe8032c6df9ec5aee985f19a0f6a499876f9`
+- Semantic SHA-256: `f5bc17ab612c85fcae62f2777d25dfb337b4d80955a1b1c0b0dea7ed9f4616fe`
 
 ## Checks
 
@@ -29,6 +29,7 @@ Git head: `9fb13374ffb5661a2ac05ddda3efa8919ee79439`
 - `pass` n1i.failed_names_not_suggested: The generated authoring contracts do not suggest the failed N1H invented names.
 - `pass` n1i.manual_ast_uses_visible_contract_only: The manually authored model-profile AST uses only visible refs/operators/output names.
 - `pass` n1i.manual_ast_validates: A model-profile manually authored AST using the visible contract validates.
+- `pass` n1i.inline_result_seed_executes_without_global_fallback: relation_destination_entry executes with inline result_id_seed and no result_id_seed_hash global.
 - `pass` n1i.knowledge_pack_checks_pass: The regenerated tactical knowledge pack passes its safety and consistency checks.
 
 ## Faithful Rerun Status
