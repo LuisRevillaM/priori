@@ -3,6 +3,24 @@ import type { ReplayPayload, ResultRow } from "./types";
 import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
 import { overlayVisibleAtFrame, type CorridorOverlay } from "./overlay";
 
+// Replay canvas palette (canvas 2D fills/strokes — not CSS tokens). Named for legibility; values
+// match the established warm-pitch look.
+const PITCH = {
+  grass: "#477556",
+  line: "rgba(255,255,255,0.84)",
+  label: "rgba(245,245,240,0.82)",
+  labelDim: "rgba(245,245,240,0.78)",
+  ball: "#f4f1e8",
+  ballEdge: "#2b2f2b",
+  home: "#1e4f7a",
+  homeEdge: "#e7edf2",
+  away: "#a9473f",
+  awayEdge: "#f3e8df",
+  corridor: "#f1d27a",
+  corridorFill: "#fff7d2",
+  anchorRing: "#d6b35a"
+} as const;
+
 type PitchCanvasProps = {
   replay: ReplayPayload | null;
   frameIndex: number;
@@ -33,7 +51,7 @@ export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvas
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, width, height);
 
-    ctx.fillStyle = "#477556";
+    ctx.fillStyle = PITCH.grass;
     ctx.fillRect(0, 0, width, height);
 
     const marginX = layout.marginX;
@@ -41,7 +59,7 @@ export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvas
     const fieldW = layout.fieldWidth;
     const fieldH = layout.fieldHeight;
 
-    ctx.strokeStyle = "rgba(255,255,255,0.84)";
+    ctx.strokeStyle = PITCH.line;
     ctx.lineWidth = 1.6;
     ctx.strokeRect(marginX, marginY, fieldW, fieldH);
     ctx.beginPath();
@@ -53,14 +71,14 @@ export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvas
     ctx.stroke();
 
     if (!replay || replay.frames.length === 0) {
-      ctx.fillStyle = "rgba(245,245,240,0.78)";
+      ctx.fillStyle = PITCH.labelDim;
       ctx.font = "14px ui-monospace, SFMono-Regular, Menlo, monospace";
       ctx.fillText("No replay window loaded", marginX + 16, marginY + 28);
       return;
     }
 
     const frame = replay.frames[Math.min(Math.max(frameIndex, 0), replay.frames.length - 1)];
-    ctx.fillStyle = "rgba(245,245,240,0.82)";
+    ctx.fillStyle = PITCH.label;
     ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, monospace";
     ctx.fillText(
       `${replay.replay_window_id} / frame ${frame.frame_id} / ${frameIndex + 1} of ${replay.frames.length}`,
@@ -75,14 +93,14 @@ export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvas
       ctx.beginPath();
       ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
       if (isBall) {
-        ctx.fillStyle = "#f4f1e8";
-        ctx.strokeStyle = "#2b2f2b";
+        ctx.fillStyle = PITCH.ball;
+        ctx.strokeStyle = PITCH.ballEdge;
       } else if (entity.team_role === "home") {
-        ctx.fillStyle = "#1e4f7a";
-        ctx.strokeStyle = "#e7edf2";
+        ctx.fillStyle = PITCH.home;
+        ctx.strokeStyle = PITCH.homeEdge;
       } else {
-        ctx.fillStyle = "#a9473f";
-        ctx.strokeStyle = "#f3e8df";
+        ctx.fillStyle = PITCH.away;
+        ctx.strokeStyle = PITCH.awayEdge;
       }
       ctx.lineWidth = isBall ? 1.2 : 1.5;
       ctx.fill();
@@ -103,8 +121,8 @@ export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvas
       const start = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
       const end = pitchPointToPixel(target.x_m, target.y_m, replay.pitch, layout);
       ctx.save();
-      ctx.strokeStyle = "#f1d27a";
-      ctx.fillStyle = "#fff7d2";
+      ctx.strokeStyle = PITCH.corridor;
+      ctx.fillStyle = PITCH.corridorFill;
       ctx.lineWidth = 3;
       ctx.setLineDash([8, 5]);
       ctx.beginPath();
@@ -115,7 +133,7 @@ export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvas
       ctx.beginPath();
       ctx.arc(end.x, end.y, 10, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = "#f1d27a";
+      ctx.strokeStyle = PITCH.corridor;
       ctx.lineWidth = 1.5;
       ctx.stroke();
       ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -125,7 +143,7 @@ export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvas
 
     const anchorX = replay.frames.findIndex((item) => item.frame_id === replay.anchor_frame_id);
     if (anchorX >= 0 && anchorX === frameIndex) {
-      ctx.strokeStyle = "#d6b35a";
+      ctx.strokeStyle = PITCH.anchorRing;
       ctx.lineWidth = 2;
       ctx.strokeRect(marginX + 6, marginY + 6, fieldW - 12, fieldH - 12);
     }
