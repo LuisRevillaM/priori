@@ -38,6 +38,8 @@ progress:
     item: S1A controlled_pass_episode runtime implemented for J03WOY accepted scope with explicit event_anchor_frame_id and physical_release_frame_id; verification report recorded at delivery/m2a-high-bypass-completed-pass/M2A_S1A_CONTROLLED_PASS.md.
   - date: "2026-06-23"
     item: S1B opponents_bypassed_by_action measurement wired to S1A controlled pass episodes and S0B-style active defending outfield denominators for J03WOY; verification report recorded at delivery/m2a-high-bypass-completed-pass/M2A_S1B_PASS_BYPASS.md.
+  - date: "2026-06-23"
+    item: S1C high_bypass_completed_pass_v1 result emission implemented for J03WOY only; verification report recorded at delivery/m2a-high-bypass-completed-pass/M2A_S1C_HIGH_BYPASS_RESULTS.md.
 latest_preflight:
   slice: M2A-S0A
   scope: single canonical match J03WOY
@@ -142,6 +144,43 @@ s1b_measurement:
     - S1B verifies opponents_bypassed_by_action measurement wiring only.
     - The expected opposition denominator is the active defending outfield set derived from the S0B-style active-player timeline, not observed endpoint rows.
     - Missing expected active opponent tracking remains UNKNOWN and never silently reduces the denominator.
-    - high_bypass_completed_pass_v1 result emission is not yet implemented.
+    - high_bypass_completed_pass_v1 result emission is not emitted by S1B; it is recorded separately in s1c_results.
     - Hermes exposure and all-corpus execution remain blocked.
-next_action: Begin M2A-S1C by emitting high_bypass_completed_pass_v1 QueryResult rows from S1A controlled pass episodes plus S1B bypass measurements for J03WOY only; preserve raw evidence and keep Hermes/all-corpus blocked.
+s1c_results:
+  slice: M2A-S1C
+  status: HIGH_BYPASS_RESULTS_IMPLEMENTED
+  accepted_match_ids:
+    - J03WOY
+  runtime_report: delivery/m2a-high-bypass-completed-pass/M2A_S1C_HIGH_BYPASS_RESULTS.md
+  artifact_hash: 832803de7c3efb6df955950793c95615477d7aea688c2f10c74a7debddd80278
+  upstream_artifact_hashes:
+    s0_contract_sha256: ffa4c63bd127eb9ba232e6666bafc8e96c7a371f347d8fe6cac05d7466119ef7
+    s1a_artifact_sha256: fff166b583eb55fb349bdace6283ad6bf72f035d96bf684e21f32209889e8ea4
+    s1b_artifact_sha256: edfbeae2957622eca06cf89a4e4a1a0ceb89395a826964483c7c511e9d484b6c
+  result_count: 7
+  classification_counts:
+    HIGH_BYPASS_COMPLETED_PASS: 7
+  trace_count: 21
+  requested_evidence_failure_count: 0
+  non_match_reason_counts:
+    controlled_pass_not_proven: 186
+    forward_progression_below_threshold: 371
+    opponents_bypassed_below_threshold: 75
+  positive_pass_episode_ids:
+    - J03WOY:firstHalf:home:188:DFL-OBJ-002G5J:DFL-OBJ-002FXT
+    - J03WOY:firstHalf:away:227:DFL-OBJ-00286X:DFL-OBJ-00019R
+    - J03WOY:firstHalf:home:331:DFL-OBJ-0028FW:DFL-OBJ-002FXT
+    - J03WOY:secondHalf:home:102:DFL-OBJ-002GM9:DFL-OBJ-002FXT
+    - J03WOY:secondHalf:away:172:DFL-OBJ-002FZB:DFL-OBJ-0028IJ
+    - J03WOY:secondHalf:home:356:DFL-OBJ-002GMO:DFL-OBJ-0026RH
+    - J03WOY:secondHalf:away:385:DFL-OBJ-0025BB:DFL-OBJ-0001IG
+  verification:
+    - make m2a-s1c-verify
+    - ./.venv/bin/python -m unittest tests.test_m2a_high_bypass_pass tests.test_m2a_pass_bypass tests.test_m2a_controlled_pass tests.test_m2a_bypass
+  explicit_boundaries:
+    - S1C emits QueryResult-shaped rows and predicate traces for high_bypass_completed_pass_v1.
+    - S1C applies recipe thresholds; S1B remains threshold-free measurement.
+    - Accepted positive results have complete requested evidence with zero evidence failures.
+    - Hermes exposure and all-corpus execution remain blocked.
+    - Replay UI integration and human visual verification are not yet implemented.
+next_action: Begin M2A-S2 by preparing replay/evidence artifacts for human visual verification of the seven high-bypass completed-pass results; keep Hermes/all-corpus blocked until visual review accepts the family.
