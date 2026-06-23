@@ -557,7 +557,19 @@ lane/region geometry kernels inside corridor evaluation
 
 ## Standard Library Expansion `[PROPOSED]`
 
-The next work should add a staged line-breaking package. The first visible family should be:
+The next work is explicitly sequenced:
+
+```text
+M2A
+controlled pass + opponents bypassed + High-Bypass Completed Pass
+
+M2B+
+defensive-line and Line-Break Support package
+```
+
+This is a sequencing change, not an architectural contradiction. M2A is the first vertical football-knowledge expansion because it introduces an event-plus-tracking action measured at two endpoints. M2B+ then builds the true defensive-line and support-response vocabulary on top of the same action foundations.
+
+The first visible M2A family should be:
 
 ```text
 High-Bypass Completed Pass
@@ -575,7 +587,7 @@ synchronized event + tracking data
 → evidence and replay
 ```
 
-Then add the true line-breaking and support-response package:
+Then add the true M2B+ line-breaking and support-response package:
 
 ```text
 controlled_pass_episode
@@ -627,12 +639,14 @@ purpose:
 inputs:
 parameters:
 outputs:
+output_schemas:
 units:
 entity_scope:
 temporal_semantics:
 unknown_behavior:
 evidence_fields:
 visual_evidence_contract:
+host_context_dependencies:
 complexity_limits:
 limitations:
 prohibited_claims:
@@ -687,10 +701,11 @@ event_types: Play_Pass | FreeKick_Play_Pass | ThrowIn_Play_Pass | GoalKick_Play_
 completion_policy: event_success_plus_tracking_confirmation
 maximum_event_tracking_alignment_seconds: second
 maximum_reception_ball_distance_m: metre
-minimum_forward_progression_m: metre
 exclude_set_pieces: boolean
 minimum_same_possession_after_reception_seconds: second
 ```
+
+Capabilities measure reusable football facts. Recipes apply thresholds. `controlled_pass_episode` must measure `forward_progression_m`; it must not define tactical inclusion through a progression threshold.
 
 ### Outputs
 
@@ -708,6 +723,7 @@ event_type
 event_evaluation
 possession_continuity_status: PASS | FAIL | UNKNOWN
 controlled_reception_status: PASS | FAIL | UNKNOWN
+release_control_status: PASS | FAIL | UNKNOWN
 ```
 
 ### Unknown Behavior
@@ -719,6 +735,7 @@ event endpoint cannot be aligned to tracking frames
 pass recipient is absent or cannot be matched to a tracked player
 release or reception frame is outside reliable tracking coverage
 ball/receiver distance cannot be evaluated
+ball/passer release control cannot be evaluated
 possession continuity cannot be established
 event and tracking evidence conflict beyond declared tolerance
 ```
@@ -788,14 +805,18 @@ opposition outfield player selector
 goal_side_buffer_m: metre
 bypassed_buffer_m: metre
 exclude_goalkeeper: boolean
-minimum_forward_progression_m: metre
 ```
+
+Capabilities measure reusable football facts. `opponents_bypassed_by_action` must measure `opponents_bypassed_count` and coverage; recipes apply count thresholds such as `>= 5`.
 
 ### Outputs
 
 ```text
 opponents_bypassed_count
 bypassed_player_ids
+expected_active_opposition_outfield_ids
+evaluated_opponent_ids
+missing_active_opponent_ids
 release_frame_id
 reception_frame_id
 passer_id
@@ -803,7 +824,7 @@ receiver_id
 forward_progression_m
 release_ball_x_m
 reception_ball_x_m
-evaluation_status: PASS | FAIL | UNKNOWN
+evaluation_coverage_status: PASS | UNKNOWN
 unknown_reason
 ```
 
