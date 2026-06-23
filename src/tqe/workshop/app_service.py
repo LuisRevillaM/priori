@@ -1606,13 +1606,53 @@ def write_failed_n1f_bundle(
     )
 
 
+def n1f_trace_draft_plan_id(bundle: dict[str, Any]) -> str:
+    trace = bundle.get("hermes_origin", {}).get("session_trace", {})
+    calls = trace.get("ordered_tool_calls") if isinstance(trace, dict) else None
+    if not isinstance(calls, list):
+        return ""
+    for call in reversed(calls):
+        if not isinstance(call, dict):
+            continue
+        if str(call.get("name") or "").removeprefix("functions.") != "mcp_priori_tactical_validate_query_plan":
+            continue
+        arguments = call.get("arguments")
+        if isinstance(arguments, dict) and arguments.get("draft_plan_id"):
+            return str(arguments["draft_plan_id"]).strip()
+    return ""
+
+
+def n1f_trace_submitted_plan_document(bundle: dict[str, Any]) -> dict[str, Any] | None:
+    trace = bundle.get("hermes_origin", {}).get("session_trace", {})
+    calls = trace.get("ordered_tool_calls") if isinstance(trace, dict) else None
+    if not isinstance(calls, list):
+        return None
+    for call in reversed(calls):
+        if not isinstance(call, dict):
+            continue
+        if str(call.get("name") or "").removeprefix("functions.") != "mcp_priori_tactical_submit_query_plan":
+            continue
+        arguments = call.get("arguments")
+        document = arguments.get("plan_document") if isinstance(arguments, dict) else None
+        if isinstance(document, dict):
+            return document
+    return None
+
+
 def attach_n1f_hermes_draft_if_present(bundle: dict[str, Any], final_decision: dict[str, Any]) -> None:
-    draft_plan_id = str(final_decision.get("draft_plan_id") or "").strip()
+    draft_plan_id = str(final_decision.get("draft_plan_id") or "").strip() or n1f_trace_draft_plan_id(bundle)
     if not draft_plan_id:
         return
     try:
         hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=HERMES_WORKSHOP_ROOT)
     except Exception as exc:  # noqa: BLE001 - diagnostic bundle should preserve absence rather than fail.
+        submitted_document = n1f_trace_submitted_plan_document(bundle)
+        if submitted_document is not None:
+            hermes_origin = bundle.setdefault("hermes_origin", {})
+            hermes_origin["draft_plan_id"] = draft_plan_id
+            hermes_origin["draft_plan_hash"] = stable_json_sha256(submitted_document)
+            hermes_origin["draft_document"] = submitted_document
+            hermes_origin["draft_hash_source"] = "submitted_tool_arguments"
         bundle.setdefault("hermes_origin", {})["draft_lookup_error"] = {
             "draft_plan_id": draft_plan_id,
             "error_type": type(exc).__name__,
