@@ -264,6 +264,10 @@
           "title": "Claim Contract Ref",
           "type": "string"
         },
+        "concept_ref": {
+          "title": "Concept Ref",
+          "type": "string"
+        },
         "created_from": {
           "items": {
             "type": "string"
@@ -369,6 +373,7 @@
         "display_name",
         "description",
         "plan_artifact_ref",
+        "concept_ref",
         "origin",
         "promotion_status",
         "claim_contract_ref",
@@ -1674,6 +1679,16 @@
     "ProjectionPolicy": {
       "additionalProperties": false,
       "properties": {
+        "accepted_differences": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Accepted Differences",
+          "type": "object"
+        },
         "aliases": {
           "items": {
             "type": "string"
@@ -1806,6 +1821,10 @@
           "title": "Claim Contract Ref",
           "type": "string"
         },
+        "concept_ref": {
+          "title": "Concept Ref",
+          "type": "string"
+        },
         "created_from": {
           "items": {
             "type": "string"
@@ -1918,6 +1937,7 @@
         "description",
         "recipe_id",
         "recipe_version",
+        "concept_ref",
         "plan_artifact_ref",
         "claim_contract_ref",
         "evidence_contract_ref"
@@ -1965,6 +1985,13 @@
           "title": "Display Name",
           "type": "string"
         },
+        "field_mapping": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Field Mapping",
+          "type": "object"
+        },
         "id": {
           "pattern": "^[a-zA-Z0-9_.:-]+$",
           "title": "Id",
@@ -2002,6 +2029,13 @@
           "title": "Owners",
           "type": "array"
         },
+        "parameter_mapping": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Parameter Mapping",
+          "type": "object"
+        },
         "reviewers": {
           "items": {
             "type": "string"
@@ -2028,6 +2062,20 @@
             "type": "string"
           },
           "title": "Tags",
+          "type": "array"
+        },
+        "uncovered_runtime_fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Uncovered Runtime Fields",
+          "type": "array"
+        },
+        "uncovered_semantic_fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Uncovered Semantic Fields",
           "type": "array"
         },
         "version": {

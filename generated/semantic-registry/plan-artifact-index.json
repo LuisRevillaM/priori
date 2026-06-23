@@ -29,6 +29,7 @@
       "draft_status": "experimental",
       "exists": true,
       "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+      "normalized_selected_document_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
       "operator_dependencies": [
         {
           "name": "exists",
@@ -68,6 +69,7 @@
         "corridor_open_after_frames",
         "destination_entry_horizon_seconds"
       ],
+      "source_artifact_sha256": "707b5cd6d2d8f981401a9ec8bd31af4c91435118a94883cb68b621137365fba4",
       "source_kind": "n1f_origin_bundle.host_augmented_document",
       "valid_typed_plan": true
     },
@@ -114,6 +116,7 @@
       "draft_status": "approved",
       "exists": true,
       "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+      "normalized_selected_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
       "operator_dependencies": [
         {
           "name": "gt",
@@ -167,6 +170,7 @@
         "outcome_horizon_seconds",
         "wide_entry_fraction"
       ],
+      "source_artifact_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
       "source_kind": "typed_plan",
       "valid_typed_plan": true
     },
@@ -192,6 +196,7 @@
       "draft_status": "experimental",
       "exists": true,
       "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+      "normalized_selected_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
       "operator_dependencies": [
         {
           "name": "gte",
@@ -217,6 +222,7 @@
         "minimum_bypassed_opponents",
         "minimum_forward_progression_m"
       ],
+      "source_artifact_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
       "source_kind": "typed_plan",
       "valid_typed_plan": true
     },
@@ -276,6 +282,7 @@
       "draft_status": "experimental",
       "exists": true,
       "normalized_plan_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
+      "normalized_selected_document_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
       "operator_dependencies": [
         {
           "name": "gt",
@@ -349,6 +356,7 @@
         "result_id_seed_hash",
         "wide_entry_fraction"
       ],
+      "source_artifact_sha256": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
       "source_kind": "typed_plan",
       "valid_typed_plan": true
     },
@@ -374,6 +382,7 @@
       "draft_status": "experimental",
       "exists": true,
       "normalized_plan_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+      "normalized_selected_document_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
       "operator_dependencies": [
         {
           "name": "exists",
@@ -411,10 +420,11 @@
         "corridor_minimum_segment_length_m",
         "corridor_open_after_frames"
       ],
+      "source_artifact_sha256": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
       "source_kind": "typed_plan",
       "valid_typed_plan": true
     }
   },
-  "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
+  "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
   "schema_version": "1.0"
 }

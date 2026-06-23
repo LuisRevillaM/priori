@@ -1198,6 +1198,7 @@
   "recipes": [
     {
       "claim_contract_ref": "claim.ball_side_block_shift.v1",
+      "concept_ref": "concept.ball_side_block_shift",
       "dependencies": [
         "possession_segment",
         "ball_lateral_fraction",
@@ -1209,10 +1210,12 @@
         "outcome_classification",
         "neq"
       ],
+      "dependency_bindings_verified": true,
       "evidence_contract_ref": "evidence.ball_side_block_shift.v1",
       "exact_typed_plan_ref": "config/query-plans/ball_side_block_shift.ir.v1.json",
       "id": "ball_side_block_shift_v1",
       "mapping_id": "recipe.ball_side_block_shift.v1",
+      "plan_artifact_exists": true,
       "plan_artifact_id": "plan.ball_side_block_shift.v1",
       "plan_integrity": {
         "artifact_id": "plan.ball_side_block_shift.v1",
@@ -1257,6 +1260,7 @@
         "draft_status": "approved",
         "exists": true,
         "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+        "normalized_selected_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
         "operator_dependencies": [
           {
             "name": "gt",
@@ -1310,6 +1314,7 @@
           "outcome_horizon_seconds",
           "wide_entry_fraction"
         ],
+        "source_artifact_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
         "source_kind": "typed_plan",
         "valid_typed_plan": true
       },
@@ -1321,15 +1326,18 @@
     },
     {
       "claim_contract_ref": "claim.progressive_connection_availability.v1",
+      "concept_ref": "concept.progressive_connection_availability",
       "dependencies": [
         "possession_segment",
         "geometric_progressive_corridor_from_anchor_set",
         "exists"
       ],
+      "dependency_bindings_verified": true,
       "evidence_contract_ref": "evidence.progressive_connection_availability.v1",
       "exact_typed_plan_ref": "config/query-plans/possession_corridor_availability.experimental.v1.json",
       "id": "possession_corridor_availability_v1",
       "mapping_id": "recipe.possession_corridor_availability.v1",
+      "plan_artifact_exists": true,
       "plan_artifact_id": "plan.possession_corridor_availability.v1",
       "plan_integrity": {
         "artifact_id": "plan.possession_corridor_availability.v1",
@@ -1353,6 +1361,7 @@
         "draft_status": "experimental",
         "exists": true,
         "normalized_plan_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+        "normalized_selected_document_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
         "operator_dependencies": [
           {
             "name": "exists",
@@ -1390,6 +1399,7 @@
           "corridor_minimum_segment_length_m",
           "corridor_open_after_frames"
         ],
+        "source_artifact_sha256": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
         "source_kind": "typed_plan",
         "valid_typed_plan": true
       },
@@ -1400,7 +1410,8 @@
       "version": "0.1.0"
     },
     {
-      "claim_contract_ref": "claim.ai_corridor_destination_composition.v1",
+      "claim_contract_ref": "claim.opposite_corridor_after_shift.v1",
+      "concept_ref": "concept.opposite_corridor_after_shift",
       "dependencies": [
         "possession_segment",
         "ball_lateral_fraction",
@@ -1415,10 +1426,12 @@
         "exists",
         "relation_destination_entry_classification"
       ],
-      "evidence_contract_ref": "evidence.ai_corridor_destination_composition.v1",
+      "dependency_bindings_verified": true,
+      "evidence_contract_ref": "evidence.opposite_corridor_after_shift.v1",
       "exact_typed_plan_ref": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json",
       "id": "opposite_corridor_after_shift_v1",
       "mapping_id": "recipe.opposite_corridor_after_shift.v1",
+      "plan_artifact_exists": true,
       "plan_artifact_id": "plan.opposite_corridor_after_shift.v1",
       "plan_integrity": {
         "artifact_id": "plan.opposite_corridor_after_shift.v1",
@@ -1476,6 +1489,7 @@
         "draft_status": "experimental",
         "exists": true,
         "normalized_plan_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
+        "normalized_selected_document_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
         "operator_dependencies": [
           {
             "name": "gt",
@@ -1549,6 +1563,7 @@
           "result_id_seed_hash",
           "wide_entry_fraction"
         ],
+        "source_artifact_sha256": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
         "source_kind": "typed_plan",
         "valid_typed_plan": true
       },
@@ -1562,15 +1577,18 @@
     },
     {
       "claim_contract_ref": "claim.high_bypass_completed_pass.v1",
+      "concept_ref": "concept.high_bypass_completed_pass",
       "dependencies": [
         "controlled_pass_episode",
         "opponents_bypassed_by_action",
         "gte"
       ],
+      "dependency_bindings_verified": true,
       "evidence_contract_ref": "evidence.high_bypass_completed_pass.v1",
       "exact_typed_plan_ref": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
       "id": "high_bypass_completed_pass_v1",
       "mapping_id": "recipe.high_bypass_completed_pass.v1",
+      "plan_artifact_exists": true,
       "plan_artifact_id": "plan.high_bypass_completed_pass.v1",
       "plan_integrity": {
         "artifact_id": "plan.high_bypass_completed_pass.v1",
@@ -1594,6 +1612,7 @@
         "draft_status": "experimental",
         "exists": true,
         "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+        "normalized_selected_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
         "operator_dependencies": [
           {
             "name": "gte",
@@ -1619,6 +1638,7 @@
           "minimum_bypassed_opponents",
           "minimum_forward_progression_m"
         ],
+        "source_artifact_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
         "source_kind": "typed_plan",
         "valid_typed_plan": true
       },
@@ -1631,13 +1651,14 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
+    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "d3c1f3c0cafd5b4bb6b500f7b258a6217c210be1169814947beab5837a85c390",
-    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
+    "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
+    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "80afeb152caa7413782c88799c7a6025be9f63b73068cdd946cbf627ce11b9c7",
+    "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
     "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
     "schema_version": "1.0",
@@ -1648,9 +1669,12 @@
   "validated_compositions": [
     {
       "claim_contract_ref": "claim.ai_corridor_destination_composition.v1",
+      "concept_ref": "concept.progressive_connection_followed_by_destination_entry",
+      "dependency_bindings_verified": true,
       "evidence_contract_ref": "evidence.ai_corridor_destination_composition.v1",
       "id": "composition.ai_corridor_destination.2026_06_23",
       "origin": "AI_AUTHORED",
+      "plan_artifact_exists": true,
       "plan_artifact_ref": "plan.ai_corridor_destination.2026_06_23",
       "plan_integrity": {
         "artifact_id": "plan.ai_corridor_destination.2026_06_23",
@@ -1681,6 +1705,7 @@
         "draft_status": "experimental",
         "exists": true,
         "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+        "normalized_selected_document_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
         "operator_dependencies": [
           {
             "name": "exists",
@@ -1720,6 +1745,7 @@
           "corridor_open_after_frames",
           "destination_entry_horizon_seconds"
         ],
+        "source_artifact_sha256": "707b5cd6d2d8f981401a9ec8bd31af4c91435118a94883cb68b621137365fba4",
         "source_kind": "n1f_origin_bundle.host_augmented_document",
         "valid_typed_plan": true
       },

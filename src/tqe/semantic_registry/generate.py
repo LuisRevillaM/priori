@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import tempfile
+from hashlib import sha256
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -42,6 +45,10 @@ SCHEMA_PATH = Path("semantic-registry/schemas/semantic-registry.schema.json")
 LOCK_PATH = Path("semantic-registry/registry.lock.json")
 CAPABILITY_CATALOG_BASELINE_PATH = Path("generated/capability-catalog.json")
 KNOWLEDGE_PACK_BASELINE_PATH = Path("generated/tactical-knowledge-pack.json")
+BASELINE_PATHS = {
+    "capability_catalog": CAPABILITY_CATALOG_BASELINE_PATH,
+    "tactical_knowledge_pack": KNOWLEDGE_PACK_BASELINE_PATH,
+}
 
 
 def _write_json(path: Path, payload: Any) -> None:
@@ -50,6 +57,26 @@ def _write_json(path: Path, payload: Any) -> None:
         json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=True) + "\n",
         encoding="utf-8",
     )
+
+
+def _sha256_bytes(path: Path) -> str:
+    digest = sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def baseline_artifact_manifest() -> dict[str, Any]:
+    manifest: dict[str, Any] = {}
+    for name, path in BASELINE_PATHS.items():
+        manifest[name] = {
+            "path": str(path),
+            "exists": path.exists(),
+            "source_artifact_sha256": _sha256_bytes(path) if path.exists() else None,
+        }
+    manifest["baseline_artifact_revision"] = stable_hash(manifest)
+    return manifest
 
 
 def _slug(value: str) -> str:
@@ -110,6 +137,9 @@ def make_registry_lock(registry: SemanticRegistry, runtime_manifest: dict[str, A
         "registry_revision": registry_revision,
         "runtime_manifest_revision": runtime_revision,
         "plan_artifact_revision": plan_index["plan_artifact_revision"],
+        "baseline_artifact_revision": baseline_artifact_manifest()[
+            "baseline_artifact_revision"
+        ],
         "generator_version": GENERATOR_VERSION,
         "product_projection_policy": policies.get("product", ""),
         "ai_projection_policy": policies.get("ai", ""),
@@ -185,6 +215,7 @@ def extract_plan_artifact_details(artifact: PlanArtifact) -> dict[str, Any]:
             "valid_typed_plan": False,
             "error": "path_missing",
         }
+    source_artifact_sha256 = _sha256_bytes(path)
     try:
         document_payload, source_kind = _document_from_plan_artifact(artifact)
         document = TacticalQueryDocument.model_validate(document_payload)
@@ -233,10 +264,12 @@ def extract_plan_artifact_details(artifact: PlanArtifact) -> dict[str, Any]:
         "path": str(path),
         "exists": True,
         "valid_typed_plan": True,
+        "source_artifact_sha256": source_artifact_sha256,
         "source_kind": source_kind,
         "origin": artifact.origin,
         "promotion_status": artifact.promotion_status,
         "normalized_plan_hash": stable_hash(normalized_document),
+        "normalized_selected_document_hash": stable_hash(normalized_document),
         "plan_id": document.draft_plan.plan_id,
         "plan_version": document.draft_plan.plan_version,
         "recipe_id": document.recipe.recipe_id,
@@ -420,6 +453,21 @@ def _signature_mismatch(
     return mismatches
 
 
+def _contract_inherits_or_is(
+    child_ref: str, required_ref: str, contracts: dict[str, Any], *, kind: str
+) -> tuple[bool, list[ValidationFinding]]:
+    if child_ref not in contracts or required_ref not in contracts:
+        return False, []
+    if child_ref == required_ref:
+        return True, []
+    closure, findings = (
+        _effective_claim_contract(child_ref, contracts)
+        if kind == "claim"
+        else _effective_evidence_contract(child_ref, contracts)
+    )
+    return required_ref in closure["ancestors"], findings
+
+
 def validate_runtime_signature_compatibility(
     binding: Any,
     runtime_entry: dict[str, Any],
@@ -436,13 +484,18 @@ def validate_runtime_signature_compatibility(
         semantic_inputs.update(_field_map(op.inputs))
         semantic_outputs.update(_field_map(op.outputs))
 
+    runtime_inputs = {item["name"]: item for item in runtime_entry.get("inputs", [])}
+    runtime_outputs = {item["name"]: item for item in runtime_entry.get("outputs", [])}
+    runtime_parameters = {item["name"]: item for item in runtime_entry.get("parameters", [])}
+
     for runtime_input in runtime_entry.get("inputs", []):
-        semantic_field = semantic_inputs.get(runtime_input["name"])
+        semantic_name = binding.field_mapping.get(runtime_input["name"], runtime_input["name"])
+        semantic_field = semantic_inputs.get(semantic_name)
         if semantic_field is None:
             findings.append(
                 _finding(
                     "runtime_signature_mismatch",
-                    f"{binding.id} runtime input {runtime_input['name']} is not declared by semantic operationalization.",
+                    f"{binding.id} runtime input {runtime_input['name']} maps to undeclared semantic input {semantic_name}.",
                     f"{path}.inputs",
                 )
             )
@@ -458,12 +511,13 @@ def validate_runtime_signature_compatibility(
             )
 
     for runtime_output in runtime_entry.get("outputs", []):
-        semantic_field = semantic_outputs.get(runtime_output["name"])
+        semantic_name = binding.field_mapping.get(runtime_output["name"], runtime_output["name"])
+        semantic_field = semantic_outputs.get(semantic_name)
         if semantic_field is None:
             findings.append(
                 _finding(
                     "runtime_signature_mismatch",
-                    f"{binding.id} runtime output {runtime_output['name']} is not declared by semantic operationalization.",
+                    f"{binding.id} runtime output {runtime_output['name']} maps to undeclared semantic output {semantic_name}.",
                     f"{path}.outputs",
                 )
             )
@@ -475,6 +529,39 @@ def validate_runtime_signature_compatibility(
                     "runtime_signature_mismatch",
                     f"{binding.id} output {runtime_output['name']} mismatch: {mismatches}.",
                     f"{path}.outputs.{runtime_output['name']}",
+                )
+            )
+    runtime_output_semantic_names = {
+        binding.field_mapping.get(name, name) for name in runtime_outputs
+    }
+    for semantic_name, semantic_field in semantic_outputs.items():
+        if getattr(semantic_field, "required", True) and semantic_name not in runtime_output_semantic_names:
+            findings.append(
+                _finding(
+                    "runtime_signature_mismatch",
+                    f"{binding.id} semantic output {semantic_name} is required but no runtime output maps to it.",
+                    f"{path}.outputs.{semantic_name}",
+                )
+            )
+
+    if runtime_parameters:
+        mapped_runtime_parameters = set(binding.parameter_mapping)
+        missing_parameter_mappings = sorted(set(runtime_parameters) - mapped_runtime_parameters)
+        extra_parameter_mappings = sorted(mapped_runtime_parameters - set(runtime_parameters))
+        if missing_parameter_mappings:
+            findings.append(
+                _finding(
+                    "runtime_parameter_signature_mismatch",
+                    f"{binding.id} runtime parameters lack semantic mapping: {missing_parameter_mappings}.",
+                    f"{path}.parameter_mapping",
+                )
+            )
+        if extra_parameter_mappings:
+            findings.append(
+                _finding(
+                    "runtime_parameter_signature_mismatch",
+                    f"{binding.id} maps unknown runtime parameters: {extra_parameter_mappings}.",
+                    f"{path}.parameter_mapping",
                 )
             )
     return findings
@@ -650,14 +737,31 @@ def validate_registry(
         if binding.conformance_status in {
             ConformanceStatus.PARTIAL,
             ConformanceStatus.LEGACY_APPROXIMATION,
-        } and not binding.known_deviations:
-            findings.append(
-                _finding(
-                    "non_exact_binding_missing_deviation",
-                    f"{binding.id} is {binding.conformance_status.value} but declares no known_deviations.",
-                    f"runtime_bindings[{index}].known_deviations",
+        }:
+            if not binding.known_deviations:
+                findings.append(
+                    _finding(
+                        "non_exact_binding_missing_deviation",
+                        f"{binding.id} is {binding.conformance_status.value} but declares no known_deviations.",
+                        f"runtime_bindings[{index}].known_deviations",
+                    )
                 )
-            )
+            if not binding.field_mapping:
+                findings.append(
+                    _finding(
+                        "non_exact_binding_missing_field_mapping",
+                        f"{binding.id} is {binding.conformance_status.value} but declares no field_mapping.",
+                        f"runtime_bindings[{index}].field_mapping",
+                    )
+                )
+            if not binding.uncovered_runtime_fields and not binding.uncovered_semantic_fields:
+                findings.append(
+                    _finding(
+                        "non_exact_binding_missing_uncovered_fields",
+                        f"{binding.id} is {binding.conformance_status.value} but declares no uncovered fields.",
+                        f"runtime_bindings[{index}].uncovered_runtime_fields",
+                    )
+                )
         if binding.conformance_status == ConformanceStatus.EXACT:
             runtime_entry = runtime_by_key.get(key)
             if runtime_entry is not None:
@@ -955,6 +1059,17 @@ def validate_registry(
         )
 
     for recipe in registry.recipe_definitions:
+        if recipe.concept_ref not in concepts:
+            findings.append(
+                _finding(
+                    "recipe_missing_concept",
+                    f"{recipe.id} references missing concept {recipe.concept_ref}.",
+                    f"recipe_definitions.{recipe.id}.concept_ref",
+                )
+            )
+            recipe_concept = None
+        else:
+            recipe_concept = concepts[recipe.concept_ref]
         artifact = plan_artifacts.get(recipe.plan_artifact_ref)
         if artifact is None:
             findings.append(
@@ -1050,6 +1165,47 @@ def validate_registry(
                     f"recipe_definitions.{recipe.id}.evidence_contract_ref",
                 )
             )
+        if (
+            recipe_concept is not None
+            and recipe.claim_contract_ref in claim_contracts
+            and recipe_concept.claim_contract_ref in claim_contracts
+        ):
+            inherits, closure_findings = _contract_inherits_or_is(
+                recipe.claim_contract_ref,
+                recipe_concept.claim_contract_ref,
+                claim_contracts,
+                kind="claim",
+            )
+            findings.extend(closure_findings)
+            if not inherits:
+                findings.append(
+                    _finding(
+                        "recipe_claim_not_derived_from_concept",
+                        f"{recipe.id} claim contract {recipe.claim_contract_ref} does not inherit concept claim {recipe_concept.claim_contract_ref}.",
+                        f"recipe_definitions.{recipe.id}.claim_contract_ref",
+                    )
+                )
+        if (
+            recipe_concept is not None
+            and recipe.evidence_contract_ref in evidence_contracts
+            and recipe_concept.evidence_contract_ref
+            and recipe_concept.evidence_contract_ref in evidence_contracts
+        ):
+            inherits, closure_findings = _contract_inherits_or_is(
+                recipe.evidence_contract_ref,
+                recipe_concept.evidence_contract_ref,
+                evidence_contracts,
+                kind="evidence",
+            )
+            findings.extend(closure_findings)
+            if not inherits:
+                findings.append(
+                    _finding(
+                        "recipe_evidence_not_derived_from_concept",
+                        f"{recipe.id} evidence contract {recipe.evidence_contract_ref} does not inherit concept evidence {recipe_concept.evidence_contract_ref}.",
+                        f"recipe_definitions.{recipe.id}.evidence_contract_ref",
+                    )
+                )
         for profile_ref in recipe.profile_refs:
             if profile_ref not in profiles:
                 findings.append(
@@ -1061,6 +1217,44 @@ def validate_registry(
                 )
                 continue
             profile = profiles[profile_ref]
+            if (
+                recipe.claim_contract_ref in claim_contracts
+                and profile.claim_contract_ref in claim_contracts
+            ):
+                inherits, closure_findings = _contract_inherits_or_is(
+                    recipe.claim_contract_ref,
+                    profile.claim_contract_ref,
+                    claim_contracts,
+                    kind="claim",
+                )
+                findings.extend(closure_findings)
+                if not inherits:
+                    findings.append(
+                        _finding(
+                            "recipe_claim_omits_profile_contract",
+                            f"{recipe.id} claim contract {recipe.claim_contract_ref} does not inherit profile claim {profile.claim_contract_ref}.",
+                            f"recipe_definitions.{recipe.id}.claim_contract_ref",
+                        )
+                    )
+            if (
+                recipe.evidence_contract_ref in evidence_contracts
+                and profile.evidence_contract_ref in evidence_contracts
+            ):
+                inherits, closure_findings = _contract_inherits_or_is(
+                    recipe.evidence_contract_ref,
+                    profile.evidence_contract_ref,
+                    evidence_contracts,
+                    kind="evidence",
+                )
+                findings.extend(closure_findings)
+                if not inherits:
+                    findings.append(
+                        _finding(
+                            "recipe_evidence_omits_profile_contract",
+                            f"{recipe.id} evidence contract {recipe.evidence_contract_ref} does not inherit profile evidence {profile.evidence_contract_ref}.",
+                            f"recipe_definitions.{recipe.id}.evidence_contract_ref",
+                        )
+                    )
             defaults = plan_details.get("parameter_defaults", {})
             for name, value in profile.bindings.items():
                 if name in defaults and defaults[name] != value:
@@ -1073,6 +1267,17 @@ def validate_registry(
                     )
 
     for composition in registry.composition_instances:
+        if composition.concept_ref not in concepts:
+            findings.append(
+                _finding(
+                    "composition_missing_concept",
+                    f"{composition.id} references missing concept {composition.concept_ref}.",
+                    f"composition_instances.{composition.id}.concept_ref",
+                )
+            )
+            composition_concept = None
+        else:
+            composition_concept = concepts[composition.concept_ref]
         artifact = plan_artifacts.get(composition.plan_artifact_ref)
         if artifact is None:
             findings.append(
@@ -1108,6 +1313,26 @@ def validate_registry(
                     f"composition_instances.{composition.id}.plan_artifact_ref",
                 )
             )
+        for dep in plan_details.get("capability_dependencies", []):
+            runtime_key = (dep["kind"], dep["name"], dep["version"])
+            if runtime_key not in set(binding_keys):
+                findings.append(
+                    _finding(
+                        "composition_references_unbound_runtime_capability",
+                        f"{artifact.id} references unbound runtime capability {runtime_key}.",
+                        f"plan_artifacts.{artifact.id}.draft_plan.nodes",
+                    )
+                )
+        for dep in plan_details.get("operator_dependencies", []):
+            key = (dep["name"], dep["version"])
+            if key not in operator_definition_keys:
+                findings.append(
+                    _finding(
+                        "composition_references_unregistered_operator",
+                        f"{artifact.id} references operator {key} without OperatorDefinition.",
+                        f"plan_artifacts.{artifact.id}.draft_plan.nodes",
+                    )
+                )
         if artifact.origin == "AI_AUTHORED" and not str(plan_details.get("source_kind", "")).startswith(
             "n1f_origin_bundle"
         ):
@@ -1134,6 +1359,47 @@ def validate_registry(
                     f"composition_instances.{composition.id}.evidence_contract_ref",
                 )
             )
+        if (
+            composition_concept is not None
+            and composition.claim_contract_ref in claim_contracts
+            and composition_concept.claim_contract_ref in claim_contracts
+        ):
+            inherits, closure_findings = _contract_inherits_or_is(
+                composition.claim_contract_ref,
+                composition_concept.claim_contract_ref,
+                claim_contracts,
+                kind="claim",
+            )
+            findings.extend(closure_findings)
+            if not inherits:
+                findings.append(
+                    _finding(
+                        "composition_claim_not_derived_from_concept",
+                        f"{composition.id} claim contract {composition.claim_contract_ref} does not inherit concept claim {composition_concept.claim_contract_ref}.",
+                        f"composition_instances.{composition.id}.claim_contract_ref",
+                    )
+                )
+        if (
+            composition_concept is not None
+            and composition.evidence_contract_ref in evidence_contracts
+            and composition_concept.evidence_contract_ref
+            and composition_concept.evidence_contract_ref in evidence_contracts
+        ):
+            inherits, closure_findings = _contract_inherits_or_is(
+                composition.evidence_contract_ref,
+                composition_concept.evidence_contract_ref,
+                evidence_contracts,
+                kind="evidence",
+            )
+            findings.extend(closure_findings)
+            if not inherits:
+                findings.append(
+                    _finding(
+                        "composition_evidence_not_derived_from_concept",
+                        f"{composition.id} evidence contract {composition.evidence_contract_ref} does not inherit concept evidence {composition_concept.evidence_contract_ref}.",
+                        f"composition_instances.{composition.id}.evidence_contract_ref",
+                    )
+                )
 
     for atlas in registry.atlas_entries:
         if atlas.status != Status.PROPOSED_ATLAS:
@@ -1218,55 +1484,93 @@ def _is_excluded(policy: Any | None, *, subject: str, status: str = "CURRENT") -
     return subject in excludes or status in excludes
 
 
-def _capability_allowed_for_product(policy: Any, maturity: Any, projection_policy: Any) -> bool:
+def _projection_requirement_context(
+    *,
+    policy: Any | None,
+    maturity: Any | None,
+    runtime_binding_verified: bool = False,
+    plan_artifact_exists: bool | None = None,
+    status: str = "CURRENT",
+) -> dict[str, str]:
+    context = {
+        "runtime_binding": "VERIFIED" if runtime_binding_verified else "MISSING",
+        "product_exposure": policy.product.value if policy else "MISSING",
+        "product_maturity": maturity.product.value if maturity else "MISSING",
+        "ai_compiler": policy.ai_compiler.value if policy else "MISSING",
+        "agent_safety": maturity.agent_safety.value if maturity else "MISSING",
+        "validation": maturity.validation.value if maturity else "MISSING",
+        "status": status,
+    }
+    if plan_artifact_exists is not None:
+        context["plan_artifact"] = "EXISTS" if plan_artifact_exists else "MISSING"
+    return context
+
+
+def _projection_requirements_met(projection_policy: Any | None, context: dict[str, str]) -> bool:
+    if projection_policy is None:
+        return False
+    for key, expected in projection_policy.requires.items():
+        actual = context.get(key, "MISSING")
+        if isinstance(expected, list):
+            if actual not in {str(item) for item in expected}:
+                return False
+        elif actual != str(expected):
+            return False
+    return True
+
+
+def _projection_allowed(
+    projection_policy: Any | None,
+    *,
+    subject: str,
+    context: dict[str, str],
+    status: str = "CURRENT",
+) -> bool:
     return (
-        policy is not None
-        and maturity is not None
-        and not _is_excluded(projection_policy, subject=policy.subject_ref)
-        and policy.product == AuthoringExposure.ALLOWED
-        and maturity.validation == MaturityLevel.VERIFIED
-        and maturity.product == MaturityLevel.EXPOSED
+        not _is_excluded(projection_policy, subject=subject, status=status)
+        and _projection_requirements_met(projection_policy, context)
     )
 
 
-def _capability_allowed_for_ai(policy: Any, maturity: Any, projection_policy: Any) -> bool:
-    return (
-        policy is not None
-        and maturity is not None
-        and not _is_excluded(projection_policy, subject=policy.subject_ref)
-        and policy.ai_compiler == AuthoringExposure.ALLOWED
-        and maturity.validation == MaturityLevel.VERIFIED
-        and maturity.agent_safety == MaturityLevel.APPROVED
+def _capability_allowed_for_product(
+    subject: str, policy: Any, maturity: Any, projection_policy: Any
+) -> bool:
+    context = _projection_requirement_context(
+        policy=policy, maturity=maturity, runtime_binding_verified=True
+    )
+    return policy is not None and maturity is not None and _projection_allowed(
+        projection_policy, subject=subject, context=context
     )
 
 
-def _plan_subject_allowed_for_product(
-    subject: str, policies: dict[str, Any], maturities: dict[str, Any], projection_policy: Any
+def _capability_allowed_for_ai(subject: str, policy: Any, maturity: Any, projection_policy: Any) -> bool:
+    context = _projection_requirement_context(
+        policy=policy, maturity=maturity, runtime_binding_verified=True
+    )
+    return policy is not None and maturity is not None and _projection_allowed(
+        projection_policy, subject=subject, context=context
+    )
+
+
+def _plan_subject_allowed(
+    subject: str,
+    policies: dict[str, Any],
+    maturities: dict[str, Any],
+    projection_policy: Any,
+    *,
+    plan_artifact_exists: bool,
+    dependency_bindings_verified: bool,
 ) -> bool:
     policy = policies.get(subject)
     maturity = maturities.get(subject)
-    return (
-        policy is not None
-        and maturity is not None
-        and not _is_excluded(projection_policy, subject=subject)
-        and policy.product == AuthoringExposure.ALLOWED
-        and maturity.validation == MaturityLevel.VERIFIED
-        and maturity.product == MaturityLevel.EXPOSED
+    context = _projection_requirement_context(
+        policy=policy,
+        maturity=maturity,
+        runtime_binding_verified=dependency_bindings_verified,
+        plan_artifact_exists=plan_artifact_exists,
     )
-
-
-def _plan_subject_allowed_for_ai(
-    subject: str, policies: dict[str, Any], maturities: dict[str, Any], projection_policy: Any
-) -> bool:
-    policy = policies.get(subject)
-    maturity = maturities.get(subject)
-    return (
-        policy is not None
-        and maturity is not None
-        and not _is_excluded(projection_policy, subject=subject)
-        and policy.ai_compiler == AuthoringExposure.ALLOWED
-        and maturity.validation == MaturityLevel.VERIFIED
-        and maturity.agent_safety == MaturityLevel.APPROVED
+    return policy is not None and maturity is not None and _projection_allowed(
+        projection_policy, subject=subject, context=context
     )
 
 
@@ -1297,6 +1601,14 @@ def build_projections(
     product_capabilities: list[dict[str, Any]] = []
     ai_capabilities: list[dict[str, Any]] = []
     unsupported: list[dict[str, Any]] = []
+    bound_runtime_keys = {
+        (
+            item.runtime_capability.kind,
+            item.runtime_capability.id,
+            item.runtime_capability.version,
+        )
+        for item in registry.runtime_bindings
+    }
 
     for binding in sorted(registry.runtime_bindings, key=lambda item: item.runtime_capability.id):
         subject = (
@@ -1314,7 +1626,7 @@ def build_projections(
             "implements": binding.implements,
             "runtime_contract": _runtime_contract_for_binding(runtime_manifest, binding),
         }
-        if policy and maturity and _capability_allowed_for_product(policy, maturity, product_policy):
+        if _capability_allowed_for_product(subject, policy, maturity, product_policy):
             product_capabilities.append(
                 base
                 | {
@@ -1333,7 +1645,7 @@ def build_projections(
                     "validation_maturity": maturity.validation.value if maturity else "MISSING",
                 }
             )
-        if policy and maturity and _capability_allowed_for_ai(policy, maturity, ai_policy):
+        if _capability_allowed_for_ai(subject, policy, maturity, ai_policy):
             ai_capabilities.append(
                 base
                 | {
@@ -1366,6 +1678,11 @@ def build_projections(
     recipe_items: list[dict[str, Any]] = []
     for recipe in registry.recipe_definitions:
         artifact = next(item for item in registry.plan_artifacts if item.id == recipe.plan_artifact_ref)
+        plan_integrity = plan_index["artifacts"].get(artifact.id, {})
+        dependency_bindings_verified = all(
+            (item["kind"], item["name"], item["version"]) in bound_runtime_keys
+            for item in plan_integrity.get("capability_dependencies", [])
+        )
         subject = f"recipe:{recipe.recipe_id}:{recipe.recipe_version}"
         recipe_items.append(
             {
@@ -1373,9 +1690,12 @@ def build_projections(
                 "version": recipe.recipe_version,
                 "subject_ref": subject,
                 "mapping_id": recipe.id,
+                "concept_ref": recipe.concept_ref,
                 "plan_artifact_id": artifact.id,
                 "exact_typed_plan_ref": artifact.exact_typed_plan_ref,
-                "plan_integrity": plan_index["artifacts"].get(artifact.id),
+                "plan_integrity": plan_integrity,
+                "plan_artifact_exists": bool(plan_integrity.get("exists")),
+                "dependency_bindings_verified": dependency_bindings_verified,
                 "dependencies": recipe.dependency_refs,
                 "profiles": recipe.profile_refs,
                 "claim_contract_ref": recipe.claim_contract_ref,
@@ -1386,30 +1706,61 @@ def build_projections(
     product_recipes = [
         item
         for item in recipe_items
-        if _plan_subject_allowed_for_product(item["subject_ref"], policies, maturities, product_policy)
+        if _plan_subject_allowed(
+            item["subject_ref"],
+            policies,
+            maturities,
+            product_policy,
+            plan_artifact_exists=item["plan_artifact_exists"],
+            dependency_bindings_verified=item["dependency_bindings_verified"],
+        )
     ]
     ai_recipes = [
         item
         for item in recipe_items
-        if _plan_subject_allowed_for_ai(item["subject_ref"], policies, maturities, ai_policy)
+        if _plan_subject_allowed(
+            item["subject_ref"],
+            policies,
+            maturities,
+            ai_policy,
+            plan_artifact_exists=item["plan_artifact_exists"],
+            dependency_bindings_verified=item["dependency_bindings_verified"],
+        )
     ]
     recipe_library_items = [
         item
         for item in recipe_items
-        if not _is_excluded(recipe_policy, subject=item["subject_ref"])
+        if _projection_allowed(
+            recipe_policy,
+            subject=item["subject_ref"],
+            context=_projection_requirement_context(
+                policy=policies.get(item["subject_ref"]),
+                maturity=maturities.get(item["subject_ref"]),
+                plan_artifact_exists=item["plan_artifact_exists"],
+                runtime_binding_verified=item["dependency_bindings_verified"],
+            ),
+        )
     ]
 
     composition_items = []
     for item in registry.composition_instances:
         subject = f"composition:{item.id}"
+        plan_integrity = plan_index["artifacts"].get(item.plan_artifact_ref, {})
+        dependency_bindings_verified = all(
+            (dep["kind"], dep["name"], dep["version"]) in bound_runtime_keys
+            for dep in plan_integrity.get("capability_dependencies", [])
+        )
         composition_items.append(
             {
                 "id": item.id,
                 "subject_ref": subject,
+                "concept_ref": item.concept_ref,
                 "plan_artifact_ref": item.plan_artifact_ref,
                 "origin": item.origin,
                 "promotion_status": item.promotion_status,
-                "plan_integrity": plan_index["artifacts"].get(item.plan_artifact_ref),
+                "plan_integrity": plan_integrity,
+                "plan_artifact_exists": bool(plan_integrity.get("exists")),
+                "dependency_bindings_verified": dependency_bindings_verified,
                 "claim_contract_ref": item.claim_contract_ref,
                 "evidence_contract_ref": item.evidence_contract_ref,
             }
@@ -1418,17 +1769,40 @@ def build_projections(
     product_compositions = [
         item
         for item in composition_items
-        if _plan_subject_allowed_for_product(item["subject_ref"], policies, maturities, product_policy)
+        if _plan_subject_allowed(
+            item["subject_ref"],
+            policies,
+            maturities,
+            product_policy,
+            plan_artifact_exists=item["plan_artifact_exists"],
+            dependency_bindings_verified=item["dependency_bindings_verified"],
+        )
     ]
     ai_compositions = [
         item
         for item in composition_items
-        if _plan_subject_allowed_for_ai(item["subject_ref"], policies, maturities, ai_policy)
+        if _plan_subject_allowed(
+            item["subject_ref"],
+            policies,
+            maturities,
+            ai_policy,
+            plan_artifact_exists=item["plan_artifact_exists"],
+            dependency_bindings_verified=item["dependency_bindings_verified"],
+        )
     ]
     recipe_library_compositions = [
         item
         for item in composition_items
-        if not _is_excluded(recipe_policy, subject=item["subject_ref"])
+        if _projection_allowed(
+            recipe_policy,
+            subject=item["subject_ref"],
+            context=_projection_requirement_context(
+                policy=policies.get(item["subject_ref"]),
+                maturity=maturities.get(item["subject_ref"]),
+                plan_artifact_exists=item["plan_artifact_exists"],
+                runtime_binding_verified=item["dependency_bindings_verified"],
+            ),
+        )
     ]
 
     atlas_summary = {
@@ -1443,7 +1817,16 @@ def build_projections(
                 "exposure_default": item.exposure_default.value,
             }
             for item in registry.atlas_entries
-            if not _is_excluded(research_policy, subject=item.id, status=item.status.value)
+            if _projection_allowed(
+                research_policy,
+                subject=item.id,
+                status=item.status.value,
+                context=_projection_requirement_context(
+                    policy=None,
+                    maturity=None,
+                    status=item.status.value,
+                ),
+            )
         ],
     }
 
@@ -1515,36 +1898,146 @@ def validate_projection_identities(
     return findings
 
 
-def _projection_identities(projection: dict[str, Any], *, include_operators: bool = False) -> dict[str, str]:
+def _canonical_fields(fields: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(
+        [
+            {
+                "name": item.get("name"),
+                "payload_type": item.get("payload_type"),
+                "temporal_type": item.get("temporal_type"),
+                "unit": item.get("unit", "none"),
+                "cardinality": item.get("cardinality"),
+                "entity_scope": item.get("entity_scope"),
+                "required": item.get("required", False),
+                "missing_data_semantics": item.get("missing_data_semantics"),
+                "evidence_fields": sorted(item.get("evidence_fields", [])),
+                "allowed_values": item.get("allowed_values"),
+            }
+            for item in fields
+        ],
+        key=lambda item: str(item.get("name")),
+    )
+
+
+def _canonical_capability_contract(item: dict[str, Any]) -> dict[str, Any]:
+    contract = item.get("runtime_contract") if isinstance(item.get("runtime_contract"), dict) else item
+    return {
+        "kind": contract.get("kind") or item.get("kind"),
+        "name": contract.get("name") or item.get("id") or item.get("name"),
+        "version": contract.get("version") or item.get("version"),
+        "inputs": _canonical_fields(contract.get("inputs", [])),
+        "outputs": _canonical_fields(contract.get("outputs", [])),
+        "parameters": _canonical_fields(contract.get("parameters", [])),
+        "evidence_fields": sorted(contract.get("evidence_fields", [])),
+        "missing_data_semantics": contract.get("missing_data_semantics") or "unknown",
+        "limitations": sorted(contract.get("limitations", [])),
+        "purpose": contract.get("purpose"),
+    }
+
+
+def _canonical_operator_contract(item: dict[str, Any], runtime_operator: dict[str, Any] | None = None) -> dict[str, Any]:
+    source = runtime_operator or item
+    return {
+        "name": source.get("name") or item.get("id"),
+        "version": source.get("version") or item.get("version"),
+        "input_payload_types": sorted(source.get("input_payload_types", [])),
+        "input_temporal_types": sorted(source.get("input_temporal_types", [])),
+        "compare_payload_types": sorted(source.get("compare_payload_types", [])),
+        "compare_required": bool(source.get("compare_required", False)),
+        "compare_unit_must_match": bool(source.get("compare_unit_must_match", False)),
+        "duration_required": bool(source.get("duration_required", False)),
+        "output_payload_type": source.get("output_payload_type"),
+        "output_temporal_type": source.get("output_temporal_type"),
+        "output_unit": source.get("output_unit", "none"),
+    }
+
+
+def _canonical_recipe_contract(item: dict[str, Any]) -> dict[str, Any]:
+    integrity = item.get("plan_integrity", item)
+    authoring_contract = item.get("authoring_contract", {})
+    authorable_nodes = authoring_contract.get("authorable_nodes", [])
+    capability_dependencies = integrity.get("capability_dependencies")
+    if capability_dependencies is None:
+        capability_dependencies = [
+            {
+                "kind": node.get("kind"),
+                "name": node.get("catalog_ref"),
+                "version": node.get("version"),
+            }
+            for node in authorable_nodes
+        ]
+    operator_dependencies = integrity.get("operator_dependencies", [])
+    if not operator_dependencies:
+        operator_dependencies = [
+            {"name": ref, "version": "1.0.0"}
+            for ref in item.get("operator_refs", [])
+        ]
+    parameter_defaults = integrity.get("parameter_defaults", {})
+    if not parameter_defaults:
+        parameter_defaults = {
+            parameter.get("name"): _typed_value_payload(parameter.get("default"))
+            for parameter in item.get("parameters", [])
+            if isinstance(parameter, dict) and "name" in parameter
+        }
+    return {
+        "recipe_id": item.get("id") or item.get("recipe_id"),
+        "recipe_version": item.get("version") or item.get("recipe_version"),
+        "capability_dependencies": sorted(
+            capability_dependencies,
+            key=lambda dep: (str(dep.get("kind")), str(dep.get("name")), str(dep.get("version"))),
+        ),
+        "operator_dependencies": sorted(
+            operator_dependencies,
+            key=lambda dep: (str(dep.get("name")), str(dep.get("version"))),
+        ),
+        "parameter_defaults": parameter_defaults,
+        "normalized_plan_hash": integrity.get("normalized_plan_hash")
+        or item.get("normalized_plan_hash")
+        or item.get("source_sha256"),
+    }
+
+
+def _projection_identities(
+    projection: dict[str, Any],
+    *,
+    include_operators: bool = False,
+    runtime_manifest: dict[str, Any] | None = None,
+) -> dict[str, str]:
     identities: dict[str, str] = {}
+    runtime_operators = _operator_by_key(runtime_manifest or {})
     for item in projection.get("capabilities", []):
         subject = f"runtime:{item['kind']}:{item['id']}:{item['version']}"
-        identities[subject] = stable_hash(item)
+        identities[subject] = stable_hash(_canonical_capability_contract(item))
     for item in projection.get("recipes", []):
         subject = f"recipe:{item['id']}:{item['version']}"
-        identities[subject] = stable_hash(item)
+        identities[subject] = stable_hash(_canonical_recipe_contract(item))
     for item in projection.get("validated_compositions", []):
         subject = f"composition:{item['id']}"
-        identities[subject] = stable_hash(item)
+        identities[subject] = stable_hash(_canonical_recipe_contract(item))
     if include_operators:
         for item in projection.get("operators", []):
             subject = f"operator:{item['id']}:{item['version']}"
-            identities[subject] = stable_hash(item)
+            identities[subject] = stable_hash(
+                _canonical_operator_contract(
+                    item, runtime_operators.get((item["id"], item["version"]))
+                )
+            )
     return identities
 
 
-def _baseline_identities(runtime_manifest: dict[str, Any]) -> dict[str, dict[str, str]]:
+def _baseline_identities(runtime_manifest: dict[str, Any]) -> dict[str, Any]:
     product: dict[str, str] = {}
     ai: dict[str, str] = {}
+    sources = baseline_artifact_manifest()
     capability_catalog = _load_json_if_exists(CAPABILITY_CATALOG_BASELINE_PATH)
     if isinstance(capability_catalog, dict):
         for key in ("primitives", "relations"):
             for item in capability_catalog.get(key, []):
                 subject = f"runtime:{item['kind']}:{item['name']}:{item['version']}"
-                product[subject] = stable_hash(item)
+                product[subject] = stable_hash(_canonical_capability_contract(item))
         for item in runtime_manifest.get("recipes", []):
             subject = f"recipe:{item['recipe_id']}:{item['recipe_version']}"
-            product[subject] = stable_hash(item)
+            product[subject] = stable_hash(_canonical_recipe_contract(item))
 
     knowledge_pack = _load_json_if_exists(KNOWLEDGE_PACK_BASELINE_PATH)
     if isinstance(knowledge_pack, dict):
@@ -1552,15 +2045,15 @@ def _baseline_identities(runtime_manifest: dict[str, Any]) -> dict[str, dict[str
             for item in knowledge_pack.get(key, []):
                 if item.get("agent_authorable") is True:
                     subject = f"runtime:{item['kind']}:{item['name']}:{item['version']}"
-                    ai[subject] = stable_hash(item)
+                    ai[subject] = stable_hash(_canonical_capability_contract(item))
         for item in knowledge_pack.get("operators", []):
             subject = f"operator:{item['name']}:{item['version']}"
-            ai[subject] = stable_hash(item)
+            ai[subject] = stable_hash(_canonical_operator_contract(item))
         for item in knowledge_pack.get("recipes", []):
             subject = f"recipe:{item['recipe_id']}:{item['recipe_version']}"
-            ai[subject] = stable_hash(item)
+            ai[subject] = stable_hash(_canonical_recipe_contract(item))
 
-    return {"product": product, "ai": ai}
+    return {"product": product, "ai": ai, "sources": sources}
 
 
 def _identity_diff(baseline: dict[str, str], projection: dict[str, str]) -> dict[str, Any]:
@@ -1570,9 +2063,10 @@ def _identity_diff(baseline: dict[str, str], projection: dict[str, str]) -> dict
     return {
         "added": sorted(projection_keys - baseline_keys),
         "removed": sorted(baseline_keys - projection_keys),
-        "changed": sorted(key for key in common if baseline[key] != projection[key]),
+        "contract_changed": sorted(key for key in common if baseline[key] != projection[key]),
         "baseline_count": len(baseline_keys),
         "projection_count": len(projection_keys),
+        "shared_count": len(common),
     }
 
 
@@ -1581,13 +2075,58 @@ def build_projection_differences(
 ) -> dict[str, Any]:
     baselines = _baseline_identities(runtime_manifest)
     return {
+        "baseline_sources": baselines["sources"],
         "product": _identity_diff(
-            baselines["product"], _projection_identities(projections["product"])
+            baselines["product"],
+            _projection_identities(projections["product"], runtime_manifest=runtime_manifest),
         ),
         "ai": _identity_diff(
-            baselines["ai"], _projection_identities(projections["ai"], include_operators=True)
+            baselines["ai"],
+            _projection_identities(
+                projections["ai"], include_operators=True, runtime_manifest=runtime_manifest
+            ),
         ),
     }
+
+
+def validate_projection_parity(
+    registry: SemanticRegistry,
+    runtime_manifest: dict[str, Any],
+    projections: dict[str, dict[str, Any]],
+) -> list[ValidationFinding]:
+    findings: list[ValidationFinding] = []
+    baseline_sources = baseline_artifact_manifest()
+    for source_name, source in baseline_sources.items():
+        if source_name == "baseline_artifact_revision":
+            continue
+        if not source.get("exists"):
+            findings.append(
+                _finding(
+                    "projection_baseline_missing",
+                    f"Required parity baseline {source_name} is missing at {source.get('path')}.",
+                    f"baselines.{source_name}",
+                )
+            )
+    if findings:
+        return findings
+
+    policy_by_target = {policy.target.value: policy for policy in registry.projection_policies}
+    differences = build_projection_differences(runtime_manifest, projections)
+    for target in ("product", "ai"):
+        diff = differences[target]
+        accepted = policy_by_target.get(target).accepted_differences if policy_by_target.get(target) else {}
+        for key in ("added", "removed", "contract_changed"):
+            allowed = set(accepted.get(key, []))
+            unexpected = sorted(set(diff.get(key, [])) - allowed)
+            if unexpected:
+                findings.append(
+                    _finding(
+                        "projection_parity_unapproved_difference",
+                        f"{target} projection has unapproved {key}: {unexpected}.",
+                        f"projection_policies.{target}.accepted_differences.{key}",
+                    )
+                )
+    return findings
 
 
 def _binding_path_for_capability(
@@ -1849,19 +2388,33 @@ def generate_scp0_artifacts(
     findings = validate_registry(registry, runtime_manifest, lock)
     projections = build_projections(registry, runtime_manifest, lock)
     findings.extend(validate_projection_identities(projections, lock))
+    findings.extend(validate_projection_parity(registry, runtime_manifest, projections))
     report = build_parity_report(registry, runtime_manifest, lock, findings, projections)
 
     if write:
-        _write_json(SCHEMA_PATH, SemanticRegistry.model_json_schema())
-        _write_json(output_root / "runtime-manifest.json", runtime_manifest)
-        _write_json(output_root / "plan-artifact-index.json", plan_index)
-        _write_json(LOCK_PATH, lock.model_dump(mode="json"))
-        _write_json(output_root / "product-projection.json", projections["product"])
-        _write_json(output_root / "ai-projection.json", projections["ai"])
-        _write_json(output_root / "recipe-library-projection.json", projections["recipe_library"])
-        _write_json(output_root / "unsupported-capability-projection.json", projections["unsupported"])
-        _write_json(output_root / "research-atlas-projection.json", projections["research_atlas"])
-        _write_json(output_root / "semantic-parity-report.json", report.model_dump(mode="json"))
+        if report.status == "PASS":
+            write_targets = {
+                SCHEMA_PATH: SemanticRegistry.model_json_schema(),
+                output_root / "runtime-manifest.json": runtime_manifest,
+                output_root / "plan-artifact-index.json": plan_index,
+                LOCK_PATH: lock.model_dump(mode="json"),
+                output_root / "product-projection.json": projections["product"],
+                output_root / "ai-projection.json": projections["ai"],
+                output_root / "recipe-library-projection.json": projections["recipe_library"],
+                output_root / "unsupported-capability-projection.json": projections["unsupported"],
+                output_root / "research-atlas-projection.json": projections["research_atlas"],
+                output_root / "semantic-parity-report.json": report.model_dump(mode="json"),
+            }
+            with tempfile.TemporaryDirectory(prefix="scp0-generate-") as tmp_name:
+                tmp_root = Path(tmp_name)
+                staged: list[tuple[Path, Path]] = []
+                for target, payload in write_targets.items():
+                    staged_path = tmp_root / target
+                    _write_json(staged_path, payload)
+                    staged.append((staged_path, target))
+                for staged_path, target in staged:
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(staged_path), str(target))
     return registry, runtime_manifest, lock, report
 
 

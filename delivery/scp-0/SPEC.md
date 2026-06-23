@@ -14,7 +14,7 @@ mode.
 
 ## Scope
 
-SCP-0 covers three implementation slices:
+SCP-0 covers four implementation slices:
 
 ### SCP-0A - Registry Schemas, Runtime Manifest, and Parity Skeleton
 
@@ -57,6 +57,25 @@ SCP-0 covers three implementation slices:
   upstream contradictions.
 - Require explicit exposure and maturity records for runtime capabilities,
   recipes, and validated composition instances.
+
+### SCP-0D - Declarative Gate Closure
+
+- Evaluate `ProjectionPolicy.requires` values declaratively for product, AI,
+  recipe-library, and research-atlas projections.
+- Pin baseline source artifact hashes in the registry lock.
+- Compare canonical support contracts rather than projection wrapper JSON.
+- Report membership drift and contract drift separately.
+- Fail projection parity on missing baselines or unapproved additions,
+  removals, or contract changes.
+- Add top-level concept references for recipes and composition instances.
+- Require recipe and composition claim/evidence contracts to inherit their
+  concept and profile/dependency contract minima.
+- Pin both full AI origin bundle bytes and normalized selected typed-plan
+  document hashes.
+- Validate composition plans for unbound capabilities and undefined operators.
+- Enforce exact binding port/parameter compatibility and require explicit
+  field mappings/uncovered fields for partial or legacy bindings.
+- Publish generated projections atomically only after validation passes.
 
 ## Non-Goals
 
@@ -213,6 +232,22 @@ SCP-0 passes only if:
 23. Pilot paths are discovered from parsed plan artifacts rather than asserted.
 24. Runtime and operator signature disagreements fail generation unless
     explicitly marked and explained as non-exact conformance.
+25. Changing a `ProjectionPolicy.requires` value changes the generated
+    projection.
+26. Missing baseline artifacts fail parity instead of producing all-added
+    reports.
+27. Canonical shared product support contracts compare equal when current
+    support is unchanged.
+28. Unapproved baseline additions, removals, or contract drift fail parity.
+29. Recipes and composition instances resolve to a top-level concept.
+30. Recipe and composition contracts preserve inherited concept/profile claim
+    prohibitions and evidence minima.
+31. AI-origin bundle byte changes alter source artifact hashes even when the
+    selected normalized plan is unchanged.
+32. Composition plans with unbound capabilities or undefined operators fail
+    validation.
+33. Exact bindings fail on missing runtime/semantic ports or parameter mappings.
+34. Failed generation leaves the last valid projection artifacts untouched.
 
 ## Side Effects
 

@@ -78,3 +78,33 @@ change projections, lock hashes, validation status, or generated evidence.
 
 **Follow-up:** Produce an SCP-0C delta review packet. SCP-1 should wait until
 the reviewer accepts this hardening or provides a focused correction.
+
+## 2026-06-23 - SCP-0D Declarative Closure
+
+**Fact:** External review of SCP-0C found that some policy and parity surfaces
+were still too decorative: `ProjectionPolicy.requires` values were validated
+but not executed, baseline parity compared incompatible wrapper shapes, recipe
+contracts did not preserve all profile lineage, and generated projections could
+be overwritten before a failed report exited.
+
+**Decision:** Add SCP-0D as a narrow closure slice before SCP-1. Projection
+requirements are now evaluated from the declared values, baseline source hashes
+are pinned in the registry lock, parity compares canonical support contracts,
+recipe and composition contracts inherit concept/profile evidence minima and
+claim restrictions, full AI origin bundle bytes are hashed separately from the
+selected normalized typed plan, and generated artifacts publish only after a
+PASS report.
+
+**Learning:** A semantic control plane is only trustworthy when every governance
+declaration has a behavioral consequence. Policy values must alter projections,
+source bytes must alter provenance hashes, missing baselines must fail, and
+failed generation must not disturb the last valid artifacts.
+
+**Evidence:** `make scp-0-verify` with 32 focused adversarial tests OK;
+`make test` with 114 repository tests OK and attestation VERIFIED;
+`generated/semantic-registry/semantic-parity-report.json`;
+`generated/semantic-registry/plan-artifact-index.json`;
+`semantic-registry/registry.lock.json`.
+
+**Follow-up:** Generate an SCP-0D review packet. SCP-1 executable-algebra work
+should remain blocked until external review accepts this closure.
