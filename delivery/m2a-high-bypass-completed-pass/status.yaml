@@ -1,6 +1,6 @@
 milestone: M2A
 name: High-Bypass Completed Pass
-status: S0_ACCEPTED
+status: S1_IN_PROGRESS
 created_at: "2026-06-23"
 branch: main
 source_of_truth:
@@ -34,6 +34,8 @@ progress:
     item: Preliminary S0B active-player timeline preflight ran across canonical matches, with J03WOY pass-window intersection; summary recorded at delivery/m2a-high-bypass-completed-pass/M2A_S0B_ACTIVE_PLAYERS.md.
   - date: "2026-06-23"
     item: S0C integrated contract freeze emitted PROCEED_TO_S1 for J03WOY only; report recorded at delivery/m2a-high-bypass-completed-pass/M2A_S0C_CONTRACT_FREEZE.md.
+  - date: "2026-06-23"
+    item: S1A controlled_pass_episode runtime implemented for J03WOY accepted scope with explicit event_anchor_frame_id and physical_release_frame_id; verification report recorded at delivery/m2a-high-bypass-completed-pass/M2A_S1A_CONTROLLED_PASS.md.
 latest_preflight:
   slice: M2A-S0A
   scope: single canonical match J03WOY
@@ -83,4 +85,25 @@ s0_contract_freeze:
     - S1 must derive physical_release_frame_id from tracking transition evidence.
     - Initial runtime scope is J03WOY only.
     - All-corpus execution, Hermes exposure, defensive-line semantics, and support-response semantics remain blocked.
-next_action: Begin M2A-S1 runtime implementation for the accepted J03WOY scope only: controlled_pass_episode with explicit anchor_evaluations and physical release semantics, then opponents_bypassed_by_action wiring. Do not expose Hermes or all-corpus execution yet.
+s1_runtime:
+  slice: M2A-S1A
+  status: CONTROLLED_PASS_EPISODE_IMPLEMENTED
+  accepted_match_ids:
+    - J03WOY
+  runtime_report: delivery/m2a-high-bypass-completed-pass/M2A_S1A_CONTROLLED_PASS.md
+  artifact_hash: fff166b583eb55fb349bdace6283ad6bf72f035d96bf684e21f32209889e8ea4
+  candidate_event_count: 639
+  controlled_pass_episode_count: 453
+  controlled_pass_status_counts:
+    PASS: 453
+    FAIL: 135
+    UNKNOWN: 51
+  verification:
+    - make m2a-s1a-verify
+    - ./.venv/bin/python -m unittest tests.test_m2a_controlled_pass tests.test_m2a_bypass
+  explicit_boundaries:
+    - S1A verifies controlled_pass_episode only.
+    - opponents_bypassed_by_action is not yet wired to real pass episodes.
+    - high_bypass_completed_pass_v1 result emission is not yet implemented.
+    - Hermes exposure and all-corpus execution remain blocked.
+next_action: Begin M2A-S1B by wiring opponents_bypassed_by_action to S1A controlled pass episodes and active defending outfield sets for J03WOY only; do not emit high_bypass_completed_pass_v1 results until S1B measurements pass.
