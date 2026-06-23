@@ -18,6 +18,7 @@ from tqe.workshop.app_service import (
     interpret_request,
     load_plan_from_path,
     match_library,
+    product_model_query,
     recover_n1f_hermes_draft_record,
 )
 from tqe.workshop.m1_2 import (
@@ -151,6 +152,18 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         mutated["default_invocation"]["match_ids"] = ["J03WPY"]
         with self.assertRaises(CapabilityGap):
             host_owned_plan_document(mutated)
+
+    def test_product_model_query_only_adds_attested_invocation_binding_for_hero(self) -> None:
+        from tqe.verification.n1c import HERO_QUESTION
+
+        routed = product_model_query(HERO_QUESTION)
+        self.assertIn("Clarification answer for invocation binding only", routed)
+        self.assertIn('match_ids: ["J03WOY"]', routed)
+        self.assertIn('periods: ["firstHalf"]', routed)
+        self.assertIn('perspective_team_role: "home"', routed)
+
+        other = "Find forward lanes that stay open for at least one second."
+        self.assertEqual(other, product_model_query(other))
 
     def test_scope_changes_bound_hash_cache_key_and_execution_record_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

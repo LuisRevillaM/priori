@@ -77,7 +77,7 @@ export type WorkbenchAction =
   | { type: "CLEAR_ERROR" };
 
 export const DEFAULT_QUERY =
-  "Show possessions where the ball goes wide and the defending block moves toward that side.";
+  "Show possessions where a progressive corridor opens within four seconds of possession starting, remains available for at least 0.8 seconds, and the ball enters that corridor's destination region within five seconds of the corridor opening.";
 
 export function initialState(): WorkbenchState {
   return {

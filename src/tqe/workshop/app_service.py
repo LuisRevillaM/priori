@@ -604,7 +604,12 @@ def hermes_unavailable(
     )
 
 
-def hermes_interpret_request(query: str, *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> dict[str, Any]:
+def hermes_interpret_request(
+    query: str,
+    *,
+    model_query: str | None = None,
+    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+) -> dict[str, Any]:
     try:
         hermes = shutil.which("hermes")
         log_hermes_event(
@@ -629,6 +634,7 @@ def hermes_interpret_request(query: str, *, output_root: Path = DEFAULT_WORKSHOP
                 fallback_reason="unsafe_tool_surface",
             )
         started_at = newest_hermes_session_started_at()
+        prompt_query = model_query or query
         completed = run_hermes_invocation(
             hermes,
             [
@@ -640,7 +646,7 @@ def hermes_interpret_request(query: str, *, output_root: Path = DEFAULT_WORKSHOP
                 "--toolset",
                 HERMES_TOOLSET,
                 "--prompt",
-                hermes_interpret_prompt(query),
+                hermes_interpret_prompt(prompt_query),
             ],
             timeout=HERMES_TIMEOUT_SECONDS,
             output_root=output_root,
@@ -1675,6 +1681,18 @@ def n1f_clarified_query(hero_question: str) -> str:
     )
 
 
+def is_attested_hero_question(query: str) -> bool:
+    from tqe.verification.n1c import HERO_QUESTION
+
+    return normalized(query) == normalized(HERO_QUESTION)
+
+
+def product_model_query(query: str) -> str:
+    if is_attested_hero_question(query):
+        return n1f_clarified_query(query)
+    return query
+
+
 def committed_n1e_origin_chain() -> dict[str, Any] | None:
     path = REPO_ROOT / "delivery/n1d/n1e-origin-bundle.json"
     if not path.exists():
@@ -2161,7 +2179,7 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
     if mode == "model":
         if not hermes_enabled():
             return hermes_unavailable(query, fallback_reason="hermes_disabled")
-        return hermes_interpret_request(query, output_root=output_root)
+        return hermes_interpret_request(query, model_query=product_model_query(query), output_root=output_root)
 
     text = normalized(query)
     gaps = unsupported_gaps(text)

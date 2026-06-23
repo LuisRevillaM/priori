@@ -74,6 +74,14 @@ function periodLabel(period: string | null | undefined) {
   return period === "secondHalf" ? "Second half" : period === "firstHalf" ? "First half" : "Period";
 }
 
+function invocationPeriodsLabel(planDocument: JsonObject | null, locked: boolean) {
+  if (!locked || !planDocument) return "All";
+  const invocation = asRecord(planDocument.default_invocation);
+  const periods = asArray(invocation.periods).filter((item): item is string => typeof item === "string");
+  if (periods.length === 0) return "Attested scope";
+  return periods.map((period) => periodLabel(period)).join(", ");
+}
+
 function matchTimeLabel(matchTimeMs: number | null | undefined) {
   if (typeof matchTimeMs !== "number" || !Number.isFinite(matchTimeMs) || matchTimeMs < 0) return "";
   const totalSeconds = Math.round(matchTimeMs / 1000);
@@ -385,6 +393,7 @@ export function App() {
     selectedMatchIds.length === allMatchCount
       ? `All ${selectedMatchIds.length || 0} available matches`
       : `${selectedMatchIds.length} selected ${selectedMatchIds.length === 1 ? "match" : "matches"}`;
+  const periodsLabel = invocationPeriodsLabel(planDocument, scopeLocked);
 
   const previewRecipe = mode === "manual" ? boot?.presets.find((preset) => preset.preset_id === selectedPreset)?.recipe ?? null : null;
   const displayRecipe = interpretation?.recipe ?? previewRecipe;
@@ -492,7 +501,7 @@ export function App() {
             </div>
             <div className="scopeMetric">
               <span>Periods</span>
-              <strong>All</strong>
+              <strong>{periodsLabel}</strong>
             </div>
             <div className="scopeMetric">
               <span>Possession</span>
