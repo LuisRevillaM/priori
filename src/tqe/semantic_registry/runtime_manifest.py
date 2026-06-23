@@ -12,7 +12,7 @@ from typing import Any
 import yaml
 
 from tqe.runtime.catalog import default_catalog
-from tqe.runtime.ir import stable_hash
+from tqe.runtime.ir import TacticalQueryDocument, stable_hash
 from tqe.workshop.m1_2 import NON_AUTHORABLE_CATALOG_REFS, RECIPE_PLAN_PATHS
 
 
@@ -27,6 +27,82 @@ def _json_ready(value: Any) -> Any:
     if isinstance(value, list):
         return [_json_ready(item) for item in value]
     return value
+
+
+def _dedupe_preserve(values: list[Any]) -> list[Any]:
+    seen: set[str] = set()
+    result: list[Any] = []
+    for value in values:
+        key = repr(value)
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(value)
+    return result
+
+
+def _typed_value_payload(value: Any) -> Any:
+    if isinstance(value, dict) and value.get("kind") == "parameter":
+        return {"parameter_ref": value["name"]}
+    if isinstance(value, dict) and "value" in value:
+        return value["value"]
+    return value
+
+
+def plan_manifest_payload(path: Path) -> dict[str, Any]:
+    document_payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    document = TacticalQueryDocument.model_validate(document_payload)
+    normalized_document = document.model_dump(mode="json", exclude_none=True)
+    capability_dependencies: list[dict[str, str]] = []
+    operator_dependencies: list[dict[str, str]] = []
+    referenced_parameters: set[str] = set()
+
+    for node in document.draft_plan.nodes:
+        if getattr(node, "kind", None) == "predicate":
+            operator_dependencies.append(
+                {"name": node.operator.name, "version": node.operator.version}
+            )
+            for arg in (node.compare, node.duration):
+                if getattr(arg, "kind", None) == "parameter":
+                    referenced_parameters.add(arg.name)
+            continue
+
+        capability_dependencies.append(
+            {
+                "kind": node.kind.value,
+                "name": node.catalog_ref,
+                "version": node.version,
+            }
+        )
+        for arg in (node.parameters or {}).values():
+            if getattr(arg, "kind", None) == "parameter":
+                referenced_parameters.add(arg.name)
+
+    parameter_defaults = {
+        item.name: _typed_value_payload(
+            item.default.model_dump(mode="json", exclude_none=True) if item.default else None
+        )
+        for item in document.recipe.parameters
+    }
+
+    return {
+        "path": str(path),
+        "recipe_id": document.recipe.recipe_id,
+        "recipe_version": document.recipe.recipe_version,
+        "display_name": document.recipe.display_name,
+        "plan_id": document.draft_plan.plan_id,
+        "plan_version": document.draft_plan.plan_version,
+        "status": document.draft_plan.status.value,
+        "normalized_plan_hash": stable_hash(normalized_document),
+        "node_catalog_refs": _dedupe_preserve(
+            [item["name"] for item in capability_dependencies]
+        ),
+        "operator_refs": _dedupe_preserve([item["name"] for item in operator_dependencies]),
+        "capability_dependencies": _dedupe_preserve(capability_dependencies),
+        "operator_dependencies": _dedupe_preserve(operator_dependencies),
+        "parameter_defaults": parameter_defaults,
+        "referenced_parameters": sorted(referenced_parameters),
+    }
 
 
 def generate_runtime_manifest() -> dict[str, Any]:
@@ -47,30 +123,7 @@ def generate_runtime_manifest() -> dict[str, Any]:
 
     recipes: list[dict[str, Any]] = []
     for path in RECIPE_PLAN_PATHS:
-        document = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-        recipe = document["recipe"]
-        draft_plan = document["draft_plan"]
-        recipes.append(
-            {
-                "path": str(path),
-                "recipe_id": recipe["recipe_id"],
-                "recipe_version": recipe["recipe_version"],
-                "display_name": recipe["display_name"],
-                "plan_id": draft_plan["plan_id"],
-                "plan_version": draft_plan["plan_version"],
-                "status": draft_plan["status"],
-                "node_catalog_refs": [
-                    node["catalog_ref"]
-                    for node in draft_plan["nodes"]
-                    if node["kind"] in {"primitive", "relation"}
-                ],
-                "operator_refs": [
-                    node["operator"]["name"]
-                    for node in draft_plan["nodes"]
-                    if node["kind"] == "predicate"
-                ],
-            }
-        )
+        recipes.append(plan_manifest_payload(Path(path)))
 
     manifest = {
         "schema_version": "1.0",

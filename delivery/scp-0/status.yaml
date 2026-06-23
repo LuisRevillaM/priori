@@ -1,6 +1,6 @@
 milestone: SCP-0
 name: Semantic Registry Foundation
-state: IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW
+state: SCP_0C_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW
 last_updated: "2026-06-23"
 outcome: >
   Create a versioned semantic parity and projection layer over the current
@@ -30,24 +30,46 @@ slices:
       - generated/semantic-registry/research-atlas-projection.json
       - generated/semantic-registry/semantic-parity-report.json
       - artifacts/scp-0/verification-report.json
+  SCP-0C:
+    name: Projection, Parity, and Integrity Hardening
+    state: DONE
+    evidence:
+      - generated/semantic-registry/plan-artifact-index.json
+      - generated/semantic-registry/semantic-parity-report.json
+      - semantic-registry/registry.lock.json
+      - src/tqe/semantic_registry/generate.py
+      - src/tqe/semantic_registry/runtime_manifest.py
+      - tests/test_scp0_semantic_registry.py
+claims:
+  registry_coverage: VERIFIED
+  runtime_binding_coverage: VERIFIED
+  atlas_isolation: VERIFIED
+  semantic_parity: PARTIAL_BASELINE_COMPARISON_REPORTED
+  projection_policy_enforcement: VERIFIED
+  plan_content_integrity: VERIFIED
+  pilot_graph_traversal: VERIFIED
+  runtime_authority: CURRENT_RUNTIME
+  projection_authority: SHADOW_ONLY
 verification:
   required:
     - make scp-0-verify
     - make test
   latest_result:
     status: PASS
-    timestamp: "2026-06-23T15:20:04-07:00"
+    timestamp: "2026-06-23T15:59:57-07:00"
     commands:
       - "make scp-0-verify"
       - "make test"
     summary:
       - "SCP-0 verifier PASS: 11 runtime capabilities bound, 8 operators defined, 4 recipes mapped, 1 validated composition mapped, 741 atlas entries isolated, zero product/AI atlas leakage."
-      - "Focused SCP-0 adversarial unit suite: 10 tests OK."
-      - "Repository unittest discovery: 92 tests OK."
+      - "SCP-0C hardening active: projection policies filter, plan artifacts are hashed into the lock, pilots traverse discovered graph paths, and baseline projection differences are reported."
+      - "Focused SCP-0 adversarial unit suite: 22 tests OK."
+      - "Repository unittest discovery: 104 tests OK."
       - "Regenerated the existing M1.1 capability catalog artifact with the project generator before the full run."
 review:
   external_packet: review-packets/scp-0-semantic-registry-foundation-2026-06-23.zip
   accepted: false
+  last_external_decision: APPROVE_WITH_REQUIRED_CHANGES_BEFORE_SCP_1
 non_goals:
   - runtime behavior changes
   - new tactical capabilities

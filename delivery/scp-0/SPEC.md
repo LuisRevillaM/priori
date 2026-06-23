@@ -14,7 +14,7 @@ mode.
 
 ## Scope
 
-SCP-0 covers two implementation slices:
+SCP-0 covers three implementation slices:
 
 ### SCP-0A - Registry Schemas, Runtime Manifest, and Parity Skeleton
 
@@ -38,6 +38,25 @@ SCP-0 covers two implementation slices:
   - High-Bypass Completed Pass.
   - Ball-Side Block Shift.
 - Generate the SCP-0 parity report and external review packet.
+
+### SCP-0C - Projection, Parity, and Integrity Hardening
+
+- Execute projection policies instead of only declaring them.
+- Compare generated product and AI projections against the current generated
+  capability catalog and Tactical Knowledge Pack surfaces.
+- Parse and hash every plan artifact, including the validated composition
+  origin bundle.
+- Add normalized plan hashes, dependencies, parameter defaults, and referenced
+  parameters to the plan-artifact index and registry lock.
+- Validate registry recipe declarations against parsed plan dependencies,
+  recipe IDs, versions, and profile-bound parameter defaults.
+- Generate pilot reports through a generic semantic graph resolver rather than
+  hard-coded capability lists.
+- Validate runtime and operator signatures against semantic declarations.
+- Compute transitive claim/evidence inheritance, detect cycles, and catch
+  upstream contradictions.
+- Require explicit exposure and maturity records for runtime capabilities,
+  recipes, and validated composition instances.
 
 ## Non-Goals
 
@@ -147,7 +166,8 @@ SCP-0 must produce:
 11. Research-atlas projection.
 12. Semantic parity report.
 13. Registry lockfile.
-14. CI/verification suite.
+14. Plan-artifact index.
+15. CI/verification suite.
 
 ## Acceptance Criteria
 
@@ -187,6 +207,12 @@ SCP-0 passes only if:
     product projection, and AI projection.
 19. Ball-Side Block Shift can be traversed through the same chain while
     preserving its reviewed-plan-only classifier boundary.
+20. Projection policy changes alter generated projections.
+21. Plan-content changes alter the registry lock.
+22. Registry/plan dependency disagreements fail generation.
+23. Pilot paths are discovered from parsed plan artifacts rather than asserted.
+24. Runtime and operator signature disagreements fail generation unless
+    explicitly marked and explained as non-exact conformance.
 
 ## Side Effects
 

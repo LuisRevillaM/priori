@@ -19,13 +19,13 @@ concepts:
     evidence_contract_ref: evidence.controlled_ball_transfer.v1
     tags: [pass, control, event_tracking_alignment]
 
-  - id: concept.wide_ball_entry
+  - id: concept.normalized_ball_lateral_position
     kind: Concept
-    display_name: Wide Ball Entry
-    description: The ball occupies a configured wide area under a declared pitch-width policy.
+    display_name: Normalized Ball Lateral Position
+    description: The ball's lateral position normalized against the pitch centerline and touchline distance.
     claim_contract_ref: claim.wide_ball_entry.v1
     evidence_contract_ref: evidence.wide_ball_entry.v1
-    tags: [width, ball_position]
+    tags: [width, ball_position, measurement]
 
   - id: concept.defensive_outfield_centroid
     kind: Concept
@@ -83,13 +83,13 @@ concepts:
     evidence_contract_ref: evidence.high_bypass_completed_pass.v1
     tags: [bypass, pass, recipe]
 
-  - id: concept.ai_corridor_destination_composition
+  - id: concept.progressive_connection_followed_by_destination_entry
     kind: Concept
-    display_name: AI Corridor Destination Composition
-    description: A validated AI-authored composition combining possession anchors, corridor availability, and destination entry.
+    display_name: Progressive Connection Followed By Destination Entry
+    description: A possession anchor has a progressive connection relation and the ball is evaluated for later entry into that relation's destination region.
     claim_contract_ref: claim.ai_corridor_destination_composition.v1
     evidence_contract_ref: evidence.ai_corridor_destination_composition.v1
-    tags: [ai_authored, corridor, destination_entry]
+    tags: [corridor, destination_entry, composition]
 
 operationalizations:
   - id: op.possession_segment_intervals.v1
@@ -140,7 +140,7 @@ operationalizations:
     kind: Operationalization
     display_name: Ball Lateral Fraction
     description: Normalize ball distance from pitch centerline toward either touchline.
-    concept_refs: [concept.wide_ball_entry]
+    concept_refs: [concept.normalized_ball_lateral_position]
     semantic_basis: DETERMINISTIC
     required_modalities: [tracking]
     applicability: [ball_position_available, pitch_width_known]
@@ -236,7 +236,7 @@ operationalizations:
     kind: Operationalization
     display_name: Reviewed Relation Destination Entry Classification
     description: Classify ball entry into a relation destination for a reviewed saved-plan path.
-    concept_refs: [concept.reviewed_outcome_classification, concept.relation_destination_entry]
+    concept_refs: [concept.relation_destination_entry]
     semantic_basis: DETERMINISTIC
     required_modalities: [tracking]
     applicability: [relation_episode_available, reviewed_plan_context]
@@ -320,7 +320,7 @@ definition_profiles:
     operationalization_ref: op.release_reception_opponent_transition_count.v1
     bindings:
       minimum_forward_progression_m: 8.0
-      minimum_opponents_bypassed: 5
+      minimum_bypassed_opponents: 5
       goalkeeper_policy: exclude_goalkeepers
     claim_contract_ref: claim.high_bypass_completed_pass.v1
     evidence_contract_ref: evidence.high_bypass_completed_pass.v1
@@ -528,9 +528,9 @@ operator_definitions:
     description: Strict lower-bound numeric comparison.
     operator_id: gt
     operator_version: 1.0.0
-    input: {container: FrameSignal, value: Scalar, unit: metre, nullable: true}
+    input: {container: FrameSignal, value: Scalar, unit: any, nullable: true}
     output: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
-    compare: {container: Scalar, value: Scalar, unit: metre, nullable: false}
+    compare: {container: Scalar, value: Scalar, unit: any, nullable: false}
     authorability: ALLOWED
   - id: operator.gte.1_0_0
     kind: OperatorDefinition
@@ -538,9 +538,9 @@ operator_definitions:
     description: Inclusive lower-bound numeric comparison.
     operator_id: gte
     operator_version: 1.0.0
-    input: {container: FrameSignal, value: Scalar, unit: metre, nullable: true}
+    input: {container: FrameSignal, value: Scalar, unit: any, nullable: true}
     output: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
-    compare: {container: Scalar, value: Scalar, unit: metre, nullable: false}
+    compare: {container: Scalar, value: Scalar, unit: any, nullable: false}
     authorability: ALLOWED
   - id: operator.lte.1_0_0
     kind: OperatorDefinition
@@ -548,9 +548,9 @@ operator_definitions:
     description: Inclusive upper-bound numeric comparison.
     operator_id: lte
     operator_version: 1.0.0
-    input: {container: FrameSignal, value: Scalar, unit: metre, nullable: true}
+    input: {container: FrameSignal, value: Scalar, unit: any, nullable: true}
     output: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
-    compare: {container: Scalar, value: Scalar, unit: metre, nullable: false}
+    compare: {container: Scalar, value: Scalar, unit: any, nullable: false}
     authorability: ALLOWED
   - id: operator.eq.1_0_0
     kind: OperatorDefinition
@@ -861,6 +861,46 @@ exposure_policies:
     subject_ref: runtime:relation:opponents_bypassed_by_action:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.recipe.ball_side_block_shift.v1
+    kind: ExposurePolicy
+    display_name: ball_side_block_shift_v1 exposure
+    description: Exposure policy for the reviewed ball-side block-shift recipe.
+    subject_ref: recipe:ball_side_block_shift_v1:1.0.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [reviewed_recipe_selection_allowed]
+  - id: exposure.recipe.possession_corridor_availability.v1
+    kind: ExposurePolicy
+    display_name: possession_corridor_availability_v1 exposure
+    description: Exposure policy for the possession corridor availability experimental preset.
+    subject_ref: recipe:possession_corridor_availability_v1:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [experimental_recipe_selection_allowed]
+  - id: exposure.recipe.opposite_corridor_after_shift.v1
+    kind: ExposurePolicy
+    display_name: opposite_corridor_after_shift_v1 exposure
+    description: Exposure policy for the opposite corridor after shift experimental preset.
+    subject_ref: recipe:opposite_corridor_after_shift_v1:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [experimental_recipe_selection_allowed]
+  - id: exposure.recipe.high_bypass_completed_pass.v1
+    kind: ExposurePolicy
+    display_name: high_bypass_completed_pass_v1 exposure
+    description: Exposure policy for the high-bypass completed pass experimental preset.
+    subject_ref: recipe:high_bypass_completed_pass_v1:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [experimental_recipe_selection_allowed]
+  - id: exposure.composition.ai_corridor_destination.2026_06_23
+    kind: ExposurePolicy
+    display_name: AI corridor destination composition exposure
+    description: Exposure policy for the verified Hermes-authored corridor destination composition.
+    subject_ref: composition:composition.ai_corridor_destination.2026_06_23
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [validated_composition_selection_allowed]
 
 projection_policies:
   - id: projection.product.v1
@@ -868,14 +908,14 @@ projection_policies:
     display_name: Product Projection Policy
     description: Includes product-approved current capabilities, recipes, and validated compositions.
     target: product
-    requires: {runtime_binding: VERIFIED, product_exposure: ALLOWED}
+    requires: {runtime_binding: VERIFIED, product_exposure: ALLOWED, product_maturity: EXPOSED, validation: VERIFIED}
     excludes: [PROPOSED_ATLAS, DEPRECATED]
   - id: projection.ai.v1
     kind: ProjectionPolicy
     display_name: AI Projection Policy
     description: Includes only AI-approved authorable capabilities, operators, recipes, and validated compositions.
     target: ai
-    requires: {runtime_binding: VERIFIED, agent_safety: APPROVED, ai_compiler: ALLOWED}
+    requires: {runtime_binding: VERIFIED, agent_safety: APPROVED, ai_compiler: ALLOWED, validation: VERIFIED}
     excludes: [PROPOSED_ATLAS, REVIEWED_PLAN_ONLY, DEPRECATED]
   - id: projection.recipe_library.v1
     kind: ProjectionPolicy
@@ -1005,6 +1045,56 @@ maturity_assessments:
     display_name: opponents_bypassed_by_action maturity
     description: Maturity assessment for opponents_bypassed_by_action.
     subject_ref: runtime:relation:opponents_bypassed_by_action:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.recipe.ball_side_block_shift.v1
+    kind: MaturityAssessment
+    display_name: ball_side_block_shift_v1 maturity
+    description: Maturity assessment for the reviewed ball-side block-shift recipe.
+    subject_ref: recipe:ball_side_block_shift_v1:1.0.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.recipe.possession_corridor_availability.v1
+    kind: MaturityAssessment
+    display_name: possession_corridor_availability_v1 maturity
+    description: Maturity assessment for the possession corridor availability experimental preset.
+    subject_ref: recipe:possession_corridor_availability_v1:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.recipe.opposite_corridor_after_shift.v1
+    kind: MaturityAssessment
+    display_name: opposite_corridor_after_shift_v1 maturity
+    description: Maturity assessment for the opposite corridor after shift experimental preset.
+    subject_ref: recipe:opposite_corridor_after_shift_v1:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.recipe.high_bypass_completed_pass.v1
+    kind: MaturityAssessment
+    display_name: high_bypass_completed_pass_v1 maturity
+    description: Maturity assessment for the high-bypass completed pass experimental preset.
+    subject_ref: recipe:high_bypass_completed_pass_v1:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.composition.ai_corridor_destination.2026_06_23
+    kind: MaturityAssessment
+    display_name: AI corridor destination composition maturity
+    description: Maturity assessment for the verified Hermes-authored corridor destination composition.
+    subject_ref: composition:composition.ai_corridor_destination.2026_06_23
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

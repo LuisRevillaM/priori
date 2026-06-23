@@ -355,6 +355,7 @@ class RegistryLock(StrictModel):
     schema_version: Literal["1.0"] = "1.0"
     registry_revision: str
     runtime_manifest_revision: str
+    plan_artifact_revision: str
     generator_version: str
     product_projection_policy: str
     ai_projection_policy: str
