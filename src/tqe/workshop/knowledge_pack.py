@@ -126,6 +126,7 @@ def build_tactical_knowledge_pack() -> dict[str, Any]:
         "primitives": capability_context["primitives"],
         "relations": capability_context["relations"],
         "operators": capability_context["operators"],
+        "authoring_contracts": capability_context["authoring_contracts"],
         "safe_composition_rules": capability_context["safe_operator_source_rules"],
         "complexity_limits": {
             "default": capability_context["default_complexity_limits"],
@@ -465,6 +466,33 @@ def verify_tactical_knowledge_pack(
     dimensions = {item["code"] for item in pack.get("ambiguity_dimensions", [])}
     checks.append(check("pack.ambiguity.include_required_dimensions", {CLARIFICATION_SUPPORT_DEFINITION, CLARIFICATION_TIME_WINDOW, CLARIFICATION_DISTANCE_THRESHOLD}.issubset(dimensions), {"dimensions": sorted(dimensions)}))
     checks.append(check("pack.schema.embedded", bool(pack.get("query_plan_schema", {}).get("schema")), {}))
+    authoring_contracts = pack.get("authoring_contracts", {})
+    destination_contract = authoring_contracts.get("possession_corridor_destination_entry", {})
+    checks.append(
+        check(
+            "pack.authoring_contracts.destination_entry_path_present",
+            bool(destination_contract)
+            and "possession_segment" in destination_contract.get("required_catalog_refs", [])
+            and "geometric_progressive_corridor_from_anchor_set" in destination_contract.get("required_catalog_refs", [])
+            and "relation_destination_entry" in destination_contract.get("required_catalog_refs", []),
+            {"required_catalog_refs": destination_contract.get("required_catalog_refs", [])},
+        )
+    )
+    contract_text = json.dumps(authoring_contracts, sort_keys=True)
+    checks.append(
+        check(
+            "pack.authoring_contracts.no_failed_n1h_identifiers",
+            not any(
+                marker in contract_text
+                for marker in (
+                    "active_ball_possession_anchor",
+                    "progressive_corridor_availability",
+                    "ball_enters_corridor_destination_region",
+                )
+            ),
+            {},
+        )
+    )
     checks.append(check("pack.source_hashes.present", len(pack.get("source_hashes", {})) >= 8, {"count": len(pack.get("source_hashes", {}))}))
     pack_text = json.dumps(pack, sort_keys=True)
     forbidden_markers = ["/Users/", "OPENAI_API_KEY", "sk-", "data/raw/", "data/canonical/", '"frames": [', '"entities": [']

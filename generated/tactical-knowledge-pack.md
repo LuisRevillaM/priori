@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `10cdddbbe5639c4786b38c314676ac088778eae2b42dcd484aa045f87311efa5`
+SHA-256: `91cdd954deb702f224590369abdb3e79790e8cdf860b25a73d2a15c1ae748526`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -120,11 +120,11 @@ Disallowed claims:
 
 ## Source Hashes
 
-- `Makefile`: `22f29af55cac45b576bc7a900bd5a50b785676e1b9adbfe462dc285140de2ae3`
+- `Makefile`: `d64815a3ddfc621ee0e5c615245c5af8401fb4ef1d54d548e63b2831bc79bf52`
 - `config/query-plans/ball_side_block_shift.ir.v1.json`: `877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945`
 - `config/query-plans/opposite_corridor_after_shift.experimental.v1.json`: `9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74`
 - `config/query-plans/possession_corridor_availability.experimental.v1.json`: `81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde`
-- `generated/capability-context.json`: `c054f8ef97160c4786b32722f96816b310816fec9f846e957d9f88fa79ef08ed`
+- `generated/capability-context.json`: `b36d20a43269d40fb38e505778c9dfa370cdb4ec75955115f707c2fb1c19fb11`
 - `generated/tactical-query-plan.schema.json`: `0e45cff180c3738629e9c49b15a7191faa12c1517ae987a91d2f80424df68b0f`
 - `generated/tactical-query-plan.types.ts`: `838bc7a1db332eb24f6fd80faa1530c6cc441aba7eb91eb3e806fa8d23d0bffc`
 - `src/tqe/runtime/binder.py`: `1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210`
@@ -134,5 +134,5 @@ Disallowed claims:
 - `src/tqe/runtime/relations.py`: `6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee`
 - `src/tqe/verification/m1_2_gate_s2i.py`: `00cf3e665ef2096c44a4d28ba37284bb9207ca5412e2e6c564ef0d8d3042c99f`
 - `src/tqe/workshop/hermes_s2.py`: `ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591`
-- `src/tqe/workshop/knowledge_pack.py`: `b0cebf5d59824f06553c55c0a1b96757fbc48f0340bdb8a84aac6f1466617a57`
-- `src/tqe/workshop/m1_2.py`: `c3c96cf32ac09d7737938d59926bc5b43aff6e708b5073968d02a60c79a6d0ef`
+- `src/tqe/workshop/knowledge_pack.py`: `80f6388833a35eaa8ffa1e9570e2c78137d0c2d84771f1e9ad51e723207679d5`
+- `src/tqe/workshop/m1_2.py`: `5334286293049c04c621f65ab7428bdd92b7273a6aa5a207c59856f4e4919fea`

@@ -18,7 +18,12 @@ from typing import Any, Literal
 import pyarrow.parquet as pq
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from tqe.runtime.binder import BindError, bind_document, bind_document_from_path
+from tqe.runtime.binder import (
+    HOST_RUNTIME_PARAMETER_DEFAULTS,
+    BindError,
+    bind_document,
+    bind_document_from_path,
+)
 from tqe.runtime.catalog import default_catalog
 from tqe.runtime.executor import (
     DEFAULT_CANONICAL_ROOT,
@@ -34,12 +39,16 @@ from tqe.runtime.executor import (
 from tqe.runtime.ir import (
     BoundCatalogNode,
     BoundPredicateNode,
+    ClassificationMode,
     ExecutionMode,
     EvaluationTarget,
     NodeKind,
+    PayloadType,
     PlanStatus,
     QueryExecution,
     TacticalQueryDocument,
+    Unit,
+    UnknownEvidencePolicy,
     model_payload,
     stable_hash,
 )
@@ -204,6 +213,7 @@ class CapabilityContext(StrictModel):
     primitives: list[dict[str, Any]]
     relations: list[dict[str, Any]]
     operators: list[dict[str, Any]]
+    authoring_contracts: dict[str, Any]
     recipe_states: list[str]
     evidence_fields: dict[str, list[str]]
     safe_operator_source_rules: dict[str, Any]
@@ -553,6 +563,288 @@ def visible_tool_names(caller_profile: CallerProfile) -> list[str]:
     return APPROVED_TOOL_NAMES
 
 
+def _typed_value_contract(payload_type: str, unit: str = "none", value: Any = "<value>") -> dict[str, Any]:
+    return {"payload_type": payload_type, "unit": unit, "value": value}
+
+
+def _parameter_ref_contract(parameter_name: str = "<declared_recipe_parameter_name>") -> dict[str, str]:
+    return {"kind": "parameter", "name": parameter_name}
+
+
+def _signal_ref_contract(
+    source_node_id: str = "<source_node_id>",
+    output_name: str = "<registered_output_name>",
+) -> dict[str, str]:
+    return {"source_node_id": source_node_id, "output_name": output_name}
+
+
+def _catalog_entry_contract(entry: Any) -> dict[str, Any]:
+    """Return the generated authoring contract for one registered catalog entry."""
+
+    return {
+        "kind": entry.kind.value if hasattr(entry.kind, "value") else entry.kind,
+        "registered_catalog_ref": entry.name,
+        "version": entry.version,
+        "node_schema": {
+            "kind": entry.kind.value if hasattr(entry.kind, "value") else entry.kind,
+            "node_id": "<agent_chosen_lower_snake_id>",
+            "catalog_ref": entry.name,
+            "version": entry.version,
+            "inputs": {
+                input_ref.name: _signal_ref_contract()
+                for input_ref in entry.inputs
+            },
+            "parameters": {
+                parameter.name: {
+                    "accepted_forms": [
+                        _typed_value_contract(
+                            parameter.payload_type.value
+                            if hasattr(parameter.payload_type, "value")
+                            else str(parameter.payload_type),
+                            parameter.unit.value if hasattr(parameter.unit, "value") else str(parameter.unit),
+                        ),
+                        _parameter_ref_contract(),
+                    ],
+                    "definition": parameter.model_dump(mode="json", exclude_none=True),
+                }
+                for parameter in entry.parameters
+            },
+        },
+        "required_inputs": [item.model_dump(mode="json") for item in entry.inputs],
+        "outputs": [item.model_dump(mode="json") for item in entry.outputs],
+        "valid_output_names": [output.name for output in entry.outputs],
+        "valid_parameter_names": [parameter.name for parameter in entry.parameters],
+        "limitations": list(entry.limitations),
+    }
+
+
+def _operator_contract(operator: Any) -> dict[str, Any]:
+    payload = operator.model_dump(mode="json", exclude_none=True)
+    payload["predicate_node_schema"] = {
+        "kind": "predicate",
+        "node_id": "<agent_chosen_lower_snake_id>",
+        "input": _signal_ref_contract(),
+        "operator": {"name": operator.name, "version": operator.version},
+    }
+    if operator.compare_required:
+        payload["predicate_node_schema"]["compare"] = {
+            "accepted_payload_types": [
+                item.value if hasattr(item, "value") else str(item)
+                for item in operator.compare_payload_types
+            ],
+            "schema": _typed_value_contract("<matching_payload_type>", "<matching_unit_or_none>"),
+        }
+    if operator.duration_required:
+        payload["predicate_node_schema"]["duration"] = _typed_value_contract("number", "second")
+    if operator.name in SAFE_ANCHOR_RELATIVE_OPERATORS:
+        payload["agent_visible_source_rule"] = {
+            "allowed_output_name": SAFE_ANCHOR_RELATIVE_OUTPUT,
+            "rejected_sources": [
+                "raw boolean EpisodeSet",
+                "raw RelationEpisodeSet",
+                "generic collection counts not indexed by anchor_id",
+            ],
+        }
+    return payload
+
+
+def _catalog_entry_by_name(catalog: Any, name: str) -> Any:
+    for collection in (catalog.primitives, catalog.relations):
+        for entry in collection:
+            if entry.name == name:
+                return entry
+    raise KeyError(name)
+
+
+def _operator_by_name(catalog: Any, name: str) -> Any:
+    for operator in catalog.operators:
+        if operator.name == name:
+            return operator
+    raise KeyError(name)
+
+
+def typed_query_plan_authoring_contract(catalog: Any) -> dict[str, Any]:
+    """Generated schema guidance for model-authored TacticalQueryDocument payloads."""
+
+    del catalog
+    return {
+        "name": "typed_query_plan",
+        "source": "tqe.runtime.ir",
+        "plan_document_shape": ["schema_version", "recipe", "default_invocation", "draft_plan"],
+        "recipe_contract": {
+            "required_fields": [
+                "schema_version",
+                "recipe_id",
+                "recipe_version",
+                "display_name",
+                "description",
+                "parameters",
+                "default_unknown_evidence_policy",
+                "output_classifications",
+            ],
+            "parameter_rule": (
+                "default_invocation.parameters may only contain names declared in recipe.parameters "
+                "or host-owned runtime globals. Catalog node parameters must use exact catalog "
+                "parameter names and may be inline TypedValue objects or ParameterRef objects whose "
+                "name appears in recipe.parameters."
+            ),
+        },
+        "default_invocation_contract": {
+            "execution_mode_values": [item.value for item in ExecutionMode],
+            "scope_fields": ["match_ids", "periods", "perspective_team_role"],
+            "parameters_rule": "Do not put undeclared names here; use recipe.parameters + ParameterRef or inline node TypedValue.",
+        },
+        "draft_plan_contract": {
+            "status_values": [item.value for item in PlanStatus],
+            "hermes_status": PlanStatus.EXPERIMENTAL.value,
+            "unknown_evidence_policy_values": [item.value for item in UnknownEvidencePolicy],
+            "classification_mode_values": [item.value for item in ClassificationMode],
+            "anchor_source_schema": _signal_ref_contract(),
+            "classification_rule_schema": {
+                "label": "UPPER_SNAKE_CASE",
+                "predicate_ids": ["<predicate_node_id>"],
+                "description": "<human-readable result label explanation>",
+            },
+            "requested_evidence_schema": {
+                "source": _signal_ref_contract(),
+                "field": "<registered_evidence_field_on_source_output>",
+                "alias": "<optional_lower_snake_alias>",
+                "required": True,
+            },
+        },
+        "draft_catalog_node_schema": {
+            "kind": ["primitive", "relation"],
+            "node_id": "lower_snake_case",
+            "catalog_ref": "<exact registered catalog_ref>",
+            "version": "<exact registered version>",
+            "inputs": {"<registered_input_name>": _signal_ref_contract()},
+            "parameters": {
+                "<registered_parameter_name>": [
+                    _typed_value_contract("<payload_type>", "<unit>"),
+                    _parameter_ref_contract(),
+                ]
+            },
+        },
+        "draft_predicate_node_schema": {
+            "kind": "predicate",
+            "node_id": "lower_snake_case",
+            "input": _signal_ref_contract(),
+            "operator": {"name": "<exact registered_operator_name>", "version": "<exact registered_version>"},
+            "compare": _typed_value_contract("<required_when_operator_requires_compare>", "<unit>"),
+            "duration": _typed_value_contract("number", "second"),
+        },
+        "typed_value_schema": {
+            "payload_type_values": [item.value for item in PayloadType],
+            "unit_values": [item.value for item in Unit],
+            "shape": _typed_value_contract("<payload_type>", "<unit>"),
+        },
+        "parameter_ref_schema": _parameter_ref_contract(),
+        "signal_ref_schema": _signal_ref_contract(),
+        "host_runtime_globals": [
+            parameter.model_dump(mode="json", exclude_none=True)
+            for parameter in HOST_RUNTIME_PARAMETER_DEFAULTS.values()
+        ],
+    }
+
+
+def plan_node_authoring_contract(catalog: Any) -> dict[str, Any]:
+    authorable_refs = [
+        entry.name
+        for collection in (catalog.primitives, catalog.relations)
+        for entry in collection
+        if entry.name not in NON_AUTHORABLE_CATALOG_REFS
+    ]
+    return {
+        "name": "plan_nodes",
+        "authorable_catalog_refs": sorted(authorable_refs),
+        "trusted_recipe_only_catalog_refs_omitted": sorted(NON_AUTHORABLE_CATALOG_REFS),
+        "operators": {
+            operator.name: _operator_contract(operator)
+            for operator in catalog.operators
+        },
+        "catalog_nodes": {
+            entry.name: _catalog_entry_contract(entry)
+            for collection in (catalog.primitives, catalog.relations)
+            for entry in collection
+            if entry.name not in NON_AUTHORABLE_CATALOG_REFS
+        },
+    }
+
+
+def possession_corridor_destination_entry_authoring_contract(catalog: Any) -> dict[str, Any]:
+    possession = _catalog_entry_by_name(catalog, "possession_segment")
+    corridor = _catalog_entry_by_name(catalog, "geometric_progressive_corridor_from_anchor_set")
+    destination = _catalog_entry_by_name(catalog, "relation_destination_entry")
+    exists_operator = _operator_by_name(catalog, "exists")
+    eq_operator = _operator_by_name(catalog, "eq")
+    return {
+        **DESTINATION_ENTRY_AGENT_PATH,
+        "required_catalog_refs": [possession.name, corridor.name, destination.name],
+        "required_operators": [exists_operator.name, eq_operator.name],
+        "registered_node_contracts": {
+            possession.name: _catalog_entry_contract(possession),
+            corridor.name: _catalog_entry_contract(corridor),
+            destination.name: _catalog_entry_contract(destination),
+        },
+        "registered_operator_contracts": {
+            exists_operator.name: _operator_contract(exists_operator),
+            eq_operator.name: _operator_contract(eq_operator),
+        },
+        "required_wiring": [
+            {
+                "from": {"source_node_id": "possession", "output_name": "anchors"},
+                "to": {"target_node_id": "progressive_corridor", "input_name": "anchors"},
+            },
+            {
+                "from": {"source_node_id": "progressive_corridor", "output_name": "anchor_evaluations"},
+                "to": {"target_node_id": "has_progressive_corridor", "input": True, "operator": "exists"},
+            },
+            {
+                "from": {"source_node_id": "progressive_corridor", "output_name": "episodes"},
+                "to": {"target_node_id": "destination_entry", "input_name": "relation_episodes"},
+            },
+            {
+                "from": {"source_node_id": "destination_entry", "output_name": "entry_status"},
+                "to": {
+                    "target_node_id": "destination_region_entered",
+                    "input": True,
+                    "operator": "eq",
+                    "compare": {"payload_type": "enum", "unit": "none", "value": "PASS"},
+                },
+            },
+        ],
+        "anchor_source": {"source_node_id": "possession", "output_name": "anchors"},
+        "classification_rule_contract": {
+            "predicate_ids_must_include": ["has_progressive_corridor", "destination_region_entered"],
+            "label_contract": "UPPER_SNAKE_CASE",
+        },
+        "valid_requested_evidence_sources": {
+            "progressive_corridor.episodes": _catalog_entry_contract(corridor)["outputs"][0],
+            "destination_entry.entry_status": _catalog_entry_contract(destination)["outputs"][0],
+        },
+        "required_safety_rules": [
+            "Use geometric_progressive_corridor_from_anchor_set.episodes for relation_destination_entry.relation_episodes.",
+            "Use geometric_progressive_corridor_from_anchor_set.anchor_evaluations for exists.",
+            "Use relation_destination_entry.entry_status with eq PASS for destination-region entry.",
+            "Do not invent operators or catalog refs.",
+            "Do not use relation_destination_entry_classification in agent-authored plans.",
+        ],
+    }
+
+
+def generated_authoring_contracts(catalog: Any) -> dict[str, Any]:
+    typed_contract = typed_query_plan_authoring_contract(catalog)
+    nodes_contract = plan_node_authoring_contract(catalog)
+    destination_contract = possession_corridor_destination_entry_authoring_contract(catalog)
+    return {
+        "typed_query_plan": typed_contract,
+        "query_plan_schema": typed_contract,
+        "plan_nodes": nodes_contract,
+        "possession_corridor_destination_entry": destination_contract,
+        "possession_corridor_destination_entry_v1": destination_contract,
+    }
+
+
 def list_capabilities(caller_profile: CallerProfile = CallerProfile.HERMES_S2) -> CapabilityContext:
     catalog = default_catalog()
     evidence_fields: dict[str, list[str]] = {}
@@ -567,31 +859,25 @@ def list_capabilities(caller_profile: CallerProfile = CallerProfile.HERMES_S2) -
 
     operators = []
     for operator in catalog.operators:
-        payload = operator.model_dump(mode="json", exclude_none=True)
-        if operator.name in SAFE_ANCHOR_RELATIVE_OPERATORS:
-            payload["agent_visible_source_rule"] = {
-                "allowed_output_name": SAFE_ANCHOR_RELATIVE_OUTPUT,
-                "rejected_sources": [
-                    "raw boolean EpisodeSet",
-                    "raw RelationEpisodeSet",
-                    "generic collection counts not indexed by anchor_id",
-                ],
-            }
-        operators.append(payload)
+        operators.append(_operator_contract(operator))
 
     tool_names = visible_tool_names(caller_profile)
+    authoring_contracts = generated_authoring_contracts(catalog)
     return CapabilityContext(
         generated_at=utc_now_iso(),
         tools=[tool_spec(name) for name in tool_names],
         primitives=primitives,
         relations=relations,
         operators=operators,
+        authoring_contracts=authoring_contracts,
         recipe_states=["APPROVED", "USER_SAVED", "EXPERIMENTAL", "DEPRECATED"],
         evidence_fields=evidence_fields,
         safe_operator_source_rules={
             "exists": {"allowed_output_name": SAFE_ANCHOR_RELATIVE_OUTPUT},
             "count_at_least": {"allowed_output_name": SAFE_ANCHOR_RELATIVE_OUTPUT},
-            "possession_corridor_destination_entry": DESTINATION_ENTRY_AGENT_PATH,
+            "possession_corridor_destination_entry": authoring_contracts[
+                "possession_corridor_destination_entry"
+            ],
         },
         default_complexity_limits=catalog.default_complexity_limits.model_dump(mode="json"),
         host_owned_complexity_ceilings=catalog.default_complexity_limits.model_dump(mode="json"),
@@ -617,6 +903,9 @@ def describe_capability(
     caller_profile: CallerProfile = CallerProfile.HERMES_S2,
 ) -> dict[str, Any]:
     context = list_capabilities(caller_profile)
+    authoring_contract = context.authoring_contracts.get(capability_name)
+    if authoring_contract is not None:
+        return {"kind": "authoring_contract", **authoring_contract}
     for collection_name in ("tools", "primitives", "relations", "operators"):
         collection = getattr(context, collection_name)
         for item in collection:
@@ -1324,7 +1613,7 @@ def tool_spec(name: str) -> ToolSpec:
     descriptions = {
         "list_capabilities": "Return the Hermes-safe capability context.",
         "search_recipes": "Search approved and experimental recipe summaries without exposing files or raw data.",
-        "describe_capability": "Describe one exposed tool, primitive, relation, or operator.",
+        "describe_capability": "Describe one exposed tool, primitive, relation, operator, or generated typed-plan authoring contract.",
         "submit_query_plan": "Store a typed query document and return an opaque draft_plan_id.",
         "validate_query_plan": "Bind and boundary-check a submitted typed query plan.",
         "execute_query_plan": "Execute a validated plan through the deterministic runtime.",
