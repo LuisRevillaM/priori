@@ -103,23 +103,31 @@ export function principalMeasurement(
   evidence: Record<string, unknown> | null | undefined
 ): { key: string; label: string; raw: string } | null {
   if (!evidence) return null;
-  const groups: Array<{ names: string[]; kind: "num" | "entry"; fmt?: (n: string) => string }> = [
-    { names: ["signed_shift_metres", "block_shift_metres", "signed_lateral_shift_m"], kind: "num", fmt: (n) => `Shift ${n} m` },
-    { names: ["destination_time_to_entry_seconds", "time_to_entry_seconds"], kind: "num", fmt: (n) => `Entry in ${n} s` },
-    { names: ["destination_entry_mode", "entry_mode"], kind: "entry" },
-    { names: ["minimum_clearance_m", "corridor_minimum_clearance_m", "clearance_m"], kind: "num", fmt: (n) => `Clearance ${n} m` },
-    { names: ["relation_duration_seconds", "corridor_duration_seconds", "duration_seconds"], kind: "num", fmt: (n) => `Held ${n} s` }
+  // 1) signed shift (block-shift family)
+  const shiftKey = findEvidenceKey(evidence, ["signed_shift_metres", "block_shift_metres", "signed_lateral_shift_m"]);
+  if (shiftKey) {
+    const text = numericText(evidence[shiftKey]);
+    if (text !== null) return { key: shiftKey, label: `Shift ${text} m`, raw: String(evidence[shiftKey]) };
+  }
+  // 2) entry mode via the combined mapper — checked BEFORE raw time-to-entry so PRESENT_AT_OPEN
+  //    (time_to_entry == 0.0) never renders as "Entry in 0 s".
+  const modeKey = findEvidenceKey(evidence, ["destination_entry_mode", "entry_mode"]);
+  if (modeKey) {
+    const timeKey = findEvidenceKey(evidence, ["destination_time_to_entry_seconds", "time_to_entry_seconds"]);
+    const info = entryModePresentation(evidence[modeKey], timeKey ? evidence[timeKey] : undefined);
+    if (info) return { key: modeKey, label: info.label, raw: String(evidence[modeKey]) };
+  }
+  // 3) remaining numeric measurements
+  const numericGroups: Array<{ names: string[]; fmt: (n: string) => string }> = [
+    { names: ["destination_time_to_entry_seconds", "time_to_entry_seconds"], fmt: (n) => `Entry in ${n} s` },
+    { names: ["minimum_clearance_m", "corridor_minimum_clearance_m", "clearance_m"], fmt: (n) => `Clearance ${n} m` },
+    { names: ["relation_duration_seconds", "corridor_duration_seconds", "duration_seconds"], fmt: (n) => `Held ${n} s` }
   ];
-  for (const group of groups) {
+  for (const group of numericGroups) {
     const key = findEvidenceKey(evidence, group.names);
     if (!key) continue;
-    if (group.kind === "num" && group.fmt) {
-      const text = numericText(evidence[key]);
-      if (text !== null) return { key, label: group.fmt(text), raw: String(evidence[key]) };
-    } else if (group.kind === "entry") {
-      const info = entryModeLabel(evidence[key]);
-      if (info) return { key, label: `Entry: ${info.label}`, raw: String(evidence[key]) };
-    }
+    const text = numericText(evidence[key]);
+    if (text !== null) return { key, label: group.fmt(text), raw: String(evidence[key]) };
   }
   return null;
 }
@@ -162,16 +170,27 @@ export function timestampOutcomeSummary(inspection: Record<string, unknown> | nu
 
 // Honest rendering of relation destination-entry mode. Only the four backend enum values are
 // recognised; an absent value returns null so the UI never infers entry from time_to_entry_seconds.
-export function entryModeLabel(mode: unknown): { label: string; tone: Tone; value: EntryMode } | null {
+// Single combined entry-mode presentation mapper. Reads the N1D aliases (destination_entry_mode +
+// destination_time_to_entry_seconds). PRESENT_AT_OPEN is rendered honestly even when the time is 0.0
+// (callers must consult this before any raw "Entry in {t}s" formatting).
+export function entryModePresentation(
+  mode: unknown,
+  timeToEntrySeconds?: unknown
+): { label: string; value: EntryMode } | null {
   switch (mode) {
     case "PRESENT_AT_OPEN":
-      return { value: "PRESENT_AT_OPEN", tone: "neutral", label: "Already in destination at open" };
-    case "ENTERED_AFTER_OPEN":
-      return { value: "ENTERED_AFTER_OPEN", tone: "good", label: "Entered destination after open" };
+      return { value: "PRESENT_AT_OPEN", label: "Already in destination when corridor opened" };
+    case "ENTERED_AFTER_OPEN": {
+      const t = formatScalar(timeToEntrySeconds);
+      return {
+        value: "ENTERED_AFTER_OPEN",
+        label: t !== null ? `Entered destination ${t}s after opening` : "Entered destination after opening"
+      };
+    }
     case "NOT_ENTERED":
-      return { value: "NOT_ENTERED", tone: "warn", label: "Did not enter destination" };
+      return { value: "NOT_ENTERED", label: "Did not enter destination in the observed window" };
     case "UNKNOWN":
-      return { value: "UNKNOWN", tone: "warn", label: "Entry not observable" };
+      return { value: "UNKNOWN", label: "Destination entry could not be determined" };
     default:
       return null;
   }

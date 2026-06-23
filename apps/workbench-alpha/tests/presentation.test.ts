@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {
   describeMeasurement,
-  entryModeLabel,
+  entryModePresentation,
   humanizePredicate,
   predicateWhy,
   principalMeasurement,
@@ -31,17 +31,17 @@ assert.equal(provenanceTone("CAPABILITY_GAP"), "bad");
 assert.equal(provenanceTone("MODEL_UNAVAILABLE"), "warn");
 assert.equal(provenanceLabel(null), "Not interpreted");
 
-// --- entry_mode is rendered only for the four honest enum values; never inferred ---
-assert.equal(entryModeLabel("PRESENT_AT_OPEN")?.value, "PRESENT_AT_OPEN");
-assert.equal(entryModeLabel("ENTERED_AFTER_OPEN")?.tone, "good");
-assert.equal(entryModeLabel("NOT_ENTERED")?.tone, "warn");
-assert.equal(entryModeLabel("UNKNOWN")?.label, "Entry not observable");
+// --- combined entry-mode mapper: honest for the four enum values; PRESENT_AT_OPEN at t=0 ---
+assert.equal(entryModePresentation("PRESENT_AT_OPEN", 0)?.value, "PRESENT_AT_OPEN");
+assert.equal(entryModePresentation("PRESENT_AT_OPEN", 0)?.label, "Already in destination when corridor opened");
+assert.equal(entryModePresentation("ENTERED_AFTER_OPEN", 0.16)?.label, "Entered destination 0.16s after opening");
+assert.equal(entryModePresentation("NOT_ENTERED", null)?.label, "Did not enter destination in the observed window");
+assert.equal(entryModePresentation("UNKNOWN")?.label, "Destination entry could not be determined");
 // absent / non-enum values must NOT be inferred into an entry mode
-assert.equal(entryModeLabel(null), null);
-assert.equal(entryModeLabel(undefined), null);
-assert.equal(entryModeLabel(""), null);
-assert.equal(entryModeLabel(3.2), null, "a time_to_entry number must never become an entry mode");
-assert.equal(entryModeLabel("SOMETHING_ELSE"), null);
+assert.equal(entryModePresentation(null), null);
+assert.equal(entryModePresentation(undefined), null);
+assert.equal(entryModePresentation("SOMETHING_ELSE"), null);
+assert.equal(entryModePresentation(3.2), null, "a time_to_entry number must never become an entry mode");
 
 // --- Tactical headlines lead the card; raw classification is humanized as a fallback ---
 assert.equal(tacticalHeadline("RETAINED_NO_SWITCH"), "Block held — no ball-side switch");
@@ -63,7 +63,15 @@ assert.equal(
   principalMeasurement({ destination_time_to_entry_seconds: 0.16 })?.label,
   "Entry in 0.16 s"
 );
-assert.equal(principalMeasurement({ destination_entry_mode: "PRESENT_AT_OPEN" })?.label, "Entry: Already in destination at open");
+// PRESENT_AT_OPEN must win over raw "Entry in 0 s"
+assert.equal(
+  principalMeasurement({ destination_entry_mode: "PRESENT_AT_OPEN", destination_time_to_entry_seconds: 0 })?.label,
+  "Already in destination when corridor opened"
+);
+assert.equal(
+  principalMeasurement({ destination_entry_mode: "ENTERED_AFTER_OPEN", destination_time_to_entry_seconds: 0.16 })?.label,
+  "Entered destination 0.16s after opening"
+);
 assert.equal(principalMeasurement({ minimum_clearance_m: 4.35 })?.label, "Clearance 4.35 m");
 assert.equal(principalMeasurement({ relation_duration_seconds: 3.8 })?.label, "Held 3.8 s");
 // node-prefixed aliases (e.g. block-shift "signed_shift.signed_shift_metres") match by dotted suffix

@@ -14,7 +14,7 @@ import {
 import { PitchCanvas } from "./PitchCanvas";
 import { advancePlaybackFrame } from "./playback";
 import {
-  entryModeLabel,
+  entryModePresentation,
   humanizePredicate,
   predicateWhy,
   principalMeasurement,
@@ -392,10 +392,11 @@ export function App() {
   const manualRecipeDescription = recipeDescription(displayRecipe);
   const elapsedSeconds = runStartedAt ? Math.max(0, Math.round((nowTs - runStartedAt) / 1000)) : 0;
 
-  const selectedEntryModeRaw = selectedResult
-    ? selectedResult.requested_evidence?.["entry_mode"] ?? asRecord(selectedResult)["entry_mode"]
-    : null;
-  const selectedEntryMode = entryModeLabel(selectedEntryModeRaw);
+  const selectedEvidence = selectedResult?.requested_evidence ?? null;
+  const selectedEntryMode = entryModePresentation(
+    selectedEvidence?.["destination_entry_mode"] ?? selectedEvidence?.["entry_mode"] ?? asRecord(selectedResult).entry_mode,
+    selectedEvidence?.["destination_time_to_entry_seconds"] ?? selectedEvidence?.["time_to_entry_seconds"]
+  );
   const overlayState: CorridorOverlay = useMemo(
     () => corridorOverlayState(evidenceResult?.requested_evidence ?? null, replay),
     [evidenceResult, replay]
