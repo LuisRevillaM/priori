@@ -79,6 +79,8 @@ COPY scripts ./scripts
 COPY config ./config
 COPY generated ./generated
 COPY docs ./docs
+RUN mkdir -p /app/delivery/n1d
+COPY delivery/n1d/n1e-origin-bundle.json ./delivery/n1d/n1e-origin-bundle.json
 COPY --from=frontend /app/apps/workbench-alpha/dist ./apps/workbench-alpha/dist
 RUN python -m pip install --upgrade pip \
     && python -m pip install -e . \
