@@ -1,0 +1,4000 @@
+catalog_id: priori.soccer.standard_library
+catalog_version: 0.1.0-concept
+snapshot_date: '2026-06-23'
+status: PROPOSAL
+declaration_count: 741
+family_count: 26
+north_star: A rich typed football algebra over a small audited runtime kernel.
+semantic_tiers:
+  OBSERVATION: Provider or canonical source fact.
+  DETERMINISTIC: Reproducible derivation from declared inputs.
+  INFERRED_CANDIDATE: Evidence-backed interpretation that does not claim intention.
+  MODELLED: Probabilistic, learned, value, or counterfactual output.
+  OPERATOR: Typed composition or temporal/set operator.
+  EVIDENCE: Provenance, replay, validation, or governance output.
+truth_model:
+  predicate_truth:
+  - PASS
+  - FAIL
+  - UNKNOWN
+  evaluation_disposition:
+  - EVALUATED
+  - NOT_APPLICABLE
+  - CONFLICT
+  data_quality:
+  - VALID
+  - DEGRADED
+  - INSUFFICIENT
+  semantic_basis:
+  - OBSERVED
+  - DERIVED
+  - INFERRED_CANDIDATE
+  - MODELLED
+runtime_types:
+- type: Scalar<T>
+  definition: A unit-bearing atomic value.
+- type: Signal<T>
+  definition: A value indexed by canonical match time or frame.
+- type: Point / Vector / Transform
+  definition: Geometry with explicit coordinate and reference frames.
+- type: Trajectory
+  definition: Time-indexed entity or ball path with uncertainty.
+- type: EntitySet / OrderedEntitySet
+  definition: Typed actors, including expected, observed, missing, and excluded membership.
+- type: Region / RegionSet
+  definition: Static or dynamic spatial areas.
+- type: Line / Curve
+  definition: Ordered structural boundaries such as units and offside lines.
+- type: Field<T>
+  definition: A scalar, vector, probability, control, pressure, or value surface over the pitch.
+- type: Graph
+  definition: Dynamic nodes and typed interaction edges.
+- type: Distribution<T>
+  definition: Calibrated alternatives or uncertain values, never collapsed prematurely.
+- type: Anchor / AnchorSet
+  definition: Reference moments with boundary and alignment uncertainty.
+- type: Episode / EpisodeSet
+  definition: Bounded intervals with start/end semantics.
+- type: RelationEpisodeSet
+  definition: A typed relation among entities or regions over time.
+- type: SequenceSet
+  definition: Ordered episodes and relations with continuity constraints.
+- type: CandidateSet
+  definition: Ranked competing hypotheses with evidence.
+- type: EvaluationSet
+  definition: Per-anchor truth, quality, coverage, reasons, and witnesses.
+- type: UncertaintyEnvelope
+  definition: Spatial, temporal, identity, model, and boundary uncertainty.
+- type: EvidenceBundle
+  definition: Frames, entities, geometry, measurements, traces, provenance, and replay.
+capability_contract_fields:
+- stable id and semantic version
+- 'semantic claim level: OBSERVATION | DETERMINISTIC | INFERRED_CANDIDATE | MODELLED'
+- 'authorability: COMPILER_LOWERING | AGENT_COMPOSABLE | TRUSTED_RECIPE_ONLY | USER_TACTICAL'
+- typed inputs and outputs
+- units, coordinate frame, perspective, and entity scope
+- temporal anchor, boundary, continuity, and resampling semantics
+- required and optional data modalities
+- parameter schema, allowed bounds, and system-owned defaults
+- coverage denominator and active-player policy
+- uncertainty propagation and alternative-hypothesis policy
+- predicate truth policy and typed UNKNOWN reasons
+- evidence fields and replay overlays
+- limitations and prohibited claims
+- mathematical invariants, synthetic tests, gold examples, and cross-provider conformance
+- performance budget, caching behavior, and deterministic result identity
+- deprecation and migration policy
+implementation_kernels:
+- entity selection and active-membership resolution
+- coordinate/reference-frame transformation
+- signal smoothing, differentiation, and uncertainty propagation
+- point, line, region, corridor, and field geometry
+- dynamic-region construction and Boolean geometry
+- reachability / time-to-intercept inference
+- state inference with multiple hypotheses
+- transition and change-point detection
+- episode extraction with hysteresis and gap tolerance
+- typed entity and relation joins
+- dynamic graph construction
+- temporal interval algebra and sequence matching
+- aggregation with coverage-aware denominators
+- tri-state thresholding
+- learned-model inference with domain checks
+- evidence projection and deterministic result identity
+families:
+- id: data_quality
+  title: Data quality, synchronization, and provenance
+  purpose: Make every downstream claim conditional on what was actually observed, aligned, and trustworthy.
+  default_modalities:
+  - tracking
+  - events
+  - match_sheet
+  capabilities:
+  - id: tracking_presence
+    definition: Reports whether each required entity is observed at each frame.
+    output_type: entity_set_signal
+    semantic_tier: OBSERVATION
+    status: PROPOSED
+  - id: tracking_coverage_ratio
+    definition: Measures observed-frame coverage for an entity, set, or episode.
+    output_type: scalar_or_frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: sample_gap_episode
+    definition: Finds contiguous gaps in the expected tracking sample stream.
+    output_type: episode_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: irregular_sampling_signal
+    definition: Measures deviation from the declared frame interval.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: coordinate_outlier_candidate
+    definition: Flags implausible positions, jumps, or off-pitch coordinates without silently correcting them.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: kinematic_outlier_candidate
+    definition: Flags implausible speed, acceleration, jerk, or turn-rate observations.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: identity_swap_candidate
+    definition: Detects trajectory discontinuities consistent with two tracked identities being swapped.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: ball_track_quality
+    definition: Summarizes ball visibility, continuity, height reliability, and physical plausibility.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: pitch_calibration_quality
+    definition: Measures whether coordinate extents and landmark geometry agree with declared pitch dimensions.
+    output_type: evaluation_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: event_tracking_alignment_candidate
+    definition: Returns ranked physical frame candidates for a provider event.
+    output_type: candidate_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: event_tracking_alignment_confidence
+    definition: Quantifies confidence and ambiguity in an event-to-tracking alignment.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: clock_offset_estimate
+    definition: Estimates local event-to-tracking clock offset over a declared interval.
+    output_type: frame_or_episode_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: clock_drift_estimate
+    definition: Estimates changing clock offset rather than assuming one constant shift.
+    output_type: frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: provider_event_conflict
+    definition: Identifies contradictions between event labels, tracking evidence, and match state.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: interpolation_mask
+    definition: Records exactly which values were interpolated and by which method.
+    output_type: entity_set_signal
+    semantic_tier: OBSERVATION
+    status: PROPOSED
+  - id: smoothing_provenance
+    definition: Records filter method, parameters, input rate, and boundary handling for derived kinematics.
+    output_type: evidence_record
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: source_provenance
+    definition: Carries provider, file, schema version, ingestion version, and source record identifiers.
+    output_type: evidence_record
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: measurement_uncertainty
+    definition: Attaches position, time, and derived-value uncertainty to any runtime value.
+    output_type: uncertainty_envelope
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: required_entity_coverage
+    definition: Checks whether all entities required by a capability are present for its full evaluation window.
+    output_type: evaluation_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: quality_reason_histogram
+    definition: Aggregates missingness, degradation, conflict, and failure reasons over a query scope.
+    output_type: table_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+- id: match_context
+  title: Match clock, laws, and contextual state
+  purpose: Represent the game context that changes the meaning of otherwise identical spatial patterns.
+  default_modalities:
+  - tracking
+  - events
+  - match_sheet
+  capabilities:
+  - id: period_episode
+    definition: Returns canonical first-half, second-half, extra-time, and shootout intervals.
+    output_type: episode_set
+    semantic_tier: OBSERVATION
+    status: PROPOSED
+  - id: canonical_match_clock
+    definition: Maps every frame and event to one monotonic match-time reference.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: ball_in_play_state
+    definition: Classifies each frame as active play, inactive play, or unknown.
+    output_type: enum_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: restart_state
+    definition: Classifies the current restart context without yet inferring the tactical routine.
+    output_type: enum_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: restart_episode
+    definition: Bounds a restart from award/setup through the return to open play.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: score_state
+    definition: Returns scoreline and goal difference from each team's perspective.
+    output_type: record_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: match_status_state
+    definition: Represents leading, level, trailing, and knockout aggregate context.
+    output_type: enum_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: remaining_time
+    definition: Returns regulation or extra-time remaining under a declared clock policy.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: stoppage_time_state
+    definition: Identifies announced or inferred added-time intervals.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: numerical_strength_state
+    definition: Returns active-player counts and numerical advantage by team.
+    output_type: record_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: pitch_dimensions
+    definition: Returns trusted pitch length, width, goal, box, and landmark geometry.
+    output_type: geometry_record
+    semantic_tier: OBSERVATION
+    status: PROPOSED
+  - id: attacking_direction
+    definition: Returns each team's attacking-axis transform by period.
+    output_type: transform_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: competition_context
+    definition: Carries competition, season, round, venue, and rule-set metadata.
+    output_type: record_value
+    semantic_tier: OBSERVATION
+    status: PROPOSED
+  - id: weather_and_surface_context
+    definition: Carries available environmental and surface metadata with provenance.
+    output_type: record_value
+    semantic_tier: OBSERVATION
+    status: PROPOSED
+  - id: game_state_window
+    definition: Creates an episode where selected score, time, strength, and restart conditions remain stable.
+    output_type: episode_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+- id: entities_and_roles
+  title: Entities, availability, roles, and tactical identity
+  purpose: Distinguish who exists, who is active, and what role they are occupying at a moment.
+  default_modalities:
+  - tracking
+  - events
+  - match_sheet
+  capabilities:
+  - id: registered_entity
+    definition: Returns canonical player, team, referee, ball, and goal identities.
+    output_type: entity_set
+    semantic_tier: OBSERVATION
+    status: PROPOSED
+  - id: active_player_timeline
+    definition: Returns the authoritative on-pitch interval for every player.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: substitution_episode
+    definition: Bounds a player-off/player-on change and its effective match time.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: dismissal_episode
+    definition: Bounds a dismissal and updates active-player membership.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: goalkeeper_timeline
+    definition: Identifies the acting goalkeeper for each team over time.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: team_membership
+    definition: Maps each active entity to a team at each time.
+    output_type: relation_signal
+    semantic_tier: OBSERVATION
+    status: PROPOSED
+  - id: provider_position_label
+    definition: Preserves declared lineup position without treating it as live tactical role.
+    output_type: enum_value
+    semantic_tier: OBSERVATION
+    status: PROPOSED
+  - id: tactical_role_assignment
+    definition: Returns probabilistic live roles inferred from location, movement, and team structure.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: tactical_role_episode
+    definition: Bounds intervals in which a player's inferred role remains sufficiently stable.
+    output_type: relation_episode_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: role_change_candidate
+    definition: Detects a sustained departure from a player's previous tactical role.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: role_exchange_candidate
+    definition: Detects two teammates exchanging spatial-role responsibilities.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: unit_membership
+    definition: Assigns active players to goalkeeper, back, midfield, and forward units with uncertainty.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: reference_player_set
+    definition: Selects entities by team, active status, role, position, or custom predicate.
+    output_type: entity_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: expected_entity_set
+    definition: Returns the entities that should be observable for a declared evaluation.
+    output_type: entity_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: entity_alias_resolution
+    definition: Resolves provider identifiers and names to stable canonical identities.
+    output_type: mapping_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: entity_visibility_state
+    definition: Distinguishes active-but-missing, off-pitch, occluded, and genuinely absent entities.
+    output_type: enum_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+- id: ball_control_and_possession
+  title: Ball contact, control, contest, and possession
+  purpose: Build possession from physical control transitions rather than treating one provider field as ground
+    truth.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: ball_motion_state
+    definition: Classifies the ball as stationary, rolling, airborne, rebounding, or uncertain.
+    output_type: enum_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: ball_height_state
+    definition: Classifies ball height relative to playable body-height bands.
+    output_type: enum_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: player_ball_proximity
+    definition: Measures player-to-ball distance with positional uncertainty.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: player_ball_reachability
+    definition: Estimates whether a player can physically reach the current ball state.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: touch_candidate
+    definition: Finds moments consistent with a player materially altering ball motion.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: contact_candidate
+    definition: Finds possible player-ball contact without requiring a material trajectory change.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: control_gain_candidate
+    definition: Finds moments when a player likely establishes controllable possession.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: control_loss_candidate
+    definition: Finds moments when a player likely loses controllable possession.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: player_control_state
+    definition: Returns the most plausible controlling player, alternatives, and confidence per frame.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: player_control_episode
+    definition: Bounds sustained player control with tolerant handling of brief tracking noise.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: team_control_state
+    definition: Returns the controlling team, contested, loose, inactive, or unknown.
+    output_type: enum_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: team_possession_episode
+    definition: Bounds continuous team possession under an explicit turnover and interruption policy.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: possession_sequence
+    definition: Groups connected control episodes into a higher-level attacking possession.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: loose_ball_episode
+    definition: Bounds intervals in which no player has credible control.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: contested_ball_episode
+    definition: Bounds intervals in which opponents have overlapping credible control claims.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: duel_for_control_episode
+    definition: Identifies a localized contest whose outcome is control acquisition.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: possession_change
+    definition: Returns confirmed or candidate transitions in team control.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: same_possession_relation
+    definition: Tests whether two anchors or episodes belong to the same possession sequence.
+    output_type: relation_evaluation
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: possession_continuity_score
+    definition: Measures confidence that control remained with one team through noisy or contested frames.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: provider_possession_comparison
+    definition: Compares reconstructed control with the provider's possession field and records disagreement.
+    output_type: evaluation_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: ball_out_of_bounds_candidate
+    definition: Detects the physical boundary crossing associated with the ball leaving play.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: dead_ball_control_state
+    definition: Represents who is entitled to restart while the ball is inactive.
+    output_type: enum_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: second_ball_episode
+    definition: Bounds the loose or contested interval following an aerial duel, clearance, block, or rebound.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: recovery_of_control
+    definition: Identifies a player or team establishing control from a loose or opponent-controlled state.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+- id: kinematics
+  title: Kinematics and trajectory structure
+  purpose: Expose continuous movement measurements that richer football behaviors can compose.
+  default_modalities:
+  - tracking
+  capabilities:
+  - id: position
+    definition: Returns canonical 2D or 3D entity position in a declared reference frame.
+    output_type: point_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: velocity
+    definition: Returns filtered velocity with method, latency, and uncertainty.
+    output_type: vector_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: acceleration
+    definition: Returns filtered acceleration with method, latency, and uncertainty.
+    output_type: vector_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: speed
+    definition: Returns scalar ground speed.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: heading_of_motion
+    definition: Returns movement direction when speed is sufficient to define it.
+    output_type: angle_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: longitudinal_velocity
+    definition: Projects velocity onto a declared attacking or reference axis.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: lateral_velocity
+    definition: Projects velocity onto the pitch lateral axis.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: relative_velocity
+    definition: Returns one entity's velocity relative to another entity or moving reference.
+    output_type: vector_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: closing_speed
+    definition: Measures the rate at which two entities or an entity and region are approaching.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: separation_speed
+    definition: Measures the rate at which two entities are moving apart.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: path_length
+    definition: Measures distance traveled over an interval.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: net_displacement
+    definition: Measures start-to-end displacement over an interval.
+    output_type: vector_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: trajectory_curvature
+    definition: Measures how strongly a trajectory bends over time.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: turn_rate
+    definition: Measures the rate of change of movement heading.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: jerk
+    definition: Measures the rate of change of acceleration.
+    output_type: vector_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: movement_onset
+    definition: Finds transition from stationary/low-speed to purposeful movement.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: movement_stop
+    definition: Finds transition into sustained stationary/low-speed behavior.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: acceleration_episode
+    definition: Bounds sustained positive acceleration above an adaptive baseline.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: deceleration_episode
+    definition: Bounds sustained negative acceleration above an adaptive baseline.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: sprint_episode
+    definition: Bounds high-speed running under configurable absolute or player-relative thresholds.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: high_intensity_run_episode
+    definition: Bounds high-intensity movement without requiring sprint-speed attainment.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: change_of_direction_episode
+    definition: Bounds a meaningful directional change with speed-aware confidence.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: trajectory_similarity
+    definition: Measures similarity between two trajectories after declared spatial and temporal alignment.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: movement_synchrony
+    definition: Measures whether entities accelerate, decelerate, or translate together.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: convergence_relation
+    definition: Measures entities moving toward a common target or region.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: divergence_relation
+    definition: Measures entities moving away from a common origin or one another.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: trajectory_change_point
+    definition: Finds statistically meaningful changes in movement regime.
+    output_type: anchor_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: predicted_short_horizon_trajectory
+    definition: Returns a calibrated distribution over near-future positions.
+    output_type: trajectory_distribution
+    semantic_tier: MODELLED
+    status: PROPOSED
+- id: geometry
+  title: Spatial geometry and topological relations
+  purpose: Provide neutral geometric relations that compile many football concepts without hiding tactical assumptions.
+  default_modalities:
+  - tracking
+  - match_sheet
+  capabilities:
+  - id: distance
+    definition: Measures Euclidean or geodesic distance between points, entities, lines, or regions.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: signed_longitudinal_separation
+    definition: Measures front-behind separation along a declared attacking axis.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: signed_lateral_separation
+    definition: Measures left-right separation in a declared team or pitch frame.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: bearing
+    definition: Returns the angle from one entity or point to another.
+    output_type: angle_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: relative_bearing
+    definition: Returns target bearing relative to an entity's movement direction or body axis when available.
+    output_type: angle_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: angle_to_goal
+    definition: Measures the visible geometric angle subtended by the goal mouth.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: distance_to_goal
+    definition: Measures distance to a declared goal reference point or goal mouth.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: goal_side_relation
+    definition: Tests whether an entity is nearer its defended goal than a reference point along the attack axis.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: ball_side_relation
+    definition: Classifies an entity as ball side, opposite side, or central under a declared lateral policy.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: ahead_of_ball_relation
+    definition: Tests whether an entity is ahead of the ball in attacking coordinates.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: behind_ball_relation
+    definition: Tests whether an entity is behind the ball in attacking coordinates.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: between_relation
+    definition: Measures whether an entity lies spatially between two entities, lines, or regions.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: inside_outside_shape_relation
+    definition: Tests whether a point lies inside, on, or outside a dynamic team shape.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: nearest_entity
+    definition: Returns nearest qualifying entities and ties under a declared distance metric.
+    output_type: ordered_entity_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: k_nearest_entities
+    definition: Returns the ordered nearest qualifying entity set.
+    output_type: ordered_entity_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: segment_clearance
+    definition: Measures minimum clearance between a line segment and qualifying obstacles.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: capsule_clearance
+    definition: Measures obstacle clearance for a corridor with nonzero width.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: line_of_sight
+    definition: Tests whether a target is geometrically visible through declared occluders.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: goal_mouth_visibility
+    definition: Measures unblocked portions of the goal mouth from a point.
+    output_type: interval_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: convex_hull
+    definition: Returns the convex hull of a qualifying entity set.
+    output_type: region_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: concave_hull
+    definition: Returns a parameterized concave team or unit boundary.
+    output_type: region_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: centroid
+    definition: Returns the centroid of a point or entity set.
+    output_type: point_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: weighted_centroid
+    definition: Returns a centroid using declared entity or tactical weights.
+    output_type: point_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: covariance_ellipse
+    definition: Summarizes spatial spread, orientation, and anisotropy of an entity set.
+    output_type: region_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: voronoi_partition
+    definition: Partitions pitch space by nearest-player ownership.
+    output_type: region_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: delaunay_adjacency
+    definition: Builds proximity adjacency from player locations.
+    output_type: graph_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: free_space_radius
+    definition: Measures distance from a point or entity to the nearest qualifying opponent.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: local_density
+    definition: Measures weighted entity density around a point or region.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: spatial_entropy
+    definition: Measures dispersion or concentration of an entity distribution.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: overlap_area
+    definition: Measures intersection area between dynamic regions.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: region_distance
+    definition: Measures minimum or centroid distance between regions.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: region_adjacency
+    definition: Tests whether two regions touch or lie within a declared separation.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: region_crossing
+    definition: Finds when a trajectory crosses a region boundary.
+    output_type: anchor_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: spatial_ordering
+    definition: Orders entities along an axis, line, or path with uncertainty-aware ties.
+    output_type: ordered_entity_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+- id: reference_frames_and_regions
+  title: Reference frames and dynamic football regions
+  purpose: Make every spatial statement explicit about perspective and allow regions to move with the game.
+  default_modalities:
+  - tracking
+  - match_sheet
+  capabilities:
+  - id: absolute_pitch_frame
+    definition: Uses provider-normalized pitch coordinates with declared origin and units.
+    output_type: coordinate_frame
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: attacking_team_frame
+    definition: Normalizes the longitudinal axis so the selected team always attacks positively.
+    output_type: coordinate_frame
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: defending_team_frame
+    definition: Normalizes coordinates from the selected defending team's perspective.
+    output_type: coordinate_frame
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: ball_relative_frame
+    definition: Defines coordinates relative to the current ball position and team perspective.
+    output_type: coordinate_frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: actor_relative_frame
+    definition: Defines coordinates relative to an actor and an available orientation axis.
+    output_type: coordinate_frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: goal_relative_frame
+    definition: Defines radial and angular coordinates relative to a selected goal.
+    output_type: coordinate_frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: unit_relative_frame
+    definition: Defines coordinates relative to an inferred team unit or line.
+    output_type: coordinate_frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: static_pitch_zone
+    definition: Returns standard or user-defined fixed pitch regions.
+    output_type: region_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: pitch_third_region
+    definition: Returns defensive, middle, or attacking thirds under attacking orientation.
+    output_type: region_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: vertical_channel_region
+    definition: Returns central, half-space, or wide channels under a declared partition.
+    output_type: region_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: penalty_area_region
+    definition: Returns the law-defined penalty area for a selected goal.
+    output_type: region_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: zone_14_region
+    definition: Returns a parameterized central area outside the penalty box.
+    output_type: region_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: cutback_region
+    definition: Returns a parameterized high-value destination region for cutbacks.
+    output_type: region_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: goal_corridor_region
+    definition: Returns the channel between a point and the visible goal mouth.
+    output_type: region_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: ball_side_region
+    definition: Returns the current lateral half or channel containing the ball.
+    output_type: region_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: weak_side_region
+    definition: Returns the lateral region opposite the ball under team perspective.
+    output_type: region_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: team_shape_interior
+    definition: Returns the current interior of a team or unit shape.
+    output_type: region_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: between_units_region
+    definition: Returns the dynamic band between two inferred opposition units.
+    output_type: region_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: behind_unit_region
+    definition: Returns space beyond an inferred unit toward its defended goal.
+    output_type: region_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: outside_team_shape_region
+    definition: Returns space laterally or longitudinally outside an inferred team shape.
+    output_type: region_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: rest_defense_region
+    definition: Returns the zone occupied or protected by players retained behind the attack.
+    output_type: region_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: custom_dynamic_region
+    definition: Builds a region from typed geometry, entities, lines, offsets, and Boolean operations.
+    output_type: region_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: region_membership
+    definition: Returns inside, boundary, outside, or unknown for entities relative to a region.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: region_dwell_episode
+    definition: Bounds intervals of continuous occupancy with configurable gap tolerance.
+    output_type: relation_episode_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: region_entry
+    definition: Finds outside-to-inside transitions.
+    output_type: anchor_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: region_exit
+    definition: Finds inside-to-outside transitions.
+    output_type: anchor_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: region_arrival
+    definition: Finds first stable occupancy after approach, not merely a one-frame crossing.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: region_vacation
+    definition: Finds stable departure that creates previously occupied space.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+- id: reachability_and_space_control
+  title: Reachability, interception, space control, and spatial value
+  purpose: Represent not only where players are, but where they can arrive first and how that changes.
+  default_modalities:
+  - tracking
+  capabilities:
+  - id: time_to_location
+    definition: Estimates an entity's arrival-time distribution to a target point.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: time_to_moving_target
+    definition: Estimates arrival time to another moving entity or ball trajectory.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: time_to_intercept_ball
+    definition: Estimates whether and when a player can intercept the projected ball path.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: arrival_time_field
+    definition: Returns estimated player or team arrival time over the pitch.
+    output_type: field_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: player_reachability_region
+    definition: Returns locations reachable by a player within a declared horizon.
+    output_type: region_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: team_reachability_region
+    definition: Returns locations reachable by at least one team member within a horizon.
+    output_type: region_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: interception_margin
+    definition: Measures receiver arrival time minus best-opponent arrival time at a target.
+    output_type: frame_or_relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: control_probability_field
+    definition: Returns calibrated probability that each team controls the ball if it arrives at each location.
+    output_type: field_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pitch_control_field
+    definition: Returns team control balance across the pitch under a declared reachability model.
+    output_type: field_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: dominant_control_region
+    definition: Returns regions where one team exceeds a declared control margin.
+    output_type: region_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: controlled_area
+    definition: Measures area under a team's control threshold.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: local_control_margin
+    definition: Measures control advantage at a point, player, or region.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: free_space_field
+    definition: Returns opponent-distance or reachability-derived free-space magnitude over the pitch.
+    output_type: field_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: available_space_region
+    definition: Returns connected regions that meet size, control, and access criteria.
+    output_type: region_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: available_space_episode
+    definition: Bounds persistence of an available region or relation.
+    output_type: relation_episode_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: space_opening_rate
+    definition: Measures positive change in available, controlled, or unoccupied space.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: space_closing_rate
+    definition: Measures negative change in available, controlled, or unoccupied space.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: space_accessibility
+    definition: Measures whether a teammate can reach and receive in a region before opponents.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: occupied_space_value
+    definition: Measures value of space currently controlled or occupied by an actor.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: generated_space_value
+    definition: Measures teammate-benefiting space increase associated with an actor's movement.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: closed_space_value
+    definition: Measures opponent-benefiting space removed by an actor's movement.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: space_transfer
+    definition: Measures movement of controlled or valuable space from one region to another.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: space_creation_candidate
+    definition: Finds movement episodes associated with meaningful space gain for self or teammates.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: space_denial_candidate
+    definition: Finds movement episodes associated with meaningful loss of opponent-accessible space.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: space_exploitation_candidate
+    definition: Finds entries or receptions into recently opened valuable space.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+- id: team_shape_units_and_lines
+  title: Team shape, units, lines, occupation, and structural change
+  purpose: Represent collective organization without assuming one fixed formation template.
+  default_modalities:
+  - tracking
+  - match_sheet
+  capabilities:
+  - id: team_centroid
+    definition: Returns team centroid with configurable inclusion and weighting.
+    output_type: point_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: team_width
+    definition: Measures lateral extent using robust quantiles or boundary players.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: team_length
+    definition: Measures longitudinal extent using robust quantiles or boundary players.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: team_area
+    definition: Measures hull or shape-interior area.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: team_stretch_index
+    definition: Measures average distance of players from the team centroid.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: horizontal_compactness
+    definition: Measures lateral compactness under a declared statistic.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: vertical_compactness
+    definition: Measures longitudinal compactness under a declared statistic.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: team_shape_orientation
+    definition: Returns principal orientation of the team distribution.
+    output_type: angle_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: team_shape_anisotropy
+    definition: Measures whether team spread is elongated or isotropic.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: team_shape_skew
+    definition: Measures asymmetric distribution around the centroid.
+    output_type: vector_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: team_shape_similarity
+    definition: Measures similarity to another frame, prototype, or declared formation.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: formation_state_distribution
+    definition: Returns probabilities over learned or declared formation shapes.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: formation_transition_episode
+    definition: Bounds sustained change between formation-shape states.
+    output_type: episode_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: unit_detection
+    definition: Clusters active players into ordered tactical units with uncertainty.
+    output_type: ordered_entity_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: unit_line_model
+    definition: Fits a robust line or curve to a tactical unit.
+    output_type: line_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: unit_line_membership
+    definition: Returns each player's membership probability in inferred units.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: unit_height
+    definition: Measures the longitudinal position of an inferred unit.
+    output_type: frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: unit_width
+    definition: Measures lateral extent of an inferred unit.
+    output_type: frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: unit_orientation
+    definition: Measures orientation of an inferred unit.
+    output_type: angle_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: unit_curvature
+    definition: Measures deviation of an inferred unit from a straight line.
+    output_type: frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: unit_spacing
+    definition: Measures distance between adjacent inferred units.
+    output_type: frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: last_defensive_line
+    definition: Returns the deepest stable outfield defensive unit or boundary.
+    output_type: line_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: offside_line_candidate
+    definition: Returns the law-relevant second-last-defender or ball line with uncertainty.
+    output_type: line_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: onside_margin
+    definition: Measures an attacker's signed distance from the inferred offside line.
+    output_type: relation_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: line_integrity
+    definition: Measures continuity, spacing regularity, and outlier displacement within a unit.
+    output_type: frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: line_step_episode
+    definition: Bounds coordinated forward movement by a defensive unit.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: line_drop_episode
+    definition: Bounds coordinated retreat by a defensive unit.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: line_shift_episode
+    definition: Bounds coordinated lateral movement by a unit.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: line_stagger
+    definition: Measures longitudinal staggering among nominal line members.
+    output_type: frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: players_ahead_of_ball
+    definition: Returns active teammates ahead of the ball under attacking orientation.
+    output_type: entity_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: players_behind_ball
+    definition: Returns active teammates behind the ball under attacking orientation.
+    output_type: entity_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: lane_occupancy
+    definition: Returns player occupancy by declared longitudinal or lateral lanes.
+    output_type: record_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: occupation_matrix
+    definition: Returns team occupancy across a configurable zone grid.
+    output_type: tensor_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: weak_side_balance
+    definition: Measures whether far-side width, depth, and defensive cover are maintained.
+    output_type: evaluation_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: rest_defense_shape
+    definition: Returns the structure of players retained to protect against transition.
+    output_type: record_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shape_expansion_episode
+    definition: Bounds sustained increase in width, length, or area.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shape_contraction_episode
+    definition: Bounds sustained decrease in width, length, or area.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shape_translation_episode
+    definition: Bounds coordinated team movement without major internal deformation.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shape_deformation_episode
+    definition: Bounds material change in internal geometry beyond translation and rotation.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+- id: pressure_and_defending
+  title: Pressure, marking, cover, denial, and collective defending
+  purpose: Describe continuous defensive influence and behavior beyond tackles and interceptions.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: nearest_defender_relation
+    definition: Returns nearest eligible defenders to an attacker, ball, path, or region.
+    output_type: ordered_entity_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: defender_arrival_time
+    definition: Estimates each defender's time to reach an attacker or ball state.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pressure_intensity
+    definition: Measures aggregate defensive interception pressure on an attacker or ball.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pressure_actor_set
+    definition: Returns defenders materially contributing to total pressure.
+    output_type: entity_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pressure_direction
+    definition: Returns the resultant direction from which pressure is applied.
+    output_type: vector_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pressure_diversity
+    definition: Measures whether pressure arrives from one or multiple distinct angles.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: direct_pressure_candidate
+    definition: Finds defenders actively closing the ball carrier or receiver.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: indirect_pressure_candidate
+    definition: Finds defenders constraining options without directly closing the carrier.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: multi_angle_pressure_candidate
+    definition: Finds sustained pressure contributed from meaningfully different directions.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: press_onset
+    definition: Finds a meaningful rise into active pressure.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: press_release
+    definition: Finds a meaningful fall out of active pressure.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: pressing_episode
+    definition: Bounds sustained team pressure on the ball-owning side.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: team_press_synchrony
+    definition: Measures coordinated acceleration and closure by multiple defenders.
+    output_type: frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: cover_relation
+    definition: Identifies a defender positioned to protect behind or beside a pressing teammate.
+    output_type: relation_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: cover_shadow_region
+    definition: Returns the passing region screened by a defender relative to ball and targets.
+    output_type: region_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: passing_lane_denial
+    definition: Measures reduction in target accessibility caused by defenders.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: marking_proximity
+    definition: Measures defender-attacker distance with tactical context.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: marking_assignment_candidate
+    definition: Returns likely defender-attacker tracking assignments over time.
+    output_type: relation_episode_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: marking_tightness
+    definition: Measures sustained proximity and responsiveness of a likely marker.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: tracking_run_candidate
+    definition: Finds a defender following an attacker's off-ball trajectory.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: containment_episode
+    definition: Finds defending that limits forward access without attempting immediate recovery.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: delay_episode
+    definition: Finds defending that slows an attack long enough for recovery or reorganization.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: forced_direction_candidate
+    definition: Finds defender positioning that channels the carrier toward a side or region.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: touchline_isolation_candidate
+    definition: Finds pressure structures that constrain the carrier against a touchline.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: press_trap_candidate
+    definition: Finds coordinated invitation, closure, and option denial around a target zone.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: back_pressure_candidate
+    definition: Finds a defender closing from behind the ball carrier.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: recovery_run_episode
+    definition: Bounds high-intensity defending toward goal, ball, runner, or recovery shape.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: tackle_attempt_candidate
+    definition: Finds physical-control contests consistent with a tackle attempt.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: interception_attempt_candidate
+    definition: Finds defender-ball trajectory convergence consistent with an interception attempt.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shot_lane_block
+    definition: Measures defender obstruction of ball-to-goal trajectories.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: cross_lane_block
+    definition: Measures defender obstruction of likely crossing trajectories.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: defensive_access_to_receiver
+    definition: Measures how quickly defenders can affect a potential receiver.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: defensive_overload
+    definition: Finds local numerical or reachability superiority for the defending team.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: block_shift_episode
+    definition: Bounds coordinated defensive translation toward the ball side.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: block_depth_state
+    definition: Classifies high, middle, or low block depth with continuous supporting measures.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: block_compactness_state
+    definition: Classifies defensive compactness while retaining continuous width, length, and spacing evidence.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: defensive_reaction_to_pass
+    definition: Measures coordinated defensive motion following a ball transfer.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+- id: support_and_superiority
+  title: Support, options, numerical relations, and local structure
+  purpose: Describe what the ball carrier or receiver can access and how teammates organize around them.
+  default_modalities:
+  - tracking
+  capabilities:
+  - id: local_attacker_count
+    definition: Counts eligible attackers in a dynamic region around a point, player, or lane.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: local_defender_count
+    definition: Counts eligible defenders in the same declared local region.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: local_number_balance
+    definition: Returns attacker-minus-defender count and coverage status.
+    output_type: record_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: local_reachability_balance
+    definition: Compares team arrival-time capacity rather than raw headcount.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: numerical_superiority_episode
+    definition: Bounds local attacking numerical advantage.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: numerical_inferiority_episode
+    definition: Bounds local attacking numerical disadvantage.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: qualitative_superiority_proxy
+    definition: Combines space, pressure, orientation availability, and modelled duel strength without claiming
+      certainty.
+    output_type: evaluation_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: spare_player_candidate
+    definition: Finds an attacker not credibly controlled by nearby defenders.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: free_player_candidate
+    definition: Finds a player with sufficient separation, time, and access to receive.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: support_distance
+    definition: Measures teammate distance from a carrier or receiver.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: support_angle
+    definition: Measures support direction relative to goal, pressure, and ball path.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: support_depth
+    definition: Measures longitudinal support behind or ahead of the ball.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: support_width
+    definition: Measures lateral separation available to stretch or escape pressure.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: support_triangle_candidate
+    definition: Finds three-player geometry providing multiple controlled passing directions.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: support_arrival_relation
+    definition: Finds teammates entering a support region after a declared anchor.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: receiver_support_state
+    definition: Summarizes immediate, backward, lateral, and forward support around a receiver.
+    output_type: record_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: receiver_isolation_candidate
+    definition: Finds receivers with insufficient accessible support under pressure.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: separation_from_marker
+    definition: Measures distance and reachability margin from the most plausible marker.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: passing_option_set
+    definition: Returns teammates satisfying configurable visibility, access, control, and legality criteria.
+    output_type: entity_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: escape_option_set
+    definition: Returns options that move possession away from current pressure.
+    output_type: entity_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: progressive_option_set
+    definition: Returns accessible options meeting a declared progression criterion.
+    output_type: entity_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: switch_option_set
+    definition: Returns accessible options on the weak or opposite side.
+    output_type: entity_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: overload_relation
+    definition: Finds concentrated attacking superiority in a region or against a unit.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: underload_relation
+    definition: Finds deliberate or emergent sparse occupation relative to opponents.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: one_v_one_isolation
+    definition: Finds an attacker-defender pair isolated from meaningful nearby support.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: two_v_one_relation
+    definition: Finds stable local two-against-one superiority.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: three_v_two_relation
+    definition: Finds stable local three-against-two superiority.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: support_quality_score
+    definition: Combines distance, angle, pressure, access, and continuation potential under a versioned model.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+- id: action_reconstruction
+  title: Physical action reconstruction
+  purpose: Turn noisy event candidates and continuous tracking into explicit physical action episodes and endpoints.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: action_candidate
+    definition: Returns provider and tracking candidates that may describe one physical ball action.
+    output_type: candidate_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: action_anchor
+    definition: Returns the canonical reference moment for evaluating an action.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: physical_ball_release
+    definition: Finds the tracked frame at which controlled contact ends and free ball travel begins.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: physical_ball_reception
+    definition: Finds the tracked frame at which a named or inferred receiver establishes control.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: action_origin
+    definition: Returns ball and actor state at the physical start of an action.
+    output_type: record_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: action_destination
+    definition: Returns ball and receiving/control state at the physical end of an action.
+    output_type: record_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: action_duration
+    definition: Measures physical start-to-end duration.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: action_ball_trajectory
+    definition: Returns the observed ball path and uncertainty across an action.
+    output_type: trajectory_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: action_ground_air_mode
+    definition: Classifies whether the observed action traveled primarily on the ground or aerially.
+    output_type: distribution_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: controlled_action_episode
+    definition: Bounds a physically evidenced action from release through outcome.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: pass_episode
+    definition: Reconstructs a teammate-directed ball transfer with release and reception or failure.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: cross_episode
+    definition: Finds pass episodes originating from crossing contexts and entering a target area.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: cutback_episode
+    definition: Finds backward or lateral deliveries from advanced wide or byline regions into a cutback region.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: through_ball_candidate
+    definition: Finds passes aimed through or beyond a defensive line into a receiver path.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: switch_of_play_action
+    definition: Finds ball transfers that materially move possession to the opposite side.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: carry_episode
+    definition: Bounds sustained player control while the ball and player travel together.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: dribble_attempt_episode
+    definition: Finds controlled carrying while directly engaging or bypassing a defender.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shot_episode
+    definition: Reconstructs a goal-directed release through terminal outcome.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: clearance_episode
+    definition: Finds defensive ball releases primarily moving danger away from the defended goal.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: headed_action_candidate
+    definition: Finds ball contacts consistent with head-height aerial play; requires honest uncertainty without
+      pose/video.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: deflection_candidate
+    definition: Finds brief contact that materially changes ball trajectory without sustained control.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: block_candidate
+    definition: Finds a defender intercepting an attempted pass, cross, or shot trajectory by contact.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: rebound_episode
+    definition: Bounds ball travel from a block, post, goalkeeper contact, or contested deflection to next control.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: miscontrol_candidate
+    definition: Finds a reception or touch followed by loss of controllable ball state.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: interception_episode
+    definition: Finds defender control gained by entering an opponent ball-transfer path.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: tackle_episode
+    definition: Finds an opponent control challenge whose physical and possession outcome can be evaluated.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: ball_recovery_episode
+    definition: Finds control gained from loose, blocked, deflected, or opponent-controlled ball state.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: duel_episode
+    definition: Finds direct opponent contests for ball control with participants and outcome.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: action_outcome_state
+    definition: Returns controlled success, opponent control, out of play, loose, contested, or unknown.
+    output_type: enum_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: action_family_hierarchy
+    definition: Returns all supported parent and child labels rather than forcing one brittle leaf label.
+    output_type: taxonomy_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: action_hypothesis_set
+    definition: Preserves multiple plausible action interpretations with ranked evidence.
+    output_type: candidate_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+- id: passing_and_receiving
+  title: Passing lanes, windows, reception, and distribution effects
+  purpose: Describe the opportunity, execution, and structural consequence of ball transfers.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: pass_vector
+    definition: Returns origin-to-destination displacement in declared coordinates.
+    output_type: vector_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: forward_progression
+    definition: Measures attack-direction-normalized displacement of a pass or carry.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: lateral_transfer
+    definition: Measures lateral displacement of a pass or carry.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: pass_length
+    definition: Measures physical or planar pass distance.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: pass_speed_profile
+    definition: Returns observed ball speed across the pass trajectory.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: pass_lane
+    definition: Returns a typed corridor from ball to a target point, player, or region.
+    output_type: region_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: pass_lane_clearance
+    definition: Measures defender clearance along a candidate or actual pass lane.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: pass_lane_interception_margin
+    definition: Compares ball arrival with defender and receiver arrival along a candidate lane.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pass_window_state
+    definition: Returns whether a candidate connection is open, closing, closed, or unknown.
+    output_type: enum_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pass_window_episode
+    definition: Bounds the interval in which a target is materially accessible by pass.
+    output_type: relation_episode_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pass_window_opening
+    definition: Finds the transition into material pass accessibility.
+    output_type: anchor_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pass_window_closing
+    definition: Finds the transition out of material pass accessibility.
+    output_type: anchor_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pass_window_duration
+    definition: Measures how long a candidate pass remains available.
+    output_type: scalar_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pass_window_opening_rate
+    definition: Measures how quickly access to a target improves.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: receiver_arrival_margin
+    definition: Compares receiver and defender arrival at the intended destination.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: receiver_control_margin
+    definition: Estimates receiver ability to establish control before pressure or boundary loss.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: receiver_openness
+    definition: Combines separation, reachability, lane access, and receiving space.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: receiving_location_relation
+    definition: Classifies reception relative to opposition shape, units, ball side, and pitch zones.
+    output_type: record_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: receive_between_units
+    definition: Finds controlled receptions in the dynamic space between opposition units.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: receive_behind_unit
+    definition: Finds controlled receptions beyond a declared opposition unit.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: receive_outside_shape
+    definition: Finds controlled receptions outside the opposition team shape.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: receive_under_pressure
+    definition: Finds receptions with pressure above a declared, evidenced level.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: receive_on_back_foot_proxy
+    definition: Finds receptions where subsequent ball movement and actor trajectory suggest negative facing; not
+      body orientation.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: receive_and_turn_candidate
+    definition: Finds receptions followed by a meaningful change toward forward access.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: one_touch_distribution_candidate
+    definition: Finds release shortly after reception without sustained control.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: destination_entry
+    definition: Measures whether the ball enters a relation's exact destination region within a declared horizon.
+    output_type: evaluation_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: target_player_entry
+    definition: Measures whether the named target establishes control in the intended destination.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: opponents_bypassed_by_action
+    definition: Counts opponents moving from goal-side of the ball at release to behind it at action end.
+    output_type: evaluation_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: structural_displacement_by_pass
+    definition: Measures changes in opposition centroid, lines, compactness, and local control across a pass.
+    output_type: record_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: pass_disruption_score
+    definition: Combines bypass, line movement, space gain, and shape deformation under a versioned model.
+    output_type: scalar_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pass_completion_probability
+    definition: Returns calibrated completion probability for an actual or candidate pass.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pass_selection_probability
+    definition: Returns calibrated probability that the ball carrier chooses a candidate target.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+- id: carrying_and_dribbling
+  title: Carrying, dribbling, evasion, and ball progression on foot
+  purpose: Represent controlled player-ball movement and its interaction with defenders.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: carry_displacement
+    definition: Measures ball and carrier displacement across a controlled carry.
+    output_type: vector_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: carry_progression
+    definition: Measures attack-direction-normalized carry progress.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: carry_duration
+    definition: Measures sustained controlled carrying time.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: carry_speed_profile
+    definition: Returns carrier and ball speed across a carry.
+    output_type: record_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: carry_pressure_profile
+    definition: Returns defensive pressure across a carry.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: carry_lane
+    definition: Returns the swept corridor occupied by ball and carrier.
+    output_type: region_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: carry_into_space
+    definition: Finds carries entering newly available or controlled space.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: carry_out_of_pressure
+    definition: Finds carries that materially reduce pressure while preserving control.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: carry_between_units
+    definition: Finds carries through the dynamic region between opposition units.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: carry_beyond_unit
+    definition: Finds carries that cross and retain control beyond an opposition unit.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: defender_engagement_episode
+    definition: Bounds direct carrier-defender interaction under proximity and movement criteria.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: defender_bypassed_by_carry
+    definition: Finds defenders moved from goal-side to behind the controlled ball during a carry.
+    output_type: evaluation_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: dribble_success_state
+    definition: Returns retained control, defender win, loose outcome, foul, boundary, or unknown.
+    output_type: enum_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: direction_change_under_pressure
+    definition: Finds significant carrier direction changes during active defender engagement.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: stop_start_evasion_candidate
+    definition: Finds carrier deceleration followed by reacceleration that changes defender relation.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: ball_shielding_proxy
+    definition: Finds low-speed control with an opponent close and ball position protected by movement geometry;
+      not body pose.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: progressive_carry_option
+    definition: Returns reachable controlled carry destinations meeting progression and risk criteria.
+    output_type: region_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: carry_value_change
+    definition: Measures modelled state-value change across a carry.
+    output_type: scalar_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+- id: off_ball_attacking_movement
+  title: Off-ball attacking movement and behavior
+  purpose: Capture movements that create access, move defenders, occupy structure, and support possession even without
+    a touch.
+  default_modalities:
+  - tracking
+  capabilities:
+  - id: movement_toward_ball
+    definition: Measures movement component toward the current or predicted ball location.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: movement_away_from_ball
+    definition: Measures movement component away from the ball.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: movement_toward_goal
+    definition: Measures movement component toward the attacking goal.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: movement_away_from_goal
+    definition: Measures movement component away from the attacking goal.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: movement_to_width
+    definition: Finds movement increasing lateral team width or outside occupation.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: movement_to_depth
+    definition: Finds movement increasing attacking depth relative to ball or opposition line.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: movement_inside
+    definition: Finds movement from wide or outside positions toward central or inside regions.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: movement_outside
+    definition: Finds movement from central or inside positions toward outer regions.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: movement_to_receive_candidate
+    definition: Finds movement that materially improves pass accessibility from the ball carrier.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: offering_to_receive_candidate
+    definition: Finds sustained accessible positioning or movement as a potential receiver; no intention claim.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: offer_window_episode
+    definition: Bounds the interval during which an actor is a credible receiving option.
+    output_type: relation_episode_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: separation_creation
+    definition: Measures increase in distance or reachability margin from a likely marker.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: marker_attraction_candidate
+    definition: Finds an attacker whose movement is followed by a defender while teammate space improves.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: defender_displacement
+    definition: Measures defender movement associated with a tracked attacker or local threat.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: teammate_accessibility_gain
+    definition: Measures improvement in teammate pass or space access during another player's movement.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: occupy_region_episode
+    definition: Bounds purposeful or stable occupancy of a tactical region.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: vacate_region_episode
+    definition: Bounds departure that leaves a tactical region materially less occupied.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: arrive_in_region_episode
+    definition: Finds movement ending in stable occupation of a tactical region.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: hold_width_candidate
+    definition: Finds sustained occupation maintaining team width on the ball or weak side.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: hold_depth_candidate
+    definition: Finds sustained occupation maintaining vertical threat or pinning depth.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: drop_between_units
+    definition: Finds movement from a higher line into space between opposition units.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: run_beyond_last_line
+    definition: Finds a run moving from onside or level to behind the last defensive line.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: run_across_line
+    definition: Finds lateral or diagonal movement across an opposition line's field of responsibility.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: diagonal_run_candidate
+    definition: Finds sustained off-ball movement combining meaningful longitudinal and lateral displacement.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: curved_run_candidate
+    definition: Finds purposeful off-ball movement with significant trajectory curvature.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: check_away_then_to_ball
+    definition: Finds an away movement followed by a return movement that improves access.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: check_to_ball_then_behind
+    definition: Finds movement toward support followed by acceleration into depth.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: overlap_candidate
+    definition: Finds an outside run beyond a teammate occupying a related lane.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: underlap_candidate
+    definition: Finds an inside run beyond a teammate occupying a wider lane.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: third_player_run_candidate
+    definition: Finds a non-receiving teammate moving to become the next accessible target during a combination.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: wall_pass_support_candidate
+    definition: Finds immediate return-support movement around a short give-and-go exchange.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: rotation_candidate
+    definition: Finds three or more teammates exchanging occupied lanes or roles while preserving structure.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: position_exchange_candidate
+    definition: Finds two teammates crossing and stably swapping tactical regions.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: pinning_candidate
+    definition: Finds an attacker occupying a relation that constrains a defender or line while teammate access
+      improves.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: dragging_run_candidate
+    definition: Finds movement followed by likely marker displacement and newly opened teammate space.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: decoy_run_candidate
+    definition: Finds a run that changes defenders or space but is not used; label remains a proxy, not inferred
+      intent.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: space_creating_run_candidate
+    definition: Finds off-ball movement associated with meaningful generated-space value for teammates.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: box_entry_run
+    definition: Finds off-ball arrival into the penalty area during an attacking action.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: near_post_run_candidate
+    definition: Finds a timed run into a near-post target region relative to a delivery source.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: far_post_run_candidate
+    definition: Finds a timed run into a far-post target region relative to a delivery source.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: cutback_support_run
+    definition: Finds arrival into a cutback destination region as the ball reaches an advanced wide area.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: rebound_positioning_candidate
+    definition: Finds occupation of likely second-ball or rebound regions around a shot.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: off_ball_run_effect
+    definition: Returns changes in defenders, team shape, space, and teammate access across a run.
+    output_type: evaluation_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+- id: lines_gaps_and_penetration
+  title: Lines, gaps, penetration, and structural breaks
+  purpose: Distinguish generic progression and opponent bypass from breaking a specific defensive structure.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: relative_position_to_unit
+    definition: Measures an actor or ball relative to a selected opposition unit.
+    output_type: relation_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: relative_position_to_line
+    definition: Measures signed distance and lateral projection relative to an inferred line.
+    output_type: relation_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: ball_crosses_unit
+    definition: Finds the ball moving from in front of to beyond a selected opposition unit.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: player_crosses_unit
+    definition: Finds a player trajectory crossing a selected opposition unit.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: receive_beyond_unit
+    definition: Finds controlled reception beyond a selected unit after being in front or level.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: controlled_line_break
+    definition: Finds an action that crosses a selected unit and ends in controlled possession beyond it.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: line_break_mode
+    definition: Classifies penetration as through, around, over, or mixed relative to the unit.
+    output_type: distribution_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: specific_unit_broken
+    definition: Identifies which inferred opposition unit or units were crossed.
+    output_type: ordered_entity_set_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: number_of_units_broken
+    definition: Counts distinct opposition units crossed by an action.
+    output_type: scalar_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: line_break_receiver_state
+    definition: Summarizes receiver control, pressure, support, direction, and local numbers after the break.
+    output_type: record_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: line_recovery_after_break
+    definition: Measures how quickly the broken unit regains goal-side structure.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: intra_unit_gap
+    definition: Measures gaps between adjacent members of the same unit.
+    output_type: relation_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: inter_unit_gap
+    definition: Measures space between adjacent opposition units.
+    output_type: region_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: gap_width
+    definition: Measures lateral or path-normal width of a selected gap.
+    output_type: frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: gap_depth
+    definition: Measures longitudinal depth of a selected gap region.
+    output_type: frame_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: gap_control_margin
+    definition: Measures attacking-versus-defending reachability within a gap.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: gap_opening_episode
+    definition: Bounds meaningful increase in a selected gap's size or accessibility.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: gap_closing_episode
+    definition: Bounds meaningful decrease in a selected gap's size or accessibility.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: gap_exploitation_episode
+    definition: Finds an attacker, pass, or carry entering a recently open accessible gap.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: line_fixing_candidate
+    definition: Finds ball or player positioning that holds an opposition unit while another route opens.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: unit_dislocation
+    definition: Measures translation, deformation, or member displacement caused across an attacking action.
+    output_type: record_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: penetration_depth
+    definition: Measures how far an action ends beyond the crossed unit or line.
+    output_type: scalar_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: penetration_retention
+    definition: Tests whether the team retains control for a declared time after penetration.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: penetration_support_response
+    definition: Measures supporting arrivals, options, and local balance after penetration.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+- id: possession_circulation_and_sequences
+  title: Possession behavior, circulation, combinations, and repeated patterns
+  purpose: Describe how a team manipulates the ball and opposition over longer sequences.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: possession_duration
+    definition: Measures total and active duration of a possession sequence.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: possession_distance_advanced
+    definition: Measures net territorial gain across a possession.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: possession_progression_rate
+    definition: Measures longitudinal gain per active second.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: possession_directness
+    definition: Compares net progress with total ball travel and action count.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: possession_width
+    definition: Measures lateral extent of ball locations during possession.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: possession_depth
+    definition: Measures longitudinal range of ball locations during possession.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: circulation_speed
+    definition: Measures ball travel, action frequency, and transfer timing across possession.
+    output_type: frame_or_episode_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: pass_tempo
+    definition: Measures time between controlled receptions and subsequent releases.
+    output_type: scalar_series
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: touch_tempo
+    definition: Measures intervals between reconstructed touches or control changes.
+    output_type: scalar_series
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: possession_security
+    definition: Measures pressure-adjusted control stability and turnover risk.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: territorial_possession
+    definition: Weights possession by ball territory and controlled-space context.
+    output_type: scalar_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: side_circulation_episode
+    definition: Bounds sustained ball circulation predominantly on one side.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: central_circulation_episode
+    definition: Bounds sustained possession through central channels.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: switch_frequency
+    definition: Counts meaningful side-to-side transfers within possession.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: recycle_episode
+    definition: Finds backward or lateral circulation that preserves possession and resets structure.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: reset_to_back_line
+    definition: Finds circulation returning control to the deepest build-up unit.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: attract_then_release_candidate
+    definition: Finds increasing local defensive concentration followed by transfer into less-defended space.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: overload_to_isolate_candidate
+    definition: Finds an overload on one side followed by access to an isolated attacker elsewhere.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: third_player_combination
+    definition: Finds A-to-B followed by B-to-C where C's movement and access develop during the first action.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: up_back_through_sequence
+    definition: Finds forward pass, backward layoff, and subsequent forward penetration.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: give_and_go_sequence
+    definition: Finds a pass followed by a return pass to the initial actor after a supporting run.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: bounce_pass_sequence
+    definition: Finds a short reception and immediate redistribution used to change angle or line.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: wall_pass_sequence
+    definition: Finds a quick one-two exchange around an opponent or pressure line.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: switch_of_play_sequence
+    definition: Finds a multi-action sequence transferring possession to the opposite side.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: central_progression_sequence
+    definition: Finds a possession segment advancing primarily through central channels.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: wide_progression_sequence
+    definition: Finds a possession segment advancing primarily through wide channels.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: outside_inside_sequence
+    definition: Finds circulation from outside occupation into central or half-space access.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: inside_outside_sequence
+    definition: Finds circulation from central concentration into outside access.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: possession_stall_episode
+    definition: Finds sustained possession with little progress, access change, or destabilization.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: possession_acceleration_episode
+    definition: Finds meaningful increases in ball speed, action tempo, or forward progress.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: possession_deceleration_episode
+    definition: Finds meaningful decreases in tempo or progress.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: pattern_repetition
+    definition: Finds recurring typed sub-sequences within or across matches.
+    output_type: sequence_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: possession_signature
+    definition: Returns a versioned feature representation of a possession's spatial-temporal structure.
+    output_type: embedding_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+- id: transitions_and_rest_defense
+  title: Transitions, counterpressure, recovery, and rest defense
+  purpose: Represent the high-value seconds around possession changes and the structure that precedes them.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: possession_loss_anchor
+    definition: Returns the physical and contextual moment a team loses control.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: possession_gain_anchor
+    definition: Returns the physical and contextual moment a team gains control.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: attacking_transition_window
+    definition: Bounds the early interval after gaining possession.
+    output_type: episode_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: defensive_transition_window
+    definition: Bounds the early interval after losing possession.
+    output_type: episode_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: first_action_after_regain
+    definition: Returns the first controlled action after possession gain.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: first_forward_action_after_regain
+    definition: Returns the first action meeting a declared forward-progress criterion.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: counterattack_candidate
+    definition: Finds transition possessions exploiting opponent imbalance with speed and forward access.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: counterpress_candidate
+    definition: Finds immediate coordinated pressure and option denial after losing possession.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: counterpress_actor_set
+    definition: Returns defenders materially participating in the immediate post-loss pressure.
+    output_type: entity_set_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: ball_recovery_time
+    definition: Measures time from possession loss to regaining control.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: defensive_reorganization_time
+    definition: Measures time from loss until a declared stable defensive shape is restored.
+    output_type: scalar_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: recovery_shape_state
+    definition: Summarizes compactness, depth, goal-side numbers, and unit restoration after loss.
+    output_type: record_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: transition_overload
+    definition: Finds local attacking superiority during a transition window.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: transition_open_space
+    definition: Returns accessible space created by opponent offensive dispersion.
+    output_type: region_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: opposition_outlet_set
+    definition: Returns opponents available as immediate transition outlets.
+    output_type: entity_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: outlet_denial
+    definition: Measures how effectively potential transition outlets are controlled.
+    output_type: evaluation_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: rest_defense_count
+    definition: Counts players retained behind or around the ball for transition protection.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: rest_defense_depth
+    definition: Measures longitudinal depth of the retained protective structure.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: rest_defense_width
+    definition: Measures lateral spread of the retained protective structure.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: rest_defense_balance
+    definition: Measures coverage of central, ball-side, weak-side, and outlet threats.
+    output_type: evaluation_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: rest_attack_structure
+    definition: Returns high outlets retained while the team defends.
+    output_type: record_signal
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: counterattack_prevention
+    definition: Measures whether post-loss forward access is delayed, redirected, or stopped.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: transition_termination
+    definition: Classifies transition end by stabilization, shot, turnover, stoppage, or timeout.
+    output_type: enum_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: regain_location
+    definition: Returns location and structural context of possession gain.
+    output_type: record_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: loss_location
+    definition: Returns location and structural context of possession loss.
+    output_type: record_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: post_regain_retention
+    definition: Measures whether possession is retained for a declared horizon after recovery.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+- id: phases_and_team_states
+  title: Phases of play and team behavioral states
+  purpose: Provide probabilistic, evidence-backed phase labels built from lower-level state rather than opaque hard
+    tags.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: in_possession_phase_distribution
+    definition: Returns probabilities over in-possession phases with supporting measurements.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: out_of_possession_phase_distribution
+    definition: Returns probabilities over out-of-possession phases with supporting measurements.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: in_contest_phase_distribution
+    definition: Returns probabilities over loose-ball, duel, and contested phases.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: goalkeeping_phase_distribution
+    definition: Returns probabilities over goalkeeper-specific phases.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: build_up_phase_candidate
+    definition: Finds controlled possession originating deep against an organized opponent.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: progression_phase_candidate
+    definition: Finds possession focused on advancing through or around opposition structure.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: final_third_phase_candidate
+    definition: Finds sustained possession in advanced attacking territory.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: counterattack_phase_candidate
+    definition: Finds fast post-regain attacks against an unorganized opponent.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: attacking_set_piece_phase
+    definition: Bounds attacking restart setup, delivery, and immediate continuation.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: high_press_phase_candidate
+    definition: Finds active pressure high in the opponent's build-up territory.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: mid_press_phase_candidate
+    definition: Finds active pressure in middle territory.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: low_press_phase_candidate
+    definition: Finds active pressure from a deep defensive position.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: high_block_phase_candidate
+    definition: Finds organized high defensive positioning without requiring active press.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: mid_block_phase_candidate
+    definition: Finds organized middle defensive positioning.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: low_block_phase_candidate
+    definition: Finds organized deep defensive positioning.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: counterpress_phase_candidate
+    definition: Finds immediate post-loss collective pressure.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: defensive_recovery_phase_candidate
+    definition: Finds retreat and reorganization after an opponent gains forward access.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: defensive_set_piece_phase
+    definition: Bounds defensive restart setup, delivery, and immediate continuation.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: organized_unorganized_state
+    definition: Estimates whether each team has a stable tactical structure.
+    output_type: distribution_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: phase_transition
+    definition: Finds sustained transition between phase distributions.
+    output_type: anchor_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: phase_evidence_projection
+    definition: Returns the lower-level facts that most strongly support a phase label.
+    output_type: evidence_record
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: team_behavior_state_embedding
+    definition: Returns a learned representation of collective spatial-temporal behavior.
+    output_type: embedding_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+- id: shooting_and_goalkeeping
+  title: Shooting, chance structure, goalmouth defense, and goalkeeper behavior
+  purpose: Represent shot creation and goalkeeping as trajectories, space, pressure, and controlled outcomes.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: shot_origin
+    definition: Returns shooter, ball, pressure, body-part label if available, and spatial context at release.
+    output_type: record_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: shot_trajectory
+    definition: Returns observed or inferred ball path from release toward terminal outcome.
+    output_type: trajectory_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shot_speed_profile
+    definition: Returns ball speed over the shot trajectory.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: shot_angle
+    definition: Measures visible goal angle at shot release.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: shot_distance
+    definition: Measures shot origin distance to goal.
+    output_type: scalar_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: shot_pressure
+    definition: Measures defensive pressure on the shooter at release.
+    output_type: scalar_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: shot_lane_clearance
+    definition: Measures obstruction along shot-to-goal paths.
+    output_type: relation_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: goalkeeper_position_at_shot
+    definition: Returns goalkeeper location relative to goal, ball, and shooting angle.
+    output_type: record_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: goalkeeper_goal_coverage
+    definition: Measures goalmouth coverage from goalkeeper position and reachability.
+    output_type: interval_set_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: defender_goal_coverage
+    definition: Measures portions of the goalmouth screened or blockable by defenders.
+    output_type: interval_set_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: shot_target_region
+    definition: Classifies trajectory destination within, outside, or against the goal frame.
+    output_type: region_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shot_outcome_state
+    definition: Returns goal, saved, blocked, woodwork, wide, high, deflected, or unknown.
+    output_type: enum_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: blocked_shot_episode
+    definition: Finds defender contact materially interrupting a shot trajectory.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: saved_shot_episode
+    definition: Finds goalkeeper contact preventing a shot from reaching goal.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: post_shot_rebound
+    definition: Bounds the ball state from save, block, or frame contact to next control.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shot_creation_sequence
+    definition: Returns the possession sub-sequence that directly precedes a shot.
+    output_type: sequence_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: box_entry_to_shot
+    definition: Measures whether and how a box entry leads to a shot within a horizon.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: cutback_to_shot
+    definition: Measures whether a cutback episode leads to a shot.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: cross_to_shot
+    definition: Measures whether a cross episode leads to a shot.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: second_ball_to_shot
+    definition: Measures whether a second-ball recovery leads to a shot.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: goalkeeper_depth
+    definition: Measures goalkeeper longitudinal position relative to goal and defensive line.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: goalkeeper_lateral_alignment
+    definition: Measures goalkeeper alignment with ball-goal geometry.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: goalkeeper_set_position_proxy
+    definition: Finds low-speed stabilization before a shot; does not infer body mechanics without pose.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: goalkeeper_sweeper_position
+    definition: Measures goalkeeper access to space behind the defensive line.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: goalkeeper_intervention_race
+    definition: Compares goalkeeper and attacker arrival to a through ball or loose ball.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: cross_claim_region
+    definition: Returns aerial locations the goalkeeper can plausibly claim first.
+    output_type: region_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: goalkeeper_claim_episode
+    definition: Finds goalkeeper control gained from a cross or aerial delivery.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: goalkeeper_punch_candidate
+    definition: Finds goalkeeper contact redirecting an aerial ball without control.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: goalkeeper_distribution_episode
+    definition: Reconstructs goalkeeper release and resulting controlled outcome.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: goalkeeper_distribution_option_set
+    definition: Returns accessible short, medium, and long distribution options.
+    output_type: entity_set_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: goalkeeper_support_option
+    definition: Measures goalkeeper availability as a safe circulation option.
+    output_type: relation_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: backpass_episode
+    definition: Finds a controlled pass to the goalkeeper or deepest teammate under pressure context.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shot_expected_goal
+    definition: Returns a versioned calibrated goal probability with feature provenance.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: post_shot_expected_goal
+    definition: Returns calibrated goal probability using observed post-release trajectory and goalkeeper state.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+- id: set_pieces
+  title: Restarts and set-piece behavior
+  purpose: Describe setup, movement, delivery, contests, and continuation for every restart type.
+  default_modalities:
+  - tracking
+  - events
+  - match_sheet
+  capabilities:
+  - id: restart_type
+    definition: Classifies kickoff, throw-in, goal kick, corner, free kick, penalty, drop ball, or unknown.
+    output_type: enum_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: restart_award_anchor
+    definition: Returns the event or physical state marking restart award.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: restart_taken_anchor
+    definition: Returns the physical release or touch that restarts play.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: set_piece_setup_episode
+    definition: Bounds stable pre-restart positioning.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: set_piece_attacking_shape
+    definition: Returns attacking occupancy, clusters, and target zones before delivery.
+    output_type: record_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: set_piece_defensive_shape
+    definition: Returns defensive marking, zonal occupation, line, and goalkeeper state.
+    output_type: record_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: set_piece_marking_scheme_candidate
+    definition: Estimates man-oriented, zonal, or hybrid defensive organization.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: set_piece_run_onset
+    definition: Finds coordinated attacking movement before or at delivery.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: set_piece_run_pattern
+    definition: Returns typed attacking trajectories and destination regions.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: screen_candidate
+    definition: Finds an attacker obstructing or delaying a defender's path without inferring intent.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: set_piece_block_candidate
+    definition: Finds an attacker occupying a path that impedes a defender during a routine.
+    output_type: relation_episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: delivery_episode
+    definition: Reconstructs restart release through first contact or terminal outcome.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: delivery_target_region
+    definition: Returns intended-looking or actual destination region with uncertainty.
+    output_type: region_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: delivery_trajectory_class
+    definition: Classifies inswing, outswing, straight, lofted, driven, short, or unknown from trajectory.
+    output_type: distribution_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: first_contact
+    definition: Finds the first credible touch after a set-piece delivery.
+    output_type: anchor_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: first_contact_winner
+    definition: Returns controlling or contacting player and team.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: second_ball_region
+    definition: Predicts and then records likely and actual second-ball locations.
+    output_type: region_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: second_ball_recovery
+    definition: Finds control gained after the first contact or clearance.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: set_piece_clearance
+    definition: Finds defending action moving the ball away from the immediate target area.
+    output_type: episode_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: set_piece_continuation
+    definition: Bounds continued attack after the first delivery phase.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: short_restart_sequence
+    definition: Finds a short restart used before a later delivery or circulation.
+    output_type: sequence_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: corner_variant_candidate
+    definition: Classifies short, direct, near-post, far-post, edge, or recycled patterns probabilistically.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: free_kick_variant_candidate
+    definition: Classifies direct shot, cross, chipped pass, short routine, or recycle.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: throw_in_pattern_candidate
+    definition: Classifies line progression, feet option, return, third-player, or long throw patterns.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: goal_kick_build_structure
+    definition: Returns goalkeeper and outfield occupation during goal-kick buildup.
+    output_type: record_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: penalty_setup_state
+    definition: Returns kicker, goalkeeper, encroachment-relevant positions, and timing.
+    output_type: record_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: set_piece_outcome
+    definition: Classifies shot, controlled retention, clearance, turnover, foul, or stoppage within a horizon.
+    output_type: enum_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: set_piece_routine_signature
+    definition: Returns a versioned representation for clustering and retrieval of similar routines.
+    output_type: embedding_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+- id: temporal_logic_and_aggregation
+  title: Temporal logic, set operations, and aggregation
+  purpose: Let Hermes compose tactical situations declaratively without inventing hidden procedural code.
+  default_modalities:
+  - any
+  capabilities:
+  - id: at
+    definition: Evaluates a value at an anchor or timestamp.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: during
+    definition: Restricts a value or relation to an episode.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: before
+    definition: Tests strict temporal precedence with optional maximum gap.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: after
+    definition: Tests strict temporal succession with optional maximum gap.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: meets
+    definition: Tests whether one episode ends where another begins within tolerance.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: overlaps
+    definition: Tests whether episodes share nonzero time.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: starts_with
+    definition: Tests whether episodes share a start boundary within tolerance.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: finishes_with
+    definition: Tests whether episodes share an end boundary within tolerance.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: contains
+    definition: Tests whether one episode temporally contains another.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: within
+    definition: Tests whether an anchor or episode lies within a declared horizon of another.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: followed_by
+    definition: Creates ordered sequence matches under gap and continuity constraints.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: preceded_by
+    definition: Creates reverse ordered sequence matches under gap and continuity constraints.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: until
+    definition: Requires a condition to hold until a terminating condition occurs.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: since
+    definition: Requires a condition to have held since a starting condition.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: cooccurs_with
+    definition: Tests simultaneous or near-simultaneous conditions.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: persists_for
+    definition: Requires continuous truth for a minimum duration while preserving unknown intervals.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: persists_for_total
+    definition: Requires cumulative truth duration within a window.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: dwell_time
+    definition: Measures duration of relation or region membership.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: gap_tolerant_persistence
+    definition: Bridges short false or missing gaps under an explicit tolerance policy.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: hysteresis_episode
+    definition: Creates stable episodes using different enter and exit thresholds.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: debounce
+    definition: Suppresses short-lived state changes below a declared duration.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: rising_edge
+    definition: Returns transition anchors where a scalar or probability crosses upward.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: falling_edge
+    definition: Returns transition anchors where a scalar or probability crosses downward.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: state_change
+    definition: Returns anchors where a categorical state changes.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: change_point
+    definition: Returns likely boundaries between temporal regimes.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: local_maximum
+    definition: Returns local maxima under scale and prominence constraints.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: local_minimum
+    definition: Returns local minima under scale and prominence constraints.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: delta
+    definition: Computes end-minus-start or anchor-relative change.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: delta_from_baseline
+    definition: Computes change from a declared pre-anchor baseline window.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: slope
+    definition: Estimates temporal trend over a window.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: integral
+    definition: Aggregates a signal over time with units preserved.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: mean_over
+    definition: Computes uncertainty-aware mean over frames or episodes.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: median_over
+    definition: Computes uncertainty-aware median over frames or episodes.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: quantile_over
+    definition: Computes a declared temporal quantile.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: min_over
+    definition: Returns minimum and witness frame.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: max_over
+    definition: Returns maximum and witness frame.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: argmin
+    definition: Returns entity, frame, or relation achieving the minimum.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: argmax
+    definition: Returns entity, frame, or relation achieving the maximum.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: count
+    definition: Counts typed members while preserving denominator and coverage.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: count_at_least
+    definition: Tests whether a typed count reaches a threshold.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: exists
+    definition: Tests whether at least one typed witness exists.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: for_all
+    definition: Tests whether every expected member satisfies a condition, with missingness preserved.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: n_of_m
+    definition: Tests whether at least N of M named conditions pass.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: rate
+    definition: Computes count or accumulated value per unit time or possession.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: sequence_pattern
+    definition: Matches a typed ordered pattern of anchors, episodes, and relations.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: same_possession
+    definition: Constrains matches to one possession sequence.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: same_action
+    definition: Constrains values to one reconstructed physical action.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: same_player
+    definition: Joins values referring to the same player identity.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: same_team
+    definition: Joins values referring to the same team.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: distinct_entities
+    definition: Requires bound entity variables to be distinct.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: join_by_anchor
+    definition: Joins outputs sharing a canonical anchor reference.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: join_by_episode
+    definition: Joins outputs sharing or overlapping a canonical episode.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: map_entities
+    definition: Applies a typed measurement across an entity set.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: filter_entities
+    definition: Selects entities satisfying a typed predicate.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: group_by_entity
+    definition: Groups evaluations by player, team, role, or unit.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: group_by_possession
+    definition: Groups outputs by possession sequence.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: union
+    definition: Returns typed set union with duplicate identity policy.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: intersection
+    definition: Returns typed set intersection.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: difference
+    definition: Returns typed set difference.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: rank
+    definition: Orders entities or episodes by a typed scalar and tie policy.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: top_k
+    definition: Returns the highest-ranked K typed members.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: window
+    definition: Creates a bounded frame or time window around an anchor.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: resample
+    definition: Resamples a signal under an explicit interpolation and anti-aliasing policy.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: normalize
+    definition: Normalizes a value by units, pitch size, player baseline, team baseline, or league model.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: compare_to_baseline
+    definition: Returns absolute and standardized deviation from a declared baseline.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: threshold
+    definition: Converts a scalar or probability to tri-state truth under uncertainty-aware bounds.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: classify_by_rules
+    definition: Applies an ordered, versioned rule set to typed values.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+  - id: probability_at_least
+    definition: Tests whether a calibrated probability exceeds a threshold with interval handling.
+    output_type: operator
+    semantic_tier: OPERATOR
+    status: PROPOSED
+- id: interaction_graphs
+  title: Dynamic graphs and interaction structure
+  purpose: Represent multi-player dependencies that are awkward as isolated pairwise measurements.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: proximity_graph
+    definition: Builds a dynamic graph from spatial-neighbor relations.
+    output_type: graph_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: reachability_graph
+    definition: Builds directed edges weighted by arrival-time or control margin.
+    output_type: graph_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: passing_option_graph
+    definition: Builds directed edges for accessible candidate passes.
+    output_type: graph_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: actual_pass_graph
+    definition: Builds possession- or match-level graphs from reconstructed passes.
+    output_type: graph_value
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: marking_graph
+    definition: Builds probable defender-attacker assignment edges.
+    output_type: graph_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pressure_graph
+    definition: Builds defender-to-attacker or defender-to-ball pressure edges.
+    output_type: graph_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: support_graph
+    definition: Builds teammate support edges weighted by access quality.
+    output_type: graph_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: space_dependency_graph
+    definition: Links movements to defenders displaced, spaces changed, and teammates benefiting.
+    output_type: graph_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: graph_connected_component
+    definition: Returns connected player groups under a declared relation graph.
+    output_type: entity_set_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: graph_centrality
+    definition: Returns typed centrality measures with graph and time context.
+    output_type: frame_signal
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: graph_betweenness_option
+    definition: Measures whether a player connects otherwise weakly connected passing regions.
+    output_type: frame_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: graph_edge_opening
+    definition: Finds a relation edge becoming materially available.
+    output_type: relation_episode_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: graph_edge_closing
+    definition: Finds a relation edge becoming materially unavailable.
+    output_type: relation_episode_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: network_rewiring_episode
+    definition: Finds substantial change in team interaction graph structure.
+    output_type: episode_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: passing_network_motif
+    definition: Finds recurring small pass-graph patterns.
+    output_type: sequence_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: movement_coordination_motif
+    definition: Finds recurring multi-player trajectory relation patterns.
+    output_type: sequence_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: defensive_assignment_switch
+    definition: Finds likely changes in marking or coverage responsibility.
+    output_type: relation_episode_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: team_graph_signature
+    definition: Returns a versioned embedding of a team's interaction structure.
+    output_type: embedding_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+- id: outcomes_and_continuity
+  title: Outcomes, continuation, and consequences
+  purpose: Describe what measurably happened after an anchor without smuggling in causal or optimality claims.
+  default_modalities:
+  - tracking
+  - events
+  capabilities:
+  - id: same_team_control_after
+    definition: Tests whether the perspective team controls the ball after a declared horizon.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: same_player_control_after
+    definition: Tests whether the same player retains control after a declared horizon.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: possession_retained_for
+    definition: Tests whether team possession persists for a declared duration.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: territorial_gain_after
+    definition: Measures ball-territory change after an anchor.
+    output_type: evaluation_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: space_gain_after
+    definition: Measures available or controlled space change after an anchor.
+    output_type: evaluation_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: pressure_change_after
+    definition: Measures pressure change after an anchor.
+    output_type: evaluation_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: shape_change_after
+    definition: Measures team or unit structural change after an anchor.
+    output_type: evaluation_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: option_count_change_after
+    definition: Measures accessible receiving-option change after an anchor.
+    output_type: evaluation_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: line_state_change_after
+    definition: Measures line crossing, displacement, or recovery after an anchor.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: shot_within
+    definition: Tests whether a shot occurs within a declared horizon and continuity policy.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: box_entry_within
+    definition: Tests whether controlled ball entry into the box occurs within a horizon.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: final_third_entry_within
+    definition: Tests whether controlled final-third entry occurs within a horizon.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: turnover_within
+    definition: Tests whether team control is lost within a declared horizon.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: foul_won_within
+    definition: Tests whether a provider or reconstructed foul occurs within a horizon.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: restart_won_within
+    definition: Tests whether the action leads to a team restart within a horizon.
+    output_type: evaluation_set
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: continuation_state
+    definition: Classifies controlled continuation, recycle, transition, terminal event, or unknown.
+    output_type: enum_value
+    semantic_tier: INFERRED_CANDIDATE
+    status: PROPOSED
+  - id: outcome_horizon_bundle
+    definition: Returns multiple factual outcomes across several declared horizons.
+    output_type: evaluation_set
+    semantic_tier: DETERMINISTIC
+    status: PROPOSED
+  - id: association_not_causation_record
+    definition: Marks downstream changes as temporally associated unless a causal design is declared.
+    output_type: evidence_record
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+- id: learned_value_and_counterfactuals
+  title: Learned probability, value, and counterfactual models
+  purpose: Keep model-dependent claims isolated, calibrated, versioned, and distinguishable from observed facts.
+  default_modalities:
+  - tracking
+  - events
+  - trained_model
+  capabilities:
+  - id: expected_goals
+    definition: Returns calibrated goal probability for a shot under a versioned model.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: expected_pass_completion
+    definition: Returns calibrated completion probability for a candidate or actual pass.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: expected_possession_retention
+    definition: Returns probability of retaining team control over a declared horizon.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: expected_progression
+    definition: Returns probability or expected distance of future territorial progression.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: expected_final_third_entry
+    definition: Returns probability of controlled final-third entry within a horizon.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: expected_box_entry
+    definition: Returns probability of controlled box entry within a horizon.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: expected_shot_creation
+    definition: Returns probability of creating a shot within a horizon.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: expected_goal_concession
+    definition: Returns probability of conceding within a horizon.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: expected_threat
+    definition: Returns versioned possession-state threat value.
+    output_type: frame_or_action_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: expected_possession_value
+    definition: Returns versioned expected possession outcome value.
+    output_type: frame_or_action_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: action_value
+    definition: Returns modelled value change across an observed action.
+    output_type: scalar_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: off_ball_action_value
+    definition: Returns modelled value associated with an observed off-ball movement.
+    output_type: scalar_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: space_value_field
+    definition: Returns spatial distribution of modelled future value.
+    output_type: field_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: counterfactual_pass_option_set
+    definition: Returns feasible alternative pass targets under declared physical assumptions.
+    output_type: candidate_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: counterfactual_carry_option_set
+    definition: Returns feasible alternative carry trajectories.
+    output_type: candidate_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: counterfactual_movement_set
+    definition: Returns feasible alternative off-ball trajectories under a declared motion model.
+    output_type: candidate_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: counterfactual_state_rollout
+    definition: Returns simulated future state distributions under a candidate action.
+    output_type: trajectory_distribution
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: expected_regret
+    definition: Compares observed action value with feasible alternatives under one model.
+    output_type: distribution_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: decision_quality_model
+    definition: Returns a model-relative assessment only when alternatives, calibration, and domain validity are
+      declared.
+    output_type: evaluation_set
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: trajectory_likelihood
+    definition: Measures likelihood of an observed movement under a learned behavior model.
+    output_type: frame_or_episode_signal
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: behavior_novelty
+    definition: Measures deviation from learned team, role, or league behavior distributions.
+    output_type: scalar_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: opponent_response_model
+    definition: Predicts defensive response distributions to candidate ball or player movement.
+    output_type: trajectory_distribution
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: team_style_embedding
+    definition: Returns a versioned representation of recurrent team behavior.
+    output_type: embedding_value
+    semantic_tier: MODELLED
+    status: PROPOSED
+  - id: model_domain_validity
+    definition: Checks whether match, competition, data modality, and feature ranges fit model training scope.
+    output_type: evaluation_set
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: model_calibration_record
+    definition: Carries calibration metrics, uncertainty intervals, training period, and population.
+    output_type: evidence_record
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: counterfactual_assumption_record
+    definition: Carries physical, behavioral, and causal assumptions behind every alternative.
+    output_type: evidence_record
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+- id: evidence_replay_and_validation
+  title: Evidence, replay, tests, and capability governance
+  purpose: Make every result inspectable, reproducible, versioned, and honest about what cannot be known.
+  default_modalities:
+  - any
+  capabilities:
+  - id: evidence_frame_set
+    definition: Returns exact witness, boundary, baseline, and failure frames for an evaluation.
+    output_type: frame_set
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: evidence_entity_set
+    definition: Returns all involved, expected, missing, and excluded entities.
+    output_type: entity_set_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: evidence_geometry
+    definition: Returns exact points, paths, lines, regions, fields, and graph edges supporting a claim.
+    output_type: geometry_bundle
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: evidence_measurements
+    definition: Returns measured values, units, uncertainty, and thresholds used.
+    output_type: record_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: predicate_trace
+    definition: Returns each predicate's PASS, FAIL, or UNKNOWN state and reason.
+    output_type: trace_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: capability_trace
+    definition: Returns capability versions, parameters, inputs, outputs, and quality state.
+    output_type: trace_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: provenance_trace
+    definition: Returns author, recipe, binder, engine, data, model, and schema versions.
+    output_type: trace_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: unknown_reason
+    definition: Returns typed reason codes for indeterminate results.
+    output_type: enum_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: degradation_reason
+    definition: Returns typed reason codes for results produced with degraded evidence.
+    output_type: enum_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: conflict_record
+    definition: Returns contradictory source facts or incompatible hypotheses.
+    output_type: record_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: replay_window
+    definition: Returns the exact time window required to inspect a result.
+    output_type: episode_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: replay_overlay_bundle
+    definition: Returns only evidence-backed overlays and explicitly unavailable overlays.
+    output_type: geometry_bundle
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: result_identity
+    definition: Computes deterministic identity from plan, scope, data, engine, and model versions.
+    output_type: identifier_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: capability_contract
+    definition: Declares typed inputs, outputs, units, frames, semantics, limitations, and authoring tier.
+    output_type: schema_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: capability_invariant_test
+    definition: Runs provider-independent mathematical and football invariants.
+    output_type: test_result_set
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: synthetic_scenario_test
+    definition: Runs a capability against controlled synthetic trajectories with known truth.
+    output_type: test_result_set
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: gold_clip_test
+    definition: Compares results with reviewed video or expert annotations when available.
+    output_type: test_result_set
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: cross_provider_conformance_test
+    definition: Checks equivalent behavior after ingestion from different providers.
+    output_type: test_result_set
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: parameter_sensitivity_report
+    definition: Reports how outputs change across allowed parameter ranges.
+    output_type: report_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: boundary_stability_report
+    definition: Reports timing and classification sensitivity near episode boundaries.
+    output_type: report_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: performance_budget
+    definition: Declares expected compute, memory, scope, and degradation behavior.
+    output_type: record_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: modality_requirement
+    definition: Declares required and optional modalities, sampling rates, and fields.
+    output_type: schema_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: semantic_claim_level
+    definition: Labels outputs as observed, deterministic, inferred candidate, modelled, or interpreted.
+    output_type: enum_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: authorability_policy
+    definition: Declares compiler lowering, agent composable, trusted recipe, or user tactical visibility.
+    output_type: enum_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: deprecation_and_migration
+    definition: Declares replacement capability and compatibility policy for retired versions.
+    output_type: record_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED
+  - id: catalog_gap_record
+    definition: Returns a typed statement of which missing primitives prevent a requested query.
+    output_type: record_value
+    semantic_tier: EVIDENCE
+    status: PROPOSED

@@ -2,7 +2,7 @@ PYTHON ?= $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python
 PYTHONPATH := $(CURDIR)/src
 export PYTHONPATH
 
-.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify m1-2-gate-s0-verify m1-2-gate-s1-verify m1-2-gate-s2-verify m1-2-gate-s2-sealed-verify m1-2-gate-s2i-verify m1-2-gate-s2ib-verify m1-2-gate-s2ic-verify m1-2-gate-s2id-verify m1-2-gate-s2ie-verify m1-2-gate-s2if-verify n1c-verify n1d-freeze n1d-verify n1d1-verify n1g-verify n1i-verify m2a-s1a-verify m2a-s1b-verify m2a-s1c-verify workbench-alpha-install workbench-alpha-build workbench-alpha-serve workbench-alpha-verify cloud-alpha-bundle cloud-alpha-smoke m1-2-verify test
+.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify m1-2-gate-s0-verify m1-2-gate-s1-verify m1-2-gate-s2-verify m1-2-gate-s2-sealed-verify m1-2-gate-s2i-verify m1-2-gate-s2ib-verify m1-2-gate-s2ic-verify m1-2-gate-s2id-verify m1-2-gate-s2ie-verify m1-2-gate-s2if-verify n1c-verify n1d-freeze n1d-verify n1d1-verify n1g-verify n1i-verify m2a-s1a-verify m2a-s1b-verify m2a-s1c-verify scp-0-verify workbench-alpha-install workbench-alpha-build workbench-alpha-serve workbench-alpha-verify cloud-alpha-bundle cloud-alpha-smoke m1-2-verify test
 
 setup:
 	python3.12 -m venv .venv
@@ -168,6 +168,10 @@ m2a-s1b-verify:
 
 m2a-s1c-verify:
 	$(PYTHON) -m tqe.verification.m2a_s1c_high_bypass_verify
+
+scp-0-verify:
+	$(PYTHON) -m tqe.verification.scp0
+	$(PYTHON) -m unittest tests.test_scp0_semantic_registry
 
 workbench-alpha-install:
 	npm --prefix apps/workbench-alpha install
