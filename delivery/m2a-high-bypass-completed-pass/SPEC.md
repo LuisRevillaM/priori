@@ -91,6 +91,7 @@ events:
   row_index
   event_type
   gameclock_seconds
+  timestamp
   team_id
   player_id
   at_x
@@ -101,6 +102,8 @@ events:
 ```
 
 `events.qualifier_json` contains pass metadata such as `Evaluation`, `Recipient`, `Player`, and `Team`. Use events to identify candidate passes and named players. Use tracking data to prove physical release and controlled-reception endpoints. Do not treat event `to_x/to_y` as a controlled reception frame without tracking confirmation.
+
+Use `events.timestamp` as the primary event-to-tracking alignment source. `gameclock_seconds` is retained for reporting and fallback only. Do not compute event time as `first_frame.timestamp_utc + gameclock_seconds` unless a preflight proves that convention is aligned for the match/period; first tracking frame is not guaranteed to be exact game-clock zero.
 
 ## Definitions
 
@@ -153,7 +156,7 @@ Exclude goalkeepers in M2A. If goalkeeper identity is missing for either team, t
 The initial tactical family is:
 
 ```text
-controlled_pass_episode.status == PASS
+controlled_pass_episode.controlled_pass_status == PASS
 AND forward_progression_m >= 8.0
 AND opponents_bypassed_count >= 5
 -> HIGH_BYPASS_COMPLETED_PASS
@@ -163,7 +166,7 @@ AND opponents_bypassed_count >= 5
 
 ## Capability 1 - `controlled_pass_episode`
 
-Visibility after proof: `AGENT_COMPOSABLE`
+Visibility after accepted M2A proof: `AGENT_COMPOSABLE`
 
 Recommended initial catalog kind: `primitive`
 
@@ -176,9 +179,18 @@ controlled_pass_episode.episodes
   cardinality: collection
   entity_scope: possession
   missing_data_semantics: unknown
+
+controlled_pass_episode.anchors
+  temporal_type: episode_set
+  payload_type: anchor_ref
+  cardinality: collection
+  entity_scope: anchor
+  missing_data_semantics: unknown
 ```
 
 Do not add a new IR temporal type for M2A unless the existing `episode_set` cannot carry required records. Each episode record must contain an explicit `pass_episode_id` so downstream predicates and evidence can correlate by action identity, not by frame only.
+
+Generic predicates and result emission must use the `anchors`/anchor-relative outputs, not raw pass episode records. Raw episode records may exist as runtime payload for inspection/evidence, but they must not be the direct source of `exists` or `count_at_least`.
 
 ### Inputs
 
@@ -214,6 +226,11 @@ receiver_nearest_margin_m: number metre
   minimum: 0.0
   maximum: 5.0
 
+minimum_control_dwell_seconds: number second
+  default: 0.24
+  minimum: 0.04
+  maximum: 1.0
+
 minimum_forward_progression_m: number metre
   default: 0.0
   minimum: -30.0
@@ -239,9 +256,18 @@ Set pieces can be added later. M2A must stay narrow and prove open-play complete
 
 ### Release Frame Alignment
 
-Find the canonical tracking frame nearest the event's `gameclock_seconds` in the same match/period.
+Find the canonical tracking frame nearest the event's `timestamp` in the same match/period.
 
 Preferred implementation:
+
+```text
+event_timestamp = events.timestamp converted to UTC
+release_frame = nearest frame timestamp_utc to event_timestamp
+```
+
+If existing runtime utilities already define event timestamp to frame alignment, reuse those. Do not add a second incompatible timing convention.
+
+Fallback implementation, allowed only when `events.timestamp` is missing:
 
 ```text
 period_start_timestamp = first frames.timestamp_utc for period
@@ -249,7 +275,7 @@ event_timestamp = period_start_timestamp + gameclock_seconds
 release_frame = nearest frame timestamp_utc to event_timestamp
 ```
 
-If existing runtime utilities already define match time or frame alignment, reuse those. Do not add a second incompatible timing convention.
+The fallback must be reported in M2A-S0 with measured alignment error. It must not silently become the default.
 
 If absolute time delta is greater than `max_release_alignment_ms`, emit a controlled pass record with:
 
@@ -271,10 +297,14 @@ receiver position exists
 ball position exists
 distance(ball, receiver) <= max_reception_ball_distance_m
 receiver is the nearest teammate to the ball, or tied within receiver_nearest_margin_m
+receiver remains nearest/within-threshold for at least minimum_control_dwell_seconds
 same-team possession continuity has not broken
+the next compatible event, where available, does not contradict the same receiver
 ```
 
 Possession continuity can initially use the runtime's existing ball possession/team role state if available. If reliable possession continuity is unavailable for a frame window, the action is `UNKNOWN`.
+
+M2A-S0 must report false-positive risk for this controlled-reception heuristic. If visual spot checks show that ball-near-receiver does not reliably indicate controlled reception, stop and tighten the reception definition before implementing S1.
 
 If no reception frame is found, emit:
 
@@ -315,6 +345,8 @@ release_frame_id
 reception_frame_id
 release_match_time_ms
 reception_match_time_ms
+anchor_id
+anchor_frame_id
 release_ball_point
 reception_ball_point
 release_passer_point
@@ -329,28 +361,34 @@ M2A may omit `FAIL` controlled passes from positive result candidates, but must 
 
 ## Capability 2 - `opponents_bypassed_by_action`
 
-Visibility after proof: `AGENT_COMPOSABLE`
+Visibility after accepted M2A proof: `AGENT_COMPOSABLE`
 
 Recommended initial catalog kind: `primitive` unless relation plumbing fits better.
 
 Recommended output shape:
 
 ```text
-opponents_bypassed_by_action.evaluations
+opponents_bypassed_by_action.anchor_evaluations
   temporal_type: episode_set
   payload_type: boolean
   cardinality: collection
-  entity_scope: possession
+  entity_scope: anchor
   missing_data_semantics: unknown
 ```
 
-Each record is keyed by `pass_episode_id`. The boolean payload indicates whether the evaluation meets a declared threshold when used directly by a recipe; the record must also carry the count and player IDs as evidence.
+Each record is keyed by both `anchor_id` and `pass_episode_id`. The boolean payload indicates whether the evaluation meets a declared threshold when used by a recipe; the record must also carry the count and player IDs as evidence.
+
+Do not expose a raw `episode_set` fallback to Hermes for `exists` or `count_at_least`. M2A must stay anchor-relative to preserve the safety discipline established in M1.2/S7R2.
 
 ### Inputs
 
 ```text
 controlled_passes:
   source: controlled_pass_episode.episodes
+  required: true
+
+anchors:
+  source: controlled_pass_episode.anchors
   required: true
 ```
 
@@ -389,16 +427,18 @@ For each `controlled_pass_episode`:
 2. Load all opposition outfield player positions at `release_frame_id` and `reception_frame_id`.
 3. Load ball positions at `release_frame_id` and `reception_frame_id`.
 4. Normalize x coordinates with the attacking team's `attack_x_sign`.
-5. Build `candidate_goal_side_ids`:
+5. Build `expected_opposition_outfield_player_ids` from `players.parquet`, excluding goalkeepers.
+6. Build `evaluated_opponent_ids` from players with valid positions at both release and reception.
+7. Build `candidate_goal_side_ids`:
    ```text
    opponent_release_attack_x > release_ball_attack_x + goal_side_buffer_m
    ```
-6. Build `bypassed_player_ids` from those candidates:
+8. Build `bypassed_player_ids` from those candidates:
    ```text
    opponent_reception_attack_x < reception_ball_attack_x - bypassed_buffer_m
    ```
-7. Exclude goalkeepers using `players.is_goalkeeper`.
-8. Set:
+9. Exclude goalkeepers using `players.is_goalkeeper`.
+10. Set:
    ```text
    opponents_bypassed_count = len(bypassed_player_ids)
    evaluation_status = PASS if count >= minimum_bypassed_opponents else FAIL
@@ -407,7 +447,7 @@ For each `controlled_pass_episode`:
 Missing evidence rule:
 
 ```text
-If any opponent who could affect the threshold is missing at release or reception,
+If any expected opposition outfield player who could affect the threshold is missing at release or reception,
 the evaluation is UNKNOWN unless the count is already proven above threshold
 without that player.
 ```
@@ -426,6 +466,8 @@ Each evaluation record must include:
 
 ```text
 pass_episode_id
+anchor_id
+anchor_frame_id
 match_id
 period
 team_id
@@ -440,6 +482,8 @@ forward_progression_m
 minimum_bypassed_opponents
 goal_side_buffer_m
 bypassed_buffer_m
+expected_opposition_outfield_player_ids
+evaluated_opponent_ids
 candidate_goal_side_player_ids
 bypassed_player_ids
 opponents_bypassed_count
@@ -464,10 +508,10 @@ State during implementation: `EXPERIMENTAL`
 Recommended recipe document path:
 
 ```text
-plans/high_bypass_completed_pass_v1.json
+config/query-plans/high_bypass_completed_pass.experimental.v1.json
 ```
 
-If recipe plan files currently live elsewhere, use the existing recipe-plan convention and add this alongside the other experimental recipe documents.
+Add this path to every existing recipe registry used by the Workbench and knowledge-pack generation, including `RECIPE_PLAN_PATHS` in `src/tqe/workshop/knowledge_pack.py` and `src/tqe/workshop/m1_2.py`.
 
 ### Recipe Parameters
 
@@ -507,14 +551,15 @@ node: controlled_pass_episode
 node: opponents_bypassed_by_action
   input:
     controlled_passes = controlled_pass_episode.episodes
+    anchors = controlled_pass_episode.anchors
   parameters:
     minimum_bypassed_opponents = $minimum_bypassed_opponents
     goal_side_buffer_m = $goal_side_buffer_m
     bypassed_buffer_m = $bypassed_buffer_m
 
 predicate:
-  source = opponents_bypassed_by_action.evaluations
-  operator = exists or eq PASS over anchor/action evaluation
+  source = opponents_bypassed_by_action.anchor_evaluations
+  operator = eq PASS over anchor-relative evaluation status, or existing safe anchor-evaluation predicate path
 
 classification:
   label = HIGH_BYPASS_COMPLETED_PASS
@@ -522,7 +567,7 @@ classification:
   unknown_policy = exclude candidate, preserve trace
 ```
 
-If current generic result emission needs anchor-like records, create deterministic action anchors from `pass_episode_id`:
+Create deterministic action anchors from `pass_episode_id`:
 
 ```text
 anchor_id = stable_hash(match_id, period, pass_episode_id, release_frame_id, reception_frame_id)
@@ -533,12 +578,15 @@ end_frame_id = reception_frame_id
 
 Do not generate IDs from node names, output list indexes, or result ordering.
 
+The accepted implementation must prove that clearing raw pass episodes from sidecar/provenance does not change anchor discovery or result identity. Anchors are first-class runtime outputs, not inferred side effects.
+
 ### Required Evidence Aliases
 
 Results must request and resolve:
 
 ```text
 pass_episode_id
+anchor_id
 event_row_index
 passer_id
 receiver_id
@@ -554,6 +602,8 @@ forward_progression_m
 opponents_bypassed_count
 bypassed_player_ids
 candidate_goal_side_player_ids
+expected_opposition_outfield_player_ids
+evaluated_opponent_ids
 goal_side_buffer_m
 bypassed_buffer_m
 evaluation_status
@@ -564,7 +614,7 @@ unknown_reason
 
 ## Knowledge Pack And Hermes Contract
 
-Expose these after local deterministic proof:
+Expose these to the generated knowledge pack in phases:
 
 ```text
 controlled_pass_episode
@@ -579,6 +629,8 @@ controlled_pass_episode              AGENT_COMPOSABLE
 opponents_bypassed_by_action         AGENT_COMPOSABLE
 high_bypass_completed_pass_v1        USER_TACTICAL / EXPERIMENTAL
 ```
+
+During M2A-S1 through M2A-S3, the new capabilities may appear in internal generated catalogs but must remain hidden or marked non-authorable in Hermes-facing context. Promote them to Hermes-visible `AGENT_COMPOSABLE` only after M2A-S4 human visual verification passes and the human-review packet is accepted.
 
 Hermes must see:
 
@@ -635,7 +687,7 @@ src/tqe/runtime/action_episodes.py       # new
 src/tqe/runtime/bypass.py                # new
 src/tqe/workshop/knowledge_pack.py
 src/tqe/workshop/m1_2.py                 # only if tool/schema exposure requires it
-plans/...                                # new experimental recipe
+config/query-plans/high_bypass_completed_pass.experimental.v1.json
 generated/capability-catalog.json
 generated/capability-context.json
 generated/tactical-knowledge-pack.json
@@ -734,19 +786,23 @@ Required automated checks:
 
 1. Catalog entries validate and generated capability/knowledge packs include the new safe capabilities.
 2. `controlled_pass_episode` emits deterministic IDs independent of event row iteration order.
-3. Release-frame alignment beyond tolerance produces `UNKNOWN`.
-4. Missing controlled reception produces `UNKNOWN`.
-5. Broken possession continuity does not count as a completed controlled pass.
-6. Attacking-direction mirroring produces identical bypass counts.
-7. Player record ordering does not change bypass counts or result IDs.
-8. A player inside either positional buffer is not spuriously bypassed.
-9. Missing opponent positions do not silently reduce the count when the missing player could affect threshold.
-10. A proven count above threshold remains `PASS` despite unrelated missing non-candidate evidence.
-11. Goalkeepers are excluded and listed in `excluded_goalkeeper_ids`.
-12. Every highlighted opponent in replay evidence appears in `bypassed_player_ids`.
-13. Every positive result resolves all required evidence aliases.
-14. Repeated execution is deterministic for the same match scope.
-15. M1.2 Workbench, N1C, N1D.1/N1I, and existing unit suites remain green or are explicitly explained if a known generated-artifact footgun dirties tracked files.
+3. Event timestamp alignment uses `events.timestamp` by default; a synthetic fallback-only case is separately reported.
+4. Release-frame alignment beyond tolerance produces `UNKNOWN`.
+5. Missing controlled reception produces `UNKNOWN`.
+6. Controlled-reception dwell/nearest-player checks reject at least one synthetic near-ball-but-not-controlled case.
+7. Broken possession continuity does not count as a completed controlled pass.
+8. Attacking-direction mirroring produces identical bypass counts.
+9. Player record ordering does not change bypass counts or result IDs.
+10. A player inside either positional buffer is not spuriously bypassed.
+11. Missing opponent positions do not silently reduce the count when the missing player could affect threshold.
+12. Expected/evaluated opposition outfield denominators are recorded for every evaluation.
+13. A proven count above threshold remains `PASS` despite unrelated missing non-candidate evidence.
+14. Goalkeepers are excluded and listed in `excluded_goalkeeper_ids`.
+15. Generic predicates consume `anchor_evaluations`, not raw episode sidecars.
+16. Every highlighted opponent in replay evidence appears in `bypassed_player_ids`.
+17. Every positive result resolves all required evidence aliases.
+18. Repeated execution is deterministic for the same match scope.
+19. M1.2 Workbench, N1C, N1D.1/N1I, and existing unit suites remain green or are explicitly explained if a known generated-artifact footgun dirties tracked files.
 
 Suggested command bundle:
 
