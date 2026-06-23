@@ -4,7 +4,7 @@
   "service_name": "priori-integrated-alpha",
   "service_type": "web_service",
   "repo_url": "https://github.com/LuisRevillaM/priori",
-  "repo_branch": "codex/integrated-alpha",
+  "repo_branch": "main",
   "region": "oregon",
   "plan": "standard",
   "runtime": "docker",
@@ -14,7 +14,7 @@
   "disk_name": "priori-integrated-alpha-data",
   "disk_mount_path": "/var/data",
   "disk_size_gb": 20,
-  "auto_deploy": false,
+  "auto_deploy": true,
   "env": {
     "HOST": "0.0.0.0",
     "WORKBENCH_HERMES_ENABLED": "1",
