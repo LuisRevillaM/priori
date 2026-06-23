@@ -2,8 +2,8 @@
   "checks": [
     {
       "details": {
-        "actual": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0",
-        "expected": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0"
+        "actual": "10cdddbbe5639c4786b38c314676ac088778eae2b42dcd484aa045f87311efa5",
+        "expected": "10cdddbbe5639c4786b38c314676ac088778eae2b42dcd484aa045f87311efa5"
       },
       "name": "pack.hash.matches_content",
       "ok": true
@@ -45,6 +45,34 @@
         ]
       },
       "name": "pack.recipes.include_corridor",
+      "ok": true
+    },
+    {
+      "details": {
+        "agent_authorable": true
+      },
+      "name": "pack.capabilities.generic_destination_entry_authorable",
+      "ok": true
+    },
+    {
+      "details": {
+        "agent_authorable": false
+      },
+      "name": "pack.capabilities.trusted_wrapper_not_authorable",
+      "ok": true
+    },
+    {
+      "details": {
+        "advertised_refs": [
+          "ball_lateral_fraction",
+          "defensive_outfield_centroid",
+          "geometric_progressive_corridor",
+          "geometric_progressive_corridor_from_anchor_set",
+          "possession_segment",
+          "signed_lateral_shift"
+        ]
+      },
+      "name": "pack.recipes.do_not_advertise_trusted_wrapper_as_authorable",
       "ok": true
     },
     {
@@ -154,8 +182,8 @@
     },
     {
       "details": {
-        "approx_tokens": 30609,
-        "json_chars": 122437
+        "approx_tokens": 35066,
+        "json_chars": 140265
       },
       "name": "pack.size.recorded",
       "ok": true
@@ -206,6 +234,8 @@
           "The authored plan must keep status=experimental for Hermes.",
           "Keep default_invocation.execution_mode=execute; host confirmation still controls whether execution may happen.",
           "exists/count_at_least may only consume anchor_evaluations.",
+          "Use relation_destination_entry.entry_status with eq PASS for agent-authored destination-region entry checks.",
+          "Do not use trusted recipe wrappers such as relation_destination_entry_classification in agent-authored plans.",
           "Do not request raw match dumps, primitive mutation, confirmation, or execution."
         ]
       },
@@ -219,10 +249,10 @@
     }
   ],
   "gate": "S2I_A_tactical_knowledge_pack",
-  "generated_at": "2026-06-22T22:20:45+00:00",
+  "generated_at": "2026-06-23T04:29:20+00:00",
   "knowledge_pack_markdown_path": "generated/tactical-knowledge-pack.md",
   "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-  "knowledge_pack_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0",
+  "knowledge_pack_sha256": "10cdddbbe5639c4786b38c314676ac088778eae2b42dcd484aa045f87311efa5",
   "passed": true,
   "schema_version": "1.0"
 }

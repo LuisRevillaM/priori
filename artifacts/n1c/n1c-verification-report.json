@@ -3,7 +3,7 @@
     {
       "details": {
         "manifest_path": "artifacts/n1c/n1c-canonical-freeze-manifest.json",
-        "manifest_sha256": "423b80651cf53c2850c0558ed12c1334b703eb44946572c5dad48cbda2ffcd12"
+        "manifest_sha256": "6a846a3afeab5b490a9790e7bccf38c5dd4bd8a02428bfb67611a4dd909fde35"
       },
       "id": "n1c.manifest_written",
       "message": "Canonical N1C freeze manifest exists and contains required identity fields.",
@@ -14,11 +14,11 @@
         "capability_context": {
           "exists": true,
           "path": "generated/capability-context.json",
-          "sha256": "0ef53564bf09c7b6e64d1ba8da1aff14bd7ce426b23e0dcb293eaf5256506fe4"
+          "sha256": "c054f8ef97160c4786b32722f96816b310816fec9f846e957d9f88fa79ef08ed"
         },
-        "file_sha256": "7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962",
+        "file_sha256": "fbe155e29760a66843391c0e2ee7629d669d3c7888b1c1fcfc5e826deb078b5b",
         "path": "generated/tactical-knowledge-pack.json",
-        "semantic_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0"
+        "semantic_sha256": "10cdddbbe5639c4786b38c314676ac088778eae2b42dcd484aa045f87311efa5"
       },
       "id": "n1c.knowledge_pack_hashes_reconciled",
       "message": "Knowledge-pack file and semantic hashes are both recorded and match current artifacts.",
@@ -230,13 +230,13 @@
         "accesses": [
           {
             "accessor": "integer",
-            "line": 3150,
+            "line": 3205,
             "name": "accepted_per_match_limit",
             "receiver": "params"
           },
           {
             "accessor": "integer",
-            "line": 3149,
+            "line": 3204,
             "name": "accepted_result_limit",
             "receiver": "params"
           },
@@ -248,115 +248,115 @@
           },
           {
             "accessor": "integer",
-            "line": 1288,
+            "line": 1343,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 1349,
+            "line": 1404,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 1546,
+            "line": 1601,
             "name": "analysis_rate_hz",
             "receiver": "context.params"
           },
           {
             "accessor": "integer",
-            "line": 1905,
+            "line": 1960,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 1972,
+            "line": 2027,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 1973,
+            "line": 2028,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 2057,
+            "line": 2112,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 2237,
+            "line": 2292,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 2787,
+            "line": 2842,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 2828,
+            "line": 2883,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 2839,
+            "line": 2894,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 2854,
+            "line": 2909,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 2859,
+            "line": 2914,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 2908,
+            "line": 2963,
             "name": "analysis_rate_hz",
             "receiver": "state.params"
           },
           {
             "accessor": "integer",
-            "line": 4005,
+            "line": 4060,
             "name": "analysis_rate_hz",
             "receiver": "params"
           },
           {
             "accessor": "integer",
-            "line": 4006,
+            "line": 4061,
             "name": "analysis_rate_hz",
             "receiver": "params"
           },
           {
             "accessor": "number",
-            "line": 1972,
+            "line": 2027,
             "name": "baseline_window_seconds",
             "receiver": "state.params"
           },
           {
             "accessor": "number",
-            "line": 2828,
+            "line": 2883,
             "name": "baseline_window_seconds",
             "receiver": "state.params"
           },
           {
             "accessor": "number",
-            "line": 2058,
+            "line": 2113,
             "name": "dedupe_window_seconds",
             "receiver": "state.params"
           },
@@ -368,61 +368,61 @@
           },
           {
             "accessor": "integer",
-            "line": 2004,
+            "line": 2059,
             "name": "minimum_outfield_players_per_team",
             "receiver": "state.params"
           },
           {
             "accessor": "number",
-            "line": 1905,
+            "line": 1960,
             "name": "minimum_possession_seconds",
             "receiver": "state.params"
           },
           {
             "accessor": "number",
-            "line": 2908,
+            "line": 2963,
             "name": "minimum_wide_dwell_seconds",
             "receiver": "state.params"
           },
           {
             "accessor": "number",
-            "line": 4007,
+            "line": 4062,
             "name": "opposite_side_fraction",
             "receiver": "params"
           },
           {
             "accessor": "number",
-            "line": 4005,
+            "line": 4060,
             "name": "outcome_horizon_seconds",
             "receiver": "params"
           },
           {
             "accessor": "number",
-            "line": 2829,
+            "line": 2884,
             "name": "prior_central_fraction",
             "receiver": "state.params"
           },
           {
             "accessor": "text",
-            "line": 2056,
+            "line": 2111,
             "name": "result_id_seed_hash",
             "receiver": "state.params"
           },
           {
             "accessor": "text",
-            "line": 2496,
+            "line": 2551,
             "name": "result_id_seed_hash",
             "receiver": "state.params"
           },
           {
             "accessor": "number",
-            "line": 4006,
+            "line": 4061,
             "name": "retained_after_switch_seconds",
             "receiver": "params"
           },
           {
             "accessor": "number",
-            "line": 1973,
+            "line": 2028,
             "name": "shift_search_window_seconds",
             "receiver": "state.params"
           }
@@ -554,7 +554,7 @@
   },
   "generated_at": "2026-06-22T15:15:37-07:00",
   "manifest_path": "artifacts/n1c/n1c-canonical-freeze-manifest.json",
-  "manifest_sha256": "423b80651cf53c2850c0558ed12c1334b703eb44946572c5dad48cbda2ffcd12",
+  "manifest_sha256": "6a846a3afeab5b490a9790e7bccf38c5dd4bd8a02428bfb67611a4dd909fde35",
   "runtime_context_contract": {
     "access_count": 33,
     "access_names": [
@@ -577,13 +577,13 @@
     "accesses": [
       {
         "accessor": "integer",
-        "line": 3150,
+        "line": 3205,
         "name": "accepted_per_match_limit",
         "receiver": "params"
       },
       {
         "accessor": "integer",
-        "line": 3149,
+        "line": 3204,
         "name": "accepted_result_limit",
         "receiver": "params"
       },
@@ -595,115 +595,115 @@
       },
       {
         "accessor": "integer",
-        "line": 1288,
+        "line": 1343,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 1349,
+        "line": 1404,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 1546,
+        "line": 1601,
         "name": "analysis_rate_hz",
         "receiver": "context.params"
       },
       {
         "accessor": "integer",
-        "line": 1905,
+        "line": 1960,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 1972,
+        "line": 2027,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 1973,
+        "line": 2028,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 2057,
+        "line": 2112,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 2237,
+        "line": 2292,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 2787,
+        "line": 2842,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 2828,
+        "line": 2883,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 2839,
+        "line": 2894,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 2854,
+        "line": 2909,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 2859,
+        "line": 2914,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 2908,
+        "line": 2963,
         "name": "analysis_rate_hz",
         "receiver": "state.params"
       },
       {
         "accessor": "integer",
-        "line": 4005,
+        "line": 4060,
         "name": "analysis_rate_hz",
         "receiver": "params"
       },
       {
         "accessor": "integer",
-        "line": 4006,
+        "line": 4061,
         "name": "analysis_rate_hz",
         "receiver": "params"
       },
       {
         "accessor": "number",
-        "line": 1972,
+        "line": 2027,
         "name": "baseline_window_seconds",
         "receiver": "state.params"
       },
       {
         "accessor": "number",
-        "line": 2828,
+        "line": 2883,
         "name": "baseline_window_seconds",
         "receiver": "state.params"
       },
       {
         "accessor": "number",
-        "line": 2058,
+        "line": 2113,
         "name": "dedupe_window_seconds",
         "receiver": "state.params"
       },
@@ -715,61 +715,61 @@
       },
       {
         "accessor": "integer",
-        "line": 2004,
+        "line": 2059,
         "name": "minimum_outfield_players_per_team",
         "receiver": "state.params"
       },
       {
         "accessor": "number",
-        "line": 1905,
+        "line": 1960,
         "name": "minimum_possession_seconds",
         "receiver": "state.params"
       },
       {
         "accessor": "number",
-        "line": 2908,
+        "line": 2963,
         "name": "minimum_wide_dwell_seconds",
         "receiver": "state.params"
       },
       {
         "accessor": "number",
-        "line": 4007,
+        "line": 4062,
         "name": "opposite_side_fraction",
         "receiver": "params"
       },
       {
         "accessor": "number",
-        "line": 4005,
+        "line": 4060,
         "name": "outcome_horizon_seconds",
         "receiver": "params"
       },
       {
         "accessor": "number",
-        "line": 2829,
+        "line": 2884,
         "name": "prior_central_fraction",
         "receiver": "state.params"
       },
       {
         "accessor": "text",
-        "line": 2056,
+        "line": 2111,
         "name": "result_id_seed_hash",
         "receiver": "state.params"
       },
       {
         "accessor": "text",
-        "line": 2496,
+        "line": 2551,
         "name": "result_id_seed_hash",
         "receiver": "state.params"
       },
       {
         "accessor": "number",
-        "line": 4006,
+        "line": 4061,
         "name": "retained_after_switch_seconds",
         "receiver": "params"
       },
       {
         "accessor": "number",
-        "line": 1973,
+        "line": 2028,
         "name": "shift_search_window_seconds",
         "receiver": "state.params"
       }

@@ -388,7 +388,7 @@
     ]
   },
   "generated_at": "reproducible_from_source_hashes",
-  "knowledge_pack_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0",
+  "knowledge_pack_sha256": "10cdddbbe5639c4786b38c314676ac088778eae2b42dcd484aa045f87311efa5",
   "knowledge_pack_version": "m1.2-s2i-a.0",
   "model_visible_tool_schemas": {
     "compare_query_versions": {
@@ -3081,6 +3081,14 @@
       "version": "1.0.0"
     },
     {
+      "agent_visible_source_rule": {
+        "allowed_output_name": "anchor_evaluations",
+        "rejected_sources": [
+          "raw boolean EpisodeSet",
+          "raw RelationEpisodeSet",
+          "generic collection counts not indexed by anchor_id"
+        ]
+      },
       "compare_payload_types": [],
       "compare_required": false,
       "compare_unit_must_match": false,
@@ -3104,6 +3112,14 @@
       "version": "1.0.0"
     },
     {
+      "agent_visible_source_rule": {
+        "allowed_output_name": "anchor_evaluations",
+        "rejected_sources": [
+          "raw boolean EpisodeSet",
+          "raw RelationEpisodeSet",
+          "generic collection counts not indexed by anchor_id"
+        ]
+      },
       "compare_payload_types": [
         "number"
       ],
@@ -3137,19 +3153,19 @@
   },
   "primitives": [
     {
+      "agent_authorable": true,
       "evidence_fields": [
         "possession_start_frame_id",
         "possession_end_frame_id",
         "possession_duration_seconds"
       ],
-      "executable": true,
       "inputs": [],
       "kind": "primitive",
       "limitations": [],
-      "missing_data_semantics": "unknown",
       "name": "possession_segment",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "possession",
           "evidence_fields": [
@@ -3164,6 +3180,7 @@
           "unit": "none"
         },
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "anchor",
           "evidence_fields": [
@@ -3184,20 +3201,20 @@
       "version": "0.1.0"
     },
     {
+      "agent_authorable": true,
       "evidence_fields": [
         "wide_entry_y_m",
         "ball_side"
       ],
-      "executable": true,
       "inputs": [],
       "kind": "primitive",
       "limitations": [
         "Depends on canonical pitch coordinates and known pitch width."
       ],
-      "missing_data_semantics": "unknown",
       "name": "ball_lateral_fraction",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "single",
           "entity_scope": "ball",
           "evidence_fields": [
@@ -3216,20 +3233,20 @@
       "version": "0.1.0"
     },
     {
+      "agent_authorable": true,
       "evidence_fields": [
         "baseline_defensive_centroid_y_m",
         "defending_team_id"
       ],
-      "executable": true,
       "inputs": [],
       "kind": "primitive",
       "limitations": [
         "Goalkeepers are excluded from the outfield centroid."
       ],
-      "missing_data_semantics": "unknown",
       "name": "defensive_outfield_centroid",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "per_team",
           "entity_scope": "team",
           "evidence_fields": [
@@ -3247,6 +3264,7 @@
       "version": "0.1.0"
     },
     {
+      "agent_authorable": true,
       "evidence_fields": [
         "baseline_start_frame_id",
         "baseline_end_frame_id",
@@ -3254,7 +3272,6 @@
         "signed_shift_metres",
         "block_shift_score"
       ],
-      "executable": true,
       "inputs": [
         {
           "cardinality": "collection",
@@ -3286,10 +3303,10 @@
       ],
       "kind": "primitive",
       "limitations": [],
-      "missing_data_semantics": "unknown",
       "name": "signed_lateral_shift",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "single",
           "entity_scope": "team",
           "evidence_fields": [
@@ -3306,6 +3323,7 @@
           "unit": "metre"
         },
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "anchor",
           "evidence_fields": [
@@ -3326,11 +3344,11 @@
       "version": "0.1.0"
     },
     {
+      "agent_authorable": false,
       "evidence_fields": [
         "classification",
         "outcome_frame_id"
       ],
-      "executable": true,
       "inputs": [
         {
           "cardinality": "collection",
@@ -3346,10 +3364,10 @@
       "limitations": [
         "Does not infer intent, optimality, or missed opportunity."
       ],
-      "missing_data_semantics": "unknown",
       "name": "outcome_classification",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "single",
           "entity_scope": "possession",
           "evidence_fields": [
@@ -3378,6 +3396,52 @@
       "version": "0.1.0"
     },
     {
+      "agent_authorable": true,
+      "agent_authoring": {
+        "output_to_classify": "entry_status",
+        "required_compare_value": "PASS",
+        "required_operator": "eq",
+        "safe_generic_path": {
+          "claims_boundary": "Measures geometric ball entry into a relation destination region only; no pass probability, optimality, intent, causation, or missed-opportunity claim.",
+          "classification_predicate": {
+            "compare": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "input": {
+              "output_name": "entry_status",
+              "source_node_id": "destination_entry"
+            },
+            "operator": {
+              "name": "eq",
+              "version": "1.0.0"
+            }
+          },
+          "forbidden_catalog_refs": [
+            "relation_destination_entry_classification"
+          ],
+          "node_sequence": [
+            "possession_segment.anchors",
+            "geometric_progressive_corridor_from_anchor_set.episodes",
+            "relation_destination_entry.entry_status",
+            "eq PASS predicate",
+            "classification/result evidence"
+          ],
+          "path_id": "possession_corridor_destination_entry_v1",
+          "purpose": "Agent-authorable generic composition for possession-start progressive corridors followed by ball entry into the relation destination region.",
+          "recommended_evidence": [
+            "destination_entry_status",
+            "destination_entry_mode",
+            "destination_time_to_entry_seconds"
+          ],
+          "required_catalog_refs": [
+            "possession_segment",
+            "geometric_progressive_corridor_from_anchor_set",
+            "relation_destination_entry"
+          ]
+        }
+      },
       "evidence_fields": [
         "entry_status",
         "relation_id",
@@ -3395,7 +3459,6 @@
         "unknown_reason",
         "missing_ball_frame_count"
       ],
-      "executable": true,
       "inputs": [
         {
           "cardinality": "collection",
@@ -3412,7 +3475,6 @@
         "Measures entry into relation destination geometry only.",
         "No pass probability, optimality, decision-quality, intent, causation, or missed-opportunity claim."
       ],
-      "missing_data_semantics": "unknown",
       "name": "relation_destination_entry",
       "outputs": [
         {
@@ -3480,6 +3542,12 @@
       "version": "0.1.0"
     },
     {
+      "agent_authorable": false,
+      "agent_authoring": {
+        "allowed": false,
+        "reason": "Recipe-specific wrapper; agent-authored plans must use the generic entry_status path.",
+        "use_instead": "relation_destination_entry"
+      },
       "evidence_fields": [
         "classification",
         "base_result_id",
@@ -3491,7 +3559,6 @@
         "destination_side",
         "destination_lane"
       ],
-      "executable": true,
       "inputs": [
         {
           "cardinality": "collection",
@@ -3509,10 +3576,10 @@
         "Requires an upstream relation episode set.",
         "No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."
       ],
-      "missing_data_semantics": "unknown",
       "name": "relation_destination_entry_classification",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "single",
           "entity_scope": "relation",
           "evidence_fields": [
@@ -3562,6 +3629,7 @@
         }
       ],
       "purpose": "Classify whether the ball later enters the destination region of a previously evaluated relation episode.",
+      "trusted_recipe_wrapper": true,
       "version": "0.1.0"
     }
   ],
@@ -5098,6 +5166,274 @@
         "The subsequent outcome was SWITCHED, RETAINED_NO_SWITCH, LOST_BEFORE_SWITCH, or excluded STOPPAGE under the frozen predicates.",
         "The replay coordinates come from canonical 25 Hz source frames."
       ],
+      "authoring_contract": {
+        "authorable_nodes": [
+          {
+            "catalog_ref": "possession_segment",
+            "kind": "primitive",
+            "parameters": {},
+            "required_inputs": {},
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "ball_lateral_fraction",
+            "kind": "primitive",
+            "parameters": {},
+            "required_inputs": {},
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "defensive_outfield_centroid",
+            "kind": "primitive",
+            "parameters": {},
+            "required_inputs": {},
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "signed_lateral_shift",
+            "kind": "primitive",
+            "parameters": {},
+            "required_inputs": {
+              "defensive_centroid": {
+                "output_name": "centroid_y",
+                "source_node_id": "defensive_centroid"
+              },
+              "entry_episodes": {
+                "output_name": "predicate",
+                "source_node_id": "wide_entry_persists"
+              },
+              "possession_episodes": {
+                "output_name": "episodes",
+                "source_node_id": "possession"
+              }
+            },
+            "version": "0.1.0"
+          }
+        ],
+        "classification_rules": [
+          {
+            "description": "Frozen M1 switched result classification.",
+            "label": "SWITCHED",
+            "predicate_ids": [
+              "wide_entry_persists",
+              "shift_persists",
+              "not_stoppage"
+            ]
+          },
+          {
+            "description": "Frozen M1 retained-no-switch result classification.",
+            "label": "RETAINED_NO_SWITCH",
+            "predicate_ids": [
+              "wide_entry_persists",
+              "shift_persists",
+              "not_stoppage"
+            ]
+          },
+          {
+            "description": "Frozen M1 loss-before-switch result classification.",
+            "label": "LOST_BEFORE_SWITCH",
+            "predicate_ids": [
+              "wide_entry_persists",
+              "shift_persists",
+              "not_stoppage"
+            ]
+          },
+          {
+            "description": "Frozen M1 excluded stoppage classification.",
+            "label": "STOPPAGE",
+            "predicate_ids": [
+              "wide_entry_persists",
+              "shift_persists"
+            ]
+          }
+        ],
+        "constraints": [
+          "The authored plan must keep status=experimental for Hermes.",
+          "Keep default_invocation.execution_mode=execute; host confirmation still controls whether execution may happen.",
+          "exists/count_at_least may only consume anchor_evaluations.",
+          "Use relation_destination_entry.entry_status with eq PASS for agent-authored destination-region entry checks.",
+          "Do not use trusted recipe wrappers such as relation_destination_entry_classification in agent-authored plans.",
+          "Do not request raw match dumps, primitive mutation, confirmation, or execution."
+        ],
+        "default_invocation_contract": {
+          "execution_mode": "execute",
+          "match_ids": [
+            "J03WOY",
+            "J03WPY",
+            "J03WQQ",
+            "J03WR9"
+          ],
+          "max_results_ceiling": 180,
+          "periods": [
+            "firstHalf",
+            "secondHalf"
+          ],
+          "perspective_team_role": "home",
+          "validation_contract": "validate_query_plan binds and checks the plan but never executes it."
+        },
+        "draft_plan_defaults": {
+          "anchor_source": {
+            "output_name": "anchors",
+            "source_node_id": "signed_shift"
+          },
+          "classification_mode": "exhaustive",
+          "complexity_limits": {
+            "max_execution_cost": 50000,
+            "max_nesting_depth": 8,
+            "max_plan_nodes": 32,
+            "max_relations_per_anchor": 1,
+            "max_returned_moments": 200,
+            "max_temporal_horizon_seconds": 12.0
+          },
+          "recipe_id": "ball_side_block_shift_v1",
+          "recipe_version": "1.0.0",
+          "status": "approved",
+          "unknown_evidence_policy": "exclude_candidate"
+        },
+        "plan_document_shape": [
+          "schema_version",
+          "recipe",
+          "default_invocation",
+          "draft_plan"
+        ],
+        "requested_evidence": [
+          {
+            "field": "possession_start_frame_id",
+            "source": {
+              "output_name": "episodes",
+              "source_node_id": "possession"
+            }
+          },
+          {
+            "field": "wide_entry_y_m",
+            "source": {
+              "output_name": "fraction",
+              "source_node_id": "ball_lateral"
+            }
+          },
+          {
+            "field": "signed_shift_metres",
+            "source": {
+              "output_name": "signed_shift",
+              "source_node_id": "signed_shift"
+            }
+          },
+          {
+            "field": "anchor_frame_id",
+            "source": {
+              "output_name": "signed_shift",
+              "source_node_id": "signed_shift"
+            }
+          }
+        ],
+        "required_predicates": [
+          {
+            "compare": {
+              "kind": "parameter",
+              "name": "wide_entry_fraction"
+            },
+            "duration": null,
+            "input": {
+              "output_name": "fraction",
+              "source_node_id": "ball_lateral"
+            },
+            "operator": {
+              "name": "gt",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "compare": null,
+            "duration": {
+              "kind": "parameter",
+              "name": "minimum_wide_dwell_seconds"
+            },
+            "input": {
+              "output_name": "predicate",
+              "source_node_id": "wide_entry_threshold"
+            },
+            "operator": {
+              "name": "persists_for",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "compare": {
+              "kind": "parameter",
+              "name": "minimum_shift_metres"
+            },
+            "duration": null,
+            "input": {
+              "output_name": "signed_shift",
+              "source_node_id": "signed_shift"
+            },
+            "operator": {
+              "name": "gte",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "compare": null,
+            "duration": {
+              "kind": "parameter",
+              "name": "minimum_shift_persistence_seconds"
+            },
+            "input": {
+              "output_name": "predicate",
+              "source_node_id": "shift_threshold"
+            },
+            "operator": {
+              "name": "persists_for",
+              "version": "1.0.0"
+            }
+          }
+        ],
+        "safe_generic_composition_hints": {
+          "destination_entry_after_possession_corridor": {
+            "claims_boundary": "Measures geometric ball entry into a relation destination region only; no pass probability, optimality, intent, causation, or missed-opportunity claim.",
+            "classification_predicate": {
+              "compare": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "PASS"
+              },
+              "input": {
+                "output_name": "entry_status",
+                "source_node_id": "destination_entry"
+              },
+              "operator": {
+                "name": "eq",
+                "version": "1.0.0"
+              }
+            },
+            "forbidden_catalog_refs": [
+              "relation_destination_entry_classification"
+            ],
+            "node_sequence": [
+              "possession_segment.anchors",
+              "geometric_progressive_corridor_from_anchor_set.episodes",
+              "relation_destination_entry.entry_status",
+              "eq PASS predicate",
+              "classification/result evidence"
+            ],
+            "path_id": "possession_corridor_destination_entry_v1",
+            "purpose": "Agent-authorable generic composition for possession-start progressive corridors followed by ball entry into the relation destination region.",
+            "recommended_evidence": [
+              "destination_entry_status",
+              "destination_entry_mode",
+              "destination_time_to_entry_seconds"
+            ],
+            "required_catalog_refs": [
+              "possession_segment",
+              "geometric_progressive_corridor_from_anchor_set",
+              "relation_destination_entry"
+            ]
+          }
+        },
+        "trusted_recipe_only_catalog_refs_omitted": [
+          "outcome_classification"
+        ]
+      },
       "default_invocation": {
         "execution_mode": "execute",
         "invocation_id": "m1_fortuna_evaluation",
@@ -5507,33 +5843,6 @@
               "name": "persists_for",
               "version": "1.0.0"
             }
-          },
-          {
-            "catalog_ref": "outcome_classification",
-            "input": null,
-            "inputs": {
-              "accepted_shift_episodes": {
-                "output_name": "predicate",
-                "source_node_id": "shift_persists"
-              }
-            },
-            "kind": "primitive",
-            "node_id": "outcome",
-            "operator": null
-          },
-          {
-            "catalog_ref": null,
-            "input": {
-              "output_name": "classification",
-              "source_node_id": "outcome"
-            },
-            "inputs": {},
-            "kind": "predicate",
-            "node_id": "not_stoppage",
-            "operator": {
-              "name": "neq",
-              "version": "1.0.0"
-            }
           }
         ],
         "plan_id": "ball_side_block_shift_ir_v1",
@@ -5566,23 +5875,12 @@
               "output_name": "signed_shift",
               "source_node_id": "signed_shift"
             }
-          },
-          {
-            "field": "classification",
-            "source": {
-              "output_name": "classification",
-              "source_node_id": "outcome"
-            }
-          },
-          {
-            "field": "outcome_frame_id",
-            "source": {
-              "output_name": "classification",
-              "source_node_id": "outcome"
-            }
           }
         ],
         "status": "approved",
+        "trusted_recipe_only_catalog_refs_omitted": [
+          "outcome_classification"
+        ],
         "unknown_evidence_policy": "exclude_candidate"
       },
       "recipe_id": "ball_side_block_shift_v1",
@@ -5597,6 +5895,224 @@
         "A geometric progressive corridor appeared under the configured relation thresholds.",
         "The replay coordinates come from canonical 25 Hz source frames."
       ],
+      "authoring_contract": {
+        "authorable_nodes": [
+          {
+            "catalog_ref": "possession_segment",
+            "kind": "primitive",
+            "parameters": {},
+            "required_inputs": {},
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "geometric_progressive_corridor_from_anchor_set",
+            "kind": "relation",
+            "parameters": {
+              "close_after_frames": {
+                "kind": "parameter",
+                "name": "corridor_close_after_frames"
+              },
+              "max_window_seconds": {
+                "kind": "parameter",
+                "name": "corridor_max_window_seconds"
+              },
+              "maximum_segment_length_m": {
+                "kind": "parameter",
+                "name": "corridor_maximum_segment_length_m"
+              },
+              "minimum_clearance_m": {
+                "kind": "parameter",
+                "name": "corridor_minimum_clearance_m"
+              },
+              "minimum_duration_seconds": {
+                "kind": "parameter",
+                "name": "corridor_minimum_duration_seconds"
+              },
+              "minimum_progression_m": {
+                "kind": "parameter",
+                "name": "corridor_minimum_progression_m"
+              },
+              "minimum_segment_length_m": {
+                "kind": "parameter",
+                "name": "corridor_minimum_segment_length_m"
+              },
+              "open_after_frames": {
+                "kind": "parameter",
+                "name": "corridor_open_after_frames"
+              },
+              "side_filter": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "any"
+              }
+            },
+            "required_inputs": {
+              "anchors": {
+                "output_name": "anchors",
+                "source_node_id": "possession"
+              }
+            },
+            "version": "0.1.0"
+          }
+        ],
+        "classification_rules": [
+          {
+            "description": "A geometric progressive corridor appeared from a generic possession anchor.",
+            "label": "PROGRESSIVE_CORRIDOR_AVAILABLE",
+            "predicate_ids": [
+              "has_progressive_corridor"
+            ]
+          }
+        ],
+        "constraints": [
+          "The authored plan must keep status=experimental for Hermes.",
+          "Keep default_invocation.execution_mode=execute; host confirmation still controls whether execution may happen.",
+          "exists/count_at_least may only consume anchor_evaluations.",
+          "Use relation_destination_entry.entry_status with eq PASS for agent-authored destination-region entry checks.",
+          "Do not use trusted recipe wrappers such as relation_destination_entry_classification in agent-authored plans.",
+          "Do not request raw match dumps, primitive mutation, confirmation, or execution."
+        ],
+        "default_invocation_contract": {
+          "execution_mode": "execute",
+          "match_ids": [
+            "J03WOY",
+            "J03WPY",
+            "J03WQQ",
+            "J03WR9"
+          ],
+          "max_results_ceiling": 64,
+          "periods": [
+            "firstHalf",
+            "secondHalf"
+          ],
+          "perspective_team_role": "home",
+          "validation_contract": "validate_query_plan binds and checks the plan but never executes it."
+        },
+        "draft_plan_defaults": {
+          "anchor_source": {
+            "output_name": "anchors",
+            "source_node_id": "possession"
+          },
+          "classification_mode": "partial_declared",
+          "complexity_limits": {
+            "max_execution_cost": 100000,
+            "max_nesting_depth": 4,
+            "max_plan_nodes": 20,
+            "max_relations_per_anchor": 1000,
+            "max_returned_moments": 100,
+            "max_temporal_horizon_seconds": 15.0
+          },
+          "recipe_id": "possession_corridor_availability_v1",
+          "recipe_version": "0.1.0",
+          "status": "experimental",
+          "unknown_evidence_policy": "exclude_candidate"
+        },
+        "plan_document_shape": [
+          "schema_version",
+          "recipe",
+          "default_invocation",
+          "draft_plan"
+        ],
+        "requested_evidence": [
+          {
+            "alias": "relation_id",
+            "field": "relation_id",
+            "source": {
+              "output_name": "episodes",
+              "source_node_id": "progressive_corridor"
+            }
+          },
+          {
+            "alias": "target_player_id",
+            "field": "target_player_id",
+            "source": {
+              "output_name": "episodes",
+              "source_node_id": "progressive_corridor"
+            }
+          },
+          {
+            "alias": "destination_region",
+            "field": "destination_region",
+            "source": {
+              "output_name": "episodes",
+              "source_node_id": "progressive_corridor"
+            }
+          },
+          {
+            "alias": "relation_duration_seconds",
+            "field": "duration_seconds",
+            "source": {
+              "output_name": "episodes",
+              "source_node_id": "progressive_corridor"
+            }
+          },
+          {
+            "alias": "minimum_clearance_m",
+            "field": "minimum_clearance_m",
+            "source": {
+              "output_name": "episodes",
+              "source_node_id": "progressive_corridor"
+            }
+          }
+        ],
+        "required_predicates": [
+          {
+            "compare": null,
+            "duration": null,
+            "input": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "progressive_corridor"
+            },
+            "operator": {
+              "name": "exists",
+              "version": "1.0.0"
+            }
+          }
+        ],
+        "safe_generic_composition_hints": {
+          "destination_entry_after_possession_corridor": {
+            "claims_boundary": "Measures geometric ball entry into a relation destination region only; no pass probability, optimality, intent, causation, or missed-opportunity claim.",
+            "classification_predicate": {
+              "compare": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "PASS"
+              },
+              "input": {
+                "output_name": "entry_status",
+                "source_node_id": "destination_entry"
+              },
+              "operator": {
+                "name": "eq",
+                "version": "1.0.0"
+              }
+            },
+            "forbidden_catalog_refs": [
+              "relation_destination_entry_classification"
+            ],
+            "node_sequence": [
+              "possession_segment.anchors",
+              "geometric_progressive_corridor_from_anchor_set.episodes",
+              "relation_destination_entry.entry_status",
+              "eq PASS predicate",
+              "classification/result evidence"
+            ],
+            "path_id": "possession_corridor_destination_entry_v1",
+            "purpose": "Agent-authorable generic composition for possession-start progressive corridors followed by ball entry into the relation destination region.",
+            "recommended_evidence": [
+              "destination_entry_status",
+              "destination_entry_mode",
+              "destination_time_to_entry_seconds"
+            ],
+            "required_catalog_refs": [
+              "possession_segment",
+              "geometric_progressive_corridor_from_anchor_set",
+              "relation_destination_entry"
+            ]
+          }
+        },
+        "trusted_recipe_only_catalog_refs_omitted": []
+      },
       "default_invocation": {
         "execution_mode": "execute",
         "invocation_id": "m1_fortuna_experimental_possession_corridor",
@@ -5872,6 +6388,7 @@
           }
         ],
         "status": "experimental",
+        "trusted_recipe_only_catalog_refs_omitted": [],
         "unknown_evidence_policy": "exclude_candidate"
       },
       "recipe_id": "possession_corridor_availability_v1",
@@ -5888,6 +6405,267 @@
         "The ball either entered or did not enter the selected corridor destination region within the configured horizon.",
         "The replay coordinates come from canonical 25 Hz source frames."
       ],
+      "authoring_contract": {
+        "authorable_nodes": [
+          {
+            "catalog_ref": "possession_segment",
+            "kind": "primitive",
+            "parameters": {},
+            "required_inputs": {},
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "ball_lateral_fraction",
+            "kind": "primitive",
+            "parameters": {},
+            "required_inputs": {},
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "defensive_outfield_centroid",
+            "kind": "primitive",
+            "parameters": {},
+            "required_inputs": {},
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "signed_lateral_shift",
+            "kind": "primitive",
+            "parameters": {},
+            "required_inputs": {
+              "defensive_centroid": {
+                "output_name": "centroid_y",
+                "source_node_id": "defensive_centroid"
+              },
+              "entry_episodes": {
+                "output_name": "predicate",
+                "source_node_id": "wide_entry_persists"
+              },
+              "possession_episodes": {
+                "output_name": "episodes",
+                "source_node_id": "possession"
+              }
+            },
+            "version": "0.1.0"
+          }
+        ],
+        "classification_rules": [
+          {
+            "description": "The opposite-side geometric progressive corridor persisted and the ball entered the selected destination region.",
+            "label": "DESTINATION_ENTERED",
+            "predicate_ids": [
+              "wide_entry_persists",
+              "shift_persists",
+              "has_opposite_corridor",
+              "destination_region_entered"
+            ]
+          },
+          {
+            "description": "The opposite-side geometric progressive corridor persisted, but the ball did not enter the selected destination region within the horizon.",
+            "label": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+            "predicate_ids": [
+              "wide_entry_persists",
+              "shift_persists",
+              "has_opposite_corridor"
+            ]
+          }
+        ],
+        "constraints": [
+          "The authored plan must keep status=experimental for Hermes.",
+          "Keep default_invocation.execution_mode=execute; host confirmation still controls whether execution may happen.",
+          "exists/count_at_least may only consume anchor_evaluations.",
+          "Use relation_destination_entry.entry_status with eq PASS for agent-authored destination-region entry checks.",
+          "Do not use trusted recipe wrappers such as relation_destination_entry_classification in agent-authored plans.",
+          "Do not request raw match dumps, primitive mutation, confirmation, or execution."
+        ],
+        "default_invocation_contract": {
+          "execution_mode": "execute",
+          "match_ids": [
+            "J03WOY",
+            "J03WPY",
+            "J03WQQ",
+            "J03WR9"
+          ],
+          "max_results_ceiling": 64,
+          "periods": [
+            "firstHalf",
+            "secondHalf"
+          ],
+          "perspective_team_role": "home",
+          "validation_contract": "validate_query_plan binds and checks the plan but never executes it."
+        },
+        "draft_plan_defaults": {
+          "anchor_source": {
+            "output_name": "anchors",
+            "source_node_id": "signed_shift"
+          },
+          "classification_mode": "partial_declared",
+          "complexity_limits": {
+            "max_execution_cost": 80000,
+            "max_nesting_depth": 10,
+            "max_plan_nodes": 40,
+            "max_relations_per_anchor": 20,
+            "max_returned_moments": 64,
+            "max_temporal_horizon_seconds": 12.0
+          },
+          "recipe_id": "opposite_corridor_after_shift_v1",
+          "recipe_version": "0.1.0",
+          "status": "experimental",
+          "unknown_evidence_policy": "exclude_candidate"
+        },
+        "plan_document_shape": [
+          "schema_version",
+          "recipe",
+          "default_invocation",
+          "draft_plan"
+        ],
+        "requested_evidence": [
+          {
+            "alias": "relation_id",
+            "field": "relation_id",
+            "source": {
+              "output_name": "episodes",
+              "source_node_id": "opposite_corridor"
+            }
+          },
+          {
+            "alias": "destination_region",
+            "field": "destination_region",
+            "source": {
+              "output_name": "episodes",
+              "source_node_id": "opposite_corridor"
+            }
+          },
+          {
+            "alias": "relation_duration_seconds",
+            "field": "duration_seconds",
+            "source": {
+              "output_name": "episodes",
+              "source_node_id": "opposite_corridor"
+            }
+          }
+        ],
+        "required_predicates": [
+          {
+            "compare": {
+              "kind": "parameter",
+              "name": "wide_entry_fraction"
+            },
+            "duration": null,
+            "input": {
+              "output_name": "fraction",
+              "source_node_id": "ball_lateral"
+            },
+            "operator": {
+              "name": "gt",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "compare": null,
+            "duration": {
+              "kind": "parameter",
+              "name": "minimum_wide_dwell_seconds"
+            },
+            "input": {
+              "output_name": "predicate",
+              "source_node_id": "wide_entry_threshold"
+            },
+            "operator": {
+              "name": "persists_for",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "compare": {
+              "kind": "parameter",
+              "name": "minimum_shift_metres"
+            },
+            "duration": null,
+            "input": {
+              "output_name": "signed_shift",
+              "source_node_id": "signed_shift"
+            },
+            "operator": {
+              "name": "gte",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "compare": null,
+            "duration": {
+              "kind": "parameter",
+              "name": "minimum_shift_persistence_seconds"
+            },
+            "input": {
+              "output_name": "predicate",
+              "source_node_id": "shift_threshold"
+            },
+            "operator": {
+              "name": "persists_for",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "compare": null,
+            "duration": null,
+            "input": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opposite_corridor"
+            },
+            "operator": {
+              "name": "exists",
+              "version": "1.0.0"
+            }
+          }
+        ],
+        "safe_generic_composition_hints": {
+          "destination_entry_after_possession_corridor": {
+            "claims_boundary": "Measures geometric ball entry into a relation destination region only; no pass probability, optimality, intent, causation, or missed-opportunity claim.",
+            "classification_predicate": {
+              "compare": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "PASS"
+              },
+              "input": {
+                "output_name": "entry_status",
+                "source_node_id": "destination_entry"
+              },
+              "operator": {
+                "name": "eq",
+                "version": "1.0.0"
+              }
+            },
+            "forbidden_catalog_refs": [
+              "relation_destination_entry_classification"
+            ],
+            "node_sequence": [
+              "possession_segment.anchors",
+              "geometric_progressive_corridor_from_anchor_set.episodes",
+              "relation_destination_entry.entry_status",
+              "eq PASS predicate",
+              "classification/result evidence"
+            ],
+            "path_id": "possession_corridor_destination_entry_v1",
+            "purpose": "Agent-authorable generic composition for possession-start progressive corridors followed by ball entry into the relation destination region.",
+            "recommended_evidence": [
+              "destination_entry_status",
+              "destination_entry_mode",
+              "destination_time_to_entry_seconds"
+            ],
+            "required_catalog_refs": [
+              "possession_segment",
+              "geometric_progressive_corridor_from_anchor_set",
+              "relation_destination_entry"
+            ]
+          }
+        },
+        "trusted_recipe_only_catalog_refs_omitted": [
+          "outcome_classification",
+          "relation_destination_entry_classification"
+        ]
+      },
       "default_invocation": {
         "execution_mode": "execute",
         "invocation_id": "m1_fortuna_experimental_opposite_corridor",
@@ -6354,33 +7132,6 @@
             }
           },
           {
-            "catalog_ref": "outcome_classification",
-            "input": null,
-            "inputs": {
-              "accepted_shift_episodes": {
-                "output_name": "predicate",
-                "source_node_id": "shift_persists"
-              }
-            },
-            "kind": "primitive",
-            "node_id": "outcome",
-            "operator": null
-          },
-          {
-            "catalog_ref": null,
-            "input": {
-              "output_name": "classification",
-              "source_node_id": "outcome"
-            },
-            "inputs": {},
-            "kind": "predicate",
-            "node_id": "not_stoppage",
-            "operator": {
-              "name": "neq",
-              "version": "1.0.0"
-            }
-          },
-          {
             "catalog_ref": "geometric_progressive_corridor",
             "input": null,
             "inputs": {
@@ -6404,33 +7155,6 @@
             "node_id": "has_opposite_corridor",
             "operator": {
               "name": "exists",
-              "version": "1.0.0"
-            }
-          },
-          {
-            "catalog_ref": "relation_destination_entry_classification",
-            "input": null,
-            "inputs": {
-              "relation_episodes": {
-                "output_name": "episodes",
-                "source_node_id": "opposite_corridor"
-              }
-            },
-            "kind": "primitive",
-            "node_id": "destination_entry",
-            "operator": null
-          },
-          {
-            "catalog_ref": null,
-            "input": {
-              "output_name": "classification",
-              "source_node_id": "destination_entry"
-            },
-            "inputs": {},
-            "kind": "predicate",
-            "node_id": "destination_region_entered",
-            "operator": {
-              "name": "neq",
               "version": "1.0.0"
             }
           }
@@ -6461,26 +7185,13 @@
               "output_name": "episodes",
               "source_node_id": "opposite_corridor"
             }
-          },
-          {
-            "alias": "destination_classification",
-            "field": "classification",
-            "source": {
-              "output_name": "classification",
-              "source_node_id": "destination_entry"
-            }
-          },
-          {
-            "alias": "destination_entry_frame_id",
-            "field": "destination_entry_frame_id",
-            "required": false,
-            "source": {
-              "output_name": "classification",
-              "source_node_id": "destination_entry"
-            }
           }
         ],
         "status": "experimental",
+        "trusted_recipe_only_catalog_refs_omitted": [
+          "outcome_classification",
+          "relation_destination_entry_classification"
+        ],
         "unknown_evidence_policy": "exclude_candidate"
       },
       "recipe_id": "opposite_corridor_after_shift_v1",
@@ -6508,6 +7219,7 @@
   },
   "relations": [
     {
+      "agent_authorable": true,
       "evidence_fields": [
         "relation_id",
         "open_frame_id",
@@ -6527,7 +7239,6 @@
         "source_close_point",
         "target_close_point"
       ],
-      "executable": true,
       "inputs": [
         {
           "cardinality": "single",
@@ -6546,10 +7257,10 @@
         "No receiver body-orientation model.",
         "No offside model in V1 acceptance."
       ],
-      "missing_data_semantics": "unknown",
       "name": "geometric_progressive_corridor",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "relation",
           "evidence_fields": [
@@ -6578,6 +7289,7 @@
           "unit": "none"
         },
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "anchor",
           "evidence_fields": [
@@ -6686,6 +7398,7 @@
       "version": "0.1.0"
     },
     {
+      "agent_authorable": true,
       "evidence_fields": [
         "relation_id",
         "open_frame_id",
@@ -6705,7 +7418,6 @@
         "source_close_point",
         "target_close_point"
       ],
-      "executable": true,
       "inputs": [
         {
           "cardinality": "collection",
@@ -6724,10 +7436,10 @@
         "No player intent, causation, or missed-opportunity claim.",
         "No receiver body-orientation or offside model."
       ],
-      "missing_data_semantics": "unknown",
       "name": "geometric_progressive_corridor_from_anchor_set",
       "outputs": [
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "relation",
           "evidence_fields": [
@@ -6756,6 +7468,7 @@
           "unit": "none"
         },
         {
+          "allowed_values": null,
           "cardinality": "collection",
           "entity_scope": "anchor",
           "evidence_fields": [
@@ -6870,26 +7583,66 @@
     },
     "exists": {
       "allowed_output_name": "anchor_evaluations"
+    },
+    "possession_corridor_destination_entry": {
+      "claims_boundary": "Measures geometric ball entry into a relation destination region only; no pass probability, optimality, intent, causation, or missed-opportunity claim.",
+      "classification_predicate": {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "entry_status",
+          "source_node_id": "destination_entry"
+        },
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      },
+      "forbidden_catalog_refs": [
+        "relation_destination_entry_classification"
+      ],
+      "node_sequence": [
+        "possession_segment.anchors",
+        "geometric_progressive_corridor_from_anchor_set.episodes",
+        "relation_destination_entry.entry_status",
+        "eq PASS predicate",
+        "classification/result evidence"
+      ],
+      "path_id": "possession_corridor_destination_entry_v1",
+      "purpose": "Agent-authorable generic composition for possession-start progressive corridors followed by ball entry into the relation destination region.",
+      "recommended_evidence": [
+        "destination_entry_status",
+        "destination_entry_mode",
+        "destination_time_to_entry_seconds"
+      ],
+      "required_catalog_refs": [
+        "possession_segment",
+        "geometric_progressive_corridor_from_anchor_set",
+        "relation_destination_entry"
+      ]
     }
   },
   "schema_version": "1.0",
   "source_hashes": {
-    "Makefile": "0080e7feb09ca1ac4df0b2e5e3eb1608b3897141d01e1a1501e82aadc7a1b2c0",
+    "Makefile": "22f29af55cac45b576bc7a900bd5a50b785676e1b9adbfe462dc285140de2ae3",
     "config/query-plans/ball_side_block_shift.ir.v1.json": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
     "config/query-plans/opposite_corridor_after_shift.experimental.v1.json": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
     "config/query-plans/possession_corridor_availability.experimental.v1.json": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
-    "generated/capability-context.json": "0ef53564bf09c7b6e64d1ba8da1aff14bd7ce426b23e0dcb293eaf5256506fe4",
+    "generated/capability-context.json": "c054f8ef97160c4786b32722f96816b310816fec9f846e957d9f88fa79ef08ed",
     "generated/tactical-query-plan.schema.json": "0e45cff180c3738629e9c49b15a7191faa12c1517ae987a91d2f80424df68b0f",
     "generated/tactical-query-plan.types.ts": "838bc7a1db332eb24f6fd80faa1530c6cc441aba7eb91eb3e806fa8d23d0bffc",
     "src/tqe/runtime/binder.py": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
     "src/tqe/runtime/catalog.py": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
-    "src/tqe/runtime/executor.py": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446",
+    "src/tqe/runtime/executor.py": "05680f7cc478f8d10f39c286be12fc66ac1c254d0d2ef6200166c5b6c5fbd9ad",
     "src/tqe/runtime/ir.py": "28e5fa2d221bc8f9ec66620d7a8f47a346a002dda9f2e264873492862c39dd3a",
     "src/tqe/runtime/relations.py": "6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee",
     "src/tqe/verification/m1_2_gate_s2i.py": "00cf3e665ef2096c44a4d28ba37284bb9207ca5412e2e6c564ef0d8d3042c99f",
     "src/tqe/workshop/hermes_s2.py": "ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591",
-    "src/tqe/workshop/knowledge_pack.py": "d6329f79a5cc096616555c28baa205d97ec58702e78552460e1712e02dfb1143",
-    "src/tqe/workshop/m1_2.py": "57e088c3cb732362ee7de530311558170b9236c8889db73b683af74a25ffbd16"
+    "src/tqe/workshop/knowledge_pack.py": "b0cebf5d59824f06553c55c0a1b96757fbc48f0340bdb8a84aac6f1466617a57",
+    "src/tqe/workshop/m1_2.py": "c3c96cf32ac09d7737938d59926bc5b43aff6e708b5073968d02a60c79a6d0ef"
   },
   "tool_surfaces": {
     "current_reference_harness_model_visible": {

@@ -7,7 +7,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-from tqe.runtime.catalog import default_catalog
 from tqe.runtime.ir import stable_hash
 from tqe.workshop.hermes_s2 import (
     CLARIFICATION_DISTANCE_THRESHOLD,
@@ -36,9 +35,11 @@ from tqe.workshop.m1_2 import (
     HERMES_S2I_MCP_TOOL_NAMES,
     HERMES_S2_TOOL_NAMES,
     MANUAL_ONLY_TOOL_NAMES,
+    NON_AUTHORABLE_CATALOG_REFS,
     CallerProfile,
     describe_capability,
     list_capabilities,
+    recipe_authoring_contract,
     tool_spec,
     utc_now_iso,
     write_json,
@@ -82,7 +83,6 @@ S2I_HOST_ONLY_TOOL_NAMES = [
 
 def build_tactical_knowledge_pack() -> dict[str, Any]:
     capability_context = list_capabilities(CallerProfile.HERMES_S2I_MCP).model_dump(mode="json")
-    catalog = default_catalog()
     recipes = [recipe_summary(path) for path in RECIPE_PLAN_PATHS]
     base: dict[str, Any] = {
         "schema_version": "1.0",
@@ -123,9 +123,9 @@ def build_tactical_knowledge_pack() -> dict[str, Any]:
         },
         "tool_surfaces": tool_surfaces(),
         "recipes": recipes,
-        "primitives": [entry.model_dump(mode="json", exclude_none=True) for entry in catalog.primitives],
-        "relations": [entry.model_dump(mode="json", exclude_none=True) for entry in catalog.relations],
-        "operators": [operator.model_dump(mode="json", exclude_none=True) for operator in catalog.operators],
+        "primitives": capability_context["primitives"],
+        "relations": capability_context["relations"],
+        "operators": capability_context["operators"],
         "safe_composition_rules": capability_context["safe_operator_source_rules"],
         "complexity_limits": {
             "default": capability_context["default_complexity_limits"],
@@ -197,6 +197,27 @@ def recipe_summary(path: Path) -> dict[str, Any]:
     recipe = document["recipe"]
     state = "APPROVED" if recipe["recipe_id"] == "ball_side_block_shift_v1" else "EXPERIMENTAL"
     draft_plan = document["draft_plan"]
+    non_authorable_node_ids = {
+        str(node.get("node_id"))
+        for node in draft_plan.get("nodes", [])
+        if node.get("catalog_ref") in NON_AUTHORABLE_CATALOG_REFS
+    }
+
+    def node_is_agent_authorable_summary(node: dict[str, Any]) -> bool:
+        if node.get("catalog_ref") in NON_AUTHORABLE_CATALOG_REFS:
+            return False
+        source = node.get("input")
+        if isinstance(source, dict) and str(source.get("source_node_id")) in non_authorable_node_ids:
+            return False
+        return True
+
+    def evidence_is_agent_authorable_summary(request: dict[str, Any]) -> bool:
+        source = request.get("source") if isinstance(request, dict) else None
+        return not (
+            isinstance(source, dict)
+            and str(source.get("source_node_id")) in non_authorable_node_ids
+        )
+
     return {
         "recipe_id": recipe["recipe_id"],
         "recipe_version": recipe["recipe_version"],
@@ -211,6 +232,7 @@ def recipe_summary(path: Path) -> dict[str, Any]:
         "parameters": recipe.get("parameters", []),
         "output_classifications": recipe.get("output_classifications", []),
         "default_invocation": document.get("default_invocation", {}),
+        "authoring_contract": recipe_authoring_contract(document),
         "plan_summary": {
             "plan_id": draft_plan["plan_id"],
             "plan_version": draft_plan["plan_version"],
@@ -218,6 +240,13 @@ def recipe_summary(path: Path) -> dict[str, Any]:
             "unknown_evidence_policy": draft_plan["unknown_evidence_policy"],
             "classification_mode": draft_plan["classification_mode"],
             "node_count": len(draft_plan.get("nodes", [])),
+            "trusted_recipe_only_catalog_refs_omitted": sorted(
+                {
+                    str(node.get("catalog_ref"))
+                    for node in draft_plan.get("nodes", [])
+                    if node.get("catalog_ref") in NON_AUTHORABLE_CATALOG_REFS
+                }
+            ),
             "nodes": [
                 {
                     "node_id": node["node_id"],
@@ -228,9 +257,14 @@ def recipe_summary(path: Path) -> dict[str, Any]:
                     "input": node.get("input"),
                 }
                 for node in draft_plan.get("nodes", [])
+                if node_is_agent_authorable_summary(node)
             ],
             "classification_rules": draft_plan.get("classification_rules", []),
-            "requested_evidence": draft_plan.get("requested_evidence", []),
+            "requested_evidence": [
+                request
+                for request in draft_plan.get("requested_evidence", [])
+                if evidence_is_agent_authorable_summary(request)
+            ],
         },
     }
 
@@ -377,6 +411,38 @@ def verify_tactical_knowledge_pack(
     recipe_ids = {recipe["recipe_id"] for recipe in pack.get("recipes", [])}
     checks.append(check("pack.recipes.include_approved_m1", "ball_side_block_shift_v1" in recipe_ids, {"recipe_ids": sorted(recipe_ids)}))
     checks.append(check("pack.recipes.include_corridor", "possession_corridor_availability_v1" in recipe_ids, {"recipe_ids": sorted(recipe_ids)}))
+    primitives = {entry.get("name"): entry for entry in pack.get("primitives", []) if isinstance(entry, dict)}
+    generic_entry = primitives.get("relation_destination_entry", {})
+    trusted_wrapper = primitives.get("relation_destination_entry_classification", {})
+    checks.append(
+        check(
+            "pack.capabilities.generic_destination_entry_authorable",
+            generic_entry.get("agent_authorable") is True
+            and bool(generic_entry.get("agent_authoring", {}).get("safe_generic_path")),
+            {"agent_authorable": generic_entry.get("agent_authorable")},
+        )
+    )
+    checks.append(
+        check(
+            "pack.capabilities.trusted_wrapper_not_authorable",
+            trusted_wrapper.get("agent_authorable") is False
+            and trusted_wrapper.get("agent_authoring", {}).get("allowed") is False,
+            {"agent_authorable": trusted_wrapper.get("agent_authorable")},
+        )
+    )
+    advertised_refs = {
+        str(node.get("catalog_ref"))
+        for recipe in pack.get("recipes", [])
+        for node in recipe.get("plan_summary", {}).get("nodes", [])
+        if isinstance(node, dict) and node.get("catalog_ref")
+    }
+    checks.append(
+        check(
+            "pack.recipes.do_not_advertise_trusted_wrapper_as_authorable",
+            "relation_destination_entry_classification" not in advertised_refs,
+            {"advertised_refs": sorted(advertised_refs)},
+        )
+    )
     target_tools = set(pack["tool_surfaces"]["s2i_target_hermes_mcp"]["tools"])
     checks.append(check("pack.tools.include_search_recipes", "search_recipes" in target_tools, {"tools": sorted(target_tools)}))
     search_schema = pack.get("model_visible_tool_schemas", {}).get("search_recipes", {})

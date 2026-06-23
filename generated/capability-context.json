@@ -71,6 +71,7 @@
       "destination_region_bounds",
       "destination_region_type",
       "destination_side",
+      "entry_mode",
       "entry_status",
       "missing_ball_frame_count",
       "observed_window_end_frame_id",
@@ -107,7 +108,7 @@
     "result_row_mutation",
     "threshold_auto_tuning"
   ],
-  "generated_at": "2026-06-22T20:53:25+00:00",
+  "generated_at": "2026-06-23T04:29:06+00:00",
   "host_owned_complexity_ceilings": {
     "max_execution_cost": 100000,
     "max_nesting_depth": 12,
@@ -119,6 +120,7 @@
   "limitations": [
     "Hermes receives this bounded context, not raw match dumps or primitive code.",
     "exists/count_at_least are agent-visible only on anchor_evaluations.",
+    "For destination-region ball entry after possession-start corridors, Hermes must use relation_destination_entry.entry_status with eq PASS; relation_destination_entry_classification is trusted-recipe-only.",
     "legacy_m1_parity is allowed only for the frozen approved M1 recipe.",
     "Unsupported concepts must be returned as capability gaps."
   ],
@@ -625,12 +627,58 @@
     },
     {
       "agent_authorable": true,
+      "agent_authoring": {
+        "output_to_classify": "entry_status",
+        "required_compare_value": "PASS",
+        "required_operator": "eq",
+        "safe_generic_path": {
+          "claims_boundary": "Measures geometric ball entry into a relation destination region only; no pass probability, optimality, intent, causation, or missed-opportunity claim.",
+          "classification_predicate": {
+            "compare": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "input": {
+              "output_name": "entry_status",
+              "source_node_id": "destination_entry"
+            },
+            "operator": {
+              "name": "eq",
+              "version": "1.0.0"
+            }
+          },
+          "forbidden_catalog_refs": [
+            "relation_destination_entry_classification"
+          ],
+          "node_sequence": [
+            "possession_segment.anchors",
+            "geometric_progressive_corridor_from_anchor_set.episodes",
+            "relation_destination_entry.entry_status",
+            "eq PASS predicate",
+            "classification/result evidence"
+          ],
+          "path_id": "possession_corridor_destination_entry_v1",
+          "purpose": "Agent-authorable generic composition for possession-start progressive corridors followed by ball entry into the relation destination region.",
+          "recommended_evidence": [
+            "destination_entry_status",
+            "destination_entry_mode",
+            "destination_time_to_entry_seconds"
+          ],
+          "required_catalog_refs": [
+            "possession_segment",
+            "geometric_progressive_corridor_from_anchor_set",
+            "relation_destination_entry"
+          ]
+        }
+      },
       "evidence_fields": [
         "entry_status",
         "relation_id",
         "anchor_id",
         "destination_entry_frame_id",
         "time_to_entry_seconds",
+        "entry_mode",
         "destination_region",
         "destination_region_type",
         "destination_region_bounds",
@@ -673,6 +721,7 @@
             "anchor_id",
             "destination_entry_frame_id",
             "time_to_entry_seconds",
+            "entry_mode",
             "destination_region",
             "destination_region_type",
             "destination_region_bounds",
@@ -724,6 +773,11 @@
     },
     {
       "agent_authorable": false,
+      "agent_authoring": {
+        "allowed": false,
+        "reason": "Recipe-specific wrapper; agent-authored plans must use the generic entry_status path.",
+        "use_instead": "relation_destination_entry"
+      },
       "evidence_fields": [
         "classification",
         "base_result_id",
@@ -805,6 +859,7 @@
         }
       ],
       "purpose": "Classify whether the ball later enters the destination region of a previously evaluated relation episode.",
+      "trusted_recipe_wrapper": true,
       "version": "0.1.0"
     }
   ],
@@ -1180,6 +1235,46 @@
     },
     "exists": {
       "allowed_output_name": "anchor_evaluations"
+    },
+    "possession_corridor_destination_entry": {
+      "claims_boundary": "Measures geometric ball entry into a relation destination region only; no pass probability, optimality, intent, causation, or missed-opportunity claim.",
+      "classification_predicate": {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "entry_status",
+          "source_node_id": "destination_entry"
+        },
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      },
+      "forbidden_catalog_refs": [
+        "relation_destination_entry_classification"
+      ],
+      "node_sequence": [
+        "possession_segment.anchors",
+        "geometric_progressive_corridor_from_anchor_set.episodes",
+        "relation_destination_entry.entry_status",
+        "eq PASS predicate",
+        "classification/result evidence"
+      ],
+      "path_id": "possession_corridor_destination_entry_v1",
+      "purpose": "Agent-authorable generic composition for possession-start progressive corridors followed by ball entry into the relation destination region.",
+      "recommended_evidence": [
+        "destination_entry_status",
+        "destination_entry_mode",
+        "destination_time_to_entry_seconds"
+      ],
+      "required_catalog_refs": [
+        "possession_segment",
+        "geometric_progressive_corridor_from_anchor_set",
+        "relation_destination_entry"
+      ]
     }
   },
   "schema_version": "1.0",

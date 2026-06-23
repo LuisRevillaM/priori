@@ -97,6 +97,40 @@ NON_AUTHORABLE_CATALOG_REFS = {
     "shift_persistence",
     "wide_channel_dwell",
 }
+DESTINATION_ENTRY_AGENT_PATH = {
+    "path_id": "possession_corridor_destination_entry_v1",
+    "purpose": (
+        "Agent-authorable generic composition for possession-start progressive "
+        "corridors followed by ball entry into the relation destination region."
+    ),
+    "node_sequence": [
+        "possession_segment.anchors",
+        "geometric_progressive_corridor_from_anchor_set.episodes",
+        "relation_destination_entry.entry_status",
+        "eq PASS predicate",
+        "classification/result evidence",
+    ],
+    "required_catalog_refs": [
+        "possession_segment",
+        "geometric_progressive_corridor_from_anchor_set",
+        "relation_destination_entry",
+    ],
+    "classification_predicate": {
+        "input": {"source_node_id": "destination_entry", "output_name": "entry_status"},
+        "operator": {"name": "eq", "version": "1.0.0"},
+        "compare": {"payload_type": "enum", "unit": "none", "value": "PASS"},
+    },
+    "recommended_evidence": [
+        "destination_entry_status",
+        "destination_entry_mode",
+        "destination_time_to_entry_seconds",
+    ],
+    "forbidden_catalog_refs": ["relation_destination_entry_classification"],
+    "claims_boundary": (
+        "Measures geometric ball entry into a relation destination region only; "
+        "no pass probability, optimality, intent, causation, or missed-opportunity claim."
+    ),
+}
 
 
 class StrictModel(BaseModel):
@@ -557,12 +591,14 @@ def list_capabilities(caller_profile: CallerProfile = CallerProfile.HERMES_S2) -
         safe_operator_source_rules={
             "exists": {"allowed_output_name": SAFE_ANCHOR_RELATIVE_OUTPUT},
             "count_at_least": {"allowed_output_name": SAFE_ANCHOR_RELATIVE_OUTPUT},
+            "possession_corridor_destination_entry": DESTINATION_ENTRY_AGENT_PATH,
         },
         default_complexity_limits=catalog.default_complexity_limits.model_dump(mode="json"),
         host_owned_complexity_ceilings=catalog.default_complexity_limits.model_dump(mode="json"),
         limitations=[
             "Hermes receives this bounded context, not raw match dumps or primitive code.",
             "exists/count_at_least are agent-visible only on anchor_evaluations.",
+            "For destination-region ball entry after possession-start corridors, Hermes must use relation_destination_entry.entry_status with eq PASS; relation_destination_entry_classification is trusted-recipe-only.",
             "legacy_m1_parity is allowed only for the frozen approved M1 recipe.",
             "Unsupported concepts must be returned as capability gaps.",
         ],
@@ -678,6 +714,25 @@ def recipe_authoring_contract(document: dict[str, Any]) -> dict[str, Any]:
 
     draft_plan = document["draft_plan"]
     default_invocation = document["default_invocation"]
+    non_authorable_node_ids = {
+        str(node.get("node_id"))
+        for node in draft_plan.get("nodes", [])
+        if node.get("catalog_ref") in NON_AUTHORABLE_CATALOG_REFS
+    }
+
+    def references_non_authorable_node(node: dict[str, Any]) -> bool:
+        ref = node.get("input")
+        if isinstance(ref, dict) and str(ref.get("source_node_id")) in non_authorable_node_ids:
+            return True
+        for ref in (node.get("inputs") or {}).values():
+            if isinstance(ref, dict) and str(ref.get("source_node_id")) in non_authorable_node_ids:
+                return True
+        return False
+
+    def evidence_references_non_authorable_node(request: dict[str, Any]) -> bool:
+        source = request.get("source") if isinstance(request, dict) else None
+        return isinstance(source, dict) and str(source.get("source_node_id")) in non_authorable_node_ids
+
     return {
         "plan_document_shape": ["schema_version", "recipe", "default_invocation", "draft_plan"],
         "default_invocation_contract": {
@@ -707,7 +762,16 @@ def recipe_authoring_contract(document: dict[str, Any]) -> dict[str, Any]:
             }
             for node in draft_plan.get("nodes", [])
             if node.get("kind") in {"primitive", "relation"}
+            and node.get("catalog_ref") not in NON_AUTHORABLE_CATALOG_REFS
+            and not references_non_authorable_node(node)
         ],
+        "trusted_recipe_only_catalog_refs_omitted": sorted(
+            {
+                str(node.get("catalog_ref"))
+                for node in draft_plan.get("nodes", [])
+                if node.get("catalog_ref") in NON_AUTHORABLE_CATALOG_REFS
+            }
+        ),
         "required_predicates": [
             {
                 "input": node.get("input"),
@@ -717,13 +781,23 @@ def recipe_authoring_contract(document: dict[str, Any]) -> dict[str, Any]:
             }
             for node in draft_plan.get("nodes", [])
             if node.get("kind") == "predicate"
+            and not references_non_authorable_node(node)
         ],
         "classification_rules": draft_plan.get("classification_rules", []),
-        "requested_evidence": draft_plan.get("requested_evidence", []),
+        "requested_evidence": [
+            request
+            for request in draft_plan.get("requested_evidence", [])
+            if not evidence_references_non_authorable_node(request)
+        ],
+        "safe_generic_composition_hints": {
+            "destination_entry_after_possession_corridor": DESTINATION_ENTRY_AGENT_PATH,
+        },
         "constraints": [
             "The authored plan must keep status=experimental for Hermes.",
             "Keep default_invocation.execution_mode=execute; host confirmation still controls whether execution may happen.",
             "exists/count_at_least may only consume anchor_evaluations.",
+            "Use relation_destination_entry.entry_status with eq PASS for agent-authored destination-region entry checks.",
+            "Do not use trusted recipe wrappers such as relation_destination_entry_classification in agent-authored plans.",
             "Do not request raw match dumps, primitive mutation, confirmation, or execution.",
         ],
     }
@@ -1216,18 +1290,34 @@ def executor_for_profile(profile: str) -> TacticalQueryExecutor:
 
 
 def catalog_entry_summary(entry: Any) -> dict[str, Any]:
-    return {
+    agent_authorable = entry.name not in NON_AUTHORABLE_CATALOG_REFS
+    payload = {
         "name": entry.name,
         "version": entry.version,
         "kind": entry.kind.value if hasattr(entry.kind, "value") else entry.kind,
         "purpose": entry.purpose,
-        "agent_authorable": entry.name not in NON_AUTHORABLE_CATALOG_REFS,
+        "agent_authorable": agent_authorable,
         "inputs": [item.model_dump(mode="json") for item in entry.inputs],
         "outputs": [output.model_dump(mode="json") for output in entry.outputs],
         "parameters": [parameter.model_dump(mode="json", exclude_none=True) for parameter in entry.parameters],
         "limitations": entry.limitations,
         "evidence_fields": entry.evidence_fields,
     }
+    if entry.name == "relation_destination_entry":
+        payload["agent_authoring"] = {
+            "safe_generic_path": DESTINATION_ENTRY_AGENT_PATH,
+            "output_to_classify": "entry_status",
+            "required_operator": "eq",
+            "required_compare_value": "PASS",
+        }
+    elif entry.name == "relation_destination_entry_classification":
+        payload["trusted_recipe_wrapper"] = True
+        payload["agent_authoring"] = {
+            "allowed": False,
+            "use_instead": "relation_destination_entry",
+            "reason": "Recipe-specific wrapper; agent-authored plans must use the generic entry_status path.",
+        }
+    return payload
 
 
 def tool_spec(name: str) -> ToolSpec:

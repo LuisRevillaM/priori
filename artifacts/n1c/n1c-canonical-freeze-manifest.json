@@ -27,11 +27,11 @@
     "capability_context": {
       "exists": true,
       "path": "generated/capability-context.json",
-      "sha256": "0ef53564bf09c7b6e64d1ba8da1aff14bd7ce426b23e0dcb293eaf5256506fe4"
+      "sha256": "c054f8ef97160c4786b32722f96816b310816fec9f846e957d9f88fa79ef08ed"
     },
-    "file_sha256": "7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962",
+    "file_sha256": "fbe155e29760a66843391c0e2ee7629d669d3c7888b1c1fcfc5e826deb078b5b",
     "path": "generated/tactical-knowledge-pack.json",
-    "semantic_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0"
+    "semantic_sha256": "10cdddbbe5639c4786b38c314676ac088778eae2b42dcd484aa045f87311efa5"
   },
   "mcp": {
     "adapter": {
@@ -106,12 +106,12 @@
     "binder_sha256": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
     "catalog_sha256": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
     "compatibility_profile": "generic",
-    "executor_sha256": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446",
+    "executor_sha256": "05680f7cc478f8d10f39c286be12fc66ac1c254d0d2ef6200166c5b6c5fbd9ad",
     "values_sha256": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166"
   },
   "schema_version": "n1c.canonical_freeze_manifest.v1",
   "source": {
-    "commit_at_manifest_generation": "0e560ac02d39b668e21f663a827d6c1d13ce164e",
+    "commit_at_manifest_generation": "05aeea071e81c3047beafa5f5bd194c36199c729",
     "source_files": {
       "mcp_server": {
         "exists": true,
@@ -131,7 +131,7 @@
       "runtime_executor": {
         "exists": true,
         "path": "src/tqe/runtime/executor.py",
-        "sha256": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446"
+        "sha256": "05680f7cc478f8d10f39c286be12fc66ac1c254d0d2ef6200166c5b6c5fbd9ad"
       },
       "runtime_values": {
         "exists": true,
@@ -141,7 +141,7 @@
       "workshop_service": {
         "exists": true,
         "path": "src/tqe/workshop/m1_2.py",
-        "sha256": "57e088c3cb732362ee7de530311558170b9236c8889db73b683af74a25ffbd16"
+        "sha256": "c3c96cf32ac09d7737938d59926bc5b43aff6e708b5073968d02a60c79a6d0ef"
       }
     }
   }

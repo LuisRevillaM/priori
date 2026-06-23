@@ -940,9 +940,10 @@ def project_requested_evidence_from_runtime(
     for request in bound_plan.requested_evidence:
         key = request.alias or f"{request.source.source_node_id}.{request.field}"
         runtime_value = state.runtime_values.get(request.source.source_node_id, {}).get(request.source.output_name)
-        selected_relation_id = selected_relation_id_for_anchor(
+        selected_relation_id = selected_relation_id_for_evidence_request(
             state=state,
             anchor=anchor,
+            bound_plan=bound_plan,
             source_node_id=request.source.source_node_id,
             output_name=request.source.output_name,
         )
@@ -1030,6 +1031,60 @@ def selected_relation_id_for_anchor(
             for record in runtime_records(runtime_value):
                 if record_matches_anchor(record, anchor) and record.get("relation_id") is not None:
                     return str(record["relation_id"])
+    return None
+
+
+def selected_relation_id_for_evidence_request(
+    *,
+    state: PeriodState,
+    anchor: RuntimeAnchor,
+    bound_plan: BoundQueryPlan,
+    source_node_id: str | None = None,
+    output_name: str | None = None,
+) -> str | None:
+    destination_relation_id = destination_entry_relation_id_for_source(
+        state=state,
+        anchor=anchor,
+        bound_plan=bound_plan,
+        source_node_id=source_node_id,
+        output_name=output_name,
+    )
+    if destination_relation_id is not None:
+        return destination_relation_id
+    return selected_relation_id_for_anchor(
+        state=state,
+        anchor=anchor,
+        source_node_id=source_node_id,
+        output_name=output_name,
+    )
+
+
+def destination_entry_relation_id_for_source(
+    *,
+    state: PeriodState,
+    anchor: RuntimeAnchor,
+    bound_plan: BoundQueryPlan,
+    source_node_id: str | None,
+    output_name: str | None,
+) -> str | None:
+    if source_node_id is None or output_name != "episodes":
+        return None
+    for node in bound_plan.nodes:
+        if not isinstance(node, BoundCatalogNode):
+            continue
+        if node.catalog_ref != "relation_destination_entry":
+            continue
+        source_ref = node.inputs.get("relation_episodes")
+        if source_ref is None:
+            continue
+        if source_ref.source_node_id != source_node_id or source_ref.output_name != output_name:
+            continue
+        runtime_value = state.runtime_values.get(node.node_id, {}).get("entry_status")
+        if runtime_value is None:
+            continue
+        for record in runtime_records(runtime_value):
+            if record_matches_anchor(record, anchor) and record.get("relation_id") is not None:
+                return str(record["relation_id"])
     return None
 
 
