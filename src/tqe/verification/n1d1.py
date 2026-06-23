@@ -31,6 +31,8 @@ from tqe.verification.n1c import (
 PINNED_ROOT = Path("delivery/n1d")
 N1D_PLAN_PATH = PINNED_ROOT / "n1d-hero-plan.json"
 N1D_MANIFEST_PATH = PINNED_ROOT / "n1d-canonical-freeze-manifest.json"
+N1E_ORIGIN_BUNDLE_PATH = PINNED_ROOT / "n1e-origin-bundle.json"
+VERIFIED_ATTESTATION_PATH = PINNED_ROOT / "n1d1-attestation.json"
 # The attestation is a generated artifact while BLOCKED (gitignored). It is promoted to
 # delivery/n1d/n1d1-attestation.json (committed) only once it reaches status VERIFIED.
 ATTESTATION_PATH = Path("artifacts/n1d/n1d1-attestation.json")
@@ -79,7 +81,79 @@ def locate_hermes_trace(session_id: str, draft_plan_id: str | None) -> dict[str,
     return None
 
 
+def bundle_host_augmented_plan(bundle: dict[str, Any]) -> dict[str, Any] | None:
+    host = bundle.get("host_augmentation")
+    if not isinstance(host, dict):
+        return None
+    document = host.get("augmented_document")
+    return document if isinstance(document, dict) else None
+
+
+def bundle_bound_plan_hash(bundle: dict[str, Any]) -> str | None:
+    pipeline = bundle.get("host_pipeline")
+    validation = pipeline.get("validation") if isinstance(pipeline, dict) else None
+    if isinstance(validation, dict) and validation.get("bound_plan_hash"):
+        return str(validation["bound_plan_hash"])
+    artifact_records = bundle.get("artifact_records")
+    bound_record = artifact_records.get("bound_record") if isinstance(artifact_records, dict) else None
+    if isinstance(bound_record, dict) and bound_record.get("bound_plan_hash"):
+        return str(bound_record["bound_plan_hash"])
+    return None
+
+
+def audit_n1e_origin_bundle(n1d_plan: dict[str, Any], bundle: dict[str, Any]) -> dict[str, Any]:
+    hermes = bundle.get("hermes_origin") if isinstance(bundle.get("hermes_origin"), dict) else {}
+    session_trace = hermes.get("session_trace") if isinstance(hermes.get("session_trace"), dict) else {}
+    hermes_doc = hermes.get("draft_document") if isinstance(hermes.get("draft_document"), dict) else {}
+    tool_calls = session_trace.get("ordered_tool_calls")
+    raw_model_output = session_trace.get("raw_model_output")
+    if not isinstance(tool_calls, list):
+        tool_calls = []
+
+    n1d_stripped = strip_requested_evidence(n1d_plan)
+    hermes_stripped = strip_requested_evidence(hermes_doc)
+    added = sorted(evidence_aliases(n1d_plan) - evidence_aliases(hermes_doc))
+    removed = sorted(evidence_aliases(hermes_doc) - evidence_aliases(n1d_plan))
+    compile_tool_names = [
+        str(call.get("name") or "").removeprefix("functions.")
+        for call in tool_calls
+        if isinstance(call, dict)
+    ]
+    required_tools = {
+        "mcp_priori_tactical_submit_query_plan",
+        "mcp_priori_tactical_validate_query_plan",
+    }
+    return {
+        "original_question_sha256": sha256(HERO_QUESTION.encode("utf-8")).hexdigest(),
+        "n1d_host_augmented_plan_hash": stable_json_sha256(n1d_plan),
+        "session_id": hermes.get("session_id"),
+        "hermes_submitted_draft_plan_hash": hermes.get("draft_plan_hash"),
+        "ordered_tool_call_trace_sha256": stable_json_sha256(tool_calls) if tool_calls else None,
+        "raw_hermes_decision_sha256": stable_json_sha256(raw_model_output) if raw_model_output else None,
+        "allowed_augmentation_diff": {
+            "structure_identical_after_strip": n1d_stripped == hermes_stripped,
+            "added_aliases": added,
+            "removed_aliases": removed,
+            "added_equals_allowed": set(added) == ALLOWED_AUGMENTATION and not removed,
+        },
+        "origin_artifacts_present": True,
+        "trace_persisted": bool(session_trace.get("trace_persisted") and tool_calls and raw_model_output),
+        "compile_tool_trace": {
+            "tool_names": compile_tool_names,
+            "contains_submit_and_validate": required_tools.issubset(set(compile_tool_names)),
+        },
+        "notes": [],
+        "origin_bundle_path": str(N1E_ORIGIN_BUNDLE_PATH),
+        "origin_bundle_sha256": sha256(
+            json.dumps(bundle, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest(),
+    }
+
+
 def audit_hermes_origin(n1d_plan: dict[str, Any]) -> dict[str, Any]:
+    if N1E_ORIGIN_BUNDLE_PATH.exists():
+        return audit_n1e_origin_bundle(n1d_plan, read_json(N1E_ORIGIN_BUNDLE_PATH))
+
     origin: dict[str, Any] = {
         "original_question_sha256": sha256(HERO_QUESTION.encode("utf-8")).hexdigest(),
         "n1d_host_augmented_plan_hash": stable_json_sha256(n1d_plan),
@@ -168,11 +242,16 @@ def main() -> None:
         print(json.dumps({"status": "fail", "reason": "n1d_pins_missing"}, sort_keys=True))
         raise SystemExit(1)
 
-    n1d_plan = read_json(N1D_PLAN_PATH)
+    origin_bundle = read_json(N1E_ORIGIN_BUNDLE_PATH) if N1E_ORIGIN_BUNDLE_PATH.exists() else None
+    bundle_plan = bundle_host_augmented_plan(origin_bundle) if isinstance(origin_bundle, dict) else None
+    n1d_plan = bundle_plan or read_json(N1D_PLAN_PATH)
     manifest = read_json(N1D_MANIFEST_PATH)
     pinned = manifest.get("pinned_identity", {})
-    bound_plan_hash = pinned.get("plan", {}).get("bound_plan_hash")
-    freeze_manifest_id = "n1d-" + stable_json_sha256(pinned)[:16]
+    bound_plan_hash = bundle_bound_plan_hash(origin_bundle) if isinstance(origin_bundle, dict) else None
+    if not bound_plan_hash:
+        bound_plan_hash = pinned.get("plan", {}).get("bound_plan_hash")
+    freeze_manifest_source = origin_bundle if isinstance(origin_bundle, dict) else pinned
+    freeze_manifest_id = ("n1e-" if isinstance(origin_bundle, dict) else "n1d-") + stable_json_sha256(freeze_manifest_source)[:16]
 
     origin = audit_hermes_origin(n1d_plan)
     novelty = attest_structural_novelty(n1d_plan)
@@ -190,6 +269,12 @@ def main() -> None:
             origin.get("trace_persisted") is True,
             "The original Hermes raw decision and ordered MCP tool-call trace are persisted and hashable.",
             {"notes": origin.get("notes")},
+        ),
+        check(
+            "n1d1.origin_compile_tools_present",
+            bool(origin.get("compile_tool_trace", {}).get("contains_submit_and_validate")),
+            "The persisted Hermes tool trace contains submit_query_plan and validate_query_plan.",
+            origin.get("compile_tool_trace", {"reason": "trace absent"}),
         ),
         check(
             "n1d1.augmentation_diff_allowed",
@@ -231,6 +316,8 @@ def main() -> None:
         },
     }
     write_json(ATTESTATION_PATH, attestation)
+    if status == "VERIFIED":
+        write_json(VERIFIED_ATTESTATION_PATH, attestation)
 
     report = {
         "schema_version": "n1d1.verification.v1",

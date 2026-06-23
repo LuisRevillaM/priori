@@ -17,7 +17,11 @@ import shutil
 import sqlite3
 import subprocess
 import sys
+import threading
 import time
+import uuid
+from copy import deepcopy
+from datetime import UTC, datetime
 from hashlib import sha256
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -70,6 +74,9 @@ HERMES_PROVIDER = os.environ.get("WORKBENCH_HERMES_PROVIDER", "openai-codex")
 HERMES_MODEL = os.environ.get("WORKBENCH_HERMES_MODEL", "gpt-5.5")
 HERMES_TOOLSET = os.environ.get("WORKBENCH_HERMES_TOOLSET", "mcp-priori_tactical")
 HERMES_TIMEOUT_SECONDS = int(os.environ.get("WORKBENCH_HERMES_TIMEOUT_SECONDS", "240"))
+N1E_RUNNER_ENABLED = os.environ.get("ENABLE_N1E_RUNNER", "").strip() == "1"
+N1E_RUN_TOKEN = os.environ.get("N1E_RUN_TOKEN", "").strip()
+N1E_RESULT_LIMIT = int(os.environ.get("N1E_RESULT_LIMIT", "25"))
 DEMO_ACCESS_TOKEN = os.environ.get("DEMO_ACCESS_TOKEN", "").strip()
 DEMO_ACCESS_QUERY_TOKEN_ENABLED = os.environ.get("DEMO_ACCESS_QUERY_TOKEN_ENABLED", "").strip() == "1"
 WORKBENCH_PREWARM_EXECUTION_CACHE = os.environ.get("WORKBENCH_PREWARM_EXECUTION_CACHE", "").strip() == "1"
@@ -96,6 +103,8 @@ HERMES_MCP_TOOL_NAMES = {
     "mcp_priori_tactical_inspect_non_match",
     "mcp_priori_tactical_retrieve_replay_window",
 }
+N1E_JOB_THREADS: dict[str, threading.Thread] = {}
+N1E_JOB_THREADS_LOCK = threading.Lock()
 
 
 class WorkbenchResponseModel(BaseModel):
@@ -955,6 +964,415 @@ def hermes_db_one(query: str, params: tuple[Any, ...]) -> dict[str, Any] | None:
         return dict(row) if row else None
 
 
+def hermes_db_all(query: str, params: tuple[Any, ...]) -> list[dict[str, Any]]:
+    if not HERMES_DB.exists():
+        return []
+    with sqlite3.connect(HERMES_DB, timeout=10) as conn:
+        conn.row_factory = sqlite3.Row
+        return [dict(row) for row in conn.execute(query, params).fetchall()]
+
+
+def stable_json_sha256(payload: Any) -> str:
+    return sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")).hexdigest()
+
+
+def utc_now_iso() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat()
+
+
+def parse_jsonish(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, (dict, list, int, float, bool)):
+        return value
+    if not isinstance(value, str):
+        return str(value)
+    text = value.strip()
+    if not text:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return value
+
+
+def normalize_tool_arguments(value: Any) -> Any:
+    parsed = parse_jsonish(value)
+    if isinstance(parsed, str):
+        nested = parse_jsonish(parsed)
+        return nested if not isinstance(nested, str) else parsed
+    return parsed
+
+
+def sanitized_hermes_message(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": row.get("id"),
+        "session_id": row.get("session_id"),
+        "role": row.get("role"),
+        "content": row.get("content"),
+        "tool_call_id": row.get("tool_call_id"),
+        "tool_calls": parse_jsonish(row.get("tool_calls")),
+        "tool_name": row.get("tool_name"),
+        "timestamp": row.get("timestamp"),
+        "finish_reason": row.get("finish_reason"),
+    }
+
+
+def extract_ordered_tool_calls(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    calls: list[dict[str, Any]] = []
+    for message in messages:
+        raw_calls = message.get("tool_calls")
+        if not isinstance(raw_calls, list):
+            continue
+        for raw_call in raw_calls:
+            if not isinstance(raw_call, dict):
+                continue
+            function = raw_call.get("function") if isinstance(raw_call.get("function"), dict) else {}
+            name = raw_call.get("name") or function.get("name")
+            arguments = raw_call.get("arguments") if "arguments" in raw_call else function.get("arguments")
+            calls.append(
+                {
+                    "order": len(calls),
+                    "message_id": message.get("id"),
+                    "tool_call_id": raw_call.get("id") or raw_call.get("tool_call_id"),
+                    "name": name,
+                    "arguments": normalize_tool_arguments(arguments),
+                }
+            )
+    return calls
+
+
+def extract_tool_responses(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    responses: list[dict[str, Any]] = []
+    for message in messages:
+        if message.get("role") != "tool":
+            continue
+        responses.append(
+            {
+                "order": len(responses),
+                "message_id": message.get("id"),
+                "tool_call_id": message.get("tool_call_id"),
+                "tool_name": message.get("tool_name"),
+                "content": parse_jsonish(message.get("content")),
+            }
+        )
+    return responses
+
+
+def export_hermes_session_trace(
+    session_id: str | None,
+    *,
+    invocation: dict[str, Any],
+    final_decision: dict[str, Any],
+) -> dict[str, Any]:
+    if not session_id:
+        return {
+            "session": None,
+            "messages": [],
+            "ordered_tool_calls": [],
+            "tool_responses": [],
+            "raw_model_output": {
+                "invocation_stdout": invocation.get("stdout"),
+                "final_decision": final_decision,
+                "note": "No Hermes session id was recorded.",
+            },
+            "trace_persisted": False,
+        }
+    session = hermes_db_one(
+        "select id, source, model, model_config, started_at, ended_at, tool_call_count, message_count, "
+        "input_tokens, output_tokens, reasoning_tokens, estimated_cost_usd from sessions where id = ?",
+        (session_id,),
+    )
+    rows = hermes_db_all(
+        "select id, session_id, role, content, tool_call_id, tool_calls, tool_name, timestamp, finish_reason "
+        "from messages where session_id = ? order by timestamp asc, id asc",
+        (session_id,),
+    )
+    messages = [sanitized_hermes_message(row) for row in rows]
+    assistant_contents = [
+        str(message.get("content") or "")
+        for message in messages
+        if message.get("role") == "assistant" and str(message.get("content") or "").strip()
+    ]
+    raw_model_output = {
+        "invocation_stdout": invocation.get("stdout"),
+        "final_assistant_content": assistant_contents[-1] if assistant_contents else None,
+        "final_decision": final_decision,
+    }
+    return {
+        "session": session,
+        "messages": messages,
+        "ordered_tool_calls": extract_ordered_tool_calls(messages),
+        "tool_responses": extract_tool_responses(messages),
+        "raw_model_output": raw_model_output,
+        "trace_persisted": bool(session and messages),
+    }
+
+
+def add_n1e_entry_mode_evidence(document: dict[str, Any]) -> dict[str, Any]:
+    from tqe.verification.n1d import ENTRY_MODE_EVIDENCE
+
+    augmented = deepcopy(document)
+    requested = augmented["draft_plan"].setdefault("requested_evidence", [])
+    present_aliases = {str(item.get("alias")) for item in requested if isinstance(item, dict)}
+    for evidence in ENTRY_MODE_EVIDENCE:
+        if str(evidence.get("alias")) not in present_aliases:
+            requested.append(deepcopy(evidence))
+    return augmented
+
+
+def run_host_authority_pipeline(document: dict[str, Any], *, output_root: Path, source_label: str) -> dict[str, Any]:
+    plan_document = TacticalQueryDocument.model_validate(document)
+    submitted = submit_query_plan(
+        SubmitQueryPlanRequest(plan_document=plan_document, source_label=source_label),
+        output_root=output_root,
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    validation = validate_query_plan(
+        ValidateQueryPlanRequest(draft_plan_id=submitted.draft_plan_id),
+        output_root=output_root,
+        caller_profile=CallerProfile.HOST_MANUAL,
+    )
+    if not validation.ok or not validation.bound_plan_id:
+        raise CapabilityGap(f"N1E host-augmented plan failed validation: {validation.issues}")
+    confirmation = host_confirm_bound_plan(
+        validation.bound_plan_id,
+        reviewer=source_label,
+        output_root=output_root,
+    )
+    cache_before = execution_cache_status(
+        {
+            "bound_plan_id": validation.bound_plan_id,
+            "execution_authorization_id": confirmation.execution_authorization_id,
+            "result_limit": N1E_RESULT_LIMIT,
+        },
+        output_root=output_root,
+    )
+    executed = cached_execute_query_plan(
+        ExecuteQueryPlanRequest(
+            bound_plan_id=validation.bound_plan_id,
+            execution_authorization_id=confirmation.execution_authorization_id,
+            result_limit=N1E_RESULT_LIMIT,
+        ),
+        output_root=output_root,
+    )
+    execution = executed["execution"]
+    if not execution.get("results"):
+        raise CapabilityGap("N1E host execution produced no results for the frozen hero question.")
+    first_result_id = str(execution["results"][0]["result_id"])
+    inspection = inspect_result(
+        InspectResultRequest(execution_id=execution["execution_id"], result_id=first_result_id),
+        output_root=output_root,
+    )
+    replay = retrieve_replay_window(
+        ReplayWindowRequest(execution_id=execution["execution_id"], result_id=first_result_id),
+        output_root=output_root,
+    )
+    return {
+        "submit": submitted.model_dump(mode="json"),
+        "validation": validation.model_dump(mode="json"),
+        "confirmation": confirmation.model_dump(mode="json"),
+        "cache_before": cache_before,
+        "execution": execution,
+        "cache_after_execute": executed["cache"],
+        "inspection": inspection.model_dump(mode="json"),
+        "replay_window": replay.model_dump(mode="json"),
+        "draft_record": read_handle("draft-plans", submitted.draft_plan_id, output_root=output_root),
+        "bound_record": read_handle("bound-plans", validation.bound_plan_id, output_root=output_root),
+        "execution_record": read_handle("executions", execution["execution_id"], output_root=output_root),
+        "replay_record": read_handle("replay-windows", replay.replay_window_id, output_root=output_root),
+    }
+
+
+def n1e_job_root(output_root: Path) -> Path:
+    return output_root / "n1e"
+
+
+def n1e_job_dir(output_root: Path, job_id: str) -> Path:
+    return n1e_job_root(output_root) / "jobs" / job_id
+
+
+def n1e_status_path(output_root: Path, job_id: str) -> Path:
+    return n1e_job_dir(output_root, job_id) / "status.json"
+
+
+def n1e_bundle_path(output_root: Path, job_id: str) -> Path:
+    return n1e_job_dir(output_root, job_id) / "n1e-origin-bundle.json"
+
+
+def n1e_latest_path(output_root: Path) -> Path:
+    return n1e_job_root(output_root) / "latest.json"
+
+
+def write_n1e_status(output_root: Path, job_id: str, payload: dict[str, Any]) -> None:
+    status = {"schema_version": "n1e.job_status.v1", "job_id": job_id, "updated_at": utc_now_iso(), **payload}
+    write_json(n1e_status_path(output_root, job_id), status)
+    write_json(n1e_latest_path(output_root), {"job_id": job_id, "status": status.get("status"), "updated_at": status["updated_at"]})
+
+
+def read_n1e_status(output_root: Path, job_id: str | None = None) -> dict[str, Any]:
+    selected = job_id
+    if not selected and n1e_latest_path(output_root).exists():
+        selected = str(read_json(n1e_latest_path(output_root)).get("job_id") or "")
+    if not selected:
+        return error_response("N1E_JOB_NOT_FOUND", "No N1E runner job has been started.")
+    path = n1e_status_path(output_root, selected)
+    if not path.exists():
+        return error_response("N1E_JOB_NOT_FOUND", "N1E runner job was not found.")
+    return ok(read_json(path))
+
+
+def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
+    job_dir = n1e_job_dir(output_root, job_id)
+    job_dir.mkdir(parents=True, exist_ok=True)
+    source_label = "n1e_origin_refresh"
+    try:
+        from tqe.verification.n1c import HERO_QUESTION, git_output
+        from tqe.verification.n1d import ENTRY_BEFORE_OPEN_ANALYSIS, entry_mode_audit, runtime_hashes
+
+        write_n1e_status(output_root, job_id, {"status": "running", "stage": "probing_hermes"})
+        hermes = shutil.which("hermes")
+        if not hermes:
+            raise CapabilityGap("Hermes executable is not available in the deploy runtime.")
+        surface = hermes_tool_surface(hermes)
+        if not surface["safe"]:
+            raise CapabilityGap(f"Unsafe Hermes tool surface: {surface}")
+
+        prompt = hermes_interpret_prompt(HERO_QUESTION)
+        started_at = newest_hermes_session_started_at()
+        write_n1e_status(output_root, job_id, {"status": "running", "stage": "compiling_with_hermes"})
+        completed = run_hermes_invocation(
+            hermes,
+            [
+                "interpret",
+                "--provider",
+                HERMES_PROVIDER,
+                "--model",
+                HERMES_MODEL,
+                "--toolset",
+                HERMES_TOOLSET,
+                "--prompt",
+                prompt,
+            ],
+            timeout=HERMES_TIMEOUT_SECONDS,
+        )
+        session = newest_hermes_session_after(started_at)
+        invocation = parse_invocation_json(completed.stdout)
+        final = parse_final_json(str(invocation.get("stdout") or ""))
+        if completed.returncode != 0 or not invocation.get("ok") or not final:
+            raise CapabilityGap("Hermes did not return a valid structured N1E interpretation.")
+
+        interpretation = hermes_final_to_interpretation(HERO_QUESTION, final, session)
+        if interpretation.get("status") != "PLAN_INTERPRETED":
+            raise CapabilityGap(f"Hermes did not return an executable plan: {interpretation.get('status')}")
+        if interpretation.get("provenance_source") != "HERMES_NOVEL_COMPOSITION":
+            raise CapabilityGap(
+                f"Hermes did not produce novel-composition provenance: {interpretation.get('provenance_source')}"
+            )
+        draft_plan_id = str(final.get("draft_plan_id") or interpretation.get("draft_plan_id") or "")
+        if not draft_plan_id:
+            raise CapabilityGap("Hermes final decision did not include draft_plan_id.")
+        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=HERMES_WORKSHOP_ROOT)
+        hermes_draft_document = hermes_draft_record.get("document")
+        if not isinstance(hermes_draft_document, dict):
+            raise CapabilityGap("Hermes draft handle did not contain a plan document.")
+
+        host_augmented_document = add_n1e_entry_mode_evidence(hermes_draft_document)
+        write_n1e_status(output_root, job_id, {"status": "running", "stage": "executing_host_authority_pipeline"})
+        records = run_host_authority_pipeline(
+            host_augmented_document,
+            output_root=output_root,
+            source_label=source_label,
+        )
+        audit = entry_mode_audit(records["execution_record"])
+        session_trace = export_hermes_session_trace(
+            str(session.get("id")) if session else None,
+            invocation=invocation,
+            final_decision=final,
+        )
+        bundle = {
+            "schema_version": "n1e.origin_bundle.v1",
+            "status": "exported",
+            "generated_at": utc_now_iso(),
+            "job_id": job_id,
+            "hero_question": {"text": HERO_QUESTION, "sha256": sha256(HERO_QUESTION.encode("utf-8")).hexdigest()},
+            "compile_contract": {
+                "provider": HERMES_PROVIDER,
+                "model": HERMES_MODEL,
+                "toolset": HERMES_TOOLSET,
+                "prompt_sha256": sha256(prompt.encode("utf-8")).hexdigest(),
+                "tool_surface": surface,
+                "hermes_python": path_state(hermes_python_executable(hermes)),
+                "hermes_executable": path_state(hermes),
+            },
+            "source": {
+                "repo_commit": git_output("rev-parse", "HEAD"),
+                "runtime_hashes": runtime_hashes(),
+                "output_root": cloud_safe_path(output_root),
+                "hermes_workshop_root": cloud_safe_path(HERMES_WORKSHOP_ROOT),
+            },
+            "hermes_origin": {
+                "session_id": str(session.get("id")) if session else None,
+                "final_decision": final,
+                "interpretation": interpretation,
+                "draft_plan_id": draft_plan_id,
+                "draft_plan_hash": hermes_draft_record.get("draft_plan_hash"),
+                "draft_document": hermes_draft_document,
+                "session_trace": session_trace,
+                "ordered_tool_call_trace_sha256": stable_json_sha256(session_trace["ordered_tool_calls"]),
+                "raw_hermes_decision_sha256": stable_json_sha256(session_trace["raw_model_output"]),
+            },
+            "host_augmentation": {
+                "allowed_added_aliases": ["destination_entry_mode", "destination_time_to_entry_seconds"],
+                "augmented_document": host_augmented_document,
+                "augmented_document_sha256": stable_json_sha256(host_augmented_document),
+                "source_label": source_label,
+            },
+            "host_pipeline": {
+                "submit": records["submit"],
+                "validation": records["validation"],
+                "confirmation": records["confirmation"],
+                "cache_before": records["cache_before"],
+                "execution": records["execution"],
+                "cache_after_execute": records["cache_after_execute"],
+                "inspection": records["inspection"],
+                "replay_window": records["replay_window"],
+            },
+            "artifact_records": {
+                "draft_record": records["draft_record"],
+                "bound_record": records["bound_record"],
+                "execution_record": records["execution_record"],
+                "replay_record": records["replay_record"],
+            },
+            "entry_mode_audit": audit,
+            "entry_before_open_analysis": ENTRY_BEFORE_OPEN_ANALYSIS,
+        }
+        write_json(n1e_bundle_path(output_root, job_id), bundle)
+        write_n1e_status(
+            output_root,
+            job_id,
+            {
+                "status": "succeeded",
+                "stage": "bundle_exported",
+                "bundle_sha256": file_sha256(n1e_bundle_path(output_root, job_id)),
+                "session_id": bundle["hermes_origin"]["session_id"],
+                "bound_plan_hash": records["validation"].get("bound_plan_hash"),
+                "execution_id": records["execution"].get("execution_id"),
+            },
+        )
+    except Exception as exc:  # noqa: BLE001 - this diagnostic job must preserve failure details.
+        write_n1e_status(
+            output_root,
+            job_id,
+            {
+                "status": "failed",
+                "stage": "failed",
+                "error_type": type(exc).__name__,
+                "message": short_text(str(exc), 1000),
+            },
+        )
+
+
 def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> dict[str, Any]:
     query = str(payload.get("query") or "").strip()
     mode = str(payload.get("mode") or "manual")
@@ -1525,6 +1943,66 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             return bool(separator) and password == DEMO_ACCESS_TOKEN
         return False
 
+    def n1e_access_allowed(self) -> bool:
+        if not N1E_RUNNER_ENABLED or not N1E_RUN_TOKEN:
+            return False
+        authorization = self.headers.get("Authorization", "")
+        if authorization == f"Bearer {N1E_RUN_TOKEN}":
+            return True
+        return self.headers.get("X-N1E-Run-Token", "") == N1E_RUN_TOKEN
+
+    def send_n1e_forbidden(self) -> None:
+        self.send_json(
+            error_response(
+                "N1E_RUNNER_UNAVAILABLE",
+                "N1E runner is disabled or the runner token is invalid.",
+            ),
+            HTTPStatus.FORBIDDEN,
+        )
+
+    def handle_n1e_get(self, parsed: Any) -> None:
+        if not self.n1e_access_allowed():
+            self.send_n1e_forbidden()
+            return
+        query = parse_qs(parsed.query)
+        job_id = (query.get("job_id") or [""])[0] or None
+        if parsed.path == "/api/n1e/status":
+            self.send_json(read_n1e_status(self.server.output_root, job_id))
+            return
+        if parsed.path == "/api/n1e/bundle":
+            status = read_n1e_status(self.server.output_root, job_id)
+            selected_job_id = status.get("job_id") if status.get("ok") else None
+            if not selected_job_id:
+                self.send_json(status, HTTPStatus.NOT_FOUND)
+                return
+            path = n1e_bundle_path(self.server.output_root, str(selected_job_id))
+            if not path.exists():
+                self.send_json(error_response("N1E_BUNDLE_NOT_FOUND", "N1E origin bundle is not available."), HTTPStatus.NOT_FOUND)
+                return
+            self.send_json(read_json(path))
+            return
+        self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
+
+    def handle_n1e_post(self, parsed: Any) -> None:
+        if not self.n1e_access_allowed():
+            self.send_n1e_forbidden()
+            return
+        if parsed.path != "/api/n1e/run":
+            self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
+            return
+        job_id = "n1e_" + uuid.uuid4().hex[:16]
+        write_n1e_status(self.server.output_root, job_id, {"status": "queued", "stage": "queued"})
+        thread = threading.Thread(
+            target=run_n1e_origin_bundle,
+            kwargs={"job_id": job_id, "output_root": self.server.output_root},
+            name=f"n1e-runner-{job_id}",
+            daemon=True,
+        )
+        with N1E_JOB_THREADS_LOCK:
+            N1E_JOB_THREADS[job_id] = thread
+        thread.start()
+        self.send_json(ok({"job_id": job_id, "status": "queued"}), HTTPStatus.ACCEPTED)
+
     def set_demo_cookie_if_needed(self, parsed: Any) -> None:
         if not DEMO_ACCESS_TOKEN:
             return
@@ -1553,6 +2031,9 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             report = readiness_report(static_root=self.server.static_root, output_root=self.server.output_root)
             status = HTTPStatus.OK if report["status"] == "READY" else HTTPStatus.SERVICE_UNAVAILABLE
             self.send_json(ok(report), status)
+            return
+        if parsed.path.startswith("/api/n1e/"):
+            self.handle_n1e_get(parsed)
             return
         if self.redirect_with_demo_cookie(parsed):
             return
@@ -1585,6 +2066,9 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+        if parsed.path.startswith("/api/n1e/"):
+            self.handle_n1e_post(parsed)
+            return
         if not self.demo_access_allowed(parsed):
             self.send_demo_auth_required()
             return
