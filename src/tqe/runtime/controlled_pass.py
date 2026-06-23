@@ -20,6 +20,20 @@ import pandas as pd
 BALL_ENTITY_ID = "DFL-OBJ-0000XT"
 DEFAULT_CANONICAL_ROOT = Path("data/canonical/v1")
 DEFAULT_PERIODS = ("firstHalf", "secondHalf")
+EVENT_COLUMNS = [
+    "match_id",
+    "period",
+    "team_role",
+    "row_index",
+    "event_type",
+    "gameclock_seconds",
+    "player_id",
+    "timestamp",
+    "qualifier_json",
+]
+FRAME_COLUMNS = ["frame_id", "timestamp_utc", "analysis_rate_hz"]
+POSITION_COLUMNS = ["frame_id", "team_role", "entity_id", "entity_type", "x_m", "y_m"]
+POSITION_CATEGORY_COLUMNS = ["team_role", "entity_id", "entity_type"]
 # Backward-compatible alias for older S1 proof code. The capability itself no
 # longer enforces this as an acceptance boundary.
 ACCEPTED_MATCH_IDS = ("J03WOY",)
@@ -107,16 +121,21 @@ def evaluate_controlled_passes(
     reason_counts: Counter[str] = Counter()
 
     for match_id in requested_match_ids:
-        events = read_table(canonical_root / "events" / f"match_id={match_id}.parquet")
+        events = read_table(canonical_root / "events" / f"match_id={match_id}.parquet", columns=EVENT_COLUMNS)
         candidates = candidate_pass_events(events)
         for period in requested_periods:
             period_candidates = [item for item in candidates if item["period"] == period]
             if not period_candidates:
                 continue
-            frames = read_table(canonical_root / "frames" / f"match_id={match_id}" / f"period={period}.parquet")
+            frames = read_table(
+                canonical_root / "frames" / f"match_id={match_id}" / f"period={period}.parquet",
+                columns=FRAME_COLUMNS,
+            )
             frames["_frame_ts_utc"] = pd.to_datetime(frames["timestamp_utc"], utc=True, errors="coerce")
             frames = frames.sort_values("frame_id").reset_index(drop=True)
-            positions = read_table(canonical_root / "positions" / f"match_id={match_id}" / f"period={period}.parquet")
+            positions = read_positions_table(
+                canonical_root / "positions" / f"match_id={match_id}" / f"period={period}.parquet"
+            )
             context = PeriodControlContext(
                 match_id=match_id,
                 period=period,
@@ -658,8 +677,15 @@ def safe_json(value: Any) -> dict[str, Any]:
     return parsed if isinstance(parsed, dict) else {}
 
 
-def read_table(path: Path) -> pd.DataFrame:
-    return pd.read_parquet(path)
+def read_table(path: Path, *, columns: list[str] | None = None) -> pd.DataFrame:
+    return pd.read_parquet(path, columns=columns)
+
+
+def read_positions_table(path: Path) -> pd.DataFrame:
+    positions = pd.read_parquet(path, columns=POSITION_COLUMNS)
+    for column in POSITION_CATEGORY_COLUMNS:
+        positions[column] = positions[column].astype("category")
+    return positions
 
 
 def canonical_match_ids(canonical_root: Path) -> tuple[str, ...]:

@@ -46,13 +46,34 @@ async function request<T>(schemaName: ApiSchemaName, path: string, options: Requ
       ...(options.headers ?? {})
     }
   });
-  const payload = (await response.json()) as T & { ok?: boolean; message?: string; error_code?: string };
+  const payload = (await parseJsonResponse(path, response)) as T & { ok?: boolean; message?: string; error_code?: string };
   if (!response.ok || payload.ok === false) {
     const errorPayload = assertValidResponse<ErrorResponse>("ErrorResponse", payload);
     const message = errorPayload.message ?? errorPayload.error_code ?? `Request failed: ${path}`;
     throw new Error(message);
   }
   return assertValidResponse<T>(schemaName, payload);
+}
+
+async function parseJsonResponse(path: string, response: Response): Promise<unknown> {
+  const text = await response.text();
+  const contentType = response.headers.get("content-type") ?? "";
+  const status = `${response.status} ${response.statusText}`.trim();
+  if (!text.trim()) {
+    throw new Error(`Workbench host returned an empty response for ${path} (${status}).`);
+  }
+  if (!contentType.toLowerCase().includes("json")) {
+    const looksLikeHtml = /^\s*<!doctype html/i.test(text) || /^\s*<html[\s>]/i.test(text);
+    const responseKind = looksLikeHtml ? "HTML" : "non-JSON";
+    throw new Error(
+      `Workbench host returned ${responseKind} for ${path} (${status}). The service may be restarting, overloaded, or serving the app shell instead of the API.`
+    );
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Workbench host returned invalid JSON for ${path} (${status}).`);
+  }
 }
 
 export function bootstrap(): Promise<BootstrapResponse> {

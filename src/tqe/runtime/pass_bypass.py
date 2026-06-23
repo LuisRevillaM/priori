@@ -17,6 +17,7 @@ from tqe.runtime.controlled_pass import (
     ControlledPassOutput,
     canonical_match_ids,
     evaluate_controlled_passes,
+    read_positions_table,
 )
 
 
@@ -312,7 +313,7 @@ def active_timeline_for(
         ["frame_id", "team_role", "entity_id"]
     ]
     intervals: list[ActiveInterval] = []
-    grouped = player_rows.groupby(["team_role", "entity_id"], sort=True)["frame_id"]
+    grouped = player_rows.groupby(["team_role", "entity_id"], sort=True, observed=True)["frame_id"]
     for (team_role, player_id), frame_series in grouped:
         info = metadata.get(str(player_id))
         intervals.extend(
@@ -485,7 +486,7 @@ def positions_for(
 ) -> pd.DataFrame:
     key = (match_id, period)
     if key not in cache:
-        cache[key] = pd.read_parquet(canonical_root / "positions" / f"match_id={match_id}" / f"period={period}.parquet")
+        cache[key] = read_positions_table(canonical_root / "positions" / f"match_id={match_id}" / f"period={period}.parquet")
     return cache[key]
 
 
