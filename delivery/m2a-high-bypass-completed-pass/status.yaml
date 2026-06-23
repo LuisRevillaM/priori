@@ -36,6 +36,8 @@ progress:
     item: S0C integrated contract freeze emitted PROCEED_TO_S1 for J03WOY only; report recorded at delivery/m2a-high-bypass-completed-pass/M2A_S0C_CONTRACT_FREEZE.md.
   - date: "2026-06-23"
     item: S1A controlled_pass_episode runtime implemented for J03WOY accepted scope with explicit event_anchor_frame_id and physical_release_frame_id; verification report recorded at delivery/m2a-high-bypass-completed-pass/M2A_S1A_CONTROLLED_PASS.md.
+  - date: "2026-06-23"
+    item: S1B opponents_bypassed_by_action measurement wired to S1A controlled pass episodes and S0B-style active defending outfield denominators for J03WOY; verification report recorded at delivery/m2a-high-bypass-completed-pass/M2A_S1B_PASS_BYPASS.md.
 latest_preflight:
   slice: M2A-S0A
   scope: single canonical match J03WOY
@@ -102,8 +104,44 @@ s1_runtime:
     - make m2a-s1a-verify
     - ./.venv/bin/python -m unittest tests.test_m2a_controlled_pass tests.test_m2a_bypass
   explicit_boundaries:
-    - S1A verifies controlled_pass_episode only.
-    - opponents_bypassed_by_action is not yet wired to real pass episodes.
+    - S1A report verifies controlled_pass_episode only.
+    - opponents_bypassed_by_action wiring is recorded separately in s1b_measurement.
+    - high_bypass_completed_pass_v1 result emission is not implemented by S1A.
+    - Hermes exposure and all-corpus execution remain blocked.
+s1b_measurement:
+  slice: M2A-S1B
+  status: OPPONENTS_BYPASSED_MEASUREMENT_IMPLEMENTED
+  accepted_match_ids:
+    - J03WOY
+  runtime_report: delivery/m2a-high-bypass-completed-pass/M2A_S1B_PASS_BYPASS.md
+  artifact_hash: edfbeae2957622eca06cf89a4e4a1a0ceb89395a826964483c7c511e9d484b6c
+  controlled_anchor_evaluation_count: 639
+  bypass_anchor_evaluation_count: 639
+  evaluation_status_counts:
+    PASS: 453
+    UNKNOWN: 186
+  coverage_status_counts:
+    COMPLETE: 453
+    UNKNOWN: 186
+  failure_reason_counts:
+    controlled_pass_not_proven: 186
+  opponents_bypassed_count_distribution:
+    "0": 360
+    "1": 41
+    "2": 25
+    "3": 16
+    "4": 4
+    "5": 3
+    "6": 3
+    "7": 1
+  max_opponents_bypassed_count: 7
+  verification:
+    - make m2a-s1b-verify
+    - ./.venv/bin/python -m unittest tests.test_m2a_pass_bypass tests.test_m2a_controlled_pass tests.test_m2a_bypass
+  explicit_boundaries:
+    - S1B verifies opponents_bypassed_by_action measurement wiring only.
+    - The expected opposition denominator is the active defending outfield set derived from the S0B-style active-player timeline, not observed endpoint rows.
+    - Missing expected active opponent tracking remains UNKNOWN and never silently reduces the denominator.
     - high_bypass_completed_pass_v1 result emission is not yet implemented.
     - Hermes exposure and all-corpus execution remain blocked.
-next_action: Begin M2A-S1B by wiring opponents_bypassed_by_action to S1A controlled pass episodes and active defending outfield sets for J03WOY only; do not emit high_bypass_completed_pass_v1 results until S1B measurements pass.
+next_action: Begin M2A-S1C by emitting high_bypass_completed_pass_v1 QueryResult rows from S1A controlled pass episodes plus S1B bypass measurements for J03WOY only; preserve raw evidence and keep Hermes/all-corpus blocked.
