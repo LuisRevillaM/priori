@@ -35,7 +35,7 @@ export type RecipeSummary = {
 };
 
 export type Preset = {
-  preset_id: "approved_block_shift" | "experimental_corridor";
+  preset_id: "approved_block_shift" | "experimental_corridor" | "experimental_high_bypass";
   label: string;
   recipe: RecipeSummary;
   plan_hash: string;

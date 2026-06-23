@@ -119,6 +119,7 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
     def test_manual_interpretation_distinguishes_reviewed_recipe_from_manual_preset(self) -> None:
         approved = interpret_request({"mode": "manual", "query": "", "preset_id": "approved_block_shift"})
         experimental = interpret_request({"mode": "manual", "query": "", "preset_id": "experimental_corridor"})
+        high_bypass = interpret_request({"mode": "manual", "query": "", "preset_id": "experimental_high_bypass"})
 
         self.assertEqual("PLAN_INTERPRETED", approved["status"])
         self.assertEqual("REVIEWED_RECIPE", approved["provenance_source"])
@@ -126,6 +127,20 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         self.assertEqual("PLAN_INTERPRETED", experimental["status"])
         self.assertEqual("MANUAL_PRESET", experimental["provenance_source"])
         self.assertEqual("possession_corridor_availability_v1", experimental["recipe_id"])
+        self.assertEqual("PLAN_INTERPRETED", high_bypass["status"])
+        self.assertEqual("MANUAL_PRESET", high_bypass["provenance_source"])
+        self.assertEqual("high_bypass_completed_pass_v1", high_bypass["recipe_id"])
+
+    def test_manual_high_bypass_plan_validates_through_host_boundary(self) -> None:
+        response = interpret_request({"mode": "manual", "query": "", "preset_id": "experimental_high_bypass"})
+        document = host_owned_plan_document(response["plan_document"])
+
+        self.assertEqual("high_bypass_completed_pass_v1", document.recipe.recipe_id)
+        self.assertEqual("experimental", document.draft_plan.status.value)
+        self.assertEqual(
+            ["J03WOY", "J03WPY", "J03WQQ", "J03WR9"],
+            document.default_invocation.match_ids,
+        )
 
     def test_attested_novel_composition_requires_verified_plan_hash(self) -> None:
         document = n1i_attested_document()

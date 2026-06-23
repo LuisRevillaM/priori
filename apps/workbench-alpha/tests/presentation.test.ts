@@ -44,6 +44,7 @@ assert.equal(entryModePresentation(3.2), null, "a time_to_entry number must neve
 // --- Tactical headlines lead the card; raw classification is humanized as a fallback ---
 assert.equal(tacticalHeadline("RETAINED_NO_SWITCH"), "Block held — no ball-side switch");
 assert.equal(tacticalHeadline("PROGRESSIVE_CORRIDOR_AVAILABLE"), "Forward corridor available");
+assert.equal(tacticalHeadline("HIGH_BYPASS_COMPLETED_PASS"), "Completed pass bypassed multiple opponents");
 assert.equal(tacticalHeadline("SOME_NEW_LABEL"), "Some new label");
 
 // --- Predicate measurements read in product language; raw payload never leaks into the line ---
@@ -56,6 +57,7 @@ assert.equal(describeMeasurement({ nested: true }, [1, 2]), "Measurement detail 
 // --- principal measurement: first available in priority order; never inferred ---
 assert.equal(principalMeasurement(null), null);
 assert.equal(principalMeasurement({}), null, "no known fields -> no measurement (never inferred)");
+assert.equal(principalMeasurement({ opponents_bypassed_count: 6 })?.label, "Bypassed 6 opponents");
 assert.equal(principalMeasurement({ signed_shift_metres: 4.21 })?.label, "Shift 4.21 m");
 assert.equal(
   principalMeasurement({ destination_time_to_entry_seconds: 0.16 })?.label,
@@ -76,6 +78,8 @@ assert.equal(principalMeasurement({ relation_duration_seconds: 3.8 })?.label, "H
 assert.equal(principalMeasurement({ "signed_shift.signed_shift_metres": -3.4 })?.label, "Shift -3.4 m");
 // priority: shift wins over clearance when both present
 assert.equal(principalMeasurement({ minimum_clearance_m: 4.35, signed_shift_metres: 2 })?.key, "signed_shift_metres");
+// priority: bypass count wins for the high-bypass family
+assert.equal(principalMeasurement({ opponents_bypassed_count: 5, signed_shift_metres: 2 })?.key, "opponents_bypassed_count");
 // raw value preserved for tooling
 assert.equal(principalMeasurement({ signed_shift_metres: 4.2109 })?.raw, "4.2109");
 

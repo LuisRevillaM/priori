@@ -5,6 +5,12 @@ import {
   overlayProofText,
   overlayVisibleAtFrame
 } from "../src/overlay";
+import {
+  passOverlayLegendLines,
+  passOverlayProofText,
+  passOverlayState,
+  passOverlayVisibleAtFrame
+} from "../src/passOverlay";
 import type { ReplayPayload } from "../src/types";
 
 const replay = (anchor: number, frameIds: number[]) =>
@@ -66,5 +72,37 @@ const noCover = corridorOverlayState(
   replay(100, [98, 100, 102])
 );
 assert.equal(noCover.kind, "witness", "interval with no covered frames downgrades, not guesses");
+
+// --- completed-pass overlay: exact release/reception evidence only ---
+const passOverlay = passOverlayState(
+  {
+    release_frame_id: 300,
+    reception_frame_id: 320,
+    release_ball_point: { x_m: -10, y_m: 5 },
+    reception_ball_point: { x_m: 12, y_m: 6 },
+    passer_id: "passer",
+    receiver_id: "receiver",
+    bypassed_player_ids: ["def1", "def2"],
+    opponents_bypassed_count: 2,
+    forward_progression_m: 22
+  },
+  replay(320, [295, 300, 310, 320, 325])
+);
+assert.equal(passOverlay.kind, "completed_pass");
+if (passOverlay.kind === "completed_pass") {
+  assert.equal(passOverlay.releaseFrameId, 300);
+  assert.equal(passOverlay.receptionFrameId, 320);
+  assert.deepEqual(passOverlay.bypassedPlayerIds, ["def1", "def2"]);
+}
+assert.equal(passOverlayVisibleAtFrame(passOverlay, 310), true);
+assert.equal(passOverlayVisibleAtFrame(passOverlay, 325), false);
+assert.equal(passOverlayProofText(passOverlay, 310), "Completed-pass overlay: observed release to controlled reception");
+const passLegend = passOverlayLegendLines(passOverlay).join(" ");
+assert.match(passLegend, /Observed completed pass/);
+assert.match(passLegend, /Opponents bypassed: 2/);
+assert.match(passLegend, /does not prove which defensive line was broken/);
+
+const noPassGeometry = passOverlayState({ release_frame_id: 300, reception_frame_id: 320 }, replay(320, [300, 320]));
+assert.equal(noPassGeometry.kind, "none");
 
 console.log("overlay tests passed");

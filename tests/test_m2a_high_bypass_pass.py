@@ -142,13 +142,17 @@ class M2AHighBypassPassRuntimeTest(unittest.TestCase):
             0,
         )
 
-    def test_scope_is_fail_closed(self) -> None:
-        with self.assertRaisesRegex(RuntimeError, "accepted only"):
-            emit_high_bypass_completed_pass_results(
-                canonical_root=Path("data/canonical/v1"),
-                match_ids=("J03WN1",),
-                periods=("firstHalf",),
-            )
+    def test_scope_can_use_another_canonical_match(self) -> None:
+        output = emit_high_bypass_completed_pass_results(
+            canonical_root=Path("data/canonical/v1"),
+            match_ids=("J03WPY",),
+            periods=("firstHalf",),
+        )
+
+        self.assertEqual(["J03WPY"], output.accepted_scope["match_ids"])
+        self.assertGreater(output.summary["controlled_anchor_evaluation_count"], 0)
+
+    def test_scope_is_fail_closed_for_unsupported_period(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "accepted only"):
             emit_high_bypass_completed_pass_results(
                 canonical_root=Path("data/canonical/v1"),
@@ -185,7 +189,8 @@ class M2AHighBypassPassRuntimeTest(unittest.TestCase):
             ],
             non_match_examples=[],
         )
-        with self.assertRaisesRegex(RuntimeError, "outside M2A-S1B accepted scope"):
+        injected.anchor_evaluations[0]["period"] = "thirdHalf"
+        with self.assertRaisesRegex(RuntimeError, "outside M2A-S1B period scope"):
             emit_high_bypass_completed_pass_results(
                 canonical_root=Path("data/canonical/v1"),
                 controlled_passes=injected,

@@ -2,8 +2,8 @@
   "checks": [
     {
       "details": {
-        "actual": "2fc0ed6e97fd8e23d08b050e45e915ed327d38648cc1c15a56544291bb961115",
-        "expected": "2fc0ed6e97fd8e23d08b050e45e915ed327d38648cc1c15a56544291bb961115"
+        "actual": "1b794ec044cc2925e5b691226a6863c8967704c4bd33bb72b9488ec114a7a074",
+        "expected": "1b794ec044cc2925e5b691226a6863c8967704c4bd33bb72b9488ec114a7a074"
       },
       "name": "pack.hash.matches_content",
       "ok": true
@@ -29,6 +29,7 @@
       "details": {
         "recipe_ids": [
           "ball_side_block_shift_v1",
+          "high_bypass_completed_pass_v1",
           "opposite_corridor_after_shift_v1",
           "possession_corridor_availability_v1"
         ]
@@ -40,11 +41,31 @@
       "details": {
         "recipe_ids": [
           "ball_side_block_shift_v1",
+          "high_bypass_completed_pass_v1",
           "opposite_corridor_after_shift_v1",
           "possession_corridor_availability_v1"
         ]
       },
       "name": "pack.recipes.include_corridor",
+      "ok": true
+    },
+    {
+      "details": {
+        "recipe_ids": [
+          "ball_side_block_shift_v1",
+          "high_bypass_completed_pass_v1",
+          "opposite_corridor_after_shift_v1",
+          "possession_corridor_availability_v1"
+        ]
+      },
+      "name": "pack.recipes.include_high_bypass",
+      "ok": true
+    },
+    {
+      "details": {
+        "missing": []
+      },
+      "name": "pack.capabilities.include_high_bypass_building_blocks",
       "ok": true
     },
     {
@@ -65,9 +86,11 @@
       "details": {
         "advertised_refs": [
           "ball_lateral_fraction",
+          "controlled_pass_episode",
           "defensive_outfield_centroid",
           "geometric_progressive_corridor",
           "geometric_progressive_corridor_from_anchor_set",
+          "opponents_bypassed_by_action",
           "possession_segment",
           "signed_lateral_shift"
         ]
@@ -184,7 +207,7 @@
     },
     {
       "details": {
-        "count": 16
+        "count": 17
       },
       "name": "pack.source_hashes.present",
       "ok": true
@@ -198,8 +221,8 @@
     },
     {
       "details": {
-        "approx_tokens": 56367,
-        "json_chars": 225470
+        "approx_tokens": 65072,
+        "json_chars": 260289
       },
       "name": "pack.size.recorded",
       "ok": true
@@ -265,10 +288,10 @@
     }
   ],
   "gate": "S2I_A_tactical_knowledge_pack",
-  "generated_at": "2026-06-23T11:42:56+00:00",
+  "generated_at": "2026-06-23T16:47:04+00:00",
   "knowledge_pack_markdown_path": "generated/tactical-knowledge-pack.md",
   "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-  "knowledge_pack_sha256": "2fc0ed6e97fd8e23d08b050e45e915ed327d38648cc1c15a56544291bb961115",
+  "knowledge_pack_sha256": "1b794ec044cc2925e5b691226a6863c8967704c4bd33bb72b9488ec114a7a074",
   "passed": true,
   "schema_version": "1.0"
 }

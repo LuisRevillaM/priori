@@ -80,7 +80,8 @@ export const apiSchemas = {
           "preset_id": {
             "enum": [
               "approved_block_shift",
-              "experimental_corridor"
+              "experimental_corridor",
+              "experimental_high_bypass"
             ],
             "title": "Preset Id",
             "type": "string"

@@ -54,6 +54,7 @@ RECIPE_PLAN_PATHS = [
     Path("config/query-plans/ball_side_block_shift.ir.v1.json"),
     Path("config/query-plans/possession_corridor_availability.experimental.v1.json"),
     Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json"),
+    Path("config/query-plans/high_bypass_completed_pass.experimental.v1.json"),
 ]
 SOURCE_PATHS = [
     Path("Makefile"),
@@ -412,7 +413,18 @@ def verify_tactical_knowledge_pack(
     recipe_ids = {recipe["recipe_id"] for recipe in pack.get("recipes", [])}
     checks.append(check("pack.recipes.include_approved_m1", "ball_side_block_shift_v1" in recipe_ids, {"recipe_ids": sorted(recipe_ids)}))
     checks.append(check("pack.recipes.include_corridor", "possession_corridor_availability_v1" in recipe_ids, {"recipe_ids": sorted(recipe_ids)}))
+    checks.append(check("pack.recipes.include_high_bypass", "high_bypass_completed_pass_v1" in recipe_ids, {"recipe_ids": sorted(recipe_ids)}))
     primitives = {entry.get("name"): entry for entry in pack.get("primitives", []) if isinstance(entry, dict)}
+    relations = {entry.get("name"): entry for entry in pack.get("relations", []) if isinstance(entry, dict)}
+    high_bypass_capabilities = set(primitives) | set(relations)
+    high_bypass_required = {"controlled_pass_episode", "opponents_bypassed_by_action"}
+    checks.append(
+        check(
+            "pack.capabilities.include_high_bypass_building_blocks",
+            high_bypass_required.issubset(high_bypass_capabilities),
+            {"missing": sorted(high_bypass_required - high_bypass_capabilities)},
+        )
+    )
     generic_entry = primitives.get("relation_destination_entry", {})
     trusted_wrapper = primitives.get("relation_destination_entry_classification", {})
     checks.append(

@@ -2,8 +2,8 @@ import unittest
 from pathlib import Path
 
 from tqe.runtime.controlled_pass import (
-    ACCEPTED_MATCH_IDS,
     ControlledPassConfig,
+    canonical_match_ids,
     evaluate_controlled_passes,
 )
 
@@ -59,14 +59,19 @@ class M2AControlledPassRuntimeTest(unittest.TestCase):
             )
         )
 
-    def test_scope_is_fail_closed_to_accepted_match(self) -> None:
-        self.assertEqual(("J03WOY",), ACCEPTED_MATCH_IDS)
-        with self.assertRaisesRegex(RuntimeError, "accepted only"):
-            evaluate_controlled_passes(
-                canonical_root=Path("data/canonical/v1"),
-                match_ids=("J03WN1",),
-                periods=("firstHalf",),
-            )
+    def test_scope_uses_canonical_match_library_not_one_match_gate(self) -> None:
+        match_ids = canonical_match_ids(Path("data/canonical/v1"))
+        self.assertIn("J03WOY", match_ids)
+        self.assertIn("J03WPY", match_ids)
+
+        output = evaluate_controlled_passes(
+            canonical_root=Path("data/canonical/v1"),
+            match_ids=("J03WPY",),
+            periods=("firstHalf",),
+        )
+
+        self.assertEqual(["J03WPY"], output.accepted_scope["match_ids"])
+        self.assertGreater(output.summary["candidate_event_count"], 0)
 
 
 if __name__ == "__main__":

@@ -24,6 +24,7 @@ import {
   timestampOutcomeSummary
 } from "./presentation";
 import { corridorOverlayState, overlayLegendLines, overlayProofText, type CorridorOverlay } from "./overlay";
+import { passOverlayLegendLines, passOverlayProofText, passOverlayState } from "./passOverlay";
 import {
   initialState,
   reducer,
@@ -111,6 +112,15 @@ function runStepLabel(step: "validating" | "confirming" | "executing" | null) {
 function interpretationBullets(recipe: InterpretResponse["recipe"] | null | undefined, planDocument: JsonObject | null) {
   const invocation = asRecord(planDocument?.default_invocation);
   const params = asRecord(invocation.parameters);
+  if (recipe?.recipe_id === "high_bypass_completed_pass_v1") {
+    return [
+      "Find completed passes whose tracked reception leaves multiple opponents behind the ball.",
+      `Minimum forward progression: ${String(params.minimum_forward_progression_m ?? "recipe default")} metres.`,
+      `Minimum opponents bypassed: ${String(params.minimum_bypassed_opponents ?? "recipe default")}.`,
+      "Uses event data to anchor candidate passes and tracking data to evaluate release, controlled reception, and opponent positions.",
+      "Does not prove which defensive line was broken or that the pass alone caused every opponent to be bypassed."
+    ];
+  }
   if (recipe?.recipe_id === "possession_corridor_availability_v1") {
     return [
       "Search possession anchors with a progressive geometric corridor ahead of the ball.",
@@ -416,15 +426,23 @@ export function App() {
     () => corridorOverlayState(evidenceResult?.requested_evidence ?? null, replay),
     [evidenceResult, replay]
   );
+  const passOverlay = useMemo(
+    () => passOverlayState(evidenceResult?.requested_evidence ?? null, replay),
+    [evidenceResult, replay]
+  );
   const evidenceHighlights = [
     selectedMeasurement ? { label: "Principal measure", value: selectedMeasurement.label } : null,
     selectedEntryMode ? { label: "Destination entry", value: selectedEntryMode.label } : null,
+    passOverlay.kind !== "none" ? { label: "Completed pass", value: "Observed release to controlled reception" } : null,
     overlayState.kind !== "none"
       ? { label: "Corridor evidence", value: overlayState.kind === "interval" ? "Active interval" : "Witness frame" }
       : null
   ].filter((item): item is { label: string; value: string } => Boolean(item));
-  const overlayProof = overlayProofText(overlayState, currentFrame?.frame_id);
-  const overlayLegend = overlayLegendLines(overlayState);
+  const overlayProof =
+    passOverlay.kind !== "none"
+      ? passOverlayProofText(passOverlay, currentFrame?.frame_id)
+      : overlayProofText(overlayState, currentFrame?.frame_id);
+  const overlayLegend = passOverlay.kind !== "none" ? passOverlayLegendLines(passOverlay) : overlayLegendLines(overlayState);
   const timestampOutcome = timestampOutcomeSummary(timestampInspection?.inspection ?? null);
 
   // Group results by match for scanability, preserving the deterministic result order within and
@@ -846,8 +864,13 @@ export function App() {
                   </div>
                   {currentFrame ? <StatusPill tone="neutral">frame {currentFrame.frame_id}</StatusPill> : null}
                 </div>
-                <PitchCanvas replay={replay} frameIndex={frameIndex} result={evidenceResult} overlay={overlayState} />
-                <div className="overlayProof" data-testid="overlay-proof" data-overlay-kind={overlayState.kind}>
+                <PitchCanvas replay={replay} frameIndex={frameIndex} result={evidenceResult} overlay={overlayState} passOverlay={passOverlay} />
+                <div
+                  className="overlayProof"
+                  data-testid="overlay-proof"
+                  data-overlay-kind={overlayState.kind}
+                  data-pass-overlay-kind={passOverlay.kind}
+                >
                   {overlayProof}
                 </div>
                 <div className="overlayLegend" data-testid="overlay-legend">

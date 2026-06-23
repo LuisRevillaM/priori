@@ -2,6 +2,11 @@ import { useEffect, useRef } from "react";
 import type { ReplayPayload, ResultRow } from "./types";
 import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
 import { overlayVisibleAtFrame, type CorridorOverlay } from "./overlay";
+import {
+  passOverlayEndpointVisibleAtFrame,
+  passOverlayVisibleAtFrame,
+  type PassOverlay
+} from "./passOverlay";
 
 // Replay canvas palette (canvas 2D fills/strokes — not CSS tokens). Named for legibility; values
 // match the established warm-pitch look.
@@ -18,6 +23,10 @@ const PITCH = {
   awayEdge: "#f3e8df",
   corridor: "#f1d27a",
   corridorFill: "#fff7d2",
+  pass: "#f3ead2",
+  passEndpoint: "#12261c",
+  bypassedOpponent: "#f7c75f",
+  actorRing: "#eaf2f7",
   anchorRing: "#d6b35a"
 } as const;
 
@@ -26,9 +35,10 @@ type PitchCanvasProps = {
   frameIndex: number;
   result?: ResultRow | null;
   overlay?: CorridorOverlay;
+  passOverlay?: PassOverlay;
 };
 
-export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvasProps) {
+export function PitchCanvas({ replay, frameIndex, result, overlay, passOverlay }: PitchCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -141,13 +151,60 @@ export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvas
       ctx.restore();
     }
 
+    if (passOverlay && passOverlay.kind === "completed_pass" && passOverlayVisibleAtFrame(passOverlay, frame.frame_id)) {
+      const start = pitchPointToPixel(passOverlay.releaseBallPoint.x_m, passOverlay.releaseBallPoint.y_m, replay.pitch, layout);
+      const end = pitchPointToPixel(passOverlay.receptionBallPoint.x_m, passOverlay.receptionBallPoint.y_m, replay.pitch, layout);
+      ctx.save();
+      ctx.strokeStyle = PITCH.pass;
+      ctx.fillStyle = PITCH.passEndpoint;
+      ctx.lineWidth = 3.2;
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+      if (passOverlayEndpointVisibleAtFrame(passOverlay, frame.frame_id)) {
+        ctx.beginPath();
+        ctx.arc(start.x, start.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = PITCH.pass;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(end.x, end.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = PITCH.pass;
+        ctx.stroke();
+      }
+      ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.fillStyle = PITCH.pass;
+      ctx.fillText("completed pass", end.x + 10, end.y - 10);
+      ctx.restore();
+    }
+
+    if (passOverlay && passOverlay.kind === "completed_pass") {
+      const actorIds = new Set([passOverlay.passerId, passOverlay.receiverId].filter((value): value is string => Boolean(value)));
+      const bypassedIds = new Set(frame.frame_id === passOverlay.receptionFrameId ? passOverlay.bypassedPlayerIds : []);
+      if (actorIds.size || bypassedIds.size) {
+        ctx.save();
+        for (const entity of frame.entities) {
+          if (!actorIds.has(entity.entity_id) && !bypassedIds.has(entity.entity_id)) continue;
+          const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, bypassedIds.has(entity.entity_id) ? 13 : 11, 0, Math.PI * 2);
+          ctx.strokeStyle = bypassedIds.has(entity.entity_id) ? PITCH.bypassedOpponent : PITCH.actorRing;
+          ctx.lineWidth = bypassedIds.has(entity.entity_id) ? 3 : 2.3;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
     const anchorX = replay.frames.findIndex((item) => item.frame_id === replay.anchor_frame_id);
     if (anchorX >= 0 && anchorX === frameIndex) {
       ctx.strokeStyle = PITCH.anchorRing;
       ctx.lineWidth = 2;
       ctx.strokeRect(marginX + 6, marginY + 6, fieldW - 12, fieldH - 12);
     }
-  }, [frameIndex, replay, result]);
+  }, [frameIndex, passOverlay, replay, result, overlay]);
 
   return (
     <div className="canvasShell">

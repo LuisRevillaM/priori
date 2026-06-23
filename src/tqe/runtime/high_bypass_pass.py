@@ -1,8 +1,7 @@
 """M2A S1C high-bypass completed-pass result emission.
 
 This module applies the first M2A recipe threshold on top of the reusable
-controlled-pass and opponent-bypass measurements. It deliberately keeps Hermes
-and all-corpus execution blocked; the accepted runtime scope remains J03WOY.
+controlled-pass and opponent-bypass measurements.
 """
 
 from __future__ import annotations
@@ -18,10 +17,10 @@ from typing import Any
 import pandas as pd
 
 from tqe.runtime.controlled_pass import (
-    ACCEPTED_MATCH_IDS,
     ACCEPTED_PERIODS,
     DEFAULT_CANONICAL_ROOT,
     ControlledPassOutput,
+    canonical_match_ids,
     evaluate_controlled_passes,
 )
 from tqe.runtime.ir import PayloadType, PredicateTrace, QueryResult, TypedValue, Unit
@@ -92,13 +91,13 @@ def emit_high_bypass_completed_pass_results(
     canonical_root: Path = DEFAULT_CANONICAL_ROOT,
     controlled_passes: ControlledPassOutput | None = None,
     bypass_measurements: PassBypassOutput | None = None,
-    match_ids: tuple[str, ...] | list[str] = ACCEPTED_MATCH_IDS,
+    match_ids: tuple[str, ...] | list[str] | None = None,
     periods: tuple[str, ...] | list[str] = ACCEPTED_PERIODS,
     config: HighBypassConfig = HighBypassConfig(),
 ) -> HighBypassOutput:
-    requested_match_ids = tuple(str(item) for item in match_ids)
+    requested_match_ids = tuple(str(item) for item in (match_ids or canonical_match_ids(canonical_root)))
     requested_periods = tuple(str(item) for item in periods)
-    validate_scope(requested_match_ids, requested_periods)
+    validate_scope(requested_periods)
     controlled = controlled_passes or evaluate_controlled_passes(
         canonical_root=canonical_root,
         match_ids=requested_match_ids,
@@ -190,10 +189,10 @@ def emit_high_bypass_completed_pass_results(
         recipe_version=RECIPE_VERSION,
         status="pass" if not evidence_failures else "fail",
         accepted_scope={
-            "match_ids": list(ACCEPTED_MATCH_IDS),
+            "match_ids": list(requested_match_ids),
             "periods": list(ACCEPTED_PERIODS),
-            "all_corpus_execution": "blocked_until_m2a_active_player_policy_extends_beyond_j03woy",
-            "hermes_exposure": "blocked_until_human_visual_review_accepts_m2a",
+            "scope_policy": "caller_supplied_match_scope",
+            "hermes_exposure": "available_as_experimental_recipe_and_agent_composable_capabilities",
         },
         config=asdict(config),
         summary={
@@ -384,14 +383,8 @@ def build_predicate_traces(result: dict[str, Any], config: HighBypassConfig) -> 
     return [trace.model_dump(mode="json") for trace in traces]
 
 
-def validate_scope(match_ids: tuple[str, ...], periods: tuple[str, ...]) -> None:
-    unsupported_matches = sorted(set(match_ids) - set(ACCEPTED_MATCH_IDS))
+def validate_scope(periods: tuple[str, ...]) -> None:
     unsupported_periods = sorted(set(periods) - set(ACCEPTED_PERIODS))
-    if unsupported_matches:
-        raise RuntimeError(
-            "M2A high-bypass S1C is accepted only for "
-            f"{ACCEPTED_MATCH_IDS}; unsupported={unsupported_matches}"
-        )
     if unsupported_periods:
         raise RuntimeError(
             "M2A high-bypass S1C is accepted only for "
@@ -401,9 +394,8 @@ def validate_scope(match_ids: tuple[str, ...], periods: tuple[str, ...]) -> None
 
 def validate_runtime_scope(controlled: ControlledPassOutput, bypass: PassBypassOutput) -> None:
     rows = list(controlled.anchor_evaluations) + list(controlled.episodes) + list(bypass.anchor_evaluations)
-    match_ids = {str(item.get("match_id")) for item in rows if item.get("match_id") is not None}
     periods = {str(item.get("period")) for item in rows if item.get("period") is not None}
-    validate_scope(tuple(match_ids), tuple(periods))
+    validate_scope(tuple(periods))
 
 
 def sorted_measurements(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:

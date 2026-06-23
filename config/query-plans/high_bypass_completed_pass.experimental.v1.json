@@ -1,0 +1,387 @@
+{
+  "schema_version": "1.0",
+  "recipe": {
+    "schema_version": "1.0",
+    "recipe_id": "high_bypass_completed_pass_v1",
+    "recipe_version": "0.1.0",
+    "display_name": "High-Bypass Completed Pass",
+    "description": "Experimental composition that finds completed controlled passes where the ball progresses forward and at least a declared number of opposition outfield players move from goal-side of the ball at release to behind the ball at controlled reception.",
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "allowed_claims": [
+      "The event data identified a completed pass candidate.",
+      "Tracking data confirmed physical release and controlled reception.",
+      "The measured action bypassed the declared number of opposition outfield players.",
+      "The replay coordinates come from canonical source frames."
+    ],
+    "disallowed_claims": [
+      "The pass was optimal.",
+      "The pass probability was high.",
+      "The passer intended to break a defensive line.",
+      "The pass alone caused every opponent to be bypassed.",
+      "The result proves which defensive line was broken.",
+      "The result is backed by licensed match video."
+    ],
+    "limitations": [
+      "Experimental plan; not an approved recipe.",
+      "Bypass count is measured relative to ball position at release and controlled reception.",
+      "Goalkeepers are excluded from the opposition denominator.",
+      "No defensive-line model, offside model, pass probability, body-orientation model, or intent model is evaluated."
+    ],
+    "output_classifications": [
+      "HIGH_BYPASS_COMPLETED_PASS"
+    ],
+    "parameters": [
+      {
+        "name": "minimum_forward_progression_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 8.0
+        },
+        "description": "Minimum forward ball progression from physical release to controlled reception."
+      },
+      {
+        "name": "minimum_bypassed_opponents",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 5
+        },
+        "description": "Minimum opposition outfield players bypassed by the completed action."
+      },
+      {
+        "name": "goal_side_buffer_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 1.0
+        },
+        "description": "Release-frame buffer for deciding whether an opponent is goal-side of the ball."
+      },
+      {
+        "name": "bypassed_buffer_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 1.0
+        },
+        "description": "Reception-frame buffer for deciding whether an opponent is behind the ball."
+      }
+    ]
+  },
+  "default_invocation": {
+    "schema_version": "1.0",
+    "invocation_id": "m2a_fortuna_high_bypass_completed_pass",
+    "match_ids": [
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9"
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "parameters": {},
+    "max_results": 100,
+    "execution_mode": "execute"
+  },
+  "draft_plan": {
+    "schema_version": "1.0",
+    "plan_id": "m2a_high_bypass_completed_pass",
+    "plan_version": "0.1.0",
+    "recipe_id": "high_bypass_completed_pass_v1",
+    "recipe_version": "0.1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate",
+    "classification_mode": "partial_declared",
+    "nodes": [
+      {
+        "kind": "primitive",
+        "node_id": "controlled_pass",
+        "catalog_ref": "controlled_pass_episode",
+        "version": "0.1.0"
+      },
+      {
+        "kind": "relation",
+        "node_id": "opponent_bypass",
+        "catalog_ref": "opponents_bypassed_by_action",
+        "version": "0.1.0",
+        "inputs": {
+          "controlled_pass_episodes": {
+            "source_node_id": "controlled_pass",
+            "output_name": "episodes"
+          },
+          "controlled_pass_anchors": {
+            "source_node_id": "controlled_pass",
+            "output_name": "anchors"
+          }
+        },
+        "parameters": {
+          "goal_side_buffer_m": {
+            "kind": "parameter",
+            "name": "goal_side_buffer_m"
+          },
+          "bypassed_buffer_m": {
+            "kind": "parameter",
+            "name": "bypassed_buffer_m"
+          }
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "forward_progression_at_least_minimum",
+        "input": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "forward_progression_m"
+        },
+        "operator": {
+          "name": "gte",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "kind": "parameter",
+          "name": "minimum_forward_progression_m"
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "opponents_bypassed_at_least_minimum",
+        "input": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "opponents_bypassed_count"
+        },
+        "operator": {
+          "name": "gte",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "kind": "parameter",
+          "name": "minimum_bypassed_opponents"
+        }
+      }
+    ],
+    "classification_rules": [
+      {
+        "label": "HIGH_BYPASS_COMPLETED_PASS",
+        "predicate_ids": [
+          "forward_progression_at_least_minimum",
+          "opponents_bypassed_at_least_minimum"
+        ],
+        "description": "A completed controlled pass progressed the ball and bypassed at least the declared number of opposition outfield players."
+      }
+    ],
+    "anchor_source": {
+      "source_node_id": "opponent_bypass",
+      "output_name": "anchor_evaluations"
+    },
+    "requested_evidence": [
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "pass_episode_id",
+        "alias": "pass_episode_id"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "passer_id",
+        "alias": "passer_id"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "receiver_id",
+        "alias": "receiver_id"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "release_frame_id",
+        "alias": "release_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "reception_frame_id",
+        "alias": "reception_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "release_match_time_ms",
+        "alias": "release_match_time_ms"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "reception_match_time_ms",
+        "alias": "reception_match_time_ms"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "release_ball_point",
+        "alias": "release_ball_point"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "reception_ball_point",
+        "alias": "reception_ball_point"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "release_passer_point",
+        "alias": "release_passer_point"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "reception_receiver_point",
+        "alias": "reception_receiver_point"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "forward_progression_m",
+        "alias": "forward_progression_m"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "opponents_bypassed_count",
+        "alias": "opponents_bypassed_count"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "bypassed_player_ids",
+        "alias": "bypassed_player_ids"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "candidate_goal_side_player_ids",
+        "alias": "candidate_goal_side_player_ids"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "expected_active_opposition_outfield_ids",
+        "alias": "expected_active_opposition_outfield_ids"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "evaluated_opponent_ids",
+        "alias": "evaluated_opponent_ids"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "missing_active_opponent_ids",
+        "alias": "missing_active_opponent_ids"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "goal_side_buffer_m",
+        "alias": "goal_side_buffer_m"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "bypassed_buffer_m",
+        "alias": "bypassed_buffer_m"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "evaluation_status",
+        "alias": "bypass_evaluation_status"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "coverage_status",
+        "alias": "coverage_status"
+      },
+      {
+        "source": {
+          "source_node_id": "opponent_bypass",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "unknown_reason",
+        "alias": "unknown_reason",
+        "required": false
+      }
+    ],
+    "complexity_limits": {
+      "max_plan_nodes": 12,
+      "max_nesting_depth": 6,
+      "max_temporal_horizon_seconds": 15.0,
+      "max_returned_moments": 100,
+      "max_relations_per_anchor": 20,
+      "max_execution_cost": 100000
+    }
+  }
+}

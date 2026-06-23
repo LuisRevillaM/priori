@@ -1,9 +1,8 @@
 """Controlled completed-pass runtime capability for M2A.
 
-This module implements the first S1 slice unlocked by the M2A-S0C contract:
-derive controlled pass episodes from canonical event and tracking data for the
-accepted J03WOY scope. It deliberately does not emit high-bypass results and
-does not expose Hermes-facing catalog entries.
+This module implements the controlled-pass capability used by the M2A
+football standard-library expansion. Event data identifies candidate completed
+passes; tracking data proves the physical release and controlled reception.
 """
 
 from __future__ import annotations
@@ -20,8 +19,11 @@ import pandas as pd
 
 BALL_ENTITY_ID = "DFL-OBJ-0000XT"
 DEFAULT_CANONICAL_ROOT = Path("data/canonical/v1")
+DEFAULT_PERIODS = ("firstHalf", "secondHalf")
+# Backward-compatible alias for older S1 proof code. The capability itself no
+# longer enforces this as an acceptance boundary.
 ACCEPTED_MATCH_IDS = ("J03WOY",)
-ACCEPTED_PERIODS = ("firstHalf", "secondHalf")
+ACCEPTED_PERIODS = DEFAULT_PERIODS
 
 
 @dataclass(frozen=True)
@@ -87,20 +89,14 @@ class ControlledPassOutput:
 def evaluate_controlled_passes(
     *,
     canonical_root: Path = DEFAULT_CANONICAL_ROOT,
-    match_ids: tuple[str, ...] | list[str] = ACCEPTED_MATCH_IDS,
-    periods: tuple[str, ...] | list[str] = ACCEPTED_PERIODS,
+    match_ids: tuple[str, ...] | list[str] | None = None,
+    periods: tuple[str, ...] | list[str] = DEFAULT_PERIODS,
     config: ControlledPassConfig = ControlledPassConfig(),
 ) -> ControlledPassOutput:
-    """Evaluate controlled pass episodes for accepted M2A S1 scope."""
+    """Evaluate controlled pass episodes for the supplied match scope."""
 
-    requested_match_ids = tuple(str(item) for item in match_ids)
+    requested_match_ids = tuple(str(item) for item in (match_ids or canonical_match_ids(canonical_root)))
     requested_periods = tuple(str(item) for item in periods)
-    unsupported = sorted(set(requested_match_ids) - set(ACCEPTED_MATCH_IDS))
-    if unsupported:
-        raise RuntimeError(
-            "M2A controlled_pass_episode S1A is accepted only for "
-            f"{ACCEPTED_MATCH_IDS}; unsupported={unsupported}"
-        )
     orientation = read_table(canonical_root / "orientation.parquet")
     episodes: list[dict[str, Any]] = []
     anchor_evaluations: list[dict[str, Any]] = []
@@ -152,9 +148,9 @@ def evaluate_controlled_passes(
         capability_version="0.1.0",
         status="pass",
         accepted_scope={
-            "match_ids": list(ACCEPTED_MATCH_IDS),
-            "periods": list(ACCEPTED_PERIODS),
-            "all_corpus_execution": "blocked_until_reduced_player_and_tracking_gap_policy_is_extended",
+            "match_ids": list(requested_match_ids),
+            "periods": list(requested_periods),
+            "scope_policy": "caller_supplied_match_scope",
         },
         config=asdict(config),
         summary={
@@ -664,6 +660,14 @@ def safe_json(value: Any) -> dict[str, Any]:
 
 def read_table(path: Path) -> pd.DataFrame:
     return pd.read_parquet(path)
+
+
+def canonical_match_ids(canonical_root: Path) -> tuple[str, ...]:
+    matches_path = canonical_root / "matches.parquet"
+    if not matches_path.exists():
+        return ACCEPTED_MATCH_IDS
+    matches = pd.read_parquet(matches_path, columns=["match_id"])
+    return tuple(str(item) for item in matches["match_id"].dropna().tolist())
 
 
 def euclidean(a: tuple[float, float], b: tuple[float, float]) -> float:

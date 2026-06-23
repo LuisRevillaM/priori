@@ -60,13 +60,15 @@ class M2APassBypassRuntimeTest(unittest.TestCase):
         self.assertNotIn("classification", serialized.lower())
         self.assertNotIn("gte_5", serialized.lower())
 
-    def test_scope_is_fail_closed_to_accepted_match(self) -> None:
-        with self.assertRaisesRegex(RuntimeError, "accepted only"):
-            evaluate_pass_bypass_measurements(
-                canonical_root=Path("data/canonical/v1"),
-                match_ids=("J03WN1",),
-                periods=("firstHalf",),
-            )
+    def test_scope_can_use_another_canonical_match(self) -> None:
+        output = evaluate_pass_bypass_measurements(
+            canonical_root=Path("data/canonical/v1"),
+            match_ids=("J03WPY",),
+            periods=("firstHalf",),
+        )
+
+        self.assertEqual(["J03WPY"], output.accepted_scope["match_ids"])
+        self.assertGreater(output.summary["controlled_anchor_evaluation_count"], 0)
 
     def test_scope_is_fail_closed_to_accepted_period(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "accepted only"):
@@ -105,7 +107,8 @@ class M2APassBypassRuntimeTest(unittest.TestCase):
             ],
             non_match_examples=[],
         )
-        with self.assertRaisesRegex(RuntimeError, "outside M2A-S1B accepted scope"):
+        injected.anchor_evaluations[0]["period"] = "thirdHalf"
+        with self.assertRaisesRegex(RuntimeError, "outside M2A-S1B period scope"):
             evaluate_pass_bypass_measurements(
                 canonical_root=Path("data/canonical/v1"),
                 controlled_passes=injected,

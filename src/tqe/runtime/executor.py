@@ -23,6 +23,7 @@ from lxml import etree
 
 from tqe.idsse.source_lock import SOURCE_VERSION
 from tqe.runtime.binder import HOST_RUNTIME_PARAMETER_DEFAULTS, bind_document_from_path
+from tqe.runtime.controlled_pass import ControlledPassConfig, ControlledPassOutput, evaluate_controlled_passes
 from tqe.runtime.ir import (
     BoundCatalogNode,
     BoundPredicateNode,
@@ -42,6 +43,7 @@ from tqe.runtime.ir import (
     UnknownEvidencePolicy,
     stable_hash,
 )
+from tqe.runtime.pass_bypass import PassBypassConfig, PassBypassOutput, evaluate_pass_bypass_measurements
 from tqe.runtime.values import FrameSignal, RuntimeValue, canonical_anchor_record_id, runtime_value_from_raw
 from tqe.runtime.relations import (
     CorridorConfig,
@@ -187,6 +189,7 @@ class TacticalQueryExecutor:
         self.compatibility_profile = compatibility_profile
         self.primitives: dict[str, PrimitiveImplementation] = {
             "possession_segment": primitive_possession_segment,
+            "controlled_pass_episode": primitive_controlled_pass_episode,
             "ball_lateral_fraction": primitive_ball_lateral_fraction,
             "defensive_outfield_centroid": primitive_defensive_outfield_centroid,
             "signed_lateral_shift": primitive_signed_lateral_shift,
@@ -201,6 +204,7 @@ class TacticalQueryExecutor:
         self.relations: dict[str, RelationImplementation] = {
             "geometric_progressive_corridor": relation_geometric_progressive_corridor,
             "geometric_progressive_corridor_from_anchor_set": relation_geometric_progressive_corridor,
+            "opponents_bypassed_by_action": relation_opponents_bypassed_by_action,
         }
         self.predicates: dict[str, PredicateImplementation] = {
             "gt": predicate_gt,
@@ -1988,6 +1992,130 @@ def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) -> 
     state.signals[node.node_id] = {"episodes": segments, "anchors": segments}
 
 
+def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode) -> None:
+    config = ControlledPassConfig(
+        release_search_before_seconds=node_parameter_number(node, "release_search_before_seconds", 1.0),
+        release_search_after_seconds=node_parameter_number(node, "release_search_after_seconds", 3.0),
+        reception_search_seconds=node_parameter_number(node, "reception_search_seconds", 6.0),
+        control_distance_m=node_parameter_number(node, "control_distance_m", 2.5),
+        nearest_teammate_margin_m=node_parameter_number(node, "nearest_teammate_margin_m", 1.0),
+        minimum_receiver_dwell_seconds=node_parameter_number(node, "minimum_receiver_dwell_seconds", 0.24),
+    )
+    output = evaluate_controlled_passes(
+        canonical_root=state.canonical_root,
+        match_ids=(state.match_id,),
+        periods=(state.period,),
+        config=config,
+    )
+    anchors = [
+        record
+        for record in (
+            controlled_pass_anchor_record(state, evaluation)
+            for evaluation in output.anchor_evaluations
+        )
+        if record is not None
+    ]
+    anchor_by_pass_id = {str(record["pass_episode_id"]): record for record in anchors}
+    episodes = [
+        controlled_pass_episode_record(state, episode, anchor_by_pass_id.get(str(episode["pass_episode_id"])))
+        for episode in output.episodes
+        if anchor_by_pass_id.get(str(episode["pass_episode_id"])) is not None
+    ]
+    frame_ids = [int(record["anchor_frame_id"]) for record in anchors]
+    state.signals[node.node_id] = {
+        "episodes": episodes,
+        "episodes_records": episodes,
+        "anchors": anchors,
+        "anchors_records": anchors,
+        "controlled_pass_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if str(record["controlled_pass_status"]) == "UNKNOWN" else str(record["controlled_pass_status"])
+                for record in anchors
+            ],
+            unknown_mask=[str(record["controlled_pass_status"]) == "UNKNOWN" for record in anchors],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "controlled_pass_status").entity_scope,
+        ),
+        "controlled_pass_status_records": anchors,
+        "forward_progression_m": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record.get("forward_progression_m") for record in anchors],
+            unknown_mask=[record.get("forward_progression_m") is None for record in anchors],
+            unit=Unit.METRE,
+            entity_scope=catalog_output(node, "forward_progression_m").entity_scope,
+        ),
+        "forward_progression_m_records": anchors,
+    }
+
+
+def controlled_pass_anchor_record(state: PeriodState, evaluation: dict[str, Any]) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(evaluation.get("controlled_reception_frame_id")) or optional_int(
+        evaluation.get("physical_release_frame_id")
+    ) or optional_int(evaluation.get("event_anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    start_frame_id = optional_int(evaluation.get("physical_release_frame_id")) or anchor_frame_id
+    end_frame_id = optional_int(evaluation.get("controlled_reception_frame_id")) or anchor_frame_id
+    entity_refs = [str(evaluation.get("passer_id")), str(evaluation.get("receiver_id"))]
+    anchor_id = anchor_record_id(
+        match_id=state.match_id,
+        period=state.period,
+        anchor_frame_id=anchor_frame_id,
+        start_frame_id=start_frame_id,
+        end_frame_id=end_frame_id,
+        entity_refs=entity_refs,
+    )
+    return {
+        **evaluation,
+        "source_controlled_pass_anchor_id": str(evaluation.get("anchor_id")),
+        "anchor_id": anchor_id,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": start_frame_id,
+        "end_frame_id": end_frame_id,
+        "entity_refs": entity_refs,
+    }
+
+
+def controlled_pass_episode_record(
+    state: PeriodState,
+    episode: dict[str, Any],
+    anchor: dict[str, Any] | None,
+) -> dict[str, Any]:
+    release_frame_id = optional_int(episode.get("physical_release_frame_id")) or optional_int(episode.get("event_anchor_frame_id"))
+    reception_frame_id = optional_int(episode.get("controlled_reception_frame_id")) or release_frame_id
+    release_ball = point_from_xy(episode.get("release_ball_x_m"), episode.get("release_ball_y_m"))
+    reception_ball = point_from_xy(episode.get("reception_ball_x_m"), episode.get("reception_ball_y_m"))
+    release_passer = point_from_xy(episode.get("passer_x_m"), episode.get("passer_y_m"))
+    reception_receiver = point_from_xy(episode.get("receiver_x_m"), episode.get("receiver_y_m"))
+    return {
+        **episode,
+        "source_controlled_pass_anchor_id": str(episode.get("anchor_id")),
+        "anchor_id": str(anchor["anchor_id"]) if anchor is not None else str(episode.get("anchor_id")),
+        "anchor_frame_id": int(anchor["anchor_frame_id"]) if anchor is not None else int(reception_frame_id or 0),
+        "start_frame_id": int(anchor["start_frame_id"]) if anchor is not None else int(release_frame_id or 0),
+        "end_frame_id": int(anchor["end_frame_id"]) if anchor is not None else int(reception_frame_id or release_frame_id or 0),
+        "entity_refs": list(anchor.get("entity_refs", [])) if anchor is not None else [str(episode.get("passer_id")), str(episode.get("receiver_id"))],
+        "release_frame_id": release_frame_id,
+        "reception_frame_id": reception_frame_id,
+        "release_match_time_ms": frame_match_time_ms(state, release_frame_id),
+        "reception_match_time_ms": frame_match_time_ms(state, reception_frame_id),
+        "release_ball_point": release_ball,
+        "reception_ball_point": reception_ball,
+        "release_passer_point": release_passer,
+        "reception_receiver_point": reception_receiver,
+    }
+
+
+def catalog_output(node: BoundCatalogNode, name: str) -> Any:
+    for output in node.outputs:
+        if output.name == name:
+            return output
+    raise RuntimeError(f"{node.node_id} did not declare output {name}")
+
+
 def primitive_ball_lateral_fraction(state: PeriodState, node: BoundCatalogNode) -> None:
     state.signals[node.node_id] = {
         "fraction": np.abs(state.ball_y) / PITCH_HALF_WIDTH_M,
@@ -2277,6 +2405,154 @@ def relation_anchor_has_required_fields(anchor: dict[str, Any]) -> bool:
     }
     has_identity = "result_id" in anchor or "anchor_id" in anchor
     return has_identity and required_fields.issubset(anchor)
+
+
+def relation_opponents_bypassed_by_action(state: PeriodState, node: BoundCatalogNode) -> None:
+    episodes_value = catalog_input_value(state, node, "controlled_pass_episodes")
+    anchors_value = catalog_input_value(state, node, "controlled_pass_anchors")
+    episodes = episodes_value.value
+    anchors = anchors_value.value
+    if not isinstance(episodes, list) or not isinstance(anchors, list):
+        raise RuntimeError(f"{node.node_id} requires controlled pass episode and anchor records")
+    controlled = ControlledPassOutput(
+        schema_version="m2a.controlled_pass_episode.v1",
+        capability="controlled_pass_episode",
+        capability_version="0.1.0",
+        status="pass",
+        accepted_scope={
+            "match_ids": [state.match_id],
+            "periods": [state.period],
+            "scope_policy": "executor_period_scope",
+        },
+        config={},
+        summary={},
+        episodes=[dict(item) for item in episodes if isinstance(item, dict)],
+        anchor_evaluations=[dict(item) for item in anchors if isinstance(item, dict)],
+        non_match_examples=[],
+    )
+    output = evaluate_pass_bypass_measurements(
+        canonical_root=state.canonical_root,
+        controlled_passes=controlled,
+        match_ids=(state.match_id,),
+        periods=(state.period,),
+        config=PassBypassConfig(
+            goal_side_buffer_m=node_parameter_number(node, "goal_side_buffer_m", 1.0),
+            bypassed_buffer_m=node_parameter_number(node, "bypassed_buffer_m", 1.0),
+        ),
+    )
+    episodes_by_id = {str(item.get("pass_episode_id")): item for item in episodes if isinstance(item, dict)}
+    evaluations = [
+        pass_bypass_anchor_record(state, evaluation, episodes_by_id.get(str(evaluation.get("pass_episode_id"))))
+        for evaluation in output.anchor_evaluations
+    ]
+    evaluations = [record for record in evaluations if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in evaluations]
+    count_values = [
+        int(record["opponents_bypassed_count"]) if record.get("evaluation_status") == "PASS" else None
+        for record in evaluations
+    ]
+    progression_values = [
+        float(record["forward_progression_m"])
+        if record.get("evaluation_status") == "PASS" and record.get("forward_progression_m") is not None
+        else None
+        for record in evaluations
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": evaluations,
+        "anchor_evaluations_records": evaluations,
+        "opponents_bypassed_count": FrameSignal(
+            frame_ids=frame_ids,
+            values=count_values,
+            unknown_mask=[value is None for value in count_values],
+            unit=Unit.COUNT,
+            entity_scope=catalog_output(node, "opponents_bypassed_count").entity_scope,
+        ),
+        "opponents_bypassed_count_records": evaluations,
+        "forward_progression_m": FrameSignal(
+            frame_ids=frame_ids,
+            values=progression_values,
+            unknown_mask=[value is None for value in progression_values],
+            unit=Unit.METRE,
+            entity_scope=catalog_output(node, "forward_progression_m").entity_scope,
+        ),
+        "forward_progression_m_records": evaluations,
+        "evaluation_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if str(record.get("evaluation_status") or "UNKNOWN") == "UNKNOWN" else str(record.get("evaluation_status"))
+                for record in evaluations
+            ],
+            unknown_mask=[str(record.get("evaluation_status") or "UNKNOWN") == "UNKNOWN" for record in evaluations],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "evaluation_status").entity_scope,
+        ),
+        "evaluation_status_records": evaluations,
+    }
+
+
+def pass_bypass_anchor_record(
+    state: PeriodState,
+    evaluation: dict[str, Any],
+    episode: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(evaluation.get("controlled_reception_frame_id")) or optional_int(
+        evaluation.get("reception_frame_id")
+    ) or optional_int(evaluation.get("physical_release_frame_id")) or optional_int(evaluation.get("event_anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    release_frame_id = optional_int(evaluation.get("release_frame_id")) or optional_int(evaluation.get("physical_release_frame_id"))
+    reception_frame_id = optional_int(evaluation.get("reception_frame_id")) or optional_int(
+        evaluation.get("controlled_reception_frame_id")
+    )
+    start_frame_id = release_frame_id or anchor_frame_id
+    end_frame_id = reception_frame_id or anchor_frame_id
+    entity_refs = [str(evaluation.get("passer_id")), str(evaluation.get("receiver_id"))]
+    anchor_id = anchor_record_id(
+        match_id=state.match_id,
+        period=state.period,
+        anchor_frame_id=anchor_frame_id,
+        start_frame_id=start_frame_id,
+        end_frame_id=end_frame_id,
+        entity_refs=entity_refs,
+    )
+    status = str(evaluation.get("evaluation_status") or "UNKNOWN")
+    return {
+        **evaluation,
+        "source_controlled_pass_anchor_id": str(evaluation.get("anchor_id")),
+        "anchor_id": anchor_id,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": start_frame_id,
+        "end_frame_id": end_frame_id,
+        "entity_refs": entity_refs,
+        "relation_count": 1 if status == "PASS" else 0,
+        "witness_relation_id": str(evaluation.get("relation_id")) if evaluation.get("relation_id") else None,
+        "release_frame_id": release_frame_id,
+        "reception_frame_id": reception_frame_id,
+        "release_match_time_ms": frame_match_time_ms(state, release_frame_id),
+        "reception_match_time_ms": frame_match_time_ms(state, reception_frame_id),
+        "controlled_pass_status": "PASS" if episode is not None else "UNKNOWN",
+        "release_control_status": None if episode is None else episode.get("release_control_status"),
+        "controlled_reception_status": None if episode is None else episode.get("controlled_reception_status"),
+        "possession_continuity_status": None if episode is None else episode.get("possession_continuity_status"),
+        "release_ball_point": point_from_xy(evaluation.get("release_ball_x_m"), evaluation.get("release_ball_y_m")),
+        "reception_ball_point": point_from_xy(evaluation.get("reception_ball_x_m"), evaluation.get("reception_ball_y_m")),
+        "release_passer_point": point_from_xy(
+            None if episode is None else episode.get("passer_x_m"),
+            None if episode is None else episode.get("passer_y_m"),
+        ),
+        "reception_receiver_point": point_from_xy(
+            None if episode is None else episode.get("receiver_x_m"),
+            None if episode is None else episode.get("receiver_y_m"),
+        ),
+        "bypassed_player_ids": list(evaluation.get("bypassed_player_ids") or []),
+        "candidate_goal_side_player_ids": list(evaluation.get("candidate_goal_side_ids") or []),
+        "expected_active_opposition_outfield_ids": list(evaluation.get("expected_active_opponent_ids") or []),
+        "evaluated_opponent_ids": list(evaluation.get("evaluated_opponent_ids") or []),
+        "missing_active_opponent_ids": list(evaluation.get("missing_active_opponent_ids") or []),
+        "unknown_reason": evaluation.get("failure_reason"),
+    }
 
 
 def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatalogNode) -> None:
@@ -3203,6 +3479,22 @@ def optional_int(value: Any) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def point_from_xy(x_value: Any, y_value: Any) -> dict[str, float] | None:
+    try:
+        if x_value is None or y_value is None or pd.isna(x_value) or pd.isna(y_value):
+            return None
+        return {"x_m": float(x_value), "y_m": float(y_value)}
+    except (TypeError, ValueError):
+        return None
+
+
+def frame_match_time_ms(state: PeriodState, frame_id: int | None) -> int | None:
+    if frame_id is None or len(state.frame_ids) == 0:
+        return None
+    first_frame_id = int(state.frame_ids[0])
+    return int(round((int(frame_id) - first_frame_id) / FRAME_RATE_HZ * 1000))
 
 
 def select_proof_results(candidates: list[dict[str, Any]], params: RuntimeParameters) -> list[dict[str, Any]]:

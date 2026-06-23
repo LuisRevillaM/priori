@@ -23,6 +23,8 @@ export function tacticalHeadline(classification: string) {
       return "Forward corridor available";
     case "NO_PROGRESSIVE_CORRIDOR":
       return "No forward corridor";
+    case "HIGH_BYPASS_COMPLETED_PASS":
+      return "Completed pass bypassed multiple opponents";
     default:
       return humanizeClassification(classification);
   }
@@ -104,13 +106,19 @@ export function principalMeasurement(
   evidence: Record<string, unknown> | null | undefined
 ): { key: string; label: string; raw: string } | null {
   if (!evidence) return null;
-  // 1) signed shift (block-shift family)
+  // 1) opponents bypassed (completed-pass family)
+  const bypassKey = findEvidenceKey(evidence, ["opponents_bypassed_count", "bypassed_opponents_count"]);
+  if (bypassKey) {
+    const text = numericText(evidence[bypassKey]);
+    if (text !== null) return { key: bypassKey, label: `Bypassed ${text} opponents`, raw: String(evidence[bypassKey]) };
+  }
+  // 2) signed shift (block-shift family)
   const shiftKey = findEvidenceKey(evidence, ["signed_shift_metres", "block_shift_metres", "signed_lateral_shift_m"]);
   if (shiftKey) {
     const text = numericText(evidence[shiftKey]);
     if (text !== null) return { key: shiftKey, label: `Shift ${text} m`, raw: String(evidence[shiftKey]) };
   }
-  // 2) entry mode via the combined mapper — checked BEFORE raw time-to-entry so PRESENT_AT_OPEN
+  // 3) entry mode via the combined mapper — checked BEFORE raw time-to-entry so PRESENT_AT_OPEN
   //    (time_to_entry == 0.0) never renders as "Entry in 0 s".
   const modeKey = findEvidenceKey(evidence, ["destination_entry_mode", "entry_mode"]);
   if (modeKey) {
@@ -118,8 +126,9 @@ export function principalMeasurement(
     const info = entryModePresentation(evidence[modeKey], timeKey ? evidence[timeKey] : undefined);
     if (info) return { key: modeKey, label: info.label, raw: String(evidence[modeKey]) };
   }
-  // 3) remaining numeric measurements
+  // 4) remaining numeric measurements
   const numericGroups: Array<{ names: string[]; fmt: (n: string) => string }> = [
+    { names: ["forward_progression_m", "pass_forward_progression_m"], fmt: (n) => `Progression ${n} m` },
     { names: ["destination_time_to_entry_seconds", "time_to_entry_seconds"], fmt: (n) => `Entry in ${n} s` },
     { names: ["minimum_clearance_m", "corridor_minimum_clearance_m", "clearance_m"], fmt: (n) => `Clearance ${n} m` },
     { names: ["relation_duration_seconds", "corridor_duration_seconds", "duration_seconds"], fmt: (n) => `Held ${n} s` }
@@ -137,7 +146,9 @@ const PREDICATE_SUBJECTS: Record<string, string> = {
   has_progressive_corridor: "Progressive corridor exists",
   destination_region_entered: "Ball entered the destination region",
   ball_side_block_shift: "Ball-side block shift cleared the threshold",
-  wide_possession: "Wide possession"
+  wide_possession: "Wide possession",
+  forward_progression_at_least_minimum: "Completed pass progressed far enough",
+  opponents_bypassed_at_least_minimum: "Completed pass bypassed enough opponents"
 };
 
 // Readable subject for a predicate id (product language); falls back to a humanized id.

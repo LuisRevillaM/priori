@@ -47,9 +47,11 @@
     "plan_nodes": {
       "authorable_catalog_refs": [
         "ball_lateral_fraction",
+        "controlled_pass_episode",
         "defensive_outfield_centroid",
         "geometric_progressive_corridor",
         "geometric_progressive_corridor_from_anchor_set",
+        "opponents_bypassed_by_action",
         "possession_segment",
         "relation_destination_entry",
         "signed_lateral_shift"
@@ -90,6 +92,286 @@
             "fraction"
           ],
           "valid_parameter_names": [],
+          "version": "0.1.0"
+        },
+        "controlled_pass_episode": {
+          "kind": "primitive",
+          "limitations": [
+            "Uses event data for candidate passes and tracking data for release/reception proof.",
+            "Does not infer tactical intention, pass optimality, or decision quality."
+          ],
+          "node_schema": {
+            "catalog_ref": "controlled_pass_episode",
+            "inputs": {},
+            "kind": "primitive",
+            "node_id": "<agent_chosen_lower_snake_id>",
+            "parameters": {
+              "control_distance_m": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 2.5
+                  },
+                  "description": "Maximum ball-player distance for control evidence.",
+                  "maximum": 8.0,
+                  "minimum": 0.1,
+                  "name": "control_distance_m",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "metre"
+                }
+              },
+              "minimum_receiver_dwell_seconds": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 0.24
+                  },
+                  "description": "Minimum receiver-control dwell for controlled reception.",
+                  "maximum": 2.0,
+                  "minimum": 0.04,
+                  "name": "minimum_receiver_dwell_seconds",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "second"
+                }
+              },
+              "nearest_teammate_margin_m": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 1.0
+                  },
+                  "description": "Margin allowing the intended player to count as controlling near teammates.",
+                  "maximum": 5.0,
+                  "minimum": 0.0,
+                  "name": "nearest_teammate_margin_m",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "metre"
+                }
+              },
+              "reception_search_seconds": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 6.0
+                  },
+                  "description": "Maximum release-to-controlled-reception search window.",
+                  "maximum": 15.0,
+                  "minimum": 0.2,
+                  "name": "reception_search_seconds",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "second"
+                }
+              },
+              "release_search_after_seconds": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 3.0
+                  },
+                  "description": "Search window after the event anchor for ball departure.",
+                  "maximum": 8.0,
+                  "minimum": 0.0,
+                  "name": "release_search_after_seconds",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "second"
+                }
+              },
+              "release_search_before_seconds": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "second",
+                    "value": 1.0
+                  },
+                  "description": "Search window before the event anchor for passer control.",
+                  "maximum": 5.0,
+                  "minimum": 0.0,
+                  "name": "release_search_before_seconds",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "second"
+                }
+              }
+            },
+            "version": "0.1.0"
+          },
+          "outputs": [
+            {
+              "allowed_values": null,
+              "cardinality": "collection",
+              "entity_scope": "possession",
+              "evidence_fields": [
+                "pass_episode_id",
+                "passer_id",
+                "receiver_id",
+                "event_anchor_frame_id",
+                "physical_release_frame_id",
+                "controlled_reception_frame_id",
+                "release_match_time_ms",
+                "reception_match_time_ms",
+                "controlled_pass_status",
+                "release_control_status",
+                "controlled_reception_status",
+                "possession_continuity_status",
+                "release_ball_point",
+                "reception_ball_point",
+                "release_passer_point",
+                "reception_receiver_point",
+                "forward_progression_m",
+                "controlled_pass_status"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "episodes",
+              "payload_type": "boolean",
+              "temporal_type": "episode_set",
+              "unit": "none"
+            },
+            {
+              "allowed_values": null,
+              "cardinality": "collection",
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "anchor_id",
+                "anchor_frame_id",
+                "start_frame_id",
+                "end_frame_id",
+                "pass_episode_id",
+                "passer_id",
+                "receiver_id",
+                "controlled_pass_status",
+                "forward_progression_m"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "anchors",
+              "payload_type": "anchor_ref",
+              "temporal_type": "episode_set",
+              "unit": "none"
+            },
+            {
+              "allowed_values": [
+                "PASS",
+                "FAIL",
+                "UNKNOWN"
+              ],
+              "cardinality": "single",
+              "entity_scope": "possession",
+              "evidence_fields": [
+                "controlled_pass_status",
+                "release_detection_status",
+                "controlled_reception_status"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "controlled_pass_status",
+              "payload_type": "enum",
+              "temporal_type": "frame_signal",
+              "unit": "none"
+            },
+            {
+              "allowed_values": null,
+              "cardinality": "single",
+              "entity_scope": "possession",
+              "evidence_fields": [
+                "forward_progression_m"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "forward_progression_m",
+              "payload_type": "number",
+              "temporal_type": "frame_signal",
+              "unit": "metre"
+            }
+          ],
+          "registered_catalog_ref": "controlled_pass_episode",
+          "required_inputs": [],
+          "valid_output_names": [
+            "episodes",
+            "anchors",
+            "controlled_pass_status",
+            "forward_progression_m"
+          ],
+          "valid_parameter_names": [
+            "release_search_before_seconds",
+            "release_search_after_seconds",
+            "reception_search_seconds",
+            "control_distance_m",
+            "nearest_teammate_margin_m",
+            "minimum_receiver_dwell_seconds"
+          ],
           "version": "0.1.0"
         },
         "defensive_outfield_centroid": {
@@ -729,6 +1011,205 @@
             "close_after_frames",
             "minimum_duration_seconds",
             "side_filter"
+          ],
+          "version": "0.1.0"
+        },
+        "opponents_bypassed_by_action": {
+          "kind": "relation",
+          "limitations": [
+            "Counts relative ball-position change between release and controlled reception.",
+            "Does not prove the pass alone caused every opponent to be bypassed.",
+            "Goalkeepers are excluded from the opponent denominator."
+          ],
+          "node_schema": {
+            "catalog_ref": "opponents_bypassed_by_action",
+            "inputs": {
+              "controlled_pass_anchors": {
+                "output_name": "<registered_output_name>",
+                "source_node_id": "<source_node_id>"
+              },
+              "controlled_pass_episodes": {
+                "output_name": "<registered_output_name>",
+                "source_node_id": "<source_node_id>"
+              }
+            },
+            "kind": "relation",
+            "node_id": "<agent_chosen_lower_snake_id>",
+            "parameters": {
+              "bypassed_buffer_m": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 1.0
+                  },
+                  "description": "Reception-frame buffer for deciding whether an opponent is behind the ball.",
+                  "maximum": 5.0,
+                  "minimum": 0.0,
+                  "name": "bypassed_buffer_m",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "metre"
+                }
+              },
+              "goal_side_buffer_m": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 1.0
+                  },
+                  "description": "Release-frame buffer for deciding whether an opponent is goal-side of the ball.",
+                  "maximum": 5.0,
+                  "minimum": 0.0,
+                  "name": "goal_side_buffer_m",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "metre"
+                }
+              }
+            },
+            "version": "0.1.0"
+          },
+          "outputs": [
+            {
+              "allowed_values": null,
+              "cardinality": "collection",
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "anchor_id",
+                "anchor_frame_id",
+                "start_frame_id",
+                "end_frame_id",
+                "pass_episode_id",
+                "passer_id",
+                "receiver_id",
+                "release_frame_id",
+                "reception_frame_id",
+                "release_match_time_ms",
+                "reception_match_time_ms",
+                "release_ball_point",
+                "reception_ball_point",
+                "release_passer_point",
+                "reception_receiver_point",
+                "forward_progression_m",
+                "evaluation_status",
+                "coverage_status",
+                "opponents_bypassed_count",
+                "bypassed_player_ids",
+                "candidate_goal_side_player_ids",
+                "expected_active_opposition_outfield_ids",
+                "evaluated_opponent_ids",
+                "missing_active_opponent_ids",
+                "goal_side_buffer_m",
+                "bypassed_buffer_m",
+                "unknown_reason"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "anchor_evaluations",
+              "payload_type": "anchor_ref",
+              "temporal_type": "episode_set",
+              "unit": "none"
+            },
+            {
+              "allowed_values": null,
+              "cardinality": "single",
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "opponents_bypassed_count",
+                "bypassed_player_ids"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "opponents_bypassed_count",
+              "payload_type": "number",
+              "temporal_type": "frame_signal",
+              "unit": "count"
+            },
+            {
+              "allowed_values": null,
+              "cardinality": "single",
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "forward_progression_m"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "forward_progression_m",
+              "payload_type": "number",
+              "temporal_type": "frame_signal",
+              "unit": "metre"
+            },
+            {
+              "allowed_values": [
+                "PASS",
+                "FAIL",
+                "UNKNOWN"
+              ],
+              "cardinality": "single",
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "evaluation_status",
+                "coverage_status",
+                "unknown_reason"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "evaluation_status",
+              "payload_type": "enum",
+              "temporal_type": "frame_signal",
+              "unit": "none"
+            }
+          ],
+          "registered_catalog_ref": "opponents_bypassed_by_action",
+          "required_inputs": [
+            {
+              "cardinality": "collection",
+              "entity_scope": "possession",
+              "name": "controlled_pass_episodes",
+              "payload_type": "boolean",
+              "required": true,
+              "temporal_type": "episode_set",
+              "unit": "none"
+            },
+            {
+              "cardinality": "collection",
+              "entity_scope": "anchor",
+              "name": "controlled_pass_anchors",
+              "payload_type": "anchor_ref",
+              "required": true,
+              "temporal_type": "episode_set",
+              "unit": "none"
+            }
+          ],
+          "valid_output_names": [
+            "anchor_evaluations",
+            "opponents_bypassed_count",
+            "forward_progression_m",
+            "evaluation_status"
+          ],
+          "valid_parameter_names": [
+            "goal_side_buffer_m",
+            "bypassed_buffer_m"
           ],
           "version": "0.1.0"
         },
@@ -3536,9 +4017,13 @@
       "The ball either entered or did not enter the selected corridor destination region within the configured horizon.",
       "The ball entered a configured wide area.",
       "The defending outfield centroid shifted toward the ball side by the configured threshold.",
+      "The event data identified a completed pass candidate.",
+      "The measured action bypassed the declared number of opposition outfield players.",
       "The replay coordinates come from canonical 25 Hz source frames.",
+      "The replay coordinates come from canonical source frames.",
       "The subsequent outcome was SWITCHED, RETAINED_NO_SWITCH, LOST_BEFORE_SWITCH, or excluded STOPPAGE under the frozen predicates.",
-      "The team had an active-ball possession anchor."
+      "The team had an active-ball possession anchor.",
+      "Tracking data confirmed physical release and controlled reception."
     ],
     "disallowed_claims_from_recipes": [
       "A pass should have been played.",
@@ -3548,8 +4033,13 @@
       "The attack intentionally created the corridor.",
       "The corridor is optimal.",
       "The moment proves an optimal decision or missed opportunity.",
+      "The pass alone caused every opponent to be bypassed.",
+      "The pass probability was high.",
+      "The pass was optimal.",
+      "The passer intended to break a defensive line.",
       "The result is a pass probability, decision-quality, causation, player-intent, or missed-opportunity claim.",
-      "The result is backed by licensed match video."
+      "The result is backed by licensed match video.",
+      "The result proves which defensive line was broken."
     ],
     "global_allowed_claims": [
       "The system can report deterministic measurements present in returned traces and evidence.",
@@ -3714,6 +4204,24 @@
       "ball_side",
       "wide_entry_y_m"
     ],
+    "controlled_pass_episode": [
+      "controlled_pass_status",
+      "controlled_pass_status",
+      "controlled_reception_frame_id",
+      "controlled_reception_status",
+      "event_anchor_frame_id",
+      "forward_progression_m",
+      "pass_episode_id",
+      "passer_id",
+      "physical_release_frame_id",
+      "possession_continuity_status",
+      "receiver_id",
+      "reception_ball_point",
+      "reception_receiver_point",
+      "release_ball_point",
+      "release_control_status",
+      "release_passer_point"
+    ],
     "defensive_outfield_centroid": [
       "baseline_defensive_centroid_y_m",
       "defending_team_id"
@@ -3755,6 +4263,24 @@
       "target_close_point",
       "target_open_point",
       "target_player_id"
+    ],
+    "opponents_bypassed_by_action": [
+      "bypassed_player_ids",
+      "candidate_goal_side_player_ids",
+      "evaluated_opponent_ids",
+      "expected_active_opposition_outfield_ids",
+      "forward_progression_m",
+      "missing_active_opponent_ids",
+      "opponents_bypassed_count",
+      "pass_episode_id",
+      "passer_id",
+      "receiver_id",
+      "reception_ball_point",
+      "reception_frame_id",
+      "reception_receiver_point",
+      "release_ball_point",
+      "release_frame_id",
+      "release_passer_point"
     ],
     "outcome_classification": [
       "classification",
@@ -3802,7 +4328,7 @@
     ]
   },
   "generated_at": "reproducible_from_source_hashes",
-  "knowledge_pack_sha256": "2fc0ed6e97fd8e23d08b050e45e915ed327d38648cc1c15a56544291bb961115",
+  "knowledge_pack_sha256": "1b794ec044cc2925e5b691226a6863c8967704c4bd33bb72b9488ec114a7a074",
   "knowledge_pack_version": "m1.2-s2i-a.0",
   "model_visible_tool_schemas": {
     "compare_query_versions": {
@@ -6812,6 +7338,207 @@
       ],
       "parameters": [],
       "purpose": "Identify active-ball possession intervals for the perspective team.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "pass_episode_id",
+        "passer_id",
+        "receiver_id",
+        "event_anchor_frame_id",
+        "physical_release_frame_id",
+        "controlled_reception_frame_id",
+        "release_ball_point",
+        "reception_ball_point",
+        "release_passer_point",
+        "reception_receiver_point",
+        "controlled_pass_status",
+        "release_control_status",
+        "controlled_reception_status",
+        "possession_continuity_status",
+        "forward_progression_m",
+        "controlled_pass_status"
+      ],
+      "inputs": [],
+      "kind": "primitive",
+      "limitations": [
+        "Uses event data for candidate passes and tracking data for release/reception proof.",
+        "Does not infer tactical intention, pass optimality, or decision quality."
+      ],
+      "name": "controlled_pass_episode",
+      "outputs": [
+        {
+          "allowed_values": null,
+          "cardinality": "collection",
+          "entity_scope": "possession",
+          "evidence_fields": [
+            "pass_episode_id",
+            "passer_id",
+            "receiver_id",
+            "event_anchor_frame_id",
+            "physical_release_frame_id",
+            "controlled_reception_frame_id",
+            "release_match_time_ms",
+            "reception_match_time_ms",
+            "controlled_pass_status",
+            "release_control_status",
+            "controlled_reception_status",
+            "possession_continuity_status",
+            "release_ball_point",
+            "reception_ball_point",
+            "release_passer_point",
+            "reception_receiver_point",
+            "forward_progression_m",
+            "controlled_pass_status"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "episodes",
+          "payload_type": "boolean",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": null,
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "start_frame_id",
+            "end_frame_id",
+            "pass_episode_id",
+            "passer_id",
+            "receiver_id",
+            "controlled_pass_status",
+            "forward_progression_m"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "possession",
+          "evidence_fields": [
+            "controlled_pass_status",
+            "release_detection_status",
+            "controlled_reception_status"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "controlled_pass_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        },
+        {
+          "allowed_values": null,
+          "cardinality": "single",
+          "entity_scope": "possession",
+          "evidence_fields": [
+            "forward_progression_m"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "forward_progression_m",
+          "payload_type": "number",
+          "temporal_type": "frame_signal",
+          "unit": "metre"
+        }
+      ],
+      "parameters": [
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 1.0
+          },
+          "description": "Search window before the event anchor for passer control.",
+          "maximum": 5.0,
+          "minimum": 0.0,
+          "name": "release_search_before_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 3.0
+          },
+          "description": "Search window after the event anchor for ball departure.",
+          "maximum": 8.0,
+          "minimum": 0.0,
+          "name": "release_search_after_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 6.0
+          },
+          "description": "Maximum release-to-controlled-reception search window.",
+          "maximum": 15.0,
+          "minimum": 0.2,
+          "name": "reception_search_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 2.5
+          },
+          "description": "Maximum ball-player distance for control evidence.",
+          "maximum": 8.0,
+          "minimum": 0.1,
+          "name": "control_distance_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 1.0
+          },
+          "description": "Margin allowing the intended player to count as controlling near teammates.",
+          "maximum": 5.0,
+          "minimum": 0.0,
+          "name": "nearest_teammate_margin_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.24
+          },
+          "description": "Minimum receiver-control dwell for controlled reception.",
+          "maximum": 2.0,
+          "minimum": 0.04,
+          "name": "minimum_receiver_dwell_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        }
+      ],
+      "purpose": "Identify completed pass actions where event data supplies the candidate passer/receiver and tracking proves physical release plus controlled reception.",
       "version": "0.1.0"
     },
     {
@@ -10813,6 +11540,724 @@
       "source_path": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json",
       "source_sha256": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
       "state": "EXPERIMENTAL"
+    },
+    {
+      "allowed_claims": [
+        "The event data identified a completed pass candidate.",
+        "Tracking data confirmed physical release and controlled reception.",
+        "The measured action bypassed the declared number of opposition outfield players.",
+        "The replay coordinates come from canonical source frames."
+      ],
+      "authoring_contract": {
+        "authorable_nodes": [
+          {
+            "catalog_ref": "controlled_pass_episode",
+            "kind": "primitive",
+            "parameters": {},
+            "required_inputs": {},
+            "version": "0.1.0"
+          },
+          {
+            "catalog_ref": "opponents_bypassed_by_action",
+            "kind": "relation",
+            "parameters": {
+              "bypassed_buffer_m": {
+                "kind": "parameter",
+                "name": "bypassed_buffer_m"
+              },
+              "goal_side_buffer_m": {
+                "kind": "parameter",
+                "name": "goal_side_buffer_m"
+              }
+            },
+            "required_inputs": {
+              "controlled_pass_anchors": {
+                "output_name": "anchors",
+                "source_node_id": "controlled_pass"
+              },
+              "controlled_pass_episodes": {
+                "output_name": "episodes",
+                "source_node_id": "controlled_pass"
+              }
+            },
+            "version": "0.1.0"
+          }
+        ],
+        "classification_rules": [
+          {
+            "description": "A completed controlled pass progressed the ball and bypassed at least the declared number of opposition outfield players.",
+            "label": "HIGH_BYPASS_COMPLETED_PASS",
+            "predicate_ids": [
+              "forward_progression_at_least_minimum",
+              "opponents_bypassed_at_least_minimum"
+            ]
+          }
+        ],
+        "constraints": [
+          "The authored plan must keep status=experimental for Hermes.",
+          "Keep default_invocation.execution_mode=execute; host confirmation still controls whether execution may happen.",
+          "exists/count_at_least may only consume anchor_evaluations.",
+          "Use relation_destination_entry.entry_status with eq PASS for agent-authored destination-region entry checks.",
+          "Do not use trusted recipe wrappers such as relation_destination_entry_classification in agent-authored plans.",
+          "Do not request raw match dumps, primitive mutation, confirmation, or execution."
+        ],
+        "default_invocation_contract": {
+          "execution_mode": "execute",
+          "match_ids": [
+            "J03WOY",
+            "J03WPY",
+            "J03WQQ",
+            "J03WR9"
+          ],
+          "max_results_ceiling": 100,
+          "periods": [
+            "firstHalf",
+            "secondHalf"
+          ],
+          "perspective_team_role": "home",
+          "validation_contract": "validate_query_plan binds and checks the plan but never executes it."
+        },
+        "draft_plan_defaults": {
+          "anchor_source": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "opponent_bypass"
+          },
+          "classification_mode": "partial_declared",
+          "complexity_limits": {
+            "max_execution_cost": 100000,
+            "max_nesting_depth": 6,
+            "max_plan_nodes": 12,
+            "max_relations_per_anchor": 20,
+            "max_returned_moments": 100,
+            "max_temporal_horizon_seconds": 15.0
+          },
+          "recipe_id": "high_bypass_completed_pass_v1",
+          "recipe_version": "0.1.0",
+          "status": "experimental",
+          "unknown_evidence_policy": "exclude_candidate"
+        },
+        "plan_document_shape": [
+          "schema_version",
+          "recipe",
+          "default_invocation",
+          "draft_plan"
+        ],
+        "requested_evidence": [
+          {
+            "alias": "pass_episode_id",
+            "field": "pass_episode_id",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "passer_id",
+            "field": "passer_id",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "receiver_id",
+            "field": "receiver_id",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "release_frame_id",
+            "field": "release_frame_id",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "reception_frame_id",
+            "field": "reception_frame_id",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "release_match_time_ms",
+            "field": "release_match_time_ms",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "reception_match_time_ms",
+            "field": "reception_match_time_ms",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "release_ball_point",
+            "field": "release_ball_point",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "reception_ball_point",
+            "field": "reception_ball_point",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "release_passer_point",
+            "field": "release_passer_point",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "reception_receiver_point",
+            "field": "reception_receiver_point",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "forward_progression_m",
+            "field": "forward_progression_m",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "opponents_bypassed_count",
+            "field": "opponents_bypassed_count",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "bypassed_player_ids",
+            "field": "bypassed_player_ids",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "candidate_goal_side_player_ids",
+            "field": "candidate_goal_side_player_ids",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "expected_active_opposition_outfield_ids",
+            "field": "expected_active_opposition_outfield_ids",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "evaluated_opponent_ids",
+            "field": "evaluated_opponent_ids",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "missing_active_opponent_ids",
+            "field": "missing_active_opponent_ids",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "goal_side_buffer_m",
+            "field": "goal_side_buffer_m",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "bypassed_buffer_m",
+            "field": "bypassed_buffer_m",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "bypass_evaluation_status",
+            "field": "evaluation_status",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "coverage_status",
+            "field": "coverage_status",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "unknown_reason",
+            "field": "unknown_reason",
+            "required": false,
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          }
+        ],
+        "required_predicates": [
+          {
+            "compare": {
+              "kind": "parameter",
+              "name": "minimum_forward_progression_m"
+            },
+            "duration": null,
+            "input": {
+              "output_name": "forward_progression_m",
+              "source_node_id": "opponent_bypass"
+            },
+            "operator": {
+              "name": "gte",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "compare": {
+              "kind": "parameter",
+              "name": "minimum_bypassed_opponents"
+            },
+            "duration": null,
+            "input": {
+              "output_name": "opponents_bypassed_count",
+              "source_node_id": "opponent_bypass"
+            },
+            "operator": {
+              "name": "gte",
+              "version": "1.0.0"
+            }
+          }
+        ],
+        "safe_generic_composition_hints": {
+          "destination_entry_after_possession_corridor": {
+            "claims_boundary": "Measures geometric ball entry into a relation destination region only; no pass probability, optimality, intent, causation, or missed-opportunity claim.",
+            "classification_predicate": {
+              "compare": {
+                "payload_type": "enum",
+                "unit": "none",
+                "value": "PASS"
+              },
+              "input": {
+                "output_name": "entry_status",
+                "source_node_id": "destination_entry"
+              },
+              "operator": {
+                "name": "eq",
+                "version": "1.0.0"
+              }
+            },
+            "forbidden_catalog_refs": [
+              "relation_destination_entry_classification"
+            ],
+            "node_sequence": [
+              "possession_segment.anchors",
+              "geometric_progressive_corridor_from_anchor_set.episodes",
+              "relation_destination_entry.entry_status",
+              "eq PASS predicate",
+              "classification/result evidence"
+            ],
+            "path_id": "possession_corridor_destination_entry_v1",
+            "purpose": "Agent-authorable generic composition for possession-start progressive corridors followed by ball entry into the relation destination region.",
+            "recommended_evidence": [
+              "destination_entry_status",
+              "destination_entry_mode",
+              "destination_time_to_entry_seconds"
+            ],
+            "required_catalog_refs": [
+              "possession_segment",
+              "geometric_progressive_corridor_from_anchor_set",
+              "relation_destination_entry"
+            ]
+          }
+        },
+        "trusted_recipe_only_catalog_refs_omitted": []
+      },
+      "default_invocation": {
+        "execution_mode": "execute",
+        "invocation_id": "m2a_fortuna_high_bypass_completed_pass",
+        "match_ids": [
+          "J03WOY",
+          "J03WPY",
+          "J03WQQ",
+          "J03WR9"
+        ],
+        "max_results": 100,
+        "parameters": {},
+        "periods": [
+          "firstHalf",
+          "secondHalf"
+        ],
+        "perspective_team_role": "home",
+        "schema_version": "1.0"
+      },
+      "description": "Experimental composition that finds completed controlled passes where the ball progresses forward and at least a declared number of opposition outfield players move from goal-side of the ball at release to behind the ball at controlled reception.",
+      "disallowed_claims": [
+        "The pass was optimal.",
+        "The pass probability was high.",
+        "The passer intended to break a defensive line.",
+        "The pass alone caused every opponent to be bypassed.",
+        "The result proves which defensive line was broken.",
+        "The result is backed by licensed match video."
+      ],
+      "display_name": "High-Bypass Completed Pass",
+      "limitations": [
+        "Experimental plan; not an approved recipe.",
+        "Bypass count is measured relative to ball position at release and controlled reception.",
+        "Goalkeepers are excluded from the opposition denominator.",
+        "No defensive-line model, offside model, pass probability, body-orientation model, or intent model is evaluated."
+      ],
+      "output_classifications": [
+        "HIGH_BYPASS_COMPLETED_PASS"
+      ],
+      "parameters": [
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 8.0
+          },
+          "description": "Minimum forward ball progression from physical release to controlled reception.",
+          "name": "minimum_forward_progression_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 5
+          },
+          "description": "Minimum opposition outfield players bypassed by the completed action.",
+          "name": "minimum_bypassed_opponents",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 1.0
+          },
+          "description": "Release-frame buffer for deciding whether an opponent is goal-side of the ball.",
+          "name": "goal_side_buffer_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 1.0
+          },
+          "description": "Reception-frame buffer for deciding whether an opponent is behind the ball.",
+          "name": "bypassed_buffer_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        }
+      ],
+      "plan_summary": {
+        "classification_mode": "partial_declared",
+        "classification_rules": [
+          {
+            "description": "A completed controlled pass progressed the ball and bypassed at least the declared number of opposition outfield players.",
+            "label": "HIGH_BYPASS_COMPLETED_PASS",
+            "predicate_ids": [
+              "forward_progression_at_least_minimum",
+              "opponents_bypassed_at_least_minimum"
+            ]
+          }
+        ],
+        "node_count": 4,
+        "nodes": [
+          {
+            "catalog_ref": "controlled_pass_episode",
+            "input": null,
+            "inputs": {},
+            "kind": "primitive",
+            "node_id": "controlled_pass",
+            "operator": null
+          },
+          {
+            "catalog_ref": "opponents_bypassed_by_action",
+            "input": null,
+            "inputs": {
+              "controlled_pass_anchors": {
+                "output_name": "anchors",
+                "source_node_id": "controlled_pass"
+              },
+              "controlled_pass_episodes": {
+                "output_name": "episodes",
+                "source_node_id": "controlled_pass"
+              }
+            },
+            "kind": "relation",
+            "node_id": "opponent_bypass",
+            "operator": null
+          },
+          {
+            "catalog_ref": null,
+            "input": {
+              "output_name": "forward_progression_m",
+              "source_node_id": "opponent_bypass"
+            },
+            "inputs": {},
+            "kind": "predicate",
+            "node_id": "forward_progression_at_least_minimum",
+            "operator": {
+              "name": "gte",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "catalog_ref": null,
+            "input": {
+              "output_name": "opponents_bypassed_count",
+              "source_node_id": "opponent_bypass"
+            },
+            "inputs": {},
+            "kind": "predicate",
+            "node_id": "opponents_bypassed_at_least_minimum",
+            "operator": {
+              "name": "gte",
+              "version": "1.0.0"
+            }
+          }
+        ],
+        "plan_id": "m2a_high_bypass_completed_pass",
+        "plan_version": "0.1.0",
+        "requested_evidence": [
+          {
+            "alias": "pass_episode_id",
+            "field": "pass_episode_id",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "passer_id",
+            "field": "passer_id",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "receiver_id",
+            "field": "receiver_id",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "release_frame_id",
+            "field": "release_frame_id",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "reception_frame_id",
+            "field": "reception_frame_id",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "release_match_time_ms",
+            "field": "release_match_time_ms",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "reception_match_time_ms",
+            "field": "reception_match_time_ms",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "release_ball_point",
+            "field": "release_ball_point",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "reception_ball_point",
+            "field": "reception_ball_point",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "release_passer_point",
+            "field": "release_passer_point",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "reception_receiver_point",
+            "field": "reception_receiver_point",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "forward_progression_m",
+            "field": "forward_progression_m",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "opponents_bypassed_count",
+            "field": "opponents_bypassed_count",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "bypassed_player_ids",
+            "field": "bypassed_player_ids",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "candidate_goal_side_player_ids",
+            "field": "candidate_goal_side_player_ids",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "expected_active_opposition_outfield_ids",
+            "field": "expected_active_opposition_outfield_ids",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "evaluated_opponent_ids",
+            "field": "evaluated_opponent_ids",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "missing_active_opponent_ids",
+            "field": "missing_active_opponent_ids",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "goal_side_buffer_m",
+            "field": "goal_side_buffer_m",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "bypassed_buffer_m",
+            "field": "bypassed_buffer_m",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "bypass_evaluation_status",
+            "field": "evaluation_status",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "coverage_status",
+            "field": "coverage_status",
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          },
+          {
+            "alias": "unknown_reason",
+            "field": "unknown_reason",
+            "required": false,
+            "source": {
+              "output_name": "anchor_evaluations",
+              "source_node_id": "opponent_bypass"
+            }
+          }
+        ],
+        "status": "experimental",
+        "trusted_recipe_only_catalog_refs_omitted": [],
+        "unknown_evidence_policy": "exclude_candidate"
+      },
+      "recipe_id": "high_bypass_completed_pass_v1",
+      "recipe_version": "0.1.0",
+      "source_path": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
+      "source_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
+      "state": "EXPERIMENTAL"
     }
   ],
   "reference_harness": {
@@ -11009,6 +12454,173 @@
         }
       ],
       "purpose": "Represent a geometrically clear forward connection from the ball location to an attacking teammate over an interval.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "pass_episode_id",
+        "passer_id",
+        "receiver_id",
+        "release_frame_id",
+        "reception_frame_id",
+        "release_ball_point",
+        "reception_ball_point",
+        "release_passer_point",
+        "reception_receiver_point",
+        "forward_progression_m",
+        "opponents_bypassed_count",
+        "bypassed_player_ids",
+        "candidate_goal_side_player_ids",
+        "expected_active_opposition_outfield_ids",
+        "evaluated_opponent_ids",
+        "missing_active_opponent_ids"
+      ],
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "possession",
+          "name": "controlled_pass_episodes",
+          "payload_type": "boolean",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "controlled_pass_anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "relation",
+      "limitations": [
+        "Counts relative ball-position change between release and controlled reception.",
+        "Does not prove the pass alone caused every opponent to be bypassed.",
+        "Goalkeepers are excluded from the opponent denominator."
+      ],
+      "name": "opponents_bypassed_by_action",
+      "outputs": [
+        {
+          "allowed_values": null,
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "start_frame_id",
+            "end_frame_id",
+            "pass_episode_id",
+            "passer_id",
+            "receiver_id",
+            "release_frame_id",
+            "reception_frame_id",
+            "release_match_time_ms",
+            "reception_match_time_ms",
+            "release_ball_point",
+            "reception_ball_point",
+            "release_passer_point",
+            "reception_receiver_point",
+            "forward_progression_m",
+            "evaluation_status",
+            "coverage_status",
+            "opponents_bypassed_count",
+            "bypassed_player_ids",
+            "candidate_goal_side_player_ids",
+            "expected_active_opposition_outfield_ids",
+            "evaluated_opponent_ids",
+            "missing_active_opponent_ids",
+            "goal_side_buffer_m",
+            "bypassed_buffer_m",
+            "unknown_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": null,
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "opponents_bypassed_count",
+            "bypassed_player_ids"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "opponents_bypassed_count",
+          "payload_type": "number",
+          "temporal_type": "frame_signal",
+          "unit": "count"
+        },
+        {
+          "allowed_values": null,
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "forward_progression_m"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "forward_progression_m",
+          "payload_type": "number",
+          "temporal_type": "frame_signal",
+          "unit": "metre"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "evaluation_status",
+            "coverage_status",
+            "unknown_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "evaluation_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 1.0
+          },
+          "description": "Release-frame buffer for deciding whether an opponent is goal-side of the ball.",
+          "maximum": 5.0,
+          "minimum": 0.0,
+          "name": "goal_side_buffer_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 1.0
+          },
+          "description": "Reception-frame buffer for deciding whether an opponent is behind the ball.",
+          "maximum": 5.0,
+          "minimum": 0.0,
+          "name": "bypassed_buffer_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        }
+      ],
+      "purpose": "Count opposition outfield players who were goal-side of the ball at action release and behind the ball at controlled reception.",
       "version": "0.1.0"
     },
     {
@@ -11983,22 +13595,23 @@
   },
   "schema_version": "1.0",
   "source_hashes": {
-    "Makefile": "d64815a3ddfc621ee0e5c615245c5af8401fb4ef1d54d548e63b2831bc79bf52",
+    "Makefile": "fe5db50210d1c88253d9c973d460e9394d650060e012a114ae672f3a4e1e14c3",
     "config/query-plans/ball_side_block_shift.ir.v1.json": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+    "config/query-plans/high_bypass_completed_pass.experimental.v1.json": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
     "config/query-plans/opposite_corridor_after_shift.experimental.v1.json": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
     "config/query-plans/possession_corridor_availability.experimental.v1.json": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
     "generated/capability-context.json": "5020ae139fb1f92c237c4be167410a7486395ea580622f747fedb9f9a90f40de",
     "generated/tactical-query-plan.schema.json": "0e45cff180c3738629e9c49b15a7191faa12c1517ae987a91d2f80424df68b0f",
     "generated/tactical-query-plan.types.ts": "838bc7a1db332eb24f6fd80faa1530c6cc441aba7eb91eb3e806fa8d23d0bffc",
     "src/tqe/runtime/binder.py": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
-    "src/tqe/runtime/catalog.py": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
-    "src/tqe/runtime/executor.py": "ccb1562340d83ecb16faa13a73cace47b7d89e725fc2a755c4f8c22d0245a253",
+    "src/tqe/runtime/catalog.py": "fe6e5084ada62a6dc27ca87e46d0fb0574dfc63fb4c93542eb0e2fb81bb8f8ab",
+    "src/tqe/runtime/executor.py": "be47107ce2524641c8b4938dedb3721bf92257c758025527195f1b9431bd8128",
     "src/tqe/runtime/ir.py": "28e5fa2d221bc8f9ec66620d7a8f47a346a002dda9f2e264873492862c39dd3a",
     "src/tqe/runtime/relations.py": "6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee",
     "src/tqe/verification/m1_2_gate_s2i.py": "00cf3e665ef2096c44a4d28ba37284bb9207ca5412e2e6c564ef0d8d3042c99f",
     "src/tqe/workshop/hermes_s2.py": "ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591",
-    "src/tqe/workshop/knowledge_pack.py": "80f6388833a35eaa8ffa1e9570e2c78137d0c2d84771f1e9ad51e723207679d5",
-    "src/tqe/workshop/m1_2.py": "3f6fe0c9fe1cb014341caef21c947a79a1067e851ac556fe3a4eda1f00318829"
+    "src/tqe/workshop/knowledge_pack.py": "2acc892dd1f8fe68d6f8f159d818e08d32f02e73a60d43cc6ea1be2157648e08",
+    "src/tqe/workshop/m1_2.py": "117062b9c072b5eb9321907bcc4bd73db61d18924515dcccc9fac0c9704daed6"
   },
   "tool_surfaces": {
     "current_reference_harness_model_visible": {

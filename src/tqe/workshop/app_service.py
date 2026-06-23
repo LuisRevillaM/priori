@@ -66,6 +66,7 @@ from tqe.workshop.m1_2 import (
 REPO_ROOT = Path(__file__).resolve().parents[3]
 APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
+HIGH_BYPASS_PLAN_PATH = Path("config/query-plans/high_bypass_completed_pass.experimental.v1.json")
 DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", "/Users/luisrevilla/.hermes-priori"))
 HERMES_DB = HERMES_HOME / "state.db"
@@ -155,7 +156,7 @@ class ModelStatusResponse(WorkbenchResponseModel):
 
 
 class PresetResponse(WorkbenchResponseModel):
-    preset_id: Literal["approved_block_shift", "experimental_corridor"]
+    preset_id: Literal["approved_block_shift", "experimental_corridor", "experimental_high_bypass"]
     label: str
     recipe: RecipeCardResponse
     plan_hash: str
@@ -434,6 +435,8 @@ def plan_for_recipe(recipe_id: str) -> dict[str, Any]:
         return read_json(APPROVED_PLAN_PATH)
     if recipe_id == "possession_corridor_availability_v1":
         return read_json(CORRIDOR_PLAN_PATH)
+    if recipe_id == "high_bypass_completed_pass_v1":
+        return read_json(HIGH_BYPASS_PLAN_PATH)
     raise ValueError(f"Unsupported recipe_id: {recipe_id}")
 
 
@@ -443,6 +446,8 @@ def plan_path_for_preset(preset_id: str | None, selected_recipe_id: str | None) 
         return APPROVED_PLAN_PATH
     if key in {"experimental_corridor", "possession_corridor_availability_v1"}:
         return CORRIDOR_PLAN_PATH
+    if key in {"experimental_high_bypass", "high_bypass_completed_pass_v1"}:
+        return HIGH_BYPASS_PLAN_PATH
     return None
 
 
@@ -553,6 +558,11 @@ def needs_support_clarification(text: str, clarifications: list[str]) -> bool:
 
 def infer_plan_path(query: str) -> Path | None:
     text = normalized(query)
+    if (
+        ("bypass" in text or "bypassed" in text or "behind" in text)
+        and ("pass" in text or "completed" in text or "opponent" in text or "players" in text)
+    ):
+        return HIGH_BYPASS_PLAN_PATH
     if "corridor" in text or "progressive lane" in text or "passing lane" in text:
         return CORRIDOR_PLAN_PATH
     if "block shift" in text:
@@ -975,7 +985,11 @@ def normalize_outcome(value: Any) -> str:
 def hermes_plan_provenance(plan_document: dict[str, Any]) -> str:
     recipe = plan_document.get("recipe") if isinstance(plan_document, dict) else None
     recipe_id = str(recipe.get("recipe_id") or "") if isinstance(recipe, dict) else ""
-    if recipe_id in {"ball_side_block_shift_v1", "possession_corridor_availability_v1"}:
+    if recipe_id in {
+        "ball_side_block_shift_v1",
+        "possession_corridor_availability_v1",
+        "high_bypass_completed_pass_v1",
+    }:
         return "HERMES_RECIPE_SELECTION"
     return "HERMES_EXPERIMENTAL_UNVERIFIED"
 
@@ -2271,7 +2285,7 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
                 "repair_applied": True,
                 "fallback_reason": "recipe_selection_required",
                 "clarification_questions": [
-                    "Select the approved block-shift recipe or the experimental corridor preset.",
+                    "Select the approved block-shift recipe, the experimental corridor preset, or the high-bypass pass preset.",
                 ],
                 "clarification_codes": ["RECIPE_SELECTION"],
             }
@@ -2606,7 +2620,11 @@ def knowledge_pack_readiness_checks() -> list[dict[str, Any]]:
 
 def recipe_readiness_checks() -> list[dict[str, Any]]:
     checks = []
-    for recipe_id in ("ball_side_block_shift_v1", "possession_corridor_availability_v1"):
+    for recipe_id in (
+        "ball_side_block_shift_v1",
+        "possession_corridor_availability_v1",
+        "high_bypass_completed_pass_v1",
+    ):
         try:
             plan_for_recipe(recipe_id)
             checks.append(readiness_check(f"recipe.{recipe_id}.loadable", True, {}))
@@ -3039,6 +3057,7 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
     def bootstrap(self) -> dict[str, Any]:
         approved_plan = load_plan_from_path(APPROVED_PLAN_PATH)
         corridor_plan = load_plan_from_path(CORRIDOR_PLAN_PATH)
+        high_bypass_plan = load_plan_from_path(HIGH_BYPASS_PLAN_PATH)
         context = list_capabilities(CallerProfile.HOST_MANUAL)
         return ok(
             {
@@ -3067,6 +3086,12 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                         "label": "Experimental corridor",
                         "recipe": recipe_card(corridor_plan, "EXPERIMENTAL"),
                         "plan_hash": stable_hash(corridor_plan),
+                    },
+                    {
+                        "preset_id": "experimental_high_bypass",
+                        "label": "High-bypass pass",
+                        "recipe": recipe_card(high_bypass_plan, "EXPERIMENTAL"),
+                        "plan_hash": stable_hash(high_bypass_plan),
                     },
                 ],
                 "capabilities": {

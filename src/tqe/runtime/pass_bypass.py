@@ -12,10 +12,10 @@ import pandas as pd
 
 from tqe.runtime.bypass import BypassConfig, PlayerPosition, evaluate_opponents_bypassed_by_action
 from tqe.runtime.controlled_pass import (
-    ACCEPTED_MATCH_IDS,
     ACCEPTED_PERIODS,
     DEFAULT_CANONICAL_ROOT,
     ControlledPassOutput,
+    canonical_match_ids,
     evaluate_controlled_passes,
 )
 
@@ -52,19 +52,13 @@ def evaluate_pass_bypass_measurements(
     *,
     canonical_root: Path = DEFAULT_CANONICAL_ROOT,
     controlled_passes: ControlledPassOutput | None = None,
-    match_ids: tuple[str, ...] | list[str] = ACCEPTED_MATCH_IDS,
+    match_ids: tuple[str, ...] | list[str] | None = None,
     periods: tuple[str, ...] | list[str] = ACCEPTED_PERIODS,
     config: PassBypassConfig = PassBypassConfig(),
 ) -> PassBypassOutput:
-    requested_match_ids = tuple(str(item) for item in match_ids)
+    requested_match_ids = tuple(str(item) for item in (match_ids or canonical_match_ids(canonical_root)))
     requested_periods = tuple(str(item) for item in periods)
-    unsupported = sorted(set(requested_match_ids) - set(ACCEPTED_MATCH_IDS))
     unsupported_periods = sorted(set(requested_periods) - set(ACCEPTED_PERIODS))
-    if unsupported:
-        raise RuntimeError(
-            "M2A pass-bypass S1B is accepted only for "
-            f"{ACCEPTED_MATCH_IDS}; unsupported={unsupported}"
-        )
     if unsupported_periods:
         raise RuntimeError(
             "M2A pass-bypass S1B is accepted only for "
@@ -141,9 +135,9 @@ def evaluate_pass_bypass_measurements(
         capability_version="0.1.0",
         status="pass",
         accepted_scope={
-            "match_ids": list(ACCEPTED_MATCH_IDS),
+            "match_ids": list(requested_match_ids),
             "periods": list(ACCEPTED_PERIODS),
-            "all_corpus_execution": "blocked_until_reduced_player_and_tracking_gap_policy_is_extended",
+            "scope_policy": "caller_supplied_match_scope",
         },
         config=asdict(config),
         summary={
@@ -294,14 +288,12 @@ def unknown_payload(reason: str) -> dict[str, Any]:
 
 def validate_controlled_scope(controlled: ControlledPassOutput) -> None:
     rows = list(controlled.anchor_evaluations) + list(controlled.episodes)
-    match_ids = {str(item.get("match_id")) for item in rows if item.get("match_id") is not None}
     periods = {str(item.get("period")) for item in rows if item.get("period") is not None}
-    unsupported_matches = sorted(match_ids - set(ACCEPTED_MATCH_IDS))
     unsupported_periods = sorted(periods - set(ACCEPTED_PERIODS))
-    if unsupported_matches or unsupported_periods:
+    if unsupported_periods:
         raise RuntimeError(
-            "Injected controlled_passes fall outside M2A-S1B accepted scope: "
-            f"matches={unsupported_matches} periods={unsupported_periods}"
+            "Injected controlled_passes fall outside M2A-S1B period scope: "
+            f"periods={unsupported_periods}"
         )
 
 
