@@ -220,6 +220,10 @@ afl-09a-verify:
 	$(PYTHON) -m tqe.verification.afl_09a
 	$(PYTHON) -m unittest tests.test_afl_validation_factory
 
+afl-one-touch-pass-chain-verify:
+	$(PYTHON) -m tqe.verification.afl_one_touch_pass_chain
+	$(PYTHON) -m unittest tests.test_one_touch_pass_chain
+
 workbench-alpha-install:
 	npm --prefix apps/workbench-alpha install
 

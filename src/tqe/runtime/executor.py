@@ -34,6 +34,12 @@ from tqe.runtime.local_number_relation import (
     LocalNumberConfig,
     evaluate_local_number_relation,
 )
+from tqe.runtime.one_touch import (
+    OneTouchRelayConfig,
+    evaluate_one_touch_relays,
+    evaluate_pass_chain,
+    evaluate_receiver_line_transition,
+)
 from tqe.runtime.relative_position_to_line import (
     RelativePositionToLineConfig,
     evaluate_relative_position_to_line,
@@ -214,8 +220,11 @@ class TacticalQueryExecutor:
         self.primitives: dict[str, PrimitiveImplementation] = {
             "possession_segment": primitive_possession_segment,
             "controlled_pass_episode": primitive_controlled_pass_episode,
+            "one_touch_relay_episode": primitive_one_touch_relay_episode,
             "defensive_line_model": primitive_defensive_line_model,
             "relative_position_to_line": primitive_relative_position_to_line,
+            "receiver_line_transition_during_pass_leg": primitive_receiver_line_transition_during_pass_leg,
+            "pass_chain_episode": primitive_pass_chain_episode,
             "controlled_line_break_episode": primitive_controlled_line_break_episode,
             "lane_occupancy": primitive_lane_occupancy,
             "ball_lateral_fraction": primitive_ball_lateral_fraction,
@@ -2139,6 +2148,80 @@ def controlled_pass_episode_record(
     }
 
 
+def primitive_one_touch_relay_episode(state: PeriodState, node: BoundCatalogNode) -> None:
+    config = OneTouchRelayConfig(
+        relay_max_event_gap_seconds=node_parameter_number(node, "relay_max_event_gap_seconds", 3.0),
+        relay_touch_distance_m=node_parameter_number(node, "relay_touch_distance_m", 2.75),
+        maximum_relay_dwell_seconds=node_parameter_number(node, "maximum_relay_dwell_seconds", 0.56),
+    )
+    output = evaluate_one_touch_relays(
+        canonical_root=state.canonical_root,
+        match_ids=(state.match_id,),
+        periods=(state.period,),
+        config=config,
+    )
+    anchors = [
+        one_touch_relay_anchor_record(state, evaluation)
+        for evaluation in output.anchor_evaluations
+    ]
+    anchors = [record for record in anchors if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in anchors]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": anchors,
+        "anchor_evaluations_records": anchors,
+        "episodes": [record for record in anchors if record.get("one_touch_relay_status") == "PASS"],
+        "episodes_records": [record for record in anchors if record.get("one_touch_relay_status") == "PASS"],
+        "one_touch_relay_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if str(record["one_touch_relay_status"]) == "UNKNOWN" else str(record["one_touch_relay_status"])
+                for record in anchors
+            ],
+            unknown_mask=[str(record["one_touch_relay_status"]) == "UNKNOWN" for record in anchors],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "one_touch_relay_status").entity_scope,
+        ),
+        "one_touch_relay_status_records": anchors,
+    }
+
+
+def one_touch_relay_anchor_record(state: PeriodState, evaluation: dict[str, Any]) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(evaluation.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    start_frame_id = optional_int(evaluation.get("start_frame_id")) or anchor_frame_id
+    end_frame_id = optional_int(evaluation.get("end_frame_id")) or anchor_frame_id
+    entity_refs = list(evaluation.get("entity_refs") or [])
+    anchor_id = anchor_record_id(
+        match_id=state.match_id,
+        period=state.period,
+        anchor_frame_id=anchor_frame_id,
+        start_frame_id=start_frame_id,
+        end_frame_id=end_frame_id,
+        entity_refs=entity_refs,
+    )
+    return {
+        **evaluation,
+        "source_one_touch_relay_anchor_id": str(evaluation.get("anchor_id")),
+        "anchor_id": anchor_id,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": start_frame_id,
+        "end_frame_id": end_frame_id,
+        "entity_refs": entity_refs,
+        "relay_match_time_ms": frame_match_time_ms(state, anchor_frame_id),
+        "input_release_match_time_ms": frame_match_time_ms(
+            state,
+            optional_int(evaluation.get("input_physical_release_frame_id")),
+        ),
+        "relay_release_match_time_ms": frame_match_time_ms(
+            state,
+            optional_int(evaluation.get("relay_physical_release_frame_id")),
+        ),
+    }
+
+
 def primitive_defensive_line_model(state: PeriodState, node: BoundCatalogNode) -> None:
     anchors_value = catalog_input_value(state, node, "anchors")
     anchors = anchors_value.value
@@ -2544,6 +2627,185 @@ def cached_player_position_at_frame(
             else (float(record["x_m"]), float(record["y_m"]))
         )
     return state.lookup_cache[key]
+
+
+def primitive_receiver_line_transition_during_pass_leg(state: PeriodState, node: BoundCatalogNode) -> None:
+    relay_value = catalog_input_value(state, node, "relay_anchors")
+    line_value = catalog_input_value(state, node, "line_evaluations")
+    release_value = catalog_input_value(state, node, "release_relative_positions")
+    relay_position_value = catalog_input_value(state, node, "relay_relative_positions")
+    relay_records = relay_value.value
+    line_records = line_value.value
+    release_records = release_value.value
+    relay_position_records = relay_position_value.value
+    if (
+        not isinstance(relay_records, list)
+        or not isinstance(line_records, list)
+        or not isinstance(release_records, list)
+        or not isinstance(relay_position_records, list)
+    ):
+        raise RuntimeError(f"{node.node_id} requires anchor-relative record collections")
+    line_by_anchor_id = record_by_anchor_id(line_records)
+    release_by_anchor_id = record_by_anchor_id(release_records)
+    relay_position_by_anchor_id = record_by_anchor_id(relay_position_records)
+    records = [
+        receiver_line_transition_anchor_record(
+            state=state,
+            relay_record=relay_record,
+            line_record=line_by_anchor_id.get(str(relay_record.get("anchor_id")))
+            if isinstance(relay_record, dict)
+            else None,
+            release_record=release_by_anchor_id.get(str(relay_record.get("anchor_id")))
+            if isinstance(relay_record, dict)
+            else None,
+            relay_position_record=relay_position_by_anchor_id.get(str(relay_record.get("anchor_id")))
+            if isinstance(relay_record, dict)
+            else None,
+        )
+        for relay_record in relay_records
+        if isinstance(relay_record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "receiver_line_transition_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None
+                if str(record["receiver_line_transition_status"]) == "UNKNOWN"
+                else str(record["receiver_line_transition_status"])
+                for record in records
+            ],
+            unknown_mask=[str(record["receiver_line_transition_status"]) == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "receiver_line_transition_status").entity_scope,
+        ),
+        "receiver_line_transition_status_records": records,
+    }
+
+
+def receiver_line_transition_anchor_record(
+    *,
+    state: PeriodState,
+    relay_record: dict[str, Any],
+    line_record: dict[str, Any] | None,
+    release_record: dict[str, Any] | None,
+    relay_position_record: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(relay_record.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    evaluation = evaluate_receiver_line_transition(
+        relay_evidence=relay_record,
+        observed_line_evidence=line_record,
+        release_relative_position_evidence=release_record,
+        relay_relative_position_evidence=relay_position_record,
+    )
+    return {
+        **relay_record,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(relay_record.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "receiver_line_transition_status": str(evaluation["receiver_line_transition_status"]),
+        "receiver_line_transition_reason": evaluation["receiver_line_transition_reason"],
+        "line_anchor_id": evaluation["line_anchor_id"],
+        "line_anchor_frame_id": evaluation["line_anchor_frame_id"],
+        "line_x_m": evaluation["line_x_m"],
+        "normalized_line_x_m": evaluation["normalized_line_x_m"],
+        "receiver_line_transition_attacking_direction": evaluation["attacking_direction"],
+        "release_relative_position_status": evaluation["release_relative_position_status"],
+        "release_signed_distance_to_line_m": evaluation["release_signed_distance_to_line_m"],
+        "relay_relative_position_status": evaluation["relay_relative_position_status"],
+        "relay_signed_distance_to_line_m": evaluation["relay_signed_distance_to_line_m"],
+        "line_record_found": line_record is not None,
+        "release_relative_position_record_found": release_record is not None,
+        "relay_relative_position_record_found": relay_position_record is not None,
+    }
+
+
+def primitive_pass_chain_episode(state: PeriodState, node: BoundCatalogNode) -> None:
+    relay_value = catalog_input_value(state, node, "relay_anchors")
+    terminal_value = catalog_input_value(state, node, "terminal_controlled_pass_anchors")
+    relay_records = relay_value.value
+    terminal_records = terminal_value.value
+    if not isinstance(relay_records, list) or not isinstance(terminal_records, list):
+        raise RuntimeError(f"{node.node_id} requires relay and terminal controlled-pass records")
+    terminal_by_pass_id = {
+        str(record.get("pass_episode_id")): record
+        for record in terminal_records
+        if isinstance(record, dict) and record.get("pass_episode_id") is not None
+    }
+    records = [
+        pass_chain_anchor_record(
+            state=state,
+            relay_record=relay_record,
+            terminal_record=terminal_by_pass_id.get(str(relay_record.get("relay_pass_episode_id")))
+            if isinstance(relay_record, dict)
+            else None,
+        )
+        for relay_record in relay_records
+        if isinstance(relay_record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "pass_chain_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if str(record["pass_chain_status"]) == "UNKNOWN" else str(record["pass_chain_status"])
+                for record in records
+            ],
+            unknown_mask=[str(record["pass_chain_status"]) == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "pass_chain_status").entity_scope,
+        ),
+        "pass_chain_status_records": records,
+    }
+
+
+def pass_chain_anchor_record(
+    *,
+    state: PeriodState,
+    relay_record: dict[str, Any],
+    terminal_record: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(relay_record.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    evaluation = evaluate_pass_chain(
+        relay_evidence=relay_record,
+        terminal_controlled_pass_evidence=terminal_record,
+    )
+    terminal_reception_frame_id = (
+        optional_int(terminal_record.get("controlled_reception_frame_id"))
+        if terminal_record is not None
+        else None
+    )
+    return {
+        **relay_record,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(relay_record.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "pass_chain_status": str(evaluation["pass_chain_status"]),
+        "pass_chain_reason": evaluation["pass_chain_reason"],
+        "terminal_pass_episode_id": relay_record.get("relay_pass_episode_id"),
+        "terminal_receiver_id": None if terminal_record is None else terminal_record.get("receiver_id"),
+        "terminal_controlled_reception_frame_id": terminal_reception_frame_id,
+        "terminal_reception_match_time_ms": frame_match_time_ms(state, terminal_reception_frame_id),
+        "terminal_forward_progression_m": None if terminal_record is None else terminal_record.get("forward_progression_m"),
+        "terminal_controlled_pass_record_found": terminal_record is not None,
+        "terminal_controlled_pass_status": None if terminal_record is None else terminal_record.get("controlled_pass_status"),
+        "terminal_reception_ball_point": None if terminal_record is None else terminal_record.get("reception_ball_point"),
+        "terminal_reception_receiver_point": None
+        if terminal_record is None
+        else terminal_record.get("reception_receiver_point"),
+    }
 
 
 def primitive_controlled_line_break_episode(state: PeriodState, node: BoundCatalogNode) -> None:

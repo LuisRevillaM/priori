@@ -1,0 +1,597 @@
+{
+  "default_invocation": {
+    "execution_mode": "execute",
+    "invocation_id": "first_time_relay_after_receiver_line_transition_probe",
+    "match_ids": [
+      "J03WOH",
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9",
+      "J03WMX",
+      "J03WN1"
+    ],
+    "max_results": 20,
+    "parameters": {},
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "schema_version": "1.0"
+  },
+  "draft_plan": {
+    "anchor_source": {
+      "output_name": "anchor_evaluations",
+      "source_node_id": "pass_chain"
+    },
+    "classification_mode": "partial_declared",
+    "classification_rules": [
+      {
+        "description": "Observed first-time relay after receiver/relay-player line transition with terminal controlled reception.",
+        "label": "FIRST_TIME_RELAY_AFTER_RECEIVER_LINE_TRANSITION",
+        "predicate_ids": [
+          "relay_pass",
+          "receiver_line_transition_pass",
+          "pass_chain_pass"
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "catalog_ref": "one_touch_relay_episode",
+        "kind": "primitive",
+        "node_id": "one_touch_relay",
+        "parameters": {
+          "maximum_relay_dwell_seconds": {
+            "kind": "parameter",
+            "name": "maximum_relay_dwell_seconds"
+          },
+          "relay_max_event_gap_seconds": {
+            "kind": "parameter",
+            "name": "relay_max_event_gap_seconds"
+          },
+          "relay_touch_distance_m": {
+            "kind": "parameter",
+            "name": "relay_touch_distance_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "defensive_line_model",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "one_touch_relay"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "defensive_line_at_input_release",
+        "parameters": {
+          "anchor_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "input_physical_release_frame_id"
+          },
+          "goal_side_buffer_m": {
+            "kind": "parameter",
+            "name": "goal_side_buffer_m"
+          },
+          "line_band_width_m": {
+            "kind": "parameter",
+            "name": "line_band_width_m"
+          },
+          "minimum_line_defenders": {
+            "kind": "parameter",
+            "name": "minimum_line_defenders"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "relative_position_to_line",
+        "inputs": {
+          "entity_anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "one_touch_relay"
+          },
+          "line_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "defensive_line_at_input_release"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "relay_position_at_input_release",
+        "parameters": {
+          "entity_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "input_physical_release_frame_id"
+          },
+          "entity_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "relay_player_id"
+          },
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "relative_position_to_line",
+        "inputs": {
+          "entity_anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "one_touch_relay"
+          },
+          "line_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "defensive_line_at_input_release"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "relay_position_at_touch",
+        "parameters": {
+          "entity_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "relay_touch_frame_id"
+          },
+          "entity_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "relay_player_id"
+          },
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "receiver_line_transition_during_pass_leg",
+        "inputs": {
+          "line_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "defensive_line_at_input_release"
+          },
+          "relay_anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "one_touch_relay"
+          },
+          "relay_relative_positions": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "relay_position_at_touch"
+          },
+          "release_relative_positions": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "relay_position_at_input_release"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "receiver_line_transition",
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "controlled_pass_episode",
+        "kind": "primitive",
+        "node_id": "terminal_controlled_pass",
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "pass_chain_episode",
+        "inputs": {
+          "relay_anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "one_touch_relay"
+          },
+          "terminal_controlled_pass_anchors": {
+            "output_name": "anchors",
+            "source_node_id": "terminal_controlled_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "pass_chain",
+        "version": "0.1.0"
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "one_touch_relay_status",
+          "source_node_id": "one_touch_relay"
+        },
+        "kind": "predicate",
+        "node_id": "relay_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "receiver_line_transition_status",
+          "source_node_id": "receiver_line_transition"
+        },
+        "kind": "predicate",
+        "node_id": "receiver_line_transition_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "pass_chain_status",
+          "source_node_id": "pass_chain"
+        },
+        "kind": "predicate",
+        "node_id": "pass_chain_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      }
+    ],
+    "plan_id": "first_time_relay_after_receiver_line_transition",
+    "plan_version": "0.1.0",
+    "recipe_id": "first_time_relay_after_receiver_line_transition_v1",
+    "recipe_version": "0.1.0",
+    "requested_evidence": [
+      {
+        "alias": "input_pass_episode_id",
+        "field": "input_pass_episode_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "relay_pass_episode_id",
+        "field": "relay_pass_episode_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "input_passer_id",
+        "field": "input_passer_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "relay_player_id",
+        "field": "relay_player_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "declared_next_pass_recipient_id",
+        "field": "declared_next_pass_recipient_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "input_physical_release_frame_id",
+        "field": "input_physical_release_frame_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "relay_touch_frame_id",
+        "field": "relay_touch_frame_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "relay_physical_release_frame_id",
+        "field": "relay_physical_release_frame_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "relay_dwell_seconds",
+        "field": "relay_dwell_seconds",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "one_touch_relay_status",
+        "field": "one_touch_relay_status",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "one_touch_relay_reason",
+        "field": "one_touch_relay_reason",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "relay_touch_ball_point",
+        "field": "relay_touch_ball_point",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "relay_touch_player_point",
+        "field": "relay_touch_player_point",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "one_touch_relay"
+        }
+      },
+      {
+        "alias": "receiver_line_transition_status",
+        "field": "receiver_line_transition_status",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "receiver_line_transition"
+        }
+      },
+      {
+        "alias": "receiver_line_transition_reason",
+        "field": "receiver_line_transition_reason",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "receiver_line_transition"
+        }
+      },
+      {
+        "alias": "line_x_m",
+        "field": "line_x_m",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "receiver_line_transition"
+        }
+      },
+      {
+        "alias": "release_relative_position_status",
+        "field": "release_relative_position_status",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "receiver_line_transition"
+        }
+      },
+      {
+        "alias": "release_signed_distance_to_line_m",
+        "field": "release_signed_distance_to_line_m",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "receiver_line_transition"
+        }
+      },
+      {
+        "alias": "relay_relative_position_status",
+        "field": "relay_relative_position_status",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "receiver_line_transition"
+        }
+      },
+      {
+        "alias": "relay_signed_distance_to_line_m",
+        "field": "relay_signed_distance_to_line_m",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "receiver_line_transition"
+        }
+      },
+      {
+        "alias": "pass_chain_status",
+        "field": "pass_chain_status",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "pass_chain"
+        }
+      },
+      {
+        "alias": "pass_chain_reason",
+        "field": "pass_chain_reason",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "pass_chain"
+        }
+      },
+      {
+        "alias": "terminal_pass_episode_id",
+        "field": "terminal_pass_episode_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "pass_chain"
+        }
+      },
+      {
+        "alias": "terminal_receiver_id",
+        "field": "terminal_receiver_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "pass_chain"
+        }
+      },
+      {
+        "alias": "terminal_controlled_reception_frame_id",
+        "field": "terminal_controlled_reception_frame_id",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "pass_chain"
+        }
+      },
+      {
+        "alias": "terminal_forward_progression_m",
+        "field": "terminal_forward_progression_m",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "pass_chain"
+        }
+      },
+      {
+        "alias": "terminal_controlled_pass_status",
+        "field": "terminal_controlled_pass_status",
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "pass_chain"
+        }
+      }
+    ],
+    "schema_version": "1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate"
+  },
+  "recipe": {
+    "allowed_claims": [
+      "The relay was event-linked and tracking-bounded under declared thresholds.",
+      "The receiver/relay player transitioned from not beyond to beyond a supplied observed line.",
+      "The onward pass reached a terminal controlled reception.",
+      "Replay/evidence comes from canonical event and tracking records."
+    ],
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "description": "Experimental composition that finds event-linked first-time relays where the receiver/relay player moves beyond a supplied observed line during the input pass leg and the onward pass has a terminal controlled reception.",
+    "disallowed_claims": [
+      "The pass or ball itself crossed the line.",
+      "The system identified a tactical defensive-line role or definitive line break.",
+      "The sequence was a planned third-man combination.",
+      "The players intended the measured outcome.",
+      "The decision was optimal or has an inferred completion probability."
+    ],
+    "display_name": "First-Time Relay After Receiver Line Transition",
+    "limitations": [
+      "Experimental plan; not an approved recipe.",
+      "v0.1 requires provider event linkage for the relay.",
+      "Tracking-only redirection candidates are deferred.",
+      "The line-transition measurement is a receiver/relay-player position transition, not ball trajectory."
+    ],
+    "output_classifications": [
+      "FIRST_TIME_RELAY_AFTER_RECEIVER_LINE_TRANSITION"
+    ],
+    "parameters": [
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 3.0
+        },
+        "description": "Maximum gap between input pass event and relay pass event.",
+        "name": "relay_max_event_gap_seconds",
+        "payload_type": "number",
+        "required": false,
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 2.75
+        },
+        "description": "Maximum ball-player distance for relay-touch evidence.",
+        "name": "relay_touch_distance_m",
+        "payload_type": "number",
+        "required": false,
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.56
+        },
+        "description": "Maximum relay touch-to-release interval.",
+        "name": "maximum_relay_dwell_seconds",
+        "payload_type": "number",
+        "required": false,
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 1.0
+        },
+        "description": "Minimum distance beyond the ball for defenders to count as goal-side.",
+        "name": "goal_side_buffer_m",
+        "payload_type": "number",
+        "required": false,
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 2.0
+        },
+        "description": "Maximum normalized x-span of defenders in one observed line band.",
+        "name": "line_band_width_m",
+        "payload_type": "number",
+        "required": false,
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 4
+        },
+        "description": "Minimum defenders required to form an observed line.",
+        "name": "minimum_line_defenders",
+        "payload_type": "number",
+        "required": false,
+        "unit": "count"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 0.5
+        },
+        "description": "Distance from the supplied line treated as level.",
+        "name": "line_buffer_m",
+        "payload_type": "number",
+        "required": false,
+        "unit": "metre"
+      }
+    ],
+    "recipe_id": "first_time_relay_after_receiver_line_transition_v1",
+    "recipe_version": "0.1.0",
+    "schema_version": "1.0"
+  },
+  "schema_version": "1.0"
+}

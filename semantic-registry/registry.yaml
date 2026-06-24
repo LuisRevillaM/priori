@@ -59,6 +59,30 @@ concepts:
     evidence_contract_ref: evidence.controlled_pass_crosses_observed_line.v1
     tags: [pass, line, geometry, controlled_reception]
 
+  - id: concept.one_touch_relay
+    kind: Concept
+    display_name: One-Touch Relay
+    description: Event-linked first-time relay where the input receiver immediately plays an onward completed pass under declared tracking thresholds.
+    claim_contract_ref: claim.one_touch_relay.v1
+    evidence_contract_ref: evidence.one_touch_relay.v1
+    tags: [pass, relay, event_tracking_alignment]
+
+  - id: concept.receiver_line_transition_during_pass_leg
+    kind: Concept
+    display_name: Receiver Line Transition During Pass Leg
+    description: The receiving or relay actor moves from not beyond to beyond a supplied observed line between input release and relay touch.
+    claim_contract_ref: claim.receiver_line_transition_during_pass_leg.v1
+    evidence_contract_ref: evidence.receiver_line_transition_during_pass_leg.v1
+    tags: [line, receiver, geometry, relay]
+
+  - id: concept.pass_chain_episode
+    kind: Concept
+    display_name: Pass Chain Episode
+    description: A connected event-linked input pass, relay pass, and terminal controlled reception.
+    claim_contract_ref: claim.pass_chain_episode.v1
+    evidence_contract_ref: evidence.pass_chain_episode.v1
+    tags: [pass, chain, relay, controlled_reception]
+
   - id: concept.observed_lane_occupancy
     kind: Concept
     display_name: Observed Lane Occupancy
@@ -90,6 +114,14 @@ concepts:
     claim_contract_ref: claim.line_break_support_response.v1
     evidence_contract_ref: evidence.line_break_support_response.v1
     tags: [line, support, lanes, local-context, composition, recipe]
+
+  - id: concept.first_time_relay_after_receiver_line_transition
+    kind: Concept
+    display_name: First-Time Relay After Receiver Line Transition
+    description: A composed experimental tactic combining an event-linked one-touch relay, receiver line transition, and terminal controlled reception.
+    claim_contract_ref: claim.first_time_relay_after_receiver_line_transition.v1
+    evidence_contract_ref: evidence.first_time_relay_after_receiver_line_transition.v1
+    tags: [relay, line, pass_chain, composition, recipe]
 
   - id: concept.defensive_block_lateral_shift
     kind: Concept
@@ -316,6 +348,76 @@ operationalizations:
     lowering: [exact_anchor_alignment, release_side_check, reception_side_check, pass_line_crossing_classification]
     claim_contract_ref: claim.controlled_pass_crosses_observed_line.v1
     evidence_contract_ref: evidence.controlled_pass_crosses_observed_line.v1
+
+  - id: op.event_linked_one_touch_relay.v1
+    kind: Operationalization
+    display_name: Event-Linked One-Touch Relay
+    description: Use adjacent provider pass events and tracking evidence to identify a bounded first-time relay.
+    concept_refs: [concept.one_touch_relay]
+    semantic_basis: INFERRED_CANDIDATE
+    required_modalities: [events, tracking]
+    applicability: [adjacent_completed_pass_events, recipient_is_next_passer, tracking_available_around_relay]
+    inputs:
+      - name: provider_event_stream
+        type: {container: EventSet, value: ProviderEvent, unit: none}
+      - name: tracking_window
+        type: {container: TrajectorySet, value: Position, unit: metre, coordinate_frame: pitch_absolute}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: one_touch_relay_evaluation, unit: none, entity_scope: anchor}
+      - name: one_touch_relay_status
+        type: {container: FrameSignal, value: Enum, quantity: one_touch_relay_status, unit: none, entity_scope: anchor}
+    lowering: [event_linkage, physical_input_release, relay_touch_detection, relay_release_detection, dwell_threshold]
+    claim_contract_ref: claim.one_touch_relay.v1
+    evidence_contract_ref: evidence.one_touch_relay.v1
+
+  - id: op.receiver_line_transition_during_pass_leg.v1
+    kind: Operationalization
+    display_name: Receiver Line Transition During Pass Leg
+    description: Evaluate whether a relay player moves from not beyond to beyond a supplied observed line between input release and relay touch.
+    concept_refs: [concept.receiver_line_transition_during_pass_leg]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [relay_anchor_available, observed_line_available, release_relative_position_available, relay_relative_position_available]
+    inputs:
+      - name: relay_anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: one_touch_relay_evaluation, unit: none, entity_scope: anchor}
+      - name: line_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: defensive_line_evaluation, unit: none, entity_scope: anchor}
+      - name: release_relative_positions
+        type: {container: EpisodeSet, value: AnchorRef, quantity: relative_position_to_line_evaluation, unit: none, entity_scope: anchor}
+      - name: relay_relative_positions
+        type: {container: EpisodeSet, value: AnchorRef, quantity: relative_position_to_line_evaluation, unit: none, entity_scope: anchor}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: receiver_line_transition_evaluation, unit: none, entity_scope: anchor}
+      - name: receiver_line_transition_status
+        type: {container: FrameSignal, value: Enum, quantity: receiver_line_transition_status, unit: none, entity_scope: anchor}
+    lowering: [exact_anchor_alignment, release_side_check, relay_touch_side_check, receiver_position_transition_classification]
+    claim_contract_ref: claim.receiver_line_transition_during_pass_leg.v1
+    evidence_contract_ref: evidence.receiver_line_transition_during_pass_leg.v1
+
+  - id: op.event_linked_pass_chain_episode.v1
+    kind: Operationalization
+    display_name: Event-Linked Pass Chain Episode
+    description: Join an event-linked relay to terminal controlled reception of the onward pass.
+    concept_refs: [concept.pass_chain_episode]
+    semantic_basis: INFERRED_CANDIDATE
+    required_modalities: [events, tracking]
+    applicability: [relay_anchor_available, terminal_controlled_pass_available]
+    inputs:
+      - name: relay_anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: one_touch_relay_evaluation, unit: none, entity_scope: anchor}
+      - name: terminal_controlled_pass_anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: controlled_pass_anchor, unit: none, entity_scope: anchor}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: pass_chain_evaluation, unit: none, entity_scope: anchor}
+      - name: pass_chain_status
+        type: {container: FrameSignal, value: Enum, quantity: pass_chain_status, unit: none, entity_scope: anchor}
+    lowering: [relay_pass_id_join, terminal_controlled_reception_check, chain_continuity_check]
+    claim_contract_ref: claim.pass_chain_episode.v1
+    evidence_contract_ref: evidence.pass_chain_episode.v1
 
   - id: op.observed_lateral_lane_occupancy.v1
     kind: Operationalization
@@ -560,6 +662,22 @@ definition_profiles:
     claim_contract_ref: claim.line_break_support_response.v1
     evidence_contract_ref: evidence.line_break_support_response.v1
 
+  - id: profile.first_time_relay_after_receiver_line_transition_default.v1
+    kind: DefinitionProfile
+    display_name: First-Time Relay After Receiver Line Transition Default Profile
+    description: Default experimental profile for event-linked first-time relay after receiver-line transition.
+    operationalization_ref: op.event_linked_one_touch_relay.v1
+    bindings:
+      relay_max_event_gap_seconds: 3.0
+      relay_touch_distance_m: 2.75
+      maximum_relay_dwell_seconds: 0.56
+      goal_side_buffer_m: 1.0
+      line_band_width_m: 2.0
+      minimum_line_defenders: 4
+      line_buffer_m: 0.5
+    claim_contract_ref: claim.first_time_relay_after_receiver_line_transition.v1
+    evidence_contract_ref: evidence.first_time_relay_after_receiver_line_transition.v1
+
   - id: profile.ball_side_block_shift_reviewed.v1
     kind: DefinitionProfile
     display_name: Ball-Side Block Shift Reviewed Profile
@@ -636,6 +754,24 @@ implementations:
     description: Current observed controlled-pass line-crossing implementation.
     implements: [op.controlled_pass_crosses_observed_line.v1]
     source_refs: [src/tqe/runtime/controlled_line_break.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.one_touch_relay_episode.python.v1
+    kind: Implementation
+    display_name: One-Touch Relay Episode Python Implementation
+    description: Current event-linked one-touch relay implementation.
+    implements: [op.event_linked_one_touch_relay.v1]
+    source_refs: [src/tqe/runtime/one_touch.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.receiver_line_transition_during_pass_leg.python.v1
+    kind: Implementation
+    display_name: Receiver Line Transition During Pass Leg Python Implementation
+    description: Current receiver/relay-player line-transition implementation.
+    implements: [op.receiver_line_transition_during_pass_leg.v1]
+    source_refs: [src/tqe/runtime/one_touch.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.pass_chain_episode.python.v1
+    kind: Implementation
+    display_name: Pass Chain Episode Python Implementation
+    description: Current event-linked relay plus terminal controlled reception implementation.
+    implements: [op.event_linked_pass_chain_episode.v1]
+    source_refs: [src/tqe/runtime/one_touch.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.lane_occupancy.python.v1
     kind: Implementation
     display_name: Lane Occupancy Python Implementation
@@ -840,7 +976,7 @@ runtime_bindings:
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: anchor_frame_id, unit: none}
-        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, input_physical_release_frame_id, relay_touch_frame_id, relay_physical_release_frame_id]
     parameter_bindings:
       goal_side_buffer_m: goal_side_buffer_m
       line_band_width_m: line_band_width_m
@@ -868,12 +1004,12 @@ runtime_bindings:
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: receiver_id, unit: none}
-        allowed_values: [receiver_id, passer_id]
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id]
       - name: entity_frame_field
         type: {container: Scalar, value: Enum, unit: none}
         required: false
         default: {payload_type: enum, value: controlled_reception_frame_id, unit: none}
-        allowed_values: [controlled_reception_frame_id, physical_release_frame_id, anchor_frame_id]
+        allowed_values: [controlled_reception_frame_id, physical_release_frame_id, anchor_frame_id, input_physical_release_frame_id, relay_touch_frame_id, relay_physical_release_frame_id, terminal_controlled_reception_frame_id]
       - name: line_buffer_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: false
@@ -911,6 +1047,80 @@ runtime_bindings:
         maximum: 10.0
     parameter_bindings:
       line_buffer_m: line_buffer_m
+
+  - id: binding.primitive.one_touch_relay_episode.0_1_0
+    kind: RuntimeBinding
+    display_name: one_touch_relay_episode runtime binding
+    description: Canonical runtime binding for one_touch_relay_episode 0.1.0.
+    runtime_capability: {id: one_touch_relay_episode, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.one_touch_relay_episode.python.v1
+    implements: [op.event_linked_one_touch_relay.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 requires adjacent provider pass-event linkage and does not model tracking-only redirection candidates.]
+    input_bindings:
+      provider_event_stream: {source: RUNTIME_CONTEXT, context_ref: provider_event_stream.completed_pass_events}
+      tracking_window: {source: RUNTIME_CONTEXT, context_ref: canonical_tracking_window}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      one_touch_relay_status: {runtime_port: one_touch_relay_status}
+    semantic_parameters:
+      - name: relay_max_event_gap_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 3.0, unit: second}
+        minimum: 0.1
+        maximum: 10.0
+      - name: relay_touch_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 2.75, unit: metre}
+        minimum: 0.1
+        maximum: 8.0
+      - name: maximum_relay_dwell_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 0.56, unit: second}
+        minimum: 0.04
+        maximum: 2.0
+    parameter_bindings:
+      relay_max_event_gap_seconds: relay_max_event_gap_seconds
+      relay_touch_distance_m: relay_touch_distance_m
+      maximum_relay_dwell_seconds: maximum_relay_dwell_seconds
+    uncovered_runtime_outputs: [episodes]
+
+  - id: binding.primitive.receiver_line_transition_during_pass_leg.0_1_0
+    kind: RuntimeBinding
+    display_name: receiver_line_transition_during_pass_leg runtime binding
+    description: Canonical runtime binding for receiver_line_transition_during_pass_leg 0.1.0.
+    runtime_capability: {id: receiver_line_transition_during_pass_leg, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.receiver_line_transition_during_pass_leg.python.v1
+    implements: [op.receiver_line_transition_during_pass_leg.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Uses anchor-record field selection for the relay actor and frames rather than a standalone semantic entity selector.]
+    input_bindings:
+      relay_anchors: {source: NODE_INPUT, runtime_port: relay_anchors}
+      line_evaluations: {source: NODE_INPUT, runtime_port: line_evaluations}
+      release_relative_positions: {source: NODE_INPUT, runtime_port: release_relative_positions}
+      relay_relative_positions: {source: NODE_INPUT, runtime_port: relay_relative_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      receiver_line_transition_status: {runtime_port: receiver_line_transition_status}
+
+  - id: binding.primitive.pass_chain_episode.0_1_0
+    kind: RuntimeBinding
+    display_name: pass_chain_episode runtime binding
+    description: Canonical runtime binding for pass_chain_episode 0.1.0.
+    runtime_capability: {id: pass_chain_episode, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.pass_chain_episode.python.v1
+    implements: [op.event_linked_pass_chain_episode.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Joins relay and terminal controlled-pass records by pass episode id; does not model arbitrary chain graph search.]
+    input_bindings:
+      relay_anchors: {source: NODE_INPUT, runtime_port: relay_anchors}
+      terminal_controlled_pass_anchors: {source: NODE_INPUT, runtime_port: terminal_controlled_pass_anchors}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      pass_chain_status: {runtime_port: pass_chain_status}
 
   - id: binding.primitive.lane_occupancy.0_1_0
     kind: RuntimeBinding
@@ -1479,6 +1689,30 @@ claim_contracts:
     permitted: [controlled_pass_crossed_supplied_observed_line_under_declared_buffer]
     prohibited: [tactical_line_role_identified, defensive_line_was_broken, line_break_caused_by_pass, player_intent_inferred, pass_was_optimal, passer_intended_measured_outcome]
     unknown_conditions: [controlled_pass_evidence_missing, line_evidence_missing, release_relative_position_missing, reception_relative_position_missing, anchor_correlation_missing]
+  - id: claim.one_touch_relay.v1
+    kind: ClaimContract
+    display_name: One-Touch Relay Claims
+    description: Claims permitted for event-linked one-touch relay measurements.
+    inherits: [claim.controlled_ball_transfer.v1]
+    permitted: [event_linked_first_time_relay_observed_under_declared_thresholds]
+    prohibited: [planned_combination_inferred, third_man_combination_claimed, player_intent_inferred, pass_was_optimal, pass_probability_inferred, decision_quality_inferred, pass_crossed_line_claimed]
+    unknown_conditions: [event_linkage_missing, input_release_unknown, relay_touch_tracking_missing, relay_release_unknown]
+  - id: claim.receiver_line_transition_during_pass_leg.v1
+    kind: ClaimContract
+    display_name: Receiver Line Transition During Pass Leg Claims
+    description: Claims permitted for receiver/relay-player position transition relative to a supplied observed line.
+    inherits: [claim.observed_geometric_defensive_line.v1, claim.relative_position_to_observed_line.v1]
+    permitted: [receiver_player_transitioned_beyond_supplied_observed_line]
+    prohibited: [pass_crossed_line_claimed, defensive_line_was_broken, tactical_line_role_identified, line_break_caused_by_pass, player_intent_inferred, pass_was_optimal, pass_probability_inferred, decision_quality_inferred]
+    unknown_conditions: [relay_evidence_missing, line_evidence_missing, release_relative_position_missing, relay_relative_position_missing, anchor_correlation_missing]
+  - id: claim.pass_chain_episode.v1
+    kind: ClaimContract
+    display_name: Pass Chain Episode Claims
+    description: Claims permitted for connected relay plus terminal controlled reception.
+    inherits: [claim.one_touch_relay.v1, claim.controlled_ball_transfer.v1]
+    permitted: [event_linked_relay_and_terminal_controlled_reception_observed]
+    prohibited: [planned_combination_inferred, third_man_combination_claimed, player_intent_inferred, pass_was_optimal, pass_probability_inferred, decision_quality_inferred, tactical_causation_inferred]
+    unknown_conditions: [relay_evidence_missing, terminal_controlled_pass_evidence_missing, terminal_reception_unknown]
   - id: claim.observed_lane_occupancy.v1
     kind: ClaimContract
     display_name: Observed Lane Occupancy Claims
@@ -1508,6 +1742,14 @@ claim_contracts:
     permitted: [controlled_pass_crossed_supplied_observed_line_under_declared_buffer, declared_support_arrival_relation_satisfied, declared_lane_occupancy_requirement_satisfied, declared_local_number_requirement_satisfied]
     prohibited: [tactical_line_role_identified, defensive_line_was_broken, line_break_caused_by_pass, line_break_caused_support, player_intent_inferred, passer_intended_measured_outcome, support_quality_inferred, pressure_inferred, communication_inferred, scanning_inferred, pass_was_optimal, pass_probability_inferred, proves_pass_probability, proves_pass_optimality]
     unknown_conditions: [controlled_pass_evidence_missing, line_evidence_missing, release_relative_position_missing, reception_relative_position_missing, support_arrival_evidence_missing, lane_occupancy_evidence_missing, local_number_evidence_missing, anchor_correlation_missing, timing_coverage_incomplete]
+  - id: claim.first_time_relay_after_receiver_line_transition.v1
+    kind: ClaimContract
+    display_name: First-Time Relay After Receiver Line Transition Claims
+    description: Claims permitted for the experimental first-time relay after receiver-line-transition composition.
+    inherits: [claim.one_touch_relay.v1, claim.receiver_line_transition_during_pass_leg.v1, claim.pass_chain_episode.v1]
+    permitted: [event_linked_first_time_relay_after_receiver_line_transition_observed, terminal_controlled_reception_observed]
+    prohibited: [pass_crossed_line_claimed, defensive_line_was_broken, tactical_line_role_identified, line_break_caused_by_pass, planned_combination_inferred, third_man_combination_claimed, player_intent_inferred, pass_was_optimal, pass_probability_inferred, decision_quality_inferred]
+    unknown_conditions: [relay_evidence_missing, receiver_line_transition_evidence_missing, terminal_controlled_pass_evidence_missing, anchor_correlation_missing]
   - id: claim.defensive_block_lateral_shift.v1
     kind: ClaimContract
     display_name: Defensive Block Lateral Shift Claims
@@ -1631,6 +1873,27 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, line_break_status, line_break_reason, pass_episode_id, physical_release_frame_id, controlled_reception_frame_id, line_anchor_frame_id, line_x_m, release_relative_position_status, release_signed_distance_to_line_m, reception_relative_position_status, reception_signed_distance_to_line_m, line_buffer_m]
     optional: [release_distance_to_line_m, reception_distance_to_line_m, normalized_line_x_m]
     replay_projection: [release_frame, reception_frame, receiver_marker, observed_line_marker, crossing_badge]
+  - id: evidence.one_touch_relay.v1
+    kind: EvidenceContract
+    display_name: One-Touch Relay Evidence
+    description: Evidence required for event-linked one-touch relay measurements.
+    required: [anchor_id, anchor_frame_id, input_pass_episode_id, relay_pass_episode_id, input_passer_id, relay_player_id, declared_next_pass_recipient_id, input_physical_release_frame_id, relay_touch_frame_id, relay_physical_release_frame_id, relay_dwell_seconds, one_touch_relay_status, one_touch_relay_reason]
+    optional: [input_event_row_index, relay_event_row_index, relay_event_gap_seconds, relay_touch_ball_point, relay_touch_player_point, relay_release_ball_point, relay_release_player_point]
+    replay_projection: [input_release_frame, relay_touch_frame, relay_release_frame, passer_marker, relay_marker, onward_recipient_marker]
+  - id: evidence.receiver_line_transition_during_pass_leg.v1
+    kind: EvidenceContract
+    display_name: Receiver Line Transition During Pass Leg Evidence
+    description: Evidence required for receiver/relay-player line-transition measurements.
+    required: [anchor_id, anchor_frame_id, receiver_line_transition_status, receiver_line_transition_reason, relay_player_id, input_physical_release_frame_id, relay_touch_frame_id, line_x_m, release_relative_position_status, relay_relative_position_status]
+    optional: [release_signed_distance_to_line_m, relay_signed_distance_to_line_m, normalized_line_x_m, line_anchor_frame_id]
+    replay_projection: [input_release_frame, relay_touch_frame, relay_marker, observed_line_marker, transition_badge]
+  - id: evidence.pass_chain_episode.v1
+    kind: EvidenceContract
+    display_name: Pass Chain Episode Evidence
+    description: Evidence required for connected relay plus terminal controlled reception.
+    required: [anchor_id, anchor_frame_id, pass_chain_status, pass_chain_reason, input_pass_episode_id, relay_pass_episode_id, terminal_pass_episode_id, relay_player_id, declared_next_pass_recipient_id, terminal_receiver_id, relay_touch_frame_id, terminal_controlled_reception_frame_id]
+    optional: [terminal_forward_progression_m, terminal_controlled_pass_status, terminal_reception_ball_point, terminal_reception_receiver_point]
+    replay_projection: [input_release_frame, relay_touch_frame, terminal_reception_frame, chain_path, terminal_receiver_marker]
   - id: evidence.observed_lane_occupancy.v1
     kind: EvidenceContract
     display_name: Observed Lane Occupancy Evidence
@@ -1660,6 +1923,14 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, event_anchor_frame_id, passer_id, receiver_id, physical_release_frame_id, controlled_reception_frame_id, release_ball_point, reception_ball_point, forward_progression_m, line_status, line_reason, goal_side_buffer_m, line_band_width_m, minimum_line_defenders, defender_positions_used, relative_position_status, relative_position_reason, entity_id, entity_frame_id, entity_x_m, signed_distance_to_line_m, line_break_status, line_break_reason, pass_episode_id, line_anchor_frame_id, line_x_m, release_relative_position_status, release_signed_distance_to_line_m, reception_relative_position_status, reception_signed_distance_to_line_m, line_buffer_m, support_arrival_status, support_arrival_reason, support_anchor_frame_id, support_window_start_frame_id, support_window_end_frame_id, support_region_mode, maximum_arrival_seconds, minimum_duration_seconds, maximum_support_distance_m, minimum_supporting_players, candidate_player_ids, evaluated_candidate_player_ids, supporting_player_ids, coverage_status, reference_point, lane_occupancy_status, lane_occupancy_reason, lane_evaluation_frame_id, lane_player_scope, occupied_lanes, occupied_lane_count, lane_counts, player_lane_assignments, required_occupied_lane_count, lane_definitions, local_number_status, local_number_reason, local_number_frame_id, radius_m, minimum_difference, minimum_perspective_players, maximum_defending_players, perspective_count, defending_count, local_number_difference, perspective_in_region_player_ids, defending_in_region_player_ids]
     optional: [normalized_line_x_m, line_compactness_m, defensive_line_player_ids, defenders_goal_side_count, ambiguous_line_player_ids, entity_y_m, distance_to_line_m, release_distance_to_line_m, reception_distance_to_line_m, first_arrival_frame_id, first_arrival_seconds_after_anchor, support_duration_seconds, per_player_evidence, missing_candidate_player_ids, invalid_candidate_player_ids, missing_frame_ids, invalid_frame_ids, evaluated_player_ids, missing_player_ids, invalid_player_ids, duplicate_player_ids, outside_lane_player_ids, pitch_width_m, perspective_player_ids, defending_player_ids, evaluated_perspective_player_ids, evaluated_defending_player_ids, missing_perspective_player_ids, missing_defending_player_ids, invalid_coordinate_player_ids]
     replay_projection: [completed_pass_line, observed_line_marker, release_frame, reception_frame, support_radius, supporting_player_badge, lane_bands, local_radius, local_number_badge]
+  - id: evidence.first_time_relay_after_receiver_line_transition.v1
+    kind: EvidenceContract
+    display_name: First-Time Relay After Receiver Line Transition Evidence
+    description: Evidence required for the experimental first-time-relay-after-receiver-line-transition composition.
+    inherits: [evidence.one_touch_relay.v1, evidence.receiver_line_transition_during_pass_leg.v1, evidence.pass_chain_episode.v1, evidence.controlled_ball_transfer.v1, evidence.observed_geometric_defensive_line.v1, evidence.relative_position_to_observed_line.v1]
+    required: [anchor_id, anchor_frame_id, event_anchor_frame_id, input_pass_episode_id, relay_pass_episode_id, input_passer_id, passer_id, receiver_id, relay_player_id, declared_next_pass_recipient_id, physical_release_frame_id, controlled_reception_frame_id, input_physical_release_frame_id, relay_touch_frame_id, relay_physical_release_frame_id, terminal_controlled_reception_frame_id, release_ball_point, reception_ball_point, relay_dwell_seconds, one_touch_relay_status, one_touch_relay_reason, receiver_line_transition_status, receiver_line_transition_reason, line_status, line_reason, goal_side_buffer_m, line_band_width_m, minimum_line_defenders, defender_positions_used, line_x_m, relative_position_status, relative_position_reason, entity_id, entity_frame_id, entity_x_m, signed_distance_to_line_m, line_buffer_m, release_relative_position_status, relay_relative_position_status, pass_chain_status, pass_chain_reason, terminal_pass_episode_id, terminal_receiver_id, forward_progression_m]
+    optional: [relay_touch_ball_point, relay_touch_player_point, release_signed_distance_to_line_m, relay_signed_distance_to_line_m, terminal_forward_progression_m, terminal_controlled_pass_status, terminal_reception_ball_point, terminal_reception_receiver_point]
+    replay_projection: [input_release_frame, relay_touch_frame, relay_release_frame, terminal_reception_frame, observed_line_marker, relay_marker, chain_path, transition_badge]
   - id: evidence.defensive_block_lateral_shift.v1
     kind: EvidenceContract
     display_name: Defensive Block Lateral Shift Evidence
@@ -1798,6 +2069,27 @@ exposure_policies:
     subject_ref: runtime:relation:local_number_relation:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.one_touch_relay_episode.0_1_0
+    kind: ExposurePolicy
+    display_name: one_touch_relay_episode exposure
+    description: Exposure policy for one_touch_relay_episode.
+    subject_ref: runtime:primitive:one_touch_relay_episode:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.receiver_line_transition_during_pass_leg.0_1_0
+    kind: ExposurePolicy
+    display_name: receiver_line_transition_during_pass_leg exposure
+    description: Exposure policy for receiver_line_transition_during_pass_leg.
+    subject_ref: runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.pass_chain_episode.0_1_0
+    kind: ExposurePolicy
+    display_name: pass_chain_episode exposure
+    description: Exposure policy for pass_chain_episode.
+    subject_ref: runtime:primitive:pass_chain_episode:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
   - id: exposure.runtime.signed_lateral_shift.0_1_0
     kind: ExposurePolicy
     display_name: signed_lateral_shift exposure
@@ -1889,6 +2181,14 @@ exposure_policies:
     ai_compiler: ALLOWED
     product: ALLOWED
     reasons: [experimental_recipe_selection_allowed]
+  - id: exposure.recipe.first_time_relay_after_receiver_line_transition.v1
+    kind: ExposurePolicy
+    display_name: first_time_relay_after_receiver_line_transition_v1 exposure
+    description: Exposure policy for the first-time relay after receiver line-transition experimental preset.
+    subject_ref: recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [experimental_recipe_selection_allowed]
   - id: exposure.composition.ai_corridor_destination.2026_06_23
     kind: ExposurePolicy
     display_name: AI corridor destination composition exposure
@@ -1913,6 +2213,38 @@ projection_policies:
         permitted_fields: []
         rationale: Verified Hermes-authored composition is intentionally new relative to the product baseline.
         review_condition: Remove or update this waiver when the product baseline intentionally includes the composition.
+      - subject_ref: runtime:primitive:one_touch_relay_episode:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 77a5d0514dc92b60a6974755690cd4c6b10c388c78f4aee87f1162b6361cd006
+        permitted_fields: []
+        rationale: One-touch relay is intentionally added as part of the first pass-chain package.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: c908635db523d3a50c6589d1d57c9325cbb3cb918a1f25d046fc29db42954ec9
+        permitted_fields: []
+        rationale: Receiver line transition is intentionally added as part of the first pass-chain package.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:pass_chain_episode:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 7e944b4c55d731b4dd2b6ec65011c38d21ebf1d2606f154df865a293cb5ca0c0
+        permitted_fields: []
+        rationale: Pass-chain episode is intentionally added as part of the first pass-chain package.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:defensive_line_model:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: bd6f7561243d065bbf5a50c3f3882d4e3d20600bb1a83bc68f661b0f0872b5df
+        projection_contract_hash: 5f34c5bc61390c519c5acb5fa3393eb57cfa0bfa2d0da07f630578d250993355
+        permitted_fields: [parameters]
+        rationale: Existing line model accepts additional relay anchor-frame fields for the pass-chain package.
+        review_condition: Re-review if the changed field set expands beyond bounded parameter allowed-values.
+      - subject_ref: runtime:primitive:relative_position_to_line:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: ba5ab172992cc5539d648abde0d7c4210e0818ab2a5998e947b2a70f4dca6531
+        projection_contract_hash: 57fef100397bf1e80362c705abd4ee7203ad45e86bf31ca24706f918cade954e
+        permitted_fields: [parameters]
+        rationale: Existing relative-position helper accepts additional relay entity/frame fields for the pass-chain package.
+        review_condition: Re-review if the changed field set expands beyond bounded parameter allowed-values.
   - id: projection.ai.v1
     kind: ProjectionPolicy
     display_name: AI Projection Policy
@@ -1933,6 +2265,44 @@ projection_policies:
         permitted_fields: []
         rationale: Line-break support response is intentionally added as the first composed line-package recipe relative to the model-visible knowledge-pack baseline.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the recipe.
+      - subject_ref: recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 9ed7dd94d66ac65628b54512990b2d1ddd14d588e9dde931d81295cf1ea7d605
+        permitted_fields: []
+        rationale: First-time relay after receiver line transition is intentionally added as the first pass-chain package capstone.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the recipe.
+      - subject_ref: runtime:primitive:one_touch_relay_episode:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 77a5d0514dc92b60a6974755690cd4c6b10c388c78f4aee87f1162b6361cd006
+        permitted_fields: []
+        rationale: One-touch relay is intentionally added as an authorable pass-chain capability.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: c908635db523d3a50c6589d1d57c9325cbb3cb918a1f25d046fc29db42954ec9
+        permitted_fields: []
+        rationale: Receiver line transition is intentionally added as an authorable pass-chain capability.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:pass_chain_episode:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 7e944b4c55d731b4dd2b6ec65011c38d21ebf1d2606f154df865a293cb5ca0c0
+        permitted_fields: []
+        rationale: Pass-chain episode is intentionally added as an authorable pass-chain capability.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:defensive_line_model:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: bd6f7561243d065bbf5a50c3f3882d4e3d20600bb1a83bc68f661b0f0872b5df
+        projection_contract_hash: 5f34c5bc61390c519c5acb5fa3393eb57cfa0bfa2d0da07f630578d250993355
+        permitted_fields: [parameters]
+        rationale: Existing line model accepts additional relay anchor-frame fields for the pass-chain package.
+        review_condition: Re-review if the changed field set expands beyond bounded parameter allowed-values.
+      - subject_ref: runtime:primitive:relative_position_to_line:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: ba5ab172992cc5539d648abde0d7c4210e0818ab2a5998e947b2a70f4dca6531
+        projection_contract_hash: 57fef100397bf1e80362c705abd4ee7203ad45e86bf31ca24706f918cade954e
+        permitted_fields: [parameters]
+        rationale: Existing relative-position helper accepts additional relay entity/frame fields for the pass-chain package.
+        review_condition: Re-review if the changed field set expands beyond bounded parameter allowed-values.
       - subject_ref: recipe:ball_side_block_shift_v1:1.0.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: 00bc3c9303cd4b29f5cab4d760d741d7fcc89c69107ebe7f55c13a7786ef5c9a
@@ -2084,6 +2454,36 @@ maturity_assessments:
     validation: VERIFIED
     agent_safety: APPROVED
     product: EXPOSED
+  - id: maturity.runtime.one_touch_relay_episode.0_1_0
+    kind: MaturityAssessment
+    display_name: one_touch_relay_episode maturity
+    description: Maturity assessment for one_touch_relay_episode.
+    subject_ref: runtime:primitive:one_touch_relay_episode:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.receiver_line_transition_during_pass_leg.0_1_0
+    kind: MaturityAssessment
+    display_name: receiver_line_transition_during_pass_leg maturity
+    description: Maturity assessment for receiver_line_transition_during_pass_leg.
+    subject_ref: runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.pass_chain_episode.0_1_0
+    kind: MaturityAssessment
+    display_name: pass_chain_episode maturity
+    description: Maturity assessment for pass_chain_episode.
+    subject_ref: runtime:primitive:pass_chain_episode:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
   - id: maturity.runtime.signed_lateral_shift.0_1_0
     kind: MaturityAssessment
     display_name: signed_lateral_shift maturity
@@ -2204,6 +2604,16 @@ maturity_assessments:
     validation: VERIFIED
     agent_safety: APPROVED
     product: EXPOSED
+  - id: maturity.recipe.first_time_relay_after_receiver_line_transition.v1
+    kind: MaturityAssessment
+    display_name: first_time_relay_after_receiver_line_transition_v1 maturity
+    description: Maturity assessment for the first-time relay after receiver line-transition experimental preset.
+    subject_ref: recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
   - id: maturity.composition.ai_corridor_destination.2026_06_23
     kind: MaturityAssessment
     display_name: AI corridor destination composition maturity
@@ -2256,6 +2666,14 @@ plan_artifacts:
     promotion_status: EXPERIMENTAL_PRESET
     exact_typed_plan_ref: config/query-plans/line_break_support_response.experimental.v1.json
     recipe_ref: recipe.line_break_support_response.v1
+  - id: plan.first_time_relay_after_receiver_line_transition.v1
+    kind: PlanArtifact
+    display_name: First-Time Relay After Receiver Line Transition Typed Plan
+    description: Exact current typed plan artifact for the first-time relay after receiver line-transition experimental recipe.
+    origin: MANUAL_PRESET
+    promotion_status: EXPERIMENTAL_PRESET
+    exact_typed_plan_ref: config/query-plans/first_time_relay_after_receiver_line_transition.experimental.v1.json
+    recipe_ref: recipe.first_time_relay_after_receiver_line_transition.v1
   - id: plan.ai_corridor_destination.2026_06_23
     kind: PlanArtifact
     display_name: AI Corridor Destination Plan Artifact
@@ -2325,6 +2743,18 @@ recipe_definitions:
     profile_refs: [profile.line_break_support_response_default.v1]
     claim_contract_ref: claim.line_break_support_response.v1
     evidence_contract_ref: evidence.line_break_support_response.v1
+  - id: recipe.first_time_relay_after_receiver_line_transition.v1
+    kind: RecipeDefinition
+    display_name: First-Time Relay After Receiver Line Transition Recipe Mapping
+    description: Semantic mapping for the first-time relay after receiver line-transition experimental recipe.
+    recipe_id: first_time_relay_after_receiver_line_transition_v1
+    recipe_version: 0.1.0
+    concept_ref: concept.first_time_relay_after_receiver_line_transition
+    plan_artifact_ref: plan.first_time_relay_after_receiver_line_transition.v1
+    dependency_refs: [one_touch_relay_episode, defensive_line_model, relative_position_to_line, receiver_line_transition_during_pass_leg, controlled_pass_episode, pass_chain_episode, eq]
+    profile_refs: [profile.first_time_relay_after_receiver_line_transition_default.v1]
+    claim_contract_ref: claim.first_time_relay_after_receiver_line_transition.v1
+    evidence_contract_ref: evidence.first_time_relay_after_receiver_line_transition.v1
 
 composition_instances:
   - id: composition.ai_corridor_destination.2026_06_23
