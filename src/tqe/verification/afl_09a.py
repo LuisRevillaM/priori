@@ -86,7 +86,8 @@ def verify_afl_09a_validation_factory() -> dict[str, Any]:
             "does": [
                 "read-compare frozen expectations",
                 "attach reusable proof gates to existing verifiers",
-                "validate proof-carrying PASS/FAIL/UNKNOWN branch requirements",
+                "validate proof-carrying PASS/FAIL/UNKNOWN branch requirements on a frozen synthetic fixture",
+                "regression-pin real-data result IDs, counts, plan hashes, evidence failures, and result signatures",
                 "block silent refresh in normal verification mode",
             ],
             "does_not": [
@@ -101,8 +102,10 @@ def verify_afl_09a_validation_factory() -> dict[str, Any]:
         ],
         "branch_fixture": {
             "path": str(BRANCH_FIXTURE_PATH),
+            "type": "frozen_synthetic_fixture",
             "status": branch_check.get("status"),
             "observed_judgements": branch_check.get("observed_judgements"),
+            "claim": "Exercises branch discipline; does not claim real-row FAIL/UNKNOWN coverage.",
         },
         "checks": {
             "two_existing_verifiers_on_spine": len(bootstrap_reports) >= 2
@@ -119,8 +122,9 @@ def verify_afl_09a_validation_factory() -> dict[str, Any]:
                 report.get("validation_factory", {}).get("silent_refresh_blocked") is True
                 for report in bootstrap_reports
             ),
-            "proof_carrying_branches_exercised": branch_check.get("status") == "PASS"
+            "synthetic_proof_carrying_branches_exercised": branch_check.get("status") == "PASS"
             and set(branch_check.get("observed_judgements", [])) == {"FAIL", "PASS", "UNKNOWN"},
+            "real_rows_regression_pinned_not_branch_claimed": True,
         },
         "findings": findings,
     }

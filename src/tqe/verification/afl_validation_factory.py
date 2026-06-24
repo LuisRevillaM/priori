@@ -30,6 +30,7 @@ class ValidationFactorySpec:
     required_prohibited_claims: frozenset[str] = frozenset()
     required_check_keys: tuple[str, ...] = ()
     result_id_mode: str = "exact"
+    require_tracked_expectation: bool = True
 
 
 def attach_validation_factory(
@@ -58,6 +59,7 @@ def attach_validation_factory(
         compared_fields = _compared_fields()
         findings.extend(_compare_snapshot(snapshot, actual, compared_fields))
         findings.extend(_validate_snapshot_provenance(snapshot, spec))
+        findings.extend(_validate_expectation_file_state(spec))
         comparison_status = "PASS" if not findings else "FAIL"
 
     findings.extend(_validate_prohibited_claims(report, spec))
@@ -74,6 +76,8 @@ def attach_validation_factory(
         "freeze_mode": freeze_mode,
         "no_tautological_verification": not freeze_mode,
         "silent_refresh_blocked": not freeze_mode,
+        "expectation_file_tracked": _path_tracked(spec.expectation_path),
+        "expectation_file_unchanged": not _paths_dirty([str(spec.expectation_path)]),
         "compared_fields": compared_fields,
         "actual": actual,
         "expectation_hash": None
@@ -294,6 +298,37 @@ def _validate_snapshot_provenance(
                 "path": "freeze_provenance.threshold_version",
             }
         )
+    if provenance.get("runtime_semantics_dirty") is True:
+        findings.append(
+            {
+                "code": "runtime_semantics_dirty_at_freeze",
+                "message": "Frozen expectation was created while runtime/query/registry semantics were dirty.",
+                "path": "freeze_provenance.runtime_semantics_dirty",
+            }
+        )
+    return findings
+
+
+def _validate_expectation_file_state(spec: ValidationFactorySpec) -> list[dict[str, str]]:
+    if not spec.require_tracked_expectation:
+        return []
+    findings: list[dict[str, str]] = []
+    if not _path_tracked(spec.expectation_path):
+        findings.append(
+            {
+                "code": "expectation_file_untracked",
+                "message": "Frozen expectation must be a git-tracked artifact.",
+                "path": str(spec.expectation_path),
+            }
+        )
+    if _paths_dirty([str(spec.expectation_path)]):
+        findings.append(
+            {
+                "code": "expectation_file_dirty",
+                "message": "Frozen expectation must be unchanged during normal verification.",
+                "path": str(spec.expectation_path),
+            }
+        )
     return findings
 
 
@@ -371,8 +406,28 @@ def _worktree_dirty() -> bool:
 
 def _paths_dirty(paths: list[str]) -> bool:
     try:
-        subprocess.check_call(["git", "diff", "--quiet", "--", *paths])
-        subprocess.check_call(["git", "diff", "--cached", "--quiet", "--", *paths])
+        subprocess.check_call(
+            ["git", "diff", "--quiet", "--", *paths],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        subprocess.check_call(
+            ["git", "diff", "--cached", "--quiet", "--", *paths],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         return False
     except Exception:
         return True
+
+
+def _path_tracked(path: Path) -> bool:
+    try:
+        subprocess.check_call(
+            ["git", "ls-files", "--error-unmatch", str(path)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        return True
+    except Exception:
+        return False

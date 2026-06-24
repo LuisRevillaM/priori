@@ -25,6 +25,7 @@ class ValidationFactoryTests(unittest.TestCase):
                 source_verifier="tests.test_afl_validation_factory",
                 threshold_version="test.v1",
                 required_check_keys=("generic_execution",),
+                require_tracked_expectation=False,
             )
             report = _report()
             rows = [_row("result-a")]
@@ -51,6 +52,64 @@ class ValidationFactoryTests(unittest.TestCase):
             self.assertEqual(drifted["validation_factory"]["status"], "FAIL")
             self.assertIn("frozen_expectation_mismatch", _finding_codes(drifted))
             self.assertEqual(expectation_path.read_text(encoding="utf-8"), frozen_payload)
+
+    def test_runtime_semantics_dirty_freeze_provenance_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            expectation_path = Path(tmp) / "expectation.json"
+            spec = ValidationFactorySpec(
+                factory_id="test.factory",
+                subject_ref="runtime:primitive:test:0.1.0",
+                expectation_path=expectation_path,
+                source_verifier="tests.test_afl_validation_factory",
+                threshold_version="test.v1",
+                required_check_keys=("generic_execution",),
+                require_tracked_expectation=False,
+            )
+            old_env = os.environ.get(FREEZE_ENV)
+            os.environ[FREEZE_ENV] = "1"
+            try:
+                attach_validation_factory(_report(), rows=[_row("result-a")], spec=spec)
+            finally:
+                if old_env is None:
+                    os.environ.pop(FREEZE_ENV, None)
+                else:
+                    os.environ[FREEZE_ENV] = old_env
+
+            payload = json.loads(expectation_path.read_text(encoding="utf-8"))
+            payload["freeze_provenance"]["runtime_semantics_dirty"] = True
+            expectation_path.write_text(
+                json.dumps(payload, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+
+            result = attach_validation_factory(_report(), rows=[_row("result-a")], spec=spec)
+            self.assertEqual(result["validation_factory"]["status"], "FAIL")
+            self.assertIn("runtime_semantics_dirty_at_freeze", _finding_codes(result))
+
+    def test_untracked_expectation_fails_when_required(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            expectation_path = Path(tmp) / "expectation.json"
+            spec = ValidationFactorySpec(
+                factory_id="test.factory",
+                subject_ref="runtime:primitive:test:0.1.0",
+                expectation_path=expectation_path,
+                source_verifier="tests.test_afl_validation_factory",
+                threshold_version="test.v1",
+                required_check_keys=("generic_execution",),
+            )
+            old_env = os.environ.get(FREEZE_ENV)
+            os.environ[FREEZE_ENV] = "1"
+            try:
+                attach_validation_factory(_report(), rows=[_row("result-a")], spec=spec)
+            finally:
+                if old_env is None:
+                    os.environ.pop(FREEZE_ENV, None)
+                else:
+                    os.environ[FREEZE_ENV] = old_env
+
+            result = attach_validation_factory(_report(), rows=[_row("result-a")], spec=spec)
+            self.assertEqual(result["validation_factory"]["status"], "FAIL")
+            self.assertIn("expectation_file_untracked", _finding_codes(result))
 
     def test_proof_carrying_branch_rules(self) -> None:
         result = validate_proof_carrying_records(
