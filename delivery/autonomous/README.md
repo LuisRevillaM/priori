@@ -1,5 +1,22 @@
 # Autonomous Delivery Governance
 
+## Read first (binding)
+
+Before using the onboarding brief or planning AFL-08/AFL-09 work, read:
+
+- **`ONBOARDING_RECONCILE_WITH_REALITY.md`**
+- **`AGENT_EXECUTION_MODE.md`**
+
+`ONBOARDING_RECONCILE_WITH_REALITY.md` is binding where it corrects informal brief language:
+capability passports are **generated projections**, not hand-authored sources of truth;
+standard-library/passport work runs under **AFL-08/AFL-09** unless the protected contract is formally
+amended. `AGENT_EXECUTION_MODE.md` sets the operating posture: bias to end-to-end execution, use the
+existing rails, add ceremony only when it prevents drift, false claims, or unreproducible work.
+
+Read these before acting on the broader brief.
+
+---
+
 This directory contains two kinds of artifacts.
 
 ## Imported References
