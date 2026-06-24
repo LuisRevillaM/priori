@@ -1,0 +1,500 @@
+{
+  "checks": [
+    {
+      "details": {
+        "outcome": "COMPILED"
+      },
+      "id": "ball_side_block_shift.outcome_compiled",
+      "status": "PASS"
+    },
+    {
+      "details": {},
+      "id": "ball_side_block_shift.normal_form_complete",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "actual": "ball_side_block_shift_v1",
+        "expected": "ball_side_block_shift_v1"
+      },
+      "id": "ball_side_block_shift.recipe_id_matches_expectation",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "bound_plan_hash": "4a5a1dabc168ffcc511923700ddb28af67393fb13c7caccd7b92689289d8b4ce"
+      },
+      "id": "ball_side_block_shift.lowered_document_binds",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "lowered_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+        "source_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057"
+      },
+      "id": "ball_side_block_shift.lowered_document_matches_source_without_overrides",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "outcome": "COMPILED"
+      },
+      "id": "high_bypass_completed_pass.outcome_compiled",
+      "status": "PASS"
+    },
+    {
+      "details": {},
+      "id": "high_bypass_completed_pass.normal_form_complete",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "actual": "high_bypass_completed_pass_v1",
+        "expected": "high_bypass_completed_pass_v1"
+      },
+      "id": "high_bypass_completed_pass.recipe_id_matches_expectation",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "bound_plan_hash": "79d7dffc50061291943e00d46f856aa6efc91e5ec6535149020b5dbb149d350e"
+      },
+      "id": "high_bypass_completed_pass.lowered_document_binds",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "lowered_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+        "source_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522"
+      },
+      "id": "high_bypass_completed_pass.lowered_document_matches_source_without_overrides",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "outcome": "COMPILED",
+        "override": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 6
+        }
+      },
+      "id": "high_bypass.parameter_override_survives_lowering",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "base": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+        "override": "defc40c2e22eea4f769330501d48bdfc2bd80c277581cb0361665bbcc3eaee0a"
+      },
+      "id": "high_bypass.parameter_override_changes_document_hash",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "blocking_gap": {
+          "claim_boundary": "Compiler errors are not football capability gaps.",
+          "concept": "minimum_bypassed_opponents",
+          "evidence_obligations": [
+            "deterministic_error_message"
+          ],
+          "executable_prefix_exists": false,
+          "executable_suffix_exists": false,
+          "expected_input": [
+            {
+              "description": "A valid SCP-1 semantic expression.",
+              "name": "semantic_expression",
+              "semantic_type": {
+                "container": "program",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "SemanticExpression"
+              }
+            }
+          ],
+          "expected_output": {
+            "container": "document",
+            "temporal_basis": "canonical_frame_time",
+            "unit": "none",
+            "value": "TacticalQueryDocument"
+          },
+          "kind": "COMPILER_ERROR",
+          "message": "Parameter minimum_bypassed_opponents expects count, got second",
+          "required_modalities": [],
+          "semantic_basis": "compiler_boundary",
+          "surrounding_program_type_correct": false
+        },
+        "expression_id": "semantic_high_bypass_completed_pass_v1",
+        "normal_form_complete": true,
+        "notes": [
+          "Parameter minimum_bypassed_opponents expects count, got second"
+        ],
+        "outcome": "COMPILER_ERROR",
+        "schema_version": "1.0",
+        "semantic_program_hash": "799cd92aeaaefcbb6845ad345aa34054157cfa06a4287171b0f31969183528a6",
+        "support": {
+          "compilable": true,
+          "executable": true,
+          "expressible": true,
+          "identifiable": true,
+          "validated": true
+        }
+      },
+      "id": "high_bypass.invalid_parameter_unit_fails_closed",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "actual_concept": "restart_taken_candidate",
+        "actual_gap_kind": "MISSING_OPERATIONALIZATION",
+        "actual_outcome": "CAPABILITY_GAP",
+        "expected_concept": "restart_taken_candidate",
+        "expected_gap_kind": "MISSING_OPERATIONALIZATION",
+        "expected_outcome": "CAPABILITY_GAP"
+      },
+      "id": "goal_kick_restart_candidate.expected_gap_outcome",
+      "status": "PASS"
+    },
+    {
+      "details": {},
+      "id": "goal_kick_restart_candidate.gap_does_not_emit_runtime_document",
+      "status": "PASS"
+    },
+    {
+      "details": {},
+      "id": "goal_kick_restart_candidate.normal_form_complete",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "actual_concept": "player_intent_from_scanning_and_body_orientation",
+        "actual_gap_kind": "MODALITY_GAP",
+        "actual_outcome": "MODALITY_GAP",
+        "expected_concept": "player_intent_from_scanning_and_body_orientation",
+        "expected_gap_kind": "MODALITY_GAP",
+        "expected_outcome": "MODALITY_GAP"
+      },
+      "id": "player_intent_modality.expected_gap_outcome",
+      "status": "PASS"
+    },
+    {
+      "details": {},
+      "id": "player_intent_modality.gap_does_not_emit_runtime_document",
+      "status": "PASS"
+    },
+    {
+      "details": {},
+      "id": "player_intent_modality.normal_form_complete",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "actual_concept": "support_arrival_profile",
+        "actual_gap_kind": "CLARIFICATION_REQUIRED",
+        "actual_outcome": "CLARIFICATION_REQUIRED",
+        "expected_concept": "support_arrival_profile",
+        "expected_gap_kind": "CLARIFICATION_REQUIRED",
+        "expected_outcome": "CLARIFICATION_REQUIRED"
+      },
+      "id": "support_arrival_clarification.expected_gap_outcome",
+      "status": "PASS"
+    },
+    {
+      "details": {},
+      "id": "support_arrival_clarification.gap_does_not_emit_runtime_document",
+      "status": "PASS"
+    },
+    {
+      "details": {},
+      "id": "support_arrival_clarification.normal_form_complete",
+      "status": "PASS"
+    }
+  ],
+  "compiled": {
+    "ball_side_block_shift": {
+      "bound_plan_hash": "4a5a1dabc168ffcc511923700ddb28af67393fb13c7caccd7b92689289d8b4ce",
+      "expression_id": "semantic_ball_side_block_shift_v1",
+      "lowered_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+      "normal_form_complete": true,
+      "notes": [
+        "lowered through existing TacticalQueryDocument",
+        "bound by existing deterministic binder"
+      ],
+      "outcome": "COMPILED",
+      "plan_hash": "6ffa2ed7df43e999183f1b9135f0d64382dd01b00f044394a67ebccdd6c647c9",
+      "runtime_plan_id": "ball_side_block_shift_ir_v1",
+      "runtime_recipe_id": "ball_side_block_shift_v1",
+      "schema_version": "1.0",
+      "semantic_program_hash": "d49b5084dfd71dc146ca88a3e3d5c4c3f0a4bcc114cc146c70351d4cdd00a518",
+      "support": {
+        "compilable": true,
+        "executable": true,
+        "expressible": true,
+        "identifiable": true,
+        "validated": true
+      }
+    },
+    "high_bypass_completed_pass": {
+      "bound_plan_hash": "79d7dffc50061291943e00d46f856aa6efc91e5ec6535149020b5dbb149d350e",
+      "expression_id": "semantic_high_bypass_completed_pass_v1",
+      "lowered_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+      "normal_form_complete": true,
+      "notes": [
+        "lowered through existing TacticalQueryDocument",
+        "bound by existing deterministic binder"
+      ],
+      "outcome": "COMPILED",
+      "plan_hash": "b9dfede28be2904a2d74d451c33d25b3f6fe29bbdd3b911276630014d16821ce",
+      "runtime_plan_id": "m2a_high_bypass_completed_pass",
+      "runtime_recipe_id": "high_bypass_completed_pass_v1",
+      "schema_version": "1.0",
+      "semantic_program_hash": "ad30c7640338591aefe12249093458bc29b8912ec768182657f432f59e85d558",
+      "support": {
+        "compilable": true,
+        "executable": true,
+        "expressible": true,
+        "identifiable": true,
+        "validated": true
+      }
+    }
+  },
+  "gaps": {
+    "goal_kick_restart_candidate": {
+      "blocking_gap": {
+        "claim_boundary": "Can at most support a restart candidate until authoritative stoppage and last-touch evidence exist.",
+        "concept": "restart_taken_candidate",
+        "evidence_obligations": [
+          "stationary_ball_interval",
+          "restart_location",
+          "contact_actor",
+          "first_live_ball_frame"
+        ],
+        "executable_prefix_exists": false,
+        "executable_suffix_exists": false,
+        "expected_input": [
+          {
+            "description": "Whether the ball is out of active play before the restart-like action.",
+            "name": "dead_ball_state",
+            "semantic_type": {
+              "container": "state",
+              "entity_scope": "match",
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "DeadBallState"
+            }
+          },
+          {
+            "description": "Ball position during the stationary restart setup.",
+            "name": "ball_location",
+            "semantic_type": {
+              "container": "point",
+              "entity_scope": "ball",
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "BallPoint"
+            }
+          },
+          {
+            "description": "Player candidate for the restart contact.",
+            "name": "contact_candidate",
+            "semantic_type": {
+              "container": "entity",
+              "entity_scope": "player",
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "PlayerRef"
+            }
+          },
+          {
+            "description": "First live-ball transition after the stationary interval.",
+            "name": "ball_motion_transition",
+            "semantic_type": {
+              "container": "transition",
+              "entity_scope": "ball",
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "BallMotionTransition"
+            }
+          }
+        ],
+        "expected_output": {
+          "cardinality": "collection",
+          "container": "candidate_set",
+          "entity_scope": "match",
+          "temporal_basis": "canonical_frame_time",
+          "unit": "none",
+          "value": "RestartTakenCandidate"
+        },
+        "kind": "MISSING_OPERATIONALIZATION",
+        "message": "Missing operationalization: restart_taken_candidate.",
+        "required_modalities": [
+          "tracking"
+        ],
+        "semantic_basis": "reconstructed_anchor",
+        "surrounding_program_type_correct": true
+      },
+      "expression_id": "semantic_goal_kick_restart_candidate_gap_v1",
+      "normal_form_complete": true,
+      "notes": [
+        "typed semantic gap returned without executable runtime document"
+      ],
+      "outcome": "CAPABILITY_GAP",
+      "schema_version": "1.0",
+      "semantic_program_hash": "a3fdf9b8d3b07740ae7d8b9c90e6ee5e5269e24cb0dfd1d5034d7148fd521172",
+      "support": {
+        "compilable": true,
+        "executable": false,
+        "expressible": true,
+        "identifiable": false,
+        "validated": false
+      }
+    },
+    "player_intent_modality": {
+      "blocking_gap": {
+        "claim_boundary": "Current tracking/events data can show observed movement and ball/player positions, not private intent from scanning or body angle.",
+        "concept": "player_intent_from_scanning_and_body_orientation",
+        "evidence_obligations": [
+          "head_check_or_gaze_signal",
+          "body_orientation_signal",
+          "validated_intent_profile"
+        ],
+        "executable_prefix_exists": true,
+        "executable_suffix_exists": false,
+        "expected_input": [
+          {
+            "description": "Observed head-check or gaze behavior.",
+            "name": "scanning_signal",
+            "semantic_type": {
+              "container": "frame_signal",
+              "entity_scope": "player",
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "ScanningState"
+            }
+          },
+          {
+            "description": "Observed or estimated torso/hip orientation.",
+            "name": "body_orientation",
+            "semantic_type": {
+              "container": "frame_signal",
+              "entity_scope": "player",
+              "temporal_basis": "canonical_frame_time",
+              "unit": "degree",
+              "value": "BodyOrientation"
+            }
+          }
+        ],
+        "expected_output": {
+          "container": "frame_signal",
+          "entity_scope": "player",
+          "temporal_basis": "canonical_frame_time",
+          "unit": "none",
+          "value": "IntendedReceiverCandidate"
+        },
+        "kind": "MODALITY_GAP",
+        "message": "Missing modality: scanning and body orientation are not available in the current dataset.",
+        "required_modalities": [
+          "video",
+          "pose_or_body_orientation"
+        ],
+        "semantic_basis": "unavailable_modality",
+        "surrounding_program_type_correct": true
+      },
+      "expression_id": "semantic_player_intent_modality_gap_v1",
+      "normal_form_complete": true,
+      "notes": [
+        "typed semantic gap returned without executable runtime document"
+      ],
+      "outcome": "MODALITY_GAP",
+      "schema_version": "1.0",
+      "semantic_program_hash": "b8e2853b4812bef3e53992f427ae015dfd1cd27bcdb5047366bff550f927c6ca",
+      "support": {
+        "compilable": true,
+        "executable": false,
+        "expressible": true,
+        "identifiable": false,
+        "validated": false
+      }
+    },
+    "support_arrival_clarification": {
+      "blocking_gap": {
+        "claim_boundary": "Support cannot be measured until its geometry and timing are specified.",
+        "concept": "support_arrival_profile",
+        "evidence_obligations": [
+          "support_definition",
+          "time_window"
+        ],
+        "executable_prefix_exists": false,
+        "executable_suffix_exists": false,
+        "expected_input": [
+          {
+            "description": "Whether support means close option, same-lane option, behind-ball outlet, ahead-of-ball runner, or another relation.",
+            "name": "support_definition",
+            "semantic_type": {
+              "container": "definition_profile",
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "SupportDefinition"
+            }
+          },
+          {
+            "description": "How soon the support must arrive or remain available.",
+            "name": "time_window",
+            "semantic_type": {
+              "container": "parameter",
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Duration"
+            }
+          }
+        ],
+        "expected_output": {
+          "container": "definition_profile",
+          "temporal_basis": "canonical_frame_time",
+          "unit": "none",
+          "value": "SupportArrivalProfile"
+        },
+        "kind": "CLARIFICATION_REQUIRED",
+        "message": "Clarification required: define support and the time window.",
+        "required_modalities": [
+          "tracking",
+          "events"
+        ],
+        "semantic_basis": "ambiguous_analyst_language",
+        "surrounding_program_type_correct": true
+      },
+      "expression_id": "semantic_support_arrival_clarification_v1",
+      "normal_form_complete": true,
+      "notes": [
+        "typed semantic gap returned without executable runtime document"
+      ],
+      "outcome": "CLARIFICATION_REQUIRED",
+      "schema_version": "1.0",
+      "semantic_program_hash": "a73e690b56b07c090b5d61fa5462c064eb781d2a5a54d9131d7203f6c372f36b",
+      "support": {
+        "compilable": true,
+        "executable": false,
+        "expressible": true,
+        "identifiable": false,
+        "validated": false
+      }
+    }
+  },
+  "milestone": "SCP-1L",
+  "schema_version": "scp1.verification.v1",
+  "status": "PASS",
+  "summary": {
+    "checks_failed": 0,
+    "checks_passed": 22,
+    "checks_total": 22,
+    "executable_programs": [
+      "ball_side_block_shift",
+      "high_bypass_completed_pass"
+    ],
+    "gap_programs": [
+      "goal_kick_restart_candidate",
+      "player_intent_modality",
+      "support_arrival_clarification"
+    ]
+  }
+}

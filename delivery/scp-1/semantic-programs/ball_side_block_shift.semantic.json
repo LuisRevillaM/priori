@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "expression_id": "semantic_ball_side_block_shift_v1",
+  "expression_version": "0.1.0",
+  "display_name": "Ball-Side Block Shift",
+  "query_text": "Show moments where the defending block shifts toward the ball side before a wide entry.",
+  "description": "Semantic expression for the reviewed ball-side block-shift recipe. It proves that a reviewed recipe can be represented as Football Query Normal Form and lowered through the existing runtime.",
+  "normal_form": {
+    "scope": {
+      "summary": "Selected matches, both halves, from the requested attacking-team perspective.",
+      "semantic_refs": [
+        "scope.selected_matches",
+        "scope.attacking_team_perspective"
+      ],
+      "runtime_refs": [
+        "default_invocation.match_ids",
+        "default_invocation.periods",
+        "default_invocation.perspective_team_role"
+      ]
+    },
+    "anchor": {
+      "summary": "Possession moments that can be evaluated for ball-side defensive displacement and wide-entry timing.",
+      "semantic_refs": [
+        "anchor.possession_segment"
+      ],
+      "runtime_refs": [
+        "possession.anchors"
+      ]
+    },
+    "bind": {
+      "summary": "Attacking team, defending team, ball position, defensive outfield unit, and field-side regions.",
+      "semantic_refs": [
+        "bind.defensive_unit",
+        "bind.ball_side_region"
+      ],
+      "runtime_refs": [
+        "defensive_centroid",
+        "ball_lateral_fraction"
+      ]
+    },
+    "measure": {
+      "summary": "Measure signed lateral defensive shift, ball-side orientation, wide-entry timing, and quality gates.",
+      "semantic_refs": [
+        "measure.signed_lateral_shift",
+        "measure.wide_entry"
+      ],
+      "runtime_refs": [
+        "signed_shift.signed_shift_metres",
+        "wide_entry.episodes"
+      ]
+    },
+    "match": {
+      "summary": "Require the displacement, timing, and persistence predicates declared by the reviewed profile.",
+      "semantic_refs": [
+        "operator.gte",
+        "operator.persists_for"
+      ],
+      "runtime_refs": [
+        "signed_shift_metres",
+        "wide_entry_persists"
+      ]
+    },
+    "outcome": {
+      "summary": "Classify a moment as BALL_SIDE_BLOCK_SHIFT when all reviewed predicates pass.",
+      "semantic_refs": [
+        "classification.ball_side_block_shift"
+      ],
+      "runtime_refs": [
+        "draft_plan.classification_rules"
+      ]
+    },
+    "judge": {
+      "summary": "Apply the reviewed ball-side block-shift definition and its declared thresholds.",
+      "semantic_refs": [
+        "profile.ball_side_block_shift_reviewed.v1"
+      ],
+      "runtime_refs": [
+        "recipe.parameters"
+      ]
+    },
+    "return": {
+      "summary": "Return matched moments with declared evidence, predicate traces, uncertainty, and replay coordinates.",
+      "semantic_refs": [
+        "evidence.ball_side_block_shift.v1"
+      ],
+      "runtime_refs": [
+        "draft_plan.requested_evidence",
+        "QueryResult.evidence",
+        "PredicateTrace"
+      ]
+    }
+  },
+  "support": {
+    "expressible": true,
+    "compilable": true,
+    "executable": true,
+    "identifiable": true,
+    "validated": true
+  },
+  "concept_refs": [
+    "concept.ball_side_block_shift",
+    "concept.defensive_unit_displacement",
+    "concept.wide_entry"
+  ],
+  "operator_refs": [
+    "gte@1.0.0",
+    "persists_for@1.0.0"
+  ],
+  "required_modalities": [
+    "tracking",
+    "events"
+  ],
+  "lowering_target": {
+    "kind": "existing_tactical_query_document",
+    "plan_path": "config/query-plans/ball_side_block_shift.ir.v1.json",
+    "profile": "reviewed_recipe"
+  },
+  "parameter_overrides": {},
+  "declared_gaps": [],
+  "fixture_expectation": {
+    "outcome": "COMPILED",
+    "runtime_recipe_id": "ball_side_block_shift_v1"
+  }
+}

@@ -1,16 +1,19 @@
 milestone: SCP-1
 name: Semantic Expression Compiler and Generality Harness
-state: PLANNED_BLOCKED_PENDING_SCP_0E_1_ACCEPTANCE
+state: SCP_1L_IMPLEMENTED_VERIFIED_PENDING_REVIEW
 last_updated: "2026-06-23"
 outcome: >
   Establish a typed semantic-expression language and natural-language compiler
   that can represent executable football programs and precise typed gaps before
   lowering executable portions into the existing deterministic runtime.
 depends_on:
-  - SCP-0E.1 external acceptance
+  - SCP-0E.1 local verification completed
+  - Protected AFL promotion remains blocked until a protected gate authority exists
 source_of_truth:
   spec: delivery/scp-1/SPEC.md
   progress: delivery/scp-1/progress.md
+  semantic_programs: delivery/scp-1/semantic-programs/
+  latest_verification_report: artifacts/scp-1/verification-report.json
 claims:
   language_broader_than_executable_library: REQUIRED
   recipes_are_not_language_boundary: REQUIRED
@@ -21,10 +24,11 @@ claims:
   open_library_evaluation: REQUIRED
   existing_runtime_authority_chain: REQUIRED
 implementation_state:
-  semantic_expression_schema: NOT_STARTED
-  football_program_corpus: NOT_STARTED
+  semantic_expression_schema: IMPLEMENTED_SCP_1L
+  football_program_corpus: IMPLEMENTED_SCP_1L_FIXTURES
+  typed_semantic_gaps: IMPLEMENTED_SCP_1L
+  lowering_to_tactical_query_document: IMPLEMENTED_FOR_TWO_PILOTS
   natural_language_compiler: NOT_STARTED
-  lowering_to_tactical_query_document: NOT_STARTED
   generality_harness: NOT_STARTED
   review_packet: NOT_STARTED
 verification:
@@ -40,10 +44,15 @@ verification:
     - clarification proof
     - negative/absence UNKNOWN proof
   latest_result:
-    status: NOT_RUN
+    status: PASS_SCP_1L
+    command: make scp-1-verify
+    report: artifacts/scp-1/verification-report.json
+    checks: 22
+    unit_tests: 8
 review:
   accepted: false
   last_external_decision: SCP_1_CHARTER_STRENGTHENING_RECOMMENDED
+  latest_local_state: SCP_1L_SELF_VERIFIED_PENDING_REVIEW
 non_goals:
   - full five-year atlas implementation
   - new executor

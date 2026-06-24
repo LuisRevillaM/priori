@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "expression_id": "semantic_player_intent_modality_gap_v1",
+  "expression_version": "0.1.0",
+  "display_name": "Player Intent Modality Gap",
+  "query_text": "Infer which teammate the passer intended to find from scanning and body angle.",
+  "description": "Reference gap fixture for claims requiring modalities not present in the current public tracking/events dataset.",
+  "normal_form": {
+    "scope": {
+      "summary": "Selected matches and passer-on-ball moments.",
+      "semantic_refs": [
+        "scope.selected_matches",
+        "scope.on_ball_actions"
+      ]
+    },
+    "anchor": {
+      "summary": "A passer control frame or pass-release episode.",
+      "semantic_refs": [
+        "anchor.controlled_pass_episode"
+      ]
+    },
+    "bind": {
+      "summary": "Passer, visible teammates, body orientation, head-check or scanning signal, and candidate intended receiver.",
+      "semantic_refs": [
+        "bind.passer",
+        "bind.body_orientation",
+        "bind.scanning_signal"
+      ]
+    },
+    "measure": {
+      "summary": "Measure gaze or head-check behavior and body orientation relative to candidate receivers.",
+      "semantic_refs": [
+        "measure.scanning",
+        "measure.body_orientation"
+      ]
+    },
+    "match": {
+      "summary": "Match inferred intention only if required visual/body-orientation modalities are available and validated.",
+      "semantic_refs": [
+        "operator.intent_inference"
+      ]
+    },
+    "outcome": {
+      "summary": "Classify a likely intended receiver only when the evidence supports the claim boundary.",
+      "semantic_refs": [
+        "classification.player_intent"
+      ]
+    },
+    "judge": {
+      "summary": "Tracking/events alone do not establish scanning, body orientation, or intention.",
+      "semantic_refs": [
+        "claim.intent_requires_video_or_pose"
+      ]
+    },
+    "return": {
+      "summary": "Return a modality gap rather than a tactical result because the needed data is unavailable.",
+      "semantic_refs": [
+        "evidence.intent_modality_gap"
+      ]
+    }
+  },
+  "support": {
+    "expressible": true,
+    "compilable": true,
+    "executable": false,
+    "identifiable": false,
+    "validated": false
+  },
+  "concept_refs": [
+    "concept.player_intent",
+    "concept.scanning",
+    "concept.body_orientation"
+  ],
+  "operator_refs": [],
+  "required_modalities": [
+    "video",
+    "pose_or_body_orientation"
+  ],
+  "declared_gaps": [
+    {
+      "kind": "MODALITY_GAP",
+      "concept": "player_intent_from_scanning_and_body_orientation",
+      "expected_input": [
+        {
+          "name": "scanning_signal",
+          "semantic_type": {
+            "container": "frame_signal",
+            "value": "ScanningState",
+            "entity_scope": "player"
+          },
+          "description": "Observed head-check or gaze behavior."
+        },
+        {
+          "name": "body_orientation",
+          "semantic_type": {
+            "container": "frame_signal",
+            "value": "BodyOrientation",
+            "unit": "degree",
+            "entity_scope": "player"
+          },
+          "description": "Observed or estimated torso/hip orientation."
+        }
+      ],
+      "expected_output": {
+        "container": "frame_signal",
+        "value": "IntendedReceiverCandidate",
+        "entity_scope": "player"
+      },
+      "semantic_basis": "unavailable_modality",
+      "required_modalities": [
+        "video",
+        "pose_or_body_orientation"
+      ],
+      "claim_boundary": "Current tracking/events data can show observed movement and ball/player positions, not private intent from scanning or body angle.",
+      "evidence_obligations": [
+        "head_check_or_gaze_signal",
+        "body_orientation_signal",
+        "validated_intent_profile"
+      ],
+      "surrounding_program_type_correct": true,
+      "executable_prefix_exists": true,
+      "executable_suffix_exists": false,
+      "message": "Missing modality: scanning and body orientation are not available in the current dataset."
+    }
+  ],
+  "fixture_expectation": {
+    "outcome": "MODALITY_GAP",
+    "blocking_gap_kind": "MODALITY_GAP",
+    "blocking_gap_concept": "player_intent_from_scanning_and_body_orientation"
+  }
+}
