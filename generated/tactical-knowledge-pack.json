@@ -53,6 +53,7 @@
         "defensive_outfield_centroid",
         "geometric_progressive_corridor",
         "geometric_progressive_corridor_from_anchor_set",
+        "lane_occupancy",
         "opponents_bypassed_by_action",
         "possession_segment",
         "relation_destination_entry",
@@ -1370,6 +1371,181 @@
             "close_after_frames",
             "minimum_duration_seconds",
             "side_filter"
+          ],
+          "version": "0.1.0"
+        },
+        "lane_occupancy": {
+          "kind": "primitive",
+          "limitations": [
+            "Classifies observed outfield players only; it does not prove complete active-player lane coverage.",
+            "Uses fixed lateral lane geometry and does not infer player intention, support quality, optimality, or role semantics.",
+            "Does not prove a line break, controlled support arrival, or causal effect."
+          ],
+          "node_schema": {
+            "catalog_ref": "lane_occupancy",
+            "inputs": {
+              "anchors": {
+                "output_name": "<registered_output_name>",
+                "source_node_id": "<source_node_id>"
+              }
+            },
+            "kind": "primitive",
+            "node_id": "<agent_chosen_lower_snake_id>",
+            "parameters": {
+              "frame_field": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allowed_values": [
+                    "anchor_frame_id",
+                    "physical_release_frame_id",
+                    "controlled_reception_frame_id"
+                  ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "anchor_frame_id"
+                  },
+                  "description": "Anchor-record frame field used for lane evaluation.",
+                  "name": "frame_field",
+                  "payload_type": "enum",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "player_scope": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "allowed_values": [
+                    "perspective_outfield",
+                    "defending_outfield"
+                  ],
+                  "default": {
+                    "payload_type": "enum",
+                    "unit": "none",
+                    "value": "perspective_outfield"
+                  },
+                  "description": "Observed outfield player group to classify into lanes.",
+                  "name": "player_scope",
+                  "payload_type": "enum",
+                  "required": false,
+                  "unit": "none"
+                }
+              },
+              "required_occupied_lane_count": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 0
+                  },
+                  "description": "Minimum number of observed lanes that must contain at least one selected player.",
+                  "maximum": 5.0,
+                  "minimum": 0.0,
+                  "name": "required_occupied_lane_count",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "count"
+                }
+              }
+            },
+            "version": "0.1.0"
+          },
+          "outputs": [
+            {
+              "allowed_values": null,
+              "cardinality": "collection",
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "anchor_id",
+                "anchor_frame_id",
+                "lane_occupancy_status",
+                "lane_occupancy_reason",
+                "lane_evaluation_frame_id",
+                "lane_player_scope",
+                "occupied_lanes",
+                "occupied_lane_count",
+                "lane_counts",
+                "player_lane_assignments",
+                "required_occupied_lane_count",
+                "coverage_status",
+                "lane_definitions"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "anchor_evaluations",
+              "payload_type": "anchor_ref",
+              "temporal_type": "episode_set",
+              "unit": "none"
+            },
+            {
+              "allowed_values": [
+                "PASS",
+                "FAIL",
+                "UNKNOWN"
+              ],
+              "cardinality": "single",
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "lane_occupancy_status",
+                "lane_occupancy_reason"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "lane_occupancy_status",
+              "payload_type": "enum",
+              "temporal_type": "frame_signal",
+              "unit": "none"
+            }
+          ],
+          "registered_catalog_ref": "lane_occupancy",
+          "required_inputs": [
+            {
+              "cardinality": "collection",
+              "entity_scope": "anchor",
+              "name": "anchors",
+              "payload_type": "anchor_ref",
+              "required": true,
+              "temporal_type": "episode_set",
+              "unit": "none"
+            }
+          ],
+          "valid_output_names": [
+            "anchor_evaluations",
+            "lane_occupancy_status"
+          ],
+          "valid_parameter_names": [
+            "frame_field",
+            "player_scope",
+            "required_occupied_lane_count"
           ],
           "version": "0.1.0"
         },
@@ -4833,6 +5009,16 @@
       "target_open_point",
       "target_player_id"
     ],
+    "lane_occupancy": [
+      "anchor_id",
+      "lane_counts",
+      "lane_evaluation_frame_id",
+      "lane_occupancy_reason",
+      "lane_occupancy_status",
+      "lane_player_scope",
+      "occupied_lane_count",
+      "occupied_lanes"
+    ],
     "opponents_bypassed_by_action": [
       "bypassed_player_ids",
       "candidate_goal_side_player_ids",
@@ -4906,7 +5092,7 @@
     ]
   },
   "generated_at": "reproducible_from_source_hashes",
-  "knowledge_pack_sha256": "99b1a76fdd8ca31d7e71f447ea9ef49e9311ca24d4499d9cba82aa714afe6711",
+  "knowledge_pack_sha256": "e6acfb41df345f5eb2029b23fd4a9ecb8b34c04969014d01ca246872cb3c9b0f",
   "knowledge_pack_version": "m1.2-s2i-a.0",
   "model_visible_tool_schemas": {
     "compare_query_versions": {
@@ -8516,6 +8702,133 @@
         }
       ],
       "purpose": "Evaluate whether a controlled pass carried a receiver from not-yet-beyond a supplied observed line at release to beyond that same line at controlled reception.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "anchor_id",
+        "lane_occupancy_status",
+        "lane_occupancy_reason",
+        "lane_evaluation_frame_id",
+        "lane_player_scope",
+        "occupied_lanes",
+        "occupied_lane_count",
+        "lane_counts"
+      ],
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Classifies observed outfield players only; it does not prove complete active-player lane coverage.",
+        "Uses fixed lateral lane geometry and does not infer player intention, support quality, optimality, or role semantics.",
+        "Does not prove a line break, controlled support arrival, or causal effect."
+      ],
+      "name": "lane_occupancy",
+      "outputs": [
+        {
+          "allowed_values": null,
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "lane_occupancy_status",
+            "lane_occupancy_reason",
+            "lane_evaluation_frame_id",
+            "lane_player_scope",
+            "occupied_lanes",
+            "occupied_lane_count",
+            "lane_counts",
+            "player_lane_assignments",
+            "required_occupied_lane_count",
+            "coverage_status",
+            "lane_definitions"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "lane_occupancy_status",
+            "lane_occupancy_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "lane_occupancy_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "allowed_values": [
+            "anchor_frame_id",
+            "physical_release_frame_id",
+            "controlled_reception_frame_id"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_frame_id"
+          },
+          "description": "Anchor-record frame field used for lane evaluation.",
+          "name": "frame_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "perspective_outfield",
+            "defending_outfield"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "perspective_outfield"
+          },
+          "description": "Observed outfield player group to classify into lanes.",
+          "name": "player_scope",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 0
+          },
+          "description": "Minimum number of observed lanes that must contain at least one selected player.",
+          "maximum": 5.0,
+          "minimum": 0.0,
+          "name": "required_occupied_lane_count",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        }
+      ],
+      "purpose": "Classify observed outfield players into lateral pitch lanes at an anchor-relative frame and evaluate declared lane-count requirements.",
       "version": "0.1.0"
     },
     {
@@ -14572,7 +14885,7 @@
   },
   "schema_version": "1.0",
   "source_hashes": {
-    "Makefile": "cad34b18ae03a6b1cba501624f164bbb18bc47251c43b0020c3b5712ab2f5f22",
+    "Makefile": "4c3b7747955a82789a566f4611f2201e5e4929134c4b346d1734f99d4f825bf4",
     "config/query-plans/ball_side_block_shift.ir.v1.json": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
     "config/query-plans/high_bypass_completed_pass.experimental.v1.json": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
     "config/query-plans/opposite_corridor_after_shift.experimental.v1.json": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
@@ -14581,8 +14894,8 @@
     "generated/tactical-query-plan.schema.json": "0e45cff180c3738629e9c49b15a7191faa12c1517ae987a91d2f80424df68b0f",
     "generated/tactical-query-plan.types.ts": "838bc7a1db332eb24f6fd80faa1530c6cc441aba7eb91eb3e806fa8d23d0bffc",
     "src/tqe/runtime/binder.py": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
-    "src/tqe/runtime/catalog.py": "ad198f64dcac12458e23ac09620e88f6a7977841f176330232fafe0fff6681bc",
-    "src/tqe/runtime/executor.py": "4c4113011b578591211e2b3e411e4d196fe3ecbb46a5b46d16af7200b22cf949",
+    "src/tqe/runtime/catalog.py": "4bdd218d3463ada5ffa0b6d9c746ff1be55f1386e0712ec314b94ef404719e0c",
+    "src/tqe/runtime/executor.py": "9ad3b41f30d654f250ae647cba4dbf24515c6e6957e4103c0ee839d237dea203",
     "src/tqe/runtime/ir.py": "28e5fa2d221bc8f9ec66620d7a8f47a346a002dda9f2e264873492862c39dd3a",
     "src/tqe/runtime/relations.py": "6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee",
     "src/tqe/verification/m1_2_gate_s2i.py": "00cf3e665ef2096c44a4d28ba37284bb9207ca5412e2e6c564ef0d8d3042c99f",

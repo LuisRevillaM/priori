@@ -54,6 +54,17 @@ RUNTIME_CONTEXTS: list[dict[str, Any]] = [
         "description": "Canonical defending outfield player positions.",
     },
     {
+        "name": "canonical_match_state.outfield_positions",
+        "temporal_type": "entity_set_signal",
+        "payload_type": "point",
+        "cardinality": "collection",
+        "unit": "metre",
+        "coordinate_frame": "pitch_absolute",
+        "entity_scope": "team",
+        "required": True,
+        "description": "Canonical observed outfield player positions for the selected team scope.",
+    },
+    {
         "name": "provider_event_stream.completed_pass_events",
         "temporal_type": "event_set",
         "payload_type": "provider_event",

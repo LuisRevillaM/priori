@@ -29,6 +29,7 @@ from tqe.runtime.controlled_line_break import (
 )
 from tqe.runtime.controlled_pass import ControlledPassConfig, ControlledPassOutput, evaluate_controlled_passes
 from tqe.runtime.defensive_line import DefensiveLineConfig, evaluate_defensive_line_model
+from tqe.runtime.lane_occupancy import LaneOccupancyConfig, evaluate_lane_occupancy
 from tqe.runtime.relative_position_to_line import (
     RelativePositionToLineConfig,
     evaluate_relative_position_to_line,
@@ -207,6 +208,7 @@ class TacticalQueryExecutor:
             "defensive_line_model": primitive_defensive_line_model,
             "relative_position_to_line": primitive_relative_position_to_line,
             "controlled_line_break_episode": primitive_controlled_line_break_episode,
+            "lane_occupancy": primitive_lane_occupancy,
             "ball_lateral_fraction": primitive_ball_lateral_fraction,
             "defensive_outfield_centroid": primitive_defensive_outfield_centroid,
             "signed_lateral_shift": primitive_signed_lateral_shift,
@@ -2545,6 +2547,150 @@ def record_by_anchor_id(records: list[Any]) -> dict[str, dict[str, Any]]:
         for record in records
         if isinstance(record, dict) and record.get("anchor_id") is not None
     }
+
+
+def primitive_lane_occupancy(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchor_records = anchor_value.value
+    if not isinstance(anchor_records, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    player_scope = node_parameter_text(node, "player_scope", "perspective_outfield")
+    required_occupied_lane_count = node_parameter_integer(
+        node,
+        "required_occupied_lane_count",
+        0,
+    )
+    records = [
+        lane_occupancy_anchor_record(
+            state=state,
+            anchor=anchor,
+            frame_field=frame_field,
+            player_scope=player_scope,
+            required_occupied_lane_count=required_occupied_lane_count,
+        )
+        for anchor in anchor_records
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None
+        if str(record["lane_occupancy_status"]) == "UNKNOWN"
+        else str(record["lane_occupancy_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "lane_occupancy_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "lane_occupancy_status").entity_scope,
+        ),
+        "lane_occupancy_status_records": records,
+    }
+
+
+def lane_occupancy_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    player_scope: str,
+    required_occupied_lane_count: int,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    lane_evaluation_frame_id = optional_int(anchor.get(frame_field))
+    if lane_evaluation_frame_id is None and frame_field != "anchor_frame_id":
+        lane_evaluation_frame_id = anchor_frame_id
+    if anchor_frame_id is None or lane_evaluation_frame_id is None:
+        return None
+    if player_scope == "defending_outfield":
+        team_role = state.defending_team_role
+    elif player_scope == "perspective_outfield":
+        team_role = state.perspective_team_role
+    else:
+        team_role = state.perspective_team_role
+    observed_positions = observed_outfield_positions_at_frame(
+        state.positions,
+        lane_evaluation_frame_id,
+        team_role,
+        outfield_player_ids(state.canonical_root, state.match_id, team_role),
+    )
+    evaluation = evaluate_lane_occupancy(
+        player_positions=observed_positions,
+        anchor_id=str(anchor.get("anchor_id")),
+        anchor_frame_id=anchor_frame_id,
+        frame_id=lane_evaluation_frame_id,
+        required_occupied_lane_count=required_occupied_lane_count,
+        config=LaneOccupancyConfig(),
+    )
+    payload = evaluation.to_dict()
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "lane_occupancy_status": str(payload["status"]),
+        "lane_occupancy_reason": payload["reason"],
+        "lane_evaluation_frame_field": frame_field,
+        "lane_evaluation_frame_id": lane_evaluation_frame_id,
+        "lane_player_scope": player_scope,
+        "lane_team_role": team_role,
+        "occupied_lanes": list(payload["occupied_lanes"]),
+        "occupied_lane_count": len(payload["occupied_lanes"]),
+        "lane_counts": payload["lane_counts"],
+        "frame_lane_counts": payload["frame_lane_counts"],
+        "player_lane_assignments": payload["player_assignments"],
+        "evaluated_player_ids": list(payload["evaluated_player_ids"]),
+        "missing_player_ids": list(payload["missing_player_ids"]),
+        "invalid_player_ids": list(payload["invalid_player_ids"]),
+        "invalid_coordinate_player_ids": list(payload["invalid_coordinate_player_ids"]),
+        "duplicate_player_ids": list(payload["duplicate_player_ids"]),
+        "outside_lane_player_ids": list(payload["outside_lane_player_ids"]),
+        "required_occupied_lane_count": payload["required_occupied_lane_count"],
+        "coverage_status": payload["coverage_status"],
+        "lane_definitions": payload["lane_definitions"],
+        "pitch_width_m": payload["pitch_width_m"],
+        "coordinate_system": payload["coordinate_system"],
+        "boundary_policy": payload["boundary_policy"],
+        "observed_player_count": len(observed_positions),
+    }
+
+
+def observed_outfield_positions_at_frame(
+    positions: pd.DataFrame,
+    frame_id: int,
+    team_role: str,
+    outfield_ids: set[str],
+) -> list[dict[str, Any]]:
+    if not outfield_ids:
+        return []
+    rows = positions[
+        (positions["frame_id"] == frame_id)
+        & (positions["entity_type"] == "player")
+        & (positions["team_role"] == team_role)
+    ]
+    rows = rows[rows["entity_id"].astype(str).isin(outfield_ids)]
+    result: list[dict[str, Any]] = []
+    for row in rows.itertuples(index=False):
+        result.append(
+            {
+                "player_id": str(row.entity_id),
+                "frame_id": int(row.frame_id),
+                "team_role": str(row.team_role),
+                "x_m": None if pd.isna(row.x_m) else float(row.x_m),
+                "y_m": None if pd.isna(row.y_m) else float(row.y_m),
+            }
+        )
+    return result
 
 
 def catalog_output(node: BoundCatalogNode, name: str) -> Any:

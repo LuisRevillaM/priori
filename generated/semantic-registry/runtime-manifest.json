@@ -536,6 +536,135 @@
       "version": "0.1.0"
     },
     {
+      "ai_authorable_by_runtime_context": true,
+      "evidence_fields": [
+        "anchor_id",
+        "lane_occupancy_status",
+        "lane_occupancy_reason",
+        "lane_evaluation_frame_id",
+        "lane_player_scope",
+        "occupied_lanes",
+        "occupied_lane_count",
+        "lane_counts"
+      ],
+      "executable": true,
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Classifies observed outfield players only; it does not prove complete active-player lane coverage.",
+        "Uses fixed lateral lane geometry and does not infer player intention, support quality, optimality, or role semantics.",
+        "Does not prove a line break, controlled support arrival, or causal effect."
+      ],
+      "missing_data_semantics": "unknown",
+      "name": "lane_occupancy",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "lane_occupancy_status",
+            "lane_occupancy_reason",
+            "lane_evaluation_frame_id",
+            "lane_player_scope",
+            "occupied_lanes",
+            "occupied_lane_count",
+            "lane_counts",
+            "player_lane_assignments",
+            "required_occupied_lane_count",
+            "coverage_status",
+            "lane_definitions"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "lane_occupancy_status",
+            "lane_occupancy_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "lane_occupancy_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "allowed_values": [
+            "anchor_frame_id",
+            "physical_release_frame_id",
+            "controlled_reception_frame_id"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_frame_id"
+          },
+          "description": "Anchor-record frame field used for lane evaluation.",
+          "name": "frame_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "perspective_outfield",
+            "defending_outfield"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "perspective_outfield"
+          },
+          "description": "Observed outfield player group to classify into lanes.",
+          "name": "player_scope",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 0
+          },
+          "description": "Minimum number of observed lanes that must contain at least one selected player.",
+          "maximum": 5.0,
+          "minimum": 0.0,
+          "name": "required_occupied_lane_count",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        }
+      ],
+      "purpose": "Classify observed outfield players into lateral pitch lanes at an anchor-relative frame and evaluate declared lane-count requirements.",
+      "runtime_id": "primitive:lane_occupancy:0.1.0",
+      "version": "0.1.0"
+    },
+    {
       "ai_authorable_by_runtime_context": false,
       "evidence_fields": [
         "classification",
@@ -2209,6 +2338,17 @@
     {
       "cardinality": "collection",
       "coordinate_frame": "pitch_absolute",
+      "description": "Canonical observed outfield player positions for the selected team scope.",
+      "entity_scope": "team",
+      "name": "canonical_match_state.outfield_positions",
+      "payload_type": "point",
+      "required": true,
+      "temporal_type": "entity_set_signal",
+      "unit": "metre"
+    },
+    {
+      "cardinality": "collection",
+      "coordinate_frame": "pitch_absolute",
       "description": "Canonical tracking samples around an event or anchor window.",
       "entity_scope": null,
       "name": "canonical_tracking_window",
@@ -2228,6 +2368,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "63aa8d712d504c11a8d07f47f38099da0b9b97650a9851f06b4f98a543f677ae",
+  "runtime_manifest_revision": "08776e81e49487045e51bf87c036bf8fc98af11f203717eba28952d0f6c6d0a8",
   "schema_version": "1.0"
 }

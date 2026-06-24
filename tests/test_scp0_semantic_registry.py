@@ -51,8 +51,8 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         registry, runtime_manifest, lock, report = generate_scp0_artifacts(write=False)
 
         self.assertEqual("PASS", report.status)
-        self.assertEqual(14, report.runtime_capabilities["bound"])
-        self.assertEqual(22, report.runtime_capabilities["including_operators_total"])
+        self.assertEqual(15, report.runtime_capabilities["bound"])
+        self.assertEqual(23, report.runtime_capabilities["including_operators_total"])
         self.assertEqual(8, report.operators["semantically_defined"])
         self.assertEqual(4, report.recipes["mapped"])
         self.assertEqual(1, report.validated_compositions["mapped"])
@@ -241,7 +241,7 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
 
         self.assertIn("projection_baseline_missing", codes)
 
-    def test_canonical_product_shared_records_have_only_reviewed_contract_drift(self) -> None:
+    def test_canonical_product_shared_records_have_no_contract_drift(self) -> None:
         registry = load_registry()
         runtime_manifest = generate_runtime_manifest()
         lock = make_registry_lock(registry, runtime_manifest)
@@ -249,17 +249,8 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
 
         differences = scpgen.build_projection_differences(runtime_manifest, projections)
 
-        self.assertEqual(
-            ["runtime:primitive:controlled_line_break_episode:0.1.0"],
-            differences["product"]["contract_changed"],
-        )
-        self.assertEqual(
-            ["outputs"],
-            differences["product"]["contract_changed_details"][
-                "runtime:primitive:controlled_line_break_episode:0.1.0"
-            ]["changed_fields"],
-        )
-        self.assertEqual(18, differences["product"]["shared_count"])
+        self.assertEqual([], differences["product"]["contract_changed"])
+        self.assertEqual(19, differences["product"]["shared_count"])
 
     def test_unapproved_baseline_add_remove_or_contract_change_fails(self) -> None:
         registry = load_registry()
@@ -952,6 +943,10 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
             "runtime:primitive:controlled_line_break_episode:0.1.0",
             {item["subject_ref"] for item in passport_projection["passports"]},
         )
+        self.assertIn(
+            "runtime:primitive:lane_occupancy:0.1.0",
+            {item["subject_ref"] for item in passport_projection["passports"]},
+        )
 
     def test_pilot_passports_include_claim_limits_replay_evidence_and_deviations(self) -> None:
         registry = load_registry()
@@ -976,6 +971,9 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         )
         controlled_line_break = passport_by_subject(
             passport_projection, "runtime:primitive:controlled_line_break_episode:0.1.0"
+        )
+        lane_occupancy = passport_by_subject(
+            passport_projection, "runtime:primitive:lane_occupancy:0.1.0"
         )
 
         self.assertIn(
@@ -1032,6 +1030,20 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         self.assertIn("defensive_line_was_broken", controlled_line_break_prohibited)
         self.assertIn("line_break_caused_by_pass", controlled_line_break_prohibited)
         self.assertIn("crossing_badge", controlled_line_break_replay)
+        lane_occupancy_prohibited = {
+            item
+            for contract in lane_occupancy["claim_contracts"]
+            for item in contract["prohibited"]
+        }
+        lane_occupancy_replay = {
+            item
+            for contract in lane_occupancy["evidence_contracts"]
+            for item in contract["replay_projection"]
+        }
+        self.assertIn("complete_active_player_lane_coverage_proven", lane_occupancy_prohibited)
+        self.assertIn("support_quality_inferred", lane_occupancy_prohibited)
+        self.assertIn("player_intent_inferred", lane_occupancy_prohibited)
+        self.assertIn("lane_bands", lane_occupancy_replay)
         self.assertEqual("PARTIAL", controlled_pass["binding"]["conformance"])
         self.assertTrue(controlled_pass["binding"]["known_deviations"])
         self.assertEqual("PARTIAL", bypass["binding"]["conformance"])
@@ -1042,6 +1054,8 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         self.assertTrue(relative_position["binding"]["known_deviations"])
         self.assertEqual("PARTIAL", controlled_line_break["binding"]["conformance"])
         self.assertTrue(controlled_line_break["binding"]["known_deviations"])
+        self.assertEqual("PARTIAL", lane_occupancy["binding"]["conformance"])
+        self.assertTrue(lane_occupancy["binding"]["known_deviations"])
 
     def test_passport_projection_changes_when_source_contract_changes(self) -> None:
         registry = load_registry()

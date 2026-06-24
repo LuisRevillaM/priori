@@ -23,6 +23,7 @@ TARGET_SUBJECTS = {
     "runtime:primitive:defensive_line_model:0.1.0",
     "runtime:primitive:relative_position_to_line:0.1.0",
     "runtime:primitive:controlled_line_break_episode:0.1.0",
+    "runtime:primitive:lane_occupancy:0.1.0",
     "runtime:relation:opponents_bypassed_by_action:0.1.0",
 }
 
