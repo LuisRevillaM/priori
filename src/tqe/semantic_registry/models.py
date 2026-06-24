@@ -158,6 +158,24 @@ class RuntimeCapabilityRef(StrictModel):
     kind: Literal["primitive", "relation"]
 
 
+class RuntimeInputBinding(StrictModel):
+    source: Literal["NODE_INPUT", "RUNTIME_CONTEXT"]
+    runtime_port: str | None = None
+    context_ref: str | None = None
+
+    @model_validator(mode="after")
+    def source_requires_target(self) -> "RuntimeInputBinding":
+        if self.source == "NODE_INPUT" and not self.runtime_port:
+            raise ValueError("NODE_INPUT binding requires runtime_port")
+        if self.source == "RUNTIME_CONTEXT" and not self.context_ref:
+            raise ValueError("RUNTIME_CONTEXT binding requires context_ref")
+        return self
+
+
+class RuntimeOutputBinding(StrictModel):
+    runtime_port: str
+
+
 class RuntimeBinding(CommonEnvelope):
     kind: Literal[ObjectKind.RUNTIME_BINDING] = ObjectKind.RUNTIME_BINDING
     runtime_capability: RuntimeCapabilityRef
@@ -165,10 +183,16 @@ class RuntimeBinding(CommonEnvelope):
     implements: list[str] = Field(min_length=1)
     conformance_status: ConformanceStatus
     known_deviations: list[str] = Field(default_factory=list)
-    field_mapping: dict[str, str] = Field(default_factory=dict)
-    parameter_mapping: dict[str, str] = Field(default_factory=dict)
-    uncovered_runtime_fields: list[str] = Field(default_factory=list)
-    uncovered_semantic_fields: list[str] = Field(default_factory=list)
+    input_bindings: dict[str, RuntimeInputBinding] = Field(default_factory=dict)
+    output_bindings: dict[str, RuntimeOutputBinding] = Field(default_factory=dict)
+    semantic_parameters: list[TypedField] = Field(default_factory=list)
+    parameter_bindings: dict[str, str] = Field(default_factory=dict)
+    uncovered_runtime_inputs: list[str] = Field(default_factory=list)
+    uncovered_runtime_outputs: list[str] = Field(default_factory=list)
+    uncovered_runtime_parameters: list[str] = Field(default_factory=list)
+    uncovered_semantic_inputs: list[str] = Field(default_factory=list)
+    uncovered_semantic_outputs: list[str] = Field(default_factory=list)
+    uncovered_semantic_parameters: list[str] = Field(default_factory=list)
 
 
 class OperatorParameter(StrictModel):
@@ -216,12 +240,22 @@ class ExposurePolicy(CommonEnvelope):
     reasons: list[str] = Field(default_factory=list)
 
 
+class ParityWaiver(StrictModel):
+    subject_ref: str
+    difference_kind: Literal["ADDED", "REMOVED", "CONTRACT_CHANGED"]
+    baseline_contract_hash: str | None = None
+    projection_contract_hash: str | None = None
+    permitted_fields: list[str] = Field(default_factory=list)
+    rationale: str
+    review_condition: str
+
+
 class ProjectionPolicy(CommonEnvelope):
     kind: Literal[ObjectKind.PROJECTION_POLICY] = ObjectKind.PROJECTION_POLICY
     target: ProjectionTarget
     requires: dict[str, Any] = Field(default_factory=dict)
     excludes: list[str] = Field(default_factory=list)
-    accepted_differences: dict[str, list[str]] = Field(default_factory=dict)
+    accepted_differences: list[ParityWaiver] = Field(default_factory=list)
 
 
 class MaturityAssessment(CommonEnvelope):

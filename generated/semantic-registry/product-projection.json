@@ -1444,7 +1444,7 @@
       "version": "1.0.0"
     },
     {
-      "claim_contract_ref": "claim.progressive_connection_availability.v1",
+      "claim_contract_ref": "claim.possession_corridor_availability.v1",
       "concept_ref": "concept.progressive_connection_availability",
       "dependencies": [
         "possession_segment",
@@ -1452,7 +1452,7 @@
         "exists"
       ],
       "dependency_bindings_verified": true,
-      "evidence_contract_ref": "evidence.progressive_connection_availability.v1",
+      "evidence_contract_ref": "evidence.possession_corridor_availability.v1",
       "exact_typed_plan_ref": "config/query-plans/possession_corridor_availability.experimental.v1.json",
       "id": "possession_corridor_availability_v1",
       "mapping_id": "recipe.possession_corridor_availability.v1",
@@ -1773,11 +1773,11 @@
     "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
+    "lock_hash": "89c255d43538f68d0d7dae04ae5b9bda5aacefa68fd65f79104439b9e422000f",
     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
+    "registry_revision": "eb5079e64409f6bc0055bb0be35ffc3f5ae148e6e835d85205179edf4e939df9",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
     "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
     "schema_version": "1.0",

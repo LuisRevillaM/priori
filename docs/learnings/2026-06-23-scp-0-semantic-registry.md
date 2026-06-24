@@ -108,3 +108,32 @@ failed generation must not disturb the last valid artifacts.
 
 **Follow-up:** Generate an SCP-0D review packet. SCP-1 executable-algebra work
 should remain blocked until external review accepts this closure.
+
+## 2026-06-23 - SCP-0E Waiver and Conformance Closure
+
+**Fact:** External review of SCP-0D found that signature conformance still had
+false exactness, parity waivers were subject-wide rather than evidence-pinned,
+composition lineage could be made circular, and some projection items still
+bypassed their declared projection policies.
+
+**Decision:** Add SCP-0E as one more narrow closure before SCP-1. Runtime
+bindings now declare explicit semantic input/output/parameter bindings,
+including runtime-context inputs. Exact and partial/legacy conformance is
+validated in both directions. Parity waivers now pin the difference kind,
+baseline hash, projection hash, permitted changed fields, rationale, and review
+condition. Recipe and composition contracts must preserve dependency-derived
+claim/evidence obligations from parsed plans. AI operators and unsupported
+items now pass through projection-policy filtering.
+
+**Learning:** Waivers must be evidence, not permission. A subject-level waiver
+is a future drift hole; a hash- and field-pinned waiver is reviewable,
+auditable, and self-invalidating when reality changes.
+
+**Evidence:** `make scp-0-verify` with 42 focused adversarial tests OK;
+`make test` with 124 repository tests OK and attestation VERIFIED;
+`generated/semantic-registry/semantic-parity-report.json`;
+`semantic-registry/registry.lock.json`.
+
+**Follow-up:** Generate an SCP-0E review packet. SCP-1 should unblock
+immediately after external acceptance, with no additional SCP-0 architecture
+cycle unless a concrete failing gate appears.

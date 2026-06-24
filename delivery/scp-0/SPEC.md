@@ -77,6 +77,27 @@ SCP-0 covers four implementation slices:
   field mappings/uncovered fields for partial or legacy bindings.
 - Publish generated projections atomically only after validation passes.
 
+### SCP-0E - Waiver and Conformance Closure
+
+- Replace coarse runtime field mappings with explicit semantic input bindings,
+  runtime output bindings, semantic parameter declarations, and parameter
+  bindings.
+- Represent implicit runtime-context inputs explicitly, rather than treating
+  missing runtime inputs as exact by default.
+- Validate exact and partial/legacy bindings in both directions across
+  semantic inputs, runtime inputs, semantic outputs, runtime outputs, runtime
+  parameters, and semantic parameters.
+- Replace subject-wide parity exceptions with pinned waiver records containing
+  difference kind, baseline contract hash, projection contract hash, permitted
+  fields, rationale, and review condition.
+- Fail parity when a waiver is stale, hash-drifted, or permits fewer fields
+  than the observed canonical difference.
+- Derive recipe and composition claim/evidence obligations from parsed plan
+  runtime dependencies, not only from the top-level concept or manually
+  declared profiles.
+- Apply projection-policy filtering to AI operators and unsupported projection
+  items.
+
 ## Non-Goals
 
 SCP-0 must not add:
@@ -248,6 +269,28 @@ SCP-0 passes only if:
     validation.
 33. Exact bindings fail on missing runtime/semantic ports or parameter mappings.
 34. Failed generation leaves the last valid projection artifacts untouched.
+35. Exact bindings fail when a required semantic input is neither bound to a
+    node input nor explicitly bound to runtime context.
+36. Runtime-context inputs pass only when declared as `RUNTIME_CONTEXT` with a
+    context reference.
+37. Partial or legacy bindings fail when a mapping key or target does not
+    resolve to a real runtime or semantic element.
+38. Partial or legacy bindings fail when a runtime parameter is neither mapped
+    nor explicitly uncovered.
+39. Exact parameter bindings fail when the semantic parameter target is absent
+    or type/unit/requiredness-incompatible.
+40. Accepted parity differences are pinned by exact baseline/projection hashes
+    and permitted changed fields.
+41. Stale parity waivers fail when their difference is no longer observed.
+42. A same-ID accepted composition or recipe contract change fails unless the
+    corresponding waiver hash and permitted fields are updated.
+43. Composition contracts must preserve every dependency-derived claim and
+    evidence obligation from the parsed plan, even if the composition concept
+    is changed at the same time.
+44. AI operator projection changes when the AI `ProjectionPolicy` excludes an
+    operator.
+45. Unsupported projection output changes when the unsupported
+    `ProjectionPolicy` changes.
 
 ## Side Effects
 

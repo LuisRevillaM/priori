@@ -486,13 +486,169 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
             for item in registry.runtime_bindings
             if item.id == "binding.primitive.relation_destination_entry.0_1_0"
         )
-        del binding.parameter_mapping["episode_selection"]
+        del binding.parameter_bindings["episode_selection"]
         lock = make_registry_lock(registry, runtime_manifest)
 
         codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
 
         self.assertIn("runtime_signature_mismatch", codes)
         self.assertIn("runtime_parameter_signature_mismatch", codes)
+
+    def test_exact_binding_unbound_required_semantic_context_input_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        binding = next(
+            item
+            for item in registry.runtime_bindings
+            if item.id == "binding.primitive.possession_segment.0_1_0"
+        )
+        binding.input_bindings = {}
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("runtime_signature_mismatch", codes)
+
+    def test_partial_binding_nonexistent_mapping_key_or_target_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        binding = next(
+            item
+            for item in registry.runtime_bindings
+            if item.id == "binding.primitive.controlled_pass_episode.0_1_0"
+        )
+        binding.output_bindings["anchors"].runtime_port = "not_a_runtime_output"
+        binding.input_bindings["not_a_semantic_input"] = copy.deepcopy(
+            binding.input_bindings["candidate_pass_events"]
+        )
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("runtime_signature_mismatch", codes)
+
+    def test_partial_binding_unmapped_runtime_parameter_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        binding = next(
+            item
+            for item in registry.runtime_bindings
+            if item.id == "binding.primitive.controlled_pass_episode.0_1_0"
+        )
+        del binding.parameter_bindings["release_search_before_seconds"]
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("runtime_parameter_signature_mismatch", codes)
+
+    def test_exact_parameter_binding_to_missing_semantic_target_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        binding = next(
+            item
+            for item in registry.runtime_bindings
+            if item.id == "binding.primitive.relation_destination_entry.0_1_0"
+        )
+        binding.parameter_bindings["episode_selection"] = "missing_semantic_parameter"
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("runtime_parameter_signature_mismatch", codes)
+
+    def test_pinned_waiver_fails_when_projection_hash_changes(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+        projections["ai"]["recipes"][0]["plan_integrity"]["normalized_plan_hash"] = "mutated"
+
+        codes = finding_codes(validate_projection_parity(registry, runtime_manifest, projections))
+
+        self.assertIn("projection_parity_waiver_hash_mismatch", codes)
+
+    def test_unused_or_stale_parity_waiver_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+        ai_policy = next(item for item in registry.projection_policies if item.target.value == "ai")
+        stale = copy.deepcopy(ai_policy.accepted_differences[0])
+        stale.subject_ref = "recipe:not_currently_different:1.0.0"
+        ai_policy.accepted_differences.append(stale)
+
+        codes = finding_codes(validate_projection_parity(registry, runtime_manifest, projections))
+
+        self.assertIn("projection_parity_stale_waiver", codes)
+
+    def test_accepted_composition_content_change_with_same_id_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+        projections["product"]["validated_compositions"][0]["plan_integrity"][
+            "normalized_plan_hash"
+        ] = "mutated"
+
+        codes = finding_codes(validate_projection_parity(registry, runtime_manifest, projections))
+
+        self.assertIn("projection_parity_waiver_hash_mismatch", codes)
+
+    def test_composition_circular_concept_contract_cannot_omit_dependency_contract(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        concept = next(
+            item
+            for item in registry.concepts
+            if item.id == "concept.progressive_connection_followed_by_destination_entry"
+        )
+        composition = registry.composition_instances[0]
+        concept.claim_contract_ref = "claim.progressive_connection_availability.v1"
+        concept.evidence_contract_ref = "evidence.progressive_connection_availability.v1"
+        composition.claim_contract_ref = "claim.progressive_connection_availability.v1"
+        composition.evidence_contract_ref = "evidence.progressive_connection_availability.v1"
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("composition_claim_omits_dependency_contract", codes)
+        self.assertIn("composition_evidence_omits_dependency_contract", codes)
+
+    def test_ai_projection_policy_exclusion_removes_operator(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        for policy in registry.projection_policies:
+            if policy.target.value == "ai":
+                policy.excludes.append("operator:gte:1.0.0")
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        projections = build_projections(registry, runtime_manifest, lock)
+        ai_operator_ids = {item["id"] for item in projections["ai"]["operators"]}
+
+        self.assertNotIn("gte", ai_operator_ids)
+
+    def test_unsupported_projection_policy_changes_unsupported_projection(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        baseline_lock = make_registry_lock(registry, runtime_manifest)
+        baseline = build_projections(registry, runtime_manifest, baseline_lock)
+        unsupported_subject = (
+            f"runtime:{baseline['unsupported']['items'][0]['kind']}:"
+            f"{baseline['unsupported']['items'][0]['id']}:"
+            f"{baseline['unsupported']['items'][0]['version']}"
+        )
+        for policy in registry.projection_policies:
+            if policy.target.value == "unsupported":
+                policy.excludes.append(unsupported_subject)
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        changed = build_projections(registry, runtime_manifest, lock)
+
+        self.assertEqual(
+            len(baseline["unsupported"]["items"]) - 1,
+            len(changed["unsupported"]["items"]),
+        )
 
     def test_failed_generation_leaves_last_valid_projection_untouched(self) -> None:
         registry = load_registry()

@@ -453,6 +453,39 @@ def _signature_mismatch(
     return mismatches
 
 
+def _parameter_signature_mismatch(semantic_field: Any, runtime_parameter: dict[str, Any]) -> list[str]:
+    semantic_type = semantic_field.type
+    semantic_payload = _type_value_to_runtime(semantic_type.value)
+    mismatches: list[str] = []
+    if semantic_payload != "any" and semantic_payload != runtime_parameter.get("payload_type"):
+        mismatches.append(
+            f"payload {semantic_payload} != {runtime_parameter.get('payload_type')}"
+        )
+    if (
+        semantic_type.unit not in {"any", runtime_parameter.get("unit", "none")}
+        and runtime_parameter.get("unit", "none") != "none"
+    ):
+        mismatches.append(f"unit {semantic_type.unit} != {runtime_parameter.get('unit')}")
+    if bool(getattr(semantic_field, "required", True)) != bool(
+        runtime_parameter.get("required", False)
+    ):
+        mismatches.append(
+            f"required {bool(getattr(semantic_field, 'required', True))} != {bool(runtime_parameter.get('required', False))}"
+        )
+    return mismatches
+
+
+def _uncovered_binding_values(binding: Any) -> dict[str, list[str]]:
+    return {
+        "uncovered_runtime_inputs": list(binding.uncovered_runtime_inputs),
+        "uncovered_runtime_outputs": list(binding.uncovered_runtime_outputs),
+        "uncovered_runtime_parameters": list(binding.uncovered_runtime_parameters),
+        "uncovered_semantic_inputs": list(binding.uncovered_semantic_inputs),
+        "uncovered_semantic_outputs": list(binding.uncovered_semantic_outputs),
+        "uncovered_semantic_parameters": list(binding.uncovered_semantic_parameters),
+    }
+
+
 def _contract_inherits_or_is(
     child_ref: str, required_ref: str, contracts: dict[str, Any], *, kind: str
 ) -> tuple[bool, list[ValidationFinding]]:
@@ -466,6 +499,79 @@ def _contract_inherits_or_is(
         else _effective_evidence_contract(child_ref, contracts)
     )
     return required_ref in closure["ancestors"], findings
+
+
+def _runtime_binding_for_dependency(registry: Any, dep: dict[str, str]) -> Any | None:
+    return next(
+        (
+            item
+            for item in registry.runtime_bindings
+            if item.runtime_capability.kind == dep["kind"]
+            and item.runtime_capability.id == dep["name"]
+            and item.runtime_capability.version == dep["version"]
+        ),
+        None,
+    )
+
+
+def validate_plan_dependency_contract_closure(
+    *,
+    registry: Any,
+    plan_details: dict[str, Any],
+    claim_contract_ref: str,
+    evidence_contract_ref: str,
+    claim_contracts: dict[str, ClaimContract],
+    evidence_contracts: dict[str, EvidenceContract],
+    operationalizations: dict[str, Any],
+    subject_path: str,
+    subject_id: str,
+    finding_prefix: str,
+) -> list[ValidationFinding]:
+    findings: list[ValidationFinding] = []
+    for dep in plan_details.get("capability_dependencies", []):
+        binding = _runtime_binding_for_dependency(registry, dep)
+        if binding is None:
+            continue
+        for op_ref in binding.implements:
+            op = operationalizations.get(op_ref)
+            if op is None:
+                continue
+            if claim_contract_ref in claim_contracts and op.claim_contract_ref in claim_contracts:
+                inherits, closure_findings = _contract_inherits_or_is(
+                    claim_contract_ref,
+                    op.claim_contract_ref,
+                    claim_contracts,
+                    kind="claim",
+                )
+                findings.extend(closure_findings)
+                if not inherits:
+                    findings.append(
+                        _finding(
+                            f"{finding_prefix}_claim_omits_dependency_contract",
+                            f"{subject_id} claim contract {claim_contract_ref} does not inherit dependency {dep['name']} claim {op.claim_contract_ref}.",
+                            f"{subject_path}.claim_contract_ref",
+                        )
+                    )
+            if (
+                evidence_contract_ref in evidence_contracts
+                and op.evidence_contract_ref in evidence_contracts
+            ):
+                inherits, closure_findings = _contract_inherits_or_is(
+                    evidence_contract_ref,
+                    op.evidence_contract_ref,
+                    evidence_contracts,
+                    kind="evidence",
+                )
+                findings.extend(closure_findings)
+                if not inherits:
+                    findings.append(
+                        _finding(
+                            f"{finding_prefix}_evidence_omits_dependency_contract",
+                            f"{subject_id} evidence contract {evidence_contract_ref} does not inherit dependency {dep['name']} evidence {op.evidence_contract_ref}.",
+                            f"{subject_path}.evidence_contract_ref",
+                        )
+                    )
+    return findings
 
 
 def validate_runtime_signature_compatibility(
@@ -487,81 +593,190 @@ def validate_runtime_signature_compatibility(
     runtime_inputs = {item["name"]: item for item in runtime_entry.get("inputs", [])}
     runtime_outputs = {item["name"]: item for item in runtime_entry.get("outputs", [])}
     runtime_parameters = {item["name"]: item for item in runtime_entry.get("parameters", [])}
+    semantic_parameters = _field_map(binding.semantic_parameters)
 
-    for runtime_input in runtime_entry.get("inputs", []):
-        semantic_name = binding.field_mapping.get(runtime_input["name"], runtime_input["name"])
+    mapped_runtime_inputs: set[str] = set()
+    for semantic_name, input_binding in binding.input_bindings.items():
         semantic_field = semantic_inputs.get(semantic_name)
         if semantic_field is None:
             findings.append(
                 _finding(
                     "runtime_signature_mismatch",
-                    f"{binding.id} runtime input {runtime_input['name']} maps to undeclared semantic input {semantic_name}.",
-                    f"{path}.inputs",
+                    f"{binding.id} input binding targets undeclared semantic input {semantic_name}.",
+                    f"{path}.input_bindings.{semantic_name}",
                 )
             )
             continue
-        mismatches = _signature_mismatch(semantic_field, runtime_input)
-        if mismatches:
+        if input_binding.source == "NODE_INPUT":
+            runtime_port = input_binding.runtime_port
+            runtime_input = runtime_inputs.get(runtime_port)
+            if runtime_input is None:
+                findings.append(
+                    _finding(
+                        "runtime_signature_mismatch",
+                        f"{binding.id} semantic input {semantic_name} maps to unknown runtime input {runtime_port}.",
+                        f"{path}.input_bindings.{semantic_name}.runtime_port",
+                    )
+                )
+                continue
+            mapped_runtime_inputs.add(str(runtime_port))
+            mismatches = _signature_mismatch(semantic_field, runtime_input)
+            if mismatches:
+                findings.append(
+                    _finding(
+                        "runtime_signature_mismatch",
+                        f"{binding.id} input {runtime_port} mismatch: {mismatches}.",
+                        f"{path}.input_bindings.{semantic_name}",
+                    )
+                )
+    for semantic_name, semantic_field in semantic_inputs.items():
+        if (
+            getattr(semantic_field, "required", True)
+            and semantic_name not in binding.input_bindings
+            and semantic_name not in binding.uncovered_semantic_inputs
+        ):
             findings.append(
                 _finding(
                     "runtime_signature_mismatch",
-                    f"{binding.id} input {runtime_input['name']} mismatch: {mismatches}.",
-                    f"{path}.inputs.{runtime_input['name']}",
+                    f"{binding.id} semantic input {semantic_name} is required but is neither bound nor explicitly uncovered.",
+                    f"{path}.input_bindings.{semantic_name}",
+                )
+            )
+    for runtime_name in runtime_inputs:
+        if (
+            runtime_name not in mapped_runtime_inputs
+            and runtime_name not in binding.uncovered_runtime_inputs
+        ):
+            findings.append(
+                _finding(
+                    "runtime_signature_mismatch",
+                    f"{binding.id} runtime input {runtime_name} is neither mapped nor explicitly uncovered.",
+                    f"{path}.uncovered_runtime_inputs",
                 )
             )
 
-    for runtime_output in runtime_entry.get("outputs", []):
-        semantic_name = binding.field_mapping.get(runtime_output["name"], runtime_output["name"])
+    mapped_runtime_outputs: set[str] = set()
+    for semantic_name, output_binding in binding.output_bindings.items():
         semantic_field = semantic_outputs.get(semantic_name)
         if semantic_field is None:
             findings.append(
                 _finding(
                     "runtime_signature_mismatch",
-                    f"{binding.id} runtime output {runtime_output['name']} maps to undeclared semantic output {semantic_name}.",
-                    f"{path}.outputs",
+                    f"{binding.id} output binding targets undeclared semantic output {semantic_name}.",
+                    f"{path}.output_bindings.{semantic_name}",
                 )
             )
             continue
+        runtime_output = runtime_outputs.get(output_binding.runtime_port)
+        if runtime_output is None:
+            findings.append(
+                _finding(
+                    "runtime_signature_mismatch",
+                    f"{binding.id} semantic output {semantic_name} maps to unknown runtime output {output_binding.runtime_port}.",
+                    f"{path}.output_bindings.{semantic_name}.runtime_port",
+                )
+            )
+            continue
+        mapped_runtime_outputs.add(output_binding.runtime_port)
         mismatches = _signature_mismatch(semantic_field, runtime_output)
         if mismatches:
             findings.append(
                 _finding(
                     "runtime_signature_mismatch",
-                    f"{binding.id} output {runtime_output['name']} mismatch: {mismatches}.",
-                    f"{path}.outputs.{runtime_output['name']}",
+                    f"{binding.id} output {output_binding.runtime_port} mismatch: {mismatches}.",
+                    f"{path}.output_bindings.{semantic_name}",
                 )
             )
-    runtime_output_semantic_names = {
-        binding.field_mapping.get(name, name) for name in runtime_outputs
-    }
     for semantic_name, semantic_field in semantic_outputs.items():
-        if getattr(semantic_field, "required", True) and semantic_name not in runtime_output_semantic_names:
+        if (
+            getattr(semantic_field, "required", True)
+            and semantic_name not in binding.output_bindings
+            and semantic_name not in binding.uncovered_semantic_outputs
+        ):
             findings.append(
                 _finding(
                     "runtime_signature_mismatch",
-                    f"{binding.id} semantic output {semantic_name} is required but no runtime output maps to it.",
-                    f"{path}.outputs.{semantic_name}",
+                    f"{binding.id} semantic output {semantic_name} is required but is neither bound nor explicitly uncovered.",
+                    f"{path}.output_bindings.{semantic_name}",
+                )
+            )
+    for runtime_name in runtime_outputs:
+        if (
+            runtime_name not in mapped_runtime_outputs
+            and runtime_name not in binding.uncovered_runtime_outputs
+        ):
+            findings.append(
+                _finding(
+                    "runtime_signature_mismatch",
+                    f"{binding.id} runtime output {runtime_name} is neither mapped nor explicitly uncovered.",
+                    f"{path}.uncovered_runtime_outputs",
                 )
             )
 
-    if runtime_parameters:
-        mapped_runtime_parameters = set(binding.parameter_mapping)
-        missing_parameter_mappings = sorted(set(runtime_parameters) - mapped_runtime_parameters)
-        extra_parameter_mappings = sorted(mapped_runtime_parameters - set(runtime_parameters))
-        if missing_parameter_mappings:
+    mapped_semantic_parameters: set[str] = set()
+    for runtime_name, semantic_name in binding.parameter_bindings.items():
+        runtime_parameter = runtime_parameters.get(runtime_name)
+        if runtime_parameter is None:
             findings.append(
                 _finding(
                     "runtime_parameter_signature_mismatch",
-                    f"{binding.id} runtime parameters lack semantic mapping: {missing_parameter_mappings}.",
-                    f"{path}.parameter_mapping",
+                    f"{binding.id} maps unknown runtime parameter {runtime_name}.",
+                    f"{path}.parameter_bindings.{runtime_name}",
                 )
             )
-        if extra_parameter_mappings:
+            continue
+        semantic_parameter = semantic_parameters.get(semantic_name)
+        if semantic_parameter is None:
             findings.append(
                 _finding(
                     "runtime_parameter_signature_mismatch",
-                    f"{binding.id} maps unknown runtime parameters: {extra_parameter_mappings}.",
-                    f"{path}.parameter_mapping",
+                    f"{binding.id} runtime parameter {runtime_name} maps to undeclared semantic parameter {semantic_name}.",
+                    f"{path}.parameter_bindings.{runtime_name}",
+                )
+            )
+            continue
+        mapped_semantic_parameters.add(semantic_name)
+        mismatches = _parameter_signature_mismatch(semantic_parameter, runtime_parameter)
+        if mismatches:
+            findings.append(
+                _finding(
+                    "runtime_parameter_signature_mismatch",
+                    f"{binding.id} parameter {runtime_name} mismatch: {mismatches}.",
+                    f"{path}.parameter_bindings.{runtime_name}",
+                )
+            )
+    for runtime_name in runtime_parameters:
+        if (
+            runtime_name not in binding.parameter_bindings
+            and runtime_name not in binding.uncovered_runtime_parameters
+        ):
+            findings.append(
+                _finding(
+                    "runtime_parameter_signature_mismatch",
+                    f"{binding.id} runtime parameter {runtime_name} is neither mapped nor explicitly uncovered.",
+                    f"{path}.uncovered_runtime_parameters",
+                )
+            )
+    for semantic_name, semantic_parameter in semantic_parameters.items():
+        if (
+            semantic_name not in mapped_semantic_parameters
+            and semantic_name not in binding.uncovered_semantic_parameters
+        ):
+            findings.append(
+                _finding(
+                    "runtime_parameter_signature_mismatch",
+                    f"{binding.id} semantic parameter {semantic_name} is neither mapped nor explicitly uncovered.",
+                    f"{path}.semantic_parameters.{semantic_name}",
+                )
+            )
+    if binding.conformance_status == ConformanceStatus.EXACT:
+        uncovered = {key: value for key, value in _uncovered_binding_values(binding).items() if value}
+        if uncovered:
+            findings.append(
+                _finding(
+                    "exact_binding_has_uncovered_elements",
+                    f"{binding.id} is EXACT but declares uncovered elements {uncovered}.",
+                    f"{path}.conformance_status",
                 )
             )
     return findings
@@ -746,30 +961,21 @@ def validate_registry(
                         f"runtime_bindings[{index}].known_deviations",
                     )
                 )
-            if not binding.field_mapping:
+            if not binding.input_bindings and not binding.output_bindings and not binding.parameter_bindings:
                 findings.append(
                     _finding(
-                        "non_exact_binding_missing_field_mapping",
-                        f"{binding.id} is {binding.conformance_status.value} but declares no field_mapping.",
-                        f"runtime_bindings[{index}].field_mapping",
+                        "non_exact_binding_missing_bindings",
+                        f"{binding.id} is {binding.conformance_status.value} but declares no input, output, or parameter bindings.",
+                        f"runtime_bindings[{index}]",
                     )
                 )
-            if not binding.uncovered_runtime_fields and not binding.uncovered_semantic_fields:
-                findings.append(
-                    _finding(
-                        "non_exact_binding_missing_uncovered_fields",
-                        f"{binding.id} is {binding.conformance_status.value} but declares no uncovered fields.",
-                        f"runtime_bindings[{index}].uncovered_runtime_fields",
-                    )
+        runtime_entry = runtime_by_key.get(key)
+        if runtime_entry is not None:
+            findings.extend(
+                validate_runtime_signature_compatibility(
+                    binding, runtime_entry, operationalizations, f"runtime_bindings[{index}]"
                 )
-        if binding.conformance_status == ConformanceStatus.EXACT:
-            runtime_entry = runtime_by_key.get(key)
-            if runtime_entry is not None:
-                findings.extend(
-                    validate_runtime_signature_compatibility(
-                        binding, runtime_entry, operationalizations, f"runtime_bindings[{index}]"
-                    )
-                )
+            )
 
     duplicate_binding_keys = sorted({key for key in binding_keys if binding_keys.count(key) > 1})
     for key in duplicate_binding_keys:
@@ -1206,6 +1412,21 @@ def validate_registry(
                         f"recipe_definitions.{recipe.id}.evidence_contract_ref",
                     )
                 )
+        if recipe.claim_contract_ref in claim_contracts and recipe.evidence_contract_ref in evidence_contracts:
+            findings.extend(
+                validate_plan_dependency_contract_closure(
+                    registry=registry,
+                    plan_details=plan_details,
+                    claim_contract_ref=recipe.claim_contract_ref,
+                    evidence_contract_ref=recipe.evidence_contract_ref,
+                    claim_contracts=claim_contracts,
+                    evidence_contracts=evidence_contracts,
+                    operationalizations=operationalizations,
+                    subject_path=f"recipe_definitions.{recipe.id}",
+                    subject_id=recipe.id,
+                    finding_prefix="recipe",
+                )
+            )
         for profile_ref in recipe.profile_refs:
             if profile_ref not in profiles:
                 findings.append(
@@ -1400,6 +1621,24 @@ def validate_registry(
                         f"composition_instances.{composition.id}.evidence_contract_ref",
                     )
                 )
+        if (
+            composition.claim_contract_ref in claim_contracts
+            and composition.evidence_contract_ref in evidence_contracts
+        ):
+            findings.extend(
+                validate_plan_dependency_contract_closure(
+                    registry=registry,
+                    plan_details=plan_details,
+                    claim_contract_ref=composition.claim_contract_ref,
+                    evidence_contract_ref=composition.evidence_contract_ref,
+                    claim_contracts=claim_contracts,
+                    evidence_contracts=evidence_contracts,
+                    operationalizations=operationalizations,
+                    subject_path=f"composition_instances.{composition.id}",
+                    subject_id=composition.id,
+                    finding_prefix="composition",
+                )
+            )
 
     for atlas in registry.atlas_entries:
         if atlas.status != Status.PROPOSED_ATLAS:
@@ -1596,6 +1835,7 @@ def build_projections(
     product_policy = _projection_policy(registry, ProjectionTarget.PRODUCT)
     ai_policy = _projection_policy(registry, ProjectionTarget.AI)
     recipe_policy = _projection_policy(registry, ProjectionTarget.RECIPE_LIBRARY)
+    unsupported_policy = _projection_policy(registry, ProjectionTarget.UNSUPPORTED)
     research_policy = _projection_policy(registry, ProjectionTarget.RESEARCH_ATLAS)
 
     product_capabilities: list[dict[str, Any]] = []
@@ -1664,16 +1904,29 @@ def build_projections(
                 }
             )
 
-    ai_operators = [
-        {
-            "id": item.operator_id,
-            "version": item.operator_version,
-            "authorability": item.authorability.value,
-            "unknown_semantics": item.unknown_semantics,
+    ai_operators = []
+    for item in registry.operator_definitions:
+        subject = f"operator:{item.operator_id}:{item.operator_version}"
+        context = {
+            "runtime_binding": "VERIFIED",
+            "ai_compiler": item.authorability.value,
+            "agent_safety": "APPROVED",
+            "validation": "VERIFIED",
+            "product_exposure": "MISSING",
+            "product_maturity": "MISSING",
+            "status": item.status.value,
         }
-        for item in registry.operator_definitions
-        if item.authorability == AuthoringExposure.ALLOWED
-    ]
+        if item.authorability == AuthoringExposure.ALLOWED and _projection_allowed(
+            ai_policy, subject=subject, context=context, status=item.status.value
+        ):
+            ai_operators.append(
+                {
+                    "id": item.operator_id,
+                    "version": item.operator_version,
+                    "authorability": item.authorability.value,
+                    "unknown_semantics": item.unknown_semantics,
+                }
+            )
 
     recipe_items: list[dict[str, Any]] = []
     for recipe in registry.recipe_definitions:
@@ -1830,6 +2083,24 @@ def build_projections(
         ],
     }
 
+    filtered_unsupported = [
+        item
+        for item in unsupported
+        if _projection_allowed(
+            unsupported_policy,
+            subject=f"runtime:{item['kind']}:{item['id']}:{item['version']}",
+            context={
+                "runtime_binding": "VERIFIED",
+                "product_exposure": item.get("product_exposure", "MISSING"),
+                "product_maturity": item.get("product_maturity", "MISSING"),
+                "ai_compiler": item.get("ai_exposure", "MISSING"),
+                "agent_safety": item.get("agent_safety_maturity", "MISSING"),
+                "validation": item.get("validation_maturity", "MISSING"),
+                "status": "CURRENT",
+            },
+        )
+    ]
+
     projections = {
         "product": {
             "schema_version": "1.0",
@@ -1857,7 +2128,7 @@ def build_projections(
         "unsupported": {
             "schema_version": "1.0",
             "registry_lock": lock_payload,
-            "items": unsupported,
+            "items": filtered_unsupported,
             "atlas": {
                 "total": len(registry.atlas_entries),
                 "reason": "PROPOSED_ATLAS entries are not product-supported or AI-authorable.",
@@ -2003,41 +2274,53 @@ def _projection_identities(
     include_operators: bool = False,
     runtime_manifest: dict[str, Any] | None = None,
 ) -> dict[str, str]:
-    identities: dict[str, str] = {}
+    return {
+        subject: stable_hash(contract)
+        for subject, contract in _projection_contracts(
+            projection, include_operators=include_operators, runtime_manifest=runtime_manifest
+        ).items()
+    }
+
+
+def _projection_contracts(
+    projection: dict[str, Any],
+    *,
+    include_operators: bool = False,
+    runtime_manifest: dict[str, Any] | None = None,
+) -> dict[str, dict[str, Any]]:
+    contracts: dict[str, dict[str, Any]] = {}
     runtime_operators = _operator_by_key(runtime_manifest or {})
     for item in projection.get("capabilities", []):
         subject = f"runtime:{item['kind']}:{item['id']}:{item['version']}"
-        identities[subject] = stable_hash(_canonical_capability_contract(item))
+        contracts[subject] = _canonical_capability_contract(item)
     for item in projection.get("recipes", []):
         subject = f"recipe:{item['id']}:{item['version']}"
-        identities[subject] = stable_hash(_canonical_recipe_contract(item))
+        contracts[subject] = _canonical_recipe_contract(item)
     for item in projection.get("validated_compositions", []):
         subject = f"composition:{item['id']}"
-        identities[subject] = stable_hash(_canonical_recipe_contract(item))
+        contracts[subject] = _canonical_recipe_contract(item)
     if include_operators:
         for item in projection.get("operators", []):
             subject = f"operator:{item['id']}:{item['version']}"
-            identities[subject] = stable_hash(
-                _canonical_operator_contract(
-                    item, runtime_operators.get((item["id"], item["version"]))
-                )
+            contracts[subject] = _canonical_operator_contract(
+                item, runtime_operators.get((item["id"], item["version"]))
             )
-    return identities
+    return contracts
 
 
-def _baseline_identities(runtime_manifest: dict[str, Any]) -> dict[str, Any]:
-    product: dict[str, str] = {}
-    ai: dict[str, str] = {}
+def _baseline_contracts(runtime_manifest: dict[str, Any]) -> dict[str, Any]:
+    product: dict[str, dict[str, Any]] = {}
+    ai: dict[str, dict[str, Any]] = {}
     sources = baseline_artifact_manifest()
     capability_catalog = _load_json_if_exists(CAPABILITY_CATALOG_BASELINE_PATH)
     if isinstance(capability_catalog, dict):
         for key in ("primitives", "relations"):
             for item in capability_catalog.get(key, []):
                 subject = f"runtime:{item['kind']}:{item['name']}:{item['version']}"
-                product[subject] = stable_hash(_canonical_capability_contract(item))
+                product[subject] = _canonical_capability_contract(item)
         for item in runtime_manifest.get("recipes", []):
             subject = f"recipe:{item['recipe_id']}:{item['recipe_version']}"
-            product[subject] = stable_hash(_canonical_recipe_contract(item))
+            product[subject] = _canonical_recipe_contract(item)
 
     knowledge_pack = _load_json_if_exists(KNOWLEDGE_PACK_BASELINE_PATH)
     if isinstance(knowledge_pack, dict):
@@ -2045,25 +2328,71 @@ def _baseline_identities(runtime_manifest: dict[str, Any]) -> dict[str, Any]:
             for item in knowledge_pack.get(key, []):
                 if item.get("agent_authorable") is True:
                     subject = f"runtime:{item['kind']}:{item['name']}:{item['version']}"
-                    ai[subject] = stable_hash(_canonical_capability_contract(item))
+                    ai[subject] = _canonical_capability_contract(item)
         for item in knowledge_pack.get("operators", []):
             subject = f"operator:{item['name']}:{item['version']}"
-            ai[subject] = stable_hash(_canonical_operator_contract(item))
+            ai[subject] = _canonical_operator_contract(item)
         for item in knowledge_pack.get("recipes", []):
             subject = f"recipe:{item['recipe_id']}:{item['recipe_version']}"
-            ai[subject] = stable_hash(_canonical_recipe_contract(item))
+            ai[subject] = _canonical_recipe_contract(item)
 
     return {"product": product, "ai": ai, "sources": sources}
 
 
-def _identity_diff(baseline: dict[str, str], projection: dict[str, str]) -> dict[str, Any]:
+def _baseline_identities(runtime_manifest: dict[str, Any]) -> dict[str, Any]:
+    contracts = _baseline_contracts(runtime_manifest)
+    return {
+        "product": {subject: stable_hash(contract) for subject, contract in contracts["product"].items()},
+        "ai": {subject: stable_hash(contract) for subject, contract in contracts["ai"].items()},
+        "sources": contracts["sources"],
+    }
+
+
+def _changed_fields(baseline_contract: dict[str, Any], projection_contract: dict[str, Any]) -> list[str]:
+    fields = set(baseline_contract) | set(projection_contract)
+    return sorted(
+        field
+        for field in fields
+        if baseline_contract.get(field) != projection_contract.get(field)
+    )
+
+
+def _identity_diff(
+    baseline_contracts: dict[str, dict[str, Any]],
+    projection_contracts: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    baseline = {
+        subject: stable_hash(contract) for subject, contract in baseline_contracts.items()
+    }
+    projection = {
+        subject: stable_hash(contract) for subject, contract in projection_contracts.items()
+    }
     baseline_keys = set(baseline)
     projection_keys = set(projection)
     common = baseline_keys & projection_keys
+    changed = sorted(key for key in common if baseline[key] != projection[key])
     return {
         "added": sorted(projection_keys - baseline_keys),
         "removed": sorted(baseline_keys - projection_keys),
-        "contract_changed": sorted(key for key in common if baseline[key] != projection[key]),
+        "contract_changed": changed,
+        "added_details": {
+            key: {"projection_contract_hash": projection[key]}
+            for key in sorted(projection_keys - baseline_keys)
+        },
+        "removed_details": {
+            key: {"baseline_contract_hash": baseline[key]}
+            for key in sorted(baseline_keys - projection_keys)
+        },
+        "contract_changed_details": {
+            key: {
+                "baseline_contract_hash": baseline[key],
+                "projection_contract_hash": projection[key],
+                "changed_fields": _changed_fields(
+                    baseline_contracts[key], projection_contracts[key]
+                ),
+            }
+            for key in changed
+        },
         "baseline_count": len(baseline_keys),
         "projection_count": len(projection_keys),
         "shared_count": len(common),
@@ -2073,16 +2402,16 @@ def _identity_diff(baseline: dict[str, str], projection: dict[str, str]) -> dict
 def build_projection_differences(
     runtime_manifest: dict[str, Any], projections: dict[str, dict[str, Any]]
 ) -> dict[str, Any]:
-    baselines = _baseline_identities(runtime_manifest)
+    baselines = _baseline_contracts(runtime_manifest)
     return {
         "baseline_sources": baselines["sources"],
         "product": _identity_diff(
             baselines["product"],
-            _projection_identities(projections["product"], runtime_manifest=runtime_manifest),
+            _projection_contracts(projections["product"], runtime_manifest=runtime_manifest),
         ),
         "ai": _identity_diff(
             baselines["ai"],
-            _projection_identities(
+            _projection_contracts(
                 projections["ai"], include_operators=True, runtime_manifest=runtime_manifest
             ),
         ),
@@ -2114,16 +2443,72 @@ def validate_projection_parity(
     differences = build_projection_differences(runtime_manifest, projections)
     for target in ("product", "ai"):
         diff = differences[target]
-        accepted = policy_by_target.get(target).accepted_differences if policy_by_target.get(target) else {}
+        policy = policy_by_target.get(target)
+        waivers = policy.accepted_differences if policy else []
+        observed: set[tuple[str, str]] = set()
+        waiver_by_key = {
+            (waiver.difference_kind.lower(), waiver.subject_ref): waiver
+            for waiver in waivers
+        }
         for key in ("added", "removed", "contract_changed"):
-            allowed = set(accepted.get(key, []))
-            unexpected = sorted(set(diff.get(key, [])) - allowed)
-            if unexpected:
+            details_key = f"{key}_details"
+            for subject in diff.get(key, []):
+                waiver = waiver_by_key.get((key, subject))
+                if waiver is None:
+                    findings.append(
+                        _finding(
+                            "projection_parity_unapproved_difference",
+                            f"{target} projection has unapproved {key}: {subject}.",
+                            f"projection_policies.{target}.accepted_differences",
+                        )
+                    )
+                    continue
+                observed.add((key, subject))
+                details = diff.get(details_key, {}).get(subject, {})
+                baseline_hash = details.get("baseline_contract_hash")
+                projection_hash = details.get("projection_contract_hash")
+                if key in {"removed", "contract_changed"} and (
+                    not waiver.baseline_contract_hash
+                    or waiver.baseline_contract_hash != baseline_hash
+                ):
+                    findings.append(
+                        _finding(
+                            "projection_parity_waiver_hash_mismatch",
+                            f"{target} waiver for {subject} expected baseline hash {waiver.baseline_contract_hash}, observed {baseline_hash}.",
+                            f"projection_policies.{target}.accepted_differences.{subject}",
+                        )
+                    )
+                if key in {"added", "contract_changed"} and (
+                    not waiver.projection_contract_hash
+                    or waiver.projection_contract_hash != projection_hash
+                ):
+                    findings.append(
+                        _finding(
+                            "projection_parity_waiver_hash_mismatch",
+                            f"{target} waiver for {subject} expected projection hash {waiver.projection_contract_hash}, observed {projection_hash}.",
+                            f"projection_policies.{target}.accepted_differences.{subject}",
+                        )
+                    )
+                if key == "contract_changed":
+                    changed_fields = set(details.get("changed_fields", []))
+                    permitted_fields = set(waiver.permitted_fields)
+                    unpermitted_fields = sorted(changed_fields - permitted_fields)
+                    if unpermitted_fields:
+                        findings.append(
+                            _finding(
+                                "projection_parity_waiver_field_mismatch",
+                                f"{target} waiver for {subject} does not permit changed fields {unpermitted_fields}.",
+                                f"projection_policies.{target}.accepted_differences.{subject}.permitted_fields",
+                            )
+                        )
+        for waiver in waivers:
+            observed_key = (waiver.difference_kind.lower(), waiver.subject_ref)
+            if observed_key not in observed:
                 findings.append(
                     _finding(
-                        "projection_parity_unapproved_difference",
-                        f"{target} projection has unapproved {key}: {unexpected}.",
-                        f"projection_policies.{target}.accepted_differences.{key}",
+                        "projection_parity_stale_waiver",
+                        f"{target} waiver for {waiver.subject_ref} {waiver.difference_kind} is not currently observed.",
+                        f"projection_policies.{target}.accepted_differences.{waiver.subject_ref}",
                     )
                 )
     return findings
