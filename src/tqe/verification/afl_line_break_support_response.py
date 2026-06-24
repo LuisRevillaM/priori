@@ -18,9 +18,16 @@ from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
 from tqe.semantic_registry.generate import OUTPUT_ROOT, generate_scp0_artifacts
+from tqe.verification.afl_validation_factory import (
+    ValidationFactorySpec,
+    attach_validation_factory,
+)
 
 
 REPORT_PATH = Path("artifacts/autonomous/afl-line-break-support-response-verification-report.json")
+EXPECTATION_PATH = Path(
+    "delivery/autonomous/afl09a/frozen-expectations/line_break_support_response.json"
+)
 PLAN_ARTIFACT_PATH = Path("config/query-plans/line_break_support_response.experimental.v1.json")
 PASSPORT_PROJECTION_PATH = OUTPUT_ROOT / "capability-passport-projection.json"
 
@@ -50,6 +57,20 @@ REQUIRED_PROHIBITED_CLAIMS = {
     "proves_pass_probability",
     "proves_pass_optimality",
 }
+VALIDATION_FACTORY_SPEC = ValidationFactorySpec(
+    factory_id="afl09a.line_break_support_response.0_1_0",
+    subject_ref="runtime:composition:line_break_support_response:0.1.0",
+    expectation_path=EXPECTATION_PATH,
+    source_verifier="tqe.verification.afl_line_break_support_response",
+    threshold_version="line_break_support_response.experimental.v0.1.0",
+    required_prohibited_claims=frozenset(REQUIRED_PROHIBITED_CLAIMS),
+    required_check_keys=(
+        "generic_execution",
+        "real_capstone_results_or_honest_zero",
+        "requested_evidence_complete",
+        "dependency_overclaim_boundary_present",
+    ),
+)
 
 
 LINE_BREAK_EVIDENCE_FIELDS = [
@@ -681,7 +702,7 @@ def verify_line_break_support_response() -> dict[str, Any]:
     sample = rows[0] if rows else {}
     requested = sample.get("requested_evidence") if isinstance(sample, dict) else {}
     status = "PASS" if not findings else "FAIL"
-    return {
+    report = {
         "schema_version": "1.0",
         "milestone": "AFL-08 line_break_support_response",
         "status": status,
@@ -729,6 +750,7 @@ def verify_line_break_support_response() -> dict[str, Any]:
         },
         "findings": findings,
     }
+    return attach_validation_factory(report, rows=rows, spec=VALIDATION_FACTORY_SPEC)
 
 
 def main() -> None:

@@ -1,0 +1,29 @@
+{
+  "expectation_id": "afl09a.line_break_support_response.0_1_0",
+  "expected": {
+    "bound_plan_hash": "ea40c8e55fc30d5a1067f7603aca276788713ea778ed22e8b2e8d216c42bee01",
+    "compatibility_profile": "generic",
+    "document_hash": "e1e33ae2d078a4f7797f2c9e53d9711e1bb61b47ffcb25160fc2b48bbf036b43",
+    "execution_status": "pass",
+    "plan_id": "line_break_support_response",
+    "report_status": "PASS",
+    "requested_evidence_failure_count": 0,
+    "result_count": 1,
+    "result_ids": [
+      "1e2938029868ff4f"
+    ],
+    "result_signature_hash": "47d4d2914c11f8d4a579e125940dbda913c712b057f38e7d20394ff48f110899"
+  },
+  "freeze_provenance": {
+    "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
+    "review": "controller_self_verified_original_real_data_verifier",
+    "runtime_semantics_dirty": false,
+    "source_commit": "6d4ae88e2bc8ddfe010b88949fb61c7d30d98e03",
+    "source_verifier": "tqe.verification.afl_line_break_support_response",
+    "source_verifier_status": "PASS",
+    "threshold_version": "line_break_support_response.experimental.v0.1.0",
+    "worktree_dirty": true
+  },
+  "schema_version": "afl09a.frozen_expectation.v1",
+  "subject_ref": "runtime:composition:line_break_support_response:0.1.0"
+}

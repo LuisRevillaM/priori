@@ -10,11 +10,38 @@ from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
 from tqe.semantic_registry.generate import OUTPUT_ROOT, generate_scp0_artifacts
+from tqe.verification.afl_validation_factory import (
+    ValidationFactorySpec,
+    attach_validation_factory,
+)
 
 
 REPORT_PATH = Path("artifacts/autonomous/afl-relative-position-verification-report.json")
+EXPECTATION_PATH = Path(
+    "delivery/autonomous/afl09a/frozen-expectations/relative_position_to_line.json"
+)
 PASSPORT_PROJECTION_PATH = OUTPUT_ROOT / "capability-passport-projection.json"
 SUBJECT_REF = "runtime:primitive:relative_position_to_line:0.1.0"
+VALIDATION_FACTORY_SPEC = ValidationFactorySpec(
+    factory_id="afl09a.relative_position_to_line.0_1_0",
+    subject_ref=SUBJECT_REF,
+    expectation_path=EXPECTATION_PATH,
+    source_verifier="tqe.verification.afl_relative_position",
+    threshold_version="relative_position_probe.v0.1.0",
+    required_prohibited_claims=frozenset(
+        {
+            "defensive_line_was_broken",
+            "tactical_line_role_identified",
+            "player_intent_inferred",
+        }
+    ),
+    required_check_keys=(
+        "generic_execution",
+        "real_results",
+        "requested_evidence_complete",
+        "line_break_overclaim_prohibited",
+    ),
+)
 
 
 def relative_position_probe_document() -> dict[str, Any]:
@@ -296,7 +323,7 @@ def verify_relative_position_capability() -> dict[str, Any]:
     sample = rows[0] if rows else {}
     requested = sample.get("requested_evidence") if isinstance(sample, dict) else {}
     status = "PASS" if not findings else "FAIL"
-    return {
+    report = {
         "schema_version": "1.0",
         "milestone": "AFL-08 relative_position_to_line",
         "status": status,
@@ -335,6 +362,7 @@ def verify_relative_position_capability() -> dict[str, Any]:
         },
         "findings": findings,
     }
+    return attach_validation_factory(report, rows=rows, spec=VALIDATION_FACTORY_SPEC)
 
 
 def main() -> None:

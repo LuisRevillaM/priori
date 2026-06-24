@@ -1,0 +1,52 @@
+{
+  "schema_version": "afl09a.proof_carrying_branch_fixture.v1",
+  "fixture_id": "afl09a.pass_fail_unknown_branch_contract.v1",
+  "purpose": "Exercise proof-carrying PASS, FAIL, and UNKNOWN branch requirements without deriving expected truth from the runtime under test.",
+  "records": [
+    {
+      "result_id": "fixture_pass_with_witness",
+      "judgement": "PASS",
+      "applicability": "APPLICABLE",
+      "evaluation_domain_complete": true,
+      "witnesses": [
+        {
+          "type": "tracking_frame",
+          "frame_id": 100,
+          "entity_ids": ["home_9"],
+          "evidence_alias": "line_break_status"
+        }
+      ],
+      "counterevidence": [],
+      "unmet_premises": [],
+      "source_observations": ["canonical_tracking_frame_100"]
+    },
+    {
+      "result_id": "fixture_fail_complete_domain",
+      "judgement": "FAIL",
+      "applicability": "APPLICABLE",
+      "evaluation_domain_complete": true,
+      "witnesses": [],
+      "counterevidence": [
+        {
+          "type": "complete_domain_observation",
+          "domain": "all_required_frames_and_entities_present"
+        }
+      ],
+      "unmet_premises": [],
+      "source_observations": ["canonical_tracking_frame_120"]
+    },
+    {
+      "result_id": "fixture_unknown_unmet_premises",
+      "judgement": "UNKNOWN",
+      "applicability": "APPLICABLE_BUT_UNDETERMINED",
+      "evaluation_domain_complete": false,
+      "witnesses": [],
+      "counterevidence": [],
+      "unmet_premises": [
+        "missing_required_tracking_frame",
+        "ambiguous_active_player_coverage"
+      ],
+      "source_observations": []
+    }
+  ]
+}
