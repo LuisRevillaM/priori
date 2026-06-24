@@ -1,0 +1,394 @@
+program:
+  id: priori-autonomous-football-language
+  version: 2.0.0-draft
+  namespace: AFL
+  protection_level: SELF_VERIFIED
+  north_star: >
+    Compile previously unseen natural-language football ideas into typed,
+    evidence-carrying tactical programs; execute them where supported; otherwise
+    return the smallest precise semantic, operationalization, modality,
+    identifiability, or validation gap.
+
+authority:
+  builder_may_modify:
+    - implementation
+    - public_tests
+    - documentation
+    - candidate_registry_entries
+  builder_may_not_modify:
+    - protected_milestone_contracts
+    - protected_holdouts
+    - protected_mutations
+    - promotion_policy
+    - trusted_gate
+    - hidden_scoring_policy
+    - signing_key
+  promotion_authority: protected_gate
+  local_status_authority: informational_only
+
+target_classes:
+  - HARD_GATE
+  - BOOTSTRAP_TARGET
+  - RELEASE_TARGET
+  - NORTH_STAR_TARGET
+
+support_dimensions:
+  - EXPRESSIBLE
+  - COMPILABLE
+  - EXECUTABLE
+  - IDENTIFIABLE
+  - VALIDATED
+
+compiler_outcomes:
+  - COMPILED
+  - COMPILED_WITH_DISCLOSED_PROFILE
+  - CLARIFICATION_REQUIRED
+  - CAPABILITY_GAP
+  - MODALITY_GAP
+  - NON_IDENTIFIABLE
+  - VALIDATION_GAP
+
+global_hard_gates:
+  - metric: critical_safety_violations
+    threshold: 0
+    target_class: HARD_GATE
+    waivable: false
+  - metric: undeclared_runtime_dependencies
+    threshold: 0
+    target_class: HARD_GATE
+    waivable: false
+  - metric: evidence_reference_violations
+    threshold: 0
+    target_class: HARD_GATE
+    waivable: false
+  - metric: stale_waivers
+    threshold: 0
+    target_class: HARD_GATE
+    waivable: false
+  - metric: broad_subject_only_waivers
+    threshold: 0
+    target_class: HARD_GATE
+    waivable: false
+  - metric: deterministic_reproduction_failures
+    threshold: 0
+    target_class: HARD_GATE
+    waivable: false
+  - metric: protected_mutants_survived
+    threshold: 0
+    target_class: HARD_GATE
+    waivable: false
+
+staged_targets:
+  generated_valid_semantic_programs:
+    bootstrap: 5000
+    release: 25000
+    north_star: 100000
+  canonical_football_intents:
+    bootstrap: 250
+    release: 750
+    north_star: 1500
+  intents_per_major_family:
+    bootstrap: 20
+    release: 50
+    north_star: 100
+
+milestones:
+  - id: AFL-G0
+    name: Protected Gate Bootstrap
+    depends_on: []
+    deliverables:
+      - namespaced_milestone_contract
+      - milestone_contract_schema
+      - gate_result_schema
+      - review_packet_schema
+      - local_contract_validator
+      - protected_ci_transition_plan
+    quantitative_targets: []
+    hard_gates:
+      - contract_schema_valid
+      - dependencies_acyclic
+      - no_legacy_milestone_ids
+      - hard_gates_not_waivable
+      - promotion_rule_declared
+      - review_packet_requirements_declared
+
+  - id: AFL-01
+    name: Semantic Expression Kernel
+    depends_on: [AFL-G0]
+    deliverables:
+      - semantic_expression_ast
+      - football_query_normal_form
+      - typed_gap_nodes
+      - reference_interpreter
+    quantitative_targets:
+      - metric: generated_valid_semantic_programs
+        threshold: 5000
+        target_class: BOOTSTRAP_TARGET
+        numerator: valid_programs_without_crash
+        denominator: generated_valid_programs
+        evaluation_split: public_generated_bootstrap
+      - metric: protected_invalid_program_accepts
+        threshold: 0
+        target_class: HARD_GATE
+        numerator: invalid_programs_accepted
+        denominator: protected_invalid_programs
+        evaluation_split: protected_invalid_programs
+
+  - id: AFL-02
+    name: Translation-Validated Compilation
+    depends_on: [AFL-01]
+    deliverables:
+      - compiler_to_tactical_query_document
+      - per_compilation_certificate
+      - differential_harness
+    pilots:
+      - high_bypass_completed_pass
+      - ball_side_block_shift
+    quantitative_targets:
+      - metric: current_recipe_parity
+        threshold: 1.0
+        target_class: HARD_GATE
+        numerator: parity_passes
+        denominator: current_recipe_parity_cases
+        evaluation_split: protected_recipe_parity
+      - metric: protected_world_agreement
+        threshold: 1.0
+        target_class: HARD_GATE
+        numerator: agreeing_world_cases
+        denominator: protected_world_cases
+        evaluation_split: protected_synthetic_worlds
+
+  - id: AFL-03
+    name: Football Program Corpus and Generality Harness
+    depends_on: [AFL-01]
+    deliverables:
+      - frozen_corpus
+      - systematic_splits
+      - synthetic_worlds
+      - protected_holdouts
+    quantitative_targets:
+      - metric: canonical_football_intents
+        threshold: 250
+        target_class: BOOTSTRAP_TARGET
+        numerator: accepted_canonical_intents
+        denominator: required_bootstrap_intents
+        evaluation_split: steward_reviewed_corpus
+      - metric: intents_per_major_family
+        threshold: 20
+        target_class: BOOTSTRAP_TARGET
+        numerator: minimum_family_intent_count
+        denominator: required_major_families
+        evaluation_split: steward_reviewed_corpus
+
+  - id: AFL-04
+    name: Natural-Language Compiler v1
+    depends_on: [AFL-02, AFL-03]
+    deliverables:
+      - nl_to_fqnf
+      - fqnf_to_semantic_expression
+      - ambiguity_detector
+      - minimal_gap_resolver
+      - closed_book_mode
+    quantitative_targets:
+      - metric: emitted_program_type_safety
+        threshold: 1.0
+        target_class: HARD_GATE
+        numerator: type_safe_outputs
+        denominator: emitted_outputs
+        evaluation_split: protected_compiler_safety
+      - metric: semantic_equivalence
+        threshold: 0.90
+        target_class: RELEASE_TARGET
+        numerator: semantically_equivalent_outputs
+        denominator: expressible_protected_cases
+        evaluation_split: protected_recipe_free_holdout
+
+  - id: AFL-05
+    name: World-State Reconstruction and Derived Events
+    depends_on: [AFL-02]
+    deliverables:
+      - ball_in_play_state
+      - dead_ball_interval
+      - touch_candidate
+      - control_candidate
+      - boundary_crossing
+      - restart_taken_candidate
+      - same_possession_continuity
+    quantitative_targets:
+      - metric: claim_escalation_violations
+        threshold: 0
+        target_class: HARD_GATE
+        numerator: candidate_to_awarded_escalations
+        denominator: reconstructed_restart_cases
+        evaluation_split: protected_restart_worlds
+
+  - id: AFL-06
+    name: General Spatiotemporal Algebra
+    depends_on: [AFL-02]
+    deliverables:
+      - dynamic_entity_sets
+      - dynamic_regions
+      - lines_and_curves
+      - reachability
+      - coverage_uncertainty_propagation
+    quantitative_targets:
+      - metric: metamorphic_invariant_violations
+        threshold: 0
+        target_class: HARD_GATE
+        numerator: invariant_violations
+        denominator: protected_metamorphic_cases
+        evaluation_split: protected_metamorphic_suite
+
+  - id: AFL-07
+    name: Collective Football Basis
+    depends_on: [AFL-05, AFL-06]
+    deliverables:
+      - team_shape
+      - units_and_lines
+      - pressure_and_reachability
+      - support_and_accessibility
+      - space_and_occupation
+      - transitions_and_rest_defense
+    quantitative_targets:
+      - metric: hidden_unregistered_math
+        threshold: 0
+        target_class: HARD_GATE
+        numerator: named_concepts_with_hidden_math
+        denominator: product_eligible_collective_concepts
+        evaluation_split: protected_collective_basis_review
+
+  - id: AFL-08
+    name: Standard Library Expansion and Atlas Closure
+    depends_on: [AFL-07]
+    deliverables:
+      - atlas_dispositions
+      - capability_passports
+      - query_unlock_scores
+    quantitative_targets:
+      - metric: unclassified_atlas_entries
+        threshold: 0
+        target_class: HARD_GATE
+        numerator: unclassified_entries
+        denominator: atlas_entries
+        evaluation_split: full_atlas_review
+      - metric: atlas_leakage_to_product_or_agent
+        threshold: 0
+        target_class: HARD_GATE
+        numerator: leaked_atlas_only_entries
+        denominator: atlas_only_entries
+        evaluation_split: projection_integrity
+
+  - id: AFL-09
+    name: Validation Factory and Proof-Carrying Results
+    depends_on: [AFL-07]
+    deliverables:
+      - capability_passport_generator
+      - evidence_derivation_graph
+      - coverage_certificate
+      - replay_projection_generator
+    quantitative_targets:
+      - metric: proof_carrying_result_violations
+        threshold: 0
+        target_class: HARD_GATE
+        numerator: invalid_result_evidence_records
+        denominator: protected_result_records
+        evaluation_split: protected_result_evidence_suite
+
+  - id: AFL-10
+    name: Natural-Language Compiler v2 and Open-World Generality
+    depends_on: [AFL-08, AFL-09]
+    deliverables:
+      - closed_book_open_world_compiler
+      - systematic_composition_report
+      - family_level_metrics
+    quantitative_targets:
+      - metric: recipe_free_systematic_composition
+        threshold: 0.90
+        target_class: NORTH_STAR_TARGET
+        numerator: correct_recipe_free_compositions
+        denominator: protected_systematic_composition_cases
+        evaluation_split: protected_recipe_free_systematic_holdout
+      - metric: critical_evidence_violations
+        threshold: 0
+        target_class: HARD_GATE
+        numerator: critical_evidence_violations
+        denominator: protected_compiler_v2_cases
+        evaluation_split: protected_compiler_v2_safety
+
+  - id: AFL-11
+    name: Product Integration and Reliability
+    depends_on: [AFL-10]
+    deliverables:
+      - versioned_query_persistence
+      - bounded_multi_match_execution
+      - rollback
+      - reproducibility
+    quantitative_targets:
+      - metric: agent_direct_execution_paths
+        threshold: 0
+        target_class: HARD_GATE
+        numerator: direct_execution_paths
+        denominator: protected_agent_boundary_probes
+        evaluation_split: protected_product_boundary
+      - metric: unvalidated_product_exposure
+        threshold: 0
+        target_class: HARD_GATE
+        numerator: unvalidated_exposed_items
+        denominator: product_exposed_items
+        evaluation_split: protected_product_projection
+
+  - id: AFL-12
+    name: North Star Audit
+    depends_on: [AFL-11]
+    deliverables:
+      - final_audit_packet
+      - family_level_scorecard
+      - deterministic_reproduction_manifest
+    quantitative_targets:
+      - metric: deterministic_reproduction
+        threshold: 1.0
+        target_class: HARD_GATE
+        numerator: reproduced_final_artifacts
+        denominator: final_audit_artifacts
+        evaluation_split: protected_final_reproduction
+      - metric: unsupported_atlas_isolation
+        threshold: 1.0
+        target_class: HARD_GATE
+        numerator: isolated_unsupported_atlas_entries
+        denominator: unsupported_atlas_entries
+        evaluation_split: protected_final_projection_integrity
+
+promotion_policy:
+  result_authority: protected_gate_only
+  builder_authored_status_authority: none
+  cumulative_gate_required: true
+  signed_certificate_required_for_protected_promotion: true
+  stop_conditions:
+    - contradictory_protected_specification
+    - backwards_incompatible_public_semantic_change
+    - new_data_modality_required
+    - learned_model_changes_claim_basis_or_calibration
+    - intention_causality_optimality_or_prescription_claim
+    - critical_safety_gate_impossible
+    - legal_or_data_governance_issue
+
+review_packet:
+  required:
+    - milestone-claim.json
+    - gate-result.json
+    - registry.lock
+    - source-tree.hash
+    - runtime-manifest.json
+    - semantic-diff.json
+    - test-denominators.json
+    - public-test-report.json
+    - protected-holdout-report.json
+    - property-test-report.json
+    - metamorphic-report.json
+    - differential-report.json
+    - mutation-report.json
+    - performance-report.json
+    - known-limitations.yaml
+    - waivers.yaml
+    - reproduction.md
+    - artifacts.sha256
