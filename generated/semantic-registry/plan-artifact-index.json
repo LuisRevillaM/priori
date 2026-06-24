@@ -226,6 +226,106 @@
       "source_kind": "typed_plan",
       "valid_typed_plan": true
     },
+    "plan.line_break_support_response.v1": {
+      "artifact_id": "plan.line_break_support_response.v1",
+      "capability_dependencies": [
+        {
+          "kind": "primitive",
+          "name": "controlled_pass_episode",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "defensive_line_model",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "relative_position_to_line",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "controlled_line_break_episode",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "relation",
+          "name": "support_arrival_relation",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "lane_occupancy",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "relation",
+          "name": "local_number_relation",
+          "version": "0.1.0"
+        }
+      ],
+      "dependency_refs": [
+        "controlled_pass_episode",
+        "defensive_line_model",
+        "relative_position_to_line",
+        "controlled_line_break_episode",
+        "support_arrival_relation",
+        "lane_occupancy",
+        "local_number_relation",
+        "eq"
+      ],
+      "draft_status": "experimental",
+      "exists": true,
+      "normalized_plan_hash": "3a524303f30929dd49a061e7886f4f973595e05501789200529c1473591857e1",
+      "normalized_selected_document_hash": "3a524303f30929dd49a061e7886f4f973595e05501789200529c1473591857e1",
+      "operator_dependencies": [
+        {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      ],
+      "origin": "MANUAL_PRESET",
+      "parameter_defaults": {
+        "goal_side_buffer_m": 1.0,
+        "line_band_width_m": 2.0,
+        "line_buffer_m": 0.5,
+        "local_maximum_defending_players": 99,
+        "local_minimum_difference": 0,
+        "local_minimum_perspective_players": 1,
+        "local_radius_m": 12.0,
+        "maximum_arrival_seconds": 2.0,
+        "maximum_support_distance_m": 8.0,
+        "minimum_duration_seconds": 0.4,
+        "minimum_line_defenders": 4,
+        "minimum_supporting_players": 1,
+        "required_occupied_lane_count": 3
+      },
+      "path": "config/query-plans/line_break_support_response.experimental.v1.json",
+      "plan_id": "line_break_support_response",
+      "plan_version": "0.1.0",
+      "promotion_status": "EXPERIMENTAL_PRESET",
+      "recipe_id": "line_break_support_response_v1",
+      "recipe_version": "0.1.0",
+      "referenced_parameters": [
+        "goal_side_buffer_m",
+        "line_band_width_m",
+        "line_buffer_m",
+        "local_maximum_defending_players",
+        "local_minimum_difference",
+        "local_minimum_perspective_players",
+        "local_radius_m",
+        "maximum_arrival_seconds",
+        "maximum_support_distance_m",
+        "minimum_duration_seconds",
+        "minimum_line_defenders",
+        "minimum_supporting_players",
+        "required_occupied_lane_count"
+      ],
+      "source_artifact_sha256": "8f9d6da096c55c5bea3461750eeca77d19f08d6b363920021f07fcb7a02510a5",
+      "source_kind": "typed_plan",
+      "valid_typed_plan": true
+    },
     "plan.opposite_corridor_after_shift.v1": {
       "artifact_id": "plan.opposite_corridor_after_shift.v1",
       "capability_dependencies": [
@@ -425,6 +525,6 @@
       "valid_typed_plan": true
     }
   },
-  "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+  "plan_artifact_revision": "5fa8a34cc392a4d6f360a60b5a735d4d831b9af1a60dea6bea61cff3403c63c8",
   "schema_version": "1.0"
 }

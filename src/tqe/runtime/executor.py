@@ -133,6 +133,7 @@ class PeriodState:
     accepted: list[dict[str, Any]] = field(default_factory=list)
     near_misses: list[dict[str, Any]] = field(default_factory=list)
     predicate_traces: list[PredicateTrace] = field(default_factory=list)
+    lookup_cache: dict[tuple[Any, ...], Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -2208,9 +2209,9 @@ def defensive_line_anchor_record(
         line_evaluation_frame_id = anchor_frame_id
     if anchor_frame_id is None or line_evaluation_frame_id is None:
         return None
-    ball_x_m = ball_x_at_frame(state.positions, line_evaluation_frame_id)
-    defender_positions = defending_positions_at_frame(
-        state.positions,
+    ball_x_m = cached_ball_x_at_frame(state, line_evaluation_frame_id)
+    defender_positions = cached_defending_positions_at_frame(
+        state,
         line_evaluation_frame_id,
         state.defending_team_role,
         known_outfield_ids,
@@ -2283,6 +2284,73 @@ def ball_x_at_frame(positions: pd.DataFrame, frame_id: int) -> float | None:
     return None if pd.isna(value) else float(value)
 
 
+def cached_ball_x_at_frame(state: PeriodState, frame_id: int) -> float | None:
+    key = ("ball_x_at_frame", int(frame_id))
+    if key not in state.lookup_cache:
+        rows = rows_at_frame(state, frame_id)
+        ball_rows = rows[rows["entity_type"] == "ball"]
+        if ball_rows.empty:
+            state.lookup_cache[key] = None
+        else:
+            value = ball_rows.iloc[0]["x_m"]
+            state.lookup_cache[key] = None if pd.isna(value) else float(value)
+    return state.lookup_cache[key]
+
+
+def rows_by_frame(state: PeriodState) -> dict[int, pd.DataFrame]:
+    key = ("rows_by_frame",)
+    if key not in state.lookup_cache:
+        state.lookup_cache[key] = {
+            int(frame_id): rows
+            for frame_id, rows in state.positions.groupby("frame_id", sort=False)
+        }
+    return state.lookup_cache[key]
+
+
+def rows_at_frame(state: PeriodState, frame_id: int) -> pd.DataFrame:
+    return rows_by_frame(state).get(int(frame_id), state.positions.iloc[0:0])
+
+
+def player_records_at_frame(state: PeriodState, frame_id: int) -> dict[str, dict[str, Any]]:
+    key = ("player_records_at_frame", int(frame_id))
+    if key not in state.lookup_cache:
+        rows = rows_at_frame(state, frame_id)
+        rows = rows[rows["entity_type"] == "player"]
+        records: dict[str, dict[str, Any]] = {}
+        for row in rows.itertuples(index=False):
+            if pd.isna(row.x_m) or pd.isna(row.y_m):
+                x_m = None
+                y_m = None
+            else:
+                x_m = float(row.x_m)
+                y_m = float(row.y_m)
+            records[str(row.entity_id)] = {
+                "player_id": str(row.entity_id),
+                "frame_id": int(row.frame_id),
+                "team_id": str(row.team_id),
+                "team_role": str(row.team_role),
+                "x_m": x_m,
+                "y_m": y_m,
+            }
+        state.lookup_cache[key] = records
+    return state.lookup_cache[key]
+
+
+def player_records_at_frame_for_team(
+    state: PeriodState,
+    frame_id: int,
+    team_role: str,
+) -> list[dict[str, Any]]:
+    key = ("player_records_at_frame_for_team", int(frame_id), team_role)
+    if key not in state.lookup_cache:
+        state.lookup_cache[key] = [
+            record
+            for record in player_records_at_frame(state, frame_id).values()
+            if record["team_role"] == team_role
+        ]
+    return state.lookup_cache[key]
+
+
 def defending_positions_at_frame(
     positions: pd.DataFrame,
     frame_id: int,
@@ -2302,6 +2370,31 @@ def defending_positions_at_frame(
             continue
         observed[str(row.entity_id)] = (float(row.x_m), float(row.y_m))
     return observed
+
+
+def cached_defending_positions_at_frame(
+    state: PeriodState,
+    frame_id: int,
+    team_role: str,
+    outfield_ids: set[str],
+) -> dict[str, tuple[float, float]]:
+    key = (
+        "defending_positions_at_frame",
+        int(frame_id),
+        team_role,
+        tuple(sorted(str(value) for value in outfield_ids)),
+    )
+    if key not in state.lookup_cache:
+        observed: dict[str, tuple[float, float]] = {}
+        allowed_ids = {str(value) for value in outfield_ids}
+        for record in player_records_at_frame_for_team(state, frame_id, team_role):
+            if allowed_ids and record["player_id"] not in allowed_ids:
+                continue
+            if record["x_m"] is None or record["y_m"] is None:
+                continue
+            observed[record["player_id"]] = (float(record["x_m"]), float(record["y_m"]))
+        state.lookup_cache[key] = observed
+    return state.lookup_cache[key]
 
 
 def primitive_relative_position_to_line(state: PeriodState, node: BoundCatalogNode) -> None:
@@ -2384,7 +2477,7 @@ def relative_position_to_line_anchor_record(
     entity_position = (
         None
         if entity_id is None or entity_frame_id is None
-        else player_position_at_frame(state.positions, entity_frame_id, entity_id)
+        else cached_player_position_at_frame(state, entity_frame_id, entity_id)
     )
     evaluation = evaluate_relative_position_to_line(
         entity_position=entity_position,
@@ -2435,6 +2528,22 @@ def player_position_at_frame(
     if pd.isna(row.x_m) or pd.isna(row.y_m):
         return None
     return (float(row.x_m), float(row.y_m))
+
+
+def cached_player_position_at_frame(
+    state: PeriodState,
+    frame_id: int,
+    entity_id: str,
+) -> tuple[float, float] | None:
+    key = ("player_position_at_frame", int(frame_id), str(entity_id))
+    if key not in state.lookup_cache:
+        record = player_records_at_frame(state, frame_id).get(str(entity_id))
+        state.lookup_cache[key] = (
+            None
+            if record is None or record["x_m"] is None or record["y_m"] is None
+            else (float(record["x_m"]), float(record["y_m"]))
+        )
+    return state.lookup_cache[key]
 
 
 def primitive_controlled_line_break_episode(state: PeriodState, node: BoundCatalogNode) -> None:
@@ -2624,8 +2733,8 @@ def lane_occupancy_anchor_record(
         team_role = state.perspective_team_role
     else:
         team_role = state.perspective_team_role
-    observed_positions = observed_outfield_positions_at_frame(
-        state.positions,
+    observed_positions = cached_observed_outfield_positions_at_frame(
+        state,
         lane_evaluation_frame_id,
         team_role,
         outfield_player_ids(state.canonical_root, state.match_id, team_role),
@@ -2701,6 +2810,34 @@ def observed_outfield_positions_at_frame(
             }
         )
     return result
+
+
+def cached_observed_outfield_positions_at_frame(
+    state: PeriodState,
+    frame_id: int,
+    team_role: str,
+    outfield_ids: set[str],
+) -> list[dict[str, Any]]:
+    key = (
+        "observed_outfield_positions_at_frame",
+        int(frame_id),
+        team_role,
+        tuple(sorted(str(value) for value in outfield_ids)),
+    )
+    if key not in state.lookup_cache:
+        allowed_ids = {str(value) for value in outfield_ids}
+        state.lookup_cache[key] = [
+            {
+                "player_id": record["player_id"],
+                "frame_id": record["frame_id"],
+                "team_role": record["team_role"],
+                "x_m": record["x_m"],
+                "y_m": record["y_m"],
+            }
+            for record in player_records_at_frame_for_team(state, frame_id, team_role)
+            if record["player_id"] in allowed_ids
+        ]
+    return state.lookup_cache[key]
 
 
 def relation_support_arrival(state: PeriodState, node: BoundCatalogNode) -> None:
@@ -2792,8 +2929,8 @@ def support_arrival_anchor_record(
     }
     horizon_seconds = max(0.0, maximum_arrival_seconds) + max(0.0, minimum_duration_seconds)
     support_window_end_frame_id = support_anchor_frame_id + int(math.ceil(horizon_seconds * FRAME_RATE_HZ - 1e-9))
-    candidate_positions = observed_outfield_positions_between_frames(
-        state.positions,
+    candidate_positions = cached_observed_outfield_positions_between_frames(
+        state,
         start_frame_id=support_anchor_frame_id,
         end_frame_id=support_window_end_frame_id,
         team_role=team_role,
@@ -2802,8 +2939,8 @@ def support_arrival_anchor_record(
     )
     reference_point = anchor_reference_point(anchor)
     if reference_point is None:
-        reference_point = observed_player_point_at_frame(
-            state.positions,
+        reference_point = cached_observed_player_point_at_frame(
+            state,
             frame_id=support_anchor_frame_id,
             player_id=anchor.get("receiver_id"),
         )
@@ -2905,6 +3042,37 @@ def observed_outfield_positions_between_frames(
     return result
 
 
+def cached_observed_outfield_positions_between_frames(
+    state: PeriodState,
+    *,
+    start_frame_id: int,
+    end_frame_id: int,
+    team_role: str,
+    outfield_ids: set[str],
+    excluded_player_ids: set[str],
+) -> list[dict[str, Any]]:
+    key = (
+        "observed_outfield_positions_between_frames",
+        int(start_frame_id),
+        int(end_frame_id),
+        team_role,
+        tuple(sorted(str(value) for value in outfield_ids)),
+        tuple(sorted(str(value) for value in excluded_player_ids)),
+    )
+    if key not in state.lookup_cache:
+        allowed_ids = {str(value) for value in outfield_ids} - {
+            str(value) for value in excluded_player_ids
+        }
+        result: list[dict[str, Any]] = []
+        for frame_id in range(int(start_frame_id), int(end_frame_id) + 1):
+            for record in player_records_at_frame_for_team(state, frame_id, team_role):
+                if record["player_id"] not in allowed_ids:
+                    continue
+                result.append(dict(record))
+        state.lookup_cache[key] = result
+    return state.lookup_cache[key]
+
+
 def observed_player_point_at_frame(
     positions: pd.DataFrame,
     *,
@@ -2924,6 +3092,23 @@ def observed_player_point_at_frame(
     if pd.isna(row.x_m) or pd.isna(row.y_m):
         return None
     return point_from_xy(row.x_m, row.y_m)
+
+
+def cached_observed_player_point_at_frame(
+    state: PeriodState,
+    *,
+    frame_id: int,
+    player_id: Any,
+) -> dict[str, float] | None:
+    key = ("observed_player_point_at_frame", int(frame_id), None if player_id is None else str(player_id))
+    if key not in state.lookup_cache:
+        record = None if player_id is None else player_records_at_frame(state, frame_id).get(str(player_id))
+        state.lookup_cache[key] = (
+            None
+            if record is None or record["x_m"] is None or record["y_m"] is None
+            else point_from_xy(record["x_m"], record["y_m"])
+        )
+    return state.lookup_cache[key]
 
 
 def anchor_reference_point(anchor: dict[str, Any]) -> dict[str, float] | None:
@@ -3011,22 +3196,22 @@ def local_number_anchor_record(
         state.match_id,
         state.defending_team_role,
     )
-    perspective_positions = observed_outfield_positions_at_frame(
-        state.positions,
+    perspective_positions = cached_observed_outfield_positions_at_frame(
+        state,
         evaluation_frame_id,
         state.perspective_team_role,
         perspective_outfield_ids,
     )
-    defending_positions = observed_outfield_positions_at_frame(
-        state.positions,
+    defending_positions = cached_observed_outfield_positions_at_frame(
+        state,
         evaluation_frame_id,
         state.defending_team_role,
         defending_outfield_ids,
     )
     reference_point = anchor_reference_point(anchor)
     if reference_point is None:
-        reference_point = observed_player_point_at_frame(
-            state.positions,
+        reference_point = cached_observed_player_point_at_frame(
+            state,
             frame_id=evaluation_frame_id,
             player_id=anchor.get("receiver_id"),
         )

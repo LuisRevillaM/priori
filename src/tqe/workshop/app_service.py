@@ -68,6 +68,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
 HIGH_BYPASS_PLAN_PATH = Path("config/query-plans/high_bypass_completed_pass.experimental.v1.json")
+LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH = Path("config/query-plans/line_break_support_response.experimental.v1.json")
 DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", "/Users/luisrevilla/.hermes-priori"))
 HERMES_DB = HERMES_HOME / "state.db"
@@ -157,7 +158,12 @@ class ModelStatusResponse(WorkbenchResponseModel):
 
 
 class PresetResponse(WorkbenchResponseModel):
-    preset_id: Literal["approved_block_shift", "experimental_corridor", "experimental_high_bypass"]
+    preset_id: Literal[
+        "approved_block_shift",
+        "experimental_corridor",
+        "experimental_high_bypass",
+        "experimental_line_break_support_response",
+    ]
     label: str
     recipe: RecipeCardResponse
     plan_hash: str
@@ -452,6 +458,8 @@ def plan_for_recipe(recipe_id: str) -> dict[str, Any]:
         return read_json(CORRIDOR_PLAN_PATH)
     if recipe_id == "high_bypass_completed_pass_v1":
         return read_json(HIGH_BYPASS_PLAN_PATH)
+    if recipe_id == "line_break_support_response_v1":
+        return read_json(LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH)
     raise ValueError(f"Unsupported recipe_id: {recipe_id}")
 
 
@@ -463,6 +471,8 @@ def plan_path_for_preset(preset_id: str | None, selected_recipe_id: str | None) 
         return CORRIDOR_PLAN_PATH
     if key in {"experimental_high_bypass", "high_bypass_completed_pass_v1"}:
         return HIGH_BYPASS_PLAN_PATH
+    if key in {"experimental_line_break_support_response", "line_break_support_response_v1"}:
+        return LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH
     return None
 
 
@@ -651,6 +661,8 @@ def infer_plan_path(query: str) -> Path | None:
         and ("pass" in text or "completed" in text or "opponent" in text or "players" in text)
     ):
         return HIGH_BYPASS_PLAN_PATH
+    if "line" in text and "support" in text and ("break" in text or "cross" in text):
+        return LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH
     if "corridor" in text or "progressive lane" in text or "passing lane" in text:
         return CORRIDOR_PLAN_PATH
     if "block shift" in text:
@@ -1077,6 +1089,7 @@ def hermes_plan_provenance(plan_document: dict[str, Any]) -> str:
         "ball_side_block_shift_v1",
         "possession_corridor_availability_v1",
         "high_bypass_completed_pass_v1",
+        "line_break_support_response_v1",
     }:
         return "HERMES_RECIPE_SELECTION"
     return "HERMES_EXPERIMENTAL_UNVERIFIED"
@@ -2712,6 +2725,7 @@ def recipe_readiness_checks() -> list[dict[str, Any]]:
         "ball_side_block_shift_v1",
         "possession_corridor_availability_v1",
         "high_bypass_completed_pass_v1",
+        "line_break_support_response_v1",
     ):
         try:
             plan_for_recipe(recipe_id)
@@ -3146,6 +3160,7 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         approved_plan = load_plan_from_path(APPROVED_PLAN_PATH)
         corridor_plan = load_plan_from_path(CORRIDOR_PLAN_PATH)
         high_bypass_plan = load_plan_from_path(HIGH_BYPASS_PLAN_PATH)
+        line_break_support_response_plan = load_plan_from_path(LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH)
         context = list_capabilities(CallerProfile.HOST_MANUAL)
         return ok(
             {
@@ -3180,6 +3195,12 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                         "label": "High-bypass pass",
                         "recipe": recipe_card(high_bypass_plan, "EXPERIMENTAL"),
                         "plan_hash": stable_hash(high_bypass_plan),
+                    },
+                    {
+                        "preset_id": "experimental_line_break_support_response",
+                        "label": "Line-break support response",
+                        "recipe": recipe_card(line_break_support_response_plan, "EXPERIMENTAL"),
+                        "plan_hash": stable_hash(line_break_support_response_plan),
                     },
                 ],
                 "capabilities": {

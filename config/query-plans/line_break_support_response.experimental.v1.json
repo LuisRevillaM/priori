@@ -1,0 +1,961 @@
+{
+  "schema_version": "1.0",
+  "recipe": {
+    "schema_version": "1.0",
+    "recipe_id": "line_break_support_response_v1",
+    "recipe_version": "0.1.0",
+    "display_name": "Line-Break Support Response",
+    "description": "Experimental capstone composition that finds observed controlled-pass crossings of a supplied geometric defensive line and evaluates the declared support-arrival, lane-occupancy, and local-number context around the controlled reception.",
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "allowed_claims": [
+      "A controlled pass crossed a supplied observed geometric defensive line under declared thresholds.",
+      "Observed teammates satisfied the declared support-arrival relation around the controlled reception.",
+      "Observed attacking players occupied at least the declared number of lateral lanes.",
+      "Observed local player counts satisfied the declared numeric relation.",
+      "The replay coordinates come from canonical tracking frames."
+    ],
+    "disallowed_claims": [
+      "The system identified a first, second, midfield, or back defensive line.",
+      "The pass caused the line break or support response.",
+      "The pass, support run, or resulting decision was optimal.",
+      "The measured support was the right tactical option.",
+      "The system inferred player intent, communication, scanning, or pressure.",
+      "The result is a pass probability or video-backed claim."
+    ],
+    "limitations": [
+      "Experimental plan; not an approved recipe.",
+      "Line crossing uses a supplied observed geometric line, not a named tactical line taxonomy.",
+      "Support, lane, and local-number outputs are observed geometric relations only.",
+      "No offside, pressure, body orientation, pass probability, decision-quality, or intention model is evaluated."
+    ],
+    "output_classifications": [
+      "LINE_BREAK_SUPPORT_RESPONSE"
+    ],
+    "parameters": [
+      {
+        "name": "goal_side_buffer_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 1.0
+        },
+        "description": "Minimum distance beyond the ball for defenders to count as goal-side."
+      },
+      {
+        "name": "line_band_width_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 2.0
+        },
+        "description": "Maximum normalized x-span of defenders in one observed line band."
+      },
+      {
+        "name": "minimum_line_defenders",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 4
+        },
+        "description": "Minimum defenders required to form an observed line."
+      },
+      {
+        "name": "line_buffer_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 0.5
+        },
+        "description": "Distance from the supplied line treated as level."
+      },
+      {
+        "name": "maximum_arrival_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 2.0
+        },
+        "description": "Latest support arrival after the controlled reception."
+      },
+      {
+        "name": "minimum_duration_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.4
+        },
+        "description": "Minimum continuous observed support duration."
+      },
+      {
+        "name": "maximum_support_distance_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 8.0
+        },
+        "description": "Maximum distance from the controlled receiver reference point."
+      },
+      {
+        "name": "minimum_supporting_players",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 1
+        },
+        "description": "Minimum observed support players required."
+      },
+      {
+        "name": "required_occupied_lane_count",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 3
+        },
+        "description": "Minimum number of observed lateral lanes occupied by attacking players."
+      },
+      {
+        "name": "local_radius_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 12.0
+        },
+        "description": "Radius around the controlled receiver reference point for local-number counting."
+      },
+      {
+        "name": "local_minimum_difference",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 0
+        },
+        "description": "Minimum perspective minus defending local player count."
+      },
+      {
+        "name": "local_minimum_perspective_players",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 1
+        },
+        "description": "Minimum observed attacking players inside the local region."
+      },
+      {
+        "name": "local_maximum_defending_players",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 99
+        },
+        "description": "Maximum observed defending players inside the local region."
+      }
+    ]
+  },
+  "default_invocation": {
+    "schema_version": "1.0",
+    "invocation_id": "line_break_support_response_probe",
+    "match_ids": [
+      "J03WOY"
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "parameters": {},
+    "max_results": 20,
+    "execution_mode": "execute"
+  },
+  "draft_plan": {
+    "schema_version": "1.0",
+    "plan_id": "line_break_support_response",
+    "plan_version": "0.1.0",
+    "recipe_id": "line_break_support_response_v1",
+    "recipe_version": "0.1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate",
+    "classification_mode": "partial_declared",
+    "nodes": [
+      {
+        "kind": "primitive",
+        "node_id": "controlled_pass",
+        "catalog_ref": "controlled_pass_episode",
+        "version": "0.1.0"
+      },
+      {
+        "kind": "primitive",
+        "node_id": "defensive_line_release",
+        "catalog_ref": "defensive_line_model",
+        "version": "0.1.0",
+        "inputs": {
+          "anchors": {
+            "source_node_id": "controlled_pass",
+            "output_name": "anchors"
+          }
+        },
+        "parameters": {
+          "goal_side_buffer_m": {
+            "kind": "parameter",
+            "name": "goal_side_buffer_m"
+          },
+          "line_band_width_m": {
+            "kind": "parameter",
+            "name": "line_band_width_m"
+          },
+          "minimum_line_defenders": {
+            "kind": "parameter",
+            "name": "minimum_line_defenders"
+          },
+          "anchor_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "physical_release_frame_id"
+          }
+        }
+      },
+      {
+        "kind": "primitive",
+        "node_id": "release_relative_position",
+        "catalog_ref": "relative_position_to_line",
+        "version": "0.1.0",
+        "inputs": {
+          "line_evaluations": {
+            "source_node_id": "defensive_line_release",
+            "output_name": "anchor_evaluations"
+          },
+          "entity_anchors": {
+            "source_node_id": "controlled_pass",
+            "output_name": "anchors"
+          }
+        },
+        "parameters": {
+          "entity_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "receiver_id"
+          },
+          "entity_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "physical_release_frame_id"
+          },
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        }
+      },
+      {
+        "kind": "primitive",
+        "node_id": "reception_relative_position",
+        "catalog_ref": "relative_position_to_line",
+        "version": "0.1.0",
+        "inputs": {
+          "line_evaluations": {
+            "source_node_id": "defensive_line_release",
+            "output_name": "anchor_evaluations"
+          },
+          "entity_anchors": {
+            "source_node_id": "controlled_pass",
+            "output_name": "anchors"
+          }
+        },
+        "parameters": {
+          "entity_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "receiver_id"
+          },
+          "entity_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        }
+      },
+      {
+        "kind": "primitive",
+        "node_id": "line_break",
+        "catalog_ref": "controlled_line_break_episode",
+        "version": "0.1.0",
+        "inputs": {
+          "controlled_pass_anchors": {
+            "source_node_id": "controlled_pass",
+            "output_name": "anchors"
+          },
+          "line_evaluations": {
+            "source_node_id": "defensive_line_release",
+            "output_name": "anchor_evaluations"
+          },
+          "release_relative_positions": {
+            "source_node_id": "release_relative_position",
+            "output_name": "anchor_evaluations"
+          },
+          "reception_relative_positions": {
+            "source_node_id": "reception_relative_position",
+            "output_name": "anchor_evaluations"
+          }
+        },
+        "parameters": {
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        }
+      },
+      {
+        "kind": "relation",
+        "node_id": "support_arrival",
+        "catalog_ref": "support_arrival_relation",
+        "version": "0.1.0",
+        "inputs": {
+          "anchors": {
+            "source_node_id": "line_break",
+            "output_name": "anchor_evaluations"
+          }
+        },
+        "parameters": {
+          "anchor_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "candidate_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "perspective_outfield"
+          },
+          "support_region_mode": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "WITHIN_DISTANCE_OF_REFERENCE_POINT"
+          },
+          "maximum_arrival_seconds": {
+            "kind": "parameter",
+            "name": "maximum_arrival_seconds"
+          },
+          "minimum_duration_seconds": {
+            "kind": "parameter",
+            "name": "minimum_duration_seconds"
+          },
+          "maximum_support_distance_m": {
+            "kind": "parameter",
+            "name": "maximum_support_distance_m"
+          },
+          "minimum_supporting_players": {
+            "kind": "parameter",
+            "name": "minimum_supporting_players"
+          }
+        }
+      },
+      {
+        "kind": "primitive",
+        "node_id": "lane_occupancy",
+        "catalog_ref": "lane_occupancy",
+        "version": "0.1.0",
+        "inputs": {
+          "anchors": {
+            "source_node_id": "line_break",
+            "output_name": "anchor_evaluations"
+          }
+        },
+        "parameters": {
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "player_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "perspective_outfield"
+          },
+          "required_occupied_lane_count": {
+            "kind": "parameter",
+            "name": "required_occupied_lane_count"
+          }
+        }
+      },
+      {
+        "kind": "relation",
+        "node_id": "local_number",
+        "catalog_ref": "local_number_relation",
+        "version": "0.1.0",
+        "inputs": {
+          "anchors": {
+            "source_node_id": "line_break",
+            "output_name": "anchor_evaluations"
+          }
+        },
+        "parameters": {
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "radius_m": {
+            "kind": "parameter",
+            "name": "local_radius_m"
+          },
+          "minimum_difference": {
+            "kind": "parameter",
+            "name": "local_minimum_difference"
+          },
+          "minimum_perspective_players": {
+            "kind": "parameter",
+            "name": "local_minimum_perspective_players"
+          },
+          "maximum_defending_players": {
+            "kind": "parameter",
+            "name": "local_maximum_defending_players"
+          }
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "line_break_pass",
+        "input": {
+          "source_node_id": "line_break",
+          "output_name": "line_break_status"
+        },
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "support_arrival_pass",
+        "input": {
+          "source_node_id": "support_arrival",
+          "output_name": "support_arrival_status"
+        },
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "lane_occupancy_pass",
+        "input": {
+          "source_node_id": "lane_occupancy",
+          "output_name": "lane_occupancy_status"
+        },
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "local_number_pass",
+        "input": {
+          "source_node_id": "local_number",
+          "output_name": "local_number_status"
+        },
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        }
+      }
+    ],
+    "classification_rules": [
+      {
+        "label": "LINE_BREAK_SUPPORT_RESPONSE",
+        "predicate_ids": [
+          "line_break_pass",
+          "support_arrival_pass",
+          "lane_occupancy_pass",
+          "local_number_pass"
+        ],
+        "description": "Observed controlled line crossing with declared support arrival, lane occupancy, and local-number context."
+      }
+    ],
+    "anchor_source": {
+      "source_node_id": "line_break",
+      "output_name": "anchor_evaluations"
+    },
+    "requested_evidence": [
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "anchor_id",
+        "alias": "anchor_id"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "anchor_frame_id",
+        "alias": "anchor_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "line_break_status",
+        "alias": "line_break_status"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "line_break_reason",
+        "alias": "line_break_reason"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "pass_episode_id",
+        "alias": "pass_episode_id"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "physical_release_frame_id",
+        "alias": "physical_release_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "controlled_reception_frame_id",
+        "alias": "controlled_reception_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "line_anchor_frame_id",
+        "alias": "line_anchor_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "line_x_m",
+        "alias": "line_x_m"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "release_relative_position_status",
+        "alias": "release_relative_position_status"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "release_signed_distance_to_line_m",
+        "alias": "release_signed_distance_to_line_m"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "reception_relative_position_status",
+        "alias": "reception_relative_position_status"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "reception_signed_distance_to_line_m",
+        "alias": "reception_signed_distance_to_line_m"
+      },
+      {
+        "source": {
+          "source_node_id": "line_break",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "line_buffer_m",
+        "alias": "line_buffer_m"
+      },
+      {
+        "source": {
+          "source_node_id": "controlled_pass",
+          "output_name": "anchors"
+        },
+        "field": "passer_id",
+        "alias": "controlled_pass_passer_id"
+      },
+      {
+        "source": {
+          "source_node_id": "controlled_pass",
+          "output_name": "anchors"
+        },
+        "field": "receiver_id",
+        "alias": "controlled_pass_receiver_id"
+      },
+      {
+        "source": {
+          "source_node_id": "controlled_pass",
+          "output_name": "anchors"
+        },
+        "field": "forward_progression_m",
+        "alias": "controlled_pass_forward_progression_m"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "support_arrival_status",
+        "alias": "support_support_arrival_status"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "support_arrival_reason",
+        "alias": "support_support_arrival_reason"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "support_anchor_frame_id",
+        "alias": "support_support_anchor_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "support_window_start_frame_id",
+        "alias": "support_support_window_start_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "support_window_end_frame_id",
+        "alias": "support_support_window_end_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "support_region_mode",
+        "alias": "support_support_region_mode"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "maximum_arrival_seconds",
+        "alias": "support_maximum_arrival_seconds"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "minimum_duration_seconds",
+        "alias": "support_minimum_duration_seconds"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "maximum_support_distance_m",
+        "alias": "support_maximum_support_distance_m"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "minimum_supporting_players",
+        "alias": "support_minimum_supporting_players"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "supporting_player_ids",
+        "alias": "support_supporting_player_ids"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "first_arrival_frame_id",
+        "alias": "support_first_arrival_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "first_arrival_seconds_after_anchor",
+        "alias": "support_first_arrival_seconds_after_anchor"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "support_duration_seconds",
+        "alias": "support_support_duration_seconds"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "coverage_status",
+        "alias": "support_coverage_status"
+      },
+      {
+        "source": {
+          "source_node_id": "support_arrival",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "reference_point",
+        "alias": "support_reference_point"
+      },
+      {
+        "source": {
+          "source_node_id": "lane_occupancy",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "lane_occupancy_status",
+        "alias": "lane_lane_occupancy_status"
+      },
+      {
+        "source": {
+          "source_node_id": "lane_occupancy",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "lane_occupancy_reason",
+        "alias": "lane_lane_occupancy_reason"
+      },
+      {
+        "source": {
+          "source_node_id": "lane_occupancy",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "lane_evaluation_frame_id",
+        "alias": "lane_lane_evaluation_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "lane_occupancy",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "lane_player_scope",
+        "alias": "lane_lane_player_scope"
+      },
+      {
+        "source": {
+          "source_node_id": "lane_occupancy",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "occupied_lanes",
+        "alias": "lane_occupied_lanes"
+      },
+      {
+        "source": {
+          "source_node_id": "lane_occupancy",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "occupied_lane_count",
+        "alias": "lane_occupied_lane_count"
+      },
+      {
+        "source": {
+          "source_node_id": "lane_occupancy",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "required_occupied_lane_count",
+        "alias": "lane_required_occupied_lane_count"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "local_number_status",
+        "alias": "local_local_number_status"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "local_number_reason",
+        "alias": "local_local_number_reason"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "local_number_frame_id",
+        "alias": "local_local_number_frame_id"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "radius_m",
+        "alias": "local_radius_m"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "minimum_difference",
+        "alias": "local_minimum_difference"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "minimum_perspective_players",
+        "alias": "local_minimum_perspective_players"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "maximum_defending_players",
+        "alias": "local_maximum_defending_players"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "perspective_count",
+        "alias": "local_perspective_count"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "defending_count",
+        "alias": "local_defending_count"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "local_number_difference",
+        "alias": "local_local_number_difference"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "perspective_in_region_player_ids",
+        "alias": "local_perspective_in_region_player_ids"
+      },
+      {
+        "source": {
+          "source_node_id": "local_number",
+          "output_name": "anchor_evaluations"
+        },
+        "field": "defending_in_region_player_ids",
+        "alias": "local_defending_in_region_player_ids"
+      }
+    ]
+  }
+}

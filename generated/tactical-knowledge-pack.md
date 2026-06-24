@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `73e4b21d9e7dbaa8c22c79a1b81b1ec90ddd29d4aab086607a7e9a3a28ee9867`
+SHA-256: `074d76e9377401b5d25ca1f125d2553fc135b1622e017261424eb780f04dad46`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -142,7 +142,7 @@ Disallowed claims:
 
 ## Source Hashes
 
-- `Makefile`: `9420d45503349f3d1173ce51d27595751836f8a5df2c5d00bd250cc488ac7b1c`
+- `Makefile`: `f8cc7b5e78e77bc681711f07b36fa22b965e3d926b1d3e22936eb1827e8a0176`
 - `config/query-plans/ball_side_block_shift.ir.v1.json`: `877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945`
 - `config/query-plans/high_bypass_completed_pass.experimental.v1.json`: `38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83`
 - `config/query-plans/opposite_corridor_after_shift.experimental.v1.json`: `9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74`
@@ -152,10 +152,10 @@ Disallowed claims:
 - `generated/tactical-query-plan.types.ts`: `838bc7a1db332eb24f6fd80faa1530c6cc441aba7eb91eb3e806fa8d23d0bffc`
 - `src/tqe/runtime/binder.py`: `1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210`
 - `src/tqe/runtime/catalog.py`: `e53b7d5db86b6a78f3756ef200a3de076ca164b6951b667ee59c9aaff6a057a3`
-- `src/tqe/runtime/executor.py`: `65ce8c98bb66ccfd6b1d6d43b736125ec81308c48084e57ed2e0162f15bb4a19`
+- `src/tqe/runtime/executor.py`: `9cc429eaca80ebe7d6c3668b2744bfc21af26355eed5798525da718da4852f50`
 - `src/tqe/runtime/ir.py`: `28e5fa2d221bc8f9ec66620d7a8f47a346a002dda9f2e264873492862c39dd3a`
 - `src/tqe/runtime/relations.py`: `6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee`
 - `src/tqe/verification/m1_2_gate_s2i.py`: `00cf3e665ef2096c44a4d28ba37284bb9207ca5412e2e6c564ef0d8d3042c99f`
 - `src/tqe/workshop/hermes_s2.py`: `ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591`
 - `src/tqe/workshop/knowledge_pack.py`: `2acc892dd1f8fe68d6f8f159d818e08d32f02e73a60d43cc6ea1be2157648e08`
-- `src/tqe/workshop/m1_2.py`: `117062b9c072b5eb9321907bcc4bd73db61d18924515dcccc9fac0c9704daed6`
+- `src/tqe/workshop/m1_2.py`: `bc32cd3d8c2de5b1c6c0535d589408708f2084792dda323a0fd1bc0c2d496570`

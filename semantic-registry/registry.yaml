@@ -83,6 +83,14 @@ concepts:
     evidence_contract_ref: evidence.observed_local_number_relation.v1
     tags: [numbers, relation, geometry, local-context]
 
+  - id: concept.line_break_support_response
+    kind: Concept
+    display_name: Line-Break Support Response
+    description: A composed experimental tactic combining observed controlled line crossing, support arrival, lane occupancy, and local-number context.
+    claim_contract_ref: claim.line_break_support_response.v1
+    evidence_contract_ref: evidence.line_break_support_response.v1
+    tags: [line, support, lanes, local-context, composition, recipe]
+
   - id: concept.defensive_block_lateral_shift
     kind: Concept
     display_name: Defensive Block Lateral Shift
@@ -529,6 +537,28 @@ definition_profiles:
       goalkeeper_policy: exclude_goalkeepers
     claim_contract_ref: claim.high_bypass_completed_pass.v1
     evidence_contract_ref: evidence.high_bypass_completed_pass.v1
+
+  - id: profile.line_break_support_response_default.v1
+    kind: DefinitionProfile
+    display_name: Line-Break Support Response Default Profile
+    description: Default experimental profile requiring a controlled pass over a supplied observed line, at least one observed support arrival, three occupied attacking lanes, and a non-negative local-number difference.
+    operationalization_ref: op.controlled_pass_crosses_observed_line.v1
+    bindings:
+      goal_side_buffer_m: 1.0
+      line_band_width_m: 2.0
+      minimum_line_defenders: 4
+      line_buffer_m: 0.5
+      maximum_arrival_seconds: 2.0
+      minimum_duration_seconds: 0.4
+      maximum_support_distance_m: 8.0
+      minimum_supporting_players: 1
+      required_occupied_lane_count: 3
+      local_radius_m: 12.0
+      local_minimum_difference: 0
+      local_minimum_perspective_players: 1
+      local_maximum_defending_players: 99
+    claim_contract_ref: claim.line_break_support_response.v1
+    evidence_contract_ref: evidence.line_break_support_response.v1
 
   - id: profile.ball_side_block_shift_reviewed.v1
     kind: DefinitionProfile
@@ -1470,6 +1500,14 @@ claim_contracts:
     permitted: [observed_players_counted_in_declared_local_region, declared_local_number_requirement_evaluated]
     prohibited: [pressure_inferred, tactical_role_identified, support_quality_inferred, player_intent_inferred, communication_inferred, scanning_inferred, line_break_caused_by_pass, pass_was_optimal, pass_probability_inferred]
     unknown_conditions: [anchor_frame_missing, reference_point_missing, observed_player_positions_missing, invalid_or_missing_player_coordinates, duplicate_player_position_records]
+  - id: claim.line_break_support_response.v1
+    kind: ClaimContract
+    display_name: Line-Break Support Response Claims
+    description: Claims permitted for the experimental line-break support-response composition.
+    inherits: [claim.controlled_ball_transfer.v1, claim.observed_geometric_defensive_line.v1, claim.relative_position_to_observed_line.v1, claim.controlled_pass_crosses_observed_line.v1, claim.observed_support_arrival.v1, claim.observed_lane_occupancy.v1, claim.observed_local_number_relation.v1]
+    permitted: [controlled_pass_crossed_supplied_observed_line_under_declared_buffer, declared_support_arrival_relation_satisfied, declared_lane_occupancy_requirement_satisfied, declared_local_number_requirement_satisfied]
+    prohibited: [tactical_line_role_identified, defensive_line_was_broken, line_break_caused_by_pass, line_break_caused_support, player_intent_inferred, passer_intended_measured_outcome, support_quality_inferred, pressure_inferred, communication_inferred, scanning_inferred, pass_was_optimal, pass_probability_inferred, proves_pass_probability, proves_pass_optimality]
+    unknown_conditions: [controlled_pass_evidence_missing, line_evidence_missing, release_relative_position_missing, reception_relative_position_missing, support_arrival_evidence_missing, lane_occupancy_evidence_missing, local_number_evidence_missing, anchor_correlation_missing, timing_coverage_incomplete]
   - id: claim.defensive_block_lateral_shift.v1
     kind: ClaimContract
     display_name: Defensive Block Lateral Shift Claims
@@ -1614,6 +1652,14 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, local_number_status, local_number_reason, local_number_frame_id, reference_point, radius_m, minimum_difference, minimum_perspective_players, maximum_defending_players, perspective_count, defending_count, local_number_difference, perspective_in_region_player_ids, defending_in_region_player_ids, coverage_status]
     optional: [perspective_player_ids, defending_player_ids, evaluated_perspective_player_ids, evaluated_defending_player_ids, missing_perspective_player_ids, missing_defending_player_ids, invalid_coordinate_player_ids, per_player_evidence]
     replay_projection: [reference_marker, local_radius, perspective_player_markers, defending_player_markers, local_number_badge]
+  - id: evidence.line_break_support_response.v1
+    kind: EvidenceContract
+    display_name: Line-Break Support Response Evidence
+    description: Evidence required for the experimental line-break support-response composition.
+    inherits: [evidence.controlled_ball_transfer.v1, evidence.observed_geometric_defensive_line.v1, evidence.relative_position_to_observed_line.v1, evidence.controlled_pass_crosses_observed_line.v1, evidence.observed_support_arrival.v1, evidence.observed_lane_occupancy.v1, evidence.observed_local_number_relation.v1]
+    required: [anchor_id, anchor_frame_id, event_anchor_frame_id, passer_id, receiver_id, physical_release_frame_id, controlled_reception_frame_id, release_ball_point, reception_ball_point, forward_progression_m, line_status, line_reason, goal_side_buffer_m, line_band_width_m, minimum_line_defenders, defender_positions_used, relative_position_status, relative_position_reason, entity_id, entity_frame_id, entity_x_m, signed_distance_to_line_m, line_break_status, line_break_reason, pass_episode_id, line_anchor_frame_id, line_x_m, release_relative_position_status, release_signed_distance_to_line_m, reception_relative_position_status, reception_signed_distance_to_line_m, line_buffer_m, support_arrival_status, support_arrival_reason, support_anchor_frame_id, support_window_start_frame_id, support_window_end_frame_id, support_region_mode, maximum_arrival_seconds, minimum_duration_seconds, maximum_support_distance_m, minimum_supporting_players, candidate_player_ids, evaluated_candidate_player_ids, supporting_player_ids, coverage_status, reference_point, lane_occupancy_status, lane_occupancy_reason, lane_evaluation_frame_id, lane_player_scope, occupied_lanes, occupied_lane_count, lane_counts, player_lane_assignments, required_occupied_lane_count, lane_definitions, local_number_status, local_number_reason, local_number_frame_id, radius_m, minimum_difference, minimum_perspective_players, maximum_defending_players, perspective_count, defending_count, local_number_difference, perspective_in_region_player_ids, defending_in_region_player_ids]
+    optional: [normalized_line_x_m, line_compactness_m, defensive_line_player_ids, defenders_goal_side_count, ambiguous_line_player_ids, entity_y_m, distance_to_line_m, release_distance_to_line_m, reception_distance_to_line_m, first_arrival_frame_id, first_arrival_seconds_after_anchor, support_duration_seconds, per_player_evidence, missing_candidate_player_ids, invalid_candidate_player_ids, missing_frame_ids, invalid_frame_ids, evaluated_player_ids, missing_player_ids, invalid_player_ids, duplicate_player_ids, outside_lane_player_ids, pitch_width_m, perspective_player_ids, defending_player_ids, evaluated_perspective_player_ids, evaluated_defending_player_ids, missing_perspective_player_ids, missing_defending_player_ids, invalid_coordinate_player_ids]
+    replay_projection: [completed_pass_line, observed_line_marker, release_frame, reception_frame, support_radius, supporting_player_badge, lane_bands, local_radius, local_number_badge]
   - id: evidence.defensive_block_lateral_shift.v1
     kind: EvidenceContract
     display_name: Defensive Block Lateral Shift Evidence
@@ -1835,6 +1881,14 @@ exposure_policies:
     ai_compiler: ALLOWED
     product: ALLOWED
     reasons: [experimental_recipe_selection_allowed]
+  - id: exposure.recipe.line_break_support_response.v1
+    kind: ExposurePolicy
+    display_name: line_break_support_response_v1 exposure
+    description: Exposure policy for the line-break support-response experimental preset.
+    subject_ref: recipe:line_break_support_response_v1:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [experimental_recipe_selection_allowed]
   - id: exposure.composition.ai_corridor_destination.2026_06_23
     kind: ExposurePolicy
     display_name: AI corridor destination composition exposure
@@ -1873,6 +1927,12 @@ projection_policies:
         permitted_fields: []
         rationale: Verified Hermes-authored composition is intentionally new relative to the model-visible knowledge-pack baseline.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the composition.
+      - subject_ref: recipe:line_break_support_response_v1:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: c63cbe4f2d787da3787a6127d3fa2ebd0355037284173040becd9c15c66b80f5
+        permitted_fields: []
+        rationale: Line-break support response is intentionally added as the first composed line-package recipe relative to the model-visible knowledge-pack baseline.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the recipe.
       - subject_ref: recipe:ball_side_block_shift_v1:1.0.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: 00bc3c9303cd4b29f5cab4d760d741d7fcc89c69107ebe7f55c13a7786ef5c9a
@@ -2134,6 +2194,16 @@ maturity_assessments:
     validation: VERIFIED
     agent_safety: APPROVED
     product: EXPOSED
+  - id: maturity.recipe.line_break_support_response.v1
+    kind: MaturityAssessment
+    display_name: line_break_support_response_v1 maturity
+    description: Maturity assessment for the line-break support-response experimental preset.
+    subject_ref: recipe:line_break_support_response_v1:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
   - id: maturity.composition.ai_corridor_destination.2026_06_23
     kind: MaturityAssessment
     display_name: AI corridor destination composition maturity
@@ -2178,6 +2248,14 @@ plan_artifacts:
     promotion_status: EXPERIMENTAL_PRESET
     exact_typed_plan_ref: config/query-plans/high_bypass_completed_pass.experimental.v1.json
     recipe_ref: recipe.high_bypass_completed_pass.v1
+  - id: plan.line_break_support_response.v1
+    kind: PlanArtifact
+    display_name: Line-Break Support Response Typed Plan
+    description: Exact current typed plan artifact for the line-break support-response experimental recipe.
+    origin: MANUAL_PRESET
+    promotion_status: EXPERIMENTAL_PRESET
+    exact_typed_plan_ref: config/query-plans/line_break_support_response.experimental.v1.json
+    recipe_ref: recipe.line_break_support_response.v1
   - id: plan.ai_corridor_destination.2026_06_23
     kind: PlanArtifact
     display_name: AI Corridor Destination Plan Artifact
@@ -2235,6 +2313,18 @@ recipe_definitions:
     profile_refs: [profile.high_bypass_default.v1]
     claim_contract_ref: claim.high_bypass_completed_pass.v1
     evidence_contract_ref: evidence.high_bypass_completed_pass.v1
+  - id: recipe.line_break_support_response.v1
+    kind: RecipeDefinition
+    display_name: Line-Break Support Response Recipe Mapping
+    description: Semantic mapping for the line-break support-response experimental recipe.
+    recipe_id: line_break_support_response_v1
+    recipe_version: 0.1.0
+    concept_ref: concept.line_break_support_response
+    plan_artifact_ref: plan.line_break_support_response.v1
+    dependency_refs: [controlled_pass_episode, defensive_line_model, relative_position_to_line, controlled_line_break_episode, support_arrival_relation, lane_occupancy, local_number_relation, eq]
+    profile_refs: [profile.line_break_support_response_default.v1]
+    claim_contract_ref: claim.line_break_support_response.v1
+    evidence_contract_ref: evidence.line_break_support_response.v1
 
 composition_instances:
   - id: composition.ai_corridor_destination.2026_06_23

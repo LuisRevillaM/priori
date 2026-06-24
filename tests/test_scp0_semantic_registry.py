@@ -54,7 +54,7 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         self.assertEqual(17, report.runtime_capabilities["bound"])
         self.assertEqual(25, report.runtime_capabilities["including_operators_total"])
         self.assertEqual(8, report.operators["semantically_defined"])
-        self.assertEqual(4, report.recipes["mapped"])
+        self.assertEqual(5, report.recipes["mapped"])
         self.assertEqual(1, report.validated_compositions["mapped"])
         self.assertEqual({"product": 0, "ai": 0}, report.atlas_leakage)
         self.assertEqual(741, len(registry.atlas_entries))
@@ -250,7 +250,7 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         differences = scpgen.build_projection_differences(runtime_manifest, projections)
 
         self.assertEqual([], differences["product"]["contract_changed"])
-        self.assertEqual(21, differences["product"]["shared_count"])
+        self.assertEqual(22, differences["product"]["shared_count"])
 
     def test_unapproved_baseline_add_remove_or_contract_change_fails(self) -> None:
         registry = load_registry()

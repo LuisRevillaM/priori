@@ -101,6 +101,7 @@ RECIPE_PLAN_PATHS = [
     Path("config/query-plans/possession_corridor_availability.experimental.v1.json"),
     Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json"),
     Path("config/query-plans/high_bypass_completed_pass.experimental.v1.json"),
+    Path("config/query-plans/line_break_support_response.experimental.v1.json"),
 ]
 NON_AUTHORABLE_CATALOG_REFS = {
     "outcome_classification",
