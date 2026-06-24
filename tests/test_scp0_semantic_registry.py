@@ -51,8 +51,8 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         registry, runtime_manifest, lock, report = generate_scp0_artifacts(write=False)
 
         self.assertEqual("PASS", report.status)
-        self.assertEqual(11, report.runtime_capabilities["bound"])
-        self.assertEqual(19, report.runtime_capabilities["including_operators_total"])
+        self.assertEqual(12, report.runtime_capabilities["bound"])
+        self.assertEqual(20, report.runtime_capabilities["including_operators_total"])
         self.assertEqual(8, report.operators["semantically_defined"])
         self.assertEqual(4, report.recipes["mapped"])
         self.assertEqual(1, report.validated_compositions["mapped"])
@@ -250,7 +250,7 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         differences = scpgen.build_projection_differences(runtime_manifest, projections)
 
         self.assertEqual([], differences["product"]["contract_changed"])
-        self.assertEqual(15, differences["product"]["shared_count"])
+        self.assertEqual(16, differences["product"]["shared_count"])
 
     def test_unapproved_baseline_add_remove_or_contract_change_fails(self) -> None:
         registry = load_registry()
@@ -931,6 +931,10 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
             "runtime:relation:opponents_bypassed_by_action:0.1.0",
             {item["subject_ref"] for item in passport_projection["passports"]},
         )
+        self.assertIn(
+            "runtime:primitive:defensive_line_model:0.1.0",
+            {item["subject_ref"] for item in passport_projection["passports"]},
+        )
 
     def test_pilot_passports_include_claim_limits_replay_evidence_and_deviations(self) -> None:
         registry = load_registry()
@@ -946,6 +950,9 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         )
         bypass = passport_by_subject(
             passport_projection, "runtime:relation:opponents_bypassed_by_action:0.1.0"
+        )
+        defensive_line = passport_by_subject(
+            passport_projection, "runtime:primitive:defensive_line_model:0.1.0"
         )
 
         self.assertIn(
@@ -964,10 +971,24 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
             "bypassed_opponent_markers",
             bypass["evidence_contracts"][0]["replay_projection"],
         )
+        self.assertIn(
+            "defensive_line_was_broken",
+            defensive_line["claim_contracts"][0]["prohibited"],
+        )
+        self.assertIn(
+            "tactical_line_role_identified",
+            defensive_line["claim_contracts"][0]["prohibited"],
+        )
+        self.assertIn(
+            "defensive_line_band",
+            defensive_line["evidence_contracts"][0]["replay_projection"],
+        )
         self.assertEqual("PARTIAL", controlled_pass["binding"]["conformance"])
         self.assertTrue(controlled_pass["binding"]["known_deviations"])
         self.assertEqual("PARTIAL", bypass["binding"]["conformance"])
         self.assertTrue(bypass["binding"]["known_deviations"])
+        self.assertEqual("PARTIAL", defensive_line["binding"]["conformance"])
+        self.assertTrue(defensive_line["binding"]["known_deviations"])
 
     def test_passport_projection_changes_when_source_contract_changes(self) -> None:
         registry = load_registry()

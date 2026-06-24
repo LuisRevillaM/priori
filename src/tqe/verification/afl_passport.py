@@ -20,6 +20,7 @@ REPORT_PATH = Path("artifacts/autonomous/afl-capability-passport-verification-re
 PASSPORT_PROJECTION_PATH = OUTPUT_ROOT / "capability-passport-projection.json"
 TARGET_SUBJECTS = {
     "runtime:primitive:controlled_pass_episode:0.1.0",
+    "runtime:primitive:defensive_line_model:0.1.0",
     "runtime:relation:opponents_bypassed_by_action:0.1.0",
 }
 

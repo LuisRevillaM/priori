@@ -35,6 +35,14 @@ concepts:
     evidence_contract_ref: evidence.defensive_outfield_centroid.v1
     tags: [defending, shape]
 
+  - id: concept.observed_geometric_defensive_line
+    kind: Concept
+    display_name: Observed Geometric Defensive Line
+    description: A compact band of defending outfield players goal-side of the ball under declared geometric thresholds.
+    claim_contract_ref: claim.observed_geometric_defensive_line.v1
+    evidence_contract_ref: evidence.observed_geometric_defensive_line.v1
+    tags: [defending, line, geometry]
+
   - id: concept.defensive_block_lateral_shift
     kind: Concept
     display_name: Defensive Block Lateral Shift
@@ -186,6 +194,30 @@ operationalizations:
     lowering: [reference_player_set, centroid]
     claim_contract_ref: claim.defensive_outfield_centroid.v1
     evidence_contract_ref: evidence.defensive_outfield_centroid.v1
+
+  - id: op.observed_geometric_defensive_line.v1
+    kind: Operationalization
+    display_name: Observed Geometric Defensive Line
+    description: Fit a compact goal-side band of defending outfield players at supplied anchor frames.
+    concept_refs: [concept.observed_geometric_defensive_line]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, ball_position_available, defending_outfield_positions_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: ball_position
+        type: {container: PointSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: ball}
+      - name: defending_outfield_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: defensive_line_evaluation, unit: none, entity_scope: anchor}
+      - name: line_status
+        type: {container: FrameSignal, value: Enum, quantity: observed_defensive_line_status, unit: none, entity_scope: anchor}
+    lowering: [attacking_direction_normalization, goal_side_filter, compact_x_band_selection, ambiguity_detection]
+    claim_contract_ref: claim.observed_geometric_defensive_line.v1
+    evidence_contract_ref: evidence.observed_geometric_defensive_line.v1
 
   - id: op.baseline_relative_defensive_shift.v1
     kind: Operationalization
@@ -398,6 +430,12 @@ implementations:
     description: Current Python implementation registered in the runtime catalog.
     implements: [op.defensive_outfield_centroid.v1]
     source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.defensive_line_model.python.v1
+    kind: Implementation
+    display_name: Defensive Line Model Python Implementation
+    description: Current observed geometric defensive-line implementation.
+    implements: [op.observed_geometric_defensive_line.v1]
+    source_refs: [src/tqe/runtime/defensive_line.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.signed_lateral_shift.python.v1
     kind: Implementation
     display_name: Signed Lateral Shift Python Implementation
@@ -544,6 +582,46 @@ runtime_bindings:
       defending_outfield_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.defending_outfield_positions}
     output_bindings:
       centroid_y: {runtime_port: centroid_y}
+
+  - id: binding.primitive.defensive_line_model.0_1_0
+    kind: RuntimeBinding
+    display_name: defensive_line_model runtime binding
+    description: Canonical runtime binding for defensive_line_model 0.1.0.
+    runtime_capability: {id: defensive_line_model, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.defensive_line_model.python.v1
+    implements: [op.observed_geometric_defensive_line.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Active-player membership uses current canonical outfield metadata and observed frame positions rather than the standalone authoritative active-player timeline.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      ball_position: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.ball_position}
+      defending_outfield_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.defending_outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      line_status: {runtime_port: line_status}
+    semantic_parameters:
+      - name: goal_side_buffer_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 1.0, unit: metre}
+        minimum: 0.0
+        maximum: 10.0
+      - name: line_band_width_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 2.0, unit: metre}
+        minimum: 0.1
+        maximum: 15.0
+      - name: minimum_line_defenders
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 4, unit: count}
+        minimum: 2.0
+        maximum: 10.0
+    parameter_bindings:
+      goal_side_buffer_m: goal_side_buffer_m
+      line_band_width_m: line_band_width_m
+      minimum_line_defenders: minimum_line_defenders
 
   - id: binding.primitive.signed_lateral_shift.0_1_0
     kind: RuntimeBinding
@@ -936,6 +1014,13 @@ claim_contracts:
     permitted: [defending_outfield_centroid_measured]
     prohibited: [proves_defender_intent, proves_marking_assignment]
     unknown_conditions: [defending_player_positions_missing, goalkeeper_identity_unresolved]
+  - id: claim.observed_geometric_defensive_line.v1
+    kind: ClaimContract
+    display_name: Observed Geometric Defensive Line Claims
+    description: Claims permitted for the observed geometric defensive-line model.
+    permitted: [observed_geometric_defensive_line_fit_under_declared_thresholds, no_qualifying_geometric_defensive_line_observed_when_evidence_complete]
+    prohibited: [tactical_line_role_identified, defensive_line_was_broken, defender_intent_inferred, pass_was_optimal, passer_intended_measured_outcome]
+    unknown_conditions: [ball_position_missing, attacking_direction_missing_or_invalid, defending_outfield_positions_incomplete, ambiguous_candidate_lines]
   - id: claim.defensive_block_lateral_shift.v1
     kind: ClaimContract
     display_name: Defensive Block Lateral Shift Claims
@@ -1038,6 +1123,13 @@ evidence_contracts:
     description: Evidence required for defensive outfield centroid measurements.
     required: [baseline_defensive_centroid_y_m, defending_outfield_player_ids]
     replay_projection: [defending_outfield_positions, centroid_marker]
+  - id: evidence.observed_geometric_defensive_line.v1
+    kind: EvidenceContract
+    display_name: Observed Geometric Defensive Line Evidence
+    description: Evidence required for observed geometric defensive-line results.
+    required: [anchor_id, anchor_frame_id, line_status, line_reason, goal_side_buffer_m, line_band_width_m, minimum_line_defenders, defender_positions_used]
+    optional: [line_x_m, normalized_line_x_m, line_compactness_m, defensive_line_player_ids, defenders_goal_side_count, ambiguous_line_player_ids]
+    replay_projection: [ball_marker, defensive_line_player_markers, defensive_line_band]
   - id: evidence.defensive_block_lateral_shift.v1
     kind: EvidenceContract
     display_name: Defensive Block Lateral Shift Evidence
@@ -1132,6 +1224,13 @@ exposure_policies:
     display_name: defensive_outfield_centroid exposure
     description: Exposure policy for defensive_outfield_centroid.
     subject_ref: runtime:primitive:defensive_outfield_centroid:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.defensive_line_model.0_1_0
+    kind: ExposurePolicy
+    display_name: defensive_line_model exposure
+    description: Exposure policy for defensive_line_model.
+    subject_ref: runtime:primitive:defensive_line_model:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
   - id: exposure.runtime.signed_lateral_shift.0_1_0
@@ -1341,6 +1440,16 @@ maturity_assessments:
     display_name: defensive_outfield_centroid maturity
     description: Maturity assessment for defensive_outfield_centroid.
     subject_ref: runtime:primitive:defensive_outfield_centroid:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.defensive_line_model.0_1_0
+    kind: MaturityAssessment
+    display_name: defensive_line_model maturity
+    description: Maturity assessment for defensive_line_model.
+    subject_ref: runtime:primitive:defensive_line_model:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

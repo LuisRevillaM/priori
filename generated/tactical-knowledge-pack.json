@@ -48,6 +48,7 @@
       "authorable_catalog_refs": [
         "ball_lateral_fraction",
         "controlled_pass_episode",
+        "defensive_line_model",
         "defensive_outfield_centroid",
         "geometric_progressive_corridor",
         "geometric_progressive_corridor_from_anchor_set",
@@ -371,6 +372,177 @@
             "control_distance_m",
             "nearest_teammate_margin_m",
             "minimum_receiver_dwell_seconds"
+          ],
+          "version": "0.1.0"
+        },
+        "defensive_line_model": {
+          "kind": "primitive",
+          "limitations": [
+            "Models only an observed geometric defensive line under declared thresholds.",
+            "Does not identify a tactical first, second, midfield, or back line.",
+            "Does not prove a line break, tactical intention, pass optimality, or defensive intent."
+          ],
+          "node_schema": {
+            "catalog_ref": "defensive_line_model",
+            "inputs": {
+              "anchors": {
+                "output_name": "<registered_output_name>",
+                "source_node_id": "<source_node_id>"
+              }
+            },
+            "kind": "primitive",
+            "node_id": "<agent_chosen_lower_snake_id>",
+            "parameters": {
+              "goal_side_buffer_m": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 1.0
+                  },
+                  "description": "Minimum distance beyond the ball for a defender to count as goal-side.",
+                  "maximum": 10.0,
+                  "minimum": 0.0,
+                  "name": "goal_side_buffer_m",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "metre"
+                }
+              },
+              "line_band_width_m": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "metre",
+                    "value": 2.0
+                  },
+                  "description": "Maximum normalized x-span of defenders in one observed line band.",
+                  "maximum": 15.0,
+                  "minimum": 0.1,
+                  "name": "line_band_width_m",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "metre"
+                }
+              },
+              "minimum_line_defenders": {
+                "accepted_forms": [
+                  {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": "<value>"
+                  },
+                  {
+                    "kind": "parameter",
+                    "name": "<declared_recipe_parameter_name>"
+                  }
+                ],
+                "definition": {
+                  "default": {
+                    "payload_type": "number",
+                    "unit": "count",
+                    "value": 4
+                  },
+                  "description": "Minimum defending outfield players required to form an observed line.",
+                  "maximum": 10.0,
+                  "minimum": 2.0,
+                  "name": "minimum_line_defenders",
+                  "payload_type": "number",
+                  "required": false,
+                  "unit": "count"
+                }
+              }
+            },
+            "version": "0.1.0"
+          },
+          "outputs": [
+            {
+              "allowed_values": null,
+              "cardinality": "collection",
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "anchor_id",
+                "anchor_frame_id",
+                "line_status",
+                "line_reason",
+                "line_type",
+                "line_x_m",
+                "normalized_line_x_m",
+                "defensive_line_player_ids",
+                "defenders_goal_side_count",
+                "line_compactness_m",
+                "candidate_line_count",
+                "goal_side_buffer_m",
+                "line_band_width_m",
+                "minimum_line_defenders"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "anchor_evaluations",
+              "payload_type": "anchor_ref",
+              "temporal_type": "episode_set",
+              "unit": "none"
+            },
+            {
+              "allowed_values": [
+                "PASS",
+                "FAIL",
+                "UNKNOWN"
+              ],
+              "cardinality": "single",
+              "entity_scope": "anchor",
+              "evidence_fields": [
+                "line_status",
+                "line_reason"
+              ],
+              "missing_data_semantics": "unknown",
+              "name": "line_status",
+              "payload_type": "enum",
+              "temporal_type": "frame_signal",
+              "unit": "none"
+            }
+          ],
+          "registered_catalog_ref": "defensive_line_model",
+          "required_inputs": [
+            {
+              "cardinality": "collection",
+              "entity_scope": "anchor",
+              "name": "anchors",
+              "payload_type": "anchor_ref",
+              "required": true,
+              "temporal_type": "episode_set",
+              "unit": "none"
+            }
+          ],
+          "valid_output_names": [
+            "anchor_evaluations",
+            "line_status"
+          ],
+          "valid_parameter_names": [
+            "goal_side_buffer_m",
+            "line_band_width_m",
+            "minimum_line_defenders"
           ],
           "version": "0.1.0"
         },
@@ -4222,6 +4394,16 @@
       "release_control_status",
       "release_passer_point"
     ],
+    "defensive_line_model": [
+      "anchor_frame_id",
+      "anchor_id",
+      "defender_positions_used",
+      "defensive_line_player_ids",
+      "line_reason",
+      "line_status",
+      "line_x_m",
+      "normalized_line_x_m"
+    ],
     "defensive_outfield_centroid": [
       "baseline_defensive_centroid_y_m",
       "defending_team_id"
@@ -4328,7 +4510,7 @@
     ]
   },
   "generated_at": "reproducible_from_source_hashes",
-  "knowledge_pack_sha256": "1b794ec044cc2925e5b691226a6863c8967704c4bd33bb72b9488ec114a7a074",
+  "knowledge_pack_sha256": "85ae38d0c8bf64a82c419de347a9814236dc926221289efbf4ad40f85ad7f6a4",
   "knowledge_pack_version": "m1.2-s2i-a.0",
   "model_visible_tool_schemas": {
     "compare_query_versions": {
@@ -7539,6 +7721,129 @@
         }
       ],
       "purpose": "Identify completed pass actions where event data supplies the candidate passer/receiver and tracking proves physical release plus controlled reception.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "anchor_id",
+        "anchor_frame_id",
+        "line_status",
+        "line_reason",
+        "line_x_m",
+        "normalized_line_x_m",
+        "defensive_line_player_ids",
+        "defender_positions_used"
+      ],
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Models only an observed geometric defensive line under declared thresholds.",
+        "Does not identify a tactical first, second, midfield, or back line.",
+        "Does not prove a line break, tactical intention, pass optimality, or defensive intent."
+      ],
+      "name": "defensive_line_model",
+      "outputs": [
+        {
+          "allowed_values": null,
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "line_status",
+            "line_reason",
+            "line_type",
+            "line_x_m",
+            "normalized_line_x_m",
+            "defensive_line_player_ids",
+            "defenders_goal_side_count",
+            "line_compactness_m",
+            "candidate_line_count",
+            "goal_side_buffer_m",
+            "line_band_width_m",
+            "minimum_line_defenders"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "line_status",
+            "line_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "line_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 1.0
+          },
+          "description": "Minimum distance beyond the ball for a defender to count as goal-side.",
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "name": "goal_side_buffer_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 2.0
+          },
+          "description": "Maximum normalized x-span of defenders in one observed line band.",
+          "maximum": 15.0,
+          "minimum": 0.1,
+          "name": "line_band_width_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 4
+          },
+          "description": "Minimum defending outfield players required to form an observed line.",
+          "maximum": 10.0,
+          "minimum": 2.0,
+          "name": "minimum_line_defenders",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        }
+      ],
+      "purpose": "Fit an observed geometric defensive line at supplied anchor frames from defending outfield player tracking positions.",
       "version": "0.1.0"
     },
     {
@@ -13595,7 +13900,7 @@
   },
   "schema_version": "1.0",
   "source_hashes": {
-    "Makefile": "fe5db50210d1c88253d9c973d460e9394d650060e012a114ae672f3a4e1e14c3",
+    "Makefile": "b08db3e9920c334a988d2c5f272866b22fc78d4379d85edfee0308d55a71852a",
     "config/query-plans/ball_side_block_shift.ir.v1.json": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
     "config/query-plans/high_bypass_completed_pass.experimental.v1.json": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
     "config/query-plans/opposite_corridor_after_shift.experimental.v1.json": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
@@ -13604,8 +13909,8 @@
     "generated/tactical-query-plan.schema.json": "0e45cff180c3738629e9c49b15a7191faa12c1517ae987a91d2f80424df68b0f",
     "generated/tactical-query-plan.types.ts": "838bc7a1db332eb24f6fd80faa1530c6cc441aba7eb91eb3e806fa8d23d0bffc",
     "src/tqe/runtime/binder.py": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
-    "src/tqe/runtime/catalog.py": "fe6e5084ada62a6dc27ca87e46d0fb0574dfc63fb4c93542eb0e2fb81bb8f8ab",
-    "src/tqe/runtime/executor.py": "be47107ce2524641c8b4938dedb3721bf92257c758025527195f1b9431bd8128",
+    "src/tqe/runtime/catalog.py": "5d9ece53270f210faa3cee2f2185ebfa6b6d9c20b8ccbefec05c712babb2188c",
+    "src/tqe/runtime/executor.py": "8d49890748fff0f49749bb5e1ae9f5ffa417683ce91a4fd8c1688ea51d8cb61b",
     "src/tqe/runtime/ir.py": "28e5fa2d221bc8f9ec66620d7a8f47a346a002dda9f2e264873492862c39dd3a",
     "src/tqe/runtime/relations.py": "6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee",
     "src/tqe/verification/m1_2_gate_s2i.py": "00cf3e665ef2096c44a4d28ba37284bb9207ca5412e2e6c564ef0d8d3042c99f",

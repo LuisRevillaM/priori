@@ -24,6 +24,7 @@ from lxml import etree
 from tqe.idsse.source_lock import SOURCE_VERSION
 from tqe.runtime.binder import HOST_RUNTIME_PARAMETER_DEFAULTS, bind_document_from_path
 from tqe.runtime.controlled_pass import ControlledPassConfig, ControlledPassOutput, evaluate_controlled_passes
+from tqe.runtime.defensive_line import DefensiveLineConfig, evaluate_defensive_line_model
 from tqe.runtime.ir import (
     BoundCatalogNode,
     BoundPredicateNode,
@@ -43,7 +44,12 @@ from tqe.runtime.ir import (
     UnknownEvidencePolicy,
     stable_hash,
 )
-from tqe.runtime.pass_bypass import PassBypassConfig, PassBypassOutput, evaluate_pass_bypass_measurements
+from tqe.runtime.pass_bypass import (
+    PassBypassConfig,
+    PassBypassOutput,
+    attack_x_sign_for,
+    evaluate_pass_bypass_measurements,
+)
 from tqe.runtime.values import FrameSignal, RuntimeValue, canonical_anchor_record_id, runtime_value_from_raw
 from tqe.runtime.relations import (
     CorridorConfig,
@@ -190,6 +196,7 @@ class TacticalQueryExecutor:
         self.primitives: dict[str, PrimitiveImplementation] = {
             "possession_segment": primitive_possession_segment,
             "controlled_pass_episode": primitive_controlled_pass_episode,
+            "defensive_line_model": primitive_defensive_line_model,
             "ball_lateral_fraction": primitive_ball_lateral_fraction,
             "defensive_outfield_centroid": primitive_defensive_outfield_centroid,
             "signed_lateral_shift": primitive_signed_lateral_shift,
@@ -2107,6 +2114,164 @@ def controlled_pass_episode_record(
         "release_passer_point": release_passer,
         "reception_receiver_point": reception_receiver,
     }
+
+
+def primitive_defensive_line_model(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchors_value = catalog_input_value(state, node, "anchors")
+    anchors = anchors_value.value
+    if not isinstance(anchors, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    config = DefensiveLineConfig(
+        goal_side_buffer_m=node_parameter_number(node, "goal_side_buffer_m", 1.0),
+        line_band_width_m=node_parameter_number(node, "line_band_width_m", 2.0),
+        minimum_defenders=int(round(node_parameter_number(node, "minimum_line_defenders", 4))),
+    )
+    orientation = parquet_rows(state.canonical_root / "orientation.parquet")
+    attack_x_sign = attack_x_sign_for(
+        orientation,
+        state.match_id,
+        state.period,
+        state.perspective_team_role,
+    )
+    known_outfield_ids = outfield_player_ids(
+        state.canonical_root,
+        state.match_id,
+        state.defending_team_role,
+    )
+    records = [
+        defensive_line_anchor_record(
+            state=state,
+            anchor=anchor,
+            attack_x_sign=attack_x_sign,
+            known_outfield_ids=known_outfield_ids,
+            config=config,
+        )
+        for anchor in anchors
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["line_status"]) == "UNKNOWN" else str(record["line_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "line_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "line_status").entity_scope,
+        ),
+        "line_status_records": records,
+    }
+
+
+def defensive_line_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    attack_x_sign: int | None,
+    known_outfield_ids: set[str],
+    config: DefensiveLineConfig,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    ball_x_m = ball_x_at_frame(state.positions, anchor_frame_id)
+    defender_positions = defending_positions_at_frame(
+        state.positions,
+        anchor_frame_id,
+        state.defending_team_role,
+        known_outfield_ids,
+    )
+    evaluation = evaluate_defensive_line_model(
+        ball_x_m=ball_x_m,
+        defending_player_positions=defender_positions,
+        attacking_direction=attack_x_sign,
+        goalkeeper_id=None,
+        goalkeeper_id_known=bool(known_outfield_ids),
+        active_defender_ids_known=bool(known_outfield_ids),
+        anchor_frame_id=anchor_frame_id,
+        config=config,
+    )
+    payload = evaluation.to_dict()
+    line_status = str(payload["status"])
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(
+            anchor.get("anchor_id")
+            or anchor_record_id(
+                match_id=state.match_id,
+                period=state.period,
+                anchor_frame_id=anchor_frame_id,
+                start_frame_id=optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+                end_frame_id=optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+                entity_refs=anchor.get("entity_refs"),
+            )
+        ),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "perspective_team_role": state.perspective_team_role,
+        "defending_team_role": state.defending_team_role,
+        "line_status": line_status,
+        "line_reason": payload["reason"],
+        "line_type": payload["line_type"],
+        "selected_band_id": payload["selected_band_id"],
+        "line_x_m": payload["line_x_m"],
+        "normalized_line_x_m": payload["normalized_line_x_m"],
+        "line_compactness_m": payload["compactness_m"],
+        "defensive_line_player_ids": list(payload["defender_ids"]),
+        "defenders_goal_side_count": payload["defenders_goal_side_count"],
+        "candidate_line_count": payload["candidate_band_count"],
+        "ambiguous_line_player_ids": [list(item) for item in payload["ambiguous_band_defender_ids"]],
+        "goal_side_buffer_m": payload["goal_side_buffer_m"],
+        "line_band_width_m": payload["line_band_width_m"],
+        "minimum_line_defenders": payload["minimum_defenders"],
+        "attacking_direction": payload["attacking_direction"],
+        "ball_x_m": payload["ball_x_m"],
+        "normalized_ball_x_m": payload["normalized_ball_x_m"],
+        "observed_defending_outfield_ids": sorted(defender_positions),
+        "defender_positions_used": list(payload["defender_positions_used"]),
+    }
+
+
+def ball_x_at_frame(positions: pd.DataFrame, frame_id: int) -> float | None:
+    rows = positions[
+        (positions["frame_id"] == frame_id)
+        & (positions["entity_type"] == "ball")
+    ]
+    if rows.empty:
+        return None
+    value = rows.iloc[0]["x_m"]
+    return None if pd.isna(value) else float(value)
+
+
+def defending_positions_at_frame(
+    positions: pd.DataFrame,
+    frame_id: int,
+    team_role: str,
+    outfield_ids: set[str],
+) -> dict[str, tuple[float, float]]:
+    rows = positions[
+        (positions["frame_id"] == frame_id)
+        & (positions["entity_type"] == "player")
+        & (positions["team_role"] == team_role)
+    ]
+    if outfield_ids:
+        rows = rows[rows["entity_id"].astype(str).isin(outfield_ids)]
+    observed: dict[str, tuple[float, float]] = {}
+    for row in rows.itertuples(index=False):
+        if pd.isna(row.x_m) or pd.isna(row.y_m):
+            continue
+        observed[str(row.entity_id)] = (float(row.x_m), float(row.y_m))
+    return observed
 
 
 def catalog_output(node: BoundCatalogNode, name: str) -> Any:

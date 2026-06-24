@@ -1,6 +1,6 @@
 {
-  "passport_count": 11,
-  "passport_revision": "bc7101471f2ade3f894752bc4eadb97b4c933d21c2dbaf72dcfafce255be89d9",
+  "passport_count": 12,
+  "passport_revision": "ec44018555fe4dd13a7d867ad889f96dc073af15354bff50d899e18897e6b1a6",
   "passports": [
     {
       "binding": {
@@ -872,6 +872,493 @@
       },
       "status": "CURRENT",
       "subject_ref": "runtime:primitive:controlled_pass_episode:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.defensive_line_model.0_1_0",
+        "input_bindings": {
+          "anchors": {
+            "runtime_port": "anchors",
+            "source": "NODE_INPUT"
+          },
+          "ball_position": {
+            "context_ref": "canonical_match_state.ball_position",
+            "source": "RUNTIME_CONTEXT"
+          },
+          "defending_outfield_positions": {
+            "context_ref": "canonical_match_state.defending_outfield_positions",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "Active-player membership uses current canonical outfield metadata and observed frame positions rather than the standalone authoritative active-player timeline."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "line_status": {
+            "runtime_port": "line_status"
+          }
+        },
+        "parameter_bindings": {
+          "goal_side_buffer_m": "goal_side_buffer_m",
+          "line_band_width_m": "line_band_width_m",
+          "minimum_line_defenders": "minimum_line_defenders"
+        },
+        "semantic_parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 1.0
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "goal_side_buffer_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 2.0
+            },
+            "description": "",
+            "maximum": 15.0,
+            "minimum": 0.1,
+            "name": "line_band_width_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 4
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 2.0,
+            "name": "minimum_line_defenders",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "count",
+              "value": "Scalar"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.observed_geometric_defensive_line.v1",
+          "inherits": [],
+          "permitted": [
+            "no_qualifying_geometric_defensive_line_observed_when_evidence_complete",
+            "observed_geometric_defensive_line_fit_under_declared_thresholds"
+          ],
+          "prohibited": [
+            "defender_intent_inferred",
+            "defensive_line_was_broken",
+            "pass_was_optimal",
+            "passer_intended_measured_outcome",
+            "tactical_line_role_identified"
+          ],
+          "unknown_conditions": [
+            "ambiguous_candidate_lines",
+            "attacking_direction_missing_or_invalid",
+            "ball_position_missing",
+            "defending_outfield_positions_incomplete"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.observed_geometric_defensive_line.v1",
+          "created_from": [],
+          "description": "A compact band of defending outfield players goal-side of the ball under declared geometric thresholds.",
+          "display_name": "Observed Geometric Defensive Line",
+          "evidence_contract_ref": "evidence.observed_geometric_defensive_line.v1",
+          "id": "concept.observed_geometric_defensive_line",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "defending",
+            "line",
+            "geometry"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for defensive_line_model 0.1.0.",
+      "display_name": "defensive_line_model runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.observed_geometric_defensive_line.v1",
+          "inherits": [],
+          "optional": [
+            "ambiguous_line_player_ids",
+            "defenders_goal_side_count",
+            "defensive_line_player_ids",
+            "line_compactness_m",
+            "line_x_m",
+            "normalized_line_x_m"
+          ],
+          "replay_projection": [
+            "ball_marker",
+            "defensive_line_band",
+            "defensive_line_player_markers"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "defender_positions_used",
+            "goal_side_buffer_m",
+            "line_band_width_m",
+            "line_reason",
+            "line_status",
+            "minimum_line_defenders"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for defensive_line_model.",
+        "display_name": "defensive_line_model exposure",
+        "id": "exposure.runtime.defensive_line_model.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:defensive_line_model:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current observed geometric defensive-line implementation.",
+        "display_name": "Defensive Line Model Python Implementation",
+        "id": "impl.defensive_line_model.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.observed_geometric_defensive_line.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/defensive_line.py",
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for defensive_line_model.",
+        "display_name": "defensive_line_model maturity",
+        "id": "maturity.runtime.defensive_line_model.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:defensive_line_model:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "anchor_available",
+            "ball_position_available",
+            "defending_outfield_positions_available"
+          ],
+          "claim_contract_ref": "claim.observed_geometric_defensive_line.v1",
+          "concept_refs": [
+            "concept.observed_geometric_defensive_line"
+          ],
+          "created_from": [],
+          "description": "Fit a compact goal-side band of defending outfield players at supplied anchor frames.",
+          "display_name": "Observed Geometric Defensive Line",
+          "evidence_contract_ref": "evidence.observed_geometric_defensive_line.v1",
+          "id": "op.observed_geometric_defensive_line.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "ball_position",
+              "required": true,
+              "type": {
+                "container": "PointSignal",
+                "coordinate_frame": "pitch_absolute",
+                "entity_scope": "ball",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Point"
+              }
+            },
+            {
+              "description": "",
+              "name": "defending_outfield_positions",
+              "required": true,
+              "type": {
+                "container": "EntitySetSignal",
+                "coordinate_frame": "pitch_absolute",
+                "entity_scope": "team",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Point"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "attacking_direction_normalization",
+            "goal_side_filter",
+            "compact_x_band_selection",
+            "ambiguity_detection"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "defensive_line_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "line_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "observed_defensive_line_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "2e9036e1404cf9a4ca3516a3e946d80c5d7468bb40ec2075e173c045247c21f3",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "defensive_line_model",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "anchor_id",
+          "anchor_frame_id",
+          "line_status",
+          "line_reason",
+          "line_x_m",
+          "normalized_line_x_m",
+          "defensive_line_player_ids",
+          "defender_positions_used"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Models only an observed geometric defensive line under declared thresholds.",
+          "Does not identify a tactical first, second, midfield, or back line.",
+          "Does not prove a line break, tactical intention, pass optimality, or defensive intent."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "defensive_line_model",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "line_status",
+              "line_reason",
+              "line_type",
+              "line_x_m",
+              "normalized_line_x_m",
+              "defensive_line_player_ids",
+              "defenders_goal_side_count",
+              "line_compactness_m",
+              "candidate_line_count",
+              "goal_side_buffer_m",
+              "line_band_width_m",
+              "minimum_line_defenders"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "line_status",
+              "line_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "line_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 1.0
+            },
+            "description": "Minimum distance beyond the ball for a defender to count as goal-side.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "goal_side_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 2.0
+            },
+            "description": "Maximum normalized x-span of defenders in one observed line band.",
+            "maximum": 15.0,
+            "minimum": 0.1,
+            "name": "line_band_width_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 4
+            },
+            "description": "Minimum defending outfield players required to form an observed line.",
+            "maximum": 10.0,
+            "minimum": 2.0,
+            "name": "minimum_line_defenders",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          }
+        ],
+        "purpose": "Fit an observed geometric defensive line at supplied anchor frames from defending outfield player tracking positions.",
+        "runtime_id": "primitive:defensive_line_model:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:defensive_line_model:0.1.0"
     },
     {
       "binding": {
@@ -4454,16 +4941,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+    "baseline_artifact_revision": "4f479598e9e4c2760e60b78885be7df330ff277eefa1c1e316de9a9a7fe24671",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "9352c17308d7f146d0efb1ec51232e5a5893256432043826aa12a16bc15363f4",
+    "lock_hash": "cf2dc1c39f0702b4acf8f452713627e388005d83242ebbdd2e65c9f645dfeb41",
     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "c6235dbb7bdb8f5275102bf210caec6a885cac27b1cca13ecbeded0b8ddb9325",
+    "registry_revision": "59a4342d02715d3f357fd0c9afe9b9440fd312f6a91ec82036ed8a6f7df74464",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "50b869b2dec576a7a37c62a363f73ea9b40b4743e5905eb4fa62f7d2600b9866",
+    "runtime_manifest_revision": "bae6a042ef9275c283ee619ab9dd15936d1f8ea677bba3f68df02696bd59c6ed",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
