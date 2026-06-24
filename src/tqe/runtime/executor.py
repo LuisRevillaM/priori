@@ -34,6 +34,10 @@ from tqe.runtime.relative_position_to_line import (
     RelativePositionToLineConfig,
     evaluate_relative_position_to_line,
 )
+from tqe.runtime.support_arrival import (
+    SupportArrivalConfig,
+    evaluate_support_arrival_relation,
+)
 from tqe.runtime.ir import (
     BoundCatalogNode,
     BoundPredicateNode,
@@ -224,6 +228,7 @@ class TacticalQueryExecutor:
             "geometric_progressive_corridor": relation_geometric_progressive_corridor,
             "geometric_progressive_corridor_from_anchor_set": relation_geometric_progressive_corridor,
             "opponents_bypassed_by_action": relation_opponents_bypassed_by_action,
+            "support_arrival_relation": relation_support_arrival,
         }
         self.predicates: dict[str, PredicateImplementation] = {
             "gt": predicate_gt,
@@ -2691,6 +2696,245 @@ def observed_outfield_positions_at_frame(
             }
         )
     return result
+
+
+def relation_support_arrival(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchor_records = anchor_value.value
+    if not isinstance(anchor_records, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    anchor_frame_field = node_parameter_text(node, "anchor_frame_field", "controlled_reception_frame_id")
+    candidate_scope = node_parameter_text(node, "candidate_scope", "perspective_outfield")
+    support_region_mode = node_parameter_text(node, "support_region_mode", "WITHIN_DISTANCE_OF_REFERENCE_POINT")
+    maximum_arrival_seconds = node_parameter_number(node, "maximum_arrival_seconds", 2.0)
+    minimum_duration_seconds = node_parameter_number(node, "minimum_duration_seconds", 0.4)
+    maximum_support_distance_m = node_parameter_number(node, "maximum_support_distance_m", 8.0)
+    minimum_supporting_players = node_parameter_integer(node, "minimum_supporting_players", 1)
+    orientation = parquet_rows(state.canonical_root / "orientation.parquet")
+    attack_x_sign = attack_x_sign_for(
+        orientation,
+        state.match_id,
+        state.period,
+        state.perspective_team_role,
+    )
+    records = [
+        support_arrival_anchor_record(
+            state=state,
+            anchor=anchor,
+            anchor_frame_field=anchor_frame_field,
+            candidate_scope=candidate_scope,
+            support_region_mode=support_region_mode,
+            maximum_arrival_seconds=maximum_arrival_seconds,
+            minimum_duration_seconds=minimum_duration_seconds,
+            maximum_support_distance_m=maximum_support_distance_m,
+            minimum_supporting_players=minimum_supporting_players,
+            attack_x_sign=attack_x_sign,
+        )
+        for anchor in anchor_records
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["support_arrival_status"]) == "UNKNOWN" else str(record["support_arrival_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "support_arrival_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "support_arrival_status").entity_scope,
+        ),
+        "support_arrival_status_records": records,
+    }
+
+
+def support_arrival_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    anchor_frame_field: str,
+    candidate_scope: str,
+    support_region_mode: str,
+    maximum_arrival_seconds: float,
+    minimum_duration_seconds: float,
+    maximum_support_distance_m: float,
+    minimum_supporting_players: int,
+    attack_x_sign: int | None,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    support_anchor_frame_id = optional_int(anchor.get(anchor_frame_field))
+    if support_anchor_frame_id is None and anchor_frame_field != "anchor_frame_id":
+        support_anchor_frame_id = anchor_frame_id
+    if anchor_frame_id is None or support_anchor_frame_id is None:
+        return None
+    if candidate_scope == "defending_outfield":
+        team_role = state.defending_team_role
+    else:
+        team_role = state.perspective_team_role
+    known_outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
+    excluded_ids = {
+        str(value)
+        for value in (
+            anchor.get("passer_id"),
+            anchor.get("receiver_id"),
+        )
+        if value is not None
+    }
+    horizon_seconds = max(0.0, maximum_arrival_seconds) + max(0.0, minimum_duration_seconds)
+    support_window_end_frame_id = support_anchor_frame_id + int(math.ceil(horizon_seconds * FRAME_RATE_HZ - 1e-9))
+    candidate_positions = observed_outfield_positions_between_frames(
+        state.positions,
+        start_frame_id=support_anchor_frame_id,
+        end_frame_id=support_window_end_frame_id,
+        team_role=team_role,
+        outfield_ids=known_outfield_ids,
+        excluded_player_ids=excluded_ids,
+    )
+    reference_point = anchor_reference_point(anchor)
+    if reference_point is None:
+        reference_point = observed_player_point_at_frame(
+            state.positions,
+            frame_id=support_anchor_frame_id,
+            player_id=anchor.get("receiver_id"),
+        )
+    evaluation = evaluate_support_arrival_relation(
+        anchor_id=str(anchor.get("anchor_id")),
+        anchor_frame_id=support_anchor_frame_id,
+        reference_player_id=anchor.get("receiver_id"),
+        reference_point=reference_point,
+        candidate_positions=candidate_positions,
+        analysis_rate_hz=FRAME_RATE_HZ,
+        config=SupportArrivalConfig(
+            support_region_mode=support_region_mode,
+            maximum_arrival_seconds=maximum_arrival_seconds,
+            minimum_duration_seconds=minimum_duration_seconds,
+            maximum_support_distance_m=maximum_support_distance_m,
+            minimum_supporting_players=minimum_supporting_players,
+            attacking_direction=attack_x_sign,
+        ),
+    )
+    payload = evaluation.to_dict()
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "support_arrival_status": str(payload["status"]),
+        "support_arrival_reason": payload["reason"],
+        "support_anchor_frame_field": anchor_frame_field,
+        "support_anchor_frame_id": support_anchor_frame_id,
+        "support_window_start_frame_id": payload["support_window_start_frame_id"],
+        "support_window_end_frame_id": payload["support_window_end_frame_id"],
+        "support_window_start_seconds_after_anchor": payload["support_window_start_seconds_after_anchor"],
+        "support_window_end_seconds_after_anchor": payload["support_window_end_seconds_after_anchor"],
+        "support_region_mode": support_region_mode,
+        "maximum_arrival_seconds": maximum_arrival_seconds,
+        "minimum_duration_seconds": minimum_duration_seconds,
+        "maximum_support_distance_m": maximum_support_distance_m,
+        "minimum_supporting_players": minimum_supporting_players,
+        "candidate_scope": candidate_scope,
+        "candidate_team_role": team_role,
+        "candidate_player_ids": list(payload["candidate_player_ids"]),
+        "evaluated_candidate_player_ids": list(payload["evaluated_candidate_player_ids"]),
+        "supporting_player_ids": list(payload["supporting_player_ids"]),
+        "first_arrival_frame_id": payload["first_arrival_frame_id"],
+        "first_arrival_seconds_after_anchor": payload["first_arrival_seconds_after_anchor"],
+        "support_duration_seconds": payload["support_duration_seconds"],
+        "missing_candidate_player_ids": list(payload["missing_candidate_player_ids"]),
+        "invalid_candidate_player_ids": list(payload["invalid_candidate_player_ids"]),
+        "invalid_coordinate_player_ids": list(payload["invalid_coordinate_player_ids"]),
+        "duplicate_candidate_player_ids": list(payload["duplicate_candidate_player_ids"]),
+        "missing_frame_ids": list(payload["missing_frame_ids"]),
+        "invalid_frame_ids": list(payload["invalid_frame_ids"]),
+        "missing_reference_frame_ids": list(payload["missing_reference_frame_ids"]),
+        "invalid_reference_frame_ids": list(payload["invalid_reference_frame_ids"]),
+        "duplicate_reference_frame_ids": list(payload["duplicate_reference_frame_ids"]),
+        "per_player_evidence": payload["per_player_evidence"],
+        "coverage_status": payload["coverage_status"],
+        "config_evidence": payload["config_evidence"],
+        "reference_player_id": payload["reference_player_id"],
+        "reference_point": reference_point,
+        "observed_candidate_record_count": len(candidate_positions),
+    }
+
+
+def observed_outfield_positions_between_frames(
+    positions: pd.DataFrame,
+    *,
+    start_frame_id: int,
+    end_frame_id: int,
+    team_role: str,
+    outfield_ids: set[str],
+    excluded_player_ids: set[str],
+) -> list[dict[str, Any]]:
+    if not outfield_ids:
+        return []
+    rows = positions[
+        (positions["frame_id"] >= start_frame_id)
+        & (positions["frame_id"] <= end_frame_id)
+        & (positions["entity_type"] == "player")
+        & (positions["team_role"] == team_role)
+    ]
+    rows = rows[rows["entity_id"].astype(str).isin(outfield_ids - excluded_player_ids)]
+    result: list[dict[str, Any]] = []
+    for row in rows.itertuples(index=False):
+        result.append(
+            {
+                "player_id": str(row.entity_id),
+                "frame_id": int(row.frame_id),
+                "team_id": str(row.team_id),
+                "team_role": str(row.team_role),
+                "x_m": None if pd.isna(row.x_m) else float(row.x_m),
+                "y_m": None if pd.isna(row.y_m) else float(row.y_m),
+            }
+        )
+    return result
+
+
+def observed_player_point_at_frame(
+    positions: pd.DataFrame,
+    *,
+    frame_id: int,
+    player_id: Any,
+) -> dict[str, float] | None:
+    if player_id is None:
+        return None
+    rows = positions[
+        (positions["frame_id"] == frame_id)
+        & (positions["entity_type"] == "player")
+        & (positions["entity_id"].astype(str) == str(player_id))
+    ]
+    if rows.empty:
+        return None
+    row = rows.iloc[0]
+    if pd.isna(row.x_m) or pd.isna(row.y_m):
+        return None
+    return point_from_xy(row.x_m, row.y_m)
+
+
+def anchor_reference_point(anchor: dict[str, Any]) -> dict[str, float] | None:
+    point = anchor.get("reception_receiver_point")
+    if isinstance(point, dict) and point.get("x_m") is not None and point.get("y_m") is not None:
+        return point_from_xy(point.get("x_m"), point.get("y_m"))
+    point = anchor.get("reception_ball_point")
+    if isinstance(point, dict) and point.get("x_m") is not None and point.get("y_m") is not None:
+        return point_from_xy(point.get("x_m"), point.get("y_m"))
+    x_value = anchor.get("receiver_x_m")
+    if x_value is None:
+        x_value = anchor.get("reception_receiver_x_m")
+    y_value = anchor.get("receiver_y_m")
+    if y_value is None:
+        y_value = anchor.get("reception_receiver_y_m")
+    return point_from_xy(x_value, y_value)
 
 
 def catalog_output(node: BoundCatalogNode, name: str) -> Any:

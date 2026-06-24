@@ -25,6 +25,7 @@ TARGET_SUBJECTS = {
     "runtime:primitive:controlled_line_break_episode:0.1.0",
     "runtime:primitive:lane_occupancy:0.1.0",
     "runtime:relation:opponents_bypassed_by_action:0.1.0",
+    "runtime:relation:support_arrival_relation:0.1.0",
 }
 
 

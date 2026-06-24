@@ -1703,6 +1703,213 @@
       "purpose": "Count opposition outfield players who were goal-side of the ball at action release and behind the ball at controlled reception.",
       "runtime_id": "relation:opponents_bypassed_by_action:0.1.0",
       "version": "0.1.0"
+    },
+    {
+      "ai_authorable_by_runtime_context": true,
+      "evidence_fields": [
+        "support_arrival_status",
+        "support_arrival_reason",
+        "support_anchor_frame_id",
+        "support_window_start_frame_id",
+        "support_window_end_frame_id",
+        "support_region_mode",
+        "maximum_arrival_seconds",
+        "minimum_duration_seconds",
+        "maximum_support_distance_m",
+        "minimum_supporting_players",
+        "supporting_player_ids",
+        "first_arrival_frame_id",
+        "first_arrival_seconds_after_anchor",
+        "support_duration_seconds",
+        "candidate_player_ids",
+        "evaluated_candidate_player_ids",
+        "coverage_status",
+        "config_evidence",
+        "reference_point"
+      ],
+      "executable": true,
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "relation",
+      "limitations": [
+        "Observed geometric relation only; does not infer tactical intention.",
+        "Does not claim support quality, decision quality, communication, scanning, or optimality.",
+        "Uses observed outfield tracking around the declared anchor reference point."
+      ],
+      "missing_data_semantics": "unknown",
+      "name": "support_arrival_relation",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "support_arrival_status",
+            "support_arrival_reason",
+            "support_anchor_frame_id",
+            "support_window_start_frame_id",
+            "support_window_end_frame_id",
+            "support_region_mode",
+            "maximum_arrival_seconds",
+            "minimum_duration_seconds",
+            "maximum_support_distance_m",
+            "minimum_supporting_players",
+            "supporting_player_ids",
+            "first_arrival_frame_id",
+            "first_arrival_seconds_after_anchor",
+            "support_duration_seconds",
+            "candidate_player_ids",
+            "evaluated_candidate_player_ids",
+            "coverage_status",
+            "config_evidence",
+            "reference_point"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "support_arrival_status",
+            "support_arrival_reason",
+            "coverage_status"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "support_arrival_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "allowed_values": [
+            "controlled_reception_frame_id",
+            "anchor_frame_id"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "description": "Anchor record frame field where support timing starts.",
+          "name": "anchor_frame_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "perspective_outfield",
+            "defending_outfield"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "perspective_outfield"
+          },
+          "description": "Observed outfield player scope for candidate supporters.",
+          "name": "candidate_scope",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "WITHIN_DISTANCE_OF_REFERENCE_POINT",
+            "BEHIND_BALL_OUTLET",
+            "AHEAD_OF_BALL_OPTION"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "WITHIN_DISTANCE_OF_REFERENCE_POINT"
+          },
+          "description": "Geometry used to decide whether a candidate is in the support region.",
+          "name": "support_region_mode",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 2.0
+          },
+          "description": "Latest arrival after the support anchor frame.",
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "name": "maximum_arrival_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.4
+          },
+          "description": "Minimum continuous observed duration inside the support region.",
+          "maximum": 5.0,
+          "minimum": 0.0,
+          "name": "minimum_duration_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 8.0
+          },
+          "description": "Maximum distance from the anchor reference point.",
+          "maximum": 30.0,
+          "minimum": 0.5,
+          "name": "maximum_support_distance_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 1
+          },
+          "description": "Minimum number of observed candidates that must satisfy the support relation.",
+          "maximum": 10.0,
+          "minimum": 1.0,
+          "name": "minimum_supporting_players",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        }
+      ],
+      "purpose": "Evaluate whether observed candidate teammates enter a declared geometric support region around an anchor reference point within a declared time window and duration.",
+      "runtime_id": "relation:support_arrival_relation:0.1.0",
+      "version": "0.1.0"
     }
   ],
   "default_complexity_limits": {
@@ -2368,6 +2575,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "08776e81e49487045e51bf87c036bf8fc98af11f203717eba28952d0f6c6d0a8",
+  "runtime_manifest_revision": "3679d403116e8cd4ac595fe23f426288e992f07a252fe6cda58daf0ec4ece106",
   "schema_version": "1.0"
 }

@@ -67,6 +67,14 @@ concepts:
     evidence_contract_ref: evidence.observed_lane_occupancy.v1
     tags: [lanes, shape, geometry]
 
+  - id: concept.observed_support_arrival
+    kind: Concept
+    display_name: Observed Support Arrival
+    description: Observed candidate teammates entering a declared geometric support region around an anchor reference point within a declared time window.
+    claim_contract_ref: claim.observed_support_arrival.v1
+    evidence_contract_ref: evidence.observed_support_arrival.v1
+    tags: [support, relation, geometry, timing]
+
   - id: concept.defensive_block_lateral_shift
     kind: Concept
     display_name: Defensive Block Lateral Shift
@@ -315,6 +323,28 @@ operationalizations:
     claim_contract_ref: claim.observed_lane_occupancy.v1
     evidence_contract_ref: evidence.observed_lane_occupancy.v1
 
+  - id: op.observed_geometric_support_arrival.v1
+    kind: Operationalization
+    display_name: Observed Geometric Support Arrival
+    description: Evaluate whether observed candidate teammates enter a declared geometric support region around an anchor reference point within a declared time window and duration.
+    concept_refs: [concept.observed_support_arrival]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, reference_point_available, observed_candidate_positions_available, support_definition_declared, time_window_declared]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: observed_candidate_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: support_arrival_evaluation, unit: none, entity_scope: anchor}
+      - name: support_arrival_status
+        type: {container: FrameSignal, value: Enum, quantity: support_arrival_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, reference_point_resolution, candidate_outfield_lookup, support_region_evaluation, arrival_window_evaluation]
+    claim_contract_ref: claim.observed_support_arrival.v1
+    evidence_contract_ref: evidence.observed_support_arrival.v1
+
   - id: op.baseline_relative_defensive_shift.v1
     kind: Operationalization
     display_name: Baseline-Relative Defensive Shift
@@ -550,6 +580,12 @@ implementations:
     description: Current observed lateral lane-occupancy implementation.
     implements: [op.observed_lateral_lane_occupancy.v1]
     source_refs: [src/tqe/runtime/lane_occupancy.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.support_arrival_relation.python.v1
+    kind: Implementation
+    display_name: Support Arrival Relation Python Implementation
+    description: Current observed geometric support-arrival implementation.
+    implements: [op.observed_geometric_support_arrival.v1]
+    source_refs: [src/tqe/runtime/support_arrival.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.signed_lateral_shift.python.v1
     kind: Implementation
     display_name: Signed Lateral Shift Python Implementation
@@ -844,6 +880,70 @@ runtime_bindings:
       frame_field: frame_field
       player_scope: player_scope
       required_occupied_lane_count: required_occupied_lane_count
+
+  - id: binding.relation.support_arrival_relation.0_1_0
+    kind: RuntimeBinding
+    display_name: support_arrival_relation runtime binding
+    description: Canonical runtime binding for support_arrival_relation 0.1.0.
+    runtime_capability: {id: support_arrival_relation, version: 0.1.0, kind: relation}
+    implementation_ref: impl.support_arrival_relation.python.v1
+    implements: [op.observed_geometric_support_arrival.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Uses observed outfield tracking around an anchor reference point and does not prove tactical intent or support quality.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      observed_candidate_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      support_arrival_status: {runtime_port: support_arrival_status}
+    semantic_parameters:
+      - name: anchor_frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: controlled_reception_frame_id, unit: none}
+        allowed_values: [controlled_reception_frame_id, anchor_frame_id]
+      - name: candidate_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: perspective_outfield, unit: none}
+        allowed_values: [perspective_outfield, defending_outfield]
+      - name: support_region_mode
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: WITHIN_DISTANCE_OF_REFERENCE_POINT, unit: none}
+        allowed_values: [WITHIN_DISTANCE_OF_REFERENCE_POINT, BEHIND_BALL_OUTLET, AHEAD_OF_BALL_OPTION]
+      - name: maximum_arrival_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 2.0, unit: second}
+        minimum: 0.0
+        maximum: 10.0
+      - name: minimum_duration_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 0.4, unit: second}
+        minimum: 0.0
+        maximum: 5.0
+      - name: maximum_support_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 8.0, unit: metre}
+        minimum: 0.5
+        maximum: 30.0
+      - name: minimum_supporting_players
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 1, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+    parameter_bindings:
+      anchor_frame_field: anchor_frame_field
+      candidate_scope: candidate_scope
+      support_region_mode: support_region_mode
+      maximum_arrival_seconds: maximum_arrival_seconds
+      minimum_duration_seconds: minimum_duration_seconds
+      maximum_support_distance_m: maximum_support_distance_m
+      minimum_supporting_players: minimum_supporting_players
 
   - id: binding.primitive.signed_lateral_shift.0_1_0
     kind: RuntimeBinding
@@ -1265,6 +1365,13 @@ claim_contracts:
     permitted: [observed_outfield_players_classified_into_declared_lateral_lanes, declared_lane_count_requirement_evaluated]
     prohibited: [complete_active_player_lane_coverage_proven, player_intent_inferred, support_quality_inferred, defensive_line_was_broken, line_break_caused_by_pass, pass_was_optimal, tactical_role_identified]
     unknown_conditions: [anchor_frame_missing, observed_player_positions_missing, invalid_lane_geometry, invalid_or_missing_player_coordinates]
+  - id: claim.observed_support_arrival.v1
+    kind: ClaimContract
+    display_name: Observed Support Arrival Claims
+    description: Claims permitted for observed geometric support-arrival measurements.
+    permitted: [observed_candidate_entered_declared_support_region, declared_support_timing_requirement_evaluated]
+    prohibited: [player_intent_inferred, support_quality_inferred, tactical_role_identified, communication_inferred, scanning_inferred, pass_was_optimal, pass_probability_inferred, line_break_caused_support]
+    unknown_conditions: [anchor_frame_missing, reference_point_missing, observed_candidate_positions_missing, invalid_or_missing_candidate_coordinates, timing_coverage_incomplete]
   - id: claim.defensive_block_lateral_shift.v1
     kind: ClaimContract
     display_name: Defensive Block Lateral Shift Claims
@@ -1395,6 +1502,13 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, lane_occupancy_status, lane_occupancy_reason, lane_evaluation_frame_id, lane_player_scope, occupied_lanes, occupied_lane_count, lane_counts, player_lane_assignments, required_occupied_lane_count, coverage_status, lane_definitions]
     optional: [evaluated_player_ids, missing_player_ids, invalid_player_ids, duplicate_player_ids, outside_lane_player_ids, pitch_width_m]
     replay_projection: [lane_bands, player_lane_markers, occupied_lane_badge]
+  - id: evidence.observed_support_arrival.v1
+    kind: EvidenceContract
+    display_name: Observed Support Arrival Evidence
+    description: Evidence required for observed geometric support-arrival measurements.
+    required: [anchor_id, anchor_frame_id, support_arrival_status, support_arrival_reason, support_anchor_frame_id, support_window_start_frame_id, support_window_end_frame_id, support_region_mode, maximum_arrival_seconds, minimum_duration_seconds, maximum_support_distance_m, minimum_supporting_players, candidate_player_ids, evaluated_candidate_player_ids, supporting_player_ids, coverage_status, reference_point]
+    optional: [first_arrival_frame_id, first_arrival_seconds_after_anchor, support_duration_seconds, per_player_evidence, missing_candidate_player_ids, invalid_candidate_player_ids, missing_frame_ids, invalid_frame_ids]
+    replay_projection: [reference_marker, candidate_player_markers, support_radius, arrival_window, supporting_player_badge]
   - id: evidence.defensive_block_lateral_shift.v1
     kind: EvidenceContract
     display_name: Defensive Block Lateral Shift Evidence
@@ -1517,6 +1631,13 @@ exposure_policies:
     display_name: lane_occupancy exposure
     description: Exposure policy for lane_occupancy.
     subject_ref: runtime:primitive:lane_occupancy:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.support_arrival_relation.0_1_0
+    kind: ExposurePolicy
+    display_name: support_arrival_relation exposure
+    description: Exposure policy for support_arrival_relation.
+    subject_ref: runtime:relation:support_arrival_relation:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
   - id: exposure.runtime.signed_lateral_shift.0_1_0
@@ -1766,6 +1887,16 @@ maturity_assessments:
     display_name: lane_occupancy maturity
     description: Maturity assessment for lane_occupancy.
     subject_ref: runtime:primitive:lane_occupancy:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.support_arrival_relation.0_1_0
+    kind: MaturityAssessment
+    display_name: support_arrival_relation maturity
+    description: Maturity assessment for support_arrival_relation.
+    subject_ref: runtime:relation:support_arrival_relation:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED
