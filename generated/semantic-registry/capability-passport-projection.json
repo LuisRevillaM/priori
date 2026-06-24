@@ -1,6 +1,6 @@
 {
-  "passport_count": 13,
-  "passport_revision": "fe79c26c92b42d80d8acda3e062cb931a39cea15e8b90ff06ee584d2c7f0c29e",
+  "passport_count": 14,
+  "passport_revision": "2eeb129725f9952606070f78120aedd91acc554aaa4275c8fd12e0a831486bb9",
   "passports": [
     {
       "binding": {
@@ -258,6 +258,503 @@
       },
       "status": "CURRENT",
       "subject_ref": "runtime:primitive:ball_lateral_fraction:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.controlled_line_break_episode.0_1_0",
+        "input_bindings": {
+          "controlled_pass_anchors": {
+            "runtime_port": "controlled_pass_anchors",
+            "source": "NODE_INPUT"
+          },
+          "line_evaluations": {
+            "runtime_port": "line_evaluations",
+            "source": "NODE_INPUT"
+          },
+          "reception_relative_positions": {
+            "runtime_port": "reception_relative_positions",
+            "source": "NODE_INPUT"
+          },
+          "release_relative_positions": {
+            "runtime_port": "release_relative_positions",
+            "source": "NODE_INPUT"
+          }
+        },
+        "known_deviations": [
+          "Uses current anchor-record identity and bounded relative-position records rather than a standalone tactical line taxonomy."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "line_break_status": {
+            "runtime_port": "line_break_status"
+          }
+        },
+        "parameter_bindings": {
+          "line_buffer_m": "line_buffer_m"
+        },
+        "semantic_parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.5
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "line_buffer_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.controlled_pass_crosses_observed_line.v1",
+          "inherits": [
+            "claim.controlled_ball_transfer.v1",
+            "claim.observed_geometric_defensive_line.v1",
+            "claim.relative_position_to_observed_line.v1"
+          ],
+          "permitted": [
+            "controlled_pass_crossed_supplied_observed_line_under_declared_buffer",
+            "entity_position_classified_relative_to_supplied_line_under_declared_buffer",
+            "event_candidate_pass_identified",
+            "no_qualifying_geometric_defensive_line_observed_when_evidence_complete",
+            "observed_geometric_defensive_line_fit_under_declared_thresholds",
+            "tracking_confirmed_controlled_reception",
+            "tracking_confirmed_physical_release"
+          ],
+          "prohibited": [
+            "defender_intent_inferred",
+            "defensive_line_was_broken",
+            "line_break_caused_by_pass",
+            "pass_was_optimal",
+            "passer_intended_measured_outcome",
+            "player_intent_inferred",
+            "proves_pass_optimality",
+            "proves_pass_probability",
+            "proves_passer_intent",
+            "tactical_line_role_identified"
+          ],
+          "unknown_conditions": [
+            "ambiguous_candidate_lines",
+            "anchor_correlation_missing",
+            "attacking_direction_missing_or_invalid",
+            "ball_position_missing",
+            "controlled_pass_evidence_missing",
+            "controlled_reception_unresolved",
+            "defending_outfield_positions_incomplete",
+            "entity_position_missing",
+            "line_evidence_missing",
+            "line_position_missing",
+            "physical_release_unresolved",
+            "possession_continuity_unresolved",
+            "reception_relative_position_missing",
+            "release_relative_position_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.controlled_pass_crosses_observed_line.v1",
+          "created_from": [],
+          "description": "A controlled pass whose receiver moves from not-yet-beyond a supplied observed line to beyond it.",
+          "display_name": "Controlled Pass Crosses Observed Line",
+          "evidence_contract_ref": "evidence.controlled_pass_crosses_observed_line.v1",
+          "id": "concept.controlled_pass_crosses_observed_line",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "pass",
+            "line",
+            "geometry",
+            "controlled_reception"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for controlled_line_break_episode 0.1.0.",
+      "display_name": "controlled_line_break_episode runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.controlled_pass_crosses_observed_line.v1",
+          "inherits": [],
+          "optional": [
+            "normalized_line_x_m",
+            "reception_distance_to_line_m",
+            "release_distance_to_line_m"
+          ],
+          "replay_projection": [
+            "crossing_badge",
+            "observed_line_marker",
+            "receiver_marker",
+            "reception_frame",
+            "release_frame"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "controlled_reception_frame_id",
+            "line_anchor_frame_id",
+            "line_break_reason",
+            "line_break_status",
+            "line_buffer_m",
+            "line_x_m",
+            "pass_episode_id",
+            "physical_release_frame_id",
+            "reception_relative_position_status",
+            "reception_signed_distance_to_line_m",
+            "release_relative_position_status",
+            "release_signed_distance_to_line_m"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for controlled_line_break_episode.",
+        "display_name": "controlled_line_break_episode exposure",
+        "id": "exposure.runtime.controlled_line_break_episode.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:controlled_line_break_episode:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current observed controlled-pass line-crossing implementation.",
+        "display_name": "Controlled Line Break Episode Python Implementation",
+        "id": "impl.controlled_line_break_episode.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.controlled_pass_crosses_observed_line.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/controlled_line_break.py",
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for controlled_line_break_episode.",
+        "display_name": "controlled_line_break_episode maturity",
+        "id": "maturity.runtime.controlled_line_break_episode.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:controlled_line_break_episode:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "controlled_pass_available",
+            "observed_line_available",
+            "release_relative_position_available",
+            "reception_relative_position_available"
+          ],
+          "claim_contract_ref": "claim.controlled_pass_crosses_observed_line.v1",
+          "concept_refs": [
+            "concept.controlled_pass_crosses_observed_line"
+          ],
+          "created_from": [],
+          "description": "Evaluate whether a tracking-confirmed completed pass carried its receiver across a supplied observed line.",
+          "display_name": "Controlled Pass Crosses Observed Line",
+          "evidence_contract_ref": "evidence.controlled_pass_crosses_observed_line.v1",
+          "id": "op.controlled_pass_crosses_observed_line.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "controlled_pass_anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "controlled_pass_anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "line_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "defensive_line_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "release_relative_positions",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "relative_position_to_line_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "reception_relative_positions",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "relative_position_to_line_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "exact_anchor_alignment",
+            "release_side_check",
+            "reception_side_check",
+            "pass_line_crossing_classification"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "controlled_line_break_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "line_break_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "controlled_line_break_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "events",
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "00edf55b1f682271c623def1194a4c0cd3c835549e074d8b41ae6eff43b67459",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "controlled_line_break_episode",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "anchor_id",
+          "line_break_status",
+          "line_break_reason",
+          "pass_episode_id",
+          "physical_release_frame_id",
+          "controlled_reception_frame_id",
+          "line_x_m",
+          "release_signed_distance_to_line_m",
+          "reception_signed_distance_to_line_m"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "controlled_pass_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "line_evaluations",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "release_relative_positions",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "reception_relative_positions",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Requires a supplied observed line and exact anchor-correlated release/reception relative-position evidence.",
+          "Does not identify whether the supplied line is a first, second, midfield, or back line.",
+          "Does not infer tactical intention, pass optimality, causation, or defensive intent."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "controlled_line_break_episode",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "line_break_status",
+              "line_break_reason",
+              "pass_episode_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id",
+              "line_anchor_frame_id",
+              "line_x_m",
+              "release_relative_position_status",
+              "release_signed_distance_to_line_m",
+              "reception_relative_position_status",
+              "reception_signed_distance_to_line_m",
+              "line_buffer_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "line_break_status",
+              "line_break_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "line_break_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.5
+            },
+            "description": "Distance from the supplied line treated as level rather than ahead or behind.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "line_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          }
+        ],
+        "purpose": "Evaluate whether a controlled pass carried a receiver from not-yet-beyond a supplied observed line at release to beyond that same line at controlled reception.",
+        "runtime_id": "primitive:controlled_line_break_episode:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:controlled_line_break_episode:0.1.0"
     },
     {
       "binding": {
@@ -903,6 +1400,7 @@
           }
         },
         "parameter_bindings": {
+          "anchor_frame_field": "anchor_frame_field",
           "goal_side_buffer_m": "goal_side_buffer_m",
           "line_band_width_m": "line_band_width_m",
           "minimum_line_defenders": "minimum_line_defenders"
@@ -963,6 +1461,28 @@
               "temporal_basis": "canonical_frame_time",
               "unit": "count",
               "value": "Scalar"
+            }
+          },
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "",
+            "name": "anchor_frame_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
             }
           }
         ],
@@ -1222,7 +1742,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "2e9036e1404cf9a4ca3516a3e946d80c5d7468bb40ec2075e173c045247c21f3",
+      "passport_hash": "d4e899d8a0f19d01448de75a1e6ef9833e77bb6aa3950d9f04b51b013cc78e17",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -1351,6 +1871,23 @@
             "payload_type": "number",
             "required": false,
             "unit": "count"
+          },
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field used to evaluate the observed line.",
+            "name": "anchor_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
           }
         ],
         "purpose": "Fit an observed geometric defensive line at supplied anchor frames from defending outfield player tracking positions.",
@@ -5444,16 +5981,16 @@
   "projection_id": "priori.capability_passport_projection.afl08",
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "1f931fdfe65b759f33badc14bda44be2d7cb169ab58e68a992e811ab3f14757d",
+    "baseline_artifact_revision": "041caf023f1377c91c63923d259839dcdb458f25f5c8090a7f1a98ecc0b161cb",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "99a9a3fdef31ccbf1d402475ae7655ee8b43b4a58358b8d05d1e4665ae449c5e",
+    "lock_hash": "41647f92d7bbf00bccc7217b693e175f0a7c3c3cf614689edad93fd14480868d",
     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "ef544a65cc350a8ec3a897cbfab7665159cdb6b698112a67b215bf67992df9f4",
+    "registry_revision": "0fec4bdd1c22e30a8aec44aa6deca0572882d6b2569f3a622d9dc79718d3884c",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "f556956010fe809663a97f7e235ad6fb7a8e61df870f02dd82ecff80178e3acd",
+    "runtime_manifest_revision": "63aa8d712d504c11a8d07f47f38099da0b9b97650a9851f06b4f98a543f677ae",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

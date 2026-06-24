@@ -327,7 +327,7 @@ def _line_metadata(value: object | None) -> _LineMetadata:
         status=_status_or_none(_first_field(value, "line_status", "evaluation_status", "status")),
         relation_id=_string_or_none(_first_field(value, "relation_id", "line_relation_id")),
         evidence_id=_string_or_none(_first_field(value, "evidence_id", "line_evidence_id")),
-        anchor_frame_id=_first_field(value, "anchor_frame_id", "line_anchor_frame_id"),
+        anchor_frame_id=_first_field(value, "line_evaluation_frame_id", "line_anchor_frame_id", "anchor_frame_id"),
         line_x_m=line_x,
         line_reason=line_reason,
         attacking_direction=_first_field(value, "attacking_direction", "attack_x_sign"),

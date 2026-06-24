@@ -49,6 +49,143 @@
     {
       "agent_safety_maturity": "APPROVED",
       "ai_exposure": "ALLOWED",
+      "binding_id": "binding.primitive.controlled_line_break_episode.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "controlled_line_break_episode",
+      "implements": [
+        "op.controlled_pass_crosses_observed_line.v1"
+      ],
+      "kind": "primitive",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "anchor_id",
+          "line_break_status",
+          "line_break_reason",
+          "pass_episode_id",
+          "physical_release_frame_id",
+          "controlled_reception_frame_id",
+          "line_x_m",
+          "release_signed_distance_to_line_m",
+          "reception_signed_distance_to_line_m"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "controlled_pass_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "line_evaluations",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "release_relative_positions",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "reception_relative_positions",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Requires a supplied observed line and exact anchor-correlated release/reception relative-position evidence.",
+          "Does not identify whether the supplied line is a first, second, midfield, or back line.",
+          "Does not infer tactical intention, pass optimality, causation, or defensive intent."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "controlled_line_break_episode",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "line_break_status",
+              "line_break_reason",
+              "pass_episode_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id",
+              "line_anchor_frame_id",
+              "line_x_m",
+              "release_relative_position_status",
+              "release_signed_distance_to_line_m",
+              "reception_relative_position_status",
+              "reception_signed_distance_to_line_m",
+              "line_buffer_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "line_break_status",
+              "line_break_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "line_break_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.5
+            },
+            "description": "Distance from the supplied line treated as level rather than ahead or behind.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "line_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          }
+        ],
+        "purpose": "Evaluate whether a controlled pass carried a receiver from not-yet-beyond a supplied observed line at release to beyond that same line at controlled reception.",
+        "runtime_id": "primitive:controlled_line_break_episode:0.1.0",
+        "version": "0.1.0"
+      },
+      "version": "0.1.0"
+    },
+    {
+      "agent_safety_maturity": "APPROVED",
+      "ai_exposure": "ALLOWED",
       "binding_id": "binding.primitive.controlled_pass_episode.0_1_0",
       "conformance": "PARTIAL",
       "id": "controlled_pass_episode",
@@ -388,6 +525,23 @@
             "payload_type": "number",
             "required": false,
             "unit": "count"
+          },
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field used to evaluate the observed line.",
+            "name": "anchor_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
           }
         ],
         "purpose": "Fit an observed geometric defensive line at supplied anchor frames from defending outfield player tracking positions.",
@@ -1938,16 +2092,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "1f931fdfe65b759f33badc14bda44be2d7cb169ab58e68a992e811ab3f14757d",
+    "baseline_artifact_revision": "041caf023f1377c91c63923d259839dcdb458f25f5c8090a7f1a98ecc0b161cb",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "99a9a3fdef31ccbf1d402475ae7655ee8b43b4a58358b8d05d1e4665ae449c5e",
+    "lock_hash": "41647f92d7bbf00bccc7217b693e175f0a7c3c3cf614689edad93fd14480868d",
     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "ef544a65cc350a8ec3a897cbfab7665159cdb6b698112a67b215bf67992df9f4",
+    "registry_revision": "0fec4bdd1c22e30a8aec44aa6deca0572882d6b2569f3a622d9dc79718d3884c",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "f556956010fe809663a97f7e235ad6fb7a8e61df870f02dd82ecff80178e3acd",
+    "runtime_manifest_revision": "63aa8d712d504c11a8d07f47f38099da0b9b97650a9851f06b4f98a543f677ae",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

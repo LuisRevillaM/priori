@@ -37,6 +37,131 @@
     {
       "ai_authorable_by_runtime_context": true,
       "evidence_fields": [
+        "anchor_id",
+        "line_break_status",
+        "line_break_reason",
+        "pass_episode_id",
+        "physical_release_frame_id",
+        "controlled_reception_frame_id",
+        "line_x_m",
+        "release_signed_distance_to_line_m",
+        "reception_signed_distance_to_line_m"
+      ],
+      "executable": true,
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "controlled_pass_anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "line_evaluations",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "release_relative_positions",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "reception_relative_positions",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Requires a supplied observed line and exact anchor-correlated release/reception relative-position evidence.",
+        "Does not identify whether the supplied line is a first, second, midfield, or back line.",
+        "Does not infer tactical intention, pass optimality, causation, or defensive intent."
+      ],
+      "missing_data_semantics": "unknown",
+      "name": "controlled_line_break_episode",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "line_break_status",
+            "line_break_reason",
+            "pass_episode_id",
+            "physical_release_frame_id",
+            "controlled_reception_frame_id",
+            "line_anchor_frame_id",
+            "line_x_m",
+            "release_relative_position_status",
+            "release_signed_distance_to_line_m",
+            "reception_relative_position_status",
+            "reception_signed_distance_to_line_m",
+            "line_buffer_m"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "line_break_status",
+            "line_break_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "line_break_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 0.5
+          },
+          "description": "Distance from the supplied line treated as level rather than ahead or behind.",
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "name": "line_buffer_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        }
+      ],
+      "purpose": "Evaluate whether a controlled pass carried a receiver from not-yet-beyond a supplied observed line at release to beyond that same line at controlled reception.",
+      "runtime_id": "primitive:controlled_line_break_episode:0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "ai_authorable_by_runtime_context": true,
+      "evidence_fields": [
         "pass_episode_id",
         "passer_id",
         "receiver_id",
@@ -354,6 +479,23 @@
           "payload_type": "number",
           "required": false,
           "unit": "count"
+        },
+        {
+          "allowed_values": [
+            "anchor_frame_id",
+            "physical_release_frame_id",
+            "controlled_reception_frame_id"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_frame_id"
+          },
+          "description": "Anchor-record frame field used to evaluate the observed line.",
+          "name": "anchor_frame_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
         }
       ],
       "purpose": "Fit an observed geometric defensive line at supplied anchor frames from defending outfield player tracking positions.",
@@ -2086,6 +2228,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "f556956010fe809663a97f7e235ad6fb7a8e61df870f02dd82ecff80178e3acd",
+  "runtime_manifest_revision": "63aa8d712d504c11a8d07f47f38099da0b9b97650a9851f06b4f98a543f677ae",
   "schema_version": "1.0"
 }

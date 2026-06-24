@@ -23,6 +23,10 @@ from lxml import etree
 
 from tqe.idsse.source_lock import SOURCE_VERSION
 from tqe.runtime.binder import HOST_RUNTIME_PARAMETER_DEFAULTS, bind_document_from_path
+from tqe.runtime.controlled_line_break import (
+    ControlledLineBreakConfig,
+    evaluate_controlled_line_break_episode,
+)
 from tqe.runtime.controlled_pass import ControlledPassConfig, ControlledPassOutput, evaluate_controlled_passes
 from tqe.runtime.defensive_line import DefensiveLineConfig, evaluate_defensive_line_model
 from tqe.runtime.relative_position_to_line import (
@@ -202,6 +206,7 @@ class TacticalQueryExecutor:
             "controlled_pass_episode": primitive_controlled_pass_episode,
             "defensive_line_model": primitive_defensive_line_model,
             "relative_position_to_line": primitive_relative_position_to_line,
+            "controlled_line_break_episode": primitive_controlled_line_break_episode,
             "ball_lateral_fraction": primitive_ball_lateral_fraction,
             "defensive_outfield_centroid": primitive_defensive_outfield_centroid,
             "signed_lateral_shift": primitive_signed_lateral_shift,
@@ -2131,6 +2136,7 @@ def primitive_defensive_line_model(state: PeriodState, node: BoundCatalogNode) -
         line_band_width_m=node_parameter_number(node, "line_band_width_m", 2.0),
         minimum_defenders=int(round(node_parameter_number(node, "minimum_line_defenders", 4))),
     )
+    anchor_frame_field = node_parameter_text(node, "anchor_frame_field", "anchor_frame_id")
     orientation = parquet_rows(state.canonical_root / "orientation.parquet")
     attack_x_sign = attack_x_sign_for(
         orientation,
@@ -2147,6 +2153,7 @@ def primitive_defensive_line_model(state: PeriodState, node: BoundCatalogNode) -
         defensive_line_anchor_record(
             state=state,
             anchor=anchor,
+            anchor_frame_field=anchor_frame_field,
             attack_x_sign=attack_x_sign,
             known_outfield_ids=known_outfield_ids,
             config=config,
@@ -2178,17 +2185,21 @@ def defensive_line_anchor_record(
     *,
     state: PeriodState,
     anchor: dict[str, Any],
+    anchor_frame_field: str,
     attack_x_sign: int | None,
     known_outfield_ids: set[str],
     config: DefensiveLineConfig,
 ) -> dict[str, Any] | None:
     anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
-    if anchor_frame_id is None:
+    line_evaluation_frame_id = optional_int(anchor.get(anchor_frame_field))
+    if line_evaluation_frame_id is None and anchor_frame_field != "anchor_frame_id":
+        line_evaluation_frame_id = anchor_frame_id
+    if anchor_frame_id is None or line_evaluation_frame_id is None:
         return None
-    ball_x_m = ball_x_at_frame(state.positions, anchor_frame_id)
+    ball_x_m = ball_x_at_frame(state.positions, line_evaluation_frame_id)
     defender_positions = defending_positions_at_frame(
         state.positions,
-        anchor_frame_id,
+        line_evaluation_frame_id,
         state.defending_team_role,
         known_outfield_ids,
     )
@@ -2199,7 +2210,7 @@ def defensive_line_anchor_record(
         goalkeeper_id=None,
         goalkeeper_id_known=bool(known_outfield_ids),
         active_defender_ids_known=bool(known_outfield_ids),
-        anchor_frame_id=anchor_frame_id,
+        anchor_frame_id=line_evaluation_frame_id,
         config=config,
     )
     payload = evaluation.to_dict()
@@ -2225,6 +2236,8 @@ def defensive_line_anchor_record(
         "entity_refs": list(anchor.get("entity_refs") or []),
         "perspective_team_role": state.perspective_team_role,
         "defending_team_role": state.defending_team_role,
+        "line_evaluation_frame_field": anchor_frame_field,
+        "line_evaluation_frame_id": line_evaluation_frame_id,
         "line_status": line_status,
         "line_reason": payload["reason"],
         "line_type": payload["line_type"],
@@ -2410,6 +2423,128 @@ def player_position_at_frame(
     if pd.isna(row.x_m) or pd.isna(row.y_m):
         return None
     return (float(row.x_m), float(row.y_m))
+
+
+def primitive_controlled_line_break_episode(state: PeriodState, node: BoundCatalogNode) -> None:
+    controlled_value = catalog_input_value(state, node, "controlled_pass_anchors")
+    line_value = catalog_input_value(state, node, "line_evaluations")
+    release_value = catalog_input_value(state, node, "release_relative_positions")
+    reception_value = catalog_input_value(state, node, "reception_relative_positions")
+    controlled_records = controlled_value.value
+    line_records = line_value.value
+    release_records = release_value.value
+    reception_records = reception_value.value
+    if (
+        not isinstance(controlled_records, list)
+        or not isinstance(line_records, list)
+        or not isinstance(release_records, list)
+        or not isinstance(reception_records, list)
+    ):
+        raise RuntimeError(f"{node.node_id} requires anchor-relative record collections")
+
+    line_by_anchor_id = record_by_anchor_id(line_records)
+    release_by_anchor_id = record_by_anchor_id(release_records)
+    reception_by_anchor_id = record_by_anchor_id(reception_records)
+    config = ControlledLineBreakConfig(
+        line_buffer_m=node_parameter_number(node, "line_buffer_m", 0.5)
+    )
+    records = [
+        controlled_line_break_anchor_record(
+            state=state,
+            controlled_record=controlled_record,
+            line_record=line_by_anchor_id.get(str(controlled_record.get("anchor_id")))
+            if isinstance(controlled_record, dict)
+            else None,
+            release_record=release_by_anchor_id.get(str(controlled_record.get("anchor_id")))
+            if isinstance(controlled_record, dict)
+            else None,
+            reception_record=reception_by_anchor_id.get(str(controlled_record.get("anchor_id")))
+            if isinstance(controlled_record, dict)
+            else None,
+            config=config,
+        )
+        for controlled_record in controlled_records
+        if isinstance(controlled_record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None
+        if str(record["line_break_status"]) == "UNKNOWN"
+        else str(record["line_break_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "line_break_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "line_break_status").entity_scope,
+        ),
+        "line_break_status_records": records,
+    }
+
+
+def controlled_line_break_anchor_record(
+    *,
+    state: PeriodState,
+    controlled_record: dict[str, Any],
+    line_record: dict[str, Any] | None,
+    release_record: dict[str, Any] | None,
+    reception_record: dict[str, Any] | None,
+    config: ControlledLineBreakConfig,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(controlled_record.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    evaluation = evaluate_controlled_line_break_episode(
+        controlled_pass_evidence=controlled_record,
+        observed_line_evidence=line_record,
+        release_relative_position_evidence=release_record,
+        reception_relative_position_evidence=reception_record,
+        anchor_id=str(controlled_record.get("anchor_id")),
+        config=config,
+    )
+    payload = evaluation.to_dict()
+    return {
+        **controlled_record,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(controlled_record.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "line_break_status": str(payload["status"]),
+        "line_break_reason": payload["reason"],
+        "line_anchor_id": payload["line_anchor_id"],
+        "line_anchor_frame_id": payload["line_anchor_frame_id"],
+        "line_x_m": payload["line_x_m"],
+        "normalized_line_x_m": payload["normalized_line_x_m"],
+        "line_break_attacking_direction": payload["attacking_direction"],
+        "release_relative_position_status": payload["release_status"],
+        "release_relative_position_reason": payload["release_reason"],
+        "release_signed_distance_to_line_m": payload["release_signed_distance_to_line_m"],
+        "release_distance_to_line_m": payload["release_distance_to_line_m"],
+        "reception_relative_position_status": payload["reception_status"],
+        "reception_relative_position_reason": payload["reception_reason"],
+        "reception_signed_distance_to_line_m": payload["reception_signed_distance_to_line_m"],
+        "reception_distance_to_line_m": payload["reception_distance_to_line_m"],
+        "line_buffer_m": payload["line_buffer_m"],
+        "release_level_counts_as_not_yet_beyond": payload["release_level_counts_as_not_yet_beyond"],
+        "controlled_pass_anchor_id": payload["controlled_pass_anchor_id"],
+        "release_relative_position_record_found": release_record is not None,
+        "reception_relative_position_record_found": reception_record is not None,
+        "line_record_found": line_record is not None,
+    }
+
+
+def record_by_anchor_id(records: list[Any]) -> dict[str, dict[str, Any]]:
+    return {
+        str(record.get("anchor_id")): record
+        for record in records
+        if isinstance(record, dict) and record.get("anchor_id") is not None
+    }
 
 
 def catalog_output(node: BoundCatalogNode, name: str) -> Any:

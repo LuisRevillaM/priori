@@ -51,6 +51,14 @@ concepts:
     evidence_contract_ref: evidence.relative_position_to_observed_line.v1
     tags: [line, geometry, relative_position]
 
+  - id: concept.controlled_pass_crosses_observed_line
+    kind: Concept
+    display_name: Controlled Pass Crosses Observed Line
+    description: A controlled pass whose receiver moves from not-yet-beyond a supplied observed line to beyond it.
+    claim_contract_ref: claim.controlled_pass_crosses_observed_line.v1
+    evidence_contract_ref: evidence.controlled_pass_crosses_observed_line.v1
+    tags: [pass, line, geometry, controlled_reception]
+
   - id: concept.defensive_block_lateral_shift
     kind: Concept
     display_name: Defensive Block Lateral Shift
@@ -250,6 +258,32 @@ operationalizations:
     lowering: [anchor_id_alignment, entity_position_lookup, attacking_direction_normalization, line_relative_position_classification]
     claim_contract_ref: claim.relative_position_to_observed_line.v1
     evidence_contract_ref: evidence.relative_position_to_observed_line.v1
+
+  - id: op.controlled_pass_crosses_observed_line.v1
+    kind: Operationalization
+    display_name: Controlled Pass Crosses Observed Line
+    description: Evaluate whether a tracking-confirmed completed pass carried its receiver across a supplied observed line.
+    concept_refs: [concept.controlled_pass_crosses_observed_line]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [events, tracking]
+    applicability: [controlled_pass_available, observed_line_available, release_relative_position_available, reception_relative_position_available]
+    inputs:
+      - name: controlled_pass_anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: controlled_pass_anchor, unit: none, entity_scope: anchor}
+      - name: line_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: defensive_line_evaluation, unit: none, entity_scope: anchor}
+      - name: release_relative_positions
+        type: {container: EpisodeSet, value: AnchorRef, quantity: relative_position_to_line_evaluation, unit: none, entity_scope: anchor}
+      - name: reception_relative_positions
+        type: {container: EpisodeSet, value: AnchorRef, quantity: relative_position_to_line_evaluation, unit: none, entity_scope: anchor}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: controlled_line_break_evaluation, unit: none, entity_scope: anchor}
+      - name: line_break_status
+        type: {container: FrameSignal, value: Enum, quantity: controlled_line_break_status, unit: none, entity_scope: anchor}
+    lowering: [exact_anchor_alignment, release_side_check, reception_side_check, pass_line_crossing_classification]
+    claim_contract_ref: claim.controlled_pass_crosses_observed_line.v1
+    evidence_contract_ref: evidence.controlled_pass_crosses_observed_line.v1
 
   - id: op.baseline_relative_defensive_shift.v1
     kind: Operationalization
@@ -474,6 +508,12 @@ implementations:
     description: Current observed relative-position-to-line implementation.
     implements: [op.relative_position_to_observed_line.v1]
     source_refs: [src/tqe/runtime/relative_position_to_line.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.controlled_line_break_episode.python.v1
+    kind: Implementation
+    display_name: Controlled Line Break Episode Python Implementation
+    description: Current observed controlled-pass line-crossing implementation.
+    implements: [op.controlled_pass_crosses_observed_line.v1]
+    source_refs: [src/tqe/runtime/controlled_line_break.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.signed_lateral_shift.python.v1
     kind: Implementation
     display_name: Signed Lateral Shift Python Implementation
@@ -656,10 +696,16 @@ runtime_bindings:
         default: {payload_type: number, value: 4, unit: count}
         minimum: 2.0
         maximum: 10.0
+      - name: anchor_frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id]
     parameter_bindings:
       goal_side_buffer_m: goal_side_buffer_m
       line_band_width_m: line_band_width_m
       minimum_line_defenders: minimum_line_defenders
+      anchor_frame_field: anchor_frame_field
 
   - id: binding.primitive.relative_position_to_line.0_1_0
     kind: RuntimeBinding
@@ -697,6 +743,33 @@ runtime_bindings:
     parameter_bindings:
       entity_id_field: entity_id_field
       entity_frame_field: entity_frame_field
+      line_buffer_m: line_buffer_m
+
+  - id: binding.primitive.controlled_line_break_episode.0_1_0
+    kind: RuntimeBinding
+    display_name: controlled_line_break_episode runtime binding
+    description: Canonical runtime binding for controlled_line_break_episode 0.1.0.
+    runtime_capability: {id: controlled_line_break_episode, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.controlled_line_break_episode.python.v1
+    implements: [op.controlled_pass_crosses_observed_line.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Uses current anchor-record identity and bounded relative-position records rather than a standalone tactical line taxonomy.]
+    input_bindings:
+      controlled_pass_anchors: {source: NODE_INPUT, runtime_port: controlled_pass_anchors}
+      line_evaluations: {source: NODE_INPUT, runtime_port: line_evaluations}
+      release_relative_positions: {source: NODE_INPUT, runtime_port: release_relative_positions}
+      reception_relative_positions: {source: NODE_INPUT, runtime_port: reception_relative_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      line_break_status: {runtime_port: line_break_status}
+    semantic_parameters:
+      - name: line_buffer_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 0.5, unit: metre}
+        minimum: 0.0
+        maximum: 10.0
+    parameter_bindings:
       line_buffer_m: line_buffer_m
 
   - id: binding.primitive.signed_lateral_shift.0_1_0
@@ -1104,6 +1177,14 @@ claim_contracts:
     permitted: [entity_position_classified_relative_to_supplied_line_under_declared_buffer]
     prohibited: [defensive_line_was_broken, tactical_line_role_identified, player_intent_inferred, pass_was_optimal, passer_intended_measured_outcome]
     unknown_conditions: [line_position_missing, entity_position_missing, attacking_direction_missing_or_invalid, anchor_correlation_missing]
+  - id: claim.controlled_pass_crosses_observed_line.v1
+    kind: ClaimContract
+    display_name: Controlled Pass Crosses Observed Line Claims
+    description: Claims permitted for controlled-pass crossing of a supplied observed line.
+    inherits: [claim.controlled_ball_transfer.v1, claim.observed_geometric_defensive_line.v1, claim.relative_position_to_observed_line.v1]
+    permitted: [controlled_pass_crossed_supplied_observed_line_under_declared_buffer]
+    prohibited: [tactical_line_role_identified, defensive_line_was_broken, line_break_caused_by_pass, player_intent_inferred, pass_was_optimal, passer_intended_measured_outcome]
+    unknown_conditions: [controlled_pass_evidence_missing, line_evidence_missing, release_relative_position_missing, reception_relative_position_missing, anchor_correlation_missing]
   - id: claim.defensive_block_lateral_shift.v1
     kind: ClaimContract
     display_name: Defensive Block Lateral Shift Claims
@@ -1220,6 +1301,13 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, relative_position_status, relative_position_reason, entity_id, entity_frame_id, line_x_m, entity_x_m, signed_distance_to_line_m, line_buffer_m]
     optional: [normalized_line_x_m, normalized_entity_x_m, distance_to_line_m, entity_y_m]
     replay_projection: [entity_marker, line_marker, distance_badge]
+  - id: evidence.controlled_pass_crosses_observed_line.v1
+    kind: EvidenceContract
+    display_name: Controlled Pass Crosses Observed Line Evidence
+    description: Evidence required for controlled-pass crossing of a supplied observed line.
+    required: [anchor_id, anchor_frame_id, line_break_status, line_break_reason, pass_episode_id, physical_release_frame_id, controlled_reception_frame_id, line_anchor_frame_id, line_x_m, release_relative_position_status, release_signed_distance_to_line_m, reception_relative_position_status, reception_signed_distance_to_line_m, line_buffer_m]
+    optional: [release_distance_to_line_m, reception_distance_to_line_m, normalized_line_x_m]
+    replay_projection: [release_frame, reception_frame, receiver_marker, observed_line_marker, crossing_badge]
   - id: evidence.defensive_block_lateral_shift.v1
     kind: EvidenceContract
     display_name: Defensive Block Lateral Shift Evidence
@@ -1330,6 +1418,13 @@ exposure_policies:
     subject_ref: runtime:primitive:relative_position_to_line:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.controlled_line_break_episode.0_1_0
+    kind: ExposurePolicy
+    display_name: controlled_line_break_episode exposure
+    description: Exposure policy for controlled_line_break_episode.
+    subject_ref: runtime:primitive:controlled_line_break_episode:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
   - id: exposure.runtime.signed_lateral_shift.0_1_0
     kind: ExposurePolicy
     display_name: signed_lateral_shift exposure
@@ -1437,6 +1532,13 @@ projection_policies:
         permitted_fields: []
         rationale: Verified Hermes-authored composition is intentionally new relative to the product baseline.
         review_condition: Remove or update this waiver when the product baseline intentionally includes the composition.
+      - subject_ref: runtime:primitive:controlled_line_break_episode:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 5f5f1a7bf2c661f91a733dbe917123f1039f4613545fe22d261cb21a48e5671f
+        projection_contract_hash: 92e7d2ee2db34e0612b741c5a29d03fb5dd06881890950ce89876c15016d03b5
+        permitted_fields: [outputs]
+        rationale: AFL-08 line-library expansion explicitly adds required evidence fields for the verified controlled-line-break primitive.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
   - id: projection.ai.v1
     kind: ProjectionPolicy
     display_name: AI Projection Policy
@@ -1557,6 +1659,16 @@ maturity_assessments:
     display_name: relative_position_to_line maturity
     description: Maturity assessment for relative_position_to_line.
     subject_ref: runtime:primitive:relative_position_to_line:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.controlled_line_break_episode.0_1_0
+    kind: MaturityAssessment
+    display_name: controlled_line_break_episode maturity
+    description: Maturity assessment for controlled_line_break_episode.
+    subject_ref: runtime:primitive:controlled_line_break_episode:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED
