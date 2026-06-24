@@ -1544,6 +1544,71 @@
       "title": "OperatorParameter",
       "type": "object"
     },
+    "ParityWaiver": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_contract_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline Contract Hash"
+        },
+        "difference_kind": {
+          "enum": [
+            "ADDED",
+            "REMOVED",
+            "CONTRACT_CHANGED"
+          ],
+          "title": "Difference Kind",
+          "type": "string"
+        },
+        "permitted_fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Permitted Fields",
+          "type": "array"
+        },
+        "projection_contract_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Projection Contract Hash"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "review_condition": {
+          "title": "Review Condition",
+          "type": "string"
+        },
+        "subject_ref": {
+          "title": "Subject Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_ref",
+        "difference_kind",
+        "rationale",
+        "review_condition"
+      ],
+      "title": "ParityWaiver",
+      "type": "object"
+    },
     "PlanArtifact": {
       "additionalProperties": false,
       "properties": {
@@ -1680,14 +1745,11 @@
       "additionalProperties": false,
       "properties": {
         "accepted_differences": {
-          "additionalProperties": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
+          "items": {
+            "$ref": "#/$defs/ParityWaiver"
           },
           "title": "Accepted Differences",
-          "type": "object"
+          "type": "array"
         },
         "aliases": {
           "items": {
@@ -1985,13 +2047,6 @@
           "title": "Display Name",
           "type": "string"
         },
-        "field_mapping": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "title": "Field Mapping",
-          "type": "object"
-        },
         "id": {
           "pattern": "^[a-zA-Z0-9_.:-]+$",
           "title": "Id",
@@ -2009,6 +2064,13 @@
           "title": "Implements",
           "type": "array"
         },
+        "input_bindings": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RuntimeInputBinding"
+          },
+          "title": "Input Bindings",
+          "type": "object"
+        },
         "kind": {
           "const": "RuntimeBinding",
           "default": "RuntimeBinding",
@@ -2022,6 +2084,13 @@
           "title": "Known Deviations",
           "type": "array"
         },
+        "output_bindings": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RuntimeOutputBinding"
+          },
+          "title": "Output Bindings",
+          "type": "object"
+        },
         "owners": {
           "items": {
             "type": "string"
@@ -2029,11 +2098,11 @@
           "title": "Owners",
           "type": "array"
         },
-        "parameter_mapping": {
+        "parameter_bindings": {
           "additionalProperties": {
             "type": "string"
           },
-          "title": "Parameter Mapping",
+          "title": "Parameter Bindings",
           "type": "object"
         },
         "reviewers": {
@@ -2045,6 +2114,13 @@
         },
         "runtime_capability": {
           "$ref": "#/$defs/RuntimeCapabilityRef"
+        },
+        "semantic_parameters": {
+          "items": {
+            "$ref": "#/$defs/TypedField"
+          },
+          "title": "Semantic Parameters",
+          "type": "array"
         },
         "status": {
           "$ref": "#/$defs/Status",
@@ -2064,18 +2140,46 @@
           "title": "Tags",
           "type": "array"
         },
-        "uncovered_runtime_fields": {
+        "uncovered_runtime_inputs": {
           "items": {
             "type": "string"
           },
-          "title": "Uncovered Runtime Fields",
+          "title": "Uncovered Runtime Inputs",
           "type": "array"
         },
-        "uncovered_semantic_fields": {
+        "uncovered_runtime_outputs": {
           "items": {
             "type": "string"
           },
-          "title": "Uncovered Semantic Fields",
+          "title": "Uncovered Runtime Outputs",
+          "type": "array"
+        },
+        "uncovered_runtime_parameters": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Uncovered Runtime Parameters",
+          "type": "array"
+        },
+        "uncovered_semantic_inputs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Uncovered Semantic Inputs",
+          "type": "array"
+        },
+        "uncovered_semantic_outputs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Uncovered Semantic Outputs",
+          "type": "array"
+        },
+        "uncovered_semantic_parameters": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Uncovered Semantic Parameters",
           "type": "array"
         },
         "version": {
@@ -2122,6 +2226,62 @@
         "kind"
       ],
       "title": "RuntimeCapabilityRef",
+      "type": "object"
+    },
+    "RuntimeInputBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "context_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Context Ref"
+        },
+        "runtime_port": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runtime Port"
+        },
+        "source": {
+          "enum": [
+            "NODE_INPUT",
+            "RUNTIME_CONTEXT"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "RuntimeInputBinding",
+      "type": "object"
+    },
+    "RuntimeOutputBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "runtime_port": {
+          "title": "Runtime Port",
+          "type": "string"
+        }
+      },
+      "required": [
+        "runtime_port"
+      ],
+      "title": "RuntimeOutputBinding",
       "type": "object"
     },
     "SemanticBasis": {
