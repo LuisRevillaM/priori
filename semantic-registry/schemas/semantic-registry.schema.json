@@ -1544,6 +1544,87 @@
       "title": "OperatorParameter",
       "type": "object"
     },
+    "ParameterSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_values": {
+          "anyOf": [
+            {
+              "items": {},
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Allowed Values"
+        },
+        "default": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minimum"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "type": {
+          "$ref": "#/$defs/TypeRef"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ],
+      "title": "ParameterSpec",
+      "type": "object"
+    },
     "ParityWaiver": {
       "additionalProperties": false,
       "properties": {
@@ -2117,7 +2198,7 @@
         },
         "semantic_parameters": {
           "items": {
-            "$ref": "#/$defs/TypedField"
+            "$ref": "#/$defs/ParameterSpec"
           },
           "title": "Semantic Parameters",
           "type": "array"
@@ -2308,6 +2389,18 @@
     "TypeRef": {
       "additionalProperties": false,
       "properties": {
+        "cardinality": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cardinality"
+        },
         "container": {
           "title": "Container",
           "type": "string"

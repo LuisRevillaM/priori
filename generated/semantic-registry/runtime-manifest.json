@@ -1768,6 +1768,61 @@
       "status": "experimental"
     }
   ],
-  "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+  "runtime_contexts": [
+    {
+      "cardinality": "single",
+      "description": "Canonical per-frame match state available to runtime primitives.",
+      "entity_scope": null,
+      "name": "canonical_match_state",
+      "payload_type": "match_state",
+      "required": true,
+      "temporal_type": "world_state",
+      "unit": "none"
+    },
+    {
+      "cardinality": "single",
+      "coordinate_frame": "pitch_absolute",
+      "description": "Canonical ball position signal in pitch coordinates.",
+      "entity_scope": "ball",
+      "name": "canonical_match_state.ball_position",
+      "payload_type": "point",
+      "required": true,
+      "temporal_type": "point_signal",
+      "unit": "metre"
+    },
+    {
+      "cardinality": "collection",
+      "coordinate_frame": "pitch_absolute",
+      "description": "Canonical defending outfield player positions.",
+      "entity_scope": "team",
+      "name": "canonical_match_state.defending_outfield_positions",
+      "payload_type": "point",
+      "required": true,
+      "temporal_type": "entity_set_signal",
+      "unit": "metre"
+    },
+    {
+      "cardinality": "collection",
+      "coordinate_frame": "pitch_absolute",
+      "description": "Canonical tracking samples around an event or anchor window.",
+      "entity_scope": null,
+      "name": "canonical_tracking_window",
+      "payload_type": "position",
+      "required": true,
+      "temporal_type": "trajectory_set",
+      "unit": "metre"
+    },
+    {
+      "cardinality": "collection",
+      "description": "Provider event candidates for completed passes.",
+      "entity_scope": null,
+      "name": "provider_event_stream.completed_pass_events",
+      "payload_type": "provider_event",
+      "required": true,
+      "temporal_type": "event_set",
+      "unit": "none"
+    }
+  ],
+  "runtime_manifest_revision": "50b869b2dec576a7a37c62a363f73ea9b40b4743e5905eb4fa62f7d2600b9866",
   "schema_version": "1.0"
 }

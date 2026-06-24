@@ -137,3 +137,32 @@ auditable, and self-invalidating when reality changes.
 **Follow-up:** Generate an SCP-0E review packet. SCP-1 should unblock
 immediately after external acceptance, with no additional SCP-0 architecture
 cycle unless a concrete failing gate appears.
+
+## 2026-06-23 - SCP-0E Closure Patch
+
+**Fact:** External review of the SCP-0E packet found that explicit mappings and
+pinned waivers were real, but exactness still had false positives: runtime
+contexts were not resolved, exact conformance ignored cardinality/entity
+scope/requiredness and parameter bounds/defaults, uncovered declarations could
+name nonexistent fields, duplicate waiver keys were accepted, and product recipe
+parity was described too strongly.
+
+**Decision:** Close the remaining issues as a small SCP-0E patch rather than a
+new milestone. Runtime context references now resolve against a generated typed
+runtime-context manifest. Exact field checks compare unit, cardinality, entity
+scope, coordinate frame where declared, and input requiredness. Parameter specs
+now include bounds, defaults, and allowed values. Uncovered names must resolve
+and be unique. Waiver keys are unique by projection target, difference kind, and
+subject. Product recipe comparison is explicitly labeled as current-runtime
+alignment until a pinned product recipe baseline artifact exists.
+
+**Learning:** A registry cannot use the word `EXACT` unless every compared
+dimension is either enforced or explicitly outside the manifest. If the runtime
+manifest does not expose an independent frozen baseline, the report should name
+the weaker guarantee rather than borrowing stronger parity language.
+
+**Evidence:** `make scp-0-verify` with 49 focused adversarial tests OK;
+`make test` with 131 repository tests OK and attestation VERIFIED.
+
+**Follow-up:** Generate the SCP-0E closure-patch packet. If external review
+accepts it, begin SCP-1 immediately with the existing-runtime compiler pilot.

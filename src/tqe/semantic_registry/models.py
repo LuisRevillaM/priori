@@ -104,6 +104,7 @@ class TypeRef(StrictModel):
     value: str
     quantity: str | None = None
     unit: str = "none"
+    cardinality: str | None = None
     coordinate_frame: str | None = None
     perspective: str | None = None
     temporal_basis: str = "canonical_frame_time"
@@ -115,6 +116,17 @@ class TypedField(StrictModel):
     name: str
     type: TypeRef
     required: bool = True
+    description: str = ""
+
+
+class ParameterSpec(StrictModel):
+    name: str
+    type: TypeRef
+    required: bool = False
+    default: Any | None = None
+    minimum: float | int | None = None
+    maximum: float | int | None = None
+    allowed_values: list[Any] | None = None
     description: str = ""
 
 
@@ -165,10 +177,16 @@ class RuntimeInputBinding(StrictModel):
 
     @model_validator(mode="after")
     def source_requires_target(self) -> "RuntimeInputBinding":
-        if self.source == "NODE_INPUT" and not self.runtime_port:
-            raise ValueError("NODE_INPUT binding requires runtime_port")
-        if self.source == "RUNTIME_CONTEXT" and not self.context_ref:
-            raise ValueError("RUNTIME_CONTEXT binding requires context_ref")
+        if self.source == "NODE_INPUT":
+            if not self.runtime_port:
+                raise ValueError("NODE_INPUT binding requires runtime_port")
+            if self.context_ref is not None:
+                raise ValueError("NODE_INPUT binding forbids context_ref")
+        if self.source == "RUNTIME_CONTEXT":
+            if not self.context_ref:
+                raise ValueError("RUNTIME_CONTEXT binding requires context_ref")
+            if self.runtime_port is not None:
+                raise ValueError("RUNTIME_CONTEXT binding forbids runtime_port")
         return self
 
 
@@ -185,7 +203,7 @@ class RuntimeBinding(CommonEnvelope):
     known_deviations: list[str] = Field(default_factory=list)
     input_bindings: dict[str, RuntimeInputBinding] = Field(default_factory=dict)
     output_bindings: dict[str, RuntimeOutputBinding] = Field(default_factory=dict)
-    semantic_parameters: list[TypedField] = Field(default_factory=list)
+    semantic_parameters: list[ParameterSpec] = Field(default_factory=list)
     parameter_bindings: dict[str, str] = Field(default_factory=dict)
     uncovered_runtime_inputs: list[str] = Field(default_factory=list)
     uncovered_runtime_outputs: list[str] = Field(default_factory=list)
