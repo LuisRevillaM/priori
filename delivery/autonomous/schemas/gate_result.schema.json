@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://priori.local/schemas/gate_result.schema.json",
+  "title": "Priori AFL Gate Result",
+  "type": "object",
+  "required": [
+    "program",
+    "milestone",
+    "candidate_commit",
+    "contract_hash",
+    "gate_runner_hash",
+    "denominators_hash",
+    "result",
+    "findings"
+  ],
+  "properties": {
+    "program": {"const": "priori-autonomous-football-language"},
+    "milestone": {"type": "string", "pattern": "^AFL-(G0|[0-9]{2})$"},
+    "candidate_commit": {"type": "string"},
+    "contract_hash": {"type": "string"},
+    "contract_schema_hash": {"type": "string"},
+    "gate_runner_hash": {"type": "string"},
+    "protected_suite_id": {"type": "string"},
+    "protected_suite_hash": {"type": "string"},
+    "denominators_hash": {"type": "string"},
+    "registry_lock": {"type": "string"},
+    "source_tree_hash": {"type": "string"},
+    "result": {"enum": ["PROMOTED", "REJECTED", "BLOCKED", "ERROR"]},
+    "promoted_at": {"type": "string"},
+    "promotion_signature": {"type": "string"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["obligation", "category", "severity"],
+        "properties": {
+          "obligation": {"type": "string"},
+          "category": {"type": "string"},
+          "counterexample_ref": {"type": "string"},
+          "severity": {"enum": ["critical", "high", "medium", "low"]}
+        }
+      }
+    }
+  }
+}

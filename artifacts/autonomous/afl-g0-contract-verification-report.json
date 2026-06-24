@@ -1,0 +1,24 @@
+{
+  "contract_hash": "234940c3ac9a21ac3837c9423f7562b8a2181cd2b2ccc6a1d815558d9cb06bdb",
+  "contract_path": "delivery/autonomous/afl_milestone_contract.yaml",
+  "findings": [],
+  "gate_id": "AFL-G0.local_contract_validator",
+  "limitations": [
+    "This is repo-local self-verification, not a protected CI boundary.",
+    "No hidden holdout, protected mutation, signing key, or external promotion identity is active yet."
+  ],
+  "milestone_count": 13,
+  "protection_level": "SELF_VERIFIED",
+  "schema_hashes": {
+    "delivery/autonomous/schemas/afl_milestone_contract.schema.json": "79047c828e9f12db9b452885691a815aaee772ac573f6eb2346eacf527916d85",
+    "delivery/autonomous/schemas/gate_result.schema.json": "6050f3037cd98a06d8843f062a5acebf26aba506c2e90d1c016a329da049f56d",
+    "delivery/autonomous/schemas/review_packet_manifest.schema.json": "1042c3dd5c3c63d0de5d52e09abd17dd43fd0601061f202d56fc32c8cb58d915"
+  },
+  "schema_paths": [
+    "delivery/autonomous/schemas/afl_milestone_contract.schema.json",
+    "delivery/autonomous/schemas/gate_result.schema.json",
+    "delivery/autonomous/schemas/review_packet_manifest.schema.json"
+  ],
+  "schema_version": "1.0",
+  "status": "PASS"
+}
