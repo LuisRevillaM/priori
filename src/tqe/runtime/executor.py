@@ -6,10 +6,12 @@ is deliberately keyed by primitive/operator catalog entries, not recipe IDs.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import math
 import os
+import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -140,6 +142,9 @@ class PeriodState:
     near_misses: list[dict[str, Any]] = field(default_factory=list)
     predicate_traces: list[PredicateTrace] = field(default_factory=list)
     lookup_cache: dict[tuple[Any, ...], Any] = field(default_factory=dict)
+    node_output_cache: dict[str, dict[str, Any]] = field(default_factory=dict)
+    node_cache_summary: Counter[str] = field(default_factory=Counter)
+    progress_events: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -211,12 +216,26 @@ class TacticalQueryExecutor:
         canonical_root: Path = DEFAULT_CANONICAL_ROOT,
         raw_root: Path = DEFAULT_RAW_ROOT,
         compatibility_profile: str = GENERIC_EXECUTION_PROFILE,
+        enable_node_cache: bool | None = None,
+        progress_callback: Callable[[dict[str, Any]], None] | None = None,
+        progress_log: bool | None = None,
     ) -> None:
         self.canonical_root = canonical_root
         self.raw_root = raw_root
         if compatibility_profile not in {GENERIC_EXECUTION_PROFILE, LEGACY_M1_PARITY_PROFILE}:
             raise RuntimeError(f"Unsupported compatibility profile {compatibility_profile}")
         self.compatibility_profile = compatibility_profile
+        self.enable_node_cache = (
+            os.environ.get("TQE_DISABLE_NODE_CACHE") != "1"
+            if enable_node_cache is None
+            else enable_node_cache
+        )
+        self.progress_callback = progress_callback
+        self.progress_log = (
+            os.environ.get("TQE_PROGRESS_LOG") == "1"
+            if progress_log is None
+            else progress_log
+        )
         self.primitives: dict[str, PrimitiveImplementation] = {
             "possession_segment": primitive_possession_segment,
             "controlled_pass_episode": primitive_controlled_pass_episode,
@@ -300,9 +319,17 @@ class TacticalQueryExecutor:
         results: list[dict[str, Any]] = []
         trace_records: list[PredicateTrace] = []
         runtime_value_count = 0
+        progress_events: list[dict[str, Any]] = []
+        node_cache_summary: Counter[str] = Counter()
 
         for match_id in bound_plan.match_ids:
-            match_results, match_traces, match_runtime_value_count = self._execute_match(
+            (
+                match_results,
+                match_traces,
+                match_runtime_value_count,
+                match_progress_events,
+                match_node_cache_summary,
+            ) = self._execute_match(
                 bound_plan=bound_plan,
                 match_id=match_id,
                 params=params,
@@ -311,6 +338,8 @@ class TacticalQueryExecutor:
             results.extend(match_results)
             trace_records.extend(match_traces)
             runtime_value_count += match_runtime_value_count
+            progress_events.extend(match_progress_events)
+            node_cache_summary.update(match_node_cache_summary)
 
         results, trace_records, unknown_policy_status = apply_result_semantics(
             results=results,
@@ -381,6 +410,15 @@ class TacticalQueryExecutor:
                 "max_results": bound_plan.max_results,
                 "runtime_result_count": len(query_results),
                 "runtime_value_count": runtime_value_count,
+                "node_cache": {
+                    "enabled": self.enable_node_cache,
+                    "hits": int(node_cache_summary.get("hit", 0)),
+                    "misses": int(node_cache_summary.get("miss", 0)),
+                    "disabled": int(node_cache_summary.get("disabled", 0)),
+                    "bypassed": int(node_cache_summary.get("bypassed", 0)),
+                },
+                "progress_event_count": len(progress_events),
+                "progress_events": progress_events,
                 "unknown_policy": bound_plan.unknown_evidence_policy.value,
                 "unknown_trace_count": sum(1 for trace in trace_records if trace.status == "UNKNOWN"),
                 "requested_evidence_failure_count": len(evidence_failures),
@@ -396,10 +434,12 @@ class TacticalQueryExecutor:
         match_id: str,
         params: RuntimeParameters,
         compatibility_profile: str,
-    ) -> tuple[list[dict[str, Any]], list[PredicateTrace], int]:
+    ) -> tuple[list[dict[str, Any]], list[PredicateTrace], int, list[dict[str, Any]], Counter[str]]:
         accepted: list[dict[str, Any]] = []
         traces: list[PredicateTrace] = []
         runtime_value_count = 0
+        progress_events: list[dict[str, Any]] = []
+        node_cache_summary: Counter[str] = Counter()
         for period in bound_plan.periods:
             state = self._execute_period(
                 bound_plan=bound_plan,
@@ -426,6 +466,8 @@ class TacticalQueryExecutor:
                 accepted.extend(period_results)
                 traces.extend(period_traces)
             runtime_value_count += sum(len(outputs) for outputs in state.runtime_values.values())
+            progress_events.extend(state.progress_events)
+            node_cache_summary.update(state.node_cache_summary)
         if compatibility_profile == LEGACY_M1_PARITY_PROFILE:
             accepted.sort(
                 key=lambda item: (
@@ -445,7 +487,7 @@ class TacticalQueryExecutor:
                     item["result_id"],
                 )
             )
-        return accepted, traces, runtime_value_count
+        return accepted, traces, runtime_value_count, progress_events, node_cache_summary
 
     def evaluate_target(
         self,
@@ -490,13 +532,38 @@ class TacticalQueryExecutor:
             recipe_version=bound_plan.recipe_version,
             params=params,
         )
-        for node in bound_plan.nodes:
-            self._execute_node(state=state, node=node, compatibility_profile=profile)
+        self._record_progress(
+            state,
+            {
+                "event": "period_start",
+                "match_id": match_id,
+                "period": period,
+                "node_count": len(bound_plan.nodes),
+            },
+        )
+        for index, node in enumerate(bound_plan.nodes, start=1):
+            self._execute_node(
+                state=state,
+                node=node,
+                compatibility_profile=profile,
+                node_index=index,
+                node_count=len(bound_plan.nodes),
+            )
             enforce_runtime_complexity_limits(
                 state=state,
                 node=node,
                 bound_plan=bound_plan,
             )
+        self._record_progress(
+            state,
+            {
+                "event": "period_complete",
+                "match_id": match_id,
+                "period": period,
+                "node_count": len(bound_plan.nodes),
+                "runtime_node_count": len(state.runtime_values),
+            },
+        )
         return state
 
     def _execute_node(
@@ -505,10 +572,28 @@ class TacticalQueryExecutor:
         state: PeriodState,
         node: BoundPlanNode,
         compatibility_profile: str | None = None,
+        node_index: int | None = None,
+        node_count: int | None = None,
     ) -> NodeExecutionResult:
         profile = compatibility_profile or self.compatibility_profile
         inputs = resolved_node_inputs(state, node)
         parameters = resolved_node_parameters(node)
+        progress_base = {
+            "match_id": state.match_id,
+            "period": state.period,
+            "node_id": node.node_id,
+            "node_kind": node.kind.value,
+            "node_index": node_index,
+            "node_count": node_count,
+        }
+        if isinstance(node, BoundCatalogNode):
+            progress_base["catalog_ref"] = node.catalog_ref
+            progress_base["version"] = node.version
+        elif isinstance(node, BoundPredicateNode):
+            progress_base["operator"] = node.operator.name
+        self._record_progress(state, {"event": "node_start", **progress_base})
+
+        cache_status = "bypassed"
         if isinstance(node, BoundCatalogNode):
             if node.kind == NodeKind.RELATION:
                 implementation = self.relations.get(node.catalog_ref)
@@ -518,7 +603,21 @@ class TacticalQueryExecutor:
                 implementation = self.primitives.get(node.catalog_ref)
             if implementation is None:
                 raise RuntimeError(f"No primitive implementation for {node.catalog_ref}")
-            implementation(state, node)
+            cache_key = catalog_node_cache_key(node)
+            if self.enable_node_cache and profile == GENERIC_EXECUTION_PROFILE:
+                if cache_key in state.node_output_cache:
+                    state.signals[node.node_id] = copy.deepcopy(state.node_output_cache[cache_key])
+                    cache_status = "hit"
+                    state.node_cache_summary["hit"] += 1
+                else:
+                    implementation(state, node)
+                    state.node_output_cache[cache_key] = copy.deepcopy(state.signals[node.node_id])
+                    cache_status = "miss"
+                    state.node_cache_summary["miss"] += 1
+            else:
+                implementation(state, node)
+                cache_status = "disabled" if profile == GENERIC_EXECUTION_PROFILE else "bypassed"
+                state.node_cache_summary[cache_status] += 1
         elif isinstance(node, BoundPredicateNode):
             implementation = self.predicates.get(node.operator.name)
             if implementation is None:
@@ -528,6 +627,15 @@ class TacticalQueryExecutor:
                 node=node,
             ):
                 runtime_values = record_runtime_values(state, node)
+                self._record_progress(
+                    state,
+                    {
+                        "event": "node_complete",
+                        **progress_base,
+                        "cache_status": "bypassed",
+                        "output_names": sorted(runtime_values),
+                    },
+                )
                 return NodeExecutionResult(
                     node_id=node.node_id,
                     inputs=inputs,
@@ -541,6 +649,15 @@ class TacticalQueryExecutor:
                 node=node,
             ):
                 runtime_values = record_runtime_values(state, node)
+                self._record_progress(
+                    state,
+                    {
+                        "event": "node_complete",
+                        **progress_base,
+                        "cache_status": "bypassed",
+                        "output_names": sorted(runtime_values),
+                    },
+                )
                 return NodeExecutionResult(
                     node_id=node.node_id,
                     inputs=inputs,
@@ -564,6 +681,15 @@ class TacticalQueryExecutor:
         else:
             raise RuntimeError(f"Unsupported bound node {node}")
         runtime_values = record_runtime_values(state, node)
+        self._record_progress(
+            state,
+            {
+                "event": "node_complete",
+                **progress_base,
+                "cache_status": cache_status,
+                "output_names": sorted(runtime_values),
+            },
+        )
         return NodeExecutionResult(
             node_id=node.node_id,
             inputs=inputs,
@@ -634,6 +760,18 @@ class TacticalQueryExecutor:
             defender_centroid_y=defenders.groupby("frame_id").y_m.mean().sort_index(),
         )
 
+    def _record_progress(self, state: PeriodState, event: dict[str, Any]) -> None:
+        sanitized = {key: value for key, value in event.items() if value is not None}
+        state.progress_events.append(sanitized)
+        if self.progress_callback is not None:
+            self.progress_callback(dict(sanitized))
+        if self.progress_log:
+            print(
+                json.dumps(sanitized, sort_keys=True, separators=(",", ":")),
+                file=sys.stderr,
+                flush=True,
+            )
+
 
 def runtime_parameters(bound_plan: BoundQueryPlan) -> RuntimeParameters:
     values = {
@@ -644,6 +782,21 @@ def runtime_parameters(bound_plan: BoundQueryPlan) -> RuntimeParameters:
     values.update({item.name: item.value.value for item in bound_plan.resolved_parameters})
     return RuntimeParameters(
         values=values
+    )
+
+
+def catalog_node_cache_key(node: BoundCatalogNode) -> str:
+    payload = node.model_dump(mode="json", exclude={"node_id"})
+    return stable_hash(
+        {
+            "kind": node.kind.value,
+            "catalog_ref": node.catalog_ref,
+            "version": node.version,
+            "inputs": payload.get("inputs", {}),
+            "input_types": payload.get("input_types", {}),
+            "outputs": payload.get("outputs", []),
+            "resolved_parameters": payload.get("resolved_parameters", {}),
+        }
     )
 
 
