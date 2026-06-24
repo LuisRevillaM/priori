@@ -2901,6 +2901,271 @@ def resolve_composition_semantic_path(
     }
 
 
+def _subject_ref_for_runtime_binding(binding: Any) -> str:
+    return (
+        f"runtime:{binding.runtime_capability.kind}:"
+        f"{binding.runtime_capability.id}:{binding.runtime_capability.version}"
+    )
+
+
+def _effective_claim_contract_payload(
+    contract_ref: str, claim_contracts: dict[str, ClaimContract]
+) -> dict[str, Any]:
+    effective, _ = _effective_claim_contract(contract_ref, claim_contracts)
+    unknown_conditions: set[str] = set()
+    for ancestor_ref in sorted(effective["ancestors"]):
+        unknown_conditions.update(claim_contracts[ancestor_ref].unknown_conditions)
+    unknown_conditions.update(claim_contracts[contract_ref].unknown_conditions)
+    return {
+        "contract_ref": contract_ref,
+        "inherits": sorted(effective["ancestors"]),
+        "permitted": sorted(effective["permitted"]),
+        "prohibited": sorted(effective["prohibited"]),
+        "unknown_conditions": sorted(unknown_conditions),
+    }
+
+
+def _effective_evidence_contract_payload(
+    contract_ref: str, evidence_contracts: dict[str, EvidenceContract]
+) -> dict[str, Any]:
+    effective, _ = _effective_evidence_contract(contract_ref, evidence_contracts)
+    return {
+        "contract_ref": contract_ref,
+        "inherits": sorted(effective["ancestors"]),
+        "required": sorted(effective["required"]),
+        "optional": sorted(effective["optional"]),
+        "replay_projection": sorted(effective["replay_projection"]),
+    }
+
+
+def _model_dump_or_none(value: Any) -> Any | None:
+    if value is None:
+        return None
+    if hasattr(value, "model_dump"):
+        return value.model_dump(mode="json", exclude_none=True)
+    return value
+
+
+def build_capability_passport_projection(
+    registry: SemanticRegistry,
+    runtime_manifest: dict[str, Any],
+    lock: RegistryLock,
+    projections: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Generate registry-derived runtime capability passports.
+
+    Passports are read-only projections. They are not a new source of truth:
+    every field is derived from registry objects, runtime introspection, and the
+    current registry lock.
+    """
+
+    policies = _subject_policy(registry)
+    maturities = _subject_maturity(registry)
+    implementations = _index(registry.implementations)
+    operationalizations = _index(registry.operationalizations)
+    concepts = _index(registry.concepts)
+    claim_contracts = _index(registry.claim_contracts)
+    evidence_contracts = _index(registry.evidence_contracts)
+    product_ids = {
+        f"runtime:{item['kind']}:{item['id']}:{item['version']}"
+        for item in projections["product"].get("capabilities", [])
+    }
+    ai_ids = {
+        f"runtime:{item['kind']}:{item['id']}:{item['version']}"
+        for item in projections["ai"].get("capabilities", [])
+    }
+
+    passports: list[dict[str, Any]] = []
+    for binding in sorted(
+        registry.runtime_bindings,
+        key=lambda item: (
+            item.runtime_capability.kind,
+            item.runtime_capability.id,
+            item.runtime_capability.version,
+        ),
+    ):
+        subject_ref = _subject_ref_for_runtime_binding(binding)
+        policy = policies.get(subject_ref)
+        maturity = maturities.get(subject_ref)
+        implementation = implementations.get(binding.implementation_ref)
+        ops = [operationalizations[ref] for ref in binding.implements if ref in operationalizations]
+        concept_refs = _dedupe_preserve(
+            [concept_ref for op in ops for concept_ref in op.concept_refs]
+        )
+        claim_refs = _dedupe_preserve([op.claim_contract_ref for op in ops])
+        evidence_refs = _dedupe_preserve([op.evidence_contract_ref for op in ops])
+        passport_core = {
+            "subject_ref": subject_ref,
+            "runtime_capability": binding.runtime_capability.model_dump(mode="json"),
+            "display_name": binding.display_name,
+            "description": binding.description,
+            "status": binding.status.value,
+            "binding": {
+                "id": binding.id,
+                "conformance": binding.conformance_status.value,
+                "known_deviations": list(binding.known_deviations),
+                "input_bindings": {
+                    name: value.model_dump(mode="json", exclude_none=True)
+                    for name, value in sorted(binding.input_bindings.items())
+                },
+                "output_bindings": {
+                    name: value.model_dump(mode="json", exclude_none=True)
+                    for name, value in sorted(binding.output_bindings.items())
+                },
+                "semantic_parameters": [
+                    item.model_dump(mode="json", exclude_none=True)
+                    for item in binding.semantic_parameters
+                ],
+                "parameter_bindings": dict(sorted(binding.parameter_bindings.items())),
+                "uncovered_runtime_inputs": sorted(binding.uncovered_runtime_inputs),
+                "uncovered_runtime_outputs": sorted(binding.uncovered_runtime_outputs),
+                "uncovered_runtime_parameters": sorted(binding.uncovered_runtime_parameters),
+                "uncovered_semantic_inputs": sorted(binding.uncovered_semantic_inputs),
+                "uncovered_semantic_outputs": sorted(binding.uncovered_semantic_outputs),
+                "uncovered_semantic_parameters": sorted(binding.uncovered_semantic_parameters),
+            },
+            "implementation": _model_dump_or_none(implementation),
+            "runtime_contract": _runtime_contract_for_binding(runtime_manifest, binding),
+            "concepts": [
+                concepts[ref].model_dump(mode="json", exclude_none=True)
+                for ref in concept_refs
+                if ref in concepts
+            ],
+            "operationalizations": [
+                op.model_dump(mode="json", exclude_none=True) for op in ops
+            ],
+            "claim_contracts": [
+                _effective_claim_contract_payload(ref, claim_contracts)
+                for ref in claim_refs
+                if ref in claim_contracts
+            ],
+            "evidence_contracts": [
+                _effective_evidence_contract_payload(ref, evidence_contracts)
+                for ref in evidence_refs
+                if ref in evidence_contracts
+            ],
+            "exposure_policy": _model_dump_or_none(policy),
+            "maturity_assessment": _model_dump_or_none(maturity),
+            "projection_membership": {
+                "product": subject_ref in product_ids,
+                "ai": subject_ref in ai_ids,
+            },
+        }
+        passports.append(passport_core | {"passport_hash": stable_hash(passport_core)})
+
+    return {
+        "schema_version": "1.0",
+        "projection_id": "priori.capability_passport_projection.afl08",
+        "registry_lock": lock.model_dump(mode="json"),
+        "passport_count": len(passports),
+        "passports": passports,
+        "passport_revision": stable_hash(passports),
+    }
+
+
+def validate_capability_passport_projection(
+    passport_projection: dict[str, Any],
+    registry: SemanticRegistry,
+    runtime_manifest: dict[str, Any],
+    lock: RegistryLock,
+    projections: dict[str, dict[str, Any]],
+) -> list[ValidationFinding]:
+    findings: list[ValidationFinding] = []
+    projection_lock = passport_projection.get("registry_lock")
+    if not isinstance(projection_lock, dict):
+        findings.append(
+            _finding(
+                "capability_passport_missing_registry_lock",
+                "Capability passport projection does not include registry_lock.",
+                "capability_passport_projection.registry_lock",
+            )
+        )
+    elif projection_lock.get("lock_hash") != lock.lock_hash:
+        findings.append(
+            _finding(
+                "capability_passport_registry_lock_mismatch",
+                "Capability passport projection lock does not match current registry lock.",
+                "capability_passport_projection.registry_lock.lock_hash",
+            )
+        )
+
+    passports = passport_projection.get("passports")
+    if not isinstance(passports, list):
+        findings.append(
+            _finding(
+                "capability_passport_missing_passports",
+                "Capability passport projection must contain a passports list.",
+                "capability_passport_projection.passports",
+            )
+        )
+        return findings
+
+    subject_refs = [str(item.get("subject_ref")) for item in passports if isinstance(item, dict)]
+    duplicate_subjects = sorted(
+        subject for subject in set(subject_refs) if subject_refs.count(subject) > 1
+    )
+    for subject in duplicate_subjects:
+        findings.append(
+            _finding(
+                "capability_passport_duplicate_subject",
+                f"Capability passport projection contains duplicate subject {subject}.",
+                "capability_passport_projection.passports",
+            )
+        )
+
+    expected_subjects = {
+        _subject_ref_for_runtime_binding(binding) for binding in registry.runtime_bindings
+    }
+    observed_subjects = set(subject_refs)
+    for subject in sorted(expected_subjects - observed_subjects):
+        findings.append(
+            _finding(
+                "capability_passport_missing_runtime_subject",
+                f"Missing passport for runtime subject {subject}.",
+                "capability_passport_projection.passports",
+            )
+        )
+    for subject in sorted(observed_subjects - expected_subjects):
+        findings.append(
+            _finding(
+                "capability_passport_unknown_subject",
+                f"Passport subject {subject} is not a registered runtime binding.",
+                "capability_passport_projection.passports",
+            )
+        )
+    for subject in sorted(observed_subjects):
+        if subject.startswith("atlas."):
+            findings.append(
+                _finding(
+                    "capability_passport_atlas_leakage",
+                    f"Atlas-only entry {subject} cannot appear as a runtime capability passport.",
+                    "capability_passport_projection.passports",
+                )
+            )
+
+    expected = build_capability_passport_projection(
+        registry, runtime_manifest, lock, projections
+    )
+    actual_revision = stable_hash(passports)
+    if passport_projection.get("passport_revision") != actual_revision:
+        findings.append(
+            _finding(
+                "capability_passport_revision_mismatch",
+                "Capability passport projection revision does not match its current passport list.",
+                "capability_passport_projection.passport_revision",
+            )
+        )
+    elif passport_projection.get("passport_revision") != expected["passport_revision"]:
+        findings.append(
+            _finding(
+                "capability_passport_revision_mismatch",
+                "Capability passport projection does not match the generated registry/runtime projection.",
+                "capability_passport_projection.passport_revision",
+            )
+        )
+    return findings
+
+
 def build_pilot_report(
     registry: SemanticRegistry, projections: dict[str, dict[str, Any]]
 ) -> dict[str, Any]:
@@ -3019,7 +3284,15 @@ def generate_scp0_artifacts(
     plan_index = build_plan_artifact_index(registry)
     findings = validate_registry(registry, runtime_manifest, lock)
     projections = build_projections(registry, runtime_manifest, lock)
+    passport_projection = build_capability_passport_projection(
+        registry, runtime_manifest, lock, projections
+    )
     findings.extend(validate_projection_identities(projections, lock))
+    findings.extend(
+        validate_capability_passport_projection(
+            passport_projection, registry, runtime_manifest, lock, projections
+        )
+    )
     findings.extend(validate_projection_parity(registry, runtime_manifest, projections))
     report = build_parity_report(registry, runtime_manifest, lock, findings, projections)
 
@@ -3035,6 +3308,7 @@ def generate_scp0_artifacts(
                 output_root / "recipe-library-projection.json": projections["recipe_library"],
                 output_root / "unsupported-capability-projection.json": projections["unsupported"],
                 output_root / "research-atlas-projection.json": projections["research_atlas"],
+                output_root / "capability-passport-projection.json": passport_projection,
                 output_root / "semantic-parity-report.json": report.model_dump(mode="json"),
             }
             with tempfile.TemporaryDirectory(prefix="scp0-generate-") as tmp_name:

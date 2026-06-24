@@ -8,12 +8,14 @@ from pathlib import Path
 
 from tqe.semantic_registry import generate as scpgen
 from tqe.semantic_registry.generate import (
+    build_capability_passport_projection,
     build_plan_artifact_index,
     build_projections,
     generate_scp0_artifacts,
     generate_runtime_manifest,
     load_registry,
     make_registry_lock,
+    validate_capability_passport_projection,
     validate_projection_parity,
     validate_projection_identities,
     validate_registry,
@@ -33,6 +35,14 @@ def runtime_capability(
         item
         for item in runtime_manifest["capabilities"]
         if item["kind"] == kind and item["name"] == name and item["version"] == version
+    )
+
+
+def passport_by_subject(passport_projection: dict, subject_ref: str) -> dict:
+    return next(
+        item
+        for item in passport_projection["passports"]
+        if item["subject_ref"] == subject_ref
     )
 
 
@@ -900,6 +910,138 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
             build_plan_artifact_index(registry)["plan_artifact_revision"],
             report.recipes["plan_artifact_revision"],
         )
+
+    def test_capability_passport_projection_has_lock_and_pilot_capabilities(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+
+        passport_projection = build_capability_passport_projection(
+            registry, runtime_manifest, lock, projections
+        )
+
+        self.assertEqual(lock.lock_hash, passport_projection["registry_lock"]["lock_hash"])
+        self.assertEqual(len(registry.runtime_bindings), passport_projection["passport_count"])
+        self.assertIn(
+            "runtime:primitive:controlled_pass_episode:0.1.0",
+            {item["subject_ref"] for item in passport_projection["passports"]},
+        )
+        self.assertIn(
+            "runtime:relation:opponents_bypassed_by_action:0.1.0",
+            {item["subject_ref"] for item in passport_projection["passports"]},
+        )
+
+    def test_pilot_passports_include_claim_limits_replay_evidence_and_deviations(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+        passport_projection = build_capability_passport_projection(
+            registry, runtime_manifest, lock, projections
+        )
+
+        controlled_pass = passport_by_subject(
+            passport_projection, "runtime:primitive:controlled_pass_episode:0.1.0"
+        )
+        bypass = passport_by_subject(
+            passport_projection, "runtime:relation:opponents_bypassed_by_action:0.1.0"
+        )
+
+        self.assertIn(
+            "proves_passer_intent",
+            controlled_pass["claim_contracts"][0]["prohibited"],
+        )
+        self.assertIn(
+            "release_frame",
+            controlled_pass["evidence_contracts"][0]["replay_projection"],
+        )
+        self.assertIn(
+            "defensive_line_was_broken",
+            bypass["claim_contracts"][0]["prohibited"],
+        )
+        self.assertIn(
+            "bypassed_opponent_markers",
+            bypass["evidence_contracts"][0]["replay_projection"],
+        )
+        self.assertEqual("PARTIAL", controlled_pass["binding"]["conformance"])
+        self.assertTrue(controlled_pass["binding"]["known_deviations"])
+        self.assertEqual("PARTIAL", bypass["binding"]["conformance"])
+        self.assertTrue(bypass["binding"]["known_deviations"])
+
+    def test_passport_projection_changes_when_source_contract_changes(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+        baseline = build_capability_passport_projection(
+            registry, runtime_manifest, lock, projections
+        )
+        baseline_bypass = passport_by_subject(
+            baseline, "runtime:relation:opponents_bypassed_by_action:0.1.0"
+        )
+
+        claim = next(
+            item
+            for item in registry.claim_contracts
+            if item.id == "claim.opponent_ball_side_transition_count.v1"
+        )
+        claim.prohibited.append("proves_receiver_intent")
+        mutated_lock = make_registry_lock(registry, runtime_manifest)
+        mutated_projections = build_projections(registry, runtime_manifest, mutated_lock)
+        mutated = build_capability_passport_projection(
+            registry, runtime_manifest, mutated_lock, mutated_projections
+        )
+        mutated_bypass = passport_by_subject(
+            mutated, "runtime:relation:opponents_bypassed_by_action:0.1.0"
+        )
+
+        self.assertNotEqual(baseline["passport_revision"], mutated["passport_revision"])
+        self.assertNotEqual(
+            baseline_bypass["passport_hash"],
+            mutated_bypass["passport_hash"],
+        )
+        self.assertIn(
+            "proves_receiver_intent",
+            mutated_bypass["claim_contracts"][0]["prohibited"],
+        )
+
+    def test_atlas_entries_do_not_become_capability_passports(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+
+        passport_projection = build_capability_passport_projection(
+            registry, runtime_manifest, lock, projections
+        )
+
+        self.assertFalse(
+            any(
+                item["subject_ref"].startswith("atlas.")
+                for item in passport_projection["passports"]
+            )
+        )
+
+    def test_capability_passport_lock_or_revision_drift_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+        passport_projection = build_capability_passport_projection(
+            registry, runtime_manifest, lock, projections
+        )
+        passport_projection["registry_lock"]["lock_hash"] = "not-current"
+        passport_projection["passports"][0]["claim_contracts"] = []
+
+        codes = finding_codes(
+            validate_capability_passport_projection(
+                passport_projection, registry, runtime_manifest, lock, projections
+            )
+        )
+
+        self.assertIn("capability_passport_registry_lock_mismatch", codes)
+        self.assertIn("capability_passport_revision_mismatch", codes)
 
 
 if __name__ == "__main__":
