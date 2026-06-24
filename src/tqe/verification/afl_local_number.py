@@ -1,0 +1,353 @@
+"""AFL-08 local-number capability verifier."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from tqe.runtime.binder import bind_document
+from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
+from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
+from tqe.semantic_registry.generate import OUTPUT_ROOT, generate_scp0_artifacts
+
+
+REPORT_PATH = Path("artifacts/autonomous/afl-local-number-verification-report.json")
+PASSPORT_PROJECTION_PATH = OUTPUT_ROOT / "capability-passport-projection.json"
+SUBJECT_REF = "runtime:relation:local_number_relation:0.1.0"
+
+
+REQUIRED_EVIDENCE_FIELDS = [
+    "anchor_id",
+    "anchor_frame_id",
+    "local_number_status",
+    "local_number_reason",
+    "local_number_frame_id",
+    "reference_point",
+    "radius_m",
+    "minimum_difference",
+    "minimum_perspective_players",
+    "maximum_defending_players",
+    "perspective_count",
+    "defending_count",
+    "local_number_difference",
+    "perspective_in_region_player_ids",
+    "defending_in_region_player_ids",
+    "coverage_status",
+]
+
+
+def local_number_probe_document() -> dict[str, Any]:
+    return {
+        "schema_version": "1.0",
+        "recipe": {
+            "schema_version": "1.0",
+            "recipe_id": "local_number_probe",
+            "recipe_version": "0.1.0",
+            "display_name": "Local Number Probe",
+            "description": "Verification-only probe for observed local player counts.",
+            "default_unknown_evidence_policy": "exclude_candidate",
+            "allowed_claims": [
+                "Observed players from declared sides were counted inside a declared local region.",
+            ],
+            "disallowed_claims": [
+                "The capability does not infer pressure, tactical role, support quality, or intention.",
+                "The capability does not prove causation, pass optimality, or pass probability.",
+            ],
+            "limitations": [
+                "Verification-only probe; not a registered user-facing recipe.",
+            ],
+            "output_classifications": ["OBSERVED_LOCAL_NUMBER"],
+            "parameters": [
+                _number_param(
+                    "radius_m",
+                    "metre",
+                    12.0,
+                    "Radius around the controlled receiver reference point.",
+                ),
+                _number_param(
+                    "minimum_difference",
+                    "count",
+                    0,
+                    "Minimum perspective minus defending local player count.",
+                ),
+                _number_param(
+                    "minimum_perspective_players",
+                    "count",
+                    1,
+                    "Minimum observed perspective players inside the local region.",
+                ),
+                _number_param(
+                    "maximum_defending_players",
+                    "count",
+                    99,
+                    "Maximum observed defending players inside the local region.",
+                ),
+            ],
+        },
+        "default_invocation": {
+            "schema_version": "1.0",
+            "invocation_id": "local_number_probe",
+            "match_ids": ["J03WOY"],
+            "periods": ["firstHalf", "secondHalf"],
+            "perspective_team_role": "home",
+            "parameters": {},
+            "max_results": 20,
+            "execution_mode": "execute",
+        },
+        "draft_plan": {
+            "schema_version": "1.0",
+            "plan_id": "local_number_probe",
+            "plan_version": "0.1.0",
+            "recipe_id": "local_number_probe",
+            "recipe_version": "0.1.0",
+            "status": "experimental",
+            "unknown_evidence_policy": "exclude_candidate",
+            "classification_mode": "partial_declared",
+            "nodes": [
+                {
+                    "kind": "primitive",
+                    "node_id": "controlled_pass",
+                    "catalog_ref": "controlled_pass_episode",
+                    "version": "0.1.0",
+                },
+                {
+                    "kind": "relation",
+                    "node_id": "local_number",
+                    "catalog_ref": "local_number_relation",
+                    "version": "0.1.0",
+                    "inputs": {
+                        "anchors": {
+                            "source_node_id": "controlled_pass",
+                            "output_name": "anchors",
+                        },
+                    },
+                    "parameters": {
+                        "frame_field": {
+                            "payload_type": "enum",
+                            "unit": "none",
+                            "value": "controlled_reception_frame_id",
+                        },
+                        "radius_m": {"kind": "parameter", "name": "radius_m"},
+                        "minimum_difference": {
+                            "kind": "parameter",
+                            "name": "minimum_difference",
+                        },
+                        "minimum_perspective_players": {
+                            "kind": "parameter",
+                            "name": "minimum_perspective_players",
+                        },
+                        "maximum_defending_players": {
+                            "kind": "parameter",
+                            "name": "maximum_defending_players",
+                        },
+                    },
+                },
+                {
+                    "kind": "predicate",
+                    "node_id": "local_number_pass",
+                    "input": {
+                        "source_node_id": "local_number",
+                        "output_name": "local_number_status",
+                    },
+                    "operator": {"name": "eq", "version": "1.0.0"},
+                    "compare": {"payload_type": "enum", "unit": "none", "value": "PASS"},
+                },
+            ],
+            "classification_rules": [
+                {
+                    "label": "OBSERVED_LOCAL_NUMBER",
+                    "predicate_ids": ["local_number_pass"],
+                    "description": "Observed local player counts satisfied the declared numeric relation.",
+                },
+            ],
+            "anchor_source": {
+                "source_node_id": "local_number",
+                "output_name": "anchor_evaluations",
+            },
+            "requested_evidence": [_evidence(field) for field in REQUIRED_EVIDENCE_FIELDS],
+        },
+    }
+
+
+def _number_param(name: str, unit: str, value: float | int, description: str) -> dict[str, Any]:
+    return {
+        "name": name,
+        "payload_type": "number",
+        "unit": unit,
+        "required": False,
+        "default": {"payload_type": "number", "unit": unit, "value": value},
+        "description": description,
+    }
+
+
+def _evidence(field: str) -> dict[str, Any]:
+    return {
+        "source": {
+            "source_node_id": "local_number",
+            "output_name": "anchor_evaluations",
+        },
+        "field": field,
+        "alias": field,
+    }
+
+
+def _load_passport() -> dict[str, Any] | None:
+    if not PASSPORT_PROJECTION_PATH.exists():
+        return None
+    projection = json.loads(PASSPORT_PROJECTION_PATH.read_text(encoding="utf-8"))
+    for passport in projection.get("passports", []):
+        if isinstance(passport, dict) and passport.get("subject_ref") == SUBJECT_REF:
+            return passport
+    return None
+
+
+def _passport_prohibited_claims(passport: dict[str, Any] | None) -> set[str]:
+    if not passport:
+        return set()
+    return {
+        claim
+        for contract in passport.get("claim_contracts", [])
+        for claim in contract.get("prohibited", [])
+    }
+
+
+def _observed_statuses(rows: list[dict[str, Any]]) -> list[str]:
+    return sorted(
+        {
+            str(row.get("requested_evidence", {}).get("local_number_status"))
+            for row in rows
+            if isinstance(row.get("requested_evidence"), dict)
+        }
+    )
+
+
+def verify_local_number_capability() -> dict[str, Any]:
+    _registry, _runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=True)
+    document_payload = local_number_probe_document()
+    document = TacticalQueryDocument.model_validate(document_payload)
+    bound_plan = bind_document(document)
+    execution = TacticalQueryExecutor().execute(bound_plan)
+    rows = execution_result_rows(execution)
+    passport = _load_passport()
+    prohibited_claims = _passport_prohibited_claims(passport)
+
+    findings: list[dict[str, str]] = []
+    if parity_report.status != "PASS":
+        findings.append(
+            {
+                "code": "scp0_parity_failed",
+                "message": "SCP-0 artifact generation did not pass.",
+                "path": "semantic-registry",
+            }
+        )
+    if execution.status != ExecutionStatus.PASS:
+        findings.append(
+            {
+                "code": "execution_not_pass",
+                "message": f"Execution status was {execution.status}.",
+                "path": "execution.status",
+            }
+        )
+    if execution.provenance.get("compatibility_profile") != "generic":
+        findings.append(
+            {
+                "code": "non_generic_execution",
+                "message": "Local-number verifier must run through the generic executor.",
+                "path": "execution.provenance.compatibility_profile",
+            }
+        )
+    if not rows:
+        findings.append(
+            {
+                "code": "no_real_pass_results",
+                "message": "The local-number verifier produced no real PASS rows.",
+                "path": "execution.results",
+            }
+        )
+    evidence_failure_count = int(execution.provenance.get("requested_evidence_failure_count") or 0)
+    if evidence_failure_count:
+        findings.append(
+            {
+                "code": "requested_evidence_missing",
+                "message": f"{evidence_failure_count} result(s) had missing requested evidence.",
+                "path": "execution.provenance.requested_evidence_failures",
+            }
+        )
+    required_prohibitions = {
+        "pressure_inferred",
+        "tactical_role_identified",
+        "support_quality_inferred",
+        "player_intent_inferred",
+        "line_break_caused_by_pass",
+        "pass_was_optimal",
+        "pass_probability_inferred",
+    }
+    missing_prohibitions = sorted(required_prohibitions - prohibited_claims)
+    if missing_prohibitions:
+        findings.append(
+            {
+                "code": "passport_missing_prohibited_claims",
+                "message": f"Passport lacks prohibited claims: {', '.join(missing_prohibitions)}.",
+                "path": "capability_passport_projection.passports.local_number_relation.claim_contracts",
+            }
+        )
+
+    sample = rows[0] if rows else {}
+    requested = sample.get("requested_evidence") if isinstance(sample, dict) else {}
+    status = "PASS" if not findings else "FAIL"
+    return {
+        "schema_version": "1.0",
+        "milestone": "AFL-08 local_number_relation",
+        "status": status,
+        "registry_lock": lock.model_dump(mode="json"),
+        "plan": {
+            "plan_id": bound_plan.plan_id,
+            "bound_plan_hash": bound_plan.bound_plan_hash,
+            "document_hash": stable_hash(document_payload),
+        },
+        "execution": {
+            "execution_id": execution.execution_id,
+            "status": execution.status.value,
+            "compatibility_profile": execution.provenance.get("compatibility_profile"),
+            "result_count": len(rows),
+            "requested_evidence_failure_count": evidence_failure_count,
+            "runtime_value_count": execution.provenance.get("runtime_value_count"),
+            "runtime_trace_hash": execution.provenance.get("runtime_trace_hash"),
+            "observed_local_number_statuses": _observed_statuses(rows),
+        },
+        "sample_result": {
+            "result_id": sample.get("result_id"),
+            "classification": sample.get("classification"),
+            "requested_evidence": requested,
+        },
+        "passport": {
+            "subject_ref": SUBJECT_REF,
+            "passport_hash": None if not passport else passport.get("passport_hash"),
+            "conformance": None if not passport else passport.get("binding", {}).get("conformance"),
+            "prohibited_claims": sorted(prohibited_claims),
+        },
+        "checks": {
+            "generic_execution": execution.provenance.get("compatibility_profile") == "generic",
+            "real_pass_results": len(rows) > 0,
+            "requested_evidence_complete": evidence_failure_count == 0,
+            "overclaim_prohibited": required_prohibitions.issubset(prohibited_claims),
+        },
+        "findings": findings,
+    }
+
+
+def main() -> None:
+    report = verify_local_number_capability()
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    REPORT_PATH.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    if report["status"] != "PASS":
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()

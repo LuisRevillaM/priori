@@ -733,7 +733,7 @@
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         }
       },
-      "baseline_count": 26,
+      "baseline_count": 27,
       "contract_changed": [
         "recipe:ball_side_block_shift_v1:1.0.0",
         "recipe:high_bypass_completed_pass_v1:0.1.0",
@@ -776,17 +776,17 @@
           "projection_contract_hash": "0d1daea8595cd6fe2d7c3a8b483f05efa3fea99dbe5e9df496c443783d8b4f70"
         }
       },
-      "projection_count": 27,
+      "projection_count": 28,
       "removed": [],
       "removed_details": {},
-      "shared_count": 26
+      "shared_count": 27
     },
     "baseline_sources": {
-      "baseline_artifact_revision": "a519b9c766269568cf7bfe50b6a032eed183b076f8382fd5f38327768d7c7642",
+      "baseline_artifact_revision": "f0c5035abb893443bf9131298b674c0d8033e7e44e8d77436d62a28a11f3a9ab",
       "capability_catalog": {
         "exists": true,
         "path": "generated/capability-catalog.json",
-        "source_artifact_sha256": "ee7e5bd4845cf10b6ffb397f56353355a1bde91b7bf5fbbd4be6bbfe130e854e"
+        "source_artifact_sha256": "e033424d71e17868e415209e39936270197904e712e90ab47d44a2b24df7daab"
       },
       "product_recipe_contracts": {
         "frozen_baseline": false,
@@ -797,7 +797,7 @@
       "tactical_knowledge_pack": {
         "exists": true,
         "path": "generated/tactical-knowledge-pack.json",
-        "source_artifact_sha256": "bf8227cb0315b49f9ea36beef361f3e43da005e793387292f53295713ae44fde"
+        "source_artifact_sha256": "c7b9deb5754db020f11982baa376d8255eb67c1ee172af4029f13032d959ab5a"
       }
     },
     "product": {
@@ -809,16 +809,16 @@
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
         }
       },
-      "baseline_count": 20,
+      "baseline_count": 21,
       "contract_changed": [],
       "contract_changed_details": {},
-      "projection_count": 21,
+      "projection_count": 22,
       "recipe_contract_baseline_mode": "current_runtime_alignment",
       "recipe_contract_baseline_note": "Product recipe contracts are compared against current runtime manifest recipes until a pinned product recipe baseline artifact exists.",
       "recipe_contract_frozen_baseline": false,
       "removed": [],
       "removed_details": {},
-      "shared_count": 20
+      "shared_count": 21
     }
   },
   "recipes": {
@@ -830,26 +830,26 @@
   },
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "a519b9c766269568cf7bfe50b6a032eed183b076f8382fd5f38327768d7c7642",
+    "baseline_artifact_revision": "f0c5035abb893443bf9131298b674c0d8033e7e44e8d77436d62a28a11f3a9ab",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "a45b4855039fa2a440df5b3d1da56aaa66e15f007572647aae313981c6313162",
+    "lock_hash": "8cc4fb510f451b6a18dd436ba04b59860473a51f547fd64669cf4ad2e4cf9b7e",
     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "27a36209220cfb5214cb4be790daf309f4bd143bc10f91436bc8159983bcba79",
+    "registry_revision": "aaae3c3a6c7a931ca5cc017bc38f0006e7335854ede8413c567c31db725d520d",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "3679d403116e8cd4ac595fe23f426288e992f07a252fe6cda58daf0ec4ece106",
+    "runtime_manifest_revision": "4914d7a96d5acf66c6958aa2ea1aa76cdb14128edd1591a917593fb4b365f56b",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
   },
   "runtime_capabilities": {
-    "bound": 16,
+    "bound": 17,
     "duplicate_bindings": 0,
-    "including_operators_total": 24,
+    "including_operators_total": 25,
     "orphaned": 0,
-    "runtime_total": 16,
+    "runtime_total": 17,
     "unresolved_bindings": 0
   },
   "schema_version": "1.0",

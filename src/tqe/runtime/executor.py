@@ -30,6 +30,10 @@ from tqe.runtime.controlled_line_break import (
 from tqe.runtime.controlled_pass import ControlledPassConfig, ControlledPassOutput, evaluate_controlled_passes
 from tqe.runtime.defensive_line import DefensiveLineConfig, evaluate_defensive_line_model
 from tqe.runtime.lane_occupancy import LaneOccupancyConfig, evaluate_lane_occupancy
+from tqe.runtime.local_number_relation import (
+    LocalNumberConfig,
+    evaluate_local_number_relation,
+)
 from tqe.runtime.relative_position_to_line import (
     RelativePositionToLineConfig,
     evaluate_relative_position_to_line,
@@ -229,6 +233,7 @@ class TacticalQueryExecutor:
             "geometric_progressive_corridor_from_anchor_set": relation_geometric_progressive_corridor,
             "opponents_bypassed_by_action": relation_opponents_bypassed_by_action,
             "support_arrival_relation": relation_support_arrival,
+            "local_number_relation": relation_local_number,
         }
         self.predicates: dict[str, PredicateImplementation] = {
             "gt": predicate_gt,
@@ -2935,6 +2940,149 @@ def anchor_reference_point(anchor: dict[str, Any]) -> dict[str, float] | None:
     if y_value is None:
         y_value = anchor.get("reception_receiver_y_m")
     return point_from_xy(x_value, y_value)
+
+
+def relation_local_number(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchor_records = anchor_value.value
+    if not isinstance(anchor_records, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    frame_field = node_parameter_text(node, "frame_field", "controlled_reception_frame_id")
+    radius_m = node_parameter_number(node, "radius_m", 10.0)
+    minimum_difference = node_parameter_integer(node, "minimum_difference", 1)
+    minimum_perspective_players = node_parameter_integer(node, "minimum_perspective_players", 0)
+    maximum_defending_players = node_parameter_integer(node, "maximum_defending_players", 99)
+    records = [
+        local_number_anchor_record(
+            state=state,
+            anchor=anchor,
+            frame_field=frame_field,
+            radius_m=radius_m,
+            minimum_difference=minimum_difference,
+            minimum_perspective_players=minimum_perspective_players,
+            maximum_defending_players=maximum_defending_players,
+        )
+        for anchor in anchor_records
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["local_number_status"]) == "UNKNOWN" else str(record["local_number_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "local_number_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "local_number_status").entity_scope,
+        ),
+        "local_number_status_records": records,
+    }
+
+
+def local_number_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    radius_m: float,
+    minimum_difference: int,
+    minimum_perspective_players: int,
+    maximum_defending_players: int,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    evaluation_frame_id = optional_int(anchor.get(frame_field))
+    if evaluation_frame_id is None and frame_field != "anchor_frame_id":
+        evaluation_frame_id = anchor_frame_id
+    if anchor_frame_id is None or evaluation_frame_id is None:
+        return None
+    perspective_outfield_ids = outfield_player_ids(
+        state.canonical_root,
+        state.match_id,
+        state.perspective_team_role,
+    )
+    defending_outfield_ids = outfield_player_ids(
+        state.canonical_root,
+        state.match_id,
+        state.defending_team_role,
+    )
+    perspective_positions = observed_outfield_positions_at_frame(
+        state.positions,
+        evaluation_frame_id,
+        state.perspective_team_role,
+        perspective_outfield_ids,
+    )
+    defending_positions = observed_outfield_positions_at_frame(
+        state.positions,
+        evaluation_frame_id,
+        state.defending_team_role,
+        defending_outfield_ids,
+    )
+    reference_point = anchor_reference_point(anchor)
+    if reference_point is None:
+        reference_point = observed_player_point_at_frame(
+            state.positions,
+            frame_id=evaluation_frame_id,
+            player_id=anchor.get("receiver_id"),
+        )
+    evaluation = evaluate_local_number_relation(
+        anchor_id=str(anchor.get("anchor_id")),
+        anchor_frame_id=anchor_frame_id,
+        evaluation_frame_id=evaluation_frame_id,
+        reference_point=reference_point,
+        perspective_positions=perspective_positions,
+        defending_positions=defending_positions,
+        config=LocalNumberConfig(
+            radius_m=radius_m,
+            minimum_difference=minimum_difference,
+            minimum_perspective_players=minimum_perspective_players,
+            maximum_defending_players=maximum_defending_players,
+        ),
+    )
+    payload = evaluation.to_dict()
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "local_number_status": str(payload["status"]),
+        "local_number_reason": payload["reason"],
+        "local_number_frame_field": frame_field,
+        "local_number_frame_id": evaluation_frame_id,
+        "reference_point": reference_point,
+        "radius_m": radius_m,
+        "minimum_difference": minimum_difference,
+        "minimum_perspective_players": minimum_perspective_players,
+        "maximum_defending_players": maximum_defending_players,
+        "perspective_player_ids": list(payload["perspective_player_ids"]),
+        "defending_player_ids": list(payload["defending_player_ids"]),
+        "perspective_count": payload["perspective_count"],
+        "defending_count": payload["defending_count"],
+        "local_number_difference": payload["local_number_difference"],
+        "evaluated_perspective_player_ids": list(payload["evaluated_perspective_player_ids"]),
+        "evaluated_defending_player_ids": list(payload["evaluated_defending_player_ids"]),
+        "perspective_in_region_player_ids": list(payload["perspective_in_region_player_ids"]),
+        "defending_in_region_player_ids": list(payload["defending_in_region_player_ids"]),
+        "missing_perspective_player_ids": list(payload["missing_perspective_player_ids"]),
+        "missing_defending_player_ids": list(payload["missing_defending_player_ids"]),
+        "invalid_coordinate_player_ids": list(payload["invalid_coordinate_player_ids"]),
+        "duplicate_perspective_player_ids": list(payload["duplicate_perspective_player_ids"]),
+        "duplicate_defending_player_ids": list(payload["duplicate_defending_player_ids"]),
+        "per_player_evidence": payload["per_player_evidence"],
+        "coverage_status": payload["coverage_status"],
+        "config_evidence": payload["config_evidence"],
+        "perspective_team_role": state.perspective_team_role,
+        "defending_team_role": state.defending_team_role,
+    }
 
 
 def catalog_output(node: BoundCatalogNode, name: str) -> Any:

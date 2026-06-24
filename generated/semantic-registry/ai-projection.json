@@ -1123,6 +1123,185 @@
     {
       "agent_safety_maturity": "APPROVED",
       "ai_exposure": "ALLOWED",
+      "binding_id": "binding.relation.local_number_relation.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "local_number_relation",
+      "implements": [
+        "op.observed_local_number_relation.v1"
+      ],
+      "kind": "relation",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "local_number_status",
+          "local_number_reason",
+          "local_number_frame_id",
+          "reference_point",
+          "radius_m",
+          "minimum_difference",
+          "minimum_perspective_players",
+          "maximum_defending_players",
+          "perspective_count",
+          "defending_count",
+          "local_number_difference",
+          "perspective_in_region_player_ids",
+          "defending_in_region_player_ids",
+          "coverage_status"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Observed geometric local count only; does not infer pressure or tactical role.",
+          "Does not prove support quality, player intention, causation, optimality, or pass probability.",
+          "Uses observed outfield tracking at the declared frame around the anchor reference point."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "local_number_relation",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "local_number_status",
+              "local_number_reason",
+              "local_number_frame_id",
+              "reference_point",
+              "radius_m",
+              "minimum_difference",
+              "minimum_perspective_players",
+              "maximum_defending_players",
+              "perspective_player_ids",
+              "defending_player_ids",
+              "perspective_count",
+              "defending_count",
+              "local_number_difference",
+              "perspective_in_region_player_ids",
+              "defending_in_region_player_ids",
+              "coverage_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "local_number_status",
+              "local_number_reason",
+              "coverage_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "local_number_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Anchor record frame field where the local-number relation is evaluated.",
+            "name": "frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 10.0
+            },
+            "description": "Radius around the anchor reference point used for observed local counts.",
+            "maximum": 40.0,
+            "minimum": 0.5,
+            "name": "radius_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 1
+            },
+            "description": "Minimum perspective minus defending local player count.",
+            "maximum": 10.0,
+            "minimum": -10.0,
+            "name": "minimum_difference",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 0
+            },
+            "description": "Minimum observed perspective players inside the local region.",
+            "maximum": 11.0,
+            "minimum": 0.0,
+            "name": "minimum_perspective_players",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 99
+            },
+            "description": "Maximum observed defending players inside the local region.",
+            "maximum": 99.0,
+            "minimum": 0.0,
+            "name": "maximum_defending_players",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          }
+        ],
+        "purpose": "Evaluate observed perspective-versus-defending local player counts inside a declared radius around an anchor reference point.",
+        "runtime_id": "relation:local_number_relation:0.1.0",
+        "version": "0.1.0"
+      },
+      "version": "0.1.0"
+    },
+    {
+      "agent_safety_maturity": "APPROVED",
+      "ai_exposure": "ALLOWED",
       "binding_id": "binding.relation.opponents_bypassed_by_action.0_1_0",
       "conformance": "PARTIAL",
       "id": "opponents_bypassed_by_action",
@@ -2452,16 +2631,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "a519b9c766269568cf7bfe50b6a032eed183b076f8382fd5f38327768d7c7642",
+    "baseline_artifact_revision": "f0c5035abb893443bf9131298b674c0d8033e7e44e8d77436d62a28a11f3a9ab",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "a45b4855039fa2a440df5b3d1da56aaa66e15f007572647aae313981c6313162",
+    "lock_hash": "8cc4fb510f451b6a18dd436ba04b59860473a51f547fd64669cf4ad2e4cf9b7e",
     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "27a36209220cfb5214cb4be790daf309f4bd143bc10f91436bc8159983bcba79",
+    "registry_revision": "aaae3c3a6c7a931ca5cc017bc38f0006e7335854ede8413c567c31db725d520d",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "3679d403116e8cd4ac595fe23f426288e992f07a252fe6cda58daf0ec4ece106",
+    "runtime_manifest_revision": "4914d7a96d5acf66c6958aa2ea1aa76cdb14128edd1591a917593fb4b365f56b",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

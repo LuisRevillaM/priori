@@ -75,6 +75,14 @@ concepts:
     evidence_contract_ref: evidence.observed_support_arrival.v1
     tags: [support, relation, geometry, timing]
 
+  - id: concept.observed_local_number_relation
+    kind: Concept
+    display_name: Observed Local Number Relation
+    description: Observed perspective-versus-defending player counts inside a declared local region around an anchor reference point.
+    claim_contract_ref: claim.observed_local_number_relation.v1
+    evidence_contract_ref: evidence.observed_local_number_relation.v1
+    tags: [numbers, relation, geometry, local-context]
+
   - id: concept.defensive_block_lateral_shift
     kind: Concept
     display_name: Defensive Block Lateral Shift
@@ -345,6 +353,30 @@ operationalizations:
     claim_contract_ref: claim.observed_support_arrival.v1
     evidence_contract_ref: evidence.observed_support_arrival.v1
 
+  - id: op.observed_local_number_relation.v1
+    kind: Operationalization
+    display_name: Observed Local Number Relation
+    description: Count observed perspective and defending outfield players inside a declared radius around an anchor reference point at a declared frame.
+    concept_refs: [concept.observed_local_number_relation]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, reference_point_available, observed_player_positions_available, local_region_declared]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: observed_perspective_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+      - name: observed_defending_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: local_number_evaluation, unit: none, entity_scope: anchor}
+      - name: local_number_status
+        type: {container: FrameSignal, value: Enum, quantity: local_number_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, reference_point_resolution, observed_outfield_lookup, local_radius_counting, local_number_requirement_evaluation]
+    claim_contract_ref: claim.observed_local_number_relation.v1
+    evidence_contract_ref: evidence.observed_local_number_relation.v1
+
   - id: op.baseline_relative_defensive_shift.v1
     kind: Operationalization
     display_name: Baseline-Relative Defensive Shift
@@ -586,6 +618,12 @@ implementations:
     description: Current observed geometric support-arrival implementation.
     implements: [op.observed_geometric_support_arrival.v1]
     source_refs: [src/tqe/runtime/support_arrival.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.local_number_relation.python.v1
+    kind: Implementation
+    display_name: Local Number Relation Python Implementation
+    description: Current observed local-number relation implementation.
+    implements: [op.observed_local_number_relation.v1]
+    source_refs: [src/tqe/runtime/local_number_relation.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.signed_lateral_shift.python.v1
     kind: Implementation
     display_name: Signed Lateral Shift Python Implementation
@@ -944,6 +982,59 @@ runtime_bindings:
       minimum_duration_seconds: minimum_duration_seconds
       maximum_support_distance_m: maximum_support_distance_m
       minimum_supporting_players: minimum_supporting_players
+
+  - id: binding.relation.local_number_relation.0_1_0
+    kind: RuntimeBinding
+    display_name: local_number_relation runtime binding
+    description: Canonical runtime binding for local_number_relation 0.1.0.
+    runtime_capability: {id: local_number_relation, version: 0.1.0, kind: relation}
+    implementation_ref: impl.local_number_relation.python.v1
+    implements: [op.observed_local_number_relation.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Uses observed outfield tracking at a declared frame and does not prove pressure, tactical role, or support quality.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      observed_perspective_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.outfield_positions}
+      observed_defending_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      local_number_status: {runtime_port: local_number_status}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: controlled_reception_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+      - name: radius_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 10.0, unit: metre}
+        minimum: 0.5
+        maximum: 40.0
+      - name: minimum_difference
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 1, unit: count}
+        minimum: -10.0
+        maximum: 10.0
+      - name: minimum_perspective_players
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 0, unit: count}
+        minimum: 0.0
+        maximum: 11.0
+      - name: maximum_defending_players
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 99, unit: count}
+        minimum: 0.0
+        maximum: 99.0
+    parameter_bindings:
+      frame_field: frame_field
+      radius_m: radius_m
+      minimum_difference: minimum_difference
+      minimum_perspective_players: minimum_perspective_players
+      maximum_defending_players: maximum_defending_players
 
   - id: binding.primitive.signed_lateral_shift.0_1_0
     kind: RuntimeBinding
@@ -1372,6 +1463,13 @@ claim_contracts:
     permitted: [observed_candidate_entered_declared_support_region, declared_support_timing_requirement_evaluated]
     prohibited: [player_intent_inferred, support_quality_inferred, tactical_role_identified, communication_inferred, scanning_inferred, pass_was_optimal, pass_probability_inferred, line_break_caused_support]
     unknown_conditions: [anchor_frame_missing, reference_point_missing, observed_candidate_positions_missing, invalid_or_missing_candidate_coordinates, timing_coverage_incomplete]
+  - id: claim.observed_local_number_relation.v1
+    kind: ClaimContract
+    display_name: Observed Local Number Claims
+    description: Claims permitted for observed local player-count relations.
+    permitted: [observed_players_counted_in_declared_local_region, declared_local_number_requirement_evaluated]
+    prohibited: [pressure_inferred, tactical_role_identified, support_quality_inferred, player_intent_inferred, communication_inferred, scanning_inferred, line_break_caused_by_pass, pass_was_optimal, pass_probability_inferred]
+    unknown_conditions: [anchor_frame_missing, reference_point_missing, observed_player_positions_missing, invalid_or_missing_player_coordinates, duplicate_player_position_records]
   - id: claim.defensive_block_lateral_shift.v1
     kind: ClaimContract
     display_name: Defensive Block Lateral Shift Claims
@@ -1509,6 +1607,13 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, support_arrival_status, support_arrival_reason, support_anchor_frame_id, support_window_start_frame_id, support_window_end_frame_id, support_region_mode, maximum_arrival_seconds, minimum_duration_seconds, maximum_support_distance_m, minimum_supporting_players, candidate_player_ids, evaluated_candidate_player_ids, supporting_player_ids, coverage_status, reference_point]
     optional: [first_arrival_frame_id, first_arrival_seconds_after_anchor, support_duration_seconds, per_player_evidence, missing_candidate_player_ids, invalid_candidate_player_ids, missing_frame_ids, invalid_frame_ids]
     replay_projection: [reference_marker, candidate_player_markers, support_radius, arrival_window, supporting_player_badge]
+  - id: evidence.observed_local_number_relation.v1
+    kind: EvidenceContract
+    display_name: Observed Local Number Evidence
+    description: Evidence required for observed local player-count measurements.
+    required: [anchor_id, anchor_frame_id, local_number_status, local_number_reason, local_number_frame_id, reference_point, radius_m, minimum_difference, minimum_perspective_players, maximum_defending_players, perspective_count, defending_count, local_number_difference, perspective_in_region_player_ids, defending_in_region_player_ids, coverage_status]
+    optional: [perspective_player_ids, defending_player_ids, evaluated_perspective_player_ids, evaluated_defending_player_ids, missing_perspective_player_ids, missing_defending_player_ids, invalid_coordinate_player_ids, per_player_evidence]
+    replay_projection: [reference_marker, local_radius, perspective_player_markers, defending_player_markers, local_number_badge]
   - id: evidence.defensive_block_lateral_shift.v1
     kind: EvidenceContract
     display_name: Defensive Block Lateral Shift Evidence
@@ -1638,6 +1743,13 @@ exposure_policies:
     display_name: support_arrival_relation exposure
     description: Exposure policy for support_arrival_relation.
     subject_ref: runtime:relation:support_arrival_relation:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.local_number_relation.0_1_0
+    kind: ExposurePolicy
+    display_name: local_number_relation exposure
+    description: Exposure policy for local_number_relation.
+    subject_ref: runtime:relation:local_number_relation:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
   - id: exposure.runtime.signed_lateral_shift.0_1_0
@@ -1897,6 +2009,16 @@ maturity_assessments:
     display_name: support_arrival_relation maturity
     description: Maturity assessment for support_arrival_relation.
     subject_ref: runtime:relation:support_arrival_relation:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.local_number_relation.0_1_0
+    kind: MaturityAssessment
+    display_name: local_number_relation maturity
+    description: Maturity assessment for local_number_relation.
+    subject_ref: runtime:relation:local_number_relation:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

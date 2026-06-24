@@ -51,8 +51,8 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         registry, runtime_manifest, lock, report = generate_scp0_artifacts(write=False)
 
         self.assertEqual("PASS", report.status)
-        self.assertEqual(16, report.runtime_capabilities["bound"])
-        self.assertEqual(24, report.runtime_capabilities["including_operators_total"])
+        self.assertEqual(17, report.runtime_capabilities["bound"])
+        self.assertEqual(25, report.runtime_capabilities["including_operators_total"])
         self.assertEqual(8, report.operators["semantically_defined"])
         self.assertEqual(4, report.recipes["mapped"])
         self.assertEqual(1, report.validated_compositions["mapped"])
@@ -250,7 +250,7 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         differences = scpgen.build_projection_differences(runtime_manifest, projections)
 
         self.assertEqual([], differences["product"]["contract_changed"])
-        self.assertEqual(20, differences["product"]["shared_count"])
+        self.assertEqual(21, differences["product"]["shared_count"])
 
     def test_unapproved_baseline_add_remove_or_contract_change_fails(self) -> None:
         registry = load_registry()
@@ -951,6 +951,10 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
             "runtime:relation:support_arrival_relation:0.1.0",
             {item["subject_ref"] for item in passport_projection["passports"]},
         )
+        self.assertIn(
+            "runtime:relation:local_number_relation:0.1.0",
+            {item["subject_ref"] for item in passport_projection["passports"]},
+        )
 
     def test_pilot_passports_include_claim_limits_replay_evidence_and_deviations(self) -> None:
         registry = load_registry()
@@ -981,6 +985,9 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         )
         support_arrival = passport_by_subject(
             passport_projection, "runtime:relation:support_arrival_relation:0.1.0"
+        )
+        local_number = passport_by_subject(
+            passport_projection, "runtime:relation:local_number_relation:0.1.0"
         )
 
         self.assertIn(
@@ -1066,6 +1073,25 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         self.assertIn("communication_inferred", support_arrival_prohibited)
         self.assertIn("pass_was_optimal", support_arrival_prohibited)
         self.assertIn("support_radius", support_arrival_replay)
+        local_number_prohibited = {
+            item
+            for contract in local_number["claim_contracts"]
+            for item in contract["prohibited"]
+        }
+        local_number_replay = {
+            item
+            for contract in local_number["evidence_contracts"]
+            for item in contract["replay_projection"]
+        }
+        self.assertIn("pressure_inferred", local_number_prohibited)
+        self.assertIn("tactical_role_identified", local_number_prohibited)
+        self.assertIn("support_quality_inferred", local_number_prohibited)
+        self.assertIn("player_intent_inferred", local_number_prohibited)
+        self.assertIn("line_break_caused_by_pass", local_number_prohibited)
+        self.assertIn("pass_was_optimal", local_number_prohibited)
+        self.assertIn("pass_probability_inferred", local_number_prohibited)
+        self.assertIn("local_radius", local_number_replay)
+        self.assertIn("local_number_badge", local_number_replay)
         self.assertEqual("PARTIAL", controlled_pass["binding"]["conformance"])
         self.assertTrue(controlled_pass["binding"]["known_deviations"])
         self.assertEqual("PARTIAL", bypass["binding"]["conformance"])
@@ -1080,6 +1106,8 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         self.assertTrue(lane_occupancy["binding"]["known_deviations"])
         self.assertEqual("PARTIAL", support_arrival["binding"]["conformance"])
         self.assertTrue(support_arrival["binding"]["known_deviations"])
+        self.assertEqual("PARTIAL", local_number["binding"]["conformance"])
+        self.assertTrue(local_number["binding"]["known_deviations"])
 
     def test_passport_projection_changes_when_source_contract_changes(self) -> None:
         registry = load_registry()
