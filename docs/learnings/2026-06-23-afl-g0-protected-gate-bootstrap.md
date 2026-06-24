@@ -51,3 +51,20 @@ Implement the real protected boundary: separate CI or equivalent non-builder
 authority, hidden canaries, candidate-packet generation, and signed promotion
 certificates. Until then, AFL-G0 is an engineering scaffold, not an accepted
 protected gate.
+
+## Update: Local Candidate Gate
+
+The local gate now does more than validate the milestone contract. It builds an
+SCP-0E.1 candidate packet, runs public verification, runs public canaries,
+generates a gate result, and emits a promotion-certificate artifact.
+
+The correct local outcome is still `BLOCKED`, not `PROMOTED`:
+
+- public verification passed;
+- public canaries passed;
+- no protected CI identity was present;
+- no protected suite hash was present;
+- no signing key was present.
+
+This is the desired integrity behavior. The gate mechanics are implemented; the
+promotion authority is still external.

@@ -1,0 +1,10 @@
+{
+  "details": {
+    "limitation": "No hidden protected holdout suite is available in this workspace.",
+    "promotion_effect": "Protected promotion must remain BLOCKED."
+  },
+  "generated_at": "2026-06-24T04:17:24Z",
+  "report_type": "protected_holdout",
+  "schema_version": "1.0",
+  "status": "NOT_AVAILABLE_SELF_VERIFIED"
+}
