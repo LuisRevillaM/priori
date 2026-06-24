@@ -1,0 +1,278 @@
+program:
+  id: priori-autonomous-football-language
+  version: 1.0.0
+  north_star: >
+    Compile previously unseen natural-language football ideas into typed,
+    evidence-carrying tactical programs; execute them where supported; otherwise
+    return the smallest precise semantic, operationalization, modality,
+    identifiability, or validation gap.
+
+authority:
+  builder_may_modify:
+    - implementation
+    - public_tests
+    - documentation
+    - candidate_registry_entries
+  builder_may_not_modify:
+    - protected_milestone_contracts
+    - protected_holdouts
+    - protected_mutations
+    - promotion_policy
+    - trusted_gate
+    - hidden_scoring_policy
+  promotion_authority: protected_gate
+
+support_dimensions:
+  - EXPRESSIBLE
+  - COMPILABLE
+  - EXECUTABLE
+  - IDENTIFIABLE
+  - VALIDATED
+
+compiler_outcomes:
+  - COMPILED
+  - COMPILED_WITH_DISCLOSED_PROFILE
+  - CLARIFICATION_REQUIRED
+  - CAPABILITY_GAP
+  - MODALITY_GAP
+  - NON_IDENTIFIABLE
+  - VALIDATION_GAP
+
+global_hard_gates:
+  critical_safety_violations: 0
+  undeclared_runtime_dependencies: 0
+  evidence_reference_violations: 0
+  stale_waivers: 0
+  broad_subject_only_waivers: 0
+  deterministic_reproduction_failures: 0
+  protected_mutants_survived: 0
+
+anti_gaming:
+  fixed_denominators: true
+  hidden_systematic_holdouts: true
+  closed_book_recipe_free_mode: true
+  mutation_testing: true
+  metamorphic_testing: true
+  differential_testing: true
+  exact_hash_pinned_waivers: true
+  no_self_promotion: true
+  no_unknown_as_false: true
+  no_false_gap_credit: true
+  no_unnecessary_clarification_credit: true
+
+milestones:
+  - id: M0
+    name: Autonomous Verification Kernel and SCP-0 Closure
+    depends_on: []
+    deliverables:
+      - exact_signature_conformance
+      - typed_runtime_context_manifest
+      - protected_gate_runner
+      - protected_mutation_suite
+      - immutable_review_packet
+    pass:
+      - all_current_runtime_bindings_resolve
+      - exact_is_symmetric
+      - only_explicit_any_is_wildcard
+      - unknown_context_fails
+      - failed_generation_does_not_publish
+      - all_critical_mutants_killed
+
+  - id: M1
+    name: Semantic Expression Kernel
+    depends_on: [M0]
+    deliverables:
+      - semantic_expression_ast
+      - football_query_normal_form
+      - typed_gap_nodes
+      - reference_interpreter
+    pass:
+      generated_valid_programs: 100000
+      valid_program_crashes: 0
+      protected_invalid_program_accepts: 0
+      nondeterministic_hashes: 0
+      critical_mutants_survived: 0
+
+  - id: M2
+    name: Translation-Validated Compilation
+    depends_on: [M1]
+    deliverables:
+      - compiler_to_tactical_query_document
+      - per_compilation_certificate
+      - differential_harness
+    pilots:
+      - high_bypass_completed_pass
+      - ball_side_block_shift
+    pass:
+      current_recipe_parity: 1.0
+      protected_world_agreement: 1.0
+      undeclared_target_nodes: 0
+      evidence_loss_cases: 0
+
+  - id: M3
+    name: Football Program Corpus and Generality Harness
+    depends_on: [M1]
+    deliverables:
+      - frozen_corpus
+      - systematic_splits
+      - synthetic_worlds
+      - protected_holdouts
+    recommended_minimums:
+      canonical_intents: 1500
+      paraphrases_per_intent: 3
+      intents_per_major_family: 100
+      novel_cross_family_fraction: 0.25
+      reconstructed_anchor_fraction: 0.15
+      negative_claim_fraction: 0.15
+      clarification_fraction: 0.15
+      gap_fraction: 0.15
+
+  - id: M4
+    name: Natural-Language Compiler v1
+    depends_on: [M2, M3]
+    deliverables:
+      - nl_to_fqnf
+      - fqnf_to_semantic_expression
+      - ambiguity_detector
+      - minimal_gap_resolver
+      - closed_book_mode
+    recommended_targets:
+      emitted_program_type_safety: 1.0
+      semantic_equivalence: 0.90
+      outcome_class_accuracy: 0.90
+      exact_minimal_gap: 0.85
+      clarification_precision: 0.90
+      clarification_recall: 0.90
+      max_open_closed_book_gap: 0.10
+
+  - id: M5
+    name: World-State Reconstruction and Derived Events
+    depends_on: [M2]
+    forcing_cases:
+      - goal_kick
+      - corner
+      - throw_in
+      - kick_off
+      - free_kick_like_restart
+    required_basis:
+      - ball_in_play_state
+      - dead_ball_interval
+      - touch_candidate
+      - control_candidate
+      - physical_release
+      - physical_reception
+      - boundary_crossing
+      - last_touch_candidate
+      - restart_setup_candidate
+      - restart_taken_candidate
+      - same_possession_continuity
+
+  - id: M6
+    name: General Spatiotemporal Algebra
+    depends_on: [M2]
+    required_properties:
+      - pitch_reflection_invariance
+      - team_perspective_invariance
+      - time_translation_invariance
+      - entity_renaming_invariance
+      - resampling_stability
+      - threshold_monotonicity
+      - evidence_propagation
+
+  - id: M7
+    name: Collective Football Basis
+    depends_on: [M5, M6]
+    families:
+      - team_shape
+      - units_and_lines
+      - pressure_and_reachability
+      - support_and_accessibility
+      - space_and_occupation
+      - transitions_and_rest_defense
+
+  - id: M8
+    name: Standard Library Expansion and Atlas Closure
+    depends_on: [M7]
+    allowed_dispositions:
+      - REDUCIBLE
+      - PROFILE_VARIANT
+      - ALIAS
+      - NEW_OPERATOR_REQUIRED
+      - NEW_OPERATIONALIZATION_REQUIRED
+      - MODEL_REQUIRED
+      - NEW_MODALITY_REQUIRED
+      - NON_IDENTIFIABLE
+      - REJECTED
+    pass:
+      unclassified_atlas_entries: 0
+      atlas_leakage_to_product: 0
+      atlas_leakage_to_agent: 0
+
+  - id: M9
+    name: Validation Factory and Proof-Carrying Results
+    depends_on: [M7]
+    result_obligations:
+      - witness_for_pass
+      - complete_domain_for_fail
+      - unmet_premises_for_unknown
+      - preserved_conflict_evidence
+      - derivation_based_replay
+      - negative_claim_coverage_certificate
+
+  - id: M10
+    name: Natural-Language Compiler v2 and Open-World Generality
+    depends_on: [M8, M9]
+    recommended_targets:
+      safe_type_valid_outcomes: 0.95
+      semantic_equivalence: 0.92
+      recipe_free_systematic_composition: 0.90
+      gap_and_clarification_accuracy: 0.95
+      exact_minimal_gap: 0.90
+      paraphrase_consistency: 0.95
+      synthetic_execution_equivalence: 1.0
+      critical_evidence_violations: 0
+
+  - id: M11
+    name: Product Integration and Reliability
+    depends_on: [M10]
+    pass:
+      agent_direct_execution_paths: 0
+      raw_code_or_sql_access_paths: 0
+      unvalidated_product_exposure: 0
+      result_without_semantic_lock: 0
+      rollback_test_failures: 0
+
+  - id: M12
+    name: North Star Audit
+    depends_on: [M11]
+    hard_pass:
+      critical_safety_violations: 0
+      type_unit_frame_violations: 0
+      undeclared_runtime_dependencies: 0
+      evidence_reference_violations: 0
+      stale_or_broad_waivers: 0
+      deterministic_reproduction: 1.0
+      protected_synthetic_runtime_agreement: 1.0
+      current_recipe_parity: 1.0
+      unsupported_atlas_isolation: 1.0
+
+review_packet:
+  required:
+    - milestone-claim.json
+    - gate-result.json
+    - registry.lock
+    - source-tree.hash
+    - runtime-manifest.json
+    - semantic-diff.json
+    - test-denominators.json
+    - public-test-report.json
+    - protected-holdout-report.json
+    - property-test-report.json
+    - metamorphic-report.json
+    - differential-report.json
+    - mutation-report.json
+    - performance-report.json
+    - known-limitations.yaml
+    - waivers.yaml
+    - reproduction.md
+    - artifacts.sha256
