@@ -166,3 +166,32 @@ the weaker guarantee rather than borrowing stronger parity language.
 
 **Follow-up:** Generate the SCP-0E closure-patch packet. If external review
 accepts it, begin SCP-1 immediately with the existing-runtime compiler pilot.
+
+## 2026-06-23 - SCP-0E.1 Exact Symmetry Closure
+
+**Fact:** External review of the SCP-0E closure patch found one remaining
+false-`EXACT` path: deleting runtime metadata or omitting semantic metadata
+could make cardinality, entity-scope, or coordinate-frame checks disappear.
+Exact bindings also did not require optional semantic inputs and outputs to be
+bound.
+
+**Decision:** Treat exact mode as symmetric. Only explicit semantic `any` is a
+wildcard. Under exact conformance, concrete semantic metadata plus missing
+runtime metadata fails, and missing semantic metadata plus concrete runtime
+metadata also fails. Exact semantic optional inputs and outputs must be bound.
+The original geometric progressive corridor operationalization now declares its
+anchors as possession-scoped, matching the exact runtime binding; the generic
+anchor-set corridor remains the separate anchor-scoped variant.
+
+**Learning:** Missing metadata is not neutral when a binding claims exactness.
+In exact mode, omission is either an explicit wildcard or a failed contract.
+This keeps `EXACT` from becoming a reward-hackable label that can be restored by
+deleting inconvenient facts.
+
+**Evidence:** `make scp-0-verify` with 52 focused adversarial tests OK;
+`make test` with 134 repository tests OK and attestation VERIFIED;
+`generated/semantic-registry/semantic-parity-report.json`;
+`semantic-registry/registry.lock.json`.
+
+**Follow-up:** Generate the SCP-0E.1 exact-symmetry review packet. If external
+review accepts it, SCP-1 can start without another SCP-0 architecture cycle.

@@ -19,7 +19,7 @@ from tqe.semantic_registry.generate import (
     validate_registry,
 )
 from tqe.semantic_registry.models import AuthoringExposure, MaturityLevel
-from tqe.semantic_registry.models import RuntimeInputBinding
+from tqe.semantic_registry.models import RuntimeInputBinding, TypeRef, TypedField
 
 
 def finding_codes(findings) -> set[str]:
@@ -575,6 +575,77 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         self.assertIn("cardinality single != collection", messages)
         self.assertIn("entity_scope team != player", messages)
         self.assertIn("required True != False", messages)
+
+    def test_exact_missing_runtime_metadata_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        signed_shift = runtime_capability(
+            runtime_manifest, kind="primitive", name="signed_lateral_shift"
+        )
+        del signed_shift["outputs"][0]["cardinality"]
+        del signed_shift["inputs"][2]["entity_scope"]
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        findings = validate_registry(registry, runtime_manifest, lock)
+        messages = "\n".join(finding.message for finding in findings)
+
+        self.assertIn("runtime_signature_mismatch", finding_codes(findings))
+        self.assertIn("cardinality single != None", messages)
+        self.assertIn("entity_scope team != None", messages)
+
+    def test_exact_missing_runtime_context_metadata_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        context = next(
+            item
+            for item in runtime_manifest["runtime_contexts"]
+            if item["name"] == "canonical_match_state.ball_position"
+        )
+        del context["coordinate_frame"]
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        findings = validate_registry(registry, runtime_manifest, lock)
+        messages = "\n".join(finding.message for finding in findings)
+
+        self.assertIn("runtime_context_signature_mismatch", finding_codes(findings))
+        self.assertIn("coordinate_frame pitch_absolute != None", messages)
+
+    def test_exact_unbound_optional_semantic_ports_fail(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        op = next(
+            item
+            for item in registry.operationalizations
+            if item.id == "op.ball_lateral_fraction.v1"
+        )
+        op.inputs.append(
+            TypedField(
+                name="optional_extra_input",
+                type=TypeRef(container="FrameSignal", value="Scalar", unit="none"),
+                required=False,
+            )
+        )
+        op.outputs.append(
+            TypedField(
+                name="optional_extra_output",
+                type=TypeRef(container="FrameSignal", value="Scalar", unit="none"),
+                required=False,
+            )
+        )
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        findings = validate_registry(registry, runtime_manifest, lock)
+        messages = "\n".join(finding.message for finding in findings)
+
+        self.assertIn("runtime_signature_mismatch", finding_codes(findings))
+        self.assertIn(
+            "semantic input optional_extra_input is required by exact conformance",
+            messages,
+        )
+        self.assertIn(
+            "semantic output optional_extra_output is required by exact conformance",
+            messages,
+        )
 
     def test_exact_parameter_bounds_default_and_allowed_value_drift_fail(self) -> None:
         registry = load_registry()

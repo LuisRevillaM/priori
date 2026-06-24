@@ -98,6 +98,23 @@ SCP-0 covers four implementation slices:
 - Apply projection-policy filtering to AI operators and unsupported projection
   items.
 
+### SCP-0E.1 - Exact Symmetry Closure
+
+- Make `EXACT` conformance symmetric for metadata-bearing type dimensions:
+  cardinality, entity scope, and coordinate frame.
+- Treat only explicit semantic `any` as a wildcard.
+- Fail exact validation when the semantic side is concrete and the runtime side
+  omits the corresponding metadata.
+- Fail exact validation when the semantic side omits metadata and the runtime
+  side is concrete.
+- Require every semantic input and output to be bound under exact conformance,
+  including optional semantic ports.
+- Keep partial and legacy conformance behavior scoped to explicit mappings and
+  uncovered declarations.
+- Declare the original geometric progressive corridor input as
+  possession-scoped; keep the anchor-set corridor as the generic anchor-scoped
+  variant.
+
 ## Non-Goals
 
 SCP-0 must not add:
@@ -313,6 +330,16 @@ SCP-0 passes only if:
     implied by registry prose.
 56. Per-team semantic signal cardinality is explicit where exact runtime
     bindings depend on it.
+57. Exact metadata validation fails when runtime cardinality, entity scope, or
+    coordinate frame is deleted while the semantic side remains concrete.
+58. Exact metadata validation fails when semantic cardinality, entity scope, or
+    coordinate frame is omitted while the runtime side is concrete, unless the
+    semantic side explicitly declares `any`.
+59. Exact bindings cannot silently omit optional semantic inputs or optional
+    semantic outputs.
+60. The original `geometric_progressive_corridor` operationalization declares
+    possession-scoped anchors, while the anchor-set variant remains the generic
+    anchor-scoped corridor capability.
 
 ## Side Effects
 

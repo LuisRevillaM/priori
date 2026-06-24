@@ -275,7 +275,7 @@ operationalizations:
     applicability: [anchor_available, attacking_teammates_available, defending_outfield_available]
     inputs:
       - name: anchors
-        type: {container: FrameSignal, value: Enum, quantity: anchor, unit: none}
+        type: {container: FrameSignal, value: Enum, quantity: anchor, unit: none, entity_scope: possession}
     outputs:
       - name: episodes
         type: {container: RelationEpisodeSet, value: RelationRef, quantity: progressive_corridor, unit: none, entity_scope: relation}
