@@ -1,6 +1,6 @@
 {
-  "passport_count": 17,
-  "passport_revision": "13f540dec2de98c634bc29017660c580fa782d816b095ca44fd95f470a059fa5",
+  "passport_count": 20,
+  "passport_revision": "1853aad46248ecd09c7d432dee3f4b025c43065968592034fcda4873446b6fc0",
   "passports": [
     {
       "binding": {
@@ -1467,7 +1467,10 @@
             "allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
-              "controlled_reception_frame_id"
+              "controlled_reception_frame_id",
+              "input_physical_release_frame_id",
+              "relay_touch_frame_id",
+              "relay_physical_release_frame_id"
             ],
             "default": {
               "payload_type": "enum",
@@ -1742,7 +1745,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "d4e899d8a0f19d01448de75a1e6ef9833e77bb6aa3950d9f04b51b013cc78e17",
+      "passport_hash": "0584cc0e99c636fe86253d71d75afa1f2a4c4d7d194b8d437d759e6c810d7369",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -1876,7 +1879,10 @@
             "allowed_values": [
               "anchor_frame_id",
               "physical_release_frame_id",
-              "controlled_reception_frame_id"
+              "controlled_reception_frame_id",
+              "input_physical_release_frame_id",
+              "relay_touch_frame_id",
+              "relay_physical_release_frame_id"
             ],
             "default": {
               "payload_type": "enum",
@@ -2640,6 +2646,508 @@
     },
     {
       "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.one_touch_relay_episode.0_1_0",
+        "input_bindings": {
+          "provider_event_stream": {
+            "context_ref": "provider_event_stream.completed_pass_events",
+            "source": "RUNTIME_CONTEXT"
+          },
+          "tracking_window": {
+            "context_ref": "canonical_tracking_window",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "v0.1 requires adjacent provider pass-event linkage and does not model tracking-only redirection candidates."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "one_touch_relay_status": {
+            "runtime_port": "one_touch_relay_status"
+          }
+        },
+        "parameter_bindings": {
+          "maximum_relay_dwell_seconds": "maximum_relay_dwell_seconds",
+          "relay_max_event_gap_seconds": "relay_max_event_gap_seconds",
+          "relay_touch_distance_m": "relay_touch_distance_m"
+        },
+        "semantic_parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 3.0
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 0.1,
+            "name": "relay_max_event_gap_seconds",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 2.75
+            },
+            "description": "",
+            "maximum": 8.0,
+            "minimum": 0.1,
+            "name": "relay_touch_distance_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.56
+            },
+            "description": "",
+            "maximum": 2.0,
+            "minimum": 0.04,
+            "name": "maximum_relay_dwell_seconds",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Scalar"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [
+          "episodes"
+        ],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.one_touch_relay.v1",
+          "inherits": [
+            "claim.controlled_ball_transfer.v1"
+          ],
+          "permitted": [
+            "event_candidate_pass_identified",
+            "event_linked_first_time_relay_observed_under_declared_thresholds",
+            "tracking_confirmed_controlled_reception",
+            "tracking_confirmed_physical_release"
+          ],
+          "prohibited": [
+            "decision_quality_inferred",
+            "pass_crossed_line_claimed",
+            "pass_probability_inferred",
+            "pass_was_optimal",
+            "planned_combination_inferred",
+            "player_intent_inferred",
+            "proves_pass_optimality",
+            "proves_pass_probability",
+            "proves_passer_intent",
+            "third_man_combination_claimed"
+          ],
+          "unknown_conditions": [
+            "controlled_reception_unresolved",
+            "event_linkage_missing",
+            "input_release_unknown",
+            "physical_release_unresolved",
+            "possession_continuity_unresolved",
+            "relay_release_unknown",
+            "relay_touch_tracking_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.one_touch_relay.v1",
+          "created_from": [],
+          "description": "Event-linked first-time relay where the input receiver immediately plays an onward completed pass under declared tracking thresholds.",
+          "display_name": "One-Touch Relay",
+          "evidence_contract_ref": "evidence.one_touch_relay.v1",
+          "id": "concept.one_touch_relay",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "pass",
+            "relay",
+            "event_tracking_alignment"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for one_touch_relay_episode 0.1.0.",
+      "display_name": "one_touch_relay_episode runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.one_touch_relay.v1",
+          "inherits": [],
+          "optional": [
+            "input_event_row_index",
+            "relay_event_gap_seconds",
+            "relay_event_row_index",
+            "relay_release_ball_point",
+            "relay_release_player_point",
+            "relay_touch_ball_point",
+            "relay_touch_player_point"
+          ],
+          "replay_projection": [
+            "input_release_frame",
+            "onward_recipient_marker",
+            "passer_marker",
+            "relay_marker",
+            "relay_release_frame",
+            "relay_touch_frame"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "declared_next_pass_recipient_id",
+            "input_pass_episode_id",
+            "input_passer_id",
+            "input_physical_release_frame_id",
+            "one_touch_relay_reason",
+            "one_touch_relay_status",
+            "relay_dwell_seconds",
+            "relay_pass_episode_id",
+            "relay_physical_release_frame_id",
+            "relay_player_id",
+            "relay_touch_frame_id"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for one_touch_relay_episode.",
+        "display_name": "one_touch_relay_episode exposure",
+        "id": "exposure.runtime.one_touch_relay_episode.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:one_touch_relay_episode:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current event-linked one-touch relay implementation.",
+        "display_name": "One-Touch Relay Episode Python Implementation",
+        "id": "impl.one_touch_relay_episode.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.event_linked_one_touch_relay.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/one_touch.py",
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for one_touch_relay_episode.",
+        "display_name": "one_touch_relay_episode maturity",
+        "id": "maturity.runtime.one_touch_relay_episode.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:one_touch_relay_episode:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "adjacent_completed_pass_events",
+            "recipient_is_next_passer",
+            "tracking_available_around_relay"
+          ],
+          "claim_contract_ref": "claim.one_touch_relay.v1",
+          "concept_refs": [
+            "concept.one_touch_relay"
+          ],
+          "created_from": [],
+          "description": "Use adjacent provider pass events and tracking evidence to identify a bounded first-time relay.",
+          "display_name": "Event-Linked One-Touch Relay",
+          "evidence_contract_ref": "evidence.one_touch_relay.v1",
+          "id": "op.event_linked_one_touch_relay.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "provider_event_stream",
+              "required": true,
+              "type": {
+                "container": "EventSet",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "ProviderEvent"
+              }
+            },
+            {
+              "description": "",
+              "name": "tracking_window",
+              "required": true,
+              "type": {
+                "container": "TrajectorySet",
+                "coordinate_frame": "pitch_absolute",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Position"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "event_linkage",
+            "physical_input_release",
+            "relay_touch_detection",
+            "relay_release_detection",
+            "dwell_threshold"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "one_touch_relay_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "one_touch_relay_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "one_touch_relay_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "events",
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "INFERRED_CANDIDATE",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "451a8e5cbd0dbabf21988938cfa41c9366c02a6ebf77225f7b6cf15a4d60cfcd",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "one_touch_relay_episode",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "input_pass_episode_id",
+          "relay_pass_episode_id",
+          "input_passer_id",
+          "relay_player_id",
+          "declared_next_pass_recipient_id",
+          "input_physical_release_frame_id",
+          "relay_touch_frame_id",
+          "relay_physical_release_frame_id",
+          "relay_dwell_seconds",
+          "one_touch_relay_status",
+          "one_touch_relay_reason"
+        ],
+        "executable": true,
+        "inputs": [],
+        "kind": "primitive",
+        "limitations": [
+          "Requires provider event linkage for v0.1; tracking-only redirection candidates are not modeled.",
+          "Claims only observed first-time relay under declared thresholds.",
+          "Does not infer tactical intention, third-man combination, pass optimality, or decision quality."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "one_touch_relay_episode",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "input_pass_episode_id",
+              "relay_pass_episode_id",
+              "input_passer_id",
+              "relay_player_id",
+              "declared_next_pass_recipient_id",
+              "input_physical_release_frame_id",
+              "relay_touch_frame_id",
+              "relay_physical_release_frame_id",
+              "relay_dwell_seconds",
+              "one_touch_relay_status",
+              "one_touch_relay_reason",
+              "relay_touch_ball_point",
+              "relay_touch_player_point"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "input_pass_episode_id",
+              "relay_pass_episode_id",
+              "relay_player_id",
+              "relay_touch_frame_id",
+              "relay_physical_release_frame_id",
+              "one_touch_relay_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "boolean",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "one_touch_relay_status",
+              "one_touch_relay_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "one_touch_relay_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 3.0
+            },
+            "description": "Maximum event-time gap from input pass event to relay pass event.",
+            "maximum": 10.0,
+            "minimum": 0.1,
+            "name": "relay_max_event_gap_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 2.75
+            },
+            "description": "Maximum ball-player distance for relay-touch evidence.",
+            "maximum": 8.0,
+            "minimum": 0.1,
+            "name": "relay_touch_distance_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.56
+            },
+            "description": "Maximum observed relay touch-to-release duration for one-touch status.",
+            "maximum": 2.0,
+            "minimum": 0.04,
+            "name": "maximum_relay_dwell_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          }
+        ],
+        "purpose": "Identify event-linked first-time relay candidates where a completed input pass is immediately followed by an onward completed pass by the input receiver, with tracking evidence for relay touch/release.",
+        "runtime_id": "primitive:one_touch_relay_episode:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:one_touch_relay_episode:0.1.0"
+    },
+    {
+      "binding": {
         "conformance": "LEGACY_APPROXIMATION",
         "id": "binding.primitive.outcome_classification.0_1_0",
         "input_bindings": {
@@ -2934,6 +3442,401 @@
     },
     {
       "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.pass_chain_episode.0_1_0",
+        "input_bindings": {
+          "relay_anchors": {
+            "runtime_port": "relay_anchors",
+            "source": "NODE_INPUT"
+          },
+          "terminal_controlled_pass_anchors": {
+            "runtime_port": "terminal_controlled_pass_anchors",
+            "source": "NODE_INPUT"
+          }
+        },
+        "known_deviations": [
+          "Joins relay and terminal controlled-pass records by pass episode id; does not model arbitrary chain graph search."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "pass_chain_status": {
+            "runtime_port": "pass_chain_status"
+          }
+        },
+        "parameter_bindings": {},
+        "semantic_parameters": [],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.pass_chain_episode.v1",
+          "inherits": [
+            "claim.controlled_ball_transfer.v1",
+            "claim.one_touch_relay.v1"
+          ],
+          "permitted": [
+            "event_candidate_pass_identified",
+            "event_linked_first_time_relay_observed_under_declared_thresholds",
+            "event_linked_relay_and_terminal_controlled_reception_observed",
+            "tracking_confirmed_controlled_reception",
+            "tracking_confirmed_physical_release"
+          ],
+          "prohibited": [
+            "decision_quality_inferred",
+            "pass_crossed_line_claimed",
+            "pass_probability_inferred",
+            "pass_was_optimal",
+            "planned_combination_inferred",
+            "player_intent_inferred",
+            "proves_pass_optimality",
+            "proves_pass_probability",
+            "proves_passer_intent",
+            "tactical_causation_inferred",
+            "third_man_combination_claimed"
+          ],
+          "unknown_conditions": [
+            "controlled_reception_unresolved",
+            "event_linkage_missing",
+            "input_release_unknown",
+            "physical_release_unresolved",
+            "possession_continuity_unresolved",
+            "relay_evidence_missing",
+            "relay_release_unknown",
+            "relay_touch_tracking_missing",
+            "terminal_controlled_pass_evidence_missing",
+            "terminal_reception_unknown"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.pass_chain_episode.v1",
+          "created_from": [],
+          "description": "A connected event-linked input pass, relay pass, and terminal controlled reception.",
+          "display_name": "Pass Chain Episode",
+          "evidence_contract_ref": "evidence.pass_chain_episode.v1",
+          "id": "concept.pass_chain_episode",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "pass",
+            "chain",
+            "relay",
+            "controlled_reception"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for pass_chain_episode 0.1.0.",
+      "display_name": "pass_chain_episode runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.pass_chain_episode.v1",
+          "inherits": [],
+          "optional": [
+            "terminal_controlled_pass_status",
+            "terminal_forward_progression_m",
+            "terminal_reception_ball_point",
+            "terminal_reception_receiver_point"
+          ],
+          "replay_projection": [
+            "chain_path",
+            "input_release_frame",
+            "relay_touch_frame",
+            "terminal_receiver_marker",
+            "terminal_reception_frame"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "declared_next_pass_recipient_id",
+            "input_pass_episode_id",
+            "pass_chain_reason",
+            "pass_chain_status",
+            "relay_pass_episode_id",
+            "relay_player_id",
+            "relay_touch_frame_id",
+            "terminal_controlled_reception_frame_id",
+            "terminal_pass_episode_id",
+            "terminal_receiver_id"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for pass_chain_episode.",
+        "display_name": "pass_chain_episode exposure",
+        "id": "exposure.runtime.pass_chain_episode.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:pass_chain_episode:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current event-linked relay plus terminal controlled reception implementation.",
+        "display_name": "Pass Chain Episode Python Implementation",
+        "id": "impl.pass_chain_episode.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.event_linked_pass_chain_episode.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/one_touch.py",
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for pass_chain_episode.",
+        "display_name": "pass_chain_episode maturity",
+        "id": "maturity.runtime.pass_chain_episode.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:pass_chain_episode:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "relay_anchor_available",
+            "terminal_controlled_pass_available"
+          ],
+          "claim_contract_ref": "claim.pass_chain_episode.v1",
+          "concept_refs": [
+            "concept.pass_chain_episode"
+          ],
+          "created_from": [],
+          "description": "Join an event-linked relay to terminal controlled reception of the onward pass.",
+          "display_name": "Event-Linked Pass Chain Episode",
+          "evidence_contract_ref": "evidence.pass_chain_episode.v1",
+          "id": "op.event_linked_pass_chain_episode.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "relay_anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "one_touch_relay_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "terminal_controlled_pass_anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "controlled_pass_anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "relay_pass_id_join",
+            "terminal_controlled_reception_check",
+            "chain_continuity_check"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "pass_chain_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "pass_chain_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "pass_chain_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "events",
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "INFERRED_CANDIDATE",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "e9fc876d954edb9e6dff9a5a01b09af6708a6afc4ee27d083d3b11426c5f9006",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "pass_chain_episode",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "pass_chain_status",
+          "pass_chain_reason",
+          "input_pass_episode_id",
+          "relay_pass_episode_id",
+          "terminal_pass_episode_id",
+          "relay_player_id",
+          "declared_next_pass_recipient_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "relay_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "terminal_controlled_pass_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Claims only connected event-linked receipt/relay/terminal controlled reception.",
+          "Does not infer planned combination, tactical intent, optimality, or pass probability."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "pass_chain_episode",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "pass_chain_status",
+              "pass_chain_reason",
+              "input_pass_episode_id",
+              "relay_pass_episode_id",
+              "terminal_pass_episode_id",
+              "relay_player_id",
+              "declared_next_pass_recipient_id",
+              "terminal_receiver_id",
+              "relay_touch_frame_id",
+              "terminal_controlled_reception_frame_id",
+              "terminal_forward_progression_m",
+              "terminal_controlled_pass_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "pass_chain_status",
+              "pass_chain_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "pass_chain_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Join an event-linked one-touch relay to a terminal controlled reception for the relay's onward pass.",
+        "runtime_id": "primitive:pass_chain_episode:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:pass_chain_episode:0.1.0"
+    },
+    {
+      "binding": {
         "conformance": "EXACT",
         "id": "binding.primitive.possession_segment.0_1_0",
         "input_bindings": {
@@ -3221,6 +4124,451 @@
       },
       "status": "CURRENT",
       "subject_ref": "runtime:primitive:possession_segment:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.receiver_line_transition_during_pass_leg.0_1_0",
+        "input_bindings": {
+          "line_evaluations": {
+            "runtime_port": "line_evaluations",
+            "source": "NODE_INPUT"
+          },
+          "relay_anchors": {
+            "runtime_port": "relay_anchors",
+            "source": "NODE_INPUT"
+          },
+          "relay_relative_positions": {
+            "runtime_port": "relay_relative_positions",
+            "source": "NODE_INPUT"
+          },
+          "release_relative_positions": {
+            "runtime_port": "release_relative_positions",
+            "source": "NODE_INPUT"
+          }
+        },
+        "known_deviations": [
+          "Uses anchor-record field selection for the relay actor and frames rather than a standalone semantic entity selector."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "receiver_line_transition_status": {
+            "runtime_port": "receiver_line_transition_status"
+          }
+        },
+        "parameter_bindings": {},
+        "semantic_parameters": [],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.receiver_line_transition_during_pass_leg.v1",
+          "inherits": [
+            "claim.observed_geometric_defensive_line.v1",
+            "claim.relative_position_to_observed_line.v1"
+          ],
+          "permitted": [
+            "entity_position_classified_relative_to_supplied_line_under_declared_buffer",
+            "no_qualifying_geometric_defensive_line_observed_when_evidence_complete",
+            "observed_geometric_defensive_line_fit_under_declared_thresholds",
+            "receiver_player_transitioned_beyond_supplied_observed_line"
+          ],
+          "prohibited": [
+            "decision_quality_inferred",
+            "defender_intent_inferred",
+            "defensive_line_was_broken",
+            "line_break_caused_by_pass",
+            "pass_crossed_line_claimed",
+            "pass_probability_inferred",
+            "pass_was_optimal",
+            "passer_intended_measured_outcome",
+            "player_intent_inferred",
+            "tactical_line_role_identified"
+          ],
+          "unknown_conditions": [
+            "ambiguous_candidate_lines",
+            "anchor_correlation_missing",
+            "attacking_direction_missing_or_invalid",
+            "ball_position_missing",
+            "defending_outfield_positions_incomplete",
+            "entity_position_missing",
+            "line_evidence_missing",
+            "line_position_missing",
+            "relay_evidence_missing",
+            "relay_relative_position_missing",
+            "release_relative_position_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.receiver_line_transition_during_pass_leg.v1",
+          "created_from": [],
+          "description": "The receiving or relay actor moves from not beyond to beyond a supplied observed line between input release and relay touch.",
+          "display_name": "Receiver Line Transition During Pass Leg",
+          "evidence_contract_ref": "evidence.receiver_line_transition_during_pass_leg.v1",
+          "id": "concept.receiver_line_transition_during_pass_leg",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "line",
+            "receiver",
+            "geometry",
+            "relay"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for receiver_line_transition_during_pass_leg 0.1.0.",
+      "display_name": "receiver_line_transition_during_pass_leg runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.receiver_line_transition_during_pass_leg.v1",
+          "inherits": [],
+          "optional": [
+            "line_anchor_frame_id",
+            "normalized_line_x_m",
+            "relay_signed_distance_to_line_m",
+            "release_signed_distance_to_line_m"
+          ],
+          "replay_projection": [
+            "input_release_frame",
+            "observed_line_marker",
+            "relay_marker",
+            "relay_touch_frame",
+            "transition_badge"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "input_physical_release_frame_id",
+            "line_x_m",
+            "receiver_line_transition_reason",
+            "receiver_line_transition_status",
+            "relay_player_id",
+            "relay_relative_position_status",
+            "relay_touch_frame_id",
+            "release_relative_position_status"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for receiver_line_transition_during_pass_leg.",
+        "display_name": "receiver_line_transition_during_pass_leg exposure",
+        "id": "exposure.runtime.receiver_line_transition_during_pass_leg.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current receiver/relay-player line-transition implementation.",
+        "display_name": "Receiver Line Transition During Pass Leg Python Implementation",
+        "id": "impl.receiver_line_transition_during_pass_leg.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.receiver_line_transition_during_pass_leg.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/one_touch.py",
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for receiver_line_transition_during_pass_leg.",
+        "display_name": "receiver_line_transition_during_pass_leg maturity",
+        "id": "maturity.runtime.receiver_line_transition_during_pass_leg.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "relay_anchor_available",
+            "observed_line_available",
+            "release_relative_position_available",
+            "relay_relative_position_available"
+          ],
+          "claim_contract_ref": "claim.receiver_line_transition_during_pass_leg.v1",
+          "concept_refs": [
+            "concept.receiver_line_transition_during_pass_leg"
+          ],
+          "created_from": [],
+          "description": "Evaluate whether a relay player moves from not beyond to beyond a supplied observed line between input release and relay touch.",
+          "display_name": "Receiver Line Transition During Pass Leg",
+          "evidence_contract_ref": "evidence.receiver_line_transition_during_pass_leg.v1",
+          "id": "op.receiver_line_transition_during_pass_leg.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "relay_anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "one_touch_relay_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "line_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "defensive_line_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "release_relative_positions",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "relative_position_to_line_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "relay_relative_positions",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "relative_position_to_line_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "exact_anchor_alignment",
+            "release_side_check",
+            "relay_touch_side_check",
+            "receiver_position_transition_classification"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "receiver_line_transition_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "receiver_line_transition_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "receiver_line_transition_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "b9ac912b6f3f8bd803a863576486103cf2c8799db7583366204093778d28845a",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "receiver_line_transition_during_pass_leg",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "receiver_line_transition_status",
+          "receiver_line_transition_reason",
+          "relay_player_id",
+          "input_physical_release_frame_id",
+          "relay_touch_frame_id",
+          "line_x_m",
+          "release_relative_position_status",
+          "relay_relative_position_status"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "relay_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "line_evaluations",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "release_relative_positions",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "relay_relative_positions",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Measures receiver/relay-player position transition, not ball trajectory through a line.",
+          "Does not prove a tactical defensive-line break, causation, intention, or decision quality."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "receiver_line_transition_during_pass_leg",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "receiver_line_transition_status",
+              "receiver_line_transition_reason",
+              "relay_player_id",
+              "input_physical_release_frame_id",
+              "relay_touch_frame_id",
+              "line_x_m",
+              "release_relative_position_status",
+              "release_signed_distance_to_line_m",
+              "relay_relative_position_status",
+              "relay_signed_distance_to_line_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "receiver_line_transition_status",
+              "receiver_line_transition_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "receiver_line_transition_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Evaluate whether the relay player moved from not beyond to beyond a supplied observed line between input-pass release and relay touch.",
+        "runtime_id": "primitive:receiver_line_transition_during_pass_leg:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0"
     },
     {
       "binding": {
@@ -4008,7 +5356,9 @@
           {
             "allowed_values": [
               "receiver_id",
-              "passer_id"
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
             ],
             "default": {
               "payload_type": "enum",
@@ -4030,7 +5380,11 @@
             "allowed_values": [
               "controlled_reception_frame_id",
               "physical_release_frame_id",
-              "anchor_frame_id"
+              "anchor_frame_id",
+              "input_physical_release_frame_id",
+              "relay_touch_frame_id",
+              "relay_physical_release_frame_id",
+              "terminal_controlled_reception_frame_id"
             ],
             "default": {
               "payload_type": "enum",
@@ -4322,7 +5676,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "9a0e13f36903bb2aa83ccb71df56a98129927bc92dd37ee374883bbc95a43e79",
+      "passport_hash": "f7f02decd406a494d4e56148a70e4143878be273b5f24f50187848171b7e9e34",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -4421,7 +5775,9 @@
           {
             "allowed_values": [
               "receiver_id",
-              "passer_id"
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
             ],
             "default": {
               "payload_type": "enum",
@@ -4438,7 +5794,11 @@
             "allowed_values": [
               "controlled_reception_frame_id",
               "physical_release_frame_id",
-              "anchor_frame_id"
+              "anchor_frame_id",
+              "input_physical_release_frame_id",
+              "relay_touch_frame_id",
+              "relay_physical_release_frame_id",
+              "terminal_controlled_reception_frame_id"
             ],
             "default": {
               "payload_type": "enum",
@@ -7722,13 +9082,13 @@
     "baseline_artifact_revision": "878510d6fb01403e67d2a1938133285a167aeff2e9eebcde7775bc5da161c534",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "c2bfa344e7dcfee23c74a991cb7e454046a13792591a5a93c9405aa80133215d",
-    "plan_artifact_revision": "5fa8a34cc392a4d6f360a60b5a735d4d831b9af1a60dea6bea61cff3403c63c8",
+    "lock_hash": "62cd5a9558fc62e0bac63d5cedf97f3b39a992726bd02840081912dcd0ed01ea",
+    "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "74ca5d21c4b7b58e961b664a1e8985ded3f3b1b6783f3af8fa5bbafc84673bc9",
+    "registry_revision": "2694a80981d8a73aa2e75c5dfc5d81c2b324b944ff86eab74d9e2b4eeb5c546a",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "d04013d25f77baa84bed938222f4beac972335f1cb36988a179f81d425793e77",
+    "runtime_manifest_revision": "4fc19cdda8b6ea6dfa617fee0a830857d017d923023eed357ad3e08e58381563",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

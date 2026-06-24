@@ -174,6 +174,88 @@
       "source_kind": "typed_plan",
       "valid_typed_plan": true
     },
+    "plan.first_time_relay_after_receiver_line_transition.v1": {
+      "artifact_id": "plan.first_time_relay_after_receiver_line_transition.v1",
+      "capability_dependencies": [
+        {
+          "kind": "primitive",
+          "name": "one_touch_relay_episode",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "defensive_line_model",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "relative_position_to_line",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "receiver_line_transition_during_pass_leg",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "controlled_pass_episode",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "pass_chain_episode",
+          "version": "0.1.0"
+        }
+      ],
+      "dependency_refs": [
+        "one_touch_relay_episode",
+        "defensive_line_model",
+        "relative_position_to_line",
+        "receiver_line_transition_during_pass_leg",
+        "controlled_pass_episode",
+        "pass_chain_episode",
+        "eq"
+      ],
+      "draft_status": "experimental",
+      "exists": true,
+      "normalized_plan_hash": "f04514bafe570fde620bec086dfab53e98070d7542538d17711b5dd9ab8cf723",
+      "normalized_selected_document_hash": "f04514bafe570fde620bec086dfab53e98070d7542538d17711b5dd9ab8cf723",
+      "operator_dependencies": [
+        {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      ],
+      "origin": "MANUAL_PRESET",
+      "parameter_defaults": {
+        "goal_side_buffer_m": 1.0,
+        "line_band_width_m": 2.0,
+        "line_buffer_m": 0.5,
+        "maximum_relay_dwell_seconds": 0.56,
+        "minimum_line_defenders": 4,
+        "relay_max_event_gap_seconds": 3.0,
+        "relay_touch_distance_m": 2.75
+      },
+      "path": "config/query-plans/first_time_relay_after_receiver_line_transition.experimental.v1.json",
+      "plan_id": "first_time_relay_after_receiver_line_transition",
+      "plan_version": "0.1.0",
+      "promotion_status": "EXPERIMENTAL_PRESET",
+      "recipe_id": "first_time_relay_after_receiver_line_transition_v1",
+      "recipe_version": "0.1.0",
+      "referenced_parameters": [
+        "goal_side_buffer_m",
+        "line_band_width_m",
+        "line_buffer_m",
+        "maximum_relay_dwell_seconds",
+        "minimum_line_defenders",
+        "relay_max_event_gap_seconds",
+        "relay_touch_distance_m"
+      ],
+      "source_artifact_sha256": "af52f539c8ef40c08f7300bf4af895e1d087be4c0c138c229be36e1780e5620d",
+      "source_kind": "typed_plan",
+      "valid_typed_plan": true
+    },
     "plan.high_bypass_completed_pass.v1": {
       "artifact_id": "plan.high_bypass_completed_pass.v1",
       "capability_dependencies": [
@@ -525,6 +607,6 @@
       "valid_typed_plan": true
     }
   },
-  "plan_artifact_revision": "5fa8a34cc392a4d6f360a60b5a735d4d831b9af1a60dea6bea61cff3403c63c8",
+  "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
   "schema_version": "1.0"
 }

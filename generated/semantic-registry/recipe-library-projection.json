@@ -577,21 +577,128 @@
       ],
       "subject_ref": "recipe:line_break_support_response_v1:0.1.0",
       "version": "0.1.0"
+    },
+    {
+      "claim_contract_ref": "claim.first_time_relay_after_receiver_line_transition.v1",
+      "concept_ref": "concept.first_time_relay_after_receiver_line_transition",
+      "dependencies": [
+        "one_touch_relay_episode",
+        "defensive_line_model",
+        "relative_position_to_line",
+        "receiver_line_transition_during_pass_leg",
+        "controlled_pass_episode",
+        "pass_chain_episode",
+        "eq"
+      ],
+      "dependency_bindings_verified": true,
+      "evidence_contract_ref": "evidence.first_time_relay_after_receiver_line_transition.v1",
+      "exact_typed_plan_ref": "config/query-plans/first_time_relay_after_receiver_line_transition.experimental.v1.json",
+      "id": "first_time_relay_after_receiver_line_transition_v1",
+      "mapping_id": "recipe.first_time_relay_after_receiver_line_transition.v1",
+      "plan_artifact_exists": true,
+      "plan_artifact_id": "plan.first_time_relay_after_receiver_line_transition.v1",
+      "plan_integrity": {
+        "artifact_id": "plan.first_time_relay_after_receiver_line_transition.v1",
+        "capability_dependencies": [
+          {
+            "kind": "primitive",
+            "name": "one_touch_relay_episode",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "defensive_line_model",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "relative_position_to_line",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "receiver_line_transition_during_pass_leg",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "controlled_pass_episode",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "pass_chain_episode",
+            "version": "0.1.0"
+          }
+        ],
+        "dependency_refs": [
+          "one_touch_relay_episode",
+          "defensive_line_model",
+          "relative_position_to_line",
+          "receiver_line_transition_during_pass_leg",
+          "controlled_pass_episode",
+          "pass_chain_episode",
+          "eq"
+        ],
+        "draft_status": "experimental",
+        "exists": true,
+        "normalized_plan_hash": "f04514bafe570fde620bec086dfab53e98070d7542538d17711b5dd9ab8cf723",
+        "normalized_selected_document_hash": "f04514bafe570fde620bec086dfab53e98070d7542538d17711b5dd9ab8cf723",
+        "operator_dependencies": [
+          {
+            "name": "eq",
+            "version": "1.0.0"
+          }
+        ],
+        "origin": "MANUAL_PRESET",
+        "parameter_defaults": {
+          "goal_side_buffer_m": 1.0,
+          "line_band_width_m": 2.0,
+          "line_buffer_m": 0.5,
+          "maximum_relay_dwell_seconds": 0.56,
+          "minimum_line_defenders": 4,
+          "relay_max_event_gap_seconds": 3.0,
+          "relay_touch_distance_m": 2.75
+        },
+        "path": "config/query-plans/first_time_relay_after_receiver_line_transition.experimental.v1.json",
+        "plan_id": "first_time_relay_after_receiver_line_transition",
+        "plan_version": "0.1.0",
+        "promotion_status": "EXPERIMENTAL_PRESET",
+        "recipe_id": "first_time_relay_after_receiver_line_transition_v1",
+        "recipe_version": "0.1.0",
+        "referenced_parameters": [
+          "goal_side_buffer_m",
+          "line_band_width_m",
+          "line_buffer_m",
+          "maximum_relay_dwell_seconds",
+          "minimum_line_defenders",
+          "relay_max_event_gap_seconds",
+          "relay_touch_distance_m"
+        ],
+        "source_artifact_sha256": "af52f539c8ef40c08f7300bf4af895e1d087be4c0c138c229be36e1780e5620d",
+        "source_kind": "typed_plan",
+        "valid_typed_plan": true
+      },
+      "profiles": [
+        "profile.first_time_relay_after_receiver_line_transition_default.v1"
+      ],
+      "subject_ref": "recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0",
+      "version": "0.1.0"
     }
   ],
-  "registered_recipe_count": 5,
+  "registered_recipe_count": 6,
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
     "baseline_artifact_revision": "878510d6fb01403e67d2a1938133285a167aeff2e9eebcde7775bc5da161c534",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "c2bfa344e7dcfee23c74a991cb7e454046a13792591a5a93c9405aa80133215d",
-    "plan_artifact_revision": "5fa8a34cc392a4d6f360a60b5a735d4d831b9af1a60dea6bea61cff3403c63c8",
+    "lock_hash": "62cd5a9558fc62e0bac63d5cedf97f3b39a992726bd02840081912dcd0ed01ea",
+    "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "74ca5d21c4b7b58e961b664a1e8985ded3f3b1b6783f3af8fa5bbafc84673bc9",
+    "registry_revision": "2694a80981d8a73aa2e75c5dfc5d81c2b324b944ff86eab74d9e2b4eeb5c546a",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "d04013d25f77baa84bed938222f4beac972335f1cb36988a179f81d425793e77",
+    "runtime_manifest_revision": "4fc19cdda8b6ea6dfa617fee0a830857d017d923023eed357ad3e08e58381563",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
