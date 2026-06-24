@@ -6,6 +6,7 @@ of restating them in the semantic registry.
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 from typing import Any
 
@@ -186,7 +187,7 @@ def generate_runtime_manifest() -> dict[str, Any]:
         "schema_version": "1.0",
         "manifest_id": "priori.runtime_manifest.scp0",
         "generator_version": GENERATOR_VERSION,
-        "runtime_contexts": sorted(RUNTIME_CONTEXTS, key=lambda item: item["name"]),
+        "runtime_contexts": sorted(copy.deepcopy(RUNTIME_CONTEXTS), key=lambda item: item["name"]),
         "capabilities": sorted(capabilities, key=lambda item: item["runtime_id"]),
         "operators": sorted(operators, key=lambda item: item["runtime_id"]),
         "recipes": sorted(recipes, key=lambda item: (item["recipe_id"], item["recipe_version"])),

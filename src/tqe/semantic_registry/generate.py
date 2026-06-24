@@ -467,7 +467,12 @@ def _field_map(fields: list[Any]) -> dict[str, Any]:
 
 
 def _signature_mismatch(
-    semantic_field: Any, runtime_field: Any, *, allow_any_unit: bool = False
+    semantic_field: Any,
+    runtime_field: Any,
+    *,
+    allow_any_unit: bool = False,
+    strict_metadata: bool = False,
+    compare_required: bool = False,
 ) -> list[str]:
     semantic = _type_signature(semantic_field)
     runtime = _type_signature(runtime_field)
@@ -482,28 +487,19 @@ def _signature_mismatch(
         and semantic["unit"] != runtime["unit"]
     ):
         mismatches.append(f"unit {semantic['unit']} != {runtime['unit']}")
-    if (
-        semantic.get("cardinality") not in {None, "any", runtime.get("cardinality")}
-        and runtime.get("cardinality") is not None
-    ):
-        mismatches.append(
-            f"cardinality {semantic.get('cardinality')} != {runtime.get('cardinality')}"
-        )
-    if (
-        semantic.get("entity_scope") not in {None, "any", runtime.get("entity_scope")}
-        and runtime.get("entity_scope") is not None
-    ):
-        mismatches.append(
-            f"entity_scope {semantic.get('entity_scope')} != {runtime.get('entity_scope')}"
-        )
-    if (
-        semantic.get("coordinate_frame") not in {None, "any", runtime.get("coordinate_frame")}
-        and runtime.get("coordinate_frame") is not None
-    ):
-        mismatches.append(
-            f"coordinate_frame {semantic.get('coordinate_frame')} != {runtime.get('coordinate_frame')}"
-        )
-    if runtime.get("required") is not None and semantic.get("required") != runtime.get("required"):
+
+    for key in ("cardinality", "entity_scope", "coordinate_frame"):
+        semantic_value = semantic.get(key)
+        runtime_value = runtime.get(key)
+        if semantic_value == "any":
+            continue
+        if strict_metadata:
+            if semantic_value != runtime_value:
+                mismatches.append(f"{key} {semantic_value} != {runtime_value}")
+        elif semantic_value not in {None, runtime_value} and runtime_value is not None:
+            mismatches.append(f"{key} {semantic_value} != {runtime_value}")
+
+    if compare_required and semantic.get("required") != runtime.get("required"):
         mismatches.append(f"required {semantic.get('required')} != {runtime.get('required')}")
     return mismatches
 
@@ -691,6 +687,7 @@ def validate_runtime_signature_compatibility(
     runtime_outputs = {item["name"]: item for item in runtime_entry.get("outputs", [])}
     runtime_parameters = {item["name"]: item for item in runtime_entry.get("parameters", [])}
     semantic_parameters = _field_map(binding.semantic_parameters)
+    exact_conformance = binding.conformance_status == ConformanceStatus.EXACT
 
     findings.extend(
         _validate_uncovered_names(
@@ -772,7 +769,12 @@ def validate_runtime_signature_compatibility(
                 )
                 continue
             mapped_runtime_inputs.add(str(runtime_port))
-            mismatches = _signature_mismatch(semantic_field, runtime_input)
+            mismatches = _signature_mismatch(
+                semantic_field,
+                runtime_input,
+                strict_metadata=exact_conformance,
+                compare_required=True,
+            )
             if mismatches:
                 findings.append(
                     _finding(
@@ -792,7 +794,12 @@ def validate_runtime_signature_compatibility(
                     )
                 )
                 continue
-            mismatches = _signature_mismatch(semantic_field, context)
+            mismatches = _signature_mismatch(
+                semantic_field,
+                context,
+                strict_metadata=exact_conformance,
+                compare_required=True,
+            )
             if mismatches:
                 findings.append(
                     _finding(
@@ -803,14 +810,19 @@ def validate_runtime_signature_compatibility(
                 )
     for semantic_name, semantic_field in semantic_inputs.items():
         if (
-            getattr(semantic_field, "required", True)
+            (exact_conformance or getattr(semantic_field, "required", True))
             and semantic_name not in binding.input_bindings
             and semantic_name not in binding.uncovered_semantic_inputs
         ):
+            reason = (
+                "is required by exact conformance"
+                if exact_conformance and not getattr(semantic_field, "required", True)
+                else "is required"
+            )
             findings.append(
                 _finding(
                     "runtime_signature_mismatch",
-                    f"{binding.id} semantic input {semantic_name} is required but is neither bound nor explicitly uncovered.",
+                    f"{binding.id} semantic input {semantic_name} {reason} but is neither bound nor explicitly uncovered.",
                     f"{path}.input_bindings.{semantic_name}",
                 )
             )
@@ -850,7 +862,12 @@ def validate_runtime_signature_compatibility(
             )
             continue
         mapped_runtime_outputs.add(output_binding.runtime_port)
-        mismatches = _signature_mismatch(semantic_field, runtime_output)
+        mismatches = _signature_mismatch(
+            semantic_field,
+            runtime_output,
+            strict_metadata=exact_conformance,
+            compare_required=False,
+        )
         if mismatches:
             findings.append(
                 _finding(
@@ -861,14 +878,19 @@ def validate_runtime_signature_compatibility(
             )
     for semantic_name, semantic_field in semantic_outputs.items():
         if (
-            getattr(semantic_field, "required", True)
+            (exact_conformance or getattr(semantic_field, "required", True))
             and semantic_name not in binding.output_bindings
             and semantic_name not in binding.uncovered_semantic_outputs
         ):
+            reason = (
+                "is required by exact conformance"
+                if exact_conformance and not getattr(semantic_field, "required", True)
+                else "is required"
+            )
             findings.append(
                 _finding(
                     "runtime_signature_mismatch",
-                    f"{binding.id} semantic output {semantic_name} is required but is neither bound nor explicitly uncovered.",
+                    f"{binding.id} semantic output {semantic_name} {reason} but is neither bound nor explicitly uncovered.",
                     f"{path}.output_bindings.{semantic_name}",
                 )
             )
@@ -941,7 +963,7 @@ def validate_runtime_signature_compatibility(
                     f"{path}.semantic_parameters.{semantic_name}",
                 )
             )
-    if binding.conformance_status == ConformanceStatus.EXACT:
+    if exact_conformance:
         if binding.known_deviations:
             findings.append(
                 _finding(
