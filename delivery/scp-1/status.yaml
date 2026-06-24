@@ -1,0 +1,52 @@
+milestone: SCP-1
+name: Semantic Expression Compiler and Generality Harness
+state: PLANNED_BLOCKED_PENDING_SCP_0E_1_ACCEPTANCE
+last_updated: "2026-06-23"
+outcome: >
+  Establish a typed semantic-expression language and natural-language compiler
+  that can represent executable football programs and precise typed gaps before
+  lowering executable portions into the existing deterministic runtime.
+depends_on:
+  - SCP-0E.1 external acceptance
+source_of_truth:
+  spec: delivery/scp-1/SPEC.md
+  progress: delivery/scp-1/progress.md
+claims:
+  language_broader_than_executable_library: REQUIRED
+  recipes_are_not_language_boundary: REQUIRED
+  typed_semantic_gaps: REQUIRED
+  football_query_normal_form: REQUIRED
+  anchor_synthesis: REQUIRED
+  closed_book_recipe_free_evaluation: REQUIRED
+  open_library_evaluation: REQUIRED
+  existing_runtime_authority_chain: REQUIRED
+implementation_state:
+  semantic_expression_schema: NOT_STARTED
+  football_program_corpus: NOT_STARTED
+  natural_language_compiler: NOT_STARTED
+  lowering_to_tactical_query_document: NOT_STARTED
+  generality_harness: NOT_STARTED
+  review_packet: NOT_STARTED
+verification:
+  required:
+    - semantic expression schema validation
+    - corpus validation
+    - closed-book compiler evaluation
+    - open-library compiler evaluation
+    - existing recipe parity pilots
+    - novel executable composition proof
+    - reconstructed-anchor typed-gap proof
+    - modality-gap proof
+    - clarification proof
+    - negative/absence UNKNOWN proof
+  latest_result:
+    status: NOT_RUN
+review:
+  accepted: false
+  last_external_decision: SCP_1_CHARTER_STRENGTHENING_RECOMMENDED
+non_goals:
+  - full five-year atlas implementation
+  - new executor
+  - arbitrary Hermes code execution
+  - exposing gaps as executable capabilities
+  - production deployment
