@@ -1358,6 +1358,157 @@
       "version": "0.1.0"
     },
     {
+      "binding_id": "binding.primitive.relative_position_to_line.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "relative_position_to_line",
+      "implements": [
+        "op.relative_position_to_observed_line.v1"
+      ],
+      "kind": "primitive",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "anchor_id",
+          "anchor_frame_id",
+          "relative_position_status",
+          "relative_position_reason",
+          "entity_id",
+          "entity_frame_id",
+          "signed_distance_to_line_m"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "line_evaluations",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "entity_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Classifies only observed position relative to a supplied geometric line.",
+          "Does not identify a tactical first, second, midfield, or back line.",
+          "Does not prove a line break, tactical intention, pass optimality, or defensive intent."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "relative_position_to_line",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "relative_position_status",
+              "relative_position_reason",
+              "entity_id",
+              "entity_frame_id",
+              "line_x_m",
+              "entity_x_m",
+              "normalized_line_x_m",
+              "normalized_entity_x_m",
+              "signed_distance_to_line_m",
+              "distance_to_line_m",
+              "line_buffer_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "AHEAD_OF_LINE",
+              "BEHIND_LINE",
+              "LEVEL_WITH_LINE",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "relative_position_status",
+              "relative_position_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "relative_position_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Entity-reference field read from the entity anchor record.",
+            "name": "entity_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "controlled_reception_frame_id",
+              "physical_release_frame_id",
+              "anchor_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Frame field at which the entity position is evaluated.",
+            "name": "entity_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.5
+            },
+            "description": "Distance from the line treated as level rather than ahead or behind.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "line_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          }
+        ],
+        "purpose": "Classify an entity position as ahead of, behind, or level with an observed line at a declared frame.",
+        "runtime_id": "primitive:relative_position_to_line:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
       "binding_id": "binding.primitive.signed_lateral_shift.0_1_0",
       "conformance": "EXACT",
       "id": "signed_lateral_shift",
@@ -1908,16 +2059,16 @@
   ],
   "registry_lock": {
     "ai_projection_policy": "projection.ai.v1",
-    "baseline_artifact_revision": "4f479598e9e4c2760e60b78885be7df330ff277eefa1c1e316de9a9a7fe24671",
+    "baseline_artifact_revision": "1f931fdfe65b759f33badc14bda44be2d7cb169ab58e68a992e811ab3f14757d",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "cf2dc1c39f0702b4acf8f452713627e388005d83242ebbdd2e65c9f645dfeb41",
+    "lock_hash": "99a9a3fdef31ccbf1d402475ae7655ee8b43b4a58358b8d05d1e4665ae449c5e",
     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "59a4342d02715d3f357fd0c9afe9b9440fd312f6a91ec82036ed8a6f7df74464",
+    "registry_revision": "ef544a65cc350a8ec3a897cbfab7665159cdb6b698112a67b215bf67992df9f4",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "bae6a042ef9275c283ee619ab9dd15936d1f8ea677bba3f68df02696bd59c6ed",
+    "runtime_manifest_revision": "f556956010fe809663a97f7e235ad6fb7a8e61df870f02dd82ecff80178e3acd",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

@@ -25,6 +25,10 @@ from tqe.idsse.source_lock import SOURCE_VERSION
 from tqe.runtime.binder import HOST_RUNTIME_PARAMETER_DEFAULTS, bind_document_from_path
 from tqe.runtime.controlled_pass import ControlledPassConfig, ControlledPassOutput, evaluate_controlled_passes
 from tqe.runtime.defensive_line import DefensiveLineConfig, evaluate_defensive_line_model
+from tqe.runtime.relative_position_to_line import (
+    RelativePositionToLineConfig,
+    evaluate_relative_position_to_line,
+)
 from tqe.runtime.ir import (
     BoundCatalogNode,
     BoundPredicateNode,
@@ -197,6 +201,7 @@ class TacticalQueryExecutor:
             "possession_segment": primitive_possession_segment,
             "controlled_pass_episode": primitive_controlled_pass_episode,
             "defensive_line_model": primitive_defensive_line_model,
+            "relative_position_to_line": primitive_relative_position_to_line,
             "ball_lateral_fraction": primitive_ball_lateral_fraction,
             "defensive_outfield_centroid": primitive_defensive_outfield_centroid,
             "signed_lateral_shift": primitive_signed_lateral_shift,
@@ -2272,6 +2277,139 @@ def defending_positions_at_frame(
             continue
         observed[str(row.entity_id)] = (float(row.x_m), float(row.y_m))
     return observed
+
+
+def primitive_relative_position_to_line(state: PeriodState, node: BoundCatalogNode) -> None:
+    line_value = catalog_input_value(state, node, "line_evaluations")
+    entity_value = catalog_input_value(state, node, "entity_anchors")
+    line_records = line_value.value
+    entity_records = entity_value.value
+    if not isinstance(line_records, list) or not isinstance(entity_records, list):
+        raise RuntimeError(f"{node.node_id} requires line and entity anchor records")
+    entity_by_anchor_id = {
+        str(record.get("anchor_id")): record
+        for record in entity_records
+        if isinstance(record, dict) and record.get("anchor_id") is not None
+    }
+    entity_id_field = node_parameter_text(node, "entity_id_field", "receiver_id")
+    entity_frame_field = node_parameter_text(
+        node,
+        "entity_frame_field",
+        "controlled_reception_frame_id",
+    )
+    config = RelativePositionToLineConfig(
+        buffer_m=node_parameter_number(node, "line_buffer_m", 0.5)
+    )
+    records = [
+        relative_position_to_line_anchor_record(
+            state=state,
+            line_record=line_record,
+            entity_record=entity_by_anchor_id.get(str(line_record.get("anchor_id")))
+            if isinstance(line_record, dict)
+            else None,
+            entity_id_field=entity_id_field,
+            entity_frame_field=entity_frame_field,
+            config=config,
+        )
+        for line_record in line_records
+        if isinstance(line_record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None
+        if str(record["relative_position_status"]) == "UNKNOWN"
+        else str(record["relative_position_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "relative_position_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "relative_position_status").entity_scope,
+        ),
+        "relative_position_status_records": records,
+    }
+
+
+def relative_position_to_line_anchor_record(
+    *,
+    state: PeriodState,
+    line_record: dict[str, Any],
+    entity_record: dict[str, Any] | None,
+    entity_id_field: str,
+    entity_frame_field: str,
+    config: RelativePositionToLineConfig,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(line_record.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    entity_id = (
+        None
+        if entity_record is None or entity_record.get(entity_id_field) is None
+        else str(entity_record.get(entity_id_field))
+    )
+    entity_frame_id = optional_int(entity_record.get(entity_frame_field)) if entity_record else None
+    if entity_frame_id is None and entity_frame_field == "anchor_frame_id":
+        entity_frame_id = optional_int(line_record.get("anchor_frame_id"))
+    entity_position = (
+        None
+        if entity_id is None or entity_frame_id is None
+        else player_position_at_frame(state.positions, entity_frame_id, entity_id)
+    )
+    evaluation = evaluate_relative_position_to_line(
+        entity_position=entity_position,
+        line_evaluation=line_record,
+        entity_id=entity_id,
+        anchor_frame_id=anchor_frame_id,
+        config=config,
+    )
+    payload = evaluation.to_dict()
+    return {
+        **line_record,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(line_record.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(line_record.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(line_record.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(line_record.get("entity_refs") or []),
+        "relative_position_status": str(payload["status"]),
+        "relative_position_reason": payload["reason"],
+        "relative_position_entity_id_field": entity_id_field,
+        "relative_position_entity_frame_field": entity_frame_field,
+        "entity_record_found": entity_record is not None,
+        "entity_id": payload["entity_id"],
+        "entity_frame_id": entity_frame_id,
+        "entity_x_m": payload["entity_x_m"],
+        "entity_y_m": payload["entity_y_m"],
+        "normalized_entity_x_m": payload["normalized_entity_x_m"],
+        "signed_distance_to_line_m": payload["signed_distance_to_line_m"],
+        "distance_to_line_m": payload["distance_to_line_m"],
+        "line_buffer_m": payload["buffer_m"],
+    }
+
+
+def player_position_at_frame(
+    positions: pd.DataFrame,
+    frame_id: int,
+    entity_id: str,
+) -> tuple[float, float] | None:
+    rows = positions[
+        (positions["frame_id"] == frame_id)
+        & (positions["entity_type"] == "player")
+        & (positions["entity_id"].astype(str) == str(entity_id))
+    ]
+    if rows.empty:
+        return None
+    row = rows.iloc[0]
+    if pd.isna(row.x_m) or pd.isna(row.y_m):
+        return None
+    return (float(row.x_m), float(row.y_m))
 
 
 def catalog_output(node: BoundCatalogNode, name: str) -> Any:

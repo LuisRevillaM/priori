@@ -43,6 +43,14 @@ concepts:
     evidence_contract_ref: evidence.observed_geometric_defensive_line.v1
     tags: [defending, line, geometry]
 
+  - id: concept.relative_position_to_observed_line
+    kind: Concept
+    display_name: Relative Position To Observed Line
+    description: An entity's observed position classified ahead of, behind, or level with a supplied geometric line.
+    claim_contract_ref: claim.relative_position_to_observed_line.v1
+    evidence_contract_ref: evidence.relative_position_to_observed_line.v1
+    tags: [line, geometry, relative_position]
+
   - id: concept.defensive_block_lateral_shift
     kind: Concept
     display_name: Defensive Block Lateral Shift
@@ -218,6 +226,30 @@ operationalizations:
     lowering: [attacking_direction_normalization, goal_side_filter, compact_x_band_selection, ambiguity_detection]
     claim_contract_ref: claim.observed_geometric_defensive_line.v1
     evidence_contract_ref: evidence.observed_geometric_defensive_line.v1
+
+  - id: op.relative_position_to_observed_line.v1
+    kind: Operationalization
+    display_name: Relative Position To Observed Line
+    description: Classify an entity's tracking position relative to a supplied observed line at a declared frame.
+    concept_refs: [concept.relative_position_to_observed_line]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [line_evaluation_available, entity_anchor_available, entity_tracking_available]
+    inputs:
+      - name: line_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: defensive_line_evaluation, unit: none, entity_scope: anchor}
+      - name: entity_anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: entity_anchor, unit: none, entity_scope: anchor}
+      - name: tracking_window
+        type: {container: TrajectorySet, value: Position, unit: metre, coordinate_frame: pitch_absolute}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: relative_position_to_line_evaluation, unit: none, entity_scope: anchor}
+      - name: relative_position_status
+        type: {container: FrameSignal, value: Enum, quantity: relative_position_to_line_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_id_alignment, entity_position_lookup, attacking_direction_normalization, line_relative_position_classification]
+    claim_contract_ref: claim.relative_position_to_observed_line.v1
+    evidence_contract_ref: evidence.relative_position_to_observed_line.v1
 
   - id: op.baseline_relative_defensive_shift.v1
     kind: Operationalization
@@ -436,6 +468,12 @@ implementations:
     description: Current observed geometric defensive-line implementation.
     implements: [op.observed_geometric_defensive_line.v1]
     source_refs: [src/tqe/runtime/defensive_line.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.relative_position_to_line.python.v1
+    kind: Implementation
+    display_name: Relative Position To Line Python Implementation
+    description: Current observed relative-position-to-line implementation.
+    implements: [op.relative_position_to_observed_line.v1]
+    source_refs: [src/tqe/runtime/relative_position_to_line.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.signed_lateral_shift.python.v1
     kind: Implementation
     display_name: Signed Lateral Shift Python Implementation
@@ -622,6 +660,44 @@ runtime_bindings:
       goal_side_buffer_m: goal_side_buffer_m
       line_band_width_m: line_band_width_m
       minimum_line_defenders: minimum_line_defenders
+
+  - id: binding.primitive.relative_position_to_line.0_1_0
+    kind: RuntimeBinding
+    display_name: relative_position_to_line runtime binding
+    description: Canonical runtime binding for relative_position_to_line 0.1.0.
+    runtime_capability: {id: relative_position_to_line, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.relative_position_to_line.python.v1
+    implements: [op.relative_position_to_observed_line.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Entity identity and evaluation frame are selected from bounded anchor-record fields rather than a standalone semantic entity selector.]
+    input_bindings:
+      line_evaluations: {source: NODE_INPUT, runtime_port: line_evaluations}
+      entity_anchors: {source: NODE_INPUT, runtime_port: entity_anchors}
+      tracking_window: {source: RUNTIME_CONTEXT, context_ref: canonical_tracking_window}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      relative_position_status: {runtime_port: relative_position_status}
+    semantic_parameters:
+      - name: entity_id_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id]
+      - name: entity_frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: controlled_reception_frame_id, unit: none}
+        allowed_values: [controlled_reception_frame_id, physical_release_frame_id, anchor_frame_id]
+      - name: line_buffer_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 0.5, unit: metre}
+        minimum: 0.0
+        maximum: 10.0
+    parameter_bindings:
+      entity_id_field: entity_id_field
+      entity_frame_field: entity_frame_field
+      line_buffer_m: line_buffer_m
 
   - id: binding.primitive.signed_lateral_shift.0_1_0
     kind: RuntimeBinding
@@ -1021,6 +1097,13 @@ claim_contracts:
     permitted: [observed_geometric_defensive_line_fit_under_declared_thresholds, no_qualifying_geometric_defensive_line_observed_when_evidence_complete]
     prohibited: [tactical_line_role_identified, defensive_line_was_broken, defender_intent_inferred, pass_was_optimal, passer_intended_measured_outcome]
     unknown_conditions: [ball_position_missing, attacking_direction_missing_or_invalid, defending_outfield_positions_incomplete, ambiguous_candidate_lines]
+  - id: claim.relative_position_to_observed_line.v1
+    kind: ClaimContract
+    display_name: Relative Position To Observed Line Claims
+    description: Claims permitted for relative-position-to-line measurements.
+    permitted: [entity_position_classified_relative_to_supplied_line_under_declared_buffer]
+    prohibited: [defensive_line_was_broken, tactical_line_role_identified, player_intent_inferred, pass_was_optimal, passer_intended_measured_outcome]
+    unknown_conditions: [line_position_missing, entity_position_missing, attacking_direction_missing_or_invalid, anchor_correlation_missing]
   - id: claim.defensive_block_lateral_shift.v1
     kind: ClaimContract
     display_name: Defensive Block Lateral Shift Claims
@@ -1130,6 +1213,13 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, line_status, line_reason, goal_side_buffer_m, line_band_width_m, minimum_line_defenders, defender_positions_used]
     optional: [line_x_m, normalized_line_x_m, line_compactness_m, defensive_line_player_ids, defenders_goal_side_count, ambiguous_line_player_ids]
     replay_projection: [ball_marker, defensive_line_player_markers, defensive_line_band]
+  - id: evidence.relative_position_to_observed_line.v1
+    kind: EvidenceContract
+    display_name: Relative Position To Observed Line Evidence
+    description: Evidence required for relative-position-to-line measurements.
+    required: [anchor_id, anchor_frame_id, relative_position_status, relative_position_reason, entity_id, entity_frame_id, line_x_m, entity_x_m, signed_distance_to_line_m, line_buffer_m]
+    optional: [normalized_line_x_m, normalized_entity_x_m, distance_to_line_m, entity_y_m]
+    replay_projection: [entity_marker, line_marker, distance_badge]
   - id: evidence.defensive_block_lateral_shift.v1
     kind: EvidenceContract
     display_name: Defensive Block Lateral Shift Evidence
@@ -1231,6 +1321,13 @@ exposure_policies:
     display_name: defensive_line_model exposure
     description: Exposure policy for defensive_line_model.
     subject_ref: runtime:primitive:defensive_line_model:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.relative_position_to_line.0_1_0
+    kind: ExposurePolicy
+    display_name: relative_position_to_line exposure
+    description: Exposure policy for relative_position_to_line.
+    subject_ref: runtime:primitive:relative_position_to_line:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
   - id: exposure.runtime.signed_lateral_shift.0_1_0
@@ -1450,6 +1547,16 @@ maturity_assessments:
     display_name: defensive_line_model maturity
     description: Maturity assessment for defensive_line_model.
     subject_ref: runtime:primitive:defensive_line_model:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.relative_position_to_line.0_1_0
+    kind: MaturityAssessment
+    display_name: relative_position_to_line maturity
+    description: Maturity assessment for relative_position_to_line.
+    subject_ref: runtime:primitive:relative_position_to_line:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED
