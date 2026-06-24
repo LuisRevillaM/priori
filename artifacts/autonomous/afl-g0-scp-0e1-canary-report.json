@@ -1,0 +1,62 @@
+{
+  "canaries": [
+    {
+      "details": {
+        "finding_codes": []
+      },
+      "name": "known_good_contract_passes",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "finding_codes": [
+          "legacy_milestone_id",
+          "legacy_or_invalid_milestone_id",
+          "milestone_missing_dependency",
+          "unknown_milestone_dependency"
+        ]
+      },
+      "name": "legacy_milestone_candidate_fails",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "finding_codes": [
+          "hard_gate_waivable",
+          "hard_gate_wrong_target_class"
+        ]
+      },
+      "name": "hard_gate_tampering_fails",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "finding_codes": [
+          "quantitative_target_missing_field"
+        ]
+      },
+      "name": "denominator_reduction_fails",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "finding_codes": [
+          "authority_overlap"
+        ]
+      },
+      "name": "builder_cannot_claim_protected_authority",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "AFL_PROTECTED_SUITE_HASH_present": false,
+        "self_verified_expected": true
+      },
+      "name": "deleted_hidden_suite_blocks_promotion",
+      "status": "PASS"
+    }
+  ],
+  "generated_at": "2026-06-24T04:17:46Z",
+  "schema_version": "1.0",
+  "status": "PASS"
+}

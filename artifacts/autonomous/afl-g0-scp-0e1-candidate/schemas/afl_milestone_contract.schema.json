@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://priori.local/schemas/afl_milestone_contract.schema.json",
+  "title": "Priori AFL Milestone Contract",
+  "type": "object",
+  "required": [
+    "program",
+    "authority",
+    "target_classes",
+    "global_hard_gates",
+    "milestones",
+    "promotion_policy",
+    "review_packet"
+  ],
+  "properties": {
+    "program": {
+      "type": "object",
+      "required": ["id", "version", "namespace", "protection_level", "north_star"],
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"type": "string"},
+        "namespace": {"const": "AFL"},
+        "protection_level": {
+          "enum": ["SELF_VERIFIED", "PROTECTED_CI", "SIGNED_PROMOTION"]
+        },
+        "north_star": {"type": "string"}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "required": ["builder_may_modify", "builder_may_not_modify", "promotion_authority"],
+      "properties": {
+        "builder_may_modify": {"type": "array", "items": {"type": "string"}},
+        "builder_may_not_modify": {"type": "array", "items": {"type": "string"}},
+        "promotion_authority": {"const": "protected_gate"},
+        "local_status_authority": {"type": "string"}
+      }
+    },
+    "target_classes": {
+      "type": "array",
+      "items": {
+        "enum": ["HARD_GATE", "BOOTSTRAP_TARGET", "RELEASE_TARGET", "NORTH_STAR_TARGET"]
+      }
+    },
+    "global_hard_gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/hardGate"}
+    },
+    "milestones": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/milestone"}
+    },
+    "promotion_policy": {
+      "type": "object",
+      "required": [
+        "result_authority",
+        "cumulative_gate_required",
+        "signed_certificate_required_for_protected_promotion"
+      ]
+    },
+    "review_packet": {
+      "type": "object",
+      "required": ["required"],
+      "properties": {
+        "required": {"type": "array", "items": {"type": "string"}, "minItems": 1}
+      }
+    }
+  },
+  "$defs": {
+    "hardGate": {
+      "type": "object",
+      "required": ["metric", "threshold", "target_class", "waivable"],
+      "properties": {
+        "metric": {"type": "string"},
+        "threshold": {"type": ["integer", "number"]},
+        "target_class": {"const": "HARD_GATE"},
+        "waivable": {"const": false}
+      }
+    },
+    "quantitativeTarget": {
+      "type": "object",
+      "required": [
+        "metric",
+        "threshold",
+        "target_class",
+        "numerator",
+        "denominator",
+        "evaluation_split"
+      ],
+      "properties": {
+        "metric": {"type": "string"},
+        "threshold": {"type": ["integer", "number"]},
+        "target_class": {
+          "enum": ["HARD_GATE", "BOOTSTRAP_TARGET", "RELEASE_TARGET", "NORTH_STAR_TARGET"]
+        },
+        "numerator": {"type": "string"},
+        "denominator": {"type": "string"},
+        "evaluation_split": {"type": "string"}
+      }
+    },
+    "milestone": {
+      "type": "object",
+      "required": ["id", "name", "depends_on", "deliverables", "quantitative_targets"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^AFL-(G0|[0-9]{2})$"},
+        "name": {"type": "string"},
+        "depends_on": {"type": "array", "items": {"type": "string"}},
+        "deliverables": {"type": "array", "items": {"type": "string"}},
+        "hard_gates": {"type": "array", "items": {"type": "string"}},
+        "quantitative_targets": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/quantitativeTarget"}
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "contract_hash": "234940c3ac9a21ac3837c9423f7562b8a2181cd2b2ccc6a1d815558d9cb06bdb",
+  "contract_hash": "aaec4491feed675f7e6458195e1a04684d7b03f3f9a09ef09b394cd6754590ba",
   "contract_path": "delivery/autonomous/afl_milestone_contract.yaml",
   "findings": [],
   "gate_id": "AFL-G0.local_contract_validator",

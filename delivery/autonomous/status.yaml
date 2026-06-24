@@ -1,0 +1,46 @@
+milestone: AFL-G0
+name: Protected Gate Bootstrap
+state: LOCAL_GATE_MECHANICS_PASS_PROTECTED_PROMOTION_BLOCKED
+last_updated: "2026-06-23"
+outcome: >
+  Establish a minimum viable root-of-trust path for autonomous Priori delivery:
+  namespaced milestones, contract schemas, candidate packet generation, canary
+  checks, gate-result artifacts, and promotion-certificate artifacts.
+claims:
+  namespaced_milestones: VERIFIED
+  milestone_contract_schema: VERIFIED
+  gate_result_schema: VERIFIED
+  review_packet_schema: VERIFIED
+  candidate_packet_generation: VERIFIED_LOCAL
+  public_canaries: VERIFIED_LOCAL
+  scp_0e_1_candidate_gate_run: VERIFIED_LOCAL_BLOCKED_FOR_PROTECTED_PROMOTION
+  protected_ci_boundary: NOT_ESTABLISHED
+  protected_hidden_suite: NOT_ESTABLISHED
+  signing_key_authority: NOT_ESTABLISHED
+  protected_promotion: BLOCKED
+verification:
+  latest_result:
+    status: BLOCKED_FOR_PROTECTED_PROMOTION
+    timestamp: "2026-06-23T21:13:40-07:00"
+    commands:
+      - make afl-g0-verify
+      - make afl-g0-gate
+    summary:
+      - "AFL-G0 contract validator PASS with 13 AFL milestones and no findings."
+      - "Local SCP-0E.1 candidate packet generated."
+      - "Public verification PASS: make scp-0-verify and make afl-g0-verify."
+      - "Canary verification PASS: known-good, legacy ID, hard-gate tamper, denominator reduction, protected-authority tamper, and missing-hidden-suite blocker."
+      - "Gate result BLOCKED because AFL_GATE_PROTECTION_LEVEL, AFL_PROTECTED_SUITE_HASH, and AFL_GATE_SIGNING_KEY were absent."
+artifacts:
+  gate_result: artifacts/autonomous/afl-g0-scp-0e1-gate-result.json
+  promotion_certificate: artifacts/autonomous/afl-g0-scp-0e1-promotion-certificate.json
+  canary_report: artifacts/autonomous/afl-g0-scp-0e1-canary-report.json
+  candidate_packet_dir: artifacts/autonomous/afl-g0-scp-0e1-candidate
+  review_packet_zip: review-packets/afl-g0-scp-0e1-local-gate-2026-06-23.zip
+  review_packet_sha256: 73c8edc69dbca9985caefa8657476b380723aa5062791d3a7b81c1a900c3bcfe
+next_required_external_authority:
+  - provision non-builder protected CI or equivalent gate runner
+  - supply protected holdout/mutation suite hash
+  - supply signing key outside repository control
+  - rerun make afl-g0-gate under PROTECTED_CI
+  - publish signed PROMOTED certificate or keep BLOCKED
