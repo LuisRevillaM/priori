@@ -291,6 +291,28 @@ SCP-0 passes only if:
     operator.
 45. Unsupported projection output changes when the unsupported
     `ProjectionPolicy` changes.
+46. Unknown `RUNTIME_CONTEXT` references fail validation.
+47. `RUNTIME_CONTEXT` bindings reject `runtime_port`, and `NODE_INPUT`
+    bindings reject `context_ref`.
+48. Exact field conformance compares payload type, temporal type, unit,
+    cardinality, entity scope, coordinate frame where declared, and runtime
+    input requiredness.
+49. Runtime unit `none` is no longer treated as a wildcard; only explicit
+    semantic unit `any` has wildcard behavior.
+50. Exact parameter conformance compares payload type, unit, requiredness,
+    minimum, maximum, default, and allowed values.
+51. Exact bindings may not declare `known_deviations`.
+52. Uncovered runtime and semantic declarations must name real elements and may
+    not contain duplicates.
+53. Duplicate parity waivers for the same projection target, difference kind,
+    and subject fail validation.
+54. Product recipe parity output explicitly labels recipe comparison as
+    current-runtime alignment until a pinned product recipe baseline artifact
+    exists.
+55. Runtime-context definitions are generated from the runtime manifest, not
+    implied by registry prose.
+56. Per-team semantic signal cardinality is explicit where exact runtime
+    bindings depend on it.
 
 ## Side Effects
 

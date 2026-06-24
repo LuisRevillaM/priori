@@ -19,6 +19,63 @@ from tqe.workshop.m1_2 import NON_AUTHORABLE_CATALOG_REFS, RECIPE_PLAN_PATHS
 GENERATOR_VERSION = "scp0.generator.v1"
 
 
+RUNTIME_CONTEXTS: list[dict[str, Any]] = [
+    {
+        "name": "canonical_match_state",
+        "temporal_type": "world_state",
+        "payload_type": "match_state",
+        "cardinality": "single",
+        "unit": "none",
+        "entity_scope": None,
+        "required": True,
+        "description": "Canonical per-frame match state available to runtime primitives.",
+    },
+    {
+        "name": "canonical_match_state.ball_position",
+        "temporal_type": "point_signal",
+        "payload_type": "point",
+        "cardinality": "single",
+        "unit": "metre",
+        "coordinate_frame": "pitch_absolute",
+        "entity_scope": "ball",
+        "required": True,
+        "description": "Canonical ball position signal in pitch coordinates.",
+    },
+    {
+        "name": "canonical_match_state.defending_outfield_positions",
+        "temporal_type": "entity_set_signal",
+        "payload_type": "point",
+        "cardinality": "collection",
+        "unit": "metre",
+        "coordinate_frame": "pitch_absolute",
+        "entity_scope": "team",
+        "required": True,
+        "description": "Canonical defending outfield player positions.",
+    },
+    {
+        "name": "provider_event_stream.completed_pass_events",
+        "temporal_type": "event_set",
+        "payload_type": "provider_event",
+        "cardinality": "collection",
+        "unit": "none",
+        "entity_scope": None,
+        "required": True,
+        "description": "Provider event candidates for completed passes.",
+    },
+    {
+        "name": "canonical_tracking_window",
+        "temporal_type": "trajectory_set",
+        "payload_type": "position",
+        "cardinality": "collection",
+        "unit": "metre",
+        "coordinate_frame": "pitch_absolute",
+        "entity_scope": None,
+        "required": True,
+        "description": "Canonical tracking samples around an event or anchor window.",
+    },
+]
+
+
 def _json_ready(value: Any) -> Any:
     if hasattr(value, "model_dump"):
         return value.model_dump(mode="json", exclude_none=True)
@@ -129,6 +186,7 @@ def generate_runtime_manifest() -> dict[str, Any]:
         "schema_version": "1.0",
         "manifest_id": "priori.runtime_manifest.scp0",
         "generator_version": GENERATOR_VERSION,
+        "runtime_contexts": sorted(RUNTIME_CONTEXTS, key=lambda item: item["name"]),
         "capabilities": sorted(capabilities, key=lambda item: item["runtime_id"]),
         "operators": sorted(operators, key=lambda item: item["runtime_id"]),
         "recipes": sorted(recipes, key=lambda item: (item["recipe_id"], item["recipe_version"])),

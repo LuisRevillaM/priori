@@ -19,10 +19,21 @@ from tqe.semantic_registry.generate import (
     validate_registry,
 )
 from tqe.semantic_registry.models import AuthoringExposure, MaturityLevel
+from tqe.semantic_registry.models import RuntimeInputBinding
 
 
 def finding_codes(findings) -> set[str]:
     return {finding.code for finding in findings}
+
+
+def runtime_capability(
+    runtime_manifest: dict, *, kind: str, name: str, version: str = "0.1.0"
+) -> dict:
+    return next(
+        item
+        for item in runtime_manifest["capabilities"]
+        if item["kind"] == kind and item["name"] == name and item["version"] == version
+    )
 
 
 class SCP0SemanticRegistryTests(unittest.TestCase):
@@ -509,6 +520,92 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
 
         self.assertIn("runtime_signature_mismatch", codes)
 
+    def test_unknown_runtime_context_ref_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        binding = next(
+            item
+            for item in registry.runtime_bindings
+            if item.id == "binding.primitive.possession_segment.0_1_0"
+        )
+        binding.input_bindings["canonical_match_state"].context_ref = (
+            "fake.context.that.does.not.exist"
+        )
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("runtime_context_signature_mismatch", codes)
+
+    def test_runtime_input_binding_source_targets_are_exclusive(self) -> None:
+        with self.assertRaises(ValueError):
+            RuntimeInputBinding.model_validate(
+                {
+                    "source": "RUNTIME_CONTEXT",
+                    "context_ref": "canonical_match_state",
+                    "runtime_port": "canonical_match_state",
+                }
+            )
+        with self.assertRaises(ValueError):
+            RuntimeInputBinding.model_validate(
+                {
+                    "source": "NODE_INPUT",
+                    "runtime_port": "anchors",
+                    "context_ref": "canonical_match_state",
+                }
+            )
+
+    def test_exact_field_unit_entity_scope_cardinality_and_requiredness_drift_fail(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        signed_shift = runtime_capability(
+            runtime_manifest, kind="primitive", name="signed_lateral_shift"
+        )
+        signed_shift["outputs"][0]["unit"] = "none"
+        signed_shift["outputs"][0]["cardinality"] = "collection"
+        signed_shift["inputs"][2]["entity_scope"] = "player"
+        signed_shift["inputs"][2]["required"] = False
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        findings = validate_registry(registry, runtime_manifest, lock)
+        messages = "\n".join(finding.message for finding in findings)
+
+        self.assertIn("runtime_signature_mismatch", finding_codes(findings))
+        self.assertIn("unit metre != none", messages)
+        self.assertIn("cardinality single != collection", messages)
+        self.assertIn("entity_scope team != player", messages)
+        self.assertIn("required True != False", messages)
+
+    def test_exact_parameter_bounds_default_and_allowed_value_drift_fail(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        relation_entry = runtime_capability(
+            runtime_manifest, kind="primitive", name="relation_destination_entry"
+        )
+        for parameter in relation_entry["parameters"]:
+            if parameter["name"] == "destination_entry_horizon_seconds":
+                parameter["minimum"] = 0.3
+            if parameter["name"] == "episode_selection":
+                parameter["allowed_values"] = ["first_by_duration_clearance"]
+            if parameter["name"] == "result_id_seed":
+                parameter["default"] = {
+                    "payload_type": "enum",
+                    "value": "unexpected",
+                    "unit": "none",
+                }
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        findings = validate_registry(registry, runtime_manifest, lock)
+        messages = "\n".join(finding.message for finding in findings)
+
+        self.assertIn("runtime_parameter_signature_mismatch", finding_codes(findings))
+        self.assertIn("minimum 0.2 != 0.3", messages)
+        self.assertIn(
+            "allowed_values ['entry_first_then_progression', 'first_by_duration_clearance'] != ['first_by_duration_clearance']",
+            messages,
+        )
+        self.assertIn("default None !=", messages)
+
     def test_partial_binding_nonexistent_mapping_key_or_target_fails(self) -> None:
         registry = load_registry()
         runtime_manifest = generate_runtime_manifest()
@@ -541,6 +638,23 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
 
         self.assertIn("runtime_parameter_signature_mismatch", codes)
+
+    def test_unknown_uncovered_runtime_or_semantic_field_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        binding = next(
+            item
+            for item in registry.runtime_bindings
+            if item.id == "binding.primitive.controlled_pass_episode.0_1_0"
+        )
+        binding.uncovered_runtime_outputs.append("not_a_real_runtime_output")
+        binding.uncovered_semantic_inputs.append("not_a_real_semantic_input")
+        binding.uncovered_runtime_outputs.append("not_a_real_runtime_output")
+        lock = make_registry_lock(registry, runtime_manifest)
+
+        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+
+        self.assertIn("runtime_uncovered_field_mismatch", codes)
 
     def test_exact_parameter_binding_to_missing_semantic_target_fails(self) -> None:
         registry = load_registry()
@@ -581,6 +695,22 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         codes = finding_codes(validate_projection_parity(registry, runtime_manifest, projections))
 
         self.assertIn("projection_parity_stale_waiver", codes)
+
+    def test_duplicate_waiver_key_fails(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        ai_policy = next(item for item in registry.projection_policies if item.target.value == "ai")
+        ai_policy.accepted_differences.append(copy.deepcopy(ai_policy.accepted_differences[0]))
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+
+        registry_codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
+        parity_codes = finding_codes(
+            validate_projection_parity(registry, runtime_manifest, projections)
+        )
+
+        self.assertIn("projection_parity_duplicate_waiver", registry_codes)
+        self.assertIn("projection_parity_duplicate_waiver", parity_codes)
 
     def test_accepted_composition_content_change_with_same_id_fails(self) -> None:
         registry = load_registry()
@@ -649,6 +779,20 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
             len(baseline["unsupported"]["items"]) - 1,
             len(changed["unsupported"]["items"]),
         )
+
+    def test_product_recipe_parity_reports_current_runtime_alignment_mode(self) -> None:
+        registry = load_registry()
+        runtime_manifest = generate_runtime_manifest()
+        lock = make_registry_lock(registry, runtime_manifest)
+        projections = build_projections(registry, runtime_manifest, lock)
+
+        differences = scpgen.build_projection_differences(runtime_manifest, projections)
+
+        self.assertEqual(
+            "current_runtime_alignment",
+            differences["product"]["recipe_contract_baseline_mode"],
+        )
+        self.assertFalse(differences["product"]["recipe_contract_frozen_baseline"])
 
     def test_failed_generation_leaves_last_valid_projection_untouched(self) -> None:
         registry = load_registry()

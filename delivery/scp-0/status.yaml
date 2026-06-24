@@ -62,6 +62,7 @@ slices:
       - generated/semantic-registry/ai-projection.json
       - generated/semantic-registry/product-projection.json
       - generated/semantic-registry/unsupported-capability-projection.json
+      - src/tqe/semantic_registry/runtime_manifest.py
       - src/tqe/semantic_registry/generate.py
       - src/tqe/semantic_registry/models.py
       - tests/test_scp0_semantic_registry.py
@@ -75,9 +76,12 @@ claims:
   full_origin_provenance_integrity: VERIFIED
   recipe_contract_lineage: VERIFIED
   composition_contract_lineage: VERIFIED
+  runtime_context_conformance: VERIFIED
   exact_signature_conformance: VERIFIED
   partial_signature_conformance: VERIFIED
   parity_waiver_integrity: VERIFIED
+  parity_waiver_uniqueness: VERIFIED
+  product_recipe_parity_mode: CURRENT_RUNTIME_ALIGNMENT_DISCLOSED
   pilot_graph_traversal: VERIFIED
   runtime_authority: CURRENT_RUNTIME
   projection_authority: SHADOW_ONLY
@@ -88,19 +92,20 @@ verification:
     - make test
   latest_result:
     status: PASS
-    timestamp: "2026-06-23T17:22:22-07:00"
+    timestamp: "2026-06-23T18:10:31-07:00"
     commands:
       - "make scp-0-verify"
       - "make test"
     summary:
       - "SCP-0 verifier PASS: 11 runtime capabilities bound, 8 operators defined, 4 recipes mapped, 1 validated composition mapped, 741 atlas entries isolated, zero product/AI atlas leakage."
-      - "SCP-0E closure active: runtime bindings declare explicit input/output/parameter bindings including runtime-context sources; exact and partial/legacy conformance is validated bidirectionally; parity waivers are pinned by difference kind, baseline hash, projection hash, and permitted fields; plan dependency contracts are enforced for recipes and compositions; AI operator and unsupported projections obey declared projection policy."
-      - "Focused SCP-0 adversarial unit suite: 42 tests OK."
-      - "Repository unittest discovery: 124 tests OK; attestation VERIFIED."
+      - "SCP-0E closure active: runtime bindings declare explicit input/output/parameter bindings including runtime-context sources; runtime-context refs resolve to typed runtime manifest entries; exact and partial/legacy conformance is validated bidirectionally; exact checks include unit, cardinality, entity scope, input requiredness, and parameter bounds/defaults/allowed values; parity waivers are pinned by difference kind, baseline hash, projection hash, permitted fields, and unique waiver key; plan dependency contracts are enforced for recipes and compositions; AI operator and unsupported projections obey declared projection policy."
+      - "Product recipe comparison is explicitly reported as current-runtime alignment rather than frozen product recipe baseline parity."
+      - "Focused SCP-0 adversarial unit suite: 49 tests OK."
+      - "Repository unittest discovery: 131 tests OK; attestation VERIFIED."
 review:
-  external_packet: review-packets/scp-0e-waiver-conformance-closure-2026-06-23.zip
+  external_packet: review-packets/scp-0e-waiver-conformance-closure-patch-2026-06-23.zip
   accepted: false
-  last_external_decision: CHANGES_REQUIRED_BEFORE_SCP_1_NARROW_SCP_0E
+  last_external_decision: CHANGES_REQUIRED_BEFORE_SCP_1_SMALL_SCP_0E_CLOSURE_PATCH
 non_goals:
   - runtime behavior changes
   - new tactical capabilities

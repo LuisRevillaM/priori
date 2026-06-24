@@ -308,6 +308,9 @@ def _type_value_to_runtime(value: str) -> str:
         "RelationRef": "relation_ref",
         "EntitySet": "entity_set",
         "Point": "point",
+        "Position": "position",
+        "ProviderEvent": "provider_event",
+        "MatchState": "match_state",
     }.get(value, value.lower())
 
 
@@ -317,21 +320,50 @@ def _type_container_to_runtime(value: str) -> str:
         "EpisodeSet": "episode_set",
         "RelationEpisodeSet": "relation_episode_set",
         "Scalar": "scalar",
+        "WorldState": "world_state",
+        "PointSignal": "point_signal",
+        "EntitySetSignal": "entity_set_signal",
+        "EventSet": "event_set",
+        "TrajectorySet": "trajectory_set",
     }.get(value, value.lower())
 
 
-def _type_signature(field: Any) -> dict[str, str]:
+def _semantic_cardinality(type_ref: Any) -> str | None:
+    if getattr(type_ref, "cardinality", None):
+        return type_ref.cardinality
+    if getattr(type_ref, "container", None) in {
+        "EpisodeSet",
+        "RelationEpisodeSet",
+        "EventSet",
+        "TrajectorySet",
+        "EntitySetSignal",
+    }:
+        return "collection"
+    if getattr(type_ref, "container", None) in {"FrameSignal", "Scalar", "WorldState", "PointSignal"}:
+        return "single"
+    return None
+
+
+def _type_signature(field: Any) -> dict[str, Any]:
     if hasattr(field, "type"):
         type_ref = field.type
         return {
             "payload_type": _type_value_to_runtime(type_ref.value),
             "temporal_type": _type_container_to_runtime(type_ref.container),
             "unit": type_ref.unit,
+            "cardinality": _semantic_cardinality(type_ref),
+            "entity_scope": type_ref.entity_scope,
+            "coordinate_frame": type_ref.coordinate_frame,
+            "required": bool(getattr(field, "required", True)),
         }
     return {
         "payload_type": field["payload_type"],
         "temporal_type": field["temporal_type"],
         "unit": field.get("unit", "none"),
+        "cardinality": field.get("cardinality"),
+        "entity_scope": field.get("entity_scope"),
+        "coordinate_frame": field.get("coordinate_frame"),
+        "required": field.get("required"),
     }
 
 
@@ -446,10 +478,33 @@ def _signature_mismatch(
         mismatches.append(f"temporal {semantic['temporal_type']} != {runtime['temporal_type']}")
     if (
         not allow_any_unit
-        and semantic["unit"] not in {"any", runtime["unit"]}
-        and runtime["unit"] != "none"
+        and semantic["unit"] != "any"
+        and semantic["unit"] != runtime["unit"]
     ):
         mismatches.append(f"unit {semantic['unit']} != {runtime['unit']}")
+    if (
+        semantic.get("cardinality") not in {None, "any", runtime.get("cardinality")}
+        and runtime.get("cardinality") is not None
+    ):
+        mismatches.append(
+            f"cardinality {semantic.get('cardinality')} != {runtime.get('cardinality')}"
+        )
+    if (
+        semantic.get("entity_scope") not in {None, "any", runtime.get("entity_scope")}
+        and runtime.get("entity_scope") is not None
+    ):
+        mismatches.append(
+            f"entity_scope {semantic.get('entity_scope')} != {runtime.get('entity_scope')}"
+        )
+    if (
+        semantic.get("coordinate_frame") not in {None, "any", runtime.get("coordinate_frame")}
+        and runtime.get("coordinate_frame") is not None
+    ):
+        mismatches.append(
+            f"coordinate_frame {semantic.get('coordinate_frame')} != {runtime.get('coordinate_frame')}"
+        )
+    if runtime.get("required") is not None and semantic.get("required") != runtime.get("required"):
+        mismatches.append(f"required {semantic.get('required')} != {runtime.get('required')}")
     return mismatches
 
 
@@ -462,8 +517,8 @@ def _parameter_signature_mismatch(semantic_field: Any, runtime_parameter: dict[s
             f"payload {semantic_payload} != {runtime_parameter.get('payload_type')}"
         )
     if (
-        semantic_type.unit not in {"any", runtime_parameter.get("unit", "none")}
-        and runtime_parameter.get("unit", "none") != "none"
+        semantic_type.unit != "any"
+        and semantic_type.unit != runtime_parameter.get("unit", "none")
     ):
         mismatches.append(f"unit {semantic_type.unit} != {runtime_parameter.get('unit')}")
     if bool(getattr(semantic_field, "required", True)) != bool(
@@ -472,7 +527,48 @@ def _parameter_signature_mismatch(semantic_field: Any, runtime_parameter: dict[s
         mismatches.append(
             f"required {bool(getattr(semantic_field, 'required', True))} != {bool(runtime_parameter.get('required', False))}"
         )
+    for attr, runtime_key in (
+        ("minimum", "minimum"),
+        ("maximum", "maximum"),
+        ("default", "default"),
+        ("allowed_values", "allowed_values"),
+    ):
+        semantic_value = getattr(semantic_field, attr, None)
+        runtime_has_value = runtime_key in runtime_parameter
+        if semantic_value is not None or runtime_has_value:
+            runtime_value = runtime_parameter.get(runtime_key)
+            if semantic_value != runtime_value:
+                mismatches.append(f"{runtime_key} {semantic_value} != {runtime_value}")
     return mismatches
+
+
+def _validate_uncovered_names(
+    *,
+    binding: Any,
+    values: list[str],
+    valid_names: set[str],
+    path: str,
+    label: str,
+) -> list[ValidationFinding]:
+    findings: list[ValidationFinding] = []
+    duplicates = sorted({item for item in values if values.count(item) > 1})
+    for item in duplicates:
+        findings.append(
+            _finding(
+                "runtime_uncovered_field_mismatch",
+                f"{binding.id} declares duplicate uncovered {label} {item}.",
+                path,
+            )
+        )
+    for item in sorted(set(values) - valid_names):
+        findings.append(
+            _finding(
+                "runtime_uncovered_field_mismatch",
+                f"{binding.id} declares unknown uncovered {label} {item}.",
+                path,
+            )
+        )
+    return findings
 
 
 def _uncovered_binding_values(binding: Any) -> dict[str, list[str]]:
@@ -577,6 +673,7 @@ def validate_plan_dependency_contract_closure(
 def validate_runtime_signature_compatibility(
     binding: Any,
     runtime_entry: dict[str, Any],
+    runtime_contexts: dict[str, dict[str, Any]],
     operationalizations: dict[str, Any],
     path: str,
 ) -> list[ValidationFinding]:
@@ -595,6 +692,61 @@ def validate_runtime_signature_compatibility(
     runtime_parameters = {item["name"]: item for item in runtime_entry.get("parameters", [])}
     semantic_parameters = _field_map(binding.semantic_parameters)
 
+    findings.extend(
+        _validate_uncovered_names(
+            binding=binding,
+            values=list(binding.uncovered_runtime_inputs),
+            valid_names=set(runtime_inputs),
+            path=f"{path}.uncovered_runtime_inputs",
+            label="runtime input",
+        )
+    )
+    findings.extend(
+        _validate_uncovered_names(
+            binding=binding,
+            values=list(binding.uncovered_runtime_outputs),
+            valid_names=set(runtime_outputs),
+            path=f"{path}.uncovered_runtime_outputs",
+            label="runtime output",
+        )
+    )
+    findings.extend(
+        _validate_uncovered_names(
+            binding=binding,
+            values=list(binding.uncovered_runtime_parameters),
+            valid_names=set(runtime_parameters),
+            path=f"{path}.uncovered_runtime_parameters",
+            label="runtime parameter",
+        )
+    )
+    findings.extend(
+        _validate_uncovered_names(
+            binding=binding,
+            values=list(binding.uncovered_semantic_inputs),
+            valid_names=set(semantic_inputs),
+            path=f"{path}.uncovered_semantic_inputs",
+            label="semantic input",
+        )
+    )
+    findings.extend(
+        _validate_uncovered_names(
+            binding=binding,
+            values=list(binding.uncovered_semantic_outputs),
+            valid_names=set(semantic_outputs),
+            path=f"{path}.uncovered_semantic_outputs",
+            label="semantic output",
+        )
+    )
+    findings.extend(
+        _validate_uncovered_names(
+            binding=binding,
+            values=list(binding.uncovered_semantic_parameters),
+            valid_names=set(semantic_parameters),
+            path=f"{path}.uncovered_semantic_parameters",
+            label="semantic parameter",
+        )
+    )
+
     mapped_runtime_inputs: set[str] = set()
     for semantic_name, input_binding in binding.input_bindings.items():
         semantic_field = semantic_inputs.get(semantic_name)
@@ -605,7 +757,7 @@ def validate_runtime_signature_compatibility(
                     f"{binding.id} input binding targets undeclared semantic input {semantic_name}.",
                     f"{path}.input_bindings.{semantic_name}",
                 )
-            )
+                )
             continue
         if input_binding.source == "NODE_INPUT":
             runtime_port = input_binding.runtime_port
@@ -626,6 +778,26 @@ def validate_runtime_signature_compatibility(
                     _finding(
                         "runtime_signature_mismatch",
                         f"{binding.id} input {runtime_port} mismatch: {mismatches}.",
+                        f"{path}.input_bindings.{semantic_name}",
+                    )
+                )
+        if input_binding.source == "RUNTIME_CONTEXT":
+            context = runtime_contexts.get(str(input_binding.context_ref))
+            if context is None:
+                findings.append(
+                    _finding(
+                        "runtime_context_signature_mismatch",
+                        f"{binding.id} semantic input {semantic_name} maps to unknown runtime context {input_binding.context_ref}.",
+                        f"{path}.input_bindings.{semantic_name}.context_ref",
+                    )
+                )
+                continue
+            mismatches = _signature_mismatch(semantic_field, context)
+            if mismatches:
+                findings.append(
+                    _finding(
+                        "runtime_context_signature_mismatch",
+                        f"{binding.id} context {input_binding.context_ref} mismatch: {mismatches}.",
                         f"{path}.input_bindings.{semantic_name}",
                     )
                 )
@@ -770,6 +942,14 @@ def validate_runtime_signature_compatibility(
                 )
             )
     if binding.conformance_status == ConformanceStatus.EXACT:
+        if binding.known_deviations:
+            findings.append(
+                _finding(
+                    "exact_binding_has_known_deviations",
+                    f"{binding.id} is EXACT but declares known_deviations.",
+                    f"{path}.known_deviations",
+                )
+            )
         uncovered = {key: value for key, value in _uncovered_binding_values(binding).items() if value}
         if uncovered:
             findings.append(
@@ -877,6 +1057,9 @@ def validate_registry(
     operator_keys = runtime_operator_keys(runtime_manifest)
     runtime_by_key = _runtime_by_key(runtime_manifest)
     operators_by_key = _operator_by_key(runtime_manifest)
+    runtime_contexts = {
+        item["name"]: item for item in runtime_manifest.get("runtime_contexts", [])
+    }
     plan_artifacts = _index(registry.plan_artifacts)
     plan_index = build_plan_artifact_index(registry)
 
@@ -904,6 +1087,19 @@ def validate_registry(
                 "projection_policies",
             )
         )
+    for policy_index, policy in enumerate(registry.projection_policies):
+        waiver_keys = [
+            (policy.target.value, waiver.difference_kind, waiver.subject_ref)
+            for waiver in policy.accepted_differences
+        ]
+        for key in sorted({item for item in waiver_keys if waiver_keys.count(item) > 1}):
+            findings.append(
+                _finding(
+                    "projection_parity_duplicate_waiver",
+                    f"ProjectionPolicy {policy.id} declares duplicate waiver key {key}.",
+                    f"projection_policies[{policy_index}].accepted_differences",
+                )
+            )
 
     binding_keys: list[tuple[str, str, str]] = []
     for index, binding in enumerate(registry.runtime_bindings):
@@ -973,7 +1169,11 @@ def validate_registry(
         if runtime_entry is not None:
             findings.extend(
                 validate_runtime_signature_compatibility(
-                    binding, runtime_entry, operationalizations, f"runtime_bindings[{index}]"
+                    binding,
+                    runtime_entry,
+                    runtime_contexts,
+                    operationalizations,
+                    f"runtime_bindings[{index}]",
                 )
             )
 
@@ -2321,6 +2521,12 @@ def _baseline_contracts(runtime_manifest: dict[str, Any]) -> dict[str, Any]:
         for item in runtime_manifest.get("recipes", []):
             subject = f"recipe:{item['recipe_id']}:{item['recipe_version']}"
             product[subject] = _canonical_recipe_contract(item)
+        sources["product_recipe_contracts"] = {
+            "mode": "current_runtime_alignment",
+            "frozen_baseline": False,
+            "source": "runtime_manifest.recipes",
+            "reason": "No pinned product recipe baseline artifact exists yet; recipe comparison checks current runtime manifest alignment, not independent frozen product-recipe parity.",
+        }
 
     knowledge_pack = _load_json_if_exists(KNOWLEDGE_PACK_BASELINE_PATH)
     if isinstance(knowledge_pack, dict):
@@ -2403,12 +2609,19 @@ def build_projection_differences(
     runtime_manifest: dict[str, Any], projections: dict[str, dict[str, Any]]
 ) -> dict[str, Any]:
     baselines = _baseline_contracts(runtime_manifest)
+    product_diff = _identity_diff(
+        baselines["product"],
+        _projection_contracts(projections["product"], runtime_manifest=runtime_manifest),
+    )
+    product_diff["recipe_contract_baseline_mode"] = "current_runtime_alignment"
+    product_diff["recipe_contract_frozen_baseline"] = False
+    product_diff["recipe_contract_baseline_note"] = (
+        "Product recipe contracts are compared against current runtime manifest recipes "
+        "until a pinned product recipe baseline artifact exists."
+    )
     return {
         "baseline_sources": baselines["sources"],
-        "product": _identity_diff(
-            baselines["product"],
-            _projection_contracts(projections["product"], runtime_manifest=runtime_manifest),
-        ),
+        "product": product_diff,
         "ai": _identity_diff(
             baselines["ai"],
             _projection_contracts(
@@ -2445,6 +2658,18 @@ def validate_projection_parity(
         diff = differences[target]
         policy = policy_by_target.get(target)
         waivers = policy.accepted_differences if policy else []
+        waiver_keys = [
+            (target, waiver.difference_kind.lower(), waiver.subject_ref)
+            for waiver in waivers
+        ]
+        for duplicate_key in sorted({item for item in waiver_keys if waiver_keys.count(item) > 1}):
+            findings.append(
+                _finding(
+                    "projection_parity_duplicate_waiver",
+                    f"{target} projection declares duplicate waiver key {duplicate_key}.",
+                    f"projection_policies.{target}.accepted_differences",
+                )
+            )
         observed: set[tuple[str, str]] = set()
         waiver_by_key = {
             (waiver.difference_kind.lower(), waiver.subject_ref): waiver

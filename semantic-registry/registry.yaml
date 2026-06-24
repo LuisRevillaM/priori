@@ -182,7 +182,7 @@ operationalizations:
         type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
     outputs:
       - name: centroid_y
-        type: {container: FrameSignal, value: Scalar, quantity: lateral_position, unit: metre, entity_scope: team}
+        type: {container: FrameSignal, value: Scalar, quantity: lateral_position, unit: metre, cardinality: per_team, entity_scope: team}
     lowering: [reference_player_set, centroid]
     claim_contract_ref: claim.defensive_outfield_centroid.v1
     evidence_contract_ref: evidence.defensive_outfield_centroid.v1
@@ -201,7 +201,7 @@ operationalizations:
       - name: entry_episodes
         type: {container: EpisodeSet, value: Boolean, quantity: wide_entry, unit: none, entity_scope: ball}
       - name: defensive_centroid
-        type: {container: FrameSignal, value: Scalar, quantity: lateral_position, unit: metre, entity_scope: team}
+        type: {container: FrameSignal, value: Scalar, quantity: lateral_position, unit: metre, cardinality: per_team, entity_scope: team}
     outputs:
       - name: signed_shift
         type: {container: FrameSignal, value: Scalar, quantity: lateral_shift, unit: metre, entity_scope: team}
@@ -476,21 +476,39 @@ runtime_bindings:
       - name: release_search_before_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: false
+        default: {payload_type: number, value: 1.0, unit: second}
+        minimum: 0.0
+        maximum: 5.0
       - name: release_search_after_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: false
+        default: {payload_type: number, value: 3.0, unit: second}
+        minimum: 0.0
+        maximum: 8.0
       - name: reception_search_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: false
+        default: {payload_type: number, value: 6.0, unit: second}
+        minimum: 0.2
+        maximum: 15.0
       - name: control_distance_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: false
+        default: {payload_type: number, value: 2.5, unit: metre}
+        minimum: 0.1
+        maximum: 8.0
       - name: nearest_teammate_margin_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: false
+        default: {payload_type: number, value: 1.0, unit: metre}
+        minimum: 0.0
+        maximum: 5.0
       - name: minimum_receiver_dwell_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: false
+        default: {payload_type: number, value: 0.24, unit: second}
+        minimum: 0.04
+        maximum: 2.0
     parameter_bindings:
       release_search_before_seconds: release_search_before_seconds
       release_search_after_seconds: release_search_after_seconds
@@ -560,6 +578,8 @@ runtime_bindings:
       - name: horizon
         type: {container: Scalar, value: Scalar, unit: second}
         required: true
+        minimum: 0.2
+        maximum: 30.0
     parameter_bindings:
       horizon: horizon
 
@@ -579,12 +599,15 @@ runtime_bindings:
       - name: destination_entry_horizon_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: true
+        minimum: 0.2
+        maximum: 30.0
       - name: result_id_seed
         type: {container: Scalar, value: Enum, unit: none}
         required: true
       - name: episode_selection
         type: {container: Scalar, value: Enum, unit: none}
         required: true
+        allowed_values: [entry_first_then_progression, first_by_duration_clearance]
     parameter_bindings:
       destination_entry_horizon_seconds: destination_entry_horizon_seconds
       result_id_seed: result_id_seed
@@ -607,12 +630,15 @@ runtime_bindings:
       - name: destination_entry_horizon_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: true
+        minimum: 0.2
+        maximum: 30.0
       - name: result_id_seed
         type: {container: Scalar, value: Enum, unit: none}
         required: true
       - name: episode_selection
         type: {container: Scalar, value: Enum, unit: none}
         required: true
+        allowed_values: [first_by_duration_clearance]
     parameter_bindings:
       destination_entry_horizon_seconds: destination_entry_horizon_seconds
       result_id_seed: result_id_seed
@@ -635,30 +661,47 @@ runtime_bindings:
       - name: max_window_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: true
+        minimum: 0.2
+        maximum: 15.0
       - name: minimum_progression_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: true
+        minimum: 0.0
+        maximum: 80.0
       - name: minimum_segment_length_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: true
+        minimum: 0.0
+        maximum: 80.0
       - name: maximum_segment_length_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: true
+        minimum: 0.0
+        maximum: 100.0
       - name: minimum_clearance_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: true
+        minimum: 0.0
+        maximum: 40.0
       - name: open_after_frames
         type: {container: Scalar, value: Scalar, unit: count}
         required: true
+        minimum: 1.0
+        maximum: 100.0
       - name: close_after_frames
         type: {container: Scalar, value: Scalar, unit: count}
         required: true
+        minimum: 1.0
+        maximum: 100.0
       - name: minimum_duration_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: true
+        minimum: 0.0
+        maximum: 15.0
       - name: side_filter
         type: {container: Scalar, value: Enum, unit: none}
         required: true
+        allowed_values: [any, same_ball_side, opposite_ball_side]
     parameter_bindings:
       max_window_seconds: max_window_seconds
       minimum_progression_m: minimum_progression_m
@@ -687,30 +730,47 @@ runtime_bindings:
       - name: max_window_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: true
+        minimum: 0.2
+        maximum: 15.0
       - name: minimum_progression_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: true
+        minimum: 0.0
+        maximum: 80.0
       - name: minimum_segment_length_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: true
+        minimum: 0.0
+        maximum: 80.0
       - name: maximum_segment_length_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: true
+        minimum: 0.0
+        maximum: 100.0
       - name: minimum_clearance_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: true
+        minimum: 0.0
+        maximum: 40.0
       - name: open_after_frames
         type: {container: Scalar, value: Scalar, unit: count}
         required: true
+        minimum: 1.0
+        maximum: 100.0
       - name: close_after_frames
         type: {container: Scalar, value: Scalar, unit: count}
         required: true
+        minimum: 1.0
+        maximum: 100.0
       - name: minimum_duration_seconds
         type: {container: Scalar, value: Scalar, unit: second}
         required: true
+        minimum: 0.0
+        maximum: 15.0
       - name: side_filter
         type: {container: Scalar, value: Enum, unit: none}
         required: true
+        allowed_values: [any, same_ball_side, opposite_ball_side]
     parameter_bindings:
       max_window_seconds: max_window_seconds
       minimum_progression_m: minimum_progression_m
@@ -741,9 +801,15 @@ runtime_bindings:
       - name: goal_side_buffer_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: false
+        default: {payload_type: number, value: 1.0, unit: metre}
+        minimum: 0.0
+        maximum: 5.0
       - name: bypassed_buffer_m
         type: {container: Scalar, value: Scalar, unit: metre}
         required: false
+        default: {payload_type: number, value: 1.0, unit: metre}
+        minimum: 0.0
+        maximum: 5.0
     parameter_bindings:
       goal_side_buffer_m: goal_side_buffer_m
       bypassed_buffer_m: bypassed_buffer_m
