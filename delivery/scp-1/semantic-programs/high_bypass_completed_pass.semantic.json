@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0",
+  "expression_id": "semantic_high_bypass_completed_pass_v1",
+  "expression_version": "0.1.0",
+  "display_name": "High-Bypass Completed Pass",
+  "query_text": "Show completed passes that move the ball forward and bypass at least five opposition outfield players.",
+  "description": "Semantic expression for the first high-bypass pass family. It proves that the semantic compiler can lower a newer football capability stack without treating recipes as the language boundary.",
+  "normal_form": {
+    "scope": {
+      "summary": "Selected real matches, both halves, from the selected attacking-team perspective.",
+      "semantic_refs": [
+        "scope.selected_matches",
+        "scope.attacking_team_perspective"
+      ],
+      "runtime_refs": [
+        "default_invocation.match_ids",
+        "default_invocation.periods",
+        "default_invocation.perspective_team_role"
+      ]
+    },
+    "anchor": {
+      "summary": "Completed controlled pass receptions whose physical release and controlled reception can be aligned to tracking.",
+      "semantic_refs": [
+        "anchor.controlled_pass_episode"
+      ],
+      "runtime_refs": [
+        "controlled_pass.anchors",
+        "controlled_pass.episodes"
+      ]
+    },
+    "bind": {
+      "summary": "Passer, receiver, ball, attacking direction, and expected active opposition outfield players.",
+      "semantic_refs": [
+        "bind.passer",
+        "bind.receiver",
+        "bind.opposition_outfield"
+      ],
+      "runtime_refs": [
+        "opponent_bypass.anchor_evaluations"
+      ]
+    },
+    "measure": {
+      "summary": "Measure forward progression and count opponents who move from goal-side of the ball at release to behind the ball at controlled reception.",
+      "semantic_refs": [
+        "measure.forward_progression_m",
+        "measure.opponents_bypassed_count"
+      ],
+      "runtime_refs": [
+        "opponent_bypass.forward_progression_m",
+        "opponent_bypass.opponents_bypassed_count"
+      ]
+    },
+    "match": {
+      "summary": "Require forward progression above the declared metre threshold and bypass count above the declared count threshold.",
+      "semantic_refs": [
+        "operator.gte"
+      ],
+      "runtime_refs": [
+        "forward_progression_at_least_minimum",
+        "opponents_bypassed_at_least_minimum"
+      ]
+    },
+    "outcome": {
+      "summary": "Classify a moment as HIGH_BYPASS_COMPLETED_PASS when both quantitative predicates pass.",
+      "semantic_refs": [
+        "classification.high_bypass_completed_pass"
+      ],
+      "runtime_refs": [
+        "draft_plan.classification_rules"
+      ]
+    },
+    "judge": {
+      "summary": "Use the experimental high-bypass pass definition: forward progression at least 8 metres and at least 5 bypassed opponents by default.",
+      "semantic_refs": [
+        "profile.high_bypass_completed_pass.experimental.v1"
+      ],
+      "runtime_refs": [
+        "minimum_forward_progression_m",
+        "minimum_bypassed_opponents",
+        "goal_side_buffer_m",
+        "bypassed_buffer_m"
+      ]
+    },
+    "return": {
+      "summary": "Return release/reception frames, passer, receiver, progression, bypassed players, coverage status, uncertainty, and replay evidence.",
+      "semantic_refs": [
+        "evidence.high_bypass_completed_pass.v1"
+      ],
+      "runtime_refs": [
+        "draft_plan.requested_evidence",
+        "QueryResult.evidence",
+        "PredicateTrace"
+      ]
+    }
+  },
+  "support": {
+    "expressible": true,
+    "compilable": true,
+    "executable": true,
+    "identifiable": true,
+    "validated": true
+  },
+  "concept_refs": [
+    "concept.controlled_pass_episode",
+    "concept.opponents_bypassed_by_action",
+    "concept.high_bypass_completed_pass"
+  ],
+  "operator_refs": [
+    "gte@1.0.0"
+  ],
+  "required_modalities": [
+    "events",
+    "tracking"
+  ],
+  "lowering_target": {
+    "kind": "existing_tactical_query_document",
+    "plan_path": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
+    "profile": "experimental_program"
+  },
+  "parameter_overrides": {},
+  "declared_gaps": [],
+  "fixture_expectation": {
+    "outcome": "COMPILED",
+    "runtime_recipe_id": "high_bypass_completed_pass_v1"
+  }
+}

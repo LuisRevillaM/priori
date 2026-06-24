@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0",
+  "expression_id": "semantic_goal_kick_restart_candidate_gap_v1",
+  "expression_version": "0.1.0",
+  "display_name": "Goal-Kick Restart Candidate Gap",
+  "query_text": "Find goal kicks where the first pass forced the press to jump.",
+  "description": "Reference gap fixture for reconstructed restart anchors. The football meaning is represented, but the restart-taken operationalization is not yet executable.",
+  "normal_form": {
+    "scope": {
+      "summary": "Selected matches and dead-ball restart-like moments near a team's own goal area.",
+      "semantic_refs": [
+        "scope.selected_matches",
+        "scope.restart_phase"
+      ]
+    },
+    "anchor": {
+      "summary": "A reconstructed goal-kick restart candidate where the ball becomes live from a stationary restart configuration.",
+      "semantic_refs": [
+        "anchor.restart_taken_candidate"
+      ]
+    },
+    "bind": {
+      "summary": "Restarting team, ball, contact candidate, nearby pressure unit, and goal-area region.",
+      "semantic_refs": [
+        "bind.restart_team",
+        "bind.contact_candidate",
+        "bind.press_unit"
+      ]
+    },
+    "measure": {
+      "summary": "Measure stationary-ball interval, restart location, first live-ball transition, and post-restart pressure change.",
+      "semantic_refs": [
+        "measure.stationary_ball_interval",
+        "measure.first_live_ball_frame",
+        "measure.press_jump"
+      ]
+    },
+    "match": {
+      "summary": "Require a valid restart candidate followed by a press-jump response inside a declared time window.",
+      "semantic_refs": [
+        "operator.within",
+        "operator.gte"
+      ]
+    },
+    "outcome": {
+      "summary": "Classify candidate restarts where pressure jumps after the first short restart pass.",
+      "semantic_refs": [
+        "classification.restart_press_forced"
+      ]
+    },
+    "judge": {
+      "summary": "Do not claim GOAL_KICK_AWARDED without last-touch and stoppage evidence; only candidate restart evidence is in scope.",
+      "semantic_refs": [
+        "claim.goal_kick_restart_candidate"
+      ]
+    },
+    "return": {
+      "summary": "Return the typed gap, required evidence obligations, and any executable prefix once the anchor operationalization exists.",
+      "semantic_refs": [
+        "evidence.restart_taken_candidate"
+      ]
+    }
+  },
+  "support": {
+    "expressible": true,
+    "compilable": true,
+    "executable": false,
+    "identifiable": false,
+    "validated": false
+  },
+  "concept_refs": [
+    "concept.goal_kick_restart_candidate",
+    "concept.restart_taken_candidate",
+    "concept.press_jump"
+  ],
+  "operator_refs": [
+    "within@conceptual",
+    "gte@1.0.0"
+  ],
+  "required_modalities": [
+    "tracking",
+    "events"
+  ],
+  "declared_gaps": [
+    {
+      "kind": "MISSING_OPERATIONALIZATION",
+      "concept": "restart_taken_candidate",
+      "expected_input": [
+        {
+          "name": "dead_ball_state",
+          "semantic_type": {
+            "container": "state",
+            "value": "DeadBallState",
+            "entity_scope": "match"
+          },
+          "description": "Whether the ball is out of active play before the restart-like action."
+        },
+        {
+          "name": "ball_location",
+          "semantic_type": {
+            "container": "point",
+            "value": "BallPoint",
+            "unit": "metre",
+            "entity_scope": "ball"
+          },
+          "description": "Ball position during the stationary restart setup."
+        },
+        {
+          "name": "contact_candidate",
+          "semantic_type": {
+            "container": "entity",
+            "value": "PlayerRef",
+            "entity_scope": "player"
+          },
+          "description": "Player candidate for the restart contact."
+        },
+        {
+          "name": "ball_motion_transition",
+          "semantic_type": {
+            "container": "transition",
+            "value": "BallMotionTransition",
+            "entity_scope": "ball"
+          },
+          "description": "First live-ball transition after the stationary interval."
+        }
+      ],
+      "expected_output": {
+        "container": "candidate_set",
+        "value": "RestartTakenCandidate",
+        "cardinality": "collection",
+        "entity_scope": "match"
+      },
+      "semantic_basis": "reconstructed_anchor",
+      "required_modalities": [
+        "tracking"
+      ],
+      "claim_boundary": "Can at most support a restart candidate until authoritative stoppage and last-touch evidence exist.",
+      "evidence_obligations": [
+        "stationary_ball_interval",
+        "restart_location",
+        "contact_actor",
+        "first_live_ball_frame"
+      ],
+      "surrounding_program_type_correct": true,
+      "executable_prefix_exists": false,
+      "executable_suffix_exists": false,
+      "message": "Missing operationalization: restart_taken_candidate."
+    }
+  ],
+  "fixture_expectation": {
+    "outcome": "CAPABILITY_GAP",
+    "blocking_gap_kind": "MISSING_OPERATIONALIZATION",
+    "blocking_gap_concept": "restart_taken_candidate"
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "schema_version": "1.0",
+  "expression_id": "semantic_support_arrival_clarification_v1",
+  "expression_version": "0.1.0",
+  "display_name": "Support Arrival Clarification",
+  "query_text": "Show attacks where the late runner provided enough support.",
+  "description": "Reference clarification fixture for football language whose concept is plausible but underspecified.",
+  "normal_form": {
+    "scope": {
+      "summary": "Selected attacking possessions.",
+      "semantic_refs": [
+        "scope.selected_matches",
+        "scope.attacking_possessions"
+      ]
+    },
+    "anchor": {
+      "summary": "A possession event, pass reception, carry, or line-break-like action that could need support.",
+      "semantic_refs": [
+        "anchor.possession_or_action"
+      ]
+    },
+    "bind": {
+      "summary": "Ball carrier or receiver, candidate supporting teammates, and relevant support regions.",
+      "semantic_refs": [
+        "bind.ball_carrier",
+        "bind.supporting_teammates"
+      ]
+    },
+    "measure": {
+      "summary": "Measure support relation only after support definition, distance, lane, and timing assumptions are specified.",
+      "semantic_refs": [
+        "measure.support_arrival_relation"
+      ]
+    },
+    "match": {
+      "summary": "Cannot decide pass/fail until enough support and arrival timing are defined.",
+      "semantic_refs": [
+        "operator.clarify"
+      ]
+    },
+    "outcome": {
+      "summary": "Potentially classify supported or unsupported attacks after clarification.",
+      "semantic_refs": [
+        "classification.support_response"
+      ]
+    },
+    "judge": {
+      "summary": "Ask for support definition and time window instead of over-refusing or inventing thresholds.",
+      "semantic_refs": [
+        "claim.clarification_required"
+      ]
+    },
+    "return": {
+      "summary": "Return typed clarification dimensions that the analyst can answer.",
+      "semantic_refs": [
+        "clarification.support_definition",
+        "clarification.time_window"
+      ]
+    }
+  },
+  "support": {
+    "expressible": true,
+    "compilable": true,
+    "executable": false,
+    "identifiable": false,
+    "validated": false
+  },
+  "concept_refs": [
+    "concept.support_arrival_relation",
+    "concept.support_response"
+  ],
+  "operator_refs": [],
+  "required_modalities": [
+    "tracking",
+    "events"
+  ],
+  "declared_gaps": [
+    {
+      "kind": "CLARIFICATION_REQUIRED",
+      "concept": "support_arrival_profile",
+      "expected_input": [
+        {
+          "name": "support_definition",
+          "semantic_type": {
+            "container": "definition_profile",
+            "value": "SupportDefinition"
+          },
+          "description": "Whether support means close option, same-lane option, behind-ball outlet, ahead-of-ball runner, or another relation."
+        },
+        {
+          "name": "time_window",
+          "semantic_type": {
+            "container": "parameter",
+            "value": "Duration",
+            "unit": "second"
+          },
+          "description": "How soon the support must arrive or remain available."
+        }
+      ],
+      "expected_output": {
+        "container": "definition_profile",
+        "value": "SupportArrivalProfile"
+      },
+      "semantic_basis": "ambiguous_analyst_language",
+      "required_modalities": [
+        "tracking",
+        "events"
+      ],
+      "claim_boundary": "Support cannot be measured until its geometry and timing are specified.",
+      "evidence_obligations": [
+        "support_definition",
+        "time_window"
+      ],
+      "surrounding_program_type_correct": true,
+      "executable_prefix_exists": false,
+      "executable_suffix_exists": false,
+      "message": "Clarification required: define support and the time window."
+    }
+  ],
+  "fixture_expectation": {
+    "outcome": "CLARIFICATION_REQUIRED",
+    "blocking_gap_kind": "CLARIFICATION_REQUIRED",
+    "blocking_gap_concept": "support_arrival_profile"
+  }
+}
