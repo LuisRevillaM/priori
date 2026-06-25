@@ -3691,141 +3691,19 @@ projection_policies:
         rationale: Verified Hermes-authored composition is intentionally new relative to the model-visible knowledge-pack baseline.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the composition.
       - subject_ref: recipe:line_break_support_response_v1:0.1.0
-        difference_kind: ADDED
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: a0a83061005860a3212d895055edce154c0b82c035b637c185d330d34f07424e
         projection_contract_hash: c63cbe4f2d787da3787a6127d3fa2ebd0355037284173040becd9c15c66b80f5
-        permitted_fields: []
-        rationale: Line-break support response is intentionally added as the first composed line-package recipe relative to the model-visible knowledge-pack baseline.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the recipe.
+        permitted_fields: [capability_dependencies, normalized_plan_hash, operator_dependencies]
+        rationale: Existing AI baseline exposes its public authoring contract while the semantic projection records complete bound-plan dependencies.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
       - subject_ref: recipe:first_time_relay_after_receiver_line_transition_v1:0.1.0
-        difference_kind: ADDED
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: a69e03a6015f653ab73c5c1fe5f785493d43e8de5db6d843b598b29c16aaf524
         projection_contract_hash: 9ed7dd94d66ac65628b54512990b2d1ddd14d588e9dde931d81295cf1ea7d605
-        permitted_fields: []
-        rationale: First-time relay after receiver line transition is intentionally added as the first pass-chain package capstone.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the recipe.
-      - subject_ref: runtime:primitive:one_touch_relay_episode:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 77a5d0514dc92b60a6974755690cd4c6b10c388c78f4aee87f1162b6361cd006
-        permitted_fields: []
-        rationale: One-touch relay is intentionally added as an authorable pass-chain capability.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: c908635db523d3a50c6589d1d57c9325cbb3cb918a1f25d046fc29db42954ec9
-        permitted_fields: []
-        rationale: Receiver line transition is intentionally added as an authorable pass-chain capability.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:pass_chain_episode:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 7e944b4c55d731b4dd2b6ec65011c38d21ebf1d2606f154df865a293cb5ca0c0
-        permitted_fields: []
-        rationale: Pass-chain episode is intentionally added as an authorable pass-chain capability.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:action_event_anchor:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 8e62f3e65d93fb12cdaa92a9b38012efde2443efd6375c9fd2ec255352368fa4
-        permitted_fields: []
-        rationale: Provider action event anchors are intentionally added as authorable northstar action-sequencing substrate.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:action_chain:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: f137a3c7d7031b39578febe9f6c2b4ce8a0032aa3720c99ee9d554efc714bb6b
-        permitted_fields: []
-        rationale: Action chains are intentionally added as authorable northstar action-sequencing substrate.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:tracking_quality:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 9f365bf1bada6bfac3d546cf0f03d26edc178305393d62ba42b24ccd033c4df9
-        permitted_fields: []
-        rationale: Tracking quality is intentionally added so AI-authored plans can preserve UNKNOWN under poor coordinate coverage.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:pairwise_distance:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: cd5eb8ef82b23a544d7bc3ee9b989ed3a3fe61a42e9f21bded34a097a05b104a
-        permitted_fields: []
-        rationale: Pairwise distance is intentionally added as an authorable geometric substrate primitive.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:velocity:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: f4369cac5b49256675f49d03dee288a0b3d0b202a4ddffce5e4b5387e7a5ee0a
-        permitted_fields: []
-        rationale: Velocity is intentionally added as an authorable kinematic substrate primitive.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:multi_line_model:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 5e2bcb5c0c1202caf872612333c0302cc8f9014b1603a7d7df90bed298accfbe
-        permitted_fields: []
-        rationale: Multi-line model is intentionally added as an authorable observed ranked-line capability.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:relation:pressure_on_carrier:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 12bcebc22867494d5e6063c375767e726fbbfeb824c71bf03dd0ac0928fd7bc2
-        permitted_fields: []
-        rationale: Pressure on carrier is intentionally added as an authorable observed pressure relation.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:team_compactness:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 5e17486c2cb6e1654ecf9e40b176109587dd7b023f24e2006fc301248beb3777
-        permitted_fields: []
-        rationale: Team compactness is intentionally added as an authorable Q4 compactness substrate primitive.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:switch_of_play:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: d935006f039a807c989037e2891c62faa8d0ca4bba37e47b933c73679b363ef2
-        permitted_fields: []
-        rationale: Switch of play is intentionally added as an authorable Q4 switch substrate primitive.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:change_across_anchor:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd
-        permitted_fields: []
-        rationale: Change across anchor is intentionally added as an authorable Q4 before/after comparison primitive.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:transition_anchor:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 3e9945aa75b6d02953acd3c4eb7576372675e66cc442f6b2f29cd4021a3a4ee8
-        permitted_fields: []
-        rationale: Transition anchor is intentionally added as an authorable Q5 regain/outcome-window substrate primitive.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:structured_zone:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 8ff674254979bc5bb021d218f9283ddfe5756ec7910e99297973ad39037d7c1c
-        permitted_fields: []
-        rationale: Structured zone is intentionally added as an authorable coarse-zone substrate primitive.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:outcome_window:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: b6b4021e18ac226e8d05fd5aa7216f2d564e3d89e3931c69f21b9e5d94c91148
-        permitted_fields: []
-        rationale: Outcome window is intentionally added as an authorable retained-possession outcome primitive.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: 91fcabf7351c1253b89e552f75c188b83f7afe8aa591a7299b801e254234425f
-        projection_contract_hash: 0ae83df9a078907612759f473b3ab3b0b640ae2e021eb2d7571f3c8995f20652
-        permitted_fields: [evidence_fields, outputs, parameters]
-        rationale: Existing controlled-pass capability now exposes provider event type and bounded event-type filtering for throw-in clauses.
-        review_condition: Re-review if the changed field set expands beyond event-type evidence/filtering.
-      - subject_ref: runtime:primitive:defensive_line_model:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: bd6f7561243d065bbf5a50c3f3882d4e3d20600bb1a83bc68f661b0f0872b5df
-        projection_contract_hash: 5f34c5bc61390c519c5acb5fa3393eb57cfa0bfa2d0da07f630578d250993355
-        permitted_fields: [parameters]
-        rationale: Existing line model accepts additional relay anchor-frame fields for the pass-chain package.
-        review_condition: Re-review if the changed field set expands beyond bounded parameter allowed-values.
-      - subject_ref: runtime:primitive:relative_position_to_line:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: ba5ab172992cc5539d648abde0d7c4210e0818ab2a5998e947b2a70f4dca6531
-        projection_contract_hash: 57fef100397bf1e80362c705abd4ee7203ad45e86bf31ca24706f918cade954e
-        permitted_fields: [parameters]
-        rationale: Existing relative-position helper accepts additional relay entity/frame fields for the pass-chain package.
-        review_condition: Re-review if the changed field set expands beyond bounded parameter allowed-values.
-      - subject_ref: runtime:relation:support_arrival_relation:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: 13f4c07504e0a6190e0ae9008b52efe1b998de38d35da98aeb403e9f4570289b
-        projection_contract_hash: 5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d
-        permitted_fields: [evidence_fields, outputs, parameters]
-        rationale: Existing support-arrival relation now exposes bounded upstream-status guards used to avoid coercing UNKNOWN into no support.
-        review_condition: Re-review if the changed field set expands beyond status-guard evidence and parameters.
+        permitted_fields: [capability_dependencies, normalized_plan_hash, operator_dependencies]
+        rationale: Existing AI baseline exposes its public authoring contract while the semantic projection records complete bound-plan dependencies.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
       - subject_ref: recipe:ball_side_block_shift_v1:1.0.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: 00bc3c9303cd4b29f5cab4d760d741d7fcc89c69107ebe7f55c13a7786ef5c9a
