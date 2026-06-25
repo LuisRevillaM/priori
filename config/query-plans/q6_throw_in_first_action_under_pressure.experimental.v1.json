@@ -1,0 +1,693 @@
+{
+  "default_invocation": {
+    "execution_mode": "execute",
+    "invocation_id": "q6_throw_in_first_action_under_pressure_probe",
+    "match_ids": [
+      "J03WOH",
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9",
+      "J03WMX",
+      "J03WN1"
+    ],
+    "max_results": 20,
+    "parameters": {},
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "schema_version": "1.0"
+  },
+  "draft_plan": {
+    "anchor_source": {
+      "output_name": "anchor_evaluations",
+      "source_node_id": "controlled_first_line_transition"
+    },
+    "classification_mode": "partial_declared",
+    "classification_rules": [
+      {
+        "description": "Throw-in controlled reception moved beyond observed line rank 1 while pressure was observed at reception.",
+        "label": "Q6_THROW_IN_FIRST_ACTION_PAST_OBSERVED_LINE_UNDER_PRESSURE",
+        "predicate_ids": [
+          "first_line_transition_pass",
+          "pressure_pass"
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "catalog_ref": "action_event_anchor",
+        "kind": "primitive",
+        "node_id": "throw_in_events",
+        "parameters": {
+          "action_type": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "throw_in_successful_pass"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "controlled_pass_episode",
+        "kind": "primitive",
+        "node_id": "controlled_throw_in_pass",
+        "parameters": {
+          "event_type_filter": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "ThrowIn_Play_Pass"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "tracking_quality",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_throw_in_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "tracking_quality",
+        "parameters": {
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "velocity",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_throw_in_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "receiver_velocity",
+        "parameters": {
+          "entity_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "receiver_id"
+          },
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "lookback_seconds": {
+            "kind": "parameter",
+            "name": "velocity_lookback_seconds"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "multi_line_model",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_throw_in_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "first_line_at_release",
+        "parameters": {
+          "anchor_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "physical_release_frame_id"
+          },
+          "goal_side_buffer_m": {
+            "kind": "parameter",
+            "name": "goal_side_buffer_m"
+          },
+          "line_band_width_m": {
+            "kind": "parameter",
+            "name": "line_band_width_m"
+          },
+          "minimum_line_defenders": {
+            "kind": "parameter",
+            "name": "minimum_line_defenders"
+          },
+          "target_line_rank": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 1
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "relative_position_to_line",
+        "inputs": {
+          "entity_anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_throw_in_pass"
+          },
+          "line_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "first_line_at_release"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "receiver_release_position",
+        "parameters": {
+          "entity_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "physical_release_frame_id"
+          },
+          "entity_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "receiver_id"
+          },
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "relative_position_to_line",
+        "inputs": {
+          "entity_anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_throw_in_pass"
+          },
+          "line_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "first_line_at_release"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "receiver_reception_position",
+        "parameters": {
+          "entity_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "entity_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "receiver_id"
+          },
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "controlled_line_break_episode",
+        "inputs": {
+          "controlled_pass_anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_throw_in_pass"
+          },
+          "line_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "first_line_at_release"
+          },
+          "reception_relative_positions": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "receiver_reception_position"
+          },
+          "release_relative_positions": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "receiver_release_position"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "controlled_first_line_transition",
+        "parameters": {
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "pressure_on_carrier",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "controlled_first_line_transition"
+          }
+        },
+        "kind": "relation",
+        "node_id": "reception_pressure",
+        "parameters": {
+          "candidate_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "defending_outfield"
+          },
+          "carrier_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "receiver_id"
+          },
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "lookback_seconds": {
+            "kind": "parameter",
+            "name": "velocity_lookback_seconds"
+          },
+          "maximum_approach_angle_degrees": {
+            "kind": "parameter",
+            "name": "pressure_maximum_approach_angle_degrees"
+          },
+          "maximum_pressure_distance_m": {
+            "kind": "parameter",
+            "name": "pressure_maximum_distance_m"
+          },
+          "minimum_closing_speed_mps": {
+            "kind": "parameter",
+            "name": "pressure_minimum_closing_speed_mps"
+          },
+          "minimum_pressure_duration_seconds": {
+            "kind": "parameter",
+            "name": "pressure_minimum_duration_seconds"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "line_break_status",
+          "source_node_id": "controlled_first_line_transition"
+        },
+        "kind": "predicate",
+        "node_id": "first_line_transition_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "pressure_status",
+          "source_node_id": "reception_pressure"
+        },
+        "kind": "predicate",
+        "node_id": "pressure_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      }
+    ],
+    "plan_id": "q6_throw_in_first_action_under_pressure",
+    "plan_version": "0.1.0",
+    "recipe_id": "q6_throw_in_first_action_under_pressure_v1",
+    "recipe_version": "0.1.0",
+    "requested_evidence": [
+      {
+        "alias": "pass_episode_id",
+        "field": "pass_episode_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_throw_in_pass"
+        }
+      },
+      {
+        "alias": "event_type",
+        "field": "event_type",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_throw_in_pass"
+        }
+      },
+      {
+        "alias": "passer_id",
+        "field": "passer_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_throw_in_pass"
+        }
+      },
+      {
+        "alias": "receiver_id",
+        "field": "receiver_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_throw_in_pass"
+        }
+      },
+      {
+        "alias": "physical_release_frame_id",
+        "field": "physical_release_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_throw_in_pass"
+        }
+      },
+      {
+        "alias": "controlled_reception_frame_id",
+        "field": "controlled_reception_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_throw_in_pass"
+        }
+      },
+      {
+        "alias": "forward_progression_m",
+        "field": "forward_progression_m",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_throw_in_pass"
+        }
+      },
+      {
+        "alias": "line_break_status",
+        "field": "line_break_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_first_line_transition"
+        }
+      },
+      {
+        "alias": "line_break_reason",
+        "field": "line_break_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_first_line_transition"
+        }
+      },
+      {
+        "alias": "line_x_m",
+        "field": "line_x_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_first_line_transition"
+        }
+      },
+      {
+        "alias": "release_relative_position_status",
+        "field": "release_relative_position_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_first_line_transition"
+        }
+      },
+      {
+        "alias": "reception_relative_position_status",
+        "field": "reception_relative_position_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_first_line_transition"
+        }
+      },
+      {
+        "alias": "multi_line_status",
+        "field": "multi_line_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "first_line_at_release"
+        }
+      },
+      {
+        "alias": "target_line_rank",
+        "field": "target_line_rank",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "first_line_at_release"
+        }
+      },
+      {
+        "alias": "observed_line_count",
+        "field": "observed_line_count",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "first_line_at_release"
+        }
+      },
+      {
+        "alias": "defensive_line_player_ids",
+        "field": "defensive_line_player_ids",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "first_line_at_release"
+        }
+      },
+      {
+        "alias": "pressure_status",
+        "field": "pressure_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "reception_pressure"
+        }
+      },
+      {
+        "alias": "pressure_reason",
+        "field": "pressure_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "reception_pressure"
+        }
+      },
+      {
+        "alias": "nearest_defender_id",
+        "field": "nearest_defender_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "reception_pressure"
+        }
+      },
+      {
+        "alias": "nearest_defender_distance_m",
+        "field": "nearest_defender_distance_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "reception_pressure"
+        }
+      },
+      {
+        "alias": "closing_speed_mps",
+        "field": "closing_speed_mps",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "reception_pressure"
+        }
+      },
+      {
+        "alias": "approach_angle_degrees",
+        "field": "approach_angle_degrees",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "reception_pressure"
+        }
+      },
+      {
+        "alias": "coverage_status",
+        "field": "coverage_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "reception_pressure"
+        }
+      },
+      {
+        "alias": "speed_mps",
+        "field": "speed_mps",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "receiver_velocity"
+        }
+      },
+      {
+        "alias": "tracking_quality_status",
+        "field": "tracking_quality_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "tracking_quality"
+        }
+      }
+    ],
+    "schema_version": "1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate"
+  },
+  "recipe": {
+    "allowed_claims": [
+      "A provider ThrowIn_Play_Pass event was evaluated as the first action.",
+      "The receiver moved beyond observed geometric line rank 1 under declared thresholds.",
+      "Nearest-defender pressure was observed at the controlled reception frame.",
+      "Velocity and closing speed are displacement-derived measurements, not intent or effort."
+    ],
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "description": "Experimental northstar Q6 composition: a provider throw-in pass is controlled, the receiver moves beyond observed geometric line rank 1, and observed nearest-defender pressure is present at controlled reception.",
+    "disallowed_claims": [
+      "The system identified a complete restart routine.",
+      "The system identified tactical line roles or a definitive football line break.",
+      "The defender intended to press or the receiver made a good/bad decision.",
+      "Pressure quality, pass optimality, or completion probability was inferred."
+    ],
+    "display_name": "Throw-In First Action Beyond Observed Line Under Pressure",
+    "limitations": [
+      "Throw-in is provider event type `ThrowIn_Play_Pass`, not a full restart model.",
+      "Line rank 1 is a geometric ordering of observed defending bands, not a tactical line taxonomy.",
+      "Pressure is nearest-defender distance plus closing-speed/approach-angle thresholds.",
+      "UNKNOWN evidence is excluded rather than treated as no pressure."
+    ],
+    "output_classifications": [
+      "Q6_THROW_IN_FIRST_ACTION_PAST_OBSERVED_LINE_UNDER_PRESSURE"
+    ],
+    "parameters": [
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 1.0
+        },
+        "description": "Minimum defender distance beyond ball for line candidates.",
+        "name": "goal_side_buffer_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 2.5
+        },
+        "description": "Maximum x-span for one observed line band.",
+        "name": "line_band_width_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        },
+        "description": "Minimum defenders per observed line band.",
+        "name": "minimum_line_defenders",
+        "payload_type": "number",
+        "unit": "count"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 0.5
+        },
+        "description": "Distance from line treated as level.",
+        "name": "line_buffer_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 4.0
+        },
+        "description": "Nearest-defender pressure distance threshold.",
+        "name": "pressure_maximum_distance_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 0.0
+        },
+        "description": "Minimum defender-to-carrier closing speed.",
+        "name": "pressure_minimum_closing_speed_mps",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 110.0
+        },
+        "description": "Maximum defender approach angle.",
+        "name": "pressure_maximum_approach_angle_degrees",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.0
+        },
+        "description": "Minimum pressure duration ending at reception.",
+        "name": "pressure_minimum_duration_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.4
+        },
+        "description": "Velocity/closing-speed lookback interval.",
+        "name": "velocity_lookback_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      }
+    ],
+    "recipe_id": "q6_throw_in_first_action_under_pressure_v1",
+    "recipe_version": "0.1.0",
+    "schema_version": "1.0"
+  },
+  "schema_version": "1.0"
+}

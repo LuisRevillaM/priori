@@ -230,6 +230,9 @@ afl-runtime-reuse-verify:
 afl-substrate-q3-verify:
 	$(PYTHON) -m tqe.verification.afl_substrate_q3
 
+afl-substrate-q6-verify:
+	$(PYTHON) -m tqe.verification.afl_substrate_q6
+
 workbench-alpha-install:
 	npm --prefix apps/workbench-alpha install
 

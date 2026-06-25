@@ -249,6 +249,7 @@ class TacticalQueryExecutor:
             "action_chain": primitive_action_chain,
             "tracking_quality": primitive_tracking_quality,
             "pairwise_distance": primitive_pairwise_distance,
+            "velocity": primitive_velocity,
             "controlled_pass_episode": primitive_controlled_pass_episode,
             "one_touch_relay_episode": primitive_one_touch_relay_episode,
             "defensive_line_model": primitive_defensive_line_model,
@@ -274,6 +275,7 @@ class TacticalQueryExecutor:
             "geometric_progressive_corridor_from_anchor_set": relation_geometric_progressive_corridor,
             "opponents_bypassed_by_action": relation_opponents_bypassed_by_action,
             "support_arrival_relation": relation_support_arrival,
+            "pressure_on_carrier": relation_pressure_on_carrier,
             "local_number_relation": relation_local_number,
         }
         self.predicates: dict[str, PredicateImplementation] = {
@@ -2210,7 +2212,9 @@ def primitive_action_event_anchor(state: PeriodState, node: BoundCatalogNode) ->
     frames["_frame_ts_utc"] = pd.to_datetime(frames["timestamp_utc"], utc=True, errors="coerce")
     records: list[dict[str, Any]] = []
     for _, row in events.iterrows():
-        parsed = parse_successful_pass_event(row) if action_type == "successful_pass" else None
+        parsed = parse_successful_pass_event(row) if action_type in {"successful_pass", "throw_in_successful_pass"} else None
+        if parsed is not None and action_type == "throw_in_successful_pass" and parsed.get("event_type") != "ThrowIn_Play_Pass":
+            parsed = None
         if parsed is None:
             continue
         anchor_frame_id, offset_ms = align_event_to_frame(parsed, frames)
@@ -2421,7 +2425,51 @@ def primitive_pairwise_distance(state: PeriodState, node: BoundCatalogNode) -> N
     }
 
 
+def primitive_velocity(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    entity_id_field = node_parameter_text(node, "entity_id_field", "receiver_id")
+    lookback_seconds = node_parameter_number(node, "lookback_seconds", 0.4)
+    records = [
+        velocity_anchor_record(
+            state=state,
+            anchor=record,
+            frame_field=frame_field,
+            entity_id_field=entity_id_field,
+            lookback_seconds=lookback_seconds,
+        )
+        for record in runtime_records(anchor_value)
+        if isinstance(record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "speed_mps": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record.get("speed_mps") for record in records],
+            unknown_mask=[record.get("speed_mps") is None for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "speed_mps").entity_scope,
+        ),
+        "speed_mps_records": records,
+        "velocity_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if record["velocity_status"] == "UNKNOWN" else record["velocity_status"]
+                for record in records
+            ],
+            unknown_mask=[record["velocity_status"] == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "velocity_status").entity_scope,
+        ),
+        "velocity_status_records": records,
+    }
+
+
 def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode) -> None:
+    event_type_filter = node_parameter_text(node, "event_type_filter", "any")
     config = ControlledPassConfig(
         release_search_before_seconds=node_parameter_number(node, "release_search_before_seconds", 1.0),
         release_search_after_seconds=node_parameter_number(node, "release_search_after_seconds", 3.0),
@@ -2436,6 +2484,25 @@ def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode
         periods=(state.period,),
         config=config,
     )
+    if event_type_filter != "any":
+        output = ControlledPassOutput(
+            schema_version=output.schema_version,
+            capability=output.capability,
+            capability_version=output.capability_version,
+            status=output.status,
+            accepted_scope={**output.accepted_scope, "event_type_filter": event_type_filter},
+            config=output.config,
+            summary={**output.summary, "event_type_filter": event_type_filter},
+            episodes=[
+                record for record in output.episodes if str(record.get("event_type")) == event_type_filter
+            ],
+            anchor_evaluations=[
+                record for record in output.anchor_evaluations if str(record.get("event_type")) == event_type_filter
+            ],
+            non_match_examples=[
+                record for record in output.non_match_examples if str(record.get("event_type")) == event_type_filter
+            ][:50],
+        )
     anchors = [
         record
         for record in (
@@ -2620,6 +2687,81 @@ def pairwise_distance_anchor_record(
         "maximum_distance_m": maximum_distance_m,
         "entity_a_point": None if point_a is None else {"x_m": point_a[0], "y_m": point_a[1]},
         "entity_b_point": None if point_b is None else {"x_m": point_b[0], "y_m": point_b[1]},
+    }
+
+
+def velocity_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    entity_id_field: str,
+    lookback_seconds: float,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or frame_id is None:
+        return None
+    entity_id = str(anchor.get(entity_id_field) or "")
+    sample = velocity_sample(
+        state=state,
+        frame_id=frame_id,
+        entity_id=entity_id,
+        lookback_seconds=lookback_seconds,
+    )
+    status = "PASS" if sample.get("speed_mps") is not None else "UNKNOWN"
+    reason = "velocity_observed" if status == "PASS" else str(sample.get("reason") or "velocity_evidence_missing")
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "velocity_status": status,
+        "velocity_reason": reason,
+        "velocity_frame_id": frame_id,
+        "velocity_entity_id": entity_id,
+        **sample,
+    }
+
+
+def velocity_sample(
+    *,
+    state: PeriodState,
+    frame_id: int,
+    entity_id: str,
+    lookback_seconds: float,
+) -> dict[str, Any]:
+    lookback_frames = max(1, int(math.ceil(max(lookback_seconds, 0.04) * FRAME_RATE_HZ - 1e-9)))
+    prior_frame_id = int(frame_id) - lookback_frames
+    current = tracked_point_at_frame(state, int(frame_id), entity_id)
+    previous = tracked_point_at_frame(state, prior_frame_id, entity_id)
+    dt_seconds = lookback_frames / FRAME_RATE_HZ
+    base = {
+        "velocity_lookback_frames": lookback_frames,
+        "velocity_dt_seconds": round(float(dt_seconds), 3),
+        "velocity_prior_frame_id": prior_frame_id,
+        "velocity_vx_mps": None,
+        "velocity_vy_mps": None,
+        "speed_mps": None,
+    }
+    if not entity_id:
+        return {**base, "reason": "entity_id_missing"}
+    if current is None or previous is None:
+        return {**base, "reason": "tracking_endpoint_missing"}
+    vx = (float(current[0]) - float(previous[0])) / dt_seconds
+    vy = (float(current[1]) - float(previous[1])) / dt_seconds
+    speed = math.hypot(vx, vy)
+    return {
+        **base,
+        "velocity_vx_mps": round(float(vx), 3),
+        "velocity_vy_mps": round(float(vy), 3),
+        "speed_mps": round(float(speed), 3),
+        "current_point": point_from_xy(current[0], current[1]),
+        "previous_point": point_from_xy(previous[0], previous[1]),
     }
 
 
@@ -4265,6 +4407,259 @@ def anchor_reference_point(anchor: dict[str, Any]) -> dict[str, float] | None:
     if y_value is None:
         y_value = anchor.get("reception_receiver_y_m")
     return point_from_xy(x_value, y_value)
+
+
+def relation_pressure_on_carrier(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchor_records = anchor_value.value
+    if not isinstance(anchor_records, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    frame_field = node_parameter_text(node, "frame_field", "controlled_reception_frame_id")
+    carrier_id_field = node_parameter_text(node, "carrier_id_field", "receiver_id")
+    maximum_pressure_distance_m = node_parameter_number(node, "maximum_pressure_distance_m", 4.0)
+    minimum_closing_speed_mps = node_parameter_number(node, "minimum_closing_speed_mps", 0.2)
+    maximum_approach_angle_degrees = node_parameter_number(node, "maximum_approach_angle_degrees", 100.0)
+    minimum_pressure_duration_seconds = node_parameter_number(node, "minimum_pressure_duration_seconds", 0.0)
+    lookback_seconds = node_parameter_number(node, "lookback_seconds", 0.4)
+    candidate_scope = node_parameter_text(node, "candidate_scope", "defending_outfield")
+    if candidate_scope != "defending_outfield":
+        raise RuntimeError("pressure_on_carrier v0.1 supports candidate_scope=defending_outfield")
+    known_outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, state.defending_team_role)
+    records = [
+        pressure_on_carrier_anchor_record(
+            state=state,
+            anchor=anchor,
+            frame_field=frame_field,
+            carrier_id_field=carrier_id_field,
+            maximum_pressure_distance_m=maximum_pressure_distance_m,
+            minimum_closing_speed_mps=minimum_closing_speed_mps,
+            maximum_approach_angle_degrees=maximum_approach_angle_degrees,
+            minimum_pressure_duration_seconds=minimum_pressure_duration_seconds,
+            lookback_seconds=lookback_seconds,
+            known_outfield_ids=known_outfield_ids,
+        )
+        for anchor in anchor_records
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["pressure_status"]) == "UNKNOWN" else str(record["pressure_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "pressure_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "pressure_status").entity_scope,
+        ),
+        "pressure_status_records": records,
+    }
+
+
+def pressure_on_carrier_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    carrier_id_field: str,
+    maximum_pressure_distance_m: float,
+    minimum_closing_speed_mps: float,
+    maximum_approach_angle_degrees: float,
+    minimum_pressure_duration_seconds: float,
+    lookback_seconds: float,
+    known_outfield_ids: set[str],
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    pressure_frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or pressure_frame_id is None:
+        return None
+    carrier_id = str(anchor.get(carrier_id_field) or "")
+    evidence = pressure_evidence_at_frame(
+        state=state,
+        frame_id=pressure_frame_id,
+        carrier_id=carrier_id,
+        known_outfield_ids=known_outfield_ids,
+        maximum_pressure_distance_m=maximum_pressure_distance_m,
+        minimum_closing_speed_mps=minimum_closing_speed_mps,
+        maximum_approach_angle_degrees=maximum_approach_angle_degrees,
+        lookback_seconds=lookback_seconds,
+    )
+    status = str(evidence["pressure_status"])
+    if status == "PASS" and minimum_pressure_duration_seconds > 0:
+        duration = pressure_duration_ending_at_frame(
+            state=state,
+            frame_id=pressure_frame_id,
+            carrier_id=carrier_id,
+            known_outfield_ids=known_outfield_ids,
+            maximum_pressure_distance_m=maximum_pressure_distance_m,
+            minimum_closing_speed_mps=minimum_closing_speed_mps,
+            maximum_approach_angle_degrees=maximum_approach_angle_degrees,
+            lookback_seconds=lookback_seconds,
+            maximum_duration_seconds=minimum_pressure_duration_seconds,
+        )
+        evidence["pressure_duration_seconds"] = duration
+        if duration < minimum_pressure_duration_seconds:
+            status = "FAIL"
+            evidence["pressure_status"] = "FAIL"
+            evidence["pressure_reason"] = "pressure_duration_below_threshold"
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "pressure_status": status,
+        "pressure_frame_field": frame_field,
+        "pressure_frame_id": pressure_frame_id,
+        "carrier_id_field": carrier_id_field,
+        "carrier_id": carrier_id or None,
+        "maximum_pressure_distance_m": maximum_pressure_distance_m,
+        "minimum_closing_speed_mps": minimum_closing_speed_mps,
+        "maximum_approach_angle_degrees": maximum_approach_angle_degrees,
+        "minimum_pressure_duration_seconds": minimum_pressure_duration_seconds,
+        "lookback_seconds": lookback_seconds,
+        **evidence,
+    }
+
+
+def pressure_evidence_at_frame(
+    *,
+    state: PeriodState,
+    frame_id: int,
+    carrier_id: str,
+    known_outfield_ids: set[str],
+    maximum_pressure_distance_m: float,
+    minimum_closing_speed_mps: float,
+    maximum_approach_angle_degrees: float,
+    lookback_seconds: float,
+) -> dict[str, Any]:
+    base = {
+        "pressure_status": "UNKNOWN",
+        "pressure_reason": "pressure_evidence_missing",
+        "nearest_defender_id": None,
+        "nearest_defender_distance_m": None,
+        "closing_speed_mps": None,
+        "approach_angle_degrees": None,
+        "pressure_duration_seconds": 0.0,
+        "coverage_status": "UNKNOWN",
+        "candidate_defender_ids": sorted(str(item) for item in known_outfield_ids),
+    }
+    carrier_point = tracked_point_at_frame(state, frame_id, carrier_id)
+    if not carrier_id or carrier_point is None:
+        return {**base, "pressure_reason": "carrier_tracking_missing"}
+    defenders = [
+        record
+        for record in player_records_at_frame_for_team(state, frame_id, state.defending_team_role)
+        if record["player_id"] in known_outfield_ids
+        and record.get("x_m") is not None
+        and record.get("y_m") is not None
+    ]
+    if not defenders:
+        return {**base, "pressure_reason": "defender_tracking_missing"}
+    nearest = min(
+        defenders,
+        key=lambda record: (
+            math.dist(carrier_point, (float(record["x_m"]), float(record["y_m"]))),
+            str(record["player_id"]),
+        ),
+    )
+    defender_id = str(nearest["player_id"])
+    defender_point = (float(nearest["x_m"]), float(nearest["y_m"]))
+    current_distance = math.dist(carrier_point, defender_point)
+    lookback_frames = max(1, int(math.ceil(max(lookback_seconds, 0.04) * FRAME_RATE_HZ - 1e-9)))
+    previous_frame_id = int(frame_id) - lookback_frames
+    carrier_previous = tracked_point_at_frame(state, previous_frame_id, carrier_id)
+    defender_previous = tracked_point_at_frame(state, previous_frame_id, defender_id)
+    if carrier_previous is None or defender_previous is None:
+        return {
+            **base,
+            "pressure_reason": "closing_speed_tracking_missing",
+            "nearest_defender_id": defender_id,
+            "nearest_defender_distance_m": round(float(current_distance), 3),
+        }
+    dt_seconds = lookback_frames / FRAME_RATE_HZ
+    previous_distance = math.dist(carrier_previous, defender_previous)
+    closing_speed = (previous_distance - current_distance) / dt_seconds
+    defender_vx = (defender_point[0] - defender_previous[0]) / dt_seconds
+    defender_vy = (defender_point[1] - defender_previous[1]) / dt_seconds
+    to_carrier_x = carrier_point[0] - defender_point[0]
+    to_carrier_y = carrier_point[1] - defender_point[1]
+    approach_angle = vector_angle_degrees((defender_vx, defender_vy), (to_carrier_x, to_carrier_y))
+    distance_ok = current_distance <= maximum_pressure_distance_m
+    closing_ok = closing_speed >= minimum_closing_speed_mps
+    angle_ok = approach_angle is not None and approach_angle <= maximum_approach_angle_degrees
+    status = "PASS" if distance_ok and closing_ok and angle_ok else "FAIL"
+    failed = []
+    if not distance_ok:
+        failed.append("distance")
+    if not closing_ok:
+        failed.append("closing_speed")
+    if not angle_ok:
+        failed.append("approach_angle")
+    return {
+        **base,
+        "pressure_status": status,
+        "pressure_reason": "pressure_observed" if status == "PASS" else "pressure_threshold_not_met:" + ",".join(failed),
+        "nearest_defender_id": defender_id,
+        "nearest_defender_distance_m": round(float(current_distance), 3),
+        "previous_defender_distance_m": round(float(previous_distance), 3),
+        "closing_speed_mps": round(float(closing_speed), 3),
+        "approach_angle_degrees": None if approach_angle is None else round(float(approach_angle), 3),
+        "pressure_duration_seconds": 0.0,
+        "coverage_status": "COMPLETE",
+        "carrier_point": point_from_xy(carrier_point[0], carrier_point[1]),
+        "nearest_defender_point": point_from_xy(defender_point[0], defender_point[1]),
+        "previous_carrier_point": point_from_xy(carrier_previous[0], carrier_previous[1]),
+        "previous_defender_point": point_from_xy(defender_previous[0], defender_previous[1]),
+    }
+
+
+def pressure_duration_ending_at_frame(
+    *,
+    state: PeriodState,
+    frame_id: int,
+    carrier_id: str,
+    known_outfield_ids: set[str],
+    maximum_pressure_distance_m: float,
+    minimum_closing_speed_mps: float,
+    maximum_approach_angle_degrees: float,
+    lookback_seconds: float,
+    maximum_duration_seconds: float,
+) -> float:
+    required_frames = max(1, int(math.ceil(maximum_duration_seconds * FRAME_RATE_HZ - 1e-9)))
+    observed = 0
+    for candidate_frame_id in range(int(frame_id), int(frame_id) - required_frames, -1):
+        evidence = pressure_evidence_at_frame(
+            state=state,
+            frame_id=candidate_frame_id,
+            carrier_id=carrier_id,
+            known_outfield_ids=known_outfield_ids,
+            maximum_pressure_distance_m=maximum_pressure_distance_m,
+            minimum_closing_speed_mps=minimum_closing_speed_mps,
+            maximum_approach_angle_degrees=maximum_approach_angle_degrees,
+            lookback_seconds=lookback_seconds,
+        )
+        if evidence.get("pressure_status") != "PASS":
+            break
+        observed += 1
+    return round(float(observed / FRAME_RATE_HZ), 3)
+
+
+def vector_angle_degrees(a: tuple[float, float], b: tuple[float, float]) -> float | None:
+    a_norm = math.hypot(a[0], a[1])
+    b_norm = math.hypot(b[0], b[1])
+    if a_norm <= 1e-9 or b_norm <= 1e-9:
+        return None
+    cosine = max(-1.0, min(1.0, (a[0] * b[0] + a[1] * b[1]) / (a_norm * b_norm)))
+    return math.degrees(math.acos(cosine))
 
 
 def relation_local_number(state: PeriodState, node: BoundCatalogNode) -> None:
