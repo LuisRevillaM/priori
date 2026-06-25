@@ -1,0 +1,29 @@
+{
+  "expectation_id": "afl09a.time_to_arrival_q4.0_1_0",
+  "expected": {
+    "bound_plan_hash": "49a41a1bc2a5e02d0c9447ee20c5902bbdc4dd4a2f868bc13ef76d585e9db076",
+    "compatibility_profile": "generic",
+    "document_hash": "223543e10f796eaf04af1e66f1494c39cd912b323a1c6acf863d06a54a9e27d0",
+    "execution_status": "pass",
+    "plan_id": "q4_compact_then_switch_reachability",
+    "report_status": "PASS",
+    "requested_evidence_failure_count": 0,
+    "result_count": 1,
+    "result_ids": [
+      "1b3167aa40313584"
+    ],
+    "result_signature_hash": "63aa4d59e233885507c8501c51037998e589b6107d6e70d16d1ae6484836847d"
+  },
+  "freeze_provenance": {
+    "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
+    "review": "controller_self_verified_original_real_data_verifier",
+    "runtime_semantics_dirty": false,
+    "source_commit": "bbc1b1b3ffb5b04ac9a0bedc7d677ff6d78f16eb",
+    "source_verifier": "tqe.verification.afl_time_to_arrival",
+    "source_verifier_status": "PASS",
+    "threshold_version": "time_to_arrival_q4.v0.1.0:max_arrival=2.0:max_speed=7.0",
+    "worktree_dirty": false
+  },
+  "schema_version": "afl09a.frozen_expectation.v1",
+  "subject_ref": "recipe:q4_compact_then_switch_reachability_v1:0.1.0"
+}
