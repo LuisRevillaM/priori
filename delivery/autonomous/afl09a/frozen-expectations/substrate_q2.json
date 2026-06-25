@@ -1,9 +1,9 @@
 {
   "expectation_id": "afl09a.substrate_q2.0_1_0",
   "expected": {
-    "bound_plan_hash": "6c2dead41aced05c36fec9b62990b955f535a79419a2cf65aeafed01ce0d7a90",
+    "bound_plan_hash": "e60d397e838b4e1ff22a3107475b4dfe9773ea99940a3bb0408e2047f63618a4",
     "compatibility_profile": "generic",
-    "document_hash": "1f0271a44f36e445c84d0baf02e92b80429d5066db071d814f78364687c54bf1",
+    "document_hash": "b668a8e0b153eed55f840f5518bb1831d075e7738a2070431891dca653b91c6e",
     "execution_status": "pass",
     "plan_id": "q2_carry_breaks_pressure_layoff",
     "report_status": "PASS",
@@ -16,7 +16,7 @@
     "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
     "review": "controller_self_verified_original_real_data_verifier",
     "runtime_semantics_dirty": false,
-    "source_commit": "b32d7366e91ad94f6ff0e409014f0aa9869bf6c2",
+    "source_commit": "cde1ddbc3444cd5810d79a7936ed72a9ec131e55",
     "source_verifier": "tqe.verification.afl_substrate_q2",
     "source_verifier_status": "PASS",
     "threshold_version": "q2_carry_breaks_pressure_layoff.v0.1.0:carry_min_displacement=3.0:carry_max_seconds=10.0:pressure_start_max_distance=4.0:pressure_distance_increase=2.0:relay_max_event_gap=3.0:max_relay_dwell=0.56",
