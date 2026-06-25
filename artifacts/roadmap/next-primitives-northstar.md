@@ -166,3 +166,27 @@ Layer B is the leg that is barely started (only `pass_chain`, narrowly), it is w
 measurements into the *sequences* that make a football language feel general, and it is already
 half-funded by the one-touch work. With B + A1 + A2 in place, the majority of the northstar queries
 compile. That is the most decisive single step toward generality.
+
+## 8. Current status after Q5 and `time_to_arrival`
+
+This draft predates the full AFL-08 substrate loop. The following pieces have since landed under the
+factory:
+
+- A1 `pairwise_distance`
+- A2 `velocity` / `closing_speed`
+- A3 `time_to_arrival` v0.1 as **static-point reachability** only
+- A4 `structured_zone`
+- A6 `tracking_quality`
+- B1 `action_event_anchor`
+- B3 `action_chain`
+- B4 `transition_anchor`
+- B5 `change_across_anchor`
+- `pressure_on_carrier`
+- `multi_line_model`
+- `switch_of_play`
+- `team_compactness`
+- `outcome_window`
+
+Important boundary: A3 v0.1 does **not** implement pass-line interception, moving-ball interception,
+cover shadow, pitch-control fields, or reachability regions. After the post-`time_to_arrival`
+coverage-map redistribution, `carry_episode` is the next highest-unlock missing primitive.

@@ -38,8 +38,8 @@ honestly if asked before built.
 - **Grammar:** `action_event_anchor` (the switch) [B1] · `change_across_anchor` [B5] (compact→loses, before/after the switch)
 - **Geometry:** *compactness/team_shape* (= [A1] across the unit) · *lane_denial/cover_shadow* (defensive mirror of EXISTS `lane_occupancy`; = [A1]+[A3]) · *switch_of_play* (EXISTS machinery) · `lane_occupancy` EXISTS
 - **EXISTS:** `lane_occupancy`, `ball_lateral_fraction`, `signed_lateral_shift`, `defensive_outfield_centroid`
-- **Missing (foundational):** [A1], [B5], [B1], **[A3]** (true coverage/denial)
-- **GAP if A3 deferred:** compactness + switch + delta compile; *lane coverage* piece returns a typed gap until `time_to_arrival` [A3] exists.
+- **Implemented substrate:** [A1], [B5], [B1], and `time_to_arrival` [A3] now compile the Q4 lane-coverage clause as static target-point reachability.
+- **Remaining precision boundary:** this is not full lane denial, cover shadow, pass-line interception, pitch control, or moving-target interception. The v0.1 claim is fixed-point arrival under a declared max-speed, point-mass model.
 
 ### Q5 — Regains in our half → settled possession within N sec (vs immediate loss)
 - **Grammar:** `transition_anchor` [B4] (the regain instant) · possession-phase spine [B2] (settled vs transition) · `outcome_window` (within N)
@@ -72,7 +72,7 @@ honestly if asked before built.
 | 9 | `change_across_anchor` [B5] | Q2,Q4 | 2/6 | Package 1 — only way to say "X then Y after Z" |
 | 10 | `multi_line_model` | Q3,Q6 | 2/6 | Package 1 — generalizes EXISTS `defensive_line` |
 | 11 | `transition_anchor`[B4]+`phase_spine`[B2] | Q5 (+context) | 1–2/6 | **Decision point** — cheap via `possession_segment`; include to win Q5 |
-| 12 | `time_to_arrival` [A3] | Q4 | **1/6** | **Defer** (proven low) |
+| 12 | `time_to_arrival` [A3] | Q4 | **1/6** | **Implemented after Q5 due atlas-scale unlock value**; v0.1 static-point reachability |
 | 13 | `reference_frames` [A5] | — | **0/6** | **Defer** (proven) |
 
 ---
@@ -82,7 +82,7 @@ honestly if asked before built.
 1. **The two-layer thesis is confirmed by frequency, not assertion:** the top-4 are `[B1]` action anchor (grammar) + `[A1]` distance (geometric) + `[B3]` chain (grammar) + `[A2/A6]` velocity (geometric). Grammar and geometry are *co-equal* in the build floor — neither dominates.
 2. **Package 1 spine (4–6/6 tier):** `action_event_anchor [B1]` · `pairwise_distance [A1]` · `action_chain [B3]` · `velocity+closing_speed [A2]` · `tracking_quality [A6]`. These five make the *measurement inputs* for *pressure_on_carrier* and *carry_episode* cheap — but **the concepts are not free**: each is still a first-class capability needing its own DefinitionProfile + ClaimContract + thresholds + real-data verifier + frozen snapshot. *pressure_on_carrier* = nearest-defender + distance/closing-speed thresholds + approach angle + duration + track-quality policy; *carry_episode* = ball-carrier continuity + start/end frames + same-player control + minimum displacement + interruption/turnover logic. Much cheaper, not automatic.
 3. **Add the cheap high-leverage tier (2–3/6):** `outcome_window`, `restart_anchor`, `switch_of_play` (free — reuses existing block-shift), `change_across_anchor [B5]`, `multi_line_model` (generalizes existing line family).
-4. **Two deferrals are *proven*, not guessed:** `time_to_arrival [A3]` = 1/6, `reference_frames [A5]` = 0/6. The northstar's earlier hunch is now data-backed.
+4. **One deferral remains proven by the six-query slice:** `reference_frames [A5]` = 0/6. `time_to_arrival [A3]` looked deferrable inside the six-query sample, but the 741-concept coverage map later promoted it because it unlocked far more atlas rows than the sample revealed. It has now landed as v0.1 static-point reachability.
 5. **One decision point:** `transition_anchor [B4]` + settled-`phase_spine [B2]` are only strictly needed by Q5 — but they're *cheap* (derivable from existing `possession_segment`) and Q5 is the purest "team work pattern" ("what happens after we win it?"). Recommend **include**; the marginal cost is low and it covers the whole transition family beyond these six queries.
 
 ## Coverage after Package 1 (spine + cheap tier + B2/B4)
@@ -92,12 +92,11 @@ honestly if asked before built.
 | Q1 goal-kick switch | **Compiles** | "fullback" → opposite-side wide receiver; "attract" → pressure-rose (no intent) |
 | Q2 carry breaks pressure → layoff | **Compiles** | — |
 | Q3 2nd line, no underneath support | **Compiles** (mostly already) | support **direction** extension only |
-| Q4 compact → loses coverage after switch | **Partial** | *lane coverage* returns typed gap until [A3] |
+| Q4 compact → loses coverage after switch | **Compiles** | v0.1 reachability only; no cover-shadow/pass-line/pitch-control claim |
 | Q5 regain → settled within N | **Compiles** (with B2/B4) | freeze "settled" threshold |
 | Q6 throw-in past 1st line under pressure | **Compiles** | — |
 
-**Result: 5 of 6 compile; Q4 compiles except the coverage clause (honest typed gap on [A3]).** That is
-the definition-of-done for Substrate Package 1 — and the decomposition, not an assumption, selected it.
+**Result after the post-Q5 reachability slice: Q3, Q4, Q5, and Q6 have all been exercised across the honest outcomes: observed results, honest zero, and precise typed gap.** Q4's former [A3] gap now compiles as static-point reachability, with the remaining cover-shadow/pass-line/pitch-control scope kept explicit.
 
 ## Claim-boundary flags (carry into the passports)
 - **"attract pressure" (Q1):** observable = pressure rose near the ball; **never** claim intent/causation.
