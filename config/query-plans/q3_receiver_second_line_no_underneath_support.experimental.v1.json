@@ -1,0 +1,711 @@
+{
+  "default_invocation": {
+    "execution_mode": "execute",
+    "invocation_id": "q3_receiver_second_line_no_underneath_support_probe",
+    "match_ids": [
+      "J03WOH",
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9",
+      "J03WMX",
+      "J03WN1"
+    ],
+    "max_results": 20,
+    "parameters": {},
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "schema_version": "1.0"
+  },
+  "draft_plan": {
+    "anchor_source": {
+      "output_name": "anchor_evaluations",
+      "source_node_id": "controlled_second_line_transition"
+    },
+    "classification_mode": "partial_declared",
+    "classification_rules": [
+      {
+        "description": "Receiver moved beyond observed geometric line rank 2 and no underneath support relation was observed.",
+        "label": "Q3_RECEIVER_SECOND_LINE_NO_UNDERNEATH_SUPPORT",
+        "predicate_ids": [
+          "line_transition_pass",
+          "no_underneath_support"
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "catalog_ref": "action_event_anchor",
+        "kind": "primitive",
+        "node_id": "action_events",
+        "parameters": {
+          "action_type": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "successful_pass"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "action_chain",
+        "inputs": {
+          "actions": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "action_events"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "action_chain",
+        "parameters": {
+          "chain_length": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2
+          },
+          "maximum_action_gap_seconds": {
+            "kind": "parameter",
+            "name": "maximum_action_gap_seconds"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "controlled_pass_episode",
+        "kind": "primitive",
+        "node_id": "controlled_pass",
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "tracking_quality",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "tracking_quality",
+        "parameters": {
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "pairwise_distance",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "receiver_ball_distance",
+        "parameters": {
+          "entity_a_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "receiver_id"
+          },
+          "entity_b_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "ball"
+          },
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "maximum_distance_m": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 3.0
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "multi_line_model",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "second_line_at_release",
+        "parameters": {
+          "anchor_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "physical_release_frame_id"
+          },
+          "goal_side_buffer_m": {
+            "kind": "parameter",
+            "name": "goal_side_buffer_m"
+          },
+          "line_band_width_m": {
+            "kind": "parameter",
+            "name": "line_band_width_m"
+          },
+          "minimum_line_defenders": {
+            "kind": "parameter",
+            "name": "minimum_line_defenders"
+          },
+          "target_line_rank": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 2
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "relative_position_to_line",
+        "inputs": {
+          "entity_anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          },
+          "line_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "second_line_at_release"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "receiver_release_position",
+        "parameters": {
+          "entity_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "physical_release_frame_id"
+          },
+          "entity_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "receiver_id"
+          },
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "relative_position_to_line",
+        "inputs": {
+          "entity_anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          },
+          "line_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "second_line_at_release"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "receiver_reception_position",
+        "parameters": {
+          "entity_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "entity_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "receiver_id"
+          },
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "controlled_line_break_episode",
+        "inputs": {
+          "controlled_pass_anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          },
+          "line_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "second_line_at_release"
+          },
+          "reception_relative_positions": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "receiver_reception_position"
+          },
+          "release_relative_positions": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "receiver_release_position"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "controlled_second_line_transition",
+        "parameters": {
+          "line_buffer_m": {
+            "kind": "parameter",
+            "name": "line_buffer_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "support_arrival_relation",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "controlled_second_line_transition"
+          }
+        },
+        "kind": "relation",
+        "node_id": "underneath_support",
+        "parameters": {
+          "anchor_frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "candidate_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "perspective_outfield"
+          },
+          "maximum_arrival_seconds": {
+            "kind": "parameter",
+            "name": "maximum_arrival_seconds"
+          },
+          "maximum_support_distance_m": {
+            "kind": "parameter",
+            "name": "maximum_support_distance_m"
+          },
+          "minimum_duration_seconds": {
+            "kind": "parameter",
+            "name": "minimum_duration_seconds"
+          },
+          "minimum_supporting_players": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 1
+          },
+          "required_anchor_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "line_break_status"
+          },
+          "required_anchor_status_value": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "PASS"
+          },
+          "support_region_mode": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "BEHIND_BALL_OUTLET"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "line_break_status",
+          "source_node_id": "controlled_second_line_transition"
+        },
+        "kind": "predicate",
+        "node_id": "line_transition_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "FAIL"
+        },
+        "input": {
+          "output_name": "support_arrival_status",
+          "source_node_id": "underneath_support"
+        },
+        "kind": "predicate",
+        "node_id": "no_underneath_support",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      }
+    ],
+    "plan_id": "q3_receiver_second_line_no_underneath_support",
+    "plan_version": "0.1.0",
+    "recipe_id": "q3_receiver_second_line_no_underneath_support_v1",
+    "recipe_version": "0.1.0",
+    "requested_evidence": [
+      {
+        "alias": "line_break_status",
+        "field": "line_break_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_second_line_transition"
+        }
+      },
+      {
+        "alias": "line_break_reason",
+        "field": "line_break_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_second_line_transition"
+        }
+      },
+      {
+        "alias": "pass_episode_id",
+        "field": "pass_episode_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_second_line_transition"
+        }
+      },
+      {
+        "alias": "physical_release_frame_id",
+        "field": "physical_release_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_second_line_transition"
+        }
+      },
+      {
+        "alias": "controlled_reception_frame_id",
+        "field": "controlled_reception_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_second_line_transition"
+        }
+      },
+      {
+        "alias": "line_x_m",
+        "field": "line_x_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_second_line_transition"
+        }
+      },
+      {
+        "alias": "release_relative_position_status",
+        "field": "release_relative_position_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_second_line_transition"
+        }
+      },
+      {
+        "alias": "reception_relative_position_status",
+        "field": "reception_relative_position_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "controlled_second_line_transition"
+        }
+      },
+      {
+        "alias": "receiver_id",
+        "field": "receiver_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_pass"
+        }
+      },
+      {
+        "alias": "multi_line_status",
+        "field": "multi_line_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "second_line_at_release"
+        }
+      },
+      {
+        "alias": "target_line_rank",
+        "field": "target_line_rank",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "second_line_at_release"
+        }
+      },
+      {
+        "alias": "observed_line_count",
+        "field": "observed_line_count",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "second_line_at_release"
+        }
+      },
+      {
+        "alias": "observed_lines",
+        "field": "observed_lines",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "second_line_at_release"
+        }
+      },
+      {
+        "alias": "line_x_m",
+        "field": "line_x_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "second_line_at_release"
+        }
+      },
+      {
+        "alias": "defensive_line_player_ids",
+        "field": "defensive_line_player_ids",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "second_line_at_release"
+        }
+      },
+      {
+        "alias": "support_arrival_status",
+        "field": "support_arrival_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "underneath_support"
+        }
+      },
+      {
+        "alias": "support_arrival_reason",
+        "field": "support_arrival_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "underneath_support"
+        }
+      },
+      {
+        "alias": "support_region_mode",
+        "field": "support_region_mode",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "underneath_support"
+        }
+      },
+      {
+        "alias": "maximum_arrival_seconds",
+        "field": "maximum_arrival_seconds",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "underneath_support"
+        }
+      },
+      {
+        "alias": "maximum_support_distance_m",
+        "field": "maximum_support_distance_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "underneath_support"
+        }
+      },
+      {
+        "alias": "supporting_player_ids",
+        "field": "supporting_player_ids",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "underneath_support"
+        }
+      },
+      {
+        "alias": "candidate_player_ids",
+        "field": "candidate_player_ids",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "underneath_support"
+        }
+      },
+      {
+        "alias": "coverage_status",
+        "field": "coverage_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "underneath_support"
+        }
+      },
+      {
+        "alias": "tracking_quality_status",
+        "field": "tracking_quality_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "tracking_quality"
+        }
+      },
+      {
+        "alias": "distance_m",
+        "field": "distance_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "receiver_ball_distance"
+        }
+      }
+    ],
+    "schema_version": "1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate"
+  },
+  "recipe": {
+    "allowed_claims": [
+      "A provider-linked pass action was evaluated through the action substrate.",
+      "The receiver moved beyond observed geometric line rank 2 under declared thresholds.",
+      "No underneath support relation was observed inside the declared window.",
+      "Tracking-quality and distance substrate outputs are evidence, not tactical judgement."
+    ],
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "description": "Experimental northstar Q3 composition: a controlled pass receiver moves beyond observed geometric line rank 2 and no underneath support arrives inside the declared window.",
+    "disallowed_claims": [
+      "The system identified a tactical second line or tactical line role.",
+      "The pass definitively broke a defensive line taxonomy.",
+      "The receiver intended to break a line.",
+      "The support situation was tactically good or bad.",
+      "The pass was optimal or has an inferred completion probability."
+    ],
+    "display_name": "Receiver Beyond Observed Line Rank 2 Without Underneath Support",
+    "limitations": [
+      "Line rank 2 is a geometric ordering of observed defending bands, not football-role taxonomy.",
+      "Underneath support means BEHIND_BALL_OUTLET under declared distance/timing thresholds.",
+      "UNKNOWN evidence is excluded rather than coerced to no-support."
+    ],
+    "output_classifications": [
+      "Q3_RECEIVER_SECOND_LINE_NO_UNDERNEATH_SUPPORT"
+    ],
+    "parameters": [
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 5.0
+        },
+        "description": "Maximum event gap for action-chain pairs.",
+        "name": "maximum_action_gap_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 1.0
+        },
+        "description": "Minimum defender distance beyond ball for line candidates.",
+        "name": "goal_side_buffer_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 2.5
+        },
+        "description": "Maximum x-span for one observed line band.",
+        "name": "line_band_width_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        },
+        "description": "Minimum defenders per observed line band.",
+        "name": "minimum_line_defenders",
+        "payload_type": "number",
+        "unit": "count"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 0.5
+        },
+        "description": "Distance from line treated as level.",
+        "name": "line_buffer_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 3.0
+        },
+        "description": "Latest underneath support arrival after reception.",
+        "name": "maximum_arrival_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.0
+        },
+        "description": "Minimum observed support duration.",
+        "name": "minimum_duration_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 8.0
+        },
+        "description": "Maximum distance for underneath support.",
+        "name": "maximum_support_distance_m",
+        "payload_type": "number",
+        "unit": "metre"
+      }
+    ],
+    "recipe_id": "q3_receiver_second_line_no_underneath_support_v1",
+    "recipe_version": "0.1.0",
+    "schema_version": "1.0"
+  },
+  "schema_version": "1.0"
+}

@@ -227,6 +227,9 @@ afl-one-touch-pass-chain-verify:
 afl-runtime-reuse-verify:
 	$(PYTHON) -m tqe.verification.afl_runtime_reuse
 
+afl-substrate-q3-verify:
+	$(PYTHON) -m tqe.verification.afl_substrate_q3
+
 workbench-alpha-install:
 	npm --prefix apps/workbench-alpha install
 

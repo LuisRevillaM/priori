@@ -29,7 +29,12 @@ from tqe.runtime.controlled_line_break import (
     ControlledLineBreakConfig,
     evaluate_controlled_line_break_episode,
 )
-from tqe.runtime.controlled_pass import ControlledPassConfig, ControlledPassOutput, evaluate_controlled_passes
+from tqe.runtime.controlled_pass import (
+    ControlledPassConfig,
+    ControlledPassOutput,
+    evaluate_controlled_passes,
+    align_event_to_frame,
+)
 from tqe.runtime.defensive_line import DefensiveLineConfig, evaluate_defensive_line_model
 from tqe.runtime.lane_occupancy import LaneOccupancyConfig, evaluate_lane_occupancy
 from tqe.runtime.local_number_relation import (
@@ -37,10 +42,12 @@ from tqe.runtime.local_number_relation import (
     evaluate_local_number_relation,
 )
 from tqe.runtime.one_touch import (
+    EVENT_COLUMNS,
     OneTouchRelayConfig,
     evaluate_one_touch_relays,
     evaluate_pass_chain,
     evaluate_receiver_line_transition,
+    parse_successful_pass_event,
 )
 from tqe.runtime.relative_position_to_line import (
     RelativePositionToLineConfig,
@@ -238,9 +245,14 @@ class TacticalQueryExecutor:
         )
         self.primitives: dict[str, PrimitiveImplementation] = {
             "possession_segment": primitive_possession_segment,
+            "action_event_anchor": primitive_action_event_anchor,
+            "action_chain": primitive_action_chain,
+            "tracking_quality": primitive_tracking_quality,
+            "pairwise_distance": primitive_pairwise_distance,
             "controlled_pass_episode": primitive_controlled_pass_episode,
             "one_touch_relay_episode": primitive_one_touch_relay_episode,
             "defensive_line_model": primitive_defensive_line_model,
+            "multi_line_model": primitive_multi_line_model,
             "relative_position_to_line": primitive_relative_position_to_line,
             "receiver_line_transition_during_pass_leg": primitive_receiver_line_transition_during_pass_leg,
             "pass_chain_episode": primitive_pass_chain_episode,
@@ -2184,6 +2196,231 @@ def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) -> 
     state.signals[node.node_id] = {"episodes": segments, "anchors": segments}
 
 
+def primitive_action_event_anchor(state: PeriodState, node: BoundCatalogNode) -> None:
+    action_type = node_parameter_text(node, "action_type", "successful_pass")
+    events = parquet_rows(
+        state.canonical_root / "events" / f"match_id={state.match_id}.parquet",
+        EVENT_COLUMNS,
+    )
+    events = events[events["period"].astype(str) == state.period].sort_values("row_index").reset_index(drop=True)
+    frames = parquet_rows(
+        state.canonical_root / "frames" / f"match_id={state.match_id}" / f"period={state.period}.parquet",
+        ["frame_id", "timestamp_utc"],
+    ).sort_values("frame_id").reset_index(drop=True)
+    frames["_frame_ts_utc"] = pd.to_datetime(frames["timestamp_utc"], utc=True, errors="coerce")
+    records: list[dict[str, Any]] = []
+    for _, row in events.iterrows():
+        parsed = parse_successful_pass_event(row) if action_type == "successful_pass" else None
+        if parsed is None:
+            continue
+        anchor_frame_id, offset_ms = align_event_to_frame(parsed, frames)
+        if anchor_frame_id is None:
+            continue
+        entity_refs = [str(parsed["passer_id"]), str(parsed["receiver_id"])]
+        anchor_id = anchor_record_id(
+            match_id=state.match_id,
+            period=state.period,
+            anchor_frame_id=anchor_frame_id,
+            start_frame_id=anchor_frame_id,
+            end_frame_id=anchor_frame_id,
+            entity_refs=entity_refs,
+        )
+        records.append(
+            {
+                "anchor_id": anchor_id,
+                "match_id": state.match_id,
+                "period": state.period,
+                "anchor_frame_id": anchor_frame_id,
+                "start_frame_id": anchor_frame_id,
+                "end_frame_id": anchor_frame_id,
+                "entity_refs": entity_refs,
+                "action_event_status": "PASS",
+                "action_event_reason": "event_anchor_resolved",
+                "action_type": action_type,
+                "event_type": parsed["event_type"],
+                "event_row_index": parsed["row_index"],
+                "event_timestamp": parsed["event_timestamp"],
+                "event_gameclock_seconds": parsed["gameclock_seconds"],
+                "event_frame_offset_ms": offset_ms,
+                "team_role": parsed["team_role"],
+                "passer_id": parsed["passer_id"],
+                "receiver_id": parsed["receiver_id"],
+                "event_anchor_frame_id": anchor_frame_id,
+            }
+        )
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "action_event_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record["action_event_status"] for record in records],
+            unknown_mask=[False for _ in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "action_event_status").entity_scope,
+        ),
+        "action_event_status_records": records,
+    }
+
+
+def primitive_action_chain(state: PeriodState, node: BoundCatalogNode) -> None:
+    action_value = catalog_input_value(state, node, "actions")
+    actions = runtime_records(action_value)
+    max_gap_seconds = node_parameter_number(node, "maximum_action_gap_seconds", 5.0)
+    chain_length = int(round(node_parameter_number(node, "chain_length", 2)))
+    if chain_length != 2:
+        raise RuntimeError("action_chain v0.1 supports chain_length=2")
+    records: list[dict[str, Any]] = []
+    ordered = sorted(
+        [record for record in actions if isinstance(record, dict)],
+        key=lambda item: (
+            float(item.get("event_gameclock_seconds") or -1),
+            int(item.get("event_row_index") or -1),
+        ),
+    )
+    for first, second in zip(ordered, ordered[1:], strict=False):
+        if first.get("team_role") != second.get("team_role"):
+            continue
+        first_time = first.get("event_gameclock_seconds")
+        second_time = second.get("event_gameclock_seconds")
+        if first_time is None or second_time is None:
+            continue
+        gap_seconds = float(second_time) - float(first_time)
+        if gap_seconds < 0:
+            continue
+        status = "PASS" if gap_seconds <= max_gap_seconds else "FAIL"
+        reason = "actions_linked_in_order" if status == "PASS" else "action_gap_exceeded"
+        anchor_frame_id = optional_int(second.get("anchor_frame_id"))
+        start_frame_id = optional_int(first.get("anchor_frame_id"))
+        if anchor_frame_id is None or start_frame_id is None:
+            continue
+        entity_refs = list(
+            dict.fromkeys(
+                [
+                    *[str(item) for item in first.get("entity_refs") or []],
+                    *[str(item) for item in second.get("entity_refs") or []],
+                ]
+            )
+        )
+        anchor_id = anchor_record_id(
+            match_id=state.match_id,
+            period=state.period,
+            anchor_frame_id=anchor_frame_id,
+            start_frame_id=start_frame_id,
+            end_frame_id=anchor_frame_id,
+            entity_refs=entity_refs,
+        )
+        records.append(
+            {
+                "anchor_id": anchor_id,
+                "match_id": state.match_id,
+                "period": state.period,
+                "anchor_frame_id": anchor_frame_id,
+                "start_frame_id": start_frame_id,
+                "end_frame_id": anchor_frame_id,
+                "entity_refs": entity_refs,
+                "action_chain_status": status,
+                "action_chain_reason": reason,
+                "chain_length": chain_length,
+                "maximum_action_gap_seconds": max_gap_seconds,
+                "action_gap_seconds": gap_seconds,
+                "first_action_anchor_id": first.get("anchor_id"),
+                "second_action_anchor_id": second.get("anchor_id"),
+                "first_action_row_index": first.get("event_row_index"),
+                "second_action_row_index": second.get("event_row_index"),
+                "team_role": first.get("team_role"),
+            }
+        )
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "action_chain_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if record["action_chain_status"] == "UNKNOWN" else record["action_chain_status"]
+                for record in records
+            ],
+            unknown_mask=[record["action_chain_status"] == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "action_chain_status").entity_scope,
+        ),
+        "action_chain_status_records": records,
+    }
+
+
+def primitive_tracking_quality(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    records = [
+        tracking_quality_anchor_record(state=state, anchor=record, frame_field=frame_field)
+        for record in runtime_records(anchor_value)
+        if isinstance(record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "tracking_quality_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if record["tracking_quality_status"] == "UNKNOWN" else record["tracking_quality_status"]
+                for record in records
+            ],
+            unknown_mask=[record["tracking_quality_status"] == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "tracking_quality_status").entity_scope,
+        ),
+        "tracking_quality_status_records": records,
+    }
+
+
+def primitive_pairwise_distance(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    entity_a_field = node_parameter_text(node, "entity_a_field", "receiver_id")
+    entity_b_field = node_parameter_text(node, "entity_b_field", "ball")
+    maximum_distance_m = node_parameter_number(node, "maximum_distance_m", 10.0)
+    records = [
+        pairwise_distance_anchor_record(
+            state=state,
+            anchor=record,
+            frame_field=frame_field,
+            entity_a_field=entity_a_field,
+            entity_b_field=entity_b_field,
+            maximum_distance_m=maximum_distance_m,
+        )
+        for record in runtime_records(anchor_value)
+        if isinstance(record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "distance_m": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record.get("distance_m") for record in records],
+            unknown_mask=[record.get("distance_m") is None for record in records],
+            unit=Unit.METRE,
+            entity_scope=catalog_output(node, "distance_m").entity_scope,
+        ),
+        "distance_m_records": records,
+        "pairwise_distance_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if record["pairwise_distance_status"] == "UNKNOWN" else record["pairwise_distance_status"]
+                for record in records
+            ],
+            unknown_mask=[record["pairwise_distance_status"] == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "pairwise_distance_status").entity_scope,
+        ),
+        "pairwise_distance_status_records": records,
+    }
+
+
 def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode) -> None:
     config = ControlledPassConfig(
         release_search_before_seconds=node_parameter_number(node, "release_search_before_seconds", 1.0),
@@ -2298,6 +2535,91 @@ def controlled_pass_episode_record(
         "reception_ball_point": reception_ball,
         "release_passer_point": release_passer,
         "reception_receiver_point": reception_receiver,
+    }
+
+
+def tracking_quality_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    quality_frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or quality_frame_id is None:
+        return None
+    entity_refs = [str(item) for item in anchor.get("entity_refs") or []]
+    ball_present = ball_point_at_frame(state, quality_frame_id) is not None
+    players = player_records_at_frame(state, quality_frame_id)
+    missing_entities = [
+        entity_id
+        for entity_id in entity_refs
+        if entity_id not in players or players[entity_id].get("x_m") is None or players[entity_id].get("y_m") is None
+    ]
+    status = "PASS" if ball_present and not missing_entities else "UNKNOWN"
+    reason = "tracking_available" if status == "PASS" else "tracking_evidence_missing"
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": entity_refs,
+        "tracking_quality_status": status,
+        "tracking_quality_reason": reason,
+        "tracking_quality_frame_id": quality_frame_id,
+        "ball_position_present": ball_present,
+        "expected_entity_ids": entity_refs,
+        "missing_entity_ids": missing_entities,
+    }
+
+
+def pairwise_distance_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    entity_a_field: str,
+    entity_b_field: str,
+    maximum_distance_m: float,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or frame_id is None:
+        return None
+    entity_a_id = str(anchor.get(entity_a_field) or "")
+    point_a = tracked_point_at_frame(state, frame_id, entity_a_id)
+    point_b = ball_point_at_frame(state, frame_id) if entity_b_field == "ball" else tracked_point_at_frame(state, frame_id, str(anchor.get(entity_b_field) or ""))
+    if not entity_a_id or point_a is None or point_b is None:
+        status = "UNKNOWN"
+        reason = "pairwise_tracking_missing"
+        distance = None
+    else:
+        distance = math.dist(point_a, point_b)
+        status = "PASS" if distance <= maximum_distance_m else "FAIL"
+        reason = "distance_within_threshold" if status == "PASS" else "distance_exceeds_threshold"
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "pairwise_distance_status": status,
+        "pairwise_distance_reason": reason,
+        "distance_frame_id": frame_id,
+        "entity_a_field": entity_a_field,
+        "entity_a_id": entity_a_id or None,
+        "entity_b_field": entity_b_field,
+        "entity_b_id": "ball" if entity_b_field == "ball" else anchor.get(entity_b_field),
+        "distance_m": None if distance is None else round(float(distance), 3),
+        "maximum_distance_m": maximum_distance_m,
+        "entity_a_point": None if point_a is None else {"x_m": point_a[0], "y_m": point_a[1]},
+        "entity_b_point": None if point_b is None else {"x_m": point_b[0], "y_m": point_b[1]},
     }
 
 
@@ -2430,6 +2752,215 @@ def primitive_defensive_line_model(state: PeriodState, node: BoundCatalogNode) -
     }
 
 
+def primitive_multi_line_model(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchors_value = catalog_input_value(state, node, "anchors")
+    anchors = anchors_value.value
+    if not isinstance(anchors, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    goal_side_buffer_m = node_parameter_number(node, "goal_side_buffer_m", 1.0)
+    line_band_width_m = node_parameter_number(node, "line_band_width_m", 2.0)
+    minimum_line_defenders = int(round(node_parameter_number(node, "minimum_line_defenders", 3)))
+    target_line_rank = int(round(node_parameter_number(node, "target_line_rank", 2)))
+    anchor_frame_field = node_parameter_text(node, "anchor_frame_field", "physical_release_frame_id")
+    orientation = parquet_rows(state.canonical_root / "orientation.parquet")
+    attack_x_sign = attack_x_sign_for(
+        orientation,
+        state.match_id,
+        state.period,
+        state.perspective_team_role,
+    )
+    known_outfield_ids = outfield_player_ids(
+        state.canonical_root,
+        state.match_id,
+        state.defending_team_role,
+    )
+    records = [
+        multi_line_anchor_record(
+            state=state,
+            anchor=anchor,
+            anchor_frame_field=anchor_frame_field,
+            goal_side_buffer_m=goal_side_buffer_m,
+            line_band_width_m=line_band_width_m,
+            minimum_line_defenders=minimum_line_defenders,
+            target_line_rank=target_line_rank,
+            attack_x_sign=attack_x_sign,
+            known_outfield_ids=known_outfield_ids,
+        )
+        for anchor in anchors
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "multi_line_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if str(record["multi_line_status"]) == "UNKNOWN" else str(record["multi_line_status"])
+                for record in records
+            ],
+            unknown_mask=[str(record["multi_line_status"]) == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "multi_line_status").entity_scope,
+        ),
+        "multi_line_status_records": records,
+    }
+
+
+def multi_line_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    anchor_frame_field: str,
+    goal_side_buffer_m: float,
+    line_band_width_m: float,
+    minimum_line_defenders: int,
+    target_line_rank: int,
+    attack_x_sign: int,
+    known_outfield_ids: set[str],
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    evaluation_frame_id = optional_int(anchor.get(anchor_frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or evaluation_frame_id is None:
+        return None
+    ball_point = ball_point_at_frame(state, evaluation_frame_id)
+    if ball_point is None:
+        return multi_line_payload_from_anchor(
+            state=state,
+            anchor=anchor,
+            evaluation_frame_id=evaluation_frame_id,
+            status="UNKNOWN",
+            reason="ball_position_missing",
+            target_line_rank=target_line_rank,
+            lines=[],
+            attack_x_sign=attack_x_sign,
+        )
+    defenders = cached_observed_outfield_positions_at_frame(
+        state,
+        evaluation_frame_id,
+        state.defending_team_role,
+        known_outfield_ids,
+    )
+    candidates = []
+    normalized_ball_x = float(ball_point[0]) * attack_x_sign
+    for defender in defenders:
+        if defender.get("x_m") is None or defender.get("y_m") is None:
+            continue
+        normalized_x = float(defender["x_m"]) * attack_x_sign
+        if normalized_x > normalized_ball_x + goal_side_buffer_m:
+            candidates.append(
+                {
+                    "player_id": str(defender["player_id"]),
+                    "x_m": float(defender["x_m"]),
+                    "y_m": float(defender["y_m"]),
+                    "normalized_x_m": normalized_x,
+                }
+            )
+    candidates.sort(key=lambda item: (item["normalized_x_m"], item["player_id"]))
+    lines: list[dict[str, Any]] = []
+    used: set[str] = set()
+    for seed in candidates:
+        if seed["player_id"] in used:
+            continue
+        band = [
+            candidate for candidate in candidates
+            if abs(candidate["normalized_x_m"] - seed["normalized_x_m"]) <= line_band_width_m
+        ]
+        if len(band) < minimum_line_defenders:
+            continue
+        defender_ids = sorted({str(item["player_id"]) for item in band})
+        if any(defender_id in used for defender_id in defender_ids):
+            continue
+        used.update(defender_ids)
+        normalized_line_x_m = sum(float(item["normalized_x_m"]) for item in band) / len(band)
+        line_x_m = normalized_line_x_m / attack_x_sign
+        lines.append(
+            {
+                "line_rank": len(lines) + 1,
+                "line_id": f"observed_line:{state.match_id}:{state.period}:{evaluation_frame_id}:{len(lines) + 1}",
+                "line_x_m": round(float(line_x_m), 3),
+                "normalized_line_x_m": round(float(normalized_line_x_m), 3),
+                "defender_ids": defender_ids,
+                "defender_count": len(defender_ids),
+            }
+        )
+    if not lines:
+        status = "FAIL"
+        reason = "no_observed_lines"
+    elif len(lines) < target_line_rank:
+        status = "FAIL"
+        reason = "target_line_rank_not_observed"
+    else:
+        status = "PASS"
+        reason = "target_line_rank_observed"
+    return multi_line_payload_from_anchor(
+        state=state,
+        anchor=anchor,
+        evaluation_frame_id=evaluation_frame_id,
+        status=status,
+        reason=reason,
+        target_line_rank=target_line_rank,
+        lines=lines,
+        selected_line=lines[target_line_rank - 1] if len(lines) >= target_line_rank else None,
+        ball_x_m=ball_point[0],
+        normalized_ball_x_m=normalized_ball_x,
+        goal_side_buffer_m=goal_side_buffer_m,
+        line_band_width_m=line_band_width_m,
+        minimum_line_defenders=minimum_line_defenders,
+        attack_x_sign=attack_x_sign,
+    )
+
+
+def multi_line_payload_from_anchor(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    evaluation_frame_id: int,
+    status: str,
+    reason: str,
+    target_line_rank: int,
+    lines: list[dict[str, Any]],
+    selected_line: dict[str, Any] | None = None,
+    ball_x_m: float | None = None,
+    normalized_ball_x_m: float | None = None,
+    goal_side_buffer_m: float | None = None,
+    line_band_width_m: float | None = None,
+    minimum_line_defenders: int | None = None,
+    attack_x_sign: int | None = None,
+) -> dict[str, Any]:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id")) or evaluation_frame_id
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "multi_line_status": status,
+        "multi_line_reason": reason,
+        "line_status": status,
+        "line_reason": reason,
+        "line_type": "observed_ranked_line" if status == "PASS" else None,
+        "line_evaluation_frame_id": evaluation_frame_id,
+        "target_line_rank": target_line_rank,
+        "observed_line_count": len(lines),
+        "observed_lines": lines,
+        "selected_line": selected_line,
+        "line_x_m": None if selected_line is None else selected_line.get("line_x_m"),
+        "normalized_line_x_m": None if selected_line is None else selected_line.get("normalized_line_x_m"),
+        "defensive_line_player_ids": [] if selected_line is None else selected_line.get("defender_ids", []),
+        "ball_x_m": ball_x_m,
+        "normalized_ball_x_m": normalized_ball_x_m,
+        "goal_side_buffer_m": goal_side_buffer_m,
+        "line_band_width_m": line_band_width_m,
+        "minimum_line_defenders": minimum_line_defenders,
+        "attacking_direction": attack_x_sign,
+    }
+
+
 def defensive_line_anchor_record(
     *,
     state: PeriodState,
@@ -2520,6 +3051,63 @@ def ball_x_at_frame(positions: pd.DataFrame, frame_id: int) -> float | None:
     return None if pd.isna(value) else float(value)
 
 
+def coordinate_maps_by_frame(
+    state: PeriodState,
+) -> tuple[dict[int, dict[str, dict[str, Any]]], dict[int, tuple[float, float]]]:
+    key = ("coordinate_maps_by_frame",)
+    if key not in state.lookup_cache:
+        player_records: dict[int, dict[str, dict[str, Any]]] = {}
+        ball_points: dict[int, tuple[float, float]] = {}
+        for row in state.positions.itertuples(index=False):
+            frame_id = int(row.frame_id)
+            if str(row.entity_type) == "ball":
+                if not pd.isna(row.x_m) and not pd.isna(row.y_m):
+                    ball_points[frame_id] = (float(row.x_m), float(row.y_m))
+                continue
+            if str(row.entity_type) != "player":
+                continue
+            if pd.isna(row.x_m) or pd.isna(row.y_m):
+                x_m = None
+                y_m = None
+            else:
+                x_m = float(row.x_m)
+                y_m = float(row.y_m)
+            player_records.setdefault(frame_id, {})[str(row.entity_id)] = {
+                "player_id": str(row.entity_id),
+                "frame_id": frame_id,
+                "team_id": str(row.team_id),
+                "team_role": str(row.team_role),
+                "x_m": x_m,
+                "y_m": y_m,
+            }
+        state.lookup_cache[key] = (player_records, ball_points)
+    return state.lookup_cache[key]
+
+
+def positions_by_frame_index(state: PeriodState) -> pd.DataFrame:
+    key = ("positions_by_frame_index",)
+    if key not in state.lookup_cache:
+        state.lookup_cache[key] = state.positions.set_index("frame_id", drop=False).sort_index()
+    return state.lookup_cache[key]
+
+
+def ball_point_at_frame(state: PeriodState, frame_id: int) -> tuple[float, float] | None:
+    key = ("ball_point_at_frame", int(frame_id))
+    if key not in state.lookup_cache:
+        rows = rows_at_frame(state, frame_id)
+        ball_rows = rows[rows["entity_type"] == "ball"]
+        if ball_rows.empty:
+            state.lookup_cache[key] = None
+        else:
+            row = ball_rows.iloc[0]
+            state.lookup_cache[key] = (
+                None
+                if pd.isna(row.x_m) or pd.isna(row.y_m)
+                else (float(row.x_m), float(row.y_m))
+            )
+    return state.lookup_cache[key]
+
+
 def cached_ball_x_at_frame(state: PeriodState, frame_id: int) -> float | None:
     key = ("ball_x_at_frame", int(frame_id))
     if key not in state.lookup_cache:
@@ -2533,6 +3121,17 @@ def cached_ball_x_at_frame(state: PeriodState, frame_id: int) -> float | None:
     return state.lookup_cache[key]
 
 
+def tracked_point_at_frame(state: PeriodState, frame_id: int, entity_id: str) -> tuple[float, float] | None:
+    if not entity_id:
+        return None
+    if entity_id == BALL_ENTITY_ID or entity_id == "ball":
+        return ball_point_at_frame(state, frame_id)
+    record = player_records_at_frame(state, frame_id).get(str(entity_id))
+    if record is None or record.get("x_m") is None or record.get("y_m") is None:
+        return None
+    return (float(record["x_m"]), float(record["y_m"]))
+
+
 def rows_by_frame(state: PeriodState) -> dict[int, pd.DataFrame]:
     key = ("rows_by_frame",)
     if key not in state.lookup_cache:
@@ -2544,7 +3143,17 @@ def rows_by_frame(state: PeriodState) -> dict[int, pd.DataFrame]:
 
 
 def rows_at_frame(state: PeriodState, frame_id: int) -> pd.DataFrame:
-    return rows_by_frame(state).get(int(frame_id), state.positions.iloc[0:0])
+    key = ("rows_at_frame", int(frame_id))
+    if key not in state.lookup_cache:
+        indexed = positions_by_frame_index(state)
+        try:
+            rows = indexed.loc[int(frame_id)]
+        except KeyError:
+            rows = state.positions.iloc[0:0]
+        if isinstance(rows, pd.Series):
+            rows = rows.to_frame().T
+        state.lookup_cache[key] = rows
+    return state.lookup_cache[key]
 
 
 def player_records_at_frame(state: PeriodState, frame_id: int) -> dict[str, dict[str, Any]]:
@@ -3267,6 +3876,8 @@ def relation_support_arrival(state: PeriodState, node: BoundCatalogNode) -> None
     minimum_duration_seconds = node_parameter_number(node, "minimum_duration_seconds", 0.4)
     maximum_support_distance_m = node_parameter_number(node, "maximum_support_distance_m", 8.0)
     minimum_supporting_players = node_parameter_integer(node, "minimum_supporting_players", 1)
+    required_anchor_status_field = node_parameter_text(node, "required_anchor_status_field", "none")
+    required_anchor_status_value = node_parameter_text(node, "required_anchor_status_value", "PASS")
     orientation = parquet_rows(state.canonical_root / "orientation.parquet")
     attack_x_sign = attack_x_sign_for(
         orientation,
@@ -3285,6 +3896,8 @@ def relation_support_arrival(state: PeriodState, node: BoundCatalogNode) -> None
             minimum_duration_seconds=minimum_duration_seconds,
             maximum_support_distance_m=maximum_support_distance_m,
             minimum_supporting_players=minimum_supporting_players,
+            required_anchor_status_field=required_anchor_status_field,
+            required_anchor_status_value=required_anchor_status_value,
             attack_x_sign=attack_x_sign,
         )
         for anchor in anchor_records
@@ -3321,6 +3934,8 @@ def support_arrival_anchor_record(
     minimum_duration_seconds: float,
     maximum_support_distance_m: float,
     minimum_supporting_players: int,
+    required_anchor_status_field: str,
+    required_anchor_status_value: str,
     attack_x_sign: int | None,
 ) -> dict[str, Any] | None:
     anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
@@ -3329,6 +3944,44 @@ def support_arrival_anchor_record(
         support_anchor_frame_id = anchor_frame_id
     if anchor_frame_id is None or support_anchor_frame_id is None:
         return None
+    if required_anchor_status_field != "none":
+        anchor_status = anchor.get(required_anchor_status_field)
+        if anchor_status is None or str(anchor_status) == "UNKNOWN":
+            return support_arrival_prefilter_record(
+                state=state,
+                anchor=anchor,
+                anchor_frame_id=anchor_frame_id,
+                support_anchor_frame_id=support_anchor_frame_id,
+                anchor_frame_field=anchor_frame_field,
+                support_region_mode=support_region_mode,
+                maximum_arrival_seconds=maximum_arrival_seconds,
+                minimum_duration_seconds=minimum_duration_seconds,
+                maximum_support_distance_m=maximum_support_distance_m,
+                minimum_supporting_players=minimum_supporting_players,
+                candidate_scope=candidate_scope,
+                required_anchor_status_field=required_anchor_status_field,
+                required_anchor_status_value=required_anchor_status_value,
+                status="UNKNOWN",
+                reason="required_anchor_status_unknown",
+            )
+        if str(anchor_status) != required_anchor_status_value:
+            return support_arrival_prefilter_record(
+                state=state,
+                anchor=anchor,
+                anchor_frame_id=anchor_frame_id,
+                support_anchor_frame_id=support_anchor_frame_id,
+                anchor_frame_field=anchor_frame_field,
+                support_region_mode=support_region_mode,
+                maximum_arrival_seconds=maximum_arrival_seconds,
+                minimum_duration_seconds=minimum_duration_seconds,
+                maximum_support_distance_m=maximum_support_distance_m,
+                minimum_supporting_players=minimum_supporting_players,
+                candidate_scope=candidate_scope,
+                required_anchor_status_field=required_anchor_status_field,
+                required_anchor_status_value=required_anchor_status_value,
+                status="FAIL",
+                reason="required_anchor_status_not_met",
+            )
     if candidate_scope == "defending_outfield":
         team_role = state.defending_team_role
     else:
@@ -3400,6 +4053,8 @@ def support_arrival_anchor_record(
         "minimum_supporting_players": minimum_supporting_players,
         "candidate_scope": candidate_scope,
         "candidate_team_role": team_role,
+        "required_anchor_status_field": required_anchor_status_field,
+        "required_anchor_status_value": required_anchor_status_value,
         "candidate_player_ids": list(payload["candidate_player_ids"]),
         "evaluated_candidate_player_ids": list(payload["evaluated_candidate_player_ids"]),
         "supporting_player_ids": list(payload["supporting_player_ids"]),
@@ -3421,6 +4076,76 @@ def support_arrival_anchor_record(
         "reference_player_id": payload["reference_player_id"],
         "reference_point": reference_point,
         "observed_candidate_record_count": len(candidate_positions),
+    }
+
+
+def support_arrival_prefilter_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    anchor_frame_id: int,
+    support_anchor_frame_id: int,
+    anchor_frame_field: str,
+    support_region_mode: str,
+    maximum_arrival_seconds: float,
+    minimum_duration_seconds: float,
+    maximum_support_distance_m: float,
+    minimum_supporting_players: int,
+    candidate_scope: str,
+    required_anchor_status_field: str,
+    required_anchor_status_value: str,
+    status: str,
+    reason: str,
+) -> dict[str, Any]:
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "support_arrival_status": status,
+        "support_arrival_reason": reason,
+        "support_anchor_frame_field": anchor_frame_field,
+        "support_anchor_frame_id": support_anchor_frame_id,
+        "support_window_start_frame_id": support_anchor_frame_id,
+        "support_window_end_frame_id": support_anchor_frame_id,
+        "support_region_mode": support_region_mode,
+        "maximum_arrival_seconds": maximum_arrival_seconds,
+        "minimum_duration_seconds": minimum_duration_seconds,
+        "maximum_support_distance_m": maximum_support_distance_m,
+        "minimum_supporting_players": minimum_supporting_players,
+        "candidate_scope": candidate_scope,
+        "candidate_team_role": None,
+        "required_anchor_status_field": required_anchor_status_field,
+        "required_anchor_status_value": required_anchor_status_value,
+        "candidate_player_ids": [],
+        "evaluated_candidate_player_ids": [],
+        "supporting_player_ids": [],
+        "first_arrival_frame_id": None,
+        "first_arrival_seconds_after_anchor": None,
+        "support_duration_seconds": 0.0,
+        "missing_candidate_player_ids": [],
+        "invalid_candidate_player_ids": [],
+        "invalid_coordinate_player_ids": [],
+        "duplicate_candidate_player_ids": [],
+        "missing_frame_ids": [],
+        "invalid_frame_ids": [],
+        "missing_reference_frame_ids": [],
+        "invalid_reference_frame_ids": [],
+        "duplicate_reference_frame_ids": [],
+        "per_player_evidence": [],
+        "coverage_status": "UNKNOWN" if status == "UNKNOWN" else "NOT_EVALUATED",
+        "config_evidence": {
+            "prefiltered": True,
+            "required_anchor_status_field": required_anchor_status_field,
+            "required_anchor_status_value": required_anchor_status_value,
+        },
+        "reference_player_id": anchor.get("receiver_id"),
+        "reference_point": anchor_reference_point(anchor),
+        "observed_candidate_record_count": 0,
     }
 
 
