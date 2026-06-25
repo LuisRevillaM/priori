@@ -6,7 +6,12 @@ import unittest
 
 from tqe.runtime.binder import bind_document
 from tqe.runtime.ir import PayloadType, Unit, model_payload, stable_hash
-from tqe.semantic_compiler import CompilerOutcome, SemanticExpression, compile_semantic_expression
+from tqe.semantic_compiler import (
+    CompilerOutcome,
+    SemanticExpression,
+    compile_semantic_expression,
+    missing_operationalization_gap_expression,
+)
 
 
 PROGRAM_DIR = Path("delivery/scp-1/semantic-programs")
@@ -113,6 +118,89 @@ class SCP1SemanticCompilerTests(unittest.TestCase):
         self.assertIsNotNone(result.blocking_gap)
         self.assertEqual("support_arrival_profile", result.blocking_gap.concept)
 
+    def test_missing_operationalization_helper_emits_canonical_gap_shape(self) -> None:
+        expression = missing_operationalization_gap_expression(
+            expression_id="test_lane_coverage_gap",
+            expression_version="0.1.0",
+            display_name="Lane Coverage Gap",
+            query_text="Show lane coverage after a switch.",
+            description="Coverage is blocked until reachability exists.",
+            normal_form=self.gap_normal_form(
+                outcome={
+                    "summary": "Lane coverage requires reachability.",
+                    "semantic_refs": ["time_to_arrival"],
+                    "runtime_refs": [],
+                }
+            ),
+            blocking_concept="time_to_arrival",
+            blocked_slot="outcome",
+            expected_input=[
+                {
+                    "name": "lane_region",
+                    "semantic_type": {
+                        "container": "region",
+                        "value": "LaneRegion",
+                        "unit": "none",
+                    },
+                    "description": "The lane being tested.",
+                }
+            ],
+            expected_output={
+                "container": "frame_signal",
+                "value": "ReachabilityMargin",
+                "unit": "second",
+            },
+            semantic_basis="lane_coverage_requires_reachability_not_occupancy",
+            required_modalities=["tracking"],
+            claim_boundary="No lane coverage claim without reachability.",
+            evidence_obligations=["defender_position_time_series"],
+            message="Missing operationalization: time_to_arrival.",
+            executable_prefix_exists=True,
+        )
+
+        result = compile_semantic_expression(expression)
+
+        self.assertEqual(CompilerOutcome.CAPABILITY_GAP, result.outcome)
+        self.assertIsNotNone(result.blocking_gap)
+        self.assertEqual("MISSING_OPERATIONALIZATION", result.blocking_gap.kind.value)
+        self.assertEqual("time_to_arrival", result.blocking_gap.concept)
+        self.assertTrue(result.blocking_gap.executable_prefix_exists)
+        self.assertEqual([], expression.normal_form.outcome.runtime_refs)
+        self.assertEqual("time_to_arrival", expression.fixture_expectation.blocking_gap_concept)
+
+    def test_missing_operationalization_helper_rejects_runtime_refs_on_blocked_slot(self) -> None:
+        with self.assertRaises(ValueError):
+            missing_operationalization_gap_expression(
+                expression_id="test_bad_lane_coverage_gap",
+                expression_version="0.1.0",
+                display_name="Bad Lane Coverage Gap",
+                query_text="Show lane coverage after a switch.",
+                description="Bad fixture with fabricated runtime refs.",
+                normal_form=self.gap_normal_form(
+                    outcome={
+                        "summary": "Lane coverage requires reachability.",
+                        "semantic_refs": ["time_to_arrival"],
+                        "runtime_refs": ["lane_coverage"],
+                    }
+                ),
+                blocking_concept="time_to_arrival",
+                blocked_slot="outcome",
+                expected_input=[
+                    {
+                        "name": "lane_region",
+                        "semantic_type": {"container": "region", "value": "LaneRegion"},
+                        "description": "The lane being tested.",
+                    }
+                ],
+                expected_output={"container": "frame_signal", "value": "ReachabilityMargin"},
+                semantic_basis="lane_coverage_requires_reachability_not_occupancy",
+                required_modalities=["tracking"],
+                claim_boundary="No lane coverage claim without reachability.",
+                evidence_obligations=["defender_position_time_series"],
+                message="Missing operationalization: time_to_arrival.",
+                executable_prefix_exists=True,
+            )
+
     def test_every_fixture_declares_full_football_query_normal_form(self) -> None:
         for path in sorted(PROGRAM_DIR.glob("*.semantic.json")):
             with self.subTest(path=path.name):
@@ -124,6 +212,21 @@ class SCP1SemanticCompilerTests(unittest.TestCase):
         return SemanticExpression.model_validate_json(
             (PROGRAM_DIR / name).read_text(encoding="utf-8")
         )
+
+    @staticmethod
+    def gap_normal_form(**overrides: dict) -> dict:
+        slots = {
+            "scope": {"summary": "Selected matches.", "semantic_refs": [], "runtime_refs": []},
+            "anchor": {"summary": "A relevant anchor.", "semantic_refs": [], "runtime_refs": []},
+            "bind": {"summary": "Relevant entities.", "semantic_refs": [], "runtime_refs": []},
+            "measure": {"summary": "Available measurements.", "semantic_refs": [], "runtime_refs": []},
+            "match": {"summary": "Available predicates.", "semantic_refs": [], "runtime_refs": []},
+            "outcome": {"summary": "Blocked outcome.", "semantic_refs": [], "runtime_refs": []},
+            "judge": {"summary": "Return an honest gap.", "semantic_refs": [], "runtime_refs": []},
+            "return": {"summary": "Typed gap.", "semantic_refs": [], "runtime_refs": []},
+        }
+        slots.update(overrides)
+        return slots
 
 
 if __name__ == "__main__":

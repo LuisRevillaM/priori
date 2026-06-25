@@ -22,6 +22,7 @@ from typing import Any
 from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows, runtime_parameters
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
+from tqe.semantic_compiler.gaps import missing_operationalization_gap_expression
 from tqe.semantic_compiler.lowering import compile_semantic_expression
 from tqe.semantic_compiler.models import CompilerOutcome, SemanticExpression
 from tqe.verification.afl_validation_factory import (
@@ -193,14 +194,13 @@ def q4_document() -> dict[str, Any]:
 
 
 def lane_coverage_gap_expression() -> SemanticExpression:
-    payload = {
-        "schema_version": "1.0",
-        "expression_id": "q4_lane_coverage_time_to_arrival_gap",
-        "expression_version": "0.1.0",
-        "display_name": "Q4 Lane Coverage Gap",
-        "query_text": "Defensive block compact, then loses lane coverage after a switch.",
-        "description": "Executable compact-then-switch prefix exists, but true lane coverage requires time-to-arrival.",
-        "normal_form": {
+    return missing_operationalization_gap_expression(
+        expression_id="q4_lane_coverage_time_to_arrival_gap",
+        expression_version="0.1.0",
+        display_name="Q4 Lane Coverage Gap",
+        query_text="Defensive block compact, then loses lane coverage after a switch.",
+        description="Executable compact-then-switch prefix exists, but true lane coverage requires time-to-arrival.",
+        normal_form={
             "scope": {"summary": "Selected matches and periods.", "semantic_refs": [], "runtime_refs": []},
             "anchor": {"summary": "Observed switch of play from a controlled pass.", "semantic_refs": ["concept.observed_switch_of_play"], "runtime_refs": ["switch_of_play"]},
             "bind": {"summary": "Defending outfield unit at release and reception.", "semantic_refs": ["concept.observed_team_compactness"], "runtime_refs": ["team_compactness"]},
@@ -210,49 +210,30 @@ def lane_coverage_gap_expression() -> SemanticExpression:
             "judge": {"summary": "Return typed gap rather than infer coverage.", "semantic_refs": [], "runtime_refs": []},
             "return": {"summary": "Partial executable prefix and blocking semantic gap.", "semantic_refs": [], "runtime_refs": []},
         },
-        "support": {
-            "expressible": True,
-            "compilable": False,
-            "executable": False,
-            "identifiable": False,
-            "validated": False,
-        },
-        "concept_refs": ["concept.observed_switch_of_play", "concept.observed_team_compactness", "time_to_arrival"],
-        "operator_refs": ["change_across_anchor"],
-        "declared_gaps": [
+        blocking_concept="time_to_arrival",
+        blocked_slot="outcome",
+        expected_input=[
             {
-                "kind": "MISSING_OPERATIONALIZATION",
-                "concept": "time_to_arrival",
-                "expected_input": [
-                    {
-                        "name": "defender_trajectories",
-                        "semantic_type": {"container": "episode_set", "value": "PlayerTrajectory", "unit": "none", "cardinality": "collection", "entity_scope": "defending"},
-                        "description": "Observed defender trajectories around the lane-coverage window.",
-                    },
-                    {
-                        "name": "lane_region",
-                        "semantic_type": {"container": "region", "value": "LaneRegion", "unit": "none", "cardinality": "single", "entity_scope": "region"},
-                        "description": "The lane or pass corridor whose defensive reachability is being tested.",
-                    },
-                ],
-                "expected_output": {"container": "frame_signal", "value": "ReachabilityMargin", "unit": "second", "cardinality": "single", "entity_scope": "anchor"},
-                "semantic_basis": "lane_coverage_requires_reachability_not_occupancy",
-                "required_modalities": ["tracking"],
-                "claim_boundary": "Without time_to_arrival, Priori can report observed compactness/change but cannot claim lane coverage or lane denial.",
-                "evidence_obligations": ["defender_position_time_series", "lane_region", "arrival_time_threshold", "tracking_quality_policy"],
-                "surrounding_program_type_correct": True,
-                "executable_prefix_exists": True,
-                "executable_suffix_exists": False,
-                "message": "Q4 lane coverage is blocked on a time_to_arrival operationalization.",
-            }
+                "name": "defender_trajectories",
+                "semantic_type": {"container": "episode_set", "value": "PlayerTrajectory", "unit": "none", "cardinality": "collection", "entity_scope": "defending"},
+                "description": "Observed defender trajectories around the lane-coverage window.",
+            },
+            {
+                "name": "lane_region",
+                "semantic_type": {"container": "region", "value": "LaneRegion", "unit": "none", "cardinality": "single", "entity_scope": "region"},
+                "description": "The lane or pass corridor whose defensive reachability is being tested.",
+            },
         ],
-        "fixture_expectation": {
-            "outcome": "CAPABILITY_GAP",
-            "blocking_gap_kind": "MISSING_OPERATIONALIZATION",
-            "blocking_gap_concept": "time_to_arrival",
-        },
-    }
-    return SemanticExpression.model_validate(payload)
+        expected_output={"container": "frame_signal", "value": "ReachabilityMargin", "unit": "second", "cardinality": "single", "entity_scope": "anchor"},
+        semantic_basis="lane_coverage_requires_reachability_not_occupancy",
+        required_modalities=["tracking"],
+        claim_boundary="Without time_to_arrival, Priori can report observed compactness/change but cannot claim lane coverage or lane denial.",
+        evidence_obligations=["defender_position_time_series", "lane_region", "arrival_time_threshold", "tracking_quality_policy"],
+        executable_prefix_exists=True,
+        message="Q4 lane coverage is blocked on a time_to_arrival operationalization.",
+        concept_refs=["concept.observed_switch_of_play", "concept.observed_team_compactness", "time_to_arrival"],
+        operator_refs=["change_across_anchor"],
+    )
 
 
 def requested_evidence() -> list[dict[str, Any]]:

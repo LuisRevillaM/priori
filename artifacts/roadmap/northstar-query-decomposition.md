@@ -47,6 +47,7 @@ honestly if asked before built.
 - **EXISTS:** `possession_segment` (regain = the boundary between opp and own possession — [B4] is cheap to derive from it)
 - **Missing (foundational):** [B4], [B2], outcome_window, [A4]
 - **NOTE:** *purest Layer-B test* — heavy grammar, almost no kinematics. The one query that argues for pulling transition/phase into Package 1 (cheap, because `possession_segment` already exists). "settled" needs a **frozen threshold** (N retained actions / duration-without-loss) — define-and-freeze, deflection-audit style.
+- **AUTHORING RULE:** Q5 must annotate temporal/entity alignments in the typed plan as they are authored. Name the transition anchor frame, the possession segment it opens, the same-team possession continuity constraint, the outcome-window start/end frames, and the entity identities that must remain correlated across regain → settled phase → outcome. Do not leave these as implicit wiring in node order; future coverage-map mining should read them directly from plan metadata rather than reconstruct them from graph archaeology.
 
 ### Q6 — Throw-ins: first action progresses past first line under pressure
 - **Grammar:** `restart_anchor.throw_in` · `action_event_anchor` (first action) [B1] · `action_chain` head [B3]
