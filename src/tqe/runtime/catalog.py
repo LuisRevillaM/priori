@@ -1309,6 +1309,7 @@ def default_primitives() -> list[CatalogEntry]:
                         "distinct_entity_values",
                         "distinct_entities_status",
                         "right_match_count",
+                        "carry_status",
                         "carry_episode_id",
                         "carrier_id",
                         "carry_start_frame_id",

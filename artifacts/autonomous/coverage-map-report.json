@@ -32,6 +32,15 @@
   "role_or_reference_gap": 1.8,
   "missing_primitive": 20.8
  },
+ "composition_maturity_values": [
+  "compiler_reachable",
+  "generically_composable",
+  "handwired"
+ ],
+ "composition_maturity_counts": {
+  "handwired": 737,
+  "compiler_reachable": 4
+ },
  "reachable_now_or_one_gap_pct": 70.4,
  "top_missing_primitives_by_unlock": [
   [

@@ -1,0 +1,82 @@
+{
+  "failure_distribution": {
+    "missing_constraint": 2
+  },
+  "findings": [],
+  "missing_composition_constraints_ranked": [
+    [
+      "v0 target declares semantic alignment requirements that are not yet a searchable composition-rule object.",
+      2
+    ]
+  ],
+  "plan_dir": "generated/compiler-reachability-v0/plans",
+  "report_priority": "The compiler_reachable_pct is a bounded v0 sample signal. The failure-cause distribution is the actionable output.",
+  "row_csv_path": "generated/compiler-reachability-v0/row-ledger.csv",
+  "row_ledger_path": "generated/compiler-reachability-v0/row-ledger.json",
+  "schema_version": "compiler_reachability_report.v0",
+  "scope": {
+    "atlas_wide_execution": false,
+    "mode": "stratified_sample",
+    "natural_language": false,
+    "target_count": 6
+  },
+  "search_budget": {
+    "allowed_catalog_refs": [
+      "action_chain",
+      "action_event_anchor",
+      "ball_lateral_fraction",
+      "carry_episode",
+      "change_across_anchor",
+      "controlled_pass_episode",
+      "defensive_line_model",
+      "defensive_outfield_centroid",
+      "geometric_progressive_corridor",
+      "geometric_progressive_corridor_from_anchor_set",
+      "join_episode_sets",
+      "lane_occupancy",
+      "local_number_relation",
+      "multi_line_model",
+      "one_touch_relay_episode",
+      "opponents_bypassed_by_action",
+      "outcome_window",
+      "pairwise_distance",
+      "pass_chain_episode",
+      "possession_segment",
+      "pressure_on_carrier",
+      "receiver_line_transition_during_pass_leg",
+      "relation_destination_entry",
+      "relative_position_to_line",
+      "signed_lateral_shift",
+      "structured_zone",
+      "support_arrival_relation",
+      "switch_of_play",
+      "team_compactness",
+      "time_to_arrival",
+      "tracking_quality",
+      "transition_anchor",
+      "velocity"
+    ],
+    "excluded_catalog_refs": [
+      "controlled_line_break_episode",
+      "outcome_classification",
+      "relation_destination_entry_classification"
+    ],
+    "max_branching": 6,
+    "max_depth": 4
+  },
+  "status": "PASS",
+  "summary": {
+    "compiler_reachable_count": 4,
+    "compiler_reachable_pct": 0.5,
+    "coverage_supported_count": 350,
+    "coverage_supported_pct": 47.2,
+    "reachable_vs_supported_gap_count": 346,
+    "reachable_vs_supported_gap_pct": 46.7,
+    "sample_compiler_reachable_count": 4,
+    "sample_compiler_reachable_pct": 66.7,
+    "sample_target_count": 6
+  },
+  "synthesizer_strategy": "synthesizer.v0.1.strategy=typed_target_patterns.max_depth=4.max_branching=6",
+  "synthesizer_version": "synthesizer.v0.1",
+  "targets_path": "config/compiler-reachability/targets.v0.json"
+}

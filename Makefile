@@ -278,3 +278,8 @@ test:
 .PHONY: coverage-map
 coverage-map:
 	$(PYTHON) scripts/coverage_map/aggregate.py
+
+.PHONY: compiler-reachability
+compiler-reachability:
+	$(PYTHON) scripts/coverage_map/compiler_reachability.py
+	$(PYTHON) scripts/coverage_map/aggregate.py

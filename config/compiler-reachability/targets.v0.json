@@ -1,0 +1,189 @@
+{
+  "schema_version": "compiler_reachability_targets.v0",
+  "strategy": "synthesizer.v0.1.strategy=typed_target_patterns.max_depth=4.max_branching=6",
+  "sample_policy": "bounded_stratified_sample_before_atlas_wide_execution",
+  "note": "Concept ids are reporting/scoring labels only. Synthesis consumes target_contract fields.",
+  "targets": [
+    {
+      "target_id": "target_carry_progression_v0",
+      "concept": "carry_progression",
+      "target_contract": {
+        "pattern": "single_carry_forward_threshold",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "carry_forward_progression_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ],
+        "claim_boundary": "Observed movement-under-control with forward component; no dribbling skill, defender bypass, intent, or pressure-break quality.",
+        "composition_pattern": "anchor_relative_measurement"
+      }
+    },
+    {
+      "target_id": "target_direct_pressure_candidate_v0",
+      "concept": "direct_pressure_candidate",
+      "target_contract": {
+        "pattern": "single_anchor_pressure_status",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "pressure_reason",
+          "carrier_id",
+          "pressure_frame_id",
+          "nearest_defender_id",
+          "nearest_defender_distance_m",
+          "closing_speed_mps",
+          "approach_angle_degrees",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ],
+        "claim_boundary": "Observed nearest-defender pressure components only; no defender intent, pressure quality, or tactical causation.",
+        "composition_pattern": "anchor_relative_measurement"
+      }
+    },
+    {
+      "target_id": "target_carry_out_of_pressure_v0",
+      "concept": "carry_out_of_pressure",
+      "target_contract": {
+        "pattern": "carry_pressure_delta_join",
+        "desired_output": "classification",
+        "required_evidence": [
+          "join_status",
+          "join_reason",
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "change_status",
+          "before_value",
+          "after_value",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ],
+        "known_composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          },
+          {
+            "kind": "frame_alignment",
+            "before_frame_field": "carry_start_frame_id",
+            "after_frame_field": "carry_end_frame_id"
+          }
+        ],
+        "claim_boundary": "Pressure reduction means nearest-defender distance increased across the carry; no pressure-breaking quality, defender bypass, intent, or causation.",
+        "composition_pattern": "join_and_before_after_change"
+      }
+    },
+    {
+      "target_id": "target_post_regain_retention_v0",
+      "concept": "post_regain_retention",
+      "target_contract": {
+        "pattern": "transition_outcome_window",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_type",
+          "transition_frame_id",
+          "outcome_window_status",
+          "outcome_window_reason",
+          "minimum_settled_possession_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ],
+        "known_composition_constraints": [
+          {
+            "kind": "outcome_after_anchor",
+            "anchor_status_field": "transition_status",
+            "anchor_status_value": "PASS"
+          }
+        ],
+        "claim_boundary": "Settled means retained ball-alive for the frozen duration threshold; no settled-possession quality or tactical intent.",
+        "composition_pattern": "temporal_sequence"
+      }
+    },
+    {
+      "target_id": "target_penetration_support_response_v0",
+      "concept": "penetration_support_response",
+      "target_contract": {
+        "pattern": "unsupported_alignment_probe",
+        "desired_output": "classification",
+        "required_evidence": [
+          "line_break_status",
+          "support_arrival_status",
+          "support_region_mode"
+        ],
+        "known_composition_constraints": [
+          {
+            "kind": "support_after_reception",
+            "required": true
+          },
+          {
+            "kind": "same_receiver_identity",
+            "required": true
+          }
+        ],
+        "claim_boundary": "Would require support arrival aligned after controlled line break reception; v0 should return a precise composition gap if it cannot derive that alignment.",
+        "composition_pattern": "q3_temporal_entity_alignment"
+      }
+    },
+    {
+      "target_id": "target_defensive_reaction_to_pass_v0",
+      "concept": "defensive_reaction_to_pass",
+      "target_contract": {
+        "pattern": "unsupported_alignment_probe",
+        "desired_output": "classification",
+        "required_evidence": [
+          "change_status",
+          "arrival_status",
+          "action_event_status"
+        ],
+        "known_composition_constraints": [
+          {
+            "kind": "measure_before_and_after_pass",
+            "required": true
+          },
+          {
+            "kind": "same_receiver_target_point",
+            "required": true
+          }
+        ],
+        "claim_boundary": "Would require reachability change aligned before and after a pass without inferring defender intent.",
+        "composition_pattern": "q4_before_after_alignment"
+      }
+    }
+  ]
+}

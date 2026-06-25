@@ -51,14 +51,39 @@ PRIMITIVE_ALIASES = {
     "transition / possession-phase": "transition_anchor",
 }
 
+COMPOSITION_MATURITY_VALUES = {
+    "handwired",
+    "generically_composable",
+    "compiler_reachable",
+}
+
 def canon(cap: str) -> str:
     cap = (cap or "").strip()
     return PRIMITIVE_ALIASES.get(cap, cap)
 
+
+def normalize_composition_maturity(rows: list[dict]) -> bool:
+    changed = False
+    for row in rows:
+        existing = row.get("composition_maturity") or row.get("compiler_reachability_status")
+        if existing not in COMPOSITION_MATURITY_VALUES:
+            existing = "handwired"
+        if row.get("composition_maturity") != existing:
+            row["composition_maturity"] = existing
+            changed = True
+        applicable = row.get("classification") == "supported"
+        if row.get("composition_maturity_applicable") != applicable:
+            row["composition_maturity_applicable"] = applicable
+            changed = True
+    return changed
+
 def main() -> None:
     rows = json.loads(LEDGER.read_text())
+    if normalize_composition_maturity(rows):
+        LEDGER.write_text(json.dumps(rows, indent=1) + "\n")
     total = len(rows)
     cls = collections.Counter(r["classification"] for r in rows)
+    maturity = collections.Counter(r.get("composition_maturity", "handwired") for r in rows)
     pct = lambda n: round(100 * n / total, 1)
 
     prim = collections.Counter()
@@ -97,6 +122,8 @@ def main() -> None:
         "total_concepts": total,
         "coverage_counts": dict(cls),
         "coverage_pct": {k: pct(v) for k, v in cls.items()},
+        "composition_maturity_values": sorted(COMPOSITION_MATURITY_VALUES),
+        "composition_maturity_counts": dict(maturity),
         "reachable_now_or_one_gap_pct": pct(cls.get("supported", 0) + cls.get("partial_with_typed_gap", 0)),
         "top_missing_primitives_by_unlock": prim.most_common(15),
         "composition_constraint_count": len(ccn),
@@ -116,6 +143,7 @@ def main() -> None:
 
     keys = ["concept", "family", "classification", "justification", "required_missing_capability",
             "closest_supported_substitute", "composition_constraint_needed", "composition_constraint_note",
+            "composition_maturity", "composition_maturity_applicable",
             "compiler_reachability_status", "priority_unlock"]
     with CSV_OUT.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=keys, extrasaction="ignore", lineterminator="\n")
@@ -127,6 +155,7 @@ def main() -> None:
     for k, v in cls.most_common():
         print(f"  {pct(v):>5}%  {v:>3}  {k}")
     print(f"reachable now or with one gap: {report['reachable_now_or_one_gap_pct']}%")
+    print("composition maturity:", dict(sorted(maturity.items())))
     print("top missing primitives:", prim.most_common(8))
     print("composition constraints needed:", len(ccn))
     for c in calibration:
