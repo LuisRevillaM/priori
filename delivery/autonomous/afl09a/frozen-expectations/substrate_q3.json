@@ -1,0 +1,41 @@
+{
+  "expectation_id": "afl09a.substrate_q3.0_1_0",
+  "expected": {
+    "bound_plan_hash": "9a2f5a2f899cddec95fee65457f3a02034d12268e89644b9d2ad9ad534d75cce",
+    "compatibility_profile": "generic",
+    "document_hash": "720a3f17e1b11406ff143786caa2cbe67734357faff3036525e0bc09d40aaf31",
+    "execution_status": "pass",
+    "plan_id": "q3_receiver_second_line_no_underneath_support",
+    "report_status": "PASS",
+    "requested_evidence_failure_count": 0,
+    "result_count": 13,
+    "result_ids": [
+      "0aa39a0eaf223c29",
+      "1d147d9b7cbeea4c",
+      "39e63515770a40fd",
+      "510ff3390d5882e6",
+      "5bc7204119e4abe0",
+      "60539ee3721700e5",
+      "77692f4cde64ae59",
+      "9f9e2df5409c0161",
+      "b679ff84f18c85f8",
+      "c896e7b5088b9e5a",
+      "e09db03c2a1a5324",
+      "e4370ed0b895f1fe",
+      "e43a8b3ca70d232c"
+    ],
+    "result_signature_hash": "4d0d8bbb9ae0b8c2bd510c6ed903bdb76cfdbed491c5c60ae7073fda4ee9b198"
+  },
+  "freeze_provenance": {
+    "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
+    "review": "controller_self_verified_original_real_data_verifier",
+    "runtime_semantics_dirty": false,
+    "source_commit": "042293db699a2ae968a6faaffece53e4727aa944",
+    "source_verifier": "tqe.verification.afl_substrate_q3",
+    "source_verifier_status": "PASS",
+    "threshold_version": "q3_receiver_second_line_no_underneath_support.v0.1.0",
+    "worktree_dirty": false
+  },
+  "schema_version": "afl09a.frozen_expectation.v1",
+  "subject_ref": "recipe:q3_receiver_second_line_no_underneath_support_v1:0.1.0"
+}
