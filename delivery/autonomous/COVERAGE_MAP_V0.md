@@ -32,48 +32,49 @@ Authoritative generated artifacts:
 - `role_or_reference_gap`: the concept depends on a role taxonomy or ambiguous football reference not yet modeled.
 - `ambiguous_or_needs_definition`: the atlas entry is too underspecified to operationalize safely.
 
-## v0 Result
+## Post-Q5 v0 Result
 
-The audited v0 map covers Priori's authored 741-concept atlas, not all possible user language.
+The audited v0 map covers Priori's authored 741-concept atlas, not all possible user language. These numbers are after Q5 landed `transition_anchor`, `structured_zone`, and `outcome_window`, and after the transition-anchor backlog was conservatively redistributed into supported rows or the next precise blocker.
 
 | Classification | Concepts | Share |
 | --- | ---: | ---: |
-| `supported` | 325 | 43.9% |
-| `partial_with_typed_gap` | 155 | 20.9% |
-| `missing_primitive` | 197 | 26.6% |
+| `supported` | 340 | 45.9% |
+| `partial_with_typed_gap` | 153 | 20.6% |
+| `missing_primitive` | 184 | 24.8% |
 | `missing_modality` | 42 | 5.7% |
 | `role_or_reference_gap` | 13 | 1.8% |
 | `ambiguous_or_needs_definition` | 9 | 1.2% |
 
-Reachable now or with one named gap: 64.8%.
+Reachable now or with one named gap: 66.5%.
 
 ## Audit Posture
 
 This is `v0 estimated` and internal-only. A 30-row stratified audit found roughly 26/30 rows solid and identified one systematic inflation pattern: aggregation and extremum concepts such as `argmax`, `argmin`, `local_maximum`, and `nearest_entity` had been treated as supported even though the catalog has no generic extremum operator.
 
-That correction moved the affected rows from `supported` to `partial_with_typed_gap`, lowering supported coverage from 44.4% to 43.9%. The more important steering number, reachable now or with one typed gap, remained 64.8%.
+That correction moved the affected rows from `supported` to `partial_with_typed_gap`, lowering supported coverage from 44.4% to 43.9%. After Q5, conservative transition-anchor redistribution raises the current internal steering estimate to 45.9% supported and 66.5% reachable now or with one typed gap.
 
 Do not use this as an external coverage claim until additional audit passes and the held-out natural-language evaluation denominator exist.
 
 ## Current Roadmap Signal
 
-The top missing primitives by atlas unlock count are:
+The top missing primitives by atlas unlock count after Q5 are:
 
-1. `transition_anchor` — 31 concepts.
-2. `time_to_arrival` — 30 concepts.
-3. `carry_episode` — 17 concepts.
-4. `set_piece_structure` — 12 concepts.
-5. `off_ball_run` — 10 concepts.
+1. `time_to_arrival` — 34 concepts.
+2. `carry_episode` — 17 concepts.
+3. `set_piece_structure` — 12 concepts.
+4. `off_ball_run` — 11 concepts.
+5. `acceleration` — 7 concepts.
 
 Roadmap implication:
 
-- Q5 should continue as the transition/phase/outcome-window substrate milestone.
-- After Q5, prioritize `time_to_arrival` rather than treating it as deferrable.
+- Q5 has closed the generic transition-anchor blocker for the coverage map.
+- Prioritize `time_to_arrival` next; Q4's typed gap and the post-Q5 atlas redistribution now point at the same blocker.
+- Treat remaining transition-family partials as their next precise gap, not as generic transition-anchor debt.
 - Regenerate the coverage map after every substrate package.
 
 ## Composition Constraint Backlog
 
-The map also identifies 89 concepts blocked by missing declared composition constraints rather than missing runtime primitives. Examples include:
+The map also identifies 105 concepts blocked by missing declared composition constraints rather than missing runtime primitives. Examples include:
 
 - same anchor identity;
 - same team perspective;

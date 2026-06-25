@@ -29,8 +29,9 @@ AUDIT_NOTE = (
     "additional audits are required before external coverage claims."
 )
 ROADMAP_IMPLICATIONS = [
-    "Q5 remains the next substrate milestone for transition_anchor/phase/outcome-window work.",
-    "After Q5, prioritize time_to_arrival before lower-unlock substrate because the atlas ranks it second by unlock count.",
+    "Q5 landed transition_anchor / structured_zone / outcome_window and redistributed the prior transition-anchor backlog.",
+    "time_to_arrival is now the clear top missing primitive by atlas unlock count and should be prioritized next.",
+    "carry_episode remains the next action-family primitive after time_to_arrival.",
     "Regenerate the coverage map after every substrate package so supported/partial/gap counts remain a living metric.",
     "Treat composition constraints as compiler-alignment backlog, not hidden plan-wiring knowledge.",
 ]
@@ -85,7 +86,7 @@ def main() -> None:
     report = {
         "schema_version": "coverage-map.v0",
         "claim_status": CLAIM_STATUS,
-        "catalog_basis": "codex/afl08-passport-loop substrate (slices 1-5 + line/possession families)",
+        "catalog_basis": "codex/afl08-passport-loop substrate after Q5 transition/outcome substrate plus line/possession families",
         "denominator_note": "Coverage of Priori's authored 741-concept atlas inventory — NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
         "audit_note": AUDIT_NOTE,
         "roadmap_implications": ROADMAP_IMPLICATIONS,
@@ -101,8 +102,10 @@ def main() -> None:
             "rows_reviewed": 30,
             "approx_solid_rows": 26,
             "systematic_correction": "aggregation/extremum operator rows were downgraded from supported to partial_with_typed_gap because no generic argmax/argmin/local extremum operator exists.",
-            "supported_pct_after_correction": pct(cls.get("supported", 0)),
-            "reachable_now_or_one_gap_pct_after_correction": pct(cls.get("supported", 0) + cls.get("partial_with_typed_gap", 0)),
+            "initial_supported_pct_after_correction": 43.9,
+            "initial_reachable_now_or_one_gap_pct_after_correction": 64.8,
+            "current_supported_pct_after_q5_redistribution": pct(cls.get("supported", 0)),
+            "current_reachable_now_or_one_gap_pct_after_q5_redistribution": pct(cls.get("supported", 0) + cls.get("partial_with_typed_gap", 0)),
         },
     }
     REPORT.write_text(json.dumps(report, indent=1) + "\n")
