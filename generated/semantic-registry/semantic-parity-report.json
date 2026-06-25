@@ -731,11 +731,14 @@
         "recipe:line_break_support_response_v1:0.1.0",
         "runtime:primitive:action_chain:0.1.0",
         "runtime:primitive:action_event_anchor:0.1.0",
+        "runtime:primitive:change_across_anchor:0.1.0",
         "runtime:primitive:multi_line_model:0.1.0",
         "runtime:primitive:one_touch_relay_episode:0.1.0",
         "runtime:primitive:pairwise_distance:0.1.0",
         "runtime:primitive:pass_chain_episode:0.1.0",
         "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0",
+        "runtime:primitive:switch_of_play:0.1.0",
+        "runtime:primitive:team_compactness:0.1.0",
         "runtime:primitive:tracking_quality:0.1.0",
         "runtime:primitive:velocity:0.1.0",
         "runtime:relation:pressure_on_carrier:0.1.0"
@@ -756,6 +759,9 @@
         "runtime:primitive:action_event_anchor:0.1.0": {
           "projection_contract_hash": "8e62f3e65d93fb12cdaa92a9b38012efde2443efd6375c9fd2ec255352368fa4"
         },
+        "runtime:primitive:change_across_anchor:0.1.0": {
+          "projection_contract_hash": "6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd"
+        },
         "runtime:primitive:multi_line_model:0.1.0": {
           "projection_contract_hash": "5e2bcb5c0c1202caf872612333c0302cc8f9014b1603a7d7df90bed298accfbe"
         },
@@ -770,6 +776,12 @@
         },
         "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0": {
           "projection_contract_hash": "c908635db523d3a50c6589d1d57c9325cbb3cb918a1f25d046fc29db42954ec9"
+        },
+        "runtime:primitive:switch_of_play:0.1.0": {
+          "projection_contract_hash": "d935006f039a807c989037e2891c62faa8d0ca4bba37e47b933c73679b363ef2"
+        },
+        "runtime:primitive:team_compactness:0.1.0": {
+          "projection_contract_hash": "5e17486c2cb6e1654ecf9e40b176109587dd7b023f24e2006fc301248beb3777"
         },
         "runtime:primitive:tracking_quality:0.1.0": {
           "projection_contract_hash": "9f365bf1bada6bfac3d546cf0f03d26edc178305393d62ba42b24ccd033c4df9"
@@ -860,7 +872,7 @@
           "projection_contract_hash": "5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d"
         }
       },
-      "projection_count": 40,
+      "projection_count": 43,
       "removed": [],
       "removed_details": {},
       "shared_count": 27
@@ -889,11 +901,14 @@
         "composition:composition.ai_corridor_destination.2026_06_23",
         "runtime:primitive:action_chain:0.1.0",
         "runtime:primitive:action_event_anchor:0.1.0",
+        "runtime:primitive:change_across_anchor:0.1.0",
         "runtime:primitive:multi_line_model:0.1.0",
         "runtime:primitive:one_touch_relay_episode:0.1.0",
         "runtime:primitive:pairwise_distance:0.1.0",
         "runtime:primitive:pass_chain_episode:0.1.0",
         "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0",
+        "runtime:primitive:switch_of_play:0.1.0",
+        "runtime:primitive:team_compactness:0.1.0",
         "runtime:primitive:tracking_quality:0.1.0",
         "runtime:primitive:velocity:0.1.0",
         "runtime:relation:pressure_on_carrier:0.1.0"
@@ -907,6 +922,9 @@
         },
         "runtime:primitive:action_event_anchor:0.1.0": {
           "projection_contract_hash": "8e62f3e65d93fb12cdaa92a9b38012efde2443efd6375c9fd2ec255352368fa4"
+        },
+        "runtime:primitive:change_across_anchor:0.1.0": {
+          "projection_contract_hash": "6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd"
         },
         "runtime:primitive:multi_line_model:0.1.0": {
           "projection_contract_hash": "5e2bcb5c0c1202caf872612333c0302cc8f9014b1603a7d7df90bed298accfbe"
@@ -922,6 +940,12 @@
         },
         "runtime:primitive:receiver_line_transition_during_pass_leg:0.1.0": {
           "projection_contract_hash": "c908635db523d3a50c6589d1d57c9325cbb3cb918a1f25d046fc29db42954ec9"
+        },
+        "runtime:primitive:switch_of_play:0.1.0": {
+          "projection_contract_hash": "d935006f039a807c989037e2891c62faa8d0ca4bba37e47b933c73679b363ef2"
+        },
+        "runtime:primitive:team_compactness:0.1.0": {
+          "projection_contract_hash": "5e17486c2cb6e1654ecf9e40b176109587dd7b023f24e2006fc301248beb3777"
         },
         "runtime:primitive:tracking_quality:0.1.0": {
           "projection_contract_hash": "9f365bf1bada6bfac3d546cf0f03d26edc178305393d62ba42b24ccd033c4df9"
@@ -974,7 +998,7 @@
           "projection_contract_hash": "5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d"
         }
       },
-      "projection_count": 34,
+      "projection_count": 37,
       "recipe_contract_baseline_mode": "current_runtime_alignment",
       "recipe_contract_baseline_note": "Product recipe contracts are compared against current runtime manifest recipes until a pinned product recipe baseline artifact exists.",
       "recipe_contract_frozen_baseline": false,
@@ -995,23 +1019,23 @@
     "baseline_artifact_revision": "878510d6fb01403e67d2a1938133285a167aeff2e9eebcde7775bc5da161c534",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "aafc22e7c76a5dd93f6e26c0437245fdfc67e9fa5c63b02b4a304a931e26d587",
+    "lock_hash": "f089d7ddcd8e2edf194f4a1eecfdb032b92e7a5eef542fd9a67df61607662f43",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "74152d49ec7075c93e4b6b55ce1f3ecf3bd42e0a4ef6fff54bfd8beb1e8a9a6d",
+    "registry_revision": "ed9a392a5fb20039b2ec9715d46038cd1fa13afa7dc82a3c0205ec8aa7dfea1b",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "817f8fd6f6deaa6a621bcfb13e0b9a0c7aaf84377c395c7e8eda81fcc166a3f5",
+    "runtime_manifest_revision": "4758821eaad7d4f346a49ad617590654643a2f87d6d5d1951cacffce8dc93cee",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
   },
   "runtime_capabilities": {
-    "bound": 27,
+    "bound": 30,
     "duplicate_bindings": 0,
-    "including_operators_total": 35,
+    "including_operators_total": 38,
     "orphaned": 0,
-    "runtime_total": 27,
+    "runtime_total": 30,
     "unresolved_bindings": 0
   },
   "schema_version": "1.0",

@@ -250,6 +250,9 @@ class TacticalQueryExecutor:
             "tracking_quality": primitive_tracking_quality,
             "pairwise_distance": primitive_pairwise_distance,
             "velocity": primitive_velocity,
+            "team_compactness": primitive_team_compactness,
+            "switch_of_play": primitive_switch_of_play,
+            "change_across_anchor": primitive_change_across_anchor,
             "controlled_pass_episode": primitive_controlled_pass_episode,
             "one_touch_relay_episode": primitive_one_touch_relay_episode,
             "defensive_line_model": primitive_defensive_line_model,
@@ -2350,6 +2353,375 @@ def primitive_action_chain(state: PeriodState, node: BoundCatalogNode) -> None:
             entity_scope=catalog_output(node, "action_chain_status").entity_scope,
         ),
         "action_chain_status_records": records,
+    }
+
+
+def primitive_team_compactness(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchors = anchor_value.value
+    if not isinstance(anchors, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    player_scope = node_parameter_text(node, "player_scope", "defending_outfield")
+    maximum_team_width_m = node_parameter_number(node, "maximum_team_width_m", 45.0)
+    maximum_team_depth_m = node_parameter_number(node, "maximum_team_depth_m", 35.0)
+    minimum_observed_players = node_parameter_integer(node, "minimum_observed_players", 8)
+    if player_scope not in {"defending_outfield", "perspective_outfield"}:
+        raise RuntimeError(f"Unsupported team_compactness player_scope {player_scope}")
+    records = [
+        team_compactness_anchor_record(
+            state=state,
+            anchor=anchor,
+            frame_field=frame_field,
+            player_scope=player_scope,
+            maximum_team_width_m=maximum_team_width_m,
+            maximum_team_depth_m=maximum_team_depth_m,
+            minimum_observed_players=minimum_observed_players,
+        )
+        for anchor in anchors
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["team_compactness_status"]) == "UNKNOWN" else str(record["team_compactness_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "team_compactness_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "team_compactness_status").entity_scope,
+        ),
+        "team_compactness_status_records": records,
+    }
+
+
+def team_compactness_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    player_scope: str,
+    maximum_team_width_m: float,
+    maximum_team_depth_m: float,
+    minimum_observed_players: int,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    evaluation_frame_id = optional_int(anchor.get(frame_field))
+    if evaluation_frame_id is None and frame_field != "anchor_frame_id":
+        evaluation_frame_id = anchor_frame_id
+    if anchor_frame_id is None or evaluation_frame_id is None:
+        return None
+    team_role = state.defending_team_role if player_scope == "defending_outfield" else state.perspective_team_role
+    outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
+    positions = cached_observed_outfield_positions_at_frame(
+        state,
+        evaluation_frame_id,
+        team_role,
+        outfield_ids,
+    )
+    observed = [
+        item for item in positions
+        if item.get("x_m") is not None and item.get("y_m") is not None
+    ]
+    if len(observed) < minimum_observed_players:
+        status = "UNKNOWN"
+        reason = "insufficient_observed_outfield_players"
+        width_m = None
+        depth_m = None
+        area_m2 = None
+    else:
+        xs = [float(item["x_m"]) for item in observed]
+        ys = [float(item["y_m"]) for item in observed]
+        width_m = max(ys) - min(ys)
+        depth_m = max(xs) - min(xs)
+        area_m2 = width_m * depth_m
+        if width_m <= maximum_team_width_m and depth_m <= maximum_team_depth_m:
+            status = "PASS"
+            reason = "team_compactness_requirement_satisfied"
+        else:
+            status = "FAIL"
+            reason = "team_compactness_requirement_not_met"
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "team_compactness_status": status,
+        "team_compactness_reason": reason,
+        "team_compactness_frame_field": frame_field,
+        "team_compactness_frame_id": evaluation_frame_id,
+        "player_scope": player_scope,
+        "team_role": team_role,
+        "observed_player_count": len(observed),
+        "minimum_observed_players": minimum_observed_players,
+        "team_width_m": None if width_m is None else round(float(width_m), 3),
+        "team_depth_m": None if depth_m is None else round(float(depth_m), 3),
+        "team_area_m2": None if area_m2 is None else round(float(area_m2), 3),
+        "maximum_team_width_m": maximum_team_width_m,
+        "maximum_team_depth_m": maximum_team_depth_m,
+        "observed_player_ids": sorted(str(item["player_id"]) for item in observed),
+    }
+
+
+def primitive_switch_of_play(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchors = anchor_value.value
+    if not isinstance(anchors, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    minimum_lateral_displacement_m = node_parameter_number(node, "minimum_lateral_displacement_m", 25.0)
+    minimum_start_lateral_m = node_parameter_number(node, "minimum_start_lateral_m", 12.0)
+    minimum_end_lateral_m = node_parameter_number(node, "minimum_end_lateral_m", 12.0)
+    maximum_duration_seconds = node_parameter_number(node, "maximum_duration_seconds", 8.0)
+    records = [
+        switch_of_play_anchor_record(
+            state=state,
+            anchor=anchor,
+            minimum_lateral_displacement_m=minimum_lateral_displacement_m,
+            minimum_start_lateral_m=minimum_start_lateral_m,
+            minimum_end_lateral_m=minimum_end_lateral_m,
+            maximum_duration_seconds=maximum_duration_seconds,
+        )
+        for anchor in anchors
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["switch_status"]) == "UNKNOWN" else str(record["switch_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "switch_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "switch_status").entity_scope,
+        ),
+        "switch_status_records": records,
+    }
+
+
+def switch_of_play_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    minimum_lateral_displacement_m: float,
+    minimum_start_lateral_m: float,
+    minimum_end_lateral_m: float,
+    maximum_duration_seconds: float,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    release_frame_id = optional_int(anchor.get("physical_release_frame_id"))
+    reception_frame_id = optional_int(anchor.get("controlled_reception_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    release_point = point_from_record(anchor.get("release_ball_point"))
+    reception_point = point_from_record(anchor.get("reception_ball_point"))
+    if release_point is None and release_frame_id is not None:
+        release_point = tuple_point_to_record(ball_point_at_frame(state, release_frame_id))
+    if reception_point is None and reception_frame_id is not None:
+        reception_point = tuple_point_to_record(ball_point_at_frame(state, reception_frame_id))
+    duration_seconds = (
+        None
+        if release_frame_id is None or reception_frame_id is None
+        else max(0.0, (int(reception_frame_id) - int(release_frame_id)) / FRAME_RATE_HZ)
+    )
+    status = "UNKNOWN"
+    reason = "switch_endpoint_missing"
+    release_side = None
+    reception_side = None
+    lateral_displacement_m = None
+    if release_point is not None and reception_point is not None:
+        release_y = float(release_point["y_m"])
+        reception_y = float(reception_point["y_m"])
+        release_side = lateral_side(release_y)
+        reception_side = lateral_side(reception_y)
+        lateral_displacement_m = abs(reception_y - release_y)
+        if release_side == "CENTER" or reception_side == "CENTER":
+            status = "FAIL"
+            reason = "endpoint_not_wide_enough"
+        elif release_side == reception_side:
+            status = "FAIL"
+            reason = "same_lateral_side"
+        elif lateral_displacement_m < minimum_lateral_displacement_m:
+            status = "FAIL"
+            reason = "lateral_displacement_below_threshold"
+        elif abs(release_y) < minimum_start_lateral_m or abs(reception_y) < minimum_end_lateral_m:
+            status = "FAIL"
+            reason = "endpoint_lateral_depth_below_threshold"
+        elif duration_seconds is not None and duration_seconds > maximum_duration_seconds:
+            status = "FAIL"
+            reason = "switch_duration_exceeded"
+        else:
+            status = "PASS"
+            reason = "opposite_side_ball_transfer_observed"
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or release_frame_id or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or reception_frame_id or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "switch_status": status,
+        "switch_reason": reason,
+        "release_frame_id": release_frame_id,
+        "reception_frame_id": reception_frame_id,
+        "release_ball_point": release_point,
+        "reception_ball_point": reception_point,
+        "release_lateral_side": release_side,
+        "reception_lateral_side": reception_side,
+        "lateral_displacement_m": None if lateral_displacement_m is None else round(float(lateral_displacement_m), 3),
+        "switch_duration_seconds": None if duration_seconds is None else round(float(duration_seconds), 3),
+        "minimum_lateral_displacement_m": minimum_lateral_displacement_m,
+        "minimum_start_lateral_m": minimum_start_lateral_m,
+        "minimum_end_lateral_m": minimum_end_lateral_m,
+        "maximum_duration_seconds": maximum_duration_seconds,
+    }
+
+
+def primitive_change_across_anchor(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchors_value = catalog_input_value(state, node, "anchors")
+    before_value = catalog_input_value(state, node, "before_evaluations")
+    after_value = catalog_input_value(state, node, "after_evaluations")
+    anchors = anchors_value.value
+    if not isinstance(anchors, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    before_records = records_by_anchor_id(runtime_records(before_value))
+    after_records = records_by_anchor_id(runtime_records(after_value))
+    before_value_field = node_parameter_text(node, "before_value_field", "line_compactness_m")
+    after_value_field = node_parameter_text(node, "after_value_field", "line_compactness_m")
+    before_status_field = node_parameter_text(node, "before_status_field", "line_status")
+    after_status_field = node_parameter_text(node, "after_status_field", "line_status")
+    required_status_value = node_parameter_text(node, "required_status_value", "PASS")
+    change_mode = node_parameter_text(node, "change_mode", "increase_at_least")
+    minimum_change_m = node_parameter_number(node, "minimum_change_m", 4.0)
+    maximum_before_value_m = node_parameter_number(node, "maximum_before_value_m", 12.0)
+    records = [
+        change_across_anchor_record(
+            state=state,
+            anchor=anchor,
+            before_record=before_records.get(str(anchor.get("anchor_id"))),
+            after_record=after_records.get(str(anchor.get("anchor_id"))),
+            before_value_field=before_value_field,
+            after_value_field=after_value_field,
+            before_status_field=before_status_field,
+            after_status_field=after_status_field,
+            required_status_value=required_status_value,
+            change_mode=change_mode,
+            minimum_change_m=minimum_change_m,
+            maximum_before_value_m=maximum_before_value_m,
+        )
+        for anchor in anchors
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["change_status"]) == "UNKNOWN" else str(record["change_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "change_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "change_status").entity_scope,
+        ),
+        "change_status_records": records,
+    }
+
+
+def change_across_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    before_record: dict[str, Any] | None,
+    after_record: dict[str, Any] | None,
+    before_value_field: str,
+    after_value_field: str,
+    before_status_field: str,
+    after_status_field: str,
+    required_status_value: str,
+    change_mode: str,
+    minimum_change_m: float,
+    maximum_before_value_m: float,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    before_value = None if before_record is None else optional_float(before_record.get(before_value_field))
+    after_value = None if after_record is None else optional_float(after_record.get(after_value_field))
+    before_status = None if before_record is None else before_record.get(before_status_field)
+    after_status = None if after_record is None else after_record.get(after_status_field)
+    delta_value = None if before_value is None or after_value is None else after_value - before_value
+    status = "UNKNOWN"
+    reason = "change_evidence_missing"
+    if before_record is None or after_record is None:
+        reason = "before_or_after_record_missing"
+    elif str(before_status) != required_status_value:
+        status = "UNKNOWN" if before_status is None else "FAIL"
+        reason = "before_required_status_not_met"
+    elif after_status_field != "none" and str(after_status) != required_status_value:
+        status = "UNKNOWN" if after_status is None else "FAIL"
+        reason = "after_required_status_not_met"
+    elif before_value is None or after_value is None:
+        reason = "change_value_missing"
+    elif before_value > maximum_before_value_m:
+        status = "FAIL"
+        reason = "before_value_not_compact_enough"
+    elif change_mode == "increase_at_least":
+        status = "PASS" if delta_value is not None and delta_value >= minimum_change_m else "FAIL"
+        reason = "change_requirement_satisfied" if status == "PASS" else "increase_below_threshold"
+    elif change_mode == "decrease_at_least":
+        status = "PASS" if delta_value is not None and -delta_value >= minimum_change_m else "FAIL"
+        reason = "change_requirement_satisfied" if status == "PASS" else "decrease_below_threshold"
+    elif change_mode == "absolute_delta_at_least":
+        status = "PASS" if delta_value is not None and abs(delta_value) >= minimum_change_m else "FAIL"
+        reason = "change_requirement_satisfied" if status == "PASS" else "absolute_delta_below_threshold"
+    else:
+        status = "UNKNOWN"
+        reason = "unsupported_change_mode"
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "change_status": status,
+        "change_reason": reason,
+        "change_mode": change_mode,
+        "before_value_field": before_value_field,
+        "after_value_field": after_value_field,
+        "before_status": before_status,
+        "after_status": after_status,
+        "before_value": None if before_value is None else round(float(before_value), 3),
+        "after_value": None if after_value is None else round(float(after_value), 3),
+        "delta_value": None if delta_value is None else round(float(delta_value), 3),
+        "minimum_change_m": minimum_change_m,
+        "maximum_before_value_m": maximum_before_value_m,
+        "before_evaluation_frame_id": None if before_record is None else optional_int(before_record.get("line_evaluation_frame_id")),
+        "after_evaluation_frame_id": None if after_record is None else optional_int(after_record.get("line_evaluation_frame_id")),
     }
 
 
@@ -6175,6 +6547,48 @@ def optional_int(value: Any) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def optional_float(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    return None if math.isnan(numeric) else numeric
+
+
+def point_from_record(value: Any) -> dict[str, float] | None:
+    if isinstance(value, dict):
+        return point_from_xy(value.get("x_m"), value.get("y_m"))
+    if isinstance(value, (list, tuple)) and len(value) >= 2:
+        return point_from_xy(value[0], value[1])
+    return None
+
+
+def tuple_point_to_record(value: tuple[float, float] | None) -> dict[str, float] | None:
+    if value is None:
+        return None
+    return {"x_m": float(value[0]), "y_m": float(value[1])}
+
+
+def lateral_side(y_m: float, *, center_tolerance_m: float = 1.0) -> str:
+    if y_m > center_tolerance_m:
+        return "RIGHT"
+    if y_m < -center_tolerance_m:
+        return "LEFT"
+    return "CENTER"
+
+
+def records_by_anchor_id(records: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    indexed: dict[str, dict[str, Any]] = {}
+    for record in records:
+        anchor_id = record.get("anchor_id")
+        if anchor_id is None:
+            continue
+        indexed.setdefault(str(anchor_id), record)
+    return indexed
 
 
 def point_from_xy(x_value: Any, y_value: Any) -> dict[str, float] | None:

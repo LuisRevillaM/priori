@@ -139,6 +139,30 @@ concepts:
     evidence_contract_ref: evidence.observed_pressure_on_carrier.v1
     tags: [pressure, defending, relation, movement]
 
+  - id: concept.observed_team_compactness
+    kind: Concept
+    display_name: Observed Team Compactness
+    description: Observed team width and depth measured from outfield tracking positions at an anchor-relative frame.
+    claim_contract_ref: claim.observed_team_compactness.v1
+    evidence_contract_ref: evidence.observed_team_compactness.v1
+    tags: [shape, compactness, tracking]
+
+  - id: concept.observed_switch_of_play
+    kind: Concept
+    display_name: Observed Switch Of Play
+    description: Observed controlled-pass ball transfer from one lateral side to the opposite side under declared endpoint thresholds.
+    claim_contract_ref: claim.observed_switch_of_play.v1
+    evidence_contract_ref: evidence.observed_switch_of_play.v1
+    tags: [switch, pass, width, tracking]
+
+  - id: concept.observed_change_across_anchor
+    kind: Concept
+    display_name: Observed Change Across Anchor
+    description: Before-versus-after numeric evidence comparison for the same anchor under declared change thresholds.
+    claim_contract_ref: claim.observed_change_across_anchor.v1
+    evidence_contract_ref: evidence.observed_change_across_anchor.v1
+    tags: [change, temporal, comparison]
+
   - id: concept.observed_lane_occupancy
     kind: Concept
     display_name: Observed Lane Occupancy
@@ -631,6 +655,72 @@ operationalizations:
     claim_contract_ref: claim.observed_pressure_on_carrier.v1
     evidence_contract_ref: evidence.observed_pressure_on_carrier.v1
 
+  - id: op.observed_team_compactness.v1
+    kind: Operationalization
+    display_name: Observed Team Compactness
+    description: Measure observed outfield team width and depth at an anchor-relative frame.
+    concept_refs: [concept.observed_team_compactness]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, observed_outfield_positions_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: observed_outfield_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: team_compactness_evaluation, unit: none, entity_scope: anchor}
+      - name: team_compactness_status
+        type: {container: FrameSignal, value: Enum, quantity: team_compactness_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, observed_outfield_position_lookup, team_bounding_box, width_depth_thresholds]
+    claim_contract_ref: claim.observed_team_compactness.v1
+    evidence_contract_ref: evidence.observed_team_compactness.v1
+
+  - id: op.observed_switch_of_play.v1
+    kind: Operationalization
+    display_name: Observed Switch Of Play
+    description: Evaluate whether a controlled pass moved the ball from one lateral side to the opposite side.
+    concept_refs: [concept.observed_switch_of_play]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking, events]
+    applicability: [controlled_pass_anchor_available, release_and_reception_ball_positions_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: controlled_pass_anchor, unit: none, entity_scope: anchor}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: switch_evaluation, unit: none, entity_scope: anchor}
+      - name: switch_status
+        type: {container: FrameSignal, value: Enum, quantity: switch_status, unit: none, entity_scope: anchor}
+    lowering: [release_reception_endpoint_lookup, lateral_side_classification, opposite_side_threshold_check]
+    claim_contract_ref: claim.observed_switch_of_play.v1
+    evidence_contract_ref: evidence.observed_switch_of_play.v1
+
+  - id: op.observed_change_across_anchor.v1
+    kind: Operationalization
+    display_name: Observed Change Across Anchor
+    description: Compare before and after numeric evidence values for an anchor.
+    concept_refs: [concept.observed_change_across_anchor]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, before_after_evidence_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: before_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: before_evaluation, unit: none, entity_scope: anchor}
+      - name: after_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: after_evaluation, unit: none, entity_scope: anchor}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: change_evaluation, unit: none, entity_scope: anchor}
+      - name: change_status
+        type: {container: FrameSignal, value: Enum, quantity: change_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_correlation, before_after_value_lookup, thresholded_delta]
+    claim_contract_ref: claim.observed_change_across_anchor.v1
+    evidence_contract_ref: evidence.observed_change_across_anchor.v1
+
   - id: op.observed_lateral_lane_occupancy.v1
     kind: Operationalization
     display_name: Observed Lateral Lane Occupancy
@@ -1025,6 +1115,24 @@ implementations:
     display_name: Pressure On Carrier Python Implementation
     description: Current observed nearest-defender pressure implementation.
     implements: [op.observed_pressure_on_carrier.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.team_compactness.python.v1
+    kind: Implementation
+    display_name: Team Compactness Python Implementation
+    description: Current observed team width/depth compactness implementation.
+    implements: [op.observed_team_compactness.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.switch_of_play.python.v1
+    kind: Implementation
+    display_name: Switch Of Play Python Implementation
+    description: Current observed controlled-pass lateral switch implementation.
+    implements: [op.observed_switch_of_play.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.change_across_anchor.python.v1
+    kind: Implementation
+    display_name: Change Across Anchor Python Implementation
+    description: Current before-after numeric evidence comparison implementation.
+    implements: [op.observed_change_across_anchor.v1]
     source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.lane_occupancy.python.v1
     kind: Implementation
@@ -1779,6 +1887,171 @@ runtime_bindings:
       lookback_seconds: lookback_seconds
       candidate_scope: candidate_scope
 
+  - id: binding.primitive.team_compactness.0_1_0
+    kind: RuntimeBinding
+    display_name: team_compactness runtime binding
+    description: Canonical runtime binding for team_compactness 0.1.0.
+    runtime_capability: {id: team_compactness, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.team_compactness.python.v1
+    implements: [op.observed_team_compactness.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Measures observed outfield bounding-box width/depth only; it does not prove tactical compactness quality or lane coverage.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      observed_outfield_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      team_compactness_status: {runtime_port: team_compactness_status}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+      - name: player_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: defending_outfield, unit: none}
+        allowed_values: [defending_outfield, perspective_outfield]
+      - name: maximum_team_width_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 45.0, unit: metre}
+        minimum: 1.0
+        maximum: 80.0
+      - name: maximum_team_depth_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 35.0, unit: metre}
+        minimum: 1.0
+        maximum: 120.0
+      - name: minimum_observed_players
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 8, unit: count}
+        minimum: 1.0
+        maximum: 10.0
+    parameter_bindings:
+      frame_field: frame_field
+      player_scope: player_scope
+      maximum_team_width_m: maximum_team_width_m
+      maximum_team_depth_m: maximum_team_depth_m
+      minimum_observed_players: minimum_observed_players
+
+  - id: binding.primitive.switch_of_play.0_1_0
+    kind: RuntimeBinding
+    display_name: switch_of_play runtime binding
+    description: Canonical runtime binding for switch_of_play 0.1.0.
+    runtime_capability: {id: switch_of_play, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.switch_of_play.python.v1
+    implements: [op.observed_switch_of_play.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Uses controlled-pass ball endpoints and declared lateral thresholds; it does not infer designed switches or tactical causation.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      switch_status: {runtime_port: switch_status}
+    semantic_parameters:
+      - name: minimum_lateral_displacement_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 25.0, unit: metre}
+        minimum: 0.0
+        maximum: 80.0
+      - name: minimum_start_lateral_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 12.0, unit: metre}
+        minimum: 0.0
+        maximum: 40.0
+      - name: minimum_end_lateral_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 12.0, unit: metre}
+        minimum: 0.0
+        maximum: 40.0
+      - name: maximum_duration_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 8.0, unit: second}
+        minimum: 0.1
+        maximum: 20.0
+    parameter_bindings:
+      minimum_lateral_displacement_m: minimum_lateral_displacement_m
+      minimum_start_lateral_m: minimum_start_lateral_m
+      minimum_end_lateral_m: minimum_end_lateral_m
+      maximum_duration_seconds: maximum_duration_seconds
+
+  - id: binding.primitive.change_across_anchor.0_1_0
+    kind: RuntimeBinding
+    display_name: change_across_anchor runtime binding
+    description: Canonical runtime binding for change_across_anchor 0.1.0.
+    runtime_capability: {id: change_across_anchor, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.change_across_anchor.python.v1
+    implements: [op.observed_change_across_anchor.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 compares bounded numeric evidence fields by exact anchor id rather than arbitrary semantic expressions.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      before_evaluations: {source: NODE_INPUT, runtime_port: before_evaluations}
+      after_evaluations: {source: NODE_INPUT, runtime_port: after_evaluations}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      change_status: {runtime_port: change_status}
+    semantic_parameters:
+      - name: before_value_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: line_compactness_m, unit: none}
+        allowed_values: [line_compactness_m, team_width_m, team_depth_m, team_area_m2]
+      - name: after_value_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: line_compactness_m, unit: none}
+        allowed_values: [line_compactness_m, team_width_m, team_depth_m, team_area_m2]
+      - name: before_status_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: line_status, unit: none}
+        allowed_values: [line_status, multi_line_status, team_compactness_status]
+      - name: after_status_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: line_status, unit: none}
+        allowed_values: [line_status, multi_line_status, team_compactness_status, none]
+      - name: required_status_value
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: PASS, unit: none}
+        allowed_values: [PASS]
+      - name: change_mode
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: increase_at_least, unit: none}
+        allowed_values: [increase_at_least, decrease_at_least, absolute_delta_at_least]
+      - name: minimum_change_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 4.0, unit: metre}
+        minimum: 0.0
+        maximum: 80.0
+      - name: maximum_before_value_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 12.0, unit: metre}
+        minimum: 0.0
+        maximum: 80.0
+    parameter_bindings:
+      before_value_field: before_value_field
+      after_value_field: after_value_field
+      before_status_field: before_status_field
+      after_status_field: after_status_field
+      required_status_value: required_status_value
+      change_mode: change_mode
+      minimum_change_m: minimum_change_m
+      maximum_before_value_m: maximum_before_value_m
+
   - id: binding.relation.local_number_relation.0_1_0
     kind: RuntimeBinding
     display_name: local_number_relation runtime binding
@@ -2318,6 +2591,27 @@ claim_contracts:
     permitted: [nearest_defender_pressure_condition_evaluated_under_declared_thresholds]
     prohibited: [pressure_quality_inferred, defender_intent_inferred, player_intent_inferred, decision_quality_inferred, tactical_causation_inferred, pass_was_optimal]
     unknown_conditions: [carrier_position_missing, defender_positions_missing, velocity_endpoint_missing, duration_coverage_incomplete]
+  - id: claim.observed_team_compactness.v1
+    kind: ClaimContract
+    display_name: Observed Team Compactness Claims
+    description: Claims permitted for observed team width/depth measurements at an anchor frame.
+    permitted: [observed_team_width_depth_measured, declared_compactness_threshold_evaluated]
+    prohibited: [lane_coverage_proven, tactical_compactness_quality_inferred, player_intent_inferred, tactical_role_identified, tactical_causation_inferred]
+    unknown_conditions: [insufficient_observed_outfield_players, anchor_frame_missing, player_coordinates_missing]
+  - id: claim.observed_switch_of_play.v1
+    kind: ClaimContract
+    display_name: Observed Switch Of Play Claims
+    description: Claims permitted for controlled-pass lateral ball movement under declared thresholds.
+    permitted: [controlled_pass_moved_ball_to_opposite_lateral_side_under_declared_thresholds]
+    prohibited: [designed_switch_inferred, tactical_causation_inferred, decision_quality_inferred, pass_was_optimal, player_intent_inferred]
+    unknown_conditions: [release_ball_position_missing, reception_ball_position_missing, endpoint_frame_missing]
+  - id: claim.observed_change_across_anchor.v1
+    kind: ClaimContract
+    display_name: Observed Change Across Anchor Claims
+    description: Claims permitted for exact-anchor before/after numeric comparisons.
+    permitted: [declared_before_after_numeric_change_evaluated]
+    prohibited: [causal_change_inferred, tactical_causation_inferred, lane_coverage_proven, player_intent_inferred]
+    unknown_conditions: [before_record_missing, after_record_missing, before_value_missing, after_value_missing, anchor_correlation_missing]
   - id: claim.observed_lane_occupancy.v1
     kind: ClaimContract
     display_name: Observed Lane Occupancy Claims
@@ -2547,6 +2841,27 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, pressure_status, pressure_reason, pressure_frame_id, carrier_id, nearest_defender_distance_m, closing_speed_mps, approach_angle_degrees, pressure_duration_seconds, maximum_pressure_distance_m, minimum_closing_speed_mps, maximum_approach_angle_degrees, minimum_pressure_duration_seconds, coverage_status]
     optional: [nearest_defender_id]
     replay_projection: [carrier_marker, nearest_defender_marker, pressure_distance_badge, closing_speed_badge]
+  - id: evidence.observed_team_compactness.v1
+    kind: EvidenceContract
+    display_name: Observed Team Compactness Evidence
+    description: Evidence required for observed team width/depth measurements.
+    required: [anchor_id, anchor_frame_id, team_compactness_status, team_compactness_reason, compactness_frame_id, player_scope, observed_player_count, minimum_observed_players, team_width_m, team_depth_m, team_area_m2, maximum_team_width_m, maximum_team_depth_m]
+    optional: [player_ids, missing_player_ids]
+    replay_projection: [compactness_frame, outfield_player_markers, bounding_box, width_depth_badge]
+  - id: evidence.observed_switch_of_play.v1
+    kind: EvidenceContract
+    display_name: Observed Switch Of Play Evidence
+    description: Evidence required for controlled-pass switch-of-play measurements.
+    required: [anchor_id, anchor_frame_id, switch_status, switch_reason, physical_release_frame_id, controlled_reception_frame_id, release_ball_point, reception_ball_point, release_lateral_side, reception_lateral_side, lateral_displacement_m, duration_seconds, minimum_lateral_displacement_m, minimum_start_lateral_m, minimum_end_lateral_m, maximum_duration_seconds]
+    optional: [passer_id, receiver_id]
+    replay_projection: [release_frame, reception_frame, ball_path, lateral_side_badges]
+  - id: evidence.observed_change_across_anchor.v1
+    kind: EvidenceContract
+    display_name: Observed Change Across Anchor Evidence
+    description: Evidence required for exact-anchor before/after numeric comparisons.
+    required: [anchor_id, anchor_frame_id, change_status, change_reason, before_value_field, after_value_field, before_value, after_value, change_value, change_mode, minimum_change_m, maximum_before_value_m]
+    optional: [before_status_field, after_status_field, before_status, after_status]
+    replay_projection: [before_frame, after_frame, before_after_measurement_badges]
   - id: evidence.observed_lane_occupancy.v1
     kind: EvidenceContract
     display_name: Observed Lane Occupancy Evidence
@@ -2792,6 +3107,27 @@ exposure_policies:
     subject_ref: runtime:relation:pressure_on_carrier:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.team_compactness.0_1_0
+    kind: ExposurePolicy
+    display_name: team_compactness exposure
+    description: Exposure policy for team_compactness.
+    subject_ref: runtime:primitive:team_compactness:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.switch_of_play.0_1_0
+    kind: ExposurePolicy
+    display_name: switch_of_play exposure
+    description: Exposure policy for switch_of_play.
+    subject_ref: runtime:primitive:switch_of_play:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.change_across_anchor.0_1_0
+    kind: ExposurePolicy
+    display_name: change_across_anchor exposure
+    description: Exposure policy for change_across_anchor.
+    subject_ref: runtime:primitive:change_across_anchor:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
   - id: exposure.runtime.signed_lateral_shift.0_1_0
     kind: ExposurePolicy
     display_name: signed_lateral_shift exposure
@@ -2975,6 +3311,24 @@ projection_policies:
         permitted_fields: []
         rationale: Pressure on carrier is intentionally added as a first-class observed pressure relation.
         review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:team_compactness:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 5e17486c2cb6e1654ecf9e40b176109587dd7b023f24e2006fc301248beb3777
+        permitted_fields: []
+        rationale: Team compactness is intentionally added for the Q4 compact-then-switch executable prefix.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:switch_of_play:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: d935006f039a807c989037e2891c62faa8d0ca4bba37e47b933c73679b363ef2
+        permitted_fields: []
+        rationale: Switch of play is intentionally added for the Q4 compact-then-switch executable prefix.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:change_across_anchor:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd
+        permitted_fields: []
+        rationale: Change across anchor is intentionally added for the Q4 compact-then-switch executable prefix.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
       - subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: 91fcabf7351c1253b89e552f75c188b83f7afe8aa591a7299b801e254234425f
@@ -3088,6 +3442,24 @@ projection_policies:
         projection_contract_hash: 12bcebc22867494d5e6063c375767e726fbbfeb824c71bf03dd0ac0928fd7bc2
         permitted_fields: []
         rationale: Pressure on carrier is intentionally added as an authorable observed pressure relation.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:team_compactness:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 5e17486c2cb6e1654ecf9e40b176109587dd7b023f24e2006fc301248beb3777
+        permitted_fields: []
+        rationale: Team compactness is intentionally added as an authorable Q4 compactness substrate primitive.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:switch_of_play:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: d935006f039a807c989037e2891c62faa8d0ca4bba37e47b933c73679b363ef2
+        permitted_fields: []
+        rationale: Switch of play is intentionally added as an authorable Q4 switch substrate primitive.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:change_across_anchor:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd
+        permitted_fields: []
+        rationale: Change across anchor is intentionally added as an authorable Q4 before/after comparison primitive.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
       - subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
         difference_kind: CONTRACT_CHANGED
@@ -3363,6 +3735,36 @@ maturity_assessments:
     display_name: pressure_on_carrier maturity
     description: Maturity assessment for pressure_on_carrier.
     subject_ref: runtime:relation:pressure_on_carrier:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.team_compactness.0_1_0
+    kind: MaturityAssessment
+    display_name: team_compactness maturity
+    description: Maturity assessment for team_compactness.
+    subject_ref: runtime:primitive:team_compactness:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.switch_of_play.0_1_0
+    kind: MaturityAssessment
+    display_name: switch_of_play maturity
+    description: Maturity assessment for switch_of_play.
+    subject_ref: runtime:primitive:switch_of_play:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.change_across_anchor.0_1_0
+    kind: MaturityAssessment
+    display_name: change_across_anchor maturity
+    description: Maturity assessment for change_across_anchor.
+    subject_ref: runtime:primitive:change_across_anchor:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

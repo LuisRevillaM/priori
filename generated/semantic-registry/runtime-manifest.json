@@ -223,6 +223,234 @@
     {
       "ai_authorable_by_runtime_context": true,
       "evidence_fields": [
+        "change_status",
+        "change_reason",
+        "before_value",
+        "after_value",
+        "delta_value",
+        "before_value_field",
+        "after_value_field",
+        "minimum_change_m",
+        "maximum_before_value_m"
+      ],
+      "executable": true,
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "before_evaluations",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "after_evaluations",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Compares declared numeric evidence values only.",
+        "Does not infer why the change happened or whether it was tactically caused by the anchor event."
+      ],
+      "missing_data_semantics": "unknown",
+      "name": "change_across_anchor",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "change_status",
+            "change_reason",
+            "change_mode",
+            "before_value",
+            "after_value",
+            "delta_value",
+            "minimum_change_m",
+            "maximum_before_value_m"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "change_status",
+            "change_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "change_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "allowed_values": [
+            "line_compactness_m",
+            "team_width_m",
+            "team_depth_m",
+            "team_area_m2"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "line_compactness_m"
+          },
+          "description": "Before-record numeric evidence field to compare.",
+          "name": "before_value_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "line_compactness_m",
+            "team_width_m",
+            "team_depth_m",
+            "team_area_m2"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "line_compactness_m"
+          },
+          "description": "After-record numeric evidence field to compare.",
+          "name": "after_value_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "line_status",
+            "multi_line_status",
+            "team_compactness_status"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "line_status"
+          },
+          "description": "Before-record status field that must be PASS.",
+          "name": "before_status_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "line_status",
+            "multi_line_status",
+            "team_compactness_status",
+            "none"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "line_status"
+          },
+          "description": "After-record status field that must be PASS, or none to compare the numeric value without requiring after status.",
+          "name": "after_status_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "PASS"
+          },
+          "description": "Required before/after status value for numeric change evaluation.",
+          "name": "required_status_value",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "increase_at_least",
+            "decrease_at_least",
+            "absolute_delta_at_least"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "increase_at_least"
+          },
+          "description": "Direction of the required numeric change.",
+          "name": "change_mode",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 4.0
+          },
+          "description": "Minimum required change in metres.",
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "name": "minimum_change_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 12.0
+          },
+          "description": "Maximum allowed before value for compactness-style checks.",
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "name": "maximum_before_value_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        }
+      ],
+      "purpose": "Compare before and after numeric evidence values for the same anchor under declared change thresholds.",
+      "runtime_id": "primitive:change_across_anchor:0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "ai_authorable_by_runtime_context": true,
+      "evidence_fields": [
         "anchor_id",
         "line_break_status",
         "line_break_reason",
@@ -2031,6 +2259,297 @@
       "parameters": [],
       "purpose": "Measure defensive centroid movement toward the ball side.",
       "runtime_id": "primitive:signed_lateral_shift:0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "ai_authorable_by_runtime_context": true,
+      "evidence_fields": [
+        "switch_status",
+        "switch_reason",
+        "release_frame_id",
+        "reception_frame_id",
+        "release_lateral_side",
+        "reception_lateral_side",
+        "lateral_displacement_m",
+        "switch_duration_seconds",
+        "release_ball_point",
+        "reception_ball_point"
+      ],
+      "executable": true,
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Uses observed controlled-pass endpoints only.",
+        "Does not infer a designed switch, role taxonomy, tactical causation, or pass quality."
+      ],
+      "missing_data_semantics": "unknown",
+      "name": "switch_of_play",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "switch_status",
+            "switch_reason",
+            "release_frame_id",
+            "reception_frame_id",
+            "release_lateral_side",
+            "reception_lateral_side",
+            "lateral_displacement_m",
+            "switch_duration_seconds"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "switch_status",
+            "switch_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "switch_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 25.0
+          },
+          "description": "Minimum absolute y-axis displacement from release to reception.",
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "name": "minimum_lateral_displacement_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 12.0
+          },
+          "description": "Minimum absolute release y-position for the pass to start wide enough.",
+          "maximum": 40.0,
+          "minimum": 0.0,
+          "name": "minimum_start_lateral_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 12.0
+          },
+          "description": "Minimum absolute reception y-position for the pass to end wide enough.",
+          "maximum": 40.0,
+          "minimum": 0.0,
+          "name": "minimum_end_lateral_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 8.0
+          },
+          "description": "Maximum release-to-reception duration for a switch candidate.",
+          "maximum": 20.0,
+          "minimum": 0.1,
+          "name": "maximum_duration_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        }
+      ],
+      "purpose": "Evaluate whether a controlled pass moved the ball from one lateral side to the opposite side under declared thresholds.",
+      "runtime_id": "primitive:switch_of_play:0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "ai_authorable_by_runtime_context": true,
+      "evidence_fields": [
+        "team_compactness_status",
+        "team_compactness_reason",
+        "team_compactness_frame_id",
+        "player_scope",
+        "observed_player_count",
+        "team_width_m",
+        "team_depth_m",
+        "team_area_m2",
+        "maximum_team_width_m",
+        "maximum_team_depth_m"
+      ],
+      "executable": true,
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Uses observed outfield bounding-box width/depth only.",
+        "Does not infer tactical compactness quality, player intent, role assignment, or lane denial."
+      ],
+      "missing_data_semantics": "unknown",
+      "name": "team_compactness",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "team_compactness_status",
+            "team_compactness_reason",
+            "team_compactness_frame_id",
+            "player_scope",
+            "observed_player_count",
+            "team_width_m",
+            "team_depth_m",
+            "team_area_m2"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "team_compactness_status",
+            "team_compactness_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "team_compactness_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "allowed_values": [
+            "anchor_frame_id",
+            "physical_release_frame_id",
+            "controlled_reception_frame_id"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_frame_id"
+          },
+          "description": "Anchor-record frame field where team compactness is evaluated.",
+          "name": "frame_field",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "defending_outfield",
+            "perspective_outfield"
+          ],
+          "default": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "defending_outfield"
+          },
+          "description": "Observed outfield team to measure.",
+          "name": "player_scope",
+          "payload_type": "enum",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 45.0
+          },
+          "description": "Maximum lateral team width for compactness PASS.",
+          "maximum": 80.0,
+          "minimum": 1.0,
+          "name": "maximum_team_width_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 35.0
+          },
+          "description": "Maximum longitudinal team depth for compactness PASS.",
+          "maximum": 120.0,
+          "minimum": 1.0,
+          "name": "maximum_team_depth_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "count",
+            "value": 8
+          },
+          "description": "Minimum observed outfield players required before compactness can be evaluated.",
+          "maximum": 10.0,
+          "minimum": 1.0,
+          "name": "minimum_observed_players",
+          "payload_type": "number",
+          "required": false,
+          "unit": "count"
+        }
+      ],
+      "purpose": "Measure observed team width/depth at an anchor-relative frame and evaluate declared compactness thresholds.",
+      "runtime_id": "primitive:team_compactness:0.1.0",
       "version": "0.1.0"
     },
     {
@@ -4248,6 +4767,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "817f8fd6f6deaa6a621bcfb13e0b9a0c7aaf84377c395c7e8eda81fcc166a3f5",
+  "runtime_manifest_revision": "4758821eaad7d4f346a49ad617590654643a2f87d6d5d1951cacffce8dc93cee",
   "schema_version": "1.0"
 }

@@ -51,8 +51,8 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         registry, runtime_manifest, lock, report = generate_scp0_artifacts(write=False)
 
         self.assertEqual("PASS", report.status)
-        self.assertEqual(27, report.runtime_capabilities["bound"])
-        self.assertEqual(35, report.runtime_capabilities["including_operators_total"])
+        self.assertEqual(30, report.runtime_capabilities["bound"])
+        self.assertEqual(38, report.runtime_capabilities["including_operators_total"])
         self.assertEqual(8, report.operators["semantically_defined"])
         self.assertEqual(6, report.recipes["mapped"])
         self.assertEqual(1, report.validated_compositions["mapped"])
