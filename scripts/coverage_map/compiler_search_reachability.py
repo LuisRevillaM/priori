@@ -13,6 +13,7 @@ from __future__ import annotations
 import collections
 import csv
 import json
+import os
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -47,9 +48,10 @@ ROW_CSV = OUT_DIR / "row-ledger.csv"
 REPORT = ROOT / "artifacts" / "autonomous" / "compiler-search-v0-report.json"
 
 SYNTHESIZER_VERSION = "search_synthesizer.v0.1"
-SYNTHESIZER_STRATEGY = "bounded_backward_search.v0.1.max_depth=4.max_branching=6"
-MAX_DEPTH = 4
-MAX_BRANCHING = 6
+MAX_DEPTH = int(os.environ.get("TQE_SEARCH_MAX_DEPTH", "4"))
+MAX_BRANCHING = int(os.environ.get("TQE_SEARCH_MAX_BRANCHING", "6"))
+SEARCH_BUDGET_LABEL = f"max_depth={MAX_DEPTH}.max_branching={MAX_BRANCHING}"
+SYNTHESIZER_STRATEGY = f"bounded_backward_search.v0.1.{SEARCH_BUDGET_LABEL}"
 MATCH_IDS = ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"]
 
 SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
@@ -346,6 +348,12 @@ def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context
         except SynthesisError as error:
             errors.append({"provider": terminal.name, "taxonomy": error.taxonomy, "message": error.message, **error.details})
             continue
+    if any(error["taxonomy"] == "search_budget_exceeded" for error in errors):
+        raise SynthesisError(
+            "search_budget_exceeded",
+            "At least one provider path reached the bounded-search limit before proving reachability.",
+            {"attempted": errors[: context.max_branching]},
+        )
     if any(error["taxonomy"] == "missing_constraint" for error in errors):
         raise SynthesisError(
             "missing_constraint",
@@ -368,7 +376,11 @@ def build_entry(
     input_context: dict[str, Any],
 ) -> BuildResult:
     if depth > context.max_depth:
-        raise SynthesisError("missing_constraint", "Search exceeded max depth.", {"entry": entry.name})
+        raise SynthesisError(
+            "search_budget_exceeded",
+            "Search exceeded max depth before satisfying the target contract.",
+            {"entry": entry.name, "max_depth": context.max_depth},
+        )
     if entry.name == "join_episode_sets":
         return build_join_episode_sets(context, entry, required_fields, depth=depth)
     if entry.name == "change_across_anchor":
@@ -1175,6 +1187,7 @@ def row_result(
         "pattern_dispatch_used": False,
         "synthesizer_version": SYNTHESIZER_VERSION,
         "synthesizer_strategy": SYNTHESIZER_STRATEGY,
+        "search_budget_label": SEARCH_BUDGET_LABEL,
         "result": result,
         "failure_taxonomy": failure_taxonomy,
         "failure_details": failure_details or {},
@@ -1280,6 +1293,7 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
         "search_budget": {
             "max_depth": MAX_DEPTH,
             "max_branching": MAX_BRANCHING,
+            "budget_label": SEARCH_BUDGET_LABEL,
             "allowed_catalog_refs": sorted(default_allowed_catalog_refs()),
             "excluded_catalog_refs": CONCEPT_SHAPED_MACROS,
             "rules": [
@@ -1330,6 +1344,7 @@ def write_rows(results: list[dict[str, Any]]) -> None:
         "concept",
         "held_out",
         "multi_step",
+        "search_budget_label",
         "coverage_classification",
         "input_composition_maturity",
         "result",

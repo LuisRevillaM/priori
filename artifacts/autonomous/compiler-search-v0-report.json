@@ -70,6 +70,7 @@
       "transition_anchor",
       "velocity"
     ],
+    "budget_label": "max_depth=4.max_branching=6",
     "excluded_catalog_refs": [
       "controlled_line_break_episode",
       "outcome_classification",
