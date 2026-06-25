@@ -1,0 +1,785 @@
+{
+  "default_invocation": {
+    "execution_mode": "execute",
+    "invocation_id": "q2_carry_breaks_pressure_layoff_probe",
+    "match_ids": [
+      "J03WOH",
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9",
+      "J03WMX",
+      "J03WN1"
+    ],
+    "max_results": 20,
+    "parameters": {},
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "schema_version": "1.0"
+  },
+  "draft_plan": {
+    "anchor_source": {
+      "output_name": "anchor_evaluations",
+      "source_node_id": "q2_chain"
+    },
+    "classification_mode": "partial_declared",
+    "classification_rules": [
+      {
+        "description": "Observed carry with nearest-defender distance increase followed by third-player one-touch layoff.",
+        "label": "Q2_CARRY_PRESSURE_REDUCTION_THIRD_PLAYER_LAYOFF",
+        "predicate_ids": [
+          "q2_chain_pass"
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "catalog_ref": "controlled_pass_episode",
+        "kind": "primitive",
+        "node_id": "controlled_pass",
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "carry_episode",
+        "inputs": {
+          "controlled_pass_anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "carry_episode",
+        "parameters": {
+          "control_distance_m": {
+            "kind": "parameter",
+            "name": "control_distance_m"
+          },
+          "maximum_ball_player_speed_delta_mps": {
+            "kind": "parameter",
+            "name": "maximum_ball_player_speed_delta_mps"
+          },
+          "maximum_carry_seconds": {
+            "kind": "parameter",
+            "name": "maximum_carry_seconds"
+          },
+          "maximum_missing_frame_ratio": {
+            "kind": "parameter",
+            "name": "maximum_missing_frame_ratio"
+          },
+          "minimum_comoving_frame_ratio": {
+            "kind": "parameter",
+            "name": "minimum_comoving_frame_ratio"
+          },
+          "minimum_controlled_frame_ratio": {
+            "kind": "parameter",
+            "name": "minimum_controlled_frame_ratio"
+          },
+          "minimum_displacement_m": {
+            "kind": "parameter",
+            "name": "minimum_displacement_m"
+          },
+          "nearest_teammate_margin_m": {
+            "kind": "parameter",
+            "name": "nearest_teammate_margin_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "pressure_on_carrier",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "carry_episode"
+          }
+        },
+        "kind": "relation",
+        "node_id": "pressure_at_carry_start",
+        "parameters": {
+          "candidate_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "defending_outfield"
+          },
+          "carrier_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "carrier_id"
+          },
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "carry_start_frame_id"
+          },
+          "lookback_seconds": {
+            "kind": "parameter",
+            "name": "velocity_lookback_seconds"
+          },
+          "maximum_approach_angle_degrees": {
+            "kind": "parameter",
+            "name": "pressure_maximum_approach_angle_degrees"
+          },
+          "maximum_pressure_distance_m": {
+            "kind": "parameter",
+            "name": "pressure_maximum_distance_m"
+          },
+          "minimum_closing_speed_mps": {
+            "kind": "parameter",
+            "name": "pressure_minimum_closing_speed_mps"
+          },
+          "minimum_pressure_duration_seconds": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.0
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "pressure_on_carrier",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "carry_episode"
+          }
+        },
+        "kind": "relation",
+        "node_id": "pressure_at_carry_end",
+        "parameters": {
+          "candidate_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "defending_outfield"
+          },
+          "carrier_id_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "carrier_id"
+          },
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "carry_end_frame_id"
+          },
+          "lookback_seconds": {
+            "kind": "parameter",
+            "name": "velocity_lookback_seconds"
+          },
+          "maximum_approach_angle_degrees": {
+            "kind": "parameter",
+            "name": "pressure_maximum_approach_angle_degrees"
+          },
+          "maximum_pressure_distance_m": {
+            "kind": "parameter",
+            "name": "pressure_maximum_distance_m"
+          },
+          "minimum_closing_speed_mps": {
+            "kind": "parameter",
+            "name": "pressure_minimum_closing_speed_mps"
+          },
+          "minimum_pressure_duration_seconds": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 0.0
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "change_across_anchor",
+        "inputs": {
+          "after_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "pressure_at_carry_end"
+          },
+          "anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "carry_episode"
+          },
+          "before_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "pressure_at_carry_start"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "pressure_distance_change",
+        "parameters": {
+          "after_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "none"
+          },
+          "after_value_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "nearest_defender_distance_m"
+          },
+          "before_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "pressure_status"
+          },
+          "before_value_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "nearest_defender_distance_m"
+          },
+          "change_mode": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "increase_at_least"
+          },
+          "maximum_before_value_m": {
+            "kind": "parameter",
+            "name": "pressure_maximum_distance_m"
+          },
+          "minimum_change_m": {
+            "kind": "parameter",
+            "name": "pressure_minimum_distance_increase_m"
+          },
+          "required_status_value": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "PASS"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "one_touch_relay_episode",
+        "kind": "primitive",
+        "node_id": "one_touch_relay",
+        "parameters": {
+          "maximum_relay_dwell_seconds": {
+            "kind": "parameter",
+            "name": "maximum_relay_dwell_seconds"
+          },
+          "relay_max_event_gap_seconds": {
+            "kind": "parameter",
+            "name": "relay_max_event_gap_seconds"
+          },
+          "relay_touch_distance_m": {
+            "kind": "parameter",
+            "name": "relay_touch_distance_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "controlled_pass_episode",
+        "kind": "primitive",
+        "node_id": "terminal_controlled_pass",
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "pass_chain_episode",
+        "inputs": {
+          "relay_anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "one_touch_relay"
+          },
+          "terminal_controlled_pass_anchors": {
+            "output_name": "anchors",
+            "source_node_id": "terminal_controlled_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "pass_chain",
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "carry_relay_layoff_chain",
+        "inputs": {
+          "carry_anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "carry_episode"
+          },
+          "pass_chain_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "pass_chain"
+          },
+          "pressure_change_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "pressure_distance_change"
+          },
+          "relay_anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "one_touch_relay"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "q2_chain",
+        "version": "0.1.0"
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "carry_relay_layoff_status",
+          "source_node_id": "q2_chain"
+        },
+        "kind": "predicate",
+        "node_id": "q2_chain_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      }
+    ],
+    "plan_id": "q2_carry_breaks_pressure_layoff",
+    "plan_version": "0.1.0",
+    "recipe_id": "q2_carry_breaks_pressure_layoff_v1",
+    "recipe_version": "0.1.0",
+    "requested_evidence": [
+      {
+        "alias": "carry_relay_layoff_status",
+        "field": "carry_relay_layoff_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "carry_relay_layoff_reason",
+        "field": "carry_relay_layoff_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "carry_episode_id",
+        "field": "carry_episode_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "carrier_id",
+        "field": "carrier_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "carry_start_frame_id",
+        "field": "carry_start_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "carry_end_frame_id",
+        "field": "carry_end_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "terminal_pass_id",
+        "field": "terminal_pass_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "displacement_m",
+        "field": "displacement_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "carry_forward_progression_m",
+        "field": "carry_forward_progression_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "control_model",
+        "field": "control_model",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "control_bias",
+        "field": "control_bias",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "pressure_change_status",
+        "field": "pressure_change_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "pressure_change_reason",
+        "field": "pressure_change_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "pressure_before_distance_m",
+        "field": "pressure_before_distance_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "pressure_after_distance_m",
+        "field": "pressure_after_distance_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "pressure_distance_delta_m",
+        "field": "pressure_distance_delta_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "pressure_minimum_distance_increase_m",
+        "field": "pressure_minimum_distance_increase_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "relay_input_pass_episode_id",
+        "field": "relay_input_pass_episode_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "relay_pass_episode_id",
+        "field": "relay_pass_episode_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "relay_player_id",
+        "field": "relay_player_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "relay_touch_frame_id",
+        "field": "relay_touch_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "terminal_receiver_id",
+        "field": "terminal_receiver_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "terminal_controlled_reception_frame_id",
+        "field": "terminal_controlled_reception_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "terminal_forward_progression_m",
+        "field": "terminal_forward_progression_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "pass_chain_status",
+        "field": "pass_chain_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "three_distinct_players",
+        "field": "three_distinct_players",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      }
+    ],
+    "schema_version": "1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate"
+  },
+  "recipe": {
+    "allowed_claims": [
+      "A conservative movement-under-control carry was observed.",
+      "Nearest-defender distance increased across the carry under declared thresholds.",
+      "The carry terminal pass was the input pass of an observed one-touch relay.",
+      "The carrier, relay player, and terminal receiver were three distinct observed players."
+    ],
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "description": "Experimental northstar Q2 composition: a conservative carry is observed, nearest-defender distance increases across the carry, the terminal pass feeds an event-linked one-touch relay, and the onward pass reaches a third player with controlled reception.",
+    "disallowed_claims": [
+      "The system inferred dribbling skill or that the carry beat a defender.",
+      "The system inferred pressure-breaking quality, player intent, tactical causation, or decision quality.",
+      "The system claimed a planned third-man combination, pass optimality, or pass probability."
+    ],
+    "display_name": "Carry Reduces Pressure Before Third-Player Layoff",
+    "limitations": [
+      "Pressure break is operationalized as nearest-defender distance increasing across the carry.",
+      "Layoff is an event-linked one-touch relay with terminal controlled reception, not a planned combination claim.",
+      "UNKNOWN pressure, carry, or relay evidence is excluded rather than coerced to a match."
+    ],
+    "output_classifications": [
+      "Q2_CARRY_PRESSURE_REDUCTION_THIRD_PLAYER_LAYOFF"
+    ],
+    "parameters": [
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 10.0
+        },
+        "description": "Maximum carry interval.",
+        "name": "maximum_carry_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 3.0
+        },
+        "description": "Minimum carry displacement.",
+        "name": "minimum_displacement_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 2.5
+        },
+        "description": "Maximum ball-carrier control distance.",
+        "name": "control_distance_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 1.0
+        },
+        "description": "Nearest-team control margin.",
+        "name": "nearest_teammate_margin_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 10.0
+        },
+        "description": "Maximum ball/player velocity delta.",
+        "name": "maximum_ball_player_speed_delta_mps",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 1.0
+        },
+        "description": "Minimum controlled-frame ratio.",
+        "name": "minimum_controlled_frame_ratio",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 0.75
+        },
+        "description": "Minimum co-moving ratio.",
+        "name": "minimum_comoving_frame_ratio",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 0.02
+        },
+        "description": "Maximum missing-tracking ratio.",
+        "name": "maximum_missing_frame_ratio",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 4.0
+        },
+        "description": "Pressure distance threshold at carry start.",
+        "name": "pressure_maximum_distance_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 2.0
+        },
+        "description": "Required nearest-defender distance increase.",
+        "name": "pressure_minimum_distance_increase_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": -5.0
+        },
+        "description": "Permissive closing-speed floor for pressure-distance evidence.",
+        "name": "pressure_minimum_closing_speed_mps",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 180.0
+        },
+        "description": "Permissive approach-angle ceiling for pressure-distance evidence.",
+        "name": "pressure_maximum_approach_angle_degrees",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.4
+        },
+        "description": "Pressure kinematic lookback interval.",
+        "name": "velocity_lookback_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 3.0
+        },
+        "description": "Maximum event gap into relay pass.",
+        "name": "relay_max_event_gap_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 2.75
+        },
+        "description": "Maximum ball-player relay touch distance.",
+        "name": "relay_touch_distance_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.56
+        },
+        "description": "Maximum relay dwell interval.",
+        "name": "maximum_relay_dwell_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      }
+    ],
+    "recipe_id": "q2_carry_breaks_pressure_layoff_v1",
+    "recipe_version": "0.1.0",
+    "schema_version": "1.0"
+  },
+  "schema_version": "1.0"
+}

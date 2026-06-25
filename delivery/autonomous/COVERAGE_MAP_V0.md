@@ -35,12 +35,12 @@ Authoritative generated artifacts:
 ## Post-Carry-Episode v0 Result
 
 The audited v0 map covers Priori's authored 741-concept atlas, not all possible user language. These numbers are after Q5 landed `transition_anchor`, `structured_zone`, and `outcome_window`, and after the transition-anchor backlog was conservatively redistributed into supported rows or the next precise blocker.
-They also include `time_to_arrival` v0.1, a static-point arrival primitive using straight-line travel at a declared max speed while carrying tracking coverage and point-mass limitation evidence, and `carry_episode` v0.1, a conservative movement-under-control primitive with explicit control criteria and bias evidence.
+They also include `time_to_arrival` v0.1, a static-point arrival primitive using straight-line travel at a declared max speed while carrying tracking coverage and point-mass limitation evidence, `carry_episode` v0.1, a conservative movement-under-control primitive with explicit control criteria and bias evidence, and the Q2 pressure-reduction composition over carry start/end pressure.
 
 | Classification | Concepts | Share |
 | --- | ---: | ---: |
-| `supported` | 349 | 47.1% |
-| `partial_with_typed_gap` | 173 | 23.3% |
+| `supported` | 350 | 47.2% |
+| `partial_with_typed_gap` | 172 | 23.2% |
 | `missing_primitive` | 154 | 20.8% |
 | `missing_modality` | 43 | 5.8% |
 | `role_or_reference_gap` | 13 | 1.8% |
@@ -52,7 +52,7 @@ Reachable now or with one named gap: 70.4%.
 
 This is `v0 estimated` and internal-only. A 30-row stratified audit found roughly 26/30 rows solid and identified one systematic inflation pattern: aggregation and extremum concepts such as `argmax`, `argmin`, `local_maximum`, and `nearest_entity` had been treated as supported even though the catalog has no generic extremum operator.
 
-That correction moved the affected rows from `supported` to `partial_with_typed_gap`, lowering supported coverage from 44.4% to 43.9%. After Q5, `time_to_arrival`, and `carry_episode`, conservative redistribution raises the current internal steering estimate to 47.1% supported and 70.4% reachable now or with one typed gap.
+That correction moved the affected rows from `supported` to `partial_with_typed_gap`, lowering supported coverage from 44.4% to 43.9%. After Q5, `time_to_arrival`, `carry_episode`, and Q2's carry-pressure comparison, conservative redistribution raises the current internal steering estimate to 47.2% supported and 70.4% reachable now or with one typed gap.
 
 Do not use this as an external coverage claim until additional audit passes and the held-out natural-language evaluation denominator exist.
 
@@ -71,6 +71,7 @@ Roadmap implication:
 - Q5 has closed the generic transition-anchor blocker for the coverage map.
 - `time_to_arrival` has closed Q4's lane-coverage typed gap only for static target-point reachability. It does not claim moving-ball interception, pass-line coverage, cover shadows, pitch-control fields, or reachability regions.
 - `carry_episode` has closed the base carrying blocker. Remaining carry-family gaps are narrower: defender-bypass-by-carry, carry-path lane/profile aggregation, generated space regions, contact/touch evidence, body orientation, and learned value.
+- Q2 closes the observed `carry_out_of_pressure` composition as carry start/end pressure-distance comparison. It does not claim pressure-breaking quality or defender bypass.
 - `set_piece_structure` and `off_ball_run` are now the leading missing primitives. The cheap reachability follow-ons are `cover_shadow`, `marking`, and interception-margin compositions on top of `time_to_arrival`.
 - Treat remaining transition-family partials as their next precise gap, not as generic transition-anchor debt.
 - Regenerate the coverage map after every substrate package.

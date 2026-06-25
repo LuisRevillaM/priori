@@ -256,6 +256,7 @@ class TacticalQueryExecutor:
             "velocity": primitive_velocity,
             "time_to_arrival": primitive_time_to_arrival,
             "carry_episode": primitive_carry_episode,
+            "carry_relay_layoff_chain": primitive_carry_relay_layoff_chain,
             "team_compactness": primitive_team_compactness,
             "switch_of_play": primitive_switch_of_play,
             "change_across_anchor": primitive_change_across_anchor,
@@ -3940,6 +3941,154 @@ def primitive_carry_episode(state: PeriodState, node: BoundCatalogNode) -> None:
             entity_scope=catalog_output(node, "forward_progression_m").entity_scope,
         ),
         "forward_progression_m_records": records,
+    }
+
+
+def primitive_carry_relay_layoff_chain(state: PeriodState, node: BoundCatalogNode) -> None:
+    carry_records = runtime_records(catalog_input_value(state, node, "carry_anchors"))
+    pressure_records = runtime_records(catalog_input_value(state, node, "pressure_change_evaluations"))
+    relay_records = runtime_records(catalog_input_value(state, node, "relay_anchors"))
+    pass_chain_records = runtime_records(catalog_input_value(state, node, "pass_chain_evaluations"))
+    pressure_by_anchor_id = record_by_anchor_id(pressure_records)
+    relay_by_input_pass_id = {
+        str(record.get("input_pass_episode_id")): record
+        for record in relay_records
+        if isinstance(record, dict) and record.get("input_pass_episode_id") is not None
+    }
+    pass_chain_by_anchor_id = record_by_anchor_id(pass_chain_records)
+    records = [
+        carry_relay_layoff_chain_record(
+            state=state,
+            carry_record=carry_record,
+            pressure_record=pressure_by_anchor_id.get(str(carry_record.get("anchor_id"))) if isinstance(carry_record, dict) else None,
+            relay_record=relay_by_input_pass_id.get(str(carry_record.get("terminal_pass_id"))) if isinstance(carry_record, dict) else None,
+            pass_chain_by_anchor_id=pass_chain_by_anchor_id,
+        )
+        for carry_record in carry_records
+        if isinstance(carry_record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    episodes = [record for record in records if str(record.get("carry_relay_layoff_status")) == "PASS"]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "episodes": episodes,
+        "episodes_records": episodes,
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "carry_relay_layoff_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None
+                if str(record["carry_relay_layoff_status"]) == "UNKNOWN"
+                else str(record["carry_relay_layoff_status"])
+                for record in records
+            ],
+            unknown_mask=[str(record["carry_relay_layoff_status"]) == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "carry_relay_layoff_status").entity_scope,
+        ),
+        "carry_relay_layoff_status_records": records,
+    }
+
+
+def carry_relay_layoff_chain_record(
+    *,
+    state: PeriodState,
+    carry_record: dict[str, Any],
+    pressure_record: dict[str, Any] | None,
+    relay_record: dict[str, Any] | None,
+    pass_chain_by_anchor_id: dict[str, dict[str, Any]],
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(carry_record.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    pass_chain_record = (
+        pass_chain_by_anchor_id.get(str(relay_record.get("anchor_id")))
+        if isinstance(relay_record, dict)
+        else None
+    )
+    carrier_id = str(carry_record.get("carrier_id") or "")
+    relay_player_id = str(relay_record.get("relay_player_id") or "") if isinstance(relay_record, dict) else ""
+    terminal_receiver_id = (
+        str(pass_chain_record.get("terminal_receiver_id") or "")
+        if isinstance(pass_chain_record, dict)
+        else ""
+    )
+    status = "UNKNOWN"
+    reason = "chain_evidence_missing"
+    if str(carry_record.get("carry_status")) == "UNKNOWN":
+        reason = "carry_status_unknown"
+    elif str(carry_record.get("carry_status")) != "PASS":
+        status = "FAIL"
+        reason = "carry_status_not_pass"
+    elif pressure_record is None:
+        reason = "pressure_change_record_missing"
+    elif str(pressure_record.get("change_status")) == "UNKNOWN":
+        reason = "pressure_change_unknown"
+    elif str(pressure_record.get("change_status")) != "PASS":
+        status = "FAIL"
+        reason = "pressure_reduction_not_observed"
+    elif relay_record is None:
+        status = "FAIL"
+        reason = "relay_not_linked_to_carry_terminal_pass"
+    elif str(relay_record.get("one_touch_relay_status")) == "UNKNOWN":
+        reason = "relay_status_unknown"
+    elif str(relay_record.get("one_touch_relay_status")) != "PASS":
+        status = "FAIL"
+        reason = "relay_status_not_pass"
+    elif str(relay_record.get("input_pass_episode_id")) != str(carry_record.get("terminal_pass_id")):
+        status = "FAIL"
+        reason = "carry_terminal_pass_not_relay_input"
+    elif carrier_id and str(relay_record.get("input_passer_id") or "") != carrier_id:
+        status = "FAIL"
+        reason = "carry_carrier_not_terminal_passer"
+    elif pass_chain_record is None:
+        reason = "pass_chain_record_missing"
+    elif str(pass_chain_record.get("pass_chain_status")) == "UNKNOWN":
+        reason = "pass_chain_status_unknown"
+    elif str(pass_chain_record.get("pass_chain_status")) != "PASS":
+        status = "FAIL"
+        reason = "pass_chain_status_not_pass"
+    elif not carrier_id or not relay_player_id or not terminal_receiver_id:
+        reason = "player_identity_missing"
+    elif len({carrier_id, relay_player_id, terminal_receiver_id}) < 3:
+        status = "FAIL"
+        reason = "third_player_not_distinct"
+    else:
+        status = "PASS"
+        reason = "carry_pressure_reduction_to_third_player_layoff_observed"
+    return {
+        **carry_record,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(carry_record.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "carry_relay_layoff_status": status,
+        "carry_relay_layoff_reason": reason,
+        "pressure_change_status": None if pressure_record is None else pressure_record.get("change_status"),
+        "pressure_change_reason": None if pressure_record is None else pressure_record.get("change_reason"),
+        "pressure_before_distance_m": None if pressure_record is None else pressure_record.get("before_value"),
+        "pressure_after_distance_m": None if pressure_record is None else pressure_record.get("after_value"),
+        "pressure_distance_delta_m": None if pressure_record is None else pressure_record.get("delta_value"),
+        "pressure_minimum_distance_increase_m": None if pressure_record is None else pressure_record.get("minimum_change_m"),
+        "relay_anchor_id": None if relay_record is None else relay_record.get("anchor_id"),
+        "relay_input_pass_episode_id": None if relay_record is None else relay_record.get("input_pass_episode_id"),
+        "relay_pass_episode_id": None if relay_record is None else relay_record.get("relay_pass_episode_id"),
+        "relay_player_id": relay_player_id or None,
+        "relay_touch_frame_id": None if relay_record is None else optional_int(relay_record.get("relay_touch_frame_id")),
+        "relay_physical_release_frame_id": None
+        if relay_record is None
+        else optional_int(relay_record.get("relay_physical_release_frame_id")),
+        "terminal_receiver_id": terminal_receiver_id or None,
+        "terminal_controlled_reception_frame_id": None
+        if pass_chain_record is None
+        else optional_int(pass_chain_record.get("terminal_controlled_reception_frame_id")),
+        "terminal_forward_progression_m": None if pass_chain_record is None else pass_chain_record.get("terminal_forward_progression_m"),
+        "pass_chain_status": None if pass_chain_record is None else pass_chain_record.get("pass_chain_status"),
+        "pass_chain_reason": None if pass_chain_record is None else pass_chain_record.get("pass_chain_reason"),
+        "three_distinct_players": len({carrier_id, relay_player_id, terminal_receiver_id}) == 3
+        if carrier_id and relay_player_id and terminal_receiver_id
+        else False,
     }
 
 

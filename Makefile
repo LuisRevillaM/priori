@@ -268,6 +268,10 @@ afl-time-to-arrival-verify:
 afl-carry-episode-verify:
 	$(PYTHON) -m tqe.verification.afl_carry_episode
 
+.PHONY: afl-substrate-q2-verify
+afl-substrate-q2-verify:
+	$(PYTHON) -m tqe.verification.afl_substrate_q2
+
 test:
 	$(PYTHON) -m unittest discover -s tests
 
