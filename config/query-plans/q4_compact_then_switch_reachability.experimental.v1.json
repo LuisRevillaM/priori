@@ -1,0 +1,847 @@
+{
+  "default_invocation": {
+    "execution_mode": "execute",
+    "invocation_id": "q4_compact_then_switch_partial_probe",
+    "match_ids": [
+      "J03WOH",
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9",
+      "J03WMX",
+      "J03WN1"
+    ],
+    "max_results": 20,
+    "parameters": {},
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "schema_version": "1.0"
+  },
+  "draft_plan": {
+    "anchor_source": {
+      "output_name": "anchor_evaluations",
+      "source_node_id": "lane_reachability"
+    },
+    "classification_mode": "exhaustive",
+    "classification_rules": [
+      {
+        "description": "Compact before a switch, defending width increases afterward, and no observed opposing outfield candidate reaches the switch receiver point within the declared threshold.",
+        "label": "Q4_COMPACT_THEN_SWITCH_LANE_REACHABILITY",
+        "predicate_ids": [
+          "switch_pass",
+          "width_change_pass",
+          "lane_not_covered"
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "catalog_ref": "controlled_pass_episode",
+        "kind": "primitive",
+        "node_id": "controlled_pass",
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "switch_of_play",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "switch_of_play",
+        "parameters": {
+          "maximum_duration_seconds": {
+            "kind": "parameter",
+            "name": "switch_maximum_duration_seconds"
+          },
+          "minimum_end_lateral_m": {
+            "kind": "parameter",
+            "name": "switch_minimum_end_lateral_m"
+          },
+          "minimum_lateral_displacement_m": {
+            "kind": "parameter",
+            "name": "switch_minimum_lateral_displacement_m"
+          },
+          "minimum_start_lateral_m": {
+            "kind": "parameter",
+            "name": "switch_minimum_start_lateral_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "team_compactness",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "before_compactness",
+        "parameters": {
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "physical_release_frame_id"
+          },
+          "maximum_team_depth_m": {
+            "kind": "parameter",
+            "name": "compact_maximum_team_depth_m"
+          },
+          "maximum_team_width_m": {
+            "kind": "parameter",
+            "name": "compact_maximum_team_width_m"
+          },
+          "minimum_observed_players": {
+            "kind": "parameter",
+            "name": "compact_minimum_observed_players"
+          },
+          "player_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "defending_outfield"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "team_compactness",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "after_compactness",
+        "parameters": {
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "maximum_team_depth_m": {
+            "kind": "parameter",
+            "name": "compact_maximum_team_depth_m"
+          },
+          "maximum_team_width_m": {
+            "kind": "parameter",
+            "name": "compact_maximum_team_width_m"
+          },
+          "minimum_observed_players": {
+            "kind": "parameter",
+            "name": "compact_minimum_observed_players"
+          },
+          "player_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "defending_outfield"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "change_across_anchor",
+        "inputs": {
+          "after_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "after_compactness"
+          },
+          "anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "switch_of_play"
+          },
+          "before_evaluations": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "before_compactness"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "width_change_after_switch",
+        "parameters": {
+          "after_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "none"
+          },
+          "after_value_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "team_width_m"
+          },
+          "before_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "team_compactness_status"
+          },
+          "before_value_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "team_width_m"
+          },
+          "change_mode": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "increase_at_least"
+          },
+          "maximum_before_value_m": {
+            "kind": "parameter",
+            "name": "compact_maximum_team_width_m"
+          },
+          "minimum_change_m": {
+            "kind": "parameter",
+            "name": "minimum_width_increase_m"
+          },
+          "required_status_value": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "PASS"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "switch_status",
+          "source_node_id": "switch_of_play"
+        },
+        "kind": "predicate",
+        "node_id": "switch_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "change_status",
+          "source_node_id": "width_change_after_switch"
+        },
+        "kind": "predicate",
+        "node_id": "width_change_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "catalog_ref": "time_to_arrival",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "switch_of_play"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "lane_reachability",
+        "parameters": {
+          "candidate_scope": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "opposition_outfield_to_anchor_team"
+          },
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "controlled_reception_frame_id"
+          },
+          "maximum_arrival_seconds": {
+            "kind": "parameter",
+            "name": "coverage_maximum_arrival_seconds"
+          },
+          "maximum_player_speed_mps": {
+            "kind": "parameter",
+            "name": "coverage_maximum_player_speed_mps"
+          },
+          "minimum_observed_candidates": {
+            "kind": "parameter",
+            "name": "coverage_minimum_observed_candidates"
+          },
+          "target_entity_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "receiver_id"
+          },
+          "target_mode": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "entity"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "FAIL"
+        },
+        "input": {
+          "output_name": "time_to_arrival_status",
+          "source_node_id": "lane_reachability"
+        },
+        "kind": "predicate",
+        "node_id": "lane_not_covered",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      }
+    ],
+    "plan_id": "q4_compact_then_switch_reachability",
+    "plan_version": "0.1.0",
+    "recipe_id": "q4_compact_then_switch_reachability_v1",
+    "recipe_version": "0.1.0",
+    "requested_evidence": [
+      {
+        "alias": "pass_episode_id",
+        "field": "pass_episode_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_pass"
+        }
+      },
+      {
+        "alias": "passer_id",
+        "field": "passer_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_pass"
+        }
+      },
+      {
+        "alias": "receiver_id",
+        "field": "receiver_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_pass"
+        }
+      },
+      {
+        "alias": "physical_release_frame_id",
+        "field": "physical_release_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_pass"
+        }
+      },
+      {
+        "alias": "controlled_reception_frame_id",
+        "field": "controlled_reception_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_pass"
+        }
+      },
+      {
+        "alias": "forward_progression_m",
+        "field": "forward_progression_m",
+        "required": true,
+        "source": {
+          "output_name": "anchors",
+          "source_node_id": "controlled_pass"
+        }
+      },
+      {
+        "alias": "switch_status",
+        "field": "switch_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "switch_of_play"
+        }
+      },
+      {
+        "alias": "switch_reason",
+        "field": "switch_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "switch_of_play"
+        }
+      },
+      {
+        "alias": "release_lateral_side",
+        "field": "release_lateral_side",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "switch_of_play"
+        }
+      },
+      {
+        "alias": "reception_lateral_side",
+        "field": "reception_lateral_side",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "switch_of_play"
+        }
+      },
+      {
+        "alias": "lateral_displacement_m",
+        "field": "lateral_displacement_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "switch_of_play"
+        }
+      },
+      {
+        "alias": "switch_duration_seconds",
+        "field": "switch_duration_seconds",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "switch_of_play"
+        }
+      },
+      {
+        "alias": "before_team_compactness_status",
+        "field": "team_compactness_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "before_compactness"
+        }
+      },
+      {
+        "alias": "before_team_width_m",
+        "field": "team_width_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "before_compactness"
+        }
+      },
+      {
+        "alias": "before_team_depth_m",
+        "field": "team_depth_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "before_compactness"
+        }
+      },
+      {
+        "alias": "before_observed_player_count",
+        "field": "observed_player_count",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "before_compactness"
+        }
+      },
+      {
+        "alias": "after_team_width_m",
+        "field": "team_width_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "after_compactness"
+        }
+      },
+      {
+        "alias": "after_team_depth_m",
+        "field": "team_depth_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "after_compactness"
+        }
+      },
+      {
+        "alias": "after_observed_player_count",
+        "field": "observed_player_count",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "after_compactness"
+        }
+      },
+      {
+        "alias": "change_status",
+        "field": "change_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "width_change_after_switch"
+        }
+      },
+      {
+        "alias": "change_reason",
+        "field": "change_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "width_change_after_switch"
+        }
+      },
+      {
+        "alias": "before_value",
+        "field": "before_value",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "width_change_after_switch"
+        }
+      },
+      {
+        "alias": "after_value",
+        "field": "after_value",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "width_change_after_switch"
+        }
+      },
+      {
+        "alias": "delta_value",
+        "field": "delta_value",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "width_change_after_switch"
+        }
+      },
+      {
+        "alias": "minimum_change_m",
+        "field": "minimum_change_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "width_change_after_switch"
+        }
+      },
+      {
+        "alias": "maximum_before_value_m",
+        "field": "maximum_before_value_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "width_change_after_switch"
+        }
+      },
+      {
+        "alias": "time_to_arrival_status",
+        "field": "time_to_arrival_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "time_to_arrival_reason",
+        "field": "time_to_arrival_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "arrival_frame_id",
+        "field": "arrival_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "target_point",
+        "field": "target_point",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "candidate_scope",
+        "field": "candidate_scope",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "candidate_player_ids",
+        "field": "candidate_player_ids",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "observed_candidate_player_ids",
+        "field": "observed_candidate_player_ids",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "arrival_player_ids",
+        "field": "arrival_player_ids",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "nearest_arrival_player_id",
+        "field": "nearest_arrival_player_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "minimum_arrival_seconds",
+        "field": "minimum_arrival_seconds",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "maximum_arrival_seconds",
+        "field": "maximum_arrival_seconds",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "maximum_player_speed_mps",
+        "field": "maximum_player_speed_mps",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "reachability_model",
+        "field": "reachability_model",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "momentum_policy",
+        "field": "momentum_policy",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "reachable_verdict_bias",
+        "field": "reachable_verdict_bias",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      },
+      {
+        "alias": "coverage_status",
+        "field": "coverage_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "lane_reachability"
+        }
+      }
+    ],
+    "schema_version": "1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate"
+  },
+  "recipe": {
+    "allowed_claims": [
+      "A controlled pass moved the ball from one lateral side to the opposite side under declared thresholds.",
+      "Defending outfield width/depth was measured from observed tracking positions.",
+      "Observed defending-team width increased across the switch anchor under declared thresholds.",
+      "Observed opposing outfield candidates were evaluated against a declared static-point arrival-time threshold."
+    ],
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "description": "Experimental Q4 composition: a controlled pass is observed as a switch of play, the defending outfield unit is compact at release, defending-team width increases after reception, and opposing observed outfield candidates cannot reach the switch receiver's static reception point within the declared threshold.",
+    "disallowed_claims": [
+      "The system inferred pitch control, cover shadow, player intent, defender intent, or tactical causation.",
+      "The system solved moving-target interception or pass probability.",
+      "The switch was tactically optimal or caused the defensive change."
+    ],
+    "display_name": "Compact Block Then Switch With Reachability",
+    "limitations": [
+      "time_to_arrival v0.1 is static-point reachability under a declared straight-line speed assumption.",
+      "A reachable verdict is an optimistic point-mass bound because current heading and momentum are ignored in v0.1.",
+      "FAIL means no observed candidate in the declared scope reached the static point within the threshold.",
+      "It does not prove complete lane denial or coaching-quality coverage."
+    ],
+    "output_classifications": [
+      "Q4_COMPACT_THEN_SWITCH_LANE_REACHABILITY"
+    ],
+    "parameters": [
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 25.0
+        },
+        "description": "Minimum lateral ball displacement for switch status.",
+        "name": "switch_minimum_lateral_displacement_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 10.0
+        },
+        "description": "Minimum absolute release lateral position.",
+        "name": "switch_minimum_start_lateral_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 10.0
+        },
+        "description": "Minimum absolute reception lateral position.",
+        "name": "switch_minimum_end_lateral_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 8.0
+        },
+        "description": "Maximum release-to-reception duration.",
+        "name": "switch_maximum_duration_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 48.0
+        },
+        "description": "Maximum defending-team width for compact before status.",
+        "name": "compact_maximum_team_width_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 42.0
+        },
+        "description": "Maximum defending-team depth for compact before status.",
+        "name": "compact_maximum_team_depth_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 8
+        },
+        "description": "Minimum observed defending outfield players.",
+        "name": "compact_minimum_observed_players",
+        "payload_type": "number",
+        "unit": "count"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 6.0
+        },
+        "description": "Minimum defending-team width increase after switch.",
+        "name": "minimum_width_increase_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 2.0
+        },
+        "description": "Maximum observed opposing-candidate arrival time to the switch receiver point.",
+        "name": "coverage_maximum_arrival_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 7.0
+        },
+        "description": "Declared straight-line speed assumption for static-point reachability.",
+        "name": "coverage_maximum_player_speed_mps",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 1
+        },
+        "description": "Minimum observed candidate count before reachability can be PASS/FAIL.",
+        "name": "coverage_minimum_observed_candidates",
+        "payload_type": "number",
+        "unit": "count"
+      }
+    ],
+    "recipe_id": "q4_compact_then_switch_reachability_v1",
+    "recipe_version": "0.1.0",
+    "schema_version": "1.0"
+  },
+  "schema_version": "1.0"
+}

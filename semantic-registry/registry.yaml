@@ -123,6 +123,14 @@ concepts:
     evidence_contract_ref: evidence.observed_entity_velocity.v1
     tags: [velocity, tracking, movement]
 
+  - id: concept.time_to_arrival
+    kind: Concept
+    display_name: Time To Arrival
+    description: Static-point reachability estimate for observed candidate players under a declared straight-line speed assumption.
+    claim_contract_ref: claim.time_to_arrival.v1
+    evidence_contract_ref: evidence.time_to_arrival.v1
+    tags: [reachability, tracking, arrival-time]
+
   - id: concept.observed_multi_line_model
     kind: Concept
     display_name: Observed Multi-Line Model
@@ -632,6 +640,30 @@ operationalizations:
     lowering: [anchor_frame_selection, lookback_frame_selection, displacement_vector, speed_magnitude]
     claim_contract_ref: claim.observed_entity_velocity.v1
     evidence_contract_ref: evidence.observed_entity_velocity.v1
+
+  - id: op.static_point_time_to_arrival.v1
+    kind: Operationalization
+    display_name: Static Point Time To Arrival
+    description: Estimate candidate-player arrival time to a declared static target point at an anchor-relative frame.
+    concept_refs: [concept.time_to_arrival]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, candidate_coordinates_available, target_point_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: tracking_window
+        type: {container: TrajectorySet, value: Position, unit: metre, coordinate_frame: pitch_absolute}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: time_to_arrival_evaluation, unit: none, entity_scope: anchor}
+      - name: minimum_arrival_seconds
+        type: {container: FrameSignal, value: Scalar, quantity: time_to_arrival, unit: second, entity_scope: anchor}
+      - name: time_to_arrival_status
+        type: {container: FrameSignal, value: Enum, quantity: time_to_arrival_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, target_point_resolution, candidate_scope_resolution, straight_line_distance, declared_speed_arrival_time, threshold_evaluation]
+    claim_contract_ref: claim.time_to_arrival.v1
+    evidence_contract_ref: evidence.time_to_arrival.v1
 
   - id: op.observed_multi_line_model.v1
     kind: Operationalization
@@ -1198,6 +1230,12 @@ implementations:
     description: Current displacement-derived entity velocity implementation.
     implements: [op.observed_entity_velocity.v1]
     source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.time_to_arrival.python.v1
+    kind: Implementation
+    display_name: Time To Arrival Python Implementation
+    description: Current static-point reachability implementation.
+    implements: [op.static_point_time_to_arrival.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.multi_line_model.python.v1
     kind: Implementation
     display_name: Multi-Line Model Python Implementation
@@ -1549,6 +1587,82 @@ runtime_bindings:
       frame_field: frame_field
       entity_id_field: entity_id_field
       lookback_seconds: lookback_seconds
+
+  - id: binding.primitive.time_to_arrival.0_1_0
+    kind: RuntimeBinding
+    display_name: time_to_arrival runtime binding
+    description: Canonical runtime binding for time_to_arrival 0.1.0.
+    runtime_capability: {id: time_to_arrival, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.time_to_arrival.python.v1
+    implements: [op.static_point_time_to_arrival.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 estimates static-point arrival using a declared straight-line max speed and ignores heading/momentum.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      tracking_window: {source: RUNTIME_CONTEXT, context_ref: canonical_tracking_window}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      minimum_arrival_seconds: {runtime_port: minimum_arrival_seconds}
+      time_to_arrival_status: {runtime_port: time_to_arrival_status}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, transition_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+      - name: target_mode
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: entity, unit: none}
+        allowed_values: [entity, ball, fields]
+      - name: target_entity_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id]
+      - name: target_x_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: reception_ball_x_m, unit: none}
+        allowed_values: [release_ball_x_m, reception_ball_x_m, zone_ball_x_m]
+      - name: target_y_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: reception_ball_y_m, unit: none}
+        allowed_values: [release_ball_y_m, reception_ball_y_m, zone_ball_y_m]
+      - name: candidate_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: defending_outfield, unit: none}
+        allowed_values: [defending_outfield, perspective_outfield, all_outfield, opposition_outfield_to_anchor_team, same_team_outfield_as_anchor]
+      - name: maximum_arrival_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 2.0, unit: second}
+        minimum: 0.0
+        maximum: 15.0
+      - name: maximum_player_speed_mps
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 7.0, unit: none}
+        minimum: 0.1
+        maximum: 12.0
+      - name: minimum_observed_candidates
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 1, unit: count}
+        minimum: 1
+        maximum: 22
+    parameter_bindings:
+      frame_field: frame_field
+      target_mode: target_mode
+      target_entity_field: target_entity_field
+      target_x_field: target_x_field
+      target_y_field: target_y_field
+      candidate_scope: candidate_scope
+      maximum_arrival_seconds: maximum_arrival_seconds
+      maximum_player_speed_mps: maximum_player_speed_mps
+      minimum_observed_candidates: minimum_observed_candidates
 
   - id: binding.primitive.ball_lateral_fraction.0_1_0
     kind: RuntimeBinding
@@ -2816,6 +2930,13 @@ claim_contracts:
     permitted: [declared_entity_velocity_measured_from_tracking_displacement]
     prohibited: [player_effort_inferred, player_intent_inferred, tactical_role_identified, pressure_quality_inferred]
     unknown_conditions: [current_position_missing, prior_position_missing, invalid_time_delta]
+  - id: claim.time_to_arrival.v1
+    kind: ClaimContract
+    display_name: Time To Arrival Claims
+    description: Claims permitted for static-point reachability estimates.
+    permitted: [declared_static_point_arrival_time_estimated_under_declared_speed_assumption, declared_arrival_threshold_evaluated_for_observed_candidates]
+    prohibited: [pitch_control_inferred, cover_shadow_inferred, moving_target_interception_inferred, player_intent_inferred, defender_intent_inferred, player_effort_inferred, tactical_causation_inferred, lane_denial_quality_inferred, pass_was_optimal]
+    unknown_conditions: [target_point_missing, candidate_positions_missing, invalid_arrival_speed, insufficient_observed_candidates]
   - id: claim.observed_multi_line_model.v1
     kind: ClaimContract
     display_name: Observed Multi-Line Model Claims
@@ -3087,6 +3208,13 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, velocity_status, velocity_reason, velocity_frame_id, velocity_entity_id, velocity_lookback_frames, velocity_dt_seconds, velocity_vx_mps, velocity_vy_mps, speed_mps]
     optional: [velocity_prior_frame_id]
     replay_projection: [velocity_frame, prior_frame, velocity_vector_badge]
+  - id: evidence.time_to_arrival.v1
+    kind: EvidenceContract
+    display_name: Time To Arrival Evidence
+    description: Evidence required for static-point reachability estimates.
+    required: [anchor_id, anchor_frame_id, time_to_arrival_status, time_to_arrival_reason, arrival_frame_id, target_point, candidate_scope, candidate_player_ids, observed_candidate_player_ids, arrival_player_ids, nearest_arrival_player_id, minimum_arrival_seconds, maximum_arrival_seconds, maximum_player_speed_mps, reachability_model, momentum_policy, reachable_verdict_bias, coverage_status]
+    optional: [missing_candidate_player_ids, nearest_arrival_distance_m, per_player_arrival_evidence]
+    replay_projection: [target_point_marker, candidate_player_markers, arrival_time_badge, reachability_model_badge]
   - id: evidence.observed_multi_line_model.v1
     kind: EvidenceContract
     display_name: Observed Multi-Line Model Evidence
@@ -3373,6 +3501,13 @@ exposure_policies:
     subject_ref: runtime:primitive:velocity:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.time_to_arrival.0_1_0
+    kind: ExposurePolicy
+    display_name: time_to_arrival exposure
+    description: Exposure policy for time_to_arrival.
+    subject_ref: runtime:primitive:time_to_arrival:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
   - id: exposure.runtime.multi_line_model.0_1_0
     kind: ExposurePolicy
     display_name: multi_line_model exposure
@@ -3600,6 +3735,12 @@ projection_policies:
         permitted_fields: []
         rationale: Velocity is intentionally added as a kinematic substrate primitive for pressure and movement clauses.
         review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:time_to_arrival:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 779ce10e289191634f45051d6c90f9bd37c41e0d5e1d3a2811e5cc20ad85423a
+        permitted_fields: []
+        rationale: Time-to-arrival is intentionally added as a reachability substrate primitive and closes the Q4 lane-coverage typed gap.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
       - subject_ref: runtime:primitive:multi_line_model:0.1.0
         difference_kind: ADDED
         projection_contract_hash: 5e2bcb5c0c1202caf872612333c0302cc8f9014b1603a7d7df90bed298accfbe
@@ -3690,6 +3831,12 @@ projection_policies:
         permitted_fields: []
         rationale: Verified Hermes-authored composition is intentionally new relative to the model-visible knowledge-pack baseline.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the composition.
+      - subject_ref: runtime:primitive:time_to_arrival:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 779ce10e289191634f45051d6c90f9bd37c41e0d5e1d3a2811e5cc20ad85423a
+        permitted_fields: []
+        rationale: Time-to-arrival is intentionally added as a model-visible reachability substrate primitive with explicit point-mass limitations.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
       - subject_ref: recipe:line_break_support_response_v1:0.1.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: a0a83061005860a3212d895055edce154c0b82c035b637c185d330d34f07424e
@@ -3930,6 +4077,16 @@ maturity_assessments:
     display_name: velocity maturity
     description: Maturity assessment for velocity.
     subject_ref: runtime:primitive:velocity:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.time_to_arrival.0_1_0
+    kind: MaturityAssessment
+    display_name: time_to_arrival maturity
+    description: Maturity assessment for time_to_arrival.
+    subject_ref: runtime:primitive:time_to_arrival:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

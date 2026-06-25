@@ -260,6 +260,10 @@ cloud-alpha-smoke:
 m1-2-verify:
 	$(PYTHON) -m tqe.verification.m1_2
 
+.PHONY: afl-time-to-arrival-verify
+afl-time-to-arrival-verify:
+	$(PYTHON) -m tqe.verification.afl_time_to_arrival
+
 test:
 	$(PYTHON) -m unittest discover -s tests
 

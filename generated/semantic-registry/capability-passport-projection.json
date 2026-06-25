@@ -1,6 +1,6 @@
 {
-  "passport_count": 33,
-  "passport_revision": "3571fe3886c9c0ba1bdde4641888a3ce16b46f4af9e47355eae05c30dff5b01f",
+  "passport_count": 34,
+  "passport_revision": "926db451a9cbc4dbfb9978d31d64eb84e8fc9af566f9158c61b55b942c2cc5d6",
   "passports": [
     {
       "binding": {
@@ -10879,6 +10879,777 @@
     {
       "binding": {
         "conformance": "PARTIAL",
+        "id": "binding.primitive.time_to_arrival.0_1_0",
+        "input_bindings": {
+          "anchors": {
+            "runtime_port": "anchors",
+            "source": "NODE_INPUT"
+          },
+          "tracking_window": {
+            "context_ref": "canonical_tracking_window",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "v0.1 estimates static-point arrival using a declared straight-line max speed and ignores heading/momentum."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "minimum_arrival_seconds": {
+            "runtime_port": "minimum_arrival_seconds"
+          },
+          "time_to_arrival_status": {
+            "runtime_port": "time_to_arrival_status"
+          }
+        },
+        "parameter_bindings": {
+          "candidate_scope": "candidate_scope",
+          "frame_field": "frame_field",
+          "maximum_arrival_seconds": "maximum_arrival_seconds",
+          "maximum_player_speed_mps": "maximum_player_speed_mps",
+          "minimum_observed_candidates": "minimum_observed_candidates",
+          "target_entity_field": "target_entity_field",
+          "target_mode": "target_mode",
+          "target_x_field": "target_x_field",
+          "target_y_field": "target_y_field"
+        },
+        "semantic_parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "transition_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "",
+            "name": "frame_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "entity",
+              "ball",
+              "fields"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "entity"
+            },
+            "description": "",
+            "name": "target_mode",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "",
+            "name": "target_entity_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "release_ball_x_m",
+              "reception_ball_x_m",
+              "zone_ball_x_m"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "reception_ball_x_m"
+            },
+            "description": "",
+            "name": "target_x_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "release_ball_y_m",
+              "reception_ball_y_m",
+              "zone_ball_y_m"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "reception_ball_y_m"
+            },
+            "description": "",
+            "name": "target_y_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "defending_outfield",
+              "perspective_outfield",
+              "all_outfield",
+              "opposition_outfield_to_anchor_team",
+              "same_team_outfield_as_anchor"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "defending_outfield"
+            },
+            "description": "",
+            "name": "candidate_scope",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 2.0
+            },
+            "description": "",
+            "maximum": 15.0,
+            "minimum": 0.0,
+            "name": "maximum_arrival_seconds",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 7.0
+            },
+            "description": "",
+            "maximum": 12.0,
+            "minimum": 0.1,
+            "name": "maximum_player_speed_mps",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 1
+            },
+            "description": "",
+            "maximum": 22,
+            "minimum": 1,
+            "name": "minimum_observed_candidates",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "count",
+              "value": "Scalar"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.time_to_arrival.v1",
+          "inherits": [],
+          "permitted": [
+            "declared_arrival_threshold_evaluated_for_observed_candidates",
+            "declared_static_point_arrival_time_estimated_under_declared_speed_assumption"
+          ],
+          "prohibited": [
+            "cover_shadow_inferred",
+            "defender_intent_inferred",
+            "lane_denial_quality_inferred",
+            "moving_target_interception_inferred",
+            "pass_was_optimal",
+            "pitch_control_inferred",
+            "player_effort_inferred",
+            "player_intent_inferred",
+            "tactical_causation_inferred"
+          ],
+          "unknown_conditions": [
+            "candidate_positions_missing",
+            "insufficient_observed_candidates",
+            "invalid_arrival_speed",
+            "target_point_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.time_to_arrival.v1",
+          "created_from": [],
+          "description": "Static-point reachability estimate for observed candidate players under a declared straight-line speed assumption.",
+          "display_name": "Time To Arrival",
+          "evidence_contract_ref": "evidence.time_to_arrival.v1",
+          "id": "concept.time_to_arrival",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "reachability",
+            "tracking",
+            "arrival-time"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for time_to_arrival 0.1.0.",
+      "display_name": "time_to_arrival runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.time_to_arrival.v1",
+          "inherits": [],
+          "optional": [
+            "missing_candidate_player_ids",
+            "nearest_arrival_distance_m",
+            "per_player_arrival_evidence"
+          ],
+          "replay_projection": [
+            "arrival_time_badge",
+            "candidate_player_markers",
+            "reachability_model_badge",
+            "target_point_marker"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "arrival_frame_id",
+            "arrival_player_ids",
+            "candidate_player_ids",
+            "candidate_scope",
+            "coverage_status",
+            "maximum_arrival_seconds",
+            "maximum_player_speed_mps",
+            "minimum_arrival_seconds",
+            "momentum_policy",
+            "nearest_arrival_player_id",
+            "observed_candidate_player_ids",
+            "reachability_model",
+            "reachable_verdict_bias",
+            "target_point",
+            "time_to_arrival_reason",
+            "time_to_arrival_status"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for time_to_arrival.",
+        "display_name": "time_to_arrival exposure",
+        "id": "exposure.runtime.time_to_arrival.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:time_to_arrival:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current static-point reachability implementation.",
+        "display_name": "Time To Arrival Python Implementation",
+        "id": "impl.time_to_arrival.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.static_point_time_to_arrival.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for time_to_arrival.",
+        "display_name": "time_to_arrival maturity",
+        "id": "maturity.runtime.time_to_arrival.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:time_to_arrival:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "anchor_available",
+            "candidate_coordinates_available",
+            "target_point_available"
+          ],
+          "claim_contract_ref": "claim.time_to_arrival.v1",
+          "concept_refs": [
+            "concept.time_to_arrival"
+          ],
+          "created_from": [],
+          "description": "Estimate candidate-player arrival time to a declared static target point at an anchor-relative frame.",
+          "display_name": "Static Point Time To Arrival",
+          "evidence_contract_ref": "evidence.time_to_arrival.v1",
+          "id": "op.static_point_time_to_arrival.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "tracking_window",
+              "required": true,
+              "type": {
+                "container": "TrajectorySet",
+                "coordinate_frame": "pitch_absolute",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Position"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "anchor_frame_selection",
+            "target_point_resolution",
+            "candidate_scope_resolution",
+            "straight_line_distance",
+            "declared_speed_arrival_time",
+            "threshold_evaluation"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "time_to_arrival_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "minimum_arrival_seconds",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "time_to_arrival",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "second",
+                "value": "Scalar"
+              }
+            },
+            {
+              "description": "",
+              "name": "time_to_arrival_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "time_to_arrival_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "08ecbfc9a2162d07d350478ce7583de78b9f9d9373981f73a3bef7728e2cc3bc",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "time_to_arrival",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "time_to_arrival_status",
+          "time_to_arrival_reason",
+          "arrival_frame_id",
+          "target_point",
+          "candidate_scope",
+          "arrival_player_ids",
+          "nearest_arrival_player_id",
+          "minimum_arrival_seconds",
+          "maximum_arrival_seconds",
+          "maximum_player_speed_mps",
+          "reachability_model",
+          "momentum_policy",
+          "reachable_verdict_bias",
+          "coverage_status"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Evaluates static-point reachability under a declared straight-line speed assumption.",
+          "A reachable verdict is an optimistic point-mass bound because current heading and momentum are ignored in v0.1.",
+          "Does not infer player intent, effort, pitch control, lane denial quality, or tactical causation.",
+          "Does not solve moving-target interception or cover-shadow geometry.",
+          "Missing target or insufficient observed candidates produce UNKNOWN."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "time_to_arrival",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "time_to_arrival_status",
+              "time_to_arrival_reason",
+              "arrival_frame_id",
+              "target_point",
+              "candidate_scope",
+              "candidate_player_ids",
+              "observed_candidate_player_ids",
+              "arrival_player_ids",
+              "nearest_arrival_player_id",
+              "minimum_arrival_seconds",
+              "maximum_arrival_seconds",
+              "maximum_player_speed_mps",
+              "reachability_model",
+              "momentum_policy",
+              "reachable_verdict_bias",
+              "coverage_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "minimum_arrival_seconds",
+              "nearest_arrival_player_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "minimum_arrival_seconds",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "second"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "time_to_arrival_status",
+              "time_to_arrival_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "time_to_arrival_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "transition_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where reachability is evaluated.",
+            "name": "frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "entity",
+              "ball",
+              "fields"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "entity"
+            },
+            "description": "How to resolve the static target point.",
+            "name": "target_mode",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor field containing the target player ID when target_mode=entity.",
+            "name": "target_entity_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "release_ball_x_m",
+              "reception_ball_x_m",
+              "zone_ball_x_m"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "reception_ball_x_m"
+            },
+            "description": "Anchor field containing target x when target_mode=fields.",
+            "name": "target_x_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "release_ball_y_m",
+              "reception_ball_y_m",
+              "zone_ball_y_m"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "reception_ball_y_m"
+            },
+            "description": "Anchor field containing target y when target_mode=fields.",
+            "name": "target_y_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "defending_outfield",
+              "perspective_outfield",
+              "all_outfield",
+              "opposition_outfield_to_anchor_team",
+              "same_team_outfield_as_anchor"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "defending_outfield"
+            },
+            "description": "Observed candidate-player group evaluated for arrival.",
+            "name": "candidate_scope",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 2.0
+            },
+            "description": "Threshold used for time_to_arrival_status.",
+            "maximum": 15.0,
+            "minimum": 0.0,
+            "name": "maximum_arrival_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 7.0
+            },
+            "description": "Declared straight-line speed assumption used to estimate minimum arrival time.",
+            "maximum": 12.0,
+            "minimum": 0.1,
+            "name": "maximum_player_speed_mps",
+            "payload_type": "number",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 1
+            },
+            "description": "Minimum observed candidate-player count required before a PASS/FAIL judgement.",
+            "maximum": 22.0,
+            "minimum": 1.0,
+            "name": "minimum_observed_candidates",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          }
+        ],
+        "purpose": "Estimate observed candidate-player time to a declared static target point at an anchor-relative frame.",
+        "runtime_id": "primitive:time_to_arrival:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:time_to_arrival:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
         "id": "binding.primitive.tracking_quality.0_1_0",
         "input_bindings": {
           "anchors": {
@@ -15902,13 +16673,13 @@
     "baseline_artifact_revision": "1a1fa4a7b75453fa4ce0fef355550df1c10f3d151d2904cd3e08551b7d2c9c7c",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "a3ce0ef85ed3c1961f11c759f0dc95fa0fdee33c42604ce753d05e286468b89c",
+    "lock_hash": "fb7691e59323b3ebae784f5fde838142aabe862a9e5805459a52a1ac9f0d2835",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "7d2ef9a8aeb2dddd0eccfb93bb438bd4217d00aff600c39b812d9b6fca776cf8",
+    "registry_revision": "0cda966713f958f78afae7fa0c6041aa63472b9c23e7982a2f5063c93a1b3cb8",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "b727f01e4fdeea498e4bfeb7e549656323a9273d66cf2cff212c0be8051b98af",
+    "runtime_manifest_revision": "49dc9ce2650bff1e5b682593689b18926289f17ea590b2cdce2fe383b7638681",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

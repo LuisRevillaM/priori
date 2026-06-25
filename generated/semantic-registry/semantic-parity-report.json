@@ -726,11 +726,15 @@
   "projection_differences": {
     "ai": {
       "added": [
-        "composition:composition.ai_corridor_destination.2026_06_23"
+        "composition:composition.ai_corridor_destination.2026_06_23",
+        "runtime:primitive:time_to_arrival:0.1.0"
       ],
       "added_details": {
         "composition:composition.ai_corridor_destination.2026_06_23": {
           "projection_contract_hash": "a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b"
+        },
+        "runtime:primitive:time_to_arrival:0.1.0": {
+          "projection_contract_hash": "779ce10e289191634f45051d6c90f9bd37c41e0d5e1d3a2811e5cc20ad85423a"
         }
       },
       "baseline_count": 45,
@@ -796,7 +800,7 @@
           "projection_contract_hash": "0d1daea8595cd6fe2d7c3a8b483f05efa3fea99dbe5e9df496c443783d8b4f70"
         }
       },
-      "projection_count": 46,
+      "projection_count": 47,
       "removed": [],
       "removed_details": {},
       "shared_count": 45
@@ -835,6 +839,7 @@
         "runtime:primitive:structured_zone:0.1.0",
         "runtime:primitive:switch_of_play:0.1.0",
         "runtime:primitive:team_compactness:0.1.0",
+        "runtime:primitive:time_to_arrival:0.1.0",
         "runtime:primitive:tracking_quality:0.1.0",
         "runtime:primitive:transition_anchor:0.1.0",
         "runtime:primitive:velocity:0.1.0",
@@ -879,6 +884,9 @@
         },
         "runtime:primitive:team_compactness:0.1.0": {
           "projection_contract_hash": "5e17486c2cb6e1654ecf9e40b176109587dd7b023f24e2006fc301248beb3777"
+        },
+        "runtime:primitive:time_to_arrival:0.1.0": {
+          "projection_contract_hash": "779ce10e289191634f45051d6c90f9bd37c41e0d5e1d3a2811e5cc20ad85423a"
         },
         "runtime:primitive:tracking_quality:0.1.0": {
           "projection_contract_hash": "9f365bf1bada6bfac3d546cf0f03d26edc178305393d62ba42b24ccd033c4df9"
@@ -934,7 +942,7 @@
           "projection_contract_hash": "5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d"
         }
       },
-      "projection_count": 40,
+      "projection_count": 41,
       "recipe_contract_baseline_mode": "current_runtime_alignment",
       "recipe_contract_baseline_note": "Product recipe contracts are compared against current runtime manifest recipes until a pinned product recipe baseline artifact exists.",
       "recipe_contract_frozen_baseline": false,
@@ -955,23 +963,23 @@
     "baseline_artifact_revision": "1a1fa4a7b75453fa4ce0fef355550df1c10f3d151d2904cd3e08551b7d2c9c7c",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "a3ce0ef85ed3c1961f11c759f0dc95fa0fdee33c42604ce753d05e286468b89c",
+    "lock_hash": "fb7691e59323b3ebae784f5fde838142aabe862a9e5805459a52a1ac9f0d2835",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "7d2ef9a8aeb2dddd0eccfb93bb438bd4217d00aff600c39b812d9b6fca776cf8",
+    "registry_revision": "0cda966713f958f78afae7fa0c6041aa63472b9c23e7982a2f5063c93a1b3cb8",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "b727f01e4fdeea498e4bfeb7e549656323a9273d66cf2cff212c0be8051b98af",
+    "runtime_manifest_revision": "49dc9ce2650bff1e5b682593689b18926289f17ea590b2cdce2fe383b7638681",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"
   },
   "runtime_capabilities": {
-    "bound": 33,
+    "bound": 34,
     "duplicate_bindings": 0,
-    "including_operators_total": 41,
+    "including_operators_total": 42,
     "orphaned": 0,
-    "runtime_total": 33,
+    "runtime_total": 34,
     "unresolved_bindings": 0
   },
   "schema_version": "1.0",

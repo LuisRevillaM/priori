@@ -254,6 +254,7 @@ class TacticalQueryExecutor:
             "tracking_quality": primitive_tracking_quality,
             "pairwise_distance": primitive_pairwise_distance,
             "velocity": primitive_velocity,
+            "time_to_arrival": primitive_time_to_arrival,
             "team_compactness": primitive_team_compactness,
             "switch_of_play": primitive_switch_of_play,
             "change_across_anchor": primitive_change_across_anchor,
@@ -3321,6 +3322,62 @@ def primitive_velocity(state: PeriodState, node: BoundCatalogNode) -> None:
     }
 
 
+def primitive_time_to_arrival(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    target_mode = node_parameter_text(node, "target_mode", "entity")
+    target_entity_field = node_parameter_text(node, "target_entity_field", "receiver_id")
+    target_x_field = node_parameter_text(node, "target_x_field", "reception_ball_x_m")
+    target_y_field = node_parameter_text(node, "target_y_field", "reception_ball_y_m")
+    candidate_scope = node_parameter_text(node, "candidate_scope", "defending_outfield")
+    maximum_arrival_seconds = node_parameter_number(node, "maximum_arrival_seconds", 2.0)
+    maximum_player_speed_mps = node_parameter_number(node, "maximum_player_speed_mps", 7.0)
+    minimum_observed_candidates = node_parameter_integer(node, "minimum_observed_candidates", 1)
+    records = [
+        time_to_arrival_anchor_record(
+            state=state,
+            anchor=record,
+            frame_field=frame_field,
+            target_mode=target_mode,
+            target_entity_field=target_entity_field,
+            target_x_field=target_x_field,
+            target_y_field=target_y_field,
+            candidate_scope=candidate_scope,
+            maximum_arrival_seconds=maximum_arrival_seconds,
+            maximum_player_speed_mps=maximum_player_speed_mps,
+            minimum_observed_candidates=minimum_observed_candidates,
+        )
+        for record in runtime_records(anchor_value)
+        if isinstance(record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["time_to_arrival_status"]) == "UNKNOWN" else str(record["time_to_arrival_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "minimum_arrival_seconds": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record.get("minimum_arrival_seconds") for record in records],
+            unknown_mask=[record.get("minimum_arrival_seconds") is None for record in records],
+            unit=Unit.SECOND,
+            entity_scope=catalog_output(node, "minimum_arrival_seconds").entity_scope,
+        ),
+        "minimum_arrival_seconds_records": records,
+        "time_to_arrival_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "time_to_arrival_status").entity_scope,
+        ),
+        "time_to_arrival_status_records": records,
+    }
+
+
 def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode) -> None:
     event_type_filter = node_parameter_text(node, "event_type_filter", "any")
     config = ControlledPassConfig(
@@ -3616,6 +3673,187 @@ def velocity_sample(
         "current_point": point_from_xy(current[0], current[1]),
         "previous_point": point_from_xy(previous[0], previous[1]),
     }
+
+
+def time_to_arrival_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    target_mode: str,
+    target_entity_field: str,
+    target_x_field: str,
+    target_y_field: str,
+    candidate_scope: str,
+    maximum_arrival_seconds: float,
+    maximum_player_speed_mps: float,
+    minimum_observed_candidates: int,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or frame_id is None:
+        return None
+    target_point, target_entity_id, target_reason = time_to_arrival_target_point(
+        state=state,
+        anchor=anchor,
+        frame_id=frame_id,
+        target_mode=target_mode,
+        target_entity_field=target_entity_field,
+        target_x_field=target_x_field,
+        target_y_field=target_y_field,
+    )
+    candidate_records, known_candidate_ids = time_to_arrival_candidates(
+        state=state,
+        anchor=anchor,
+        frame_id=frame_id,
+        candidate_scope=candidate_scope,
+    )
+    observed_candidates = [
+        record
+        for record in candidate_records
+        if record.get("x_m") is not None and record.get("y_m") is not None
+    ]
+    missing_candidate_ids = sorted(
+        str(player_id)
+        for player_id in known_candidate_ids
+        if player_id not in {str(record.get("player_id")) for record in observed_candidates}
+    )
+    per_player: list[dict[str, Any]] = []
+    if target_point is not None and maximum_player_speed_mps > 0:
+        for record in observed_candidates:
+            player_id = str(record["player_id"])
+            point = (float(record["x_m"]), float(record["y_m"]))
+            distance = math.dist(point, target_point)
+            arrival_seconds = distance / maximum_player_speed_mps
+            per_player.append(
+                {
+                    "player_id": player_id,
+                    "distance_to_target_m": round(float(distance), 3),
+                    "arrival_seconds": round(float(arrival_seconds), 3),
+                    "arrives_within_threshold": arrival_seconds <= maximum_arrival_seconds,
+                    "point": point_from_xy(point[0], point[1]),
+                }
+            )
+    nearest = min(
+        per_player,
+        key=lambda item: (float(item["arrival_seconds"]), str(item["player_id"])),
+        default=None,
+    )
+    arriving_player_ids = [
+        str(item["player_id"])
+        for item in per_player
+        if bool(item.get("arrives_within_threshold"))
+    ]
+    if maximum_player_speed_mps <= 0:
+        status = "UNKNOWN"
+        reason = "invalid_arrival_speed"
+    elif target_point is None:
+        status = "UNKNOWN"
+        reason = target_reason or "target_point_missing"
+    elif len(observed_candidates) < max(1, minimum_observed_candidates):
+        status = "UNKNOWN"
+        reason = "candidate_tracking_missing"
+    elif arriving_player_ids:
+        status = "PASS"
+        reason = "arrival_within_threshold"
+    else:
+        status = "FAIL"
+        reason = "arrival_threshold_not_met"
+    coverage_status = "COMPLETE" if not missing_candidate_ids else "OBSERVED_ONLY"
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "time_to_arrival_status": status,
+        "time_to_arrival_reason": reason,
+        "arrival_frame_id": frame_id,
+        "frame_field": frame_field,
+        "target_mode": target_mode,
+        "target_entity_field": target_entity_field,
+        "target_entity_id": target_entity_id,
+        "target_point": None if target_point is None else point_from_xy(target_point[0], target_point[1]),
+        "candidate_scope": candidate_scope,
+        "candidate_player_ids": sorted(str(player_id) for player_id in known_candidate_ids),
+        "observed_candidate_player_ids": sorted(str(record["player_id"]) for record in observed_candidates),
+        "missing_candidate_player_ids": missing_candidate_ids,
+        "arrival_player_ids": sorted(arriving_player_ids),
+        "nearest_arrival_player_id": None if nearest is None else str(nearest["player_id"]),
+        "minimum_arrival_seconds": None if nearest is None else float(nearest["arrival_seconds"]),
+        "nearest_arrival_distance_m": None if nearest is None else float(nearest["distance_to_target_m"]),
+        "maximum_arrival_seconds": round(float(maximum_arrival_seconds), 3),
+        "maximum_player_speed_mps": round(float(maximum_player_speed_mps), 3),
+        "reachability_model": "straight_line_declared_max_speed_point_mass",
+        "momentum_policy": "ignored_v0_1",
+        "reachable_verdict_bias": "optimistic_for_reachable_conservative_for_unreachable",
+        "minimum_observed_candidates": int(minimum_observed_candidates),
+        "observed_candidate_count": len(observed_candidates),
+        "coverage_status": coverage_status,
+        "per_player_arrival_evidence": per_player,
+    }
+
+
+def time_to_arrival_target_point(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_id: int,
+    target_mode: str,
+    target_entity_field: str,
+    target_x_field: str,
+    target_y_field: str,
+) -> tuple[tuple[float, float] | None, str | None, str | None]:
+    if target_mode == "ball":
+        return ball_point_at_frame(state, frame_id), "ball", None
+    if target_mode == "entity":
+        entity_id = str(anchor.get(target_entity_field) or "")
+        return tracked_point_at_frame(state, frame_id, entity_id), entity_id or None, None
+    if target_mode == "fields":
+        point = point_from_xy(anchor.get(target_x_field), anchor.get(target_y_field))
+        return None if point is None else (float(point["x_m"]), float(point["y_m"])), None, None
+    return None, None, "unsupported_target_mode"
+
+
+def time_to_arrival_candidates(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_id: int,
+    candidate_scope: str,
+) -> tuple[list[dict[str, Any]], set[str]]:
+    if candidate_scope == "defending_outfield":
+        team_role = state.defending_team_role
+        known_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
+        return player_records_at_frame_for_team(state, frame_id, team_role), known_ids
+    if candidate_scope == "perspective_outfield":
+        team_role = state.perspective_team_role
+        known_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
+        return player_records_at_frame_for_team(state, frame_id, team_role), known_ids
+    if candidate_scope == "all_outfield":
+        perspective = outfield_player_ids(state.canonical_root, state.match_id, state.perspective_team_role)
+        defending = outfield_player_ids(state.canonical_root, state.match_id, state.defending_team_role)
+        known_ids = perspective | defending
+        records = [
+            record
+            for record in player_records_at_frame(state, frame_id).values()
+            if str(record.get("player_id")) in known_ids
+        ]
+        return records, known_ids
+    if candidate_scope in {"opposition_outfield_to_anchor_team", "same_team_outfield_as_anchor"}:
+        anchor_team_role = str(anchor.get("team_role") or "")
+        if anchor_team_role not in {"home", "away"}:
+            return [], set()
+        if candidate_scope == "same_team_outfield_as_anchor":
+            team_role = anchor_team_role
+        else:
+            team_role = "away" if anchor_team_role == "home" else "home"
+        known_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
+        return player_records_at_frame_for_team(state, frame_id, team_role), known_ids
+    raise RuntimeError(f"Unsupported time_to_arrival candidate_scope: {candidate_scope}")
 
 
 def primitive_one_touch_relay_episode(state: PeriodState, node: BoundCatalogNode) -> None:
