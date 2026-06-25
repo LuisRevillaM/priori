@@ -51,10 +51,10 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
         registry, runtime_manifest, lock, report = generate_scp0_artifacts(write=False)
 
         self.assertEqual("PASS", report.status)
-        self.assertEqual(17, report.runtime_capabilities["bound"])
-        self.assertEqual(25, report.runtime_capabilities["including_operators_total"])
+        self.assertEqual(27, report.runtime_capabilities["bound"])
+        self.assertEqual(35, report.runtime_capabilities["including_operators_total"])
         self.assertEqual(8, report.operators["semantically_defined"])
-        self.assertEqual(5, report.recipes["mapped"])
+        self.assertEqual(6, report.recipes["mapped"])
         self.assertEqual(1, report.validated_compositions["mapped"])
         self.assertEqual({"product": 0, "ai": 0}, report.atlas_leakage)
         self.assertEqual(741, len(registry.atlas_entries))
@@ -249,8 +249,16 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
 
         differences = scpgen.build_projection_differences(runtime_manifest, projections)
 
-        self.assertEqual([], differences["product"]["contract_changed"])
-        self.assertEqual(22, differences["product"]["shared_count"])
+        self.assertEqual(
+            [
+                "runtime:primitive:controlled_pass_episode:0.1.0",
+                "runtime:primitive:defensive_line_model:0.1.0",
+                "runtime:primitive:relative_position_to_line:0.1.0",
+                "runtime:relation:support_arrival_relation:0.1.0",
+            ],
+            differences["product"]["contract_changed"],
+        )
+        self.assertEqual(23, differences["product"]["shared_count"])
 
     def test_unapproved_baseline_add_remove_or_contract_change_fails(self) -> None:
         registry = load_registry()
@@ -279,11 +287,18 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
             }
         )
         removed_projection = copy.deepcopy(projections)
-        removed_projection["product"]["capabilities"] = removed_projection["product"][
-            "capabilities"
-        ][1:]
+        removed_projection["product"]["capabilities"] = [
+            item
+            for item in removed_projection["product"]["capabilities"]
+            if item.get("id") != "ball_lateral_fraction"
+        ]
         changed_projection = copy.deepcopy(projections)
-        changed_projection["product"]["capabilities"][0]["runtime_contract"][
+        unwaived_index = next(
+            index
+            for index, item in enumerate(changed_projection["product"]["capabilities"])
+            if item.get("id") == "ball_lateral_fraction"
+        )
+        changed_projection["product"]["capabilities"][unwaived_index]["runtime_contract"][
             "purpose"
         ] = "mutated purpose"
 

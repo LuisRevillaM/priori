@@ -1,7 +1,765 @@
 {
-  "passport_count": 20,
-  "passport_revision": "1853aad46248ecd09c7d432dee3f4b025c43065968592034fcda4873446b6fc0",
+  "passport_count": 27,
+  "passport_revision": "42ef229b4da268e615edb816cd65bb2bb10598b11b548ed2c69f3e087be63af7",
   "passports": [
+    {
+      "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.action_chain.0_1_0",
+        "input_bindings": {
+          "actions": {
+            "runtime_port": "actions",
+            "source": "NODE_INPUT"
+          }
+        },
+        "known_deviations": [
+          "v0.1 supports adjacent same-team action pairs only."
+        ],
+        "output_bindings": {
+          "action_chain_status": {
+            "runtime_port": "action_chain_status"
+          },
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          }
+        },
+        "parameter_bindings": {
+          "chain_length": "chain_length",
+          "maximum_action_gap_seconds": "maximum_action_gap_seconds"
+        },
+        "semantic_parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 5.0
+            },
+            "description": "",
+            "maximum": 20.0,
+            "minimum": 0.0,
+            "name": "maximum_action_gap_seconds",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2
+            },
+            "description": "",
+            "maximum": 2.0,
+            "minimum": 2.0,
+            "name": "chain_length",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "count",
+              "value": "Scalar"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.action_chain.v1",
+          "inherits": [],
+          "permitted": [
+            "ordered_same_team_action_chain_observed_under_declared_gap"
+          ],
+          "prohibited": [
+            "decision_quality_inferred",
+            "pass_was_optimal",
+            "planned_combination_inferred",
+            "player_intent_inferred",
+            "tactical_causation_inferred"
+          ],
+          "unknown_conditions": [
+            "action_anchor_missing",
+            "event_time_missing",
+            "team_identity_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.action_chain.v1",
+          "created_from": [],
+          "description": "Ordered same-team provider action anchors connected inside declared event-time gaps.",
+          "display_name": "Action Chain",
+          "evidence_contract_ref": "evidence.action_chain.v1",
+          "id": "concept.action_chain",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "events",
+            "chain",
+            "action"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for action_chain 0.1.0.",
+      "display_name": "action_chain runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.action_chain.v1",
+          "inherits": [],
+          "optional": [
+            "action_gap_seconds"
+          ],
+          "replay_projection": [
+            "chain_gap_badge",
+            "first_action_frame",
+            "second_action_frame"
+          ],
+          "required": [
+            "action_chain_reason",
+            "action_chain_status",
+            "anchor_frame_id",
+            "anchor_id",
+            "chain_length",
+            "first_action_anchor_id",
+            "maximum_action_gap_seconds",
+            "second_action_anchor_id"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for action_chain.",
+        "display_name": "action_chain exposure",
+        "id": "exposure.runtime.action_chain.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:action_chain:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current ordered same-team action-chain implementation.",
+        "display_name": "Action Chain Python Implementation",
+        "id": "impl.action_chain.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.same_team_action_chain.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for action_chain.",
+        "display_name": "action_chain maturity",
+        "id": "maturity.runtime.action_chain.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:action_chain:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "action_anchors_available"
+          ],
+          "claim_contract_ref": "claim.action_chain.v1",
+          "concept_refs": [
+            "concept.action_chain"
+          ],
+          "created_from": [],
+          "description": "Join ordered provider action anchors from the same team inside a declared event-time gap.",
+          "display_name": "Same-Team Action Chain",
+          "evidence_contract_ref": "evidence.action_chain.v1",
+          "id": "op.same_team_action_chain.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "actions",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "action_event_anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "action_sorting",
+            "same_team_join",
+            "event_gap_threshold"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "action_chain_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "action_chain_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "action_chain_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "events"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "bbc7de4328446a6ef546f66b486bd727a9213bd1aa0c9d3cc3201372cae9654f",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "action_chain",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "action_chain_status",
+          "action_gap_seconds",
+          "first_action_anchor_id",
+          "second_action_anchor_id"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "actions",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "v0.1 supports adjacent same-team action pairs only.",
+          "Does not infer tactical intent, planned combination, or causation."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "action_chain",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "action_chain_status",
+              "action_chain_reason",
+              "chain_length",
+              "maximum_action_gap_seconds",
+              "action_gap_seconds",
+              "first_action_anchor_id",
+              "second_action_anchor_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "action_chain_status",
+              "action_chain_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "action_chain_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 5.0
+            },
+            "description": "Maximum elapsed provider event time between adjacent actions.",
+            "maximum": 20.0,
+            "minimum": 0.0,
+            "name": "maximum_action_gap_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2
+            },
+            "description": "Number of ordered actions in the chain. v0.1 supports adjacent pairs.",
+            "maximum": 2.0,
+            "minimum": 2.0,
+            "name": "chain_length",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          }
+        ],
+        "purpose": "Join ordered same-team action anchors into a bounded event-time action chain.",
+        "runtime_id": "primitive:action_chain:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:action_chain:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.action_event_anchor.0_1_0",
+        "input_bindings": {
+          "candidate_action_events": {
+            "context_ref": "provider_event_stream.completed_pass_events",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "v0.1 supports provider completed-pass action anchors only."
+        ],
+        "output_bindings": {
+          "action_event_status": {
+            "runtime_port": "action_event_status"
+          },
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          }
+        },
+        "parameter_bindings": {
+          "action_type": "action_type"
+        },
+        "semantic_parameters": [
+          {
+            "allowed_values": [
+              "successful_pass",
+              "throw_in_successful_pass"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "successful_pass"
+            },
+            "description": "",
+            "name": "action_type",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.provider_action_event_anchor.v1",
+          "inherits": [],
+          "permitted": [
+            "provider_action_event_aligned_to_tracking_frame"
+          ],
+          "prohibited": [
+            "controlled_reception_proven",
+            "decision_quality_inferred",
+            "pass_was_optimal",
+            "player_intent_inferred",
+            "tactical_role_identified"
+          ],
+          "unknown_conditions": [
+            "event_identity_missing",
+            "tracking_frame_alignment_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.provider_action_event_anchor.v1",
+          "created_from": [],
+          "description": "Provider event rows aligned to nearest tracking frames as typed action anchors.",
+          "display_name": "Provider Action Event Anchor",
+          "evidence_contract_ref": "evidence.provider_action_event_anchor.v1",
+          "id": "concept.provider_action_event_anchor",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "events",
+            "anchor",
+            "action"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for action_event_anchor 0.1.0.",
+      "display_name": "action_event_anchor runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.provider_action_event_anchor.v1",
+          "inherits": [],
+          "optional": [
+            "passer_id",
+            "receiver_id",
+            "team_role"
+          ],
+          "replay_projection": [
+            "action_actor_markers",
+            "event_anchor_frame"
+          ],
+          "required": [
+            "action_event_status",
+            "action_type",
+            "anchor_frame_id",
+            "anchor_id",
+            "event_anchor_frame_id",
+            "event_frame_offset_ms",
+            "event_row_index",
+            "event_type"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for action_event_anchor.",
+        "display_name": "action_event_anchor exposure",
+        "id": "exposure.runtime.action_event_anchor.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:action_event_anchor:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current provider event anchor implementation.",
+        "display_name": "Action Event Anchor Python Implementation",
+        "id": "impl.action_event_anchor.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.provider_action_event_anchor.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for action_event_anchor.",
+        "display_name": "action_event_anchor maturity",
+        "id": "maturity.runtime.action_event_anchor.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:action_event_anchor:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "provider_event_available",
+            "nearest_tracking_frame_available"
+          ],
+          "claim_contract_ref": "claim.provider_action_event_anchor.v1",
+          "concept_refs": [
+            "concept.provider_action_event_anchor"
+          ],
+          "created_from": [],
+          "description": "Align supported provider action events to nearest tracking frames as action anchors.",
+          "display_name": "Provider Action Event Anchor",
+          "evidence_contract_ref": "evidence.provider_action_event_anchor.v1",
+          "id": "op.provider_action_event_anchor.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "candidate_action_events",
+              "required": true,
+              "type": {
+                "container": "EventSet",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "ProviderEvent"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "provider_event_filter",
+            "nearest_tracking_frame_alignment",
+            "action_anchor_projection"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "action_event_anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "action_event_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "action_event_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "events",
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "INFERRED_CANDIDATE",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "1adef45abc7c040537d95db2cbca55bf9e8d21131a5c7f42ad538313a1806b0a",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "action_event_anchor",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "action_event_status",
+          "action_type",
+          "event_type",
+          "event_row_index",
+          "event_anchor_frame_id",
+          "event_frame_offset_ms",
+          "passer_id",
+          "receiver_id"
+        ],
+        "executable": true,
+        "inputs": [],
+        "kind": "primitive",
+        "limitations": [
+          "Uses provider events for action identity and nearest tracking frame for alignment.",
+          "Does not prove controlled reception, intent, optimality, or tactical role."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "action_event_anchor",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "action_event_status",
+              "action_type",
+              "event_type",
+              "event_row_index",
+              "event_anchor_frame_id",
+              "event_frame_offset_ms",
+              "team_role",
+              "passer_id",
+              "receiver_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "action_event_status",
+              "action_event_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "action_event_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "successful_pass",
+              "throw_in_successful_pass"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "successful_pass"
+            },
+            "description": "Provider event action type to expose as anchors.",
+            "name": "action_type",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Expose provider event rows as typed action anchors with frame alignment.",
+        "runtime_id": "primitive:action_event_anchor:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:action_event_anchor:0.1.0"
+    },
     {
       "binding": {
         "conformance": "EXACT",
@@ -786,6 +1544,7 @@
         },
         "parameter_bindings": {
           "control_distance_m": "control_distance_m",
+          "event_type_filter": "event_type_filter",
           "minimum_receiver_dwell_seconds": "minimum_receiver_dwell_seconds",
           "nearest_teammate_margin_m": "nearest_teammate_margin_m",
           "reception_search_seconds": "reception_search_seconds",
@@ -905,6 +1664,29 @@
               "temporal_basis": "canonical_frame_time",
               "unit": "second",
               "value": "Scalar"
+            }
+          },
+          {
+            "allowed_values": [
+              "any",
+              "Play_Pass",
+              "ThrowIn_Play_Pass",
+              "GoalKick_Play_Pass"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "any"
+            },
+            "description": "",
+            "name": "event_type_filter",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
             }
           }
         ],
@@ -1156,7 +1938,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "2a8a2227794a692471831598ee2c539fec13500d6d8ca6f808b4ebff61f8a386",
+      "passport_hash": "ff788e32c8c3e7d048104b5fa1178f29fc3e31f7b488c6075fbb7bfbaab845e8",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -1172,6 +1954,7 @@
           "pass_episode_id",
           "passer_id",
           "receiver_id",
+          "event_type",
           "event_anchor_frame_id",
           "physical_release_frame_id",
           "controlled_reception_frame_id",
@@ -1236,6 +2019,7 @@
               "pass_episode_id",
               "passer_id",
               "receiver_id",
+              "event_type",
               "controlled_pass_status",
               "forward_progression_m"
             ],
@@ -1361,6 +2145,24 @@
             "payload_type": "number",
             "required": false,
             "unit": "second"
+          },
+          {
+            "allowed_values": [
+              "any",
+              "Play_Pass",
+              "ThrowIn_Play_Pass",
+              "GoalKick_Play_Pass"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "any"
+            },
+            "description": "Optional provider event-type filter for controlled-pass anchors.",
+            "name": "event_type_filter",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
           }
         ],
         "purpose": "Identify completed pass actions where event data supplies the candidate passer/receiver and tracking proves physical release plus controlled reception.",
@@ -2647,6 +3449,562 @@
     {
       "binding": {
         "conformance": "PARTIAL",
+        "id": "binding.primitive.multi_line_model.0_1_0",
+        "input_bindings": {
+          "anchors": {
+            "runtime_port": "anchors",
+            "source": "NODE_INPUT"
+          },
+          "ball_position": {
+            "context_ref": "canonical_match_state.ball_position",
+            "source": "RUNTIME_CONTEXT"
+          },
+          "defending_outfield_positions": {
+            "context_ref": "canonical_match_state.defending_outfield_positions",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "Line rank is geometric observed order only and does not identify tactical line roles."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "multi_line_status": {
+            "runtime_port": "multi_line_status"
+          }
+        },
+        "parameter_bindings": {
+          "anchor_frame_field": "anchor_frame_field",
+          "goal_side_buffer_m": "goal_side_buffer_m",
+          "line_band_width_m": "line_band_width_m",
+          "minimum_line_defenders": "minimum_line_defenders",
+          "target_line_rank": "target_line_rank"
+        },
+        "semantic_parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 1.0
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "goal_side_buffer_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 2.0
+            },
+            "description": "",
+            "maximum": 15.0,
+            "minimum": 0.1,
+            "name": "line_band_width_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 3
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 2.0,
+            "name": "minimum_line_defenders",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "count",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2
+            },
+            "description": "",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "name": "target_line_rank",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "count",
+              "value": "Scalar"
+            }
+          },
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id",
+              "event_anchor_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "physical_release_frame_id"
+            },
+            "description": "",
+            "name": "anchor_frame_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.observed_multi_line_model.v1",
+          "inherits": [],
+          "permitted": [
+            "observed_geometric_line_rank_fit_under_declared_thresholds",
+            "target_line_rank_absent_when_evidence_complete"
+          ],
+          "prohibited": [
+            "defender_intent_inferred",
+            "defensive_line_was_broken",
+            "pass_was_optimal",
+            "player_intent_inferred",
+            "tactical_line_role_identified"
+          ],
+          "unknown_conditions": [
+            "ambiguous_candidate_lines",
+            "attacking_direction_missing_or_invalid",
+            "ball_position_missing",
+            "defending_outfield_positions_incomplete"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.observed_multi_line_model.v1",
+          "created_from": [],
+          "description": "Ranked observed geometric defending line bands at supplied anchor frames.",
+          "display_name": "Observed Multi-Line Model",
+          "evidence_contract_ref": "evidence.observed_multi_line_model.v1",
+          "id": "concept.observed_multi_line_model",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "defending",
+            "lines",
+            "geometry"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for multi_line_model 0.1.0.",
+      "display_name": "multi_line_model runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.observed_multi_line_model.v1",
+          "inherits": [],
+          "optional": [
+            "defensive_line_player_ids",
+            "line_x_m",
+            "normalized_line_x_m",
+            "observed_lines",
+            "selected_line"
+          ],
+          "replay_projection": [
+            "ball_marker",
+            "ranked_line_bands",
+            "selected_line_badge"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "line_evaluation_frame_id",
+            "multi_line_reason",
+            "multi_line_status",
+            "observed_line_count",
+            "target_line_rank"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for multi_line_model.",
+        "display_name": "multi_line_model exposure",
+        "id": "exposure.runtime.multi_line_model.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:multi_line_model:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current ranked observed geometric defending-line implementation.",
+        "display_name": "Multi-Line Model Python Implementation",
+        "id": "impl.multi_line_model.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.observed_multi_line_model.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for multi_line_model.",
+        "display_name": "multi_line_model maturity",
+        "id": "maturity.runtime.multi_line_model.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:multi_line_model:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "anchor_available",
+            "ball_position_available",
+            "defending_outfield_positions_available"
+          ],
+          "claim_contract_ref": "claim.observed_multi_line_model.v1",
+          "concept_refs": [
+            "concept.observed_multi_line_model"
+          ],
+          "created_from": [],
+          "description": "Fit ranked observed geometric defending line bands at supplied anchor frames.",
+          "display_name": "Observed Multi-Line Model",
+          "evidence_contract_ref": "evidence.observed_multi_line_model.v1",
+          "id": "op.observed_multi_line_model.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "ball_position",
+              "required": true,
+              "type": {
+                "container": "PointSignal",
+                "coordinate_frame": "pitch_absolute",
+                "entity_scope": "ball",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Point"
+              }
+            },
+            {
+              "description": "",
+              "name": "defending_outfield_positions",
+              "required": true,
+              "type": {
+                "container": "EntitySetSignal",
+                "coordinate_frame": "pitch_absolute",
+                "entity_scope": "team",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Point"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "attacking_direction_normalization",
+            "goal_side_filter",
+            "ranked_compact_line_bands",
+            "target_rank_selection"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "multi_line_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "multi_line_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "multi_line_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "508df5a0d52fa03beb997845ebd1ff2cfad8bf7f660e3124e9d5ae026c9b59b4",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "multi_line_model",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "multi_line_status",
+          "line_evaluation_frame_id",
+          "target_line_rank",
+          "observed_line_count",
+          "observed_lines",
+          "line_x_m",
+          "defensive_line_player_ids"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Line ranks are observed geometric ordering only, not tactical first/second/midfield/back-line labels.",
+          "Does not prove a line break, tactical intention, pass optimality, causation, or defensive role."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "multi_line_model",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "multi_line_status",
+              "multi_line_reason",
+              "line_evaluation_frame_id",
+              "target_line_rank",
+              "observed_line_count",
+              "observed_lines",
+              "selected_line",
+              "line_x_m",
+              "normalized_line_x_m",
+              "defensive_line_player_ids"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "multi_line_status",
+              "multi_line_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "multi_line_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 1.0
+            },
+            "description": "Minimum distance beyond the ball for a defender to count as goal-side.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "goal_side_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 2.0
+            },
+            "description": "Maximum normalized x-span of defenders in one observed line band.",
+            "maximum": 15.0,
+            "minimum": 0.1,
+            "name": "line_band_width_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 3
+            },
+            "description": "Minimum defending outfield players required to form an observed line band.",
+            "maximum": 10.0,
+            "minimum": 2.0,
+            "name": "minimum_line_defenders",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "count",
+              "value": 2
+            },
+            "description": "Geometric goal-side line rank to expose for downstream relative-position tests.",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "name": "target_line_rank",
+            "payload_type": "number",
+            "required": false,
+            "unit": "count"
+          },
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id",
+              "event_anchor_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "physical_release_frame_id"
+            },
+            "description": "Anchor-record frame field used to evaluate observed line bands.",
+            "name": "anchor_frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Fit ranked observed defensive line bands at supplied anchor frames. Rank is geometric order goal-side of the ball, not tactical role taxonomy.",
+        "runtime_id": "primitive:multi_line_model:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:multi_line_model:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
         "id": "binding.primitive.one_touch_relay_episode.0_1_0",
         "input_bindings": {
           "provider_event_stream": {
@@ -3439,6 +4797,543 @@
       },
       "status": "CURRENT",
       "subject_ref": "runtime:primitive:outcome_classification:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.pairwise_distance.0_1_0",
+        "input_bindings": {
+          "anchors": {
+            "runtime_port": "anchors",
+            "source": "NODE_INPUT"
+          },
+          "tracking_window": {
+            "context_ref": "canonical_tracking_window",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "v0.1 selects endpoints from bounded anchor-record fields rather than a general entity selector."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "distance_m": {
+            "runtime_port": "distance_m"
+          },
+          "pairwise_distance_status": {
+            "runtime_port": "pairwise_distance_status"
+          }
+        },
+        "parameter_bindings": {
+          "entity_a_field": "entity_a_field",
+          "entity_b_field": "entity_b_field",
+          "frame_field": "frame_field",
+          "maximum_distance_m": "maximum_distance_m"
+        },
+        "semantic_parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "",
+            "name": "frame_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "",
+            "name": "entity_a_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "ball",
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "ball"
+            },
+            "description": "",
+            "name": "entity_b_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 10.0
+            },
+            "description": "",
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "name": "maximum_distance_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.pairwise_distance.v1",
+          "inherits": [],
+          "permitted": [
+            "declared_distance_threshold_evaluated",
+            "declared_pairwise_distance_measured"
+          ],
+          "prohibited": [
+            "marking_assignment_inferred",
+            "pass_was_optimal",
+            "player_intent_inferred",
+            "pressure_quality_inferred"
+          ],
+          "unknown_conditions": [
+            "anchor_frame_missing",
+            "endpoint_coordinate_missing",
+            "entity_identity_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.pairwise_distance.v1",
+          "created_from": [],
+          "description": "Observed geometric distance between two anchor-relative entities, or an entity and the ball.",
+          "display_name": "Pairwise Distance",
+          "evidence_contract_ref": "evidence.pairwise_distance.v1",
+          "id": "concept.pairwise_distance",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "distance",
+            "geometry",
+            "measurement"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for pairwise_distance 0.1.0.",
+      "display_name": "pairwise_distance runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.pairwise_distance.v1",
+          "inherits": [],
+          "optional": [],
+          "replay_projection": [
+            "distance_badge",
+            "entity_a_marker",
+            "entity_b_marker"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "distance_frame_id",
+            "distance_m",
+            "entity_a_id",
+            "entity_b_id",
+            "maximum_distance_m",
+            "pairwise_distance_reason",
+            "pairwise_distance_status"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for pairwise_distance.",
+        "display_name": "pairwise_distance exposure",
+        "id": "exposure.runtime.pairwise_distance.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:pairwise_distance:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current anchor-relative pairwise-distance implementation.",
+        "display_name": "Pairwise Distance Python Implementation",
+        "id": "impl.pairwise_distance.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.anchor_pairwise_distance.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for pairwise_distance.",
+        "display_name": "pairwise_distance maturity",
+        "id": "maturity.runtime.pairwise_distance.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:pairwise_distance:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "anchor_available",
+            "endpoint_coordinates_available"
+          ],
+          "claim_contract_ref": "claim.pairwise_distance.v1",
+          "concept_refs": [
+            "concept.pairwise_distance"
+          ],
+          "created_from": [],
+          "description": "Measure anchor-relative distance between two declared entities, or an entity and the ball.",
+          "display_name": "Anchor Pairwise Distance",
+          "evidence_contract_ref": "evidence.pairwise_distance.v1",
+          "id": "op.anchor_pairwise_distance.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "tracking_window",
+              "required": true,
+              "type": {
+                "container": "TrajectorySet",
+                "coordinate_frame": "pitch_absolute",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Position"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "anchor_frame_selection",
+            "endpoint_coordinate_lookup",
+            "euclidean_distance",
+            "threshold_evaluation"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "pairwise_distance_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "distance_m",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "distance",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Scalar"
+              }
+            },
+            {
+              "description": "",
+              "name": "pairwise_distance_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "pairwise_distance_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "5c0ebe94a06112d1937375a4b9abd2fc42df7fa161dffbbadc3f60a19275bcd3",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "pairwise_distance",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "pairwise_distance_status",
+          "distance_frame_id",
+          "entity_a_id",
+          "entity_b_id",
+          "distance_m",
+          "maximum_distance_m"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Measures observed geometry only.",
+          "Does not infer pressure, marking quality, intent, or optimality."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "pairwise_distance",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "pairwise_distance_status",
+              "pairwise_distance_reason",
+              "distance_frame_id",
+              "entity_a_id",
+              "entity_b_id",
+              "distance_m",
+              "maximum_distance_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "distance_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "distance_m",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "metre"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "pairwise_distance_status",
+              "pairwise_distance_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "pairwise_distance_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where distance is measured.",
+            "name": "frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor field containing the first entity ID.",
+            "name": "entity_a_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "ball",
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "ball"
+            },
+            "description": "Anchor field containing the second entity ID, or ball.",
+            "name": "entity_b_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 10.0
+            },
+            "description": "Threshold used for pairwise_distance_status.",
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "name": "maximum_distance_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          }
+        ],
+        "purpose": "Measure observed distance between an anchor entity and another entity or the ball at an anchor-relative frame.",
+        "runtime_id": "primitive:pairwise_distance:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:pairwise_distance:0.1.0"
     },
     {
       "binding": {
@@ -6204,6 +8099,889 @@
     },
     {
       "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.tracking_quality.0_1_0",
+        "input_bindings": {
+          "anchors": {
+            "runtime_port": "anchors",
+            "source": "NODE_INPUT"
+          },
+          "canonical_match_state": {
+            "context_ref": "canonical_match_state",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "v0.1 checks coordinate presence rather than full tracking accuracy."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "tracking_quality_status": {
+            "runtime_port": "tracking_quality_status"
+          }
+        },
+        "parameter_bindings": {
+          "frame_field": "frame_field"
+        },
+        "semantic_parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "",
+            "name": "frame_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.tracking_quality.v1",
+          "inherits": [],
+          "permitted": [
+            "declared_tracking_coordinates_available_at_anchor_frame"
+          ],
+          "prohibited": [
+            "player_intent_inferred",
+            "tactical_role_identified",
+            "tracking_accuracy_proven"
+          ],
+          "unknown_conditions": [
+            "anchor_frame_missing",
+            "ball_coordinates_missing",
+            "declared_entity_coordinates_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.tracking_quality.v1",
+          "created_from": [],
+          "description": "Availability of ball and declared entity coordinates at an anchor-relative frame.",
+          "display_name": "Tracking Quality",
+          "evidence_contract_ref": "evidence.tracking_quality.v1",
+          "id": "concept.tracking_quality",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "tracking",
+            "quality",
+            "coverage"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for tracking_quality 0.1.0.",
+      "display_name": "tracking_quality runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.tracking_quality.v1",
+          "inherits": [],
+          "optional": [
+            "expected_entity_ids",
+            "missing_entity_ids"
+          ],
+          "replay_projection": [
+            "missing_entity_badge",
+            "quality_frame"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "ball_position_present",
+            "tracking_quality_frame_id",
+            "tracking_quality_reason",
+            "tracking_quality_status"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for tracking_quality.",
+        "display_name": "tracking_quality exposure",
+        "id": "exposure.runtime.tracking_quality.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:tracking_quality:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current anchor-relative coordinate-availability implementation.",
+        "display_name": "Tracking Quality Python Implementation",
+        "id": "impl.tracking_quality.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.anchor_tracking_quality.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for tracking_quality.",
+        "display_name": "tracking_quality maturity",
+        "id": "maturity.runtime.tracking_quality.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:tracking_quality:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "anchor_available",
+            "tracking_available"
+          ],
+          "claim_contract_ref": "claim.tracking_quality.v1",
+          "concept_refs": [
+            "concept.tracking_quality"
+          ],
+          "created_from": [],
+          "description": "Evaluate coordinate availability for the ball and declared anchor entities at an anchor-relative frame.",
+          "display_name": "Anchor Tracking Quality",
+          "evidence_contract_ref": "evidence.tracking_quality.v1",
+          "id": "op.anchor_tracking_quality.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "canonical_match_state",
+              "required": true,
+              "type": {
+                "container": "WorldState",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "MatchState"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "anchor_frame_selection",
+            "ball_coordinate_check",
+            "entity_coordinate_check"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "tracking_quality_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "tracking_quality_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "tracking_quality_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "7eb3d07a1274e8b4f6775f2460714ff61c9fb7aba76979c08475bb857bc8ec9f",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "tracking_quality",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "tracking_quality_status",
+          "tracking_quality_frame_id",
+          "ball_position_present",
+          "expected_entity_ids",
+          "missing_entity_ids"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Reports observed coordinate availability only.",
+          "Does not infer tracking accuracy beyond missing/usable coordinates in v0.1."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "tracking_quality",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "tracking_quality_status",
+              "tracking_quality_reason",
+              "tracking_quality_frame_id",
+              "ball_position_present",
+              "expected_entity_ids",
+              "missing_entity_ids"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "tracking_quality_status",
+              "tracking_quality_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "tracking_quality_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where quality is evaluated.",
+            "name": "frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Report whether ball and declared anchor entities have usable coordinates at an anchor-relative frame.",
+        "runtime_id": "primitive:tracking_quality:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:tracking_quality:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.velocity.0_1_0",
+        "input_bindings": {
+          "anchors": {
+            "runtime_port": "anchors",
+            "source": "NODE_INPUT"
+          },
+          "tracking_window": {
+            "context_ref": "canonical_tracking_window",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "v0.1 reports displacement-derived velocity only and uses unit none for metres-per-second scalar fields."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "speed_mps": {
+            "runtime_port": "speed_mps"
+          },
+          "velocity_status": {
+            "runtime_port": "velocity_status"
+          }
+        },
+        "parameter_bindings": {
+          "entity_id_field": "entity_id_field",
+          "frame_field": "frame_field",
+          "lookback_seconds": "lookback_seconds"
+        },
+        "semantic_parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "",
+            "name": "frame_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "",
+            "name": "entity_id_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.4
+            },
+            "description": "",
+            "maximum": 3.0,
+            "minimum": 0.04,
+            "name": "lookback_seconds",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Scalar"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.observed_entity_velocity.v1",
+          "inherits": [],
+          "permitted": [
+            "declared_entity_velocity_measured_from_tracking_displacement"
+          ],
+          "prohibited": [
+            "player_effort_inferred",
+            "player_intent_inferred",
+            "pressure_quality_inferred",
+            "tactical_role_identified"
+          ],
+          "unknown_conditions": [
+            "current_position_missing",
+            "invalid_time_delta",
+            "prior_position_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.observed_entity_velocity.v1",
+          "created_from": [],
+          "description": "Displacement-derived velocity for an observed entity around an anchor-relative frame.",
+          "display_name": "Observed Entity Velocity",
+          "evidence_contract_ref": "evidence.observed_entity_velocity.v1",
+          "id": "concept.observed_entity_velocity",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "velocity",
+            "tracking",
+            "movement"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for velocity 0.1.0.",
+      "display_name": "velocity runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.observed_entity_velocity.v1",
+          "inherits": [],
+          "optional": [
+            "velocity_prior_frame_id"
+          ],
+          "replay_projection": [
+            "prior_frame",
+            "velocity_frame",
+            "velocity_vector_badge"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "speed_mps",
+            "velocity_dt_seconds",
+            "velocity_entity_id",
+            "velocity_frame_id",
+            "velocity_lookback_frames",
+            "velocity_reason",
+            "velocity_status",
+            "velocity_vx_mps",
+            "velocity_vy_mps"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for velocity.",
+        "display_name": "velocity exposure",
+        "id": "exposure.runtime.velocity.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:velocity:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current displacement-derived entity velocity implementation.",
+        "display_name": "Velocity Python Implementation",
+        "id": "impl.velocity.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.observed_entity_velocity.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for velocity.",
+        "display_name": "velocity maturity",
+        "id": "maturity.runtime.velocity.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:velocity:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "anchor_available",
+            "entity_coordinates_available_at_two_frames"
+          ],
+          "claim_contract_ref": "claim.observed_entity_velocity.v1",
+          "concept_refs": [
+            "concept.observed_entity_velocity"
+          ],
+          "created_from": [],
+          "description": "Estimate an entity's displacement-derived velocity over a bounded lookback window.",
+          "display_name": "Observed Entity Velocity",
+          "evidence_contract_ref": "evidence.observed_entity_velocity.v1",
+          "id": "op.observed_entity_velocity.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "tracking_window",
+              "required": true,
+              "type": {
+                "container": "TrajectorySet",
+                "coordinate_frame": "pitch_absolute",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Position"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "anchor_frame_selection",
+            "lookback_frame_selection",
+            "displacement_vector",
+            "speed_magnitude"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "velocity_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "speed_mps",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "speed",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Scalar"
+              }
+            },
+            {
+              "description": "",
+              "name": "velocity_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "velocity_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "e68ed8d690fb207ab93623c5a38a85f50caceb675a8ab10b2d0097f3e8345e52",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "velocity",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "velocity_status",
+          "velocity_reason",
+          "velocity_frame_id",
+          "velocity_entity_id",
+          "velocity_dt_seconds",
+          "velocity_vx_mps",
+          "velocity_vy_mps",
+          "speed_mps"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Simple displacement-derived observed velocity only.",
+          "Does not infer effort, intent, role, or pressure quality.",
+          "Missing endpoint coordinates produce UNKNOWN."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "velocity",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "velocity_status",
+              "velocity_reason",
+              "velocity_frame_id",
+              "velocity_entity_id",
+              "velocity_lookback_frames",
+              "velocity_dt_seconds",
+              "velocity_vx_mps",
+              "velocity_vy_mps",
+              "speed_mps"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "speed_mps",
+              "velocity_entity_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "speed_mps",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "velocity_status",
+              "velocity_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "velocity_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where velocity is evaluated.",
+            "name": "frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor-record field containing the tracked player id.",
+            "name": "entity_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.4
+            },
+            "description": "Time before the evaluation frame used for displacement velocity.",
+            "maximum": 3.0,
+            "minimum": 0.04,
+            "name": "lookback_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          }
+        ],
+        "purpose": "Estimate observed entity velocity around an anchor-relative frame from tracking displacement.",
+        "runtime_id": "primitive:velocity:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:velocity:0.1.0"
+    },
+    {
+      "binding": {
         "conformance": "EXACT",
         "id": "binding.relation.geometric_progressive_corridor.0_1_0",
         "input_bindings": {
@@ -8419,6 +11197,670 @@
     {
       "binding": {
         "conformance": "PARTIAL",
+        "id": "binding.relation.pressure_on_carrier.0_1_0",
+        "input_bindings": {
+          "anchors": {
+            "runtime_port": "anchors",
+            "source": "NODE_INPUT"
+          },
+          "observed_defending_positions": {
+            "context_ref": "canonical_match_state.defending_outfield_positions",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "Nearest-defender pressure is operationalized through declared geometry and kinematics; it does not infer pressure quality or defender intent."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "pressure_status": {
+            "runtime_port": "pressure_status"
+          }
+        },
+        "parameter_bindings": {
+          "candidate_scope": "candidate_scope",
+          "carrier_id_field": "carrier_id_field",
+          "frame_field": "frame_field",
+          "lookback_seconds": "lookback_seconds",
+          "maximum_approach_angle_degrees": "maximum_approach_angle_degrees",
+          "maximum_pressure_distance_m": "maximum_pressure_distance_m",
+          "minimum_closing_speed_mps": "minimum_closing_speed_mps",
+          "minimum_pressure_duration_seconds": "minimum_pressure_duration_seconds"
+        },
+        "semantic_parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "",
+            "name": "frame_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "",
+            "name": "carrier_id_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 4.0
+            },
+            "description": "",
+            "maximum": 15.0,
+            "minimum": 0.5,
+            "name": "maximum_pressure_distance_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 0.2
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": -5.0,
+            "name": "minimum_closing_speed_mps",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 100.0
+            },
+            "description": "",
+            "maximum": 180.0,
+            "minimum": 0.0,
+            "name": "maximum_approach_angle_degrees",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.0
+            },
+            "description": "",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "minimum_pressure_duration_seconds",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.4
+            },
+            "description": "",
+            "maximum": 3.0,
+            "minimum": 0.04,
+            "name": "lookback_seconds",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Scalar"
+            }
+          },
+          {
+            "allowed_values": [
+              "defending_outfield"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "defending_outfield"
+            },
+            "description": "",
+            "name": "candidate_scope",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.observed_pressure_on_carrier.v1",
+          "inherits": [],
+          "permitted": [
+            "nearest_defender_pressure_condition_evaluated_under_declared_thresholds"
+          ],
+          "prohibited": [
+            "decision_quality_inferred",
+            "defender_intent_inferred",
+            "pass_was_optimal",
+            "player_intent_inferred",
+            "pressure_quality_inferred",
+            "tactical_causation_inferred"
+          ],
+          "unknown_conditions": [
+            "carrier_position_missing",
+            "defender_positions_missing",
+            "duration_coverage_incomplete",
+            "velocity_endpoint_missing"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.observed_pressure_on_carrier.v1",
+          "created_from": [],
+          "description": "Nearest-defender pressure on a carrier under declared distance, closing-speed, approach-angle, duration, and coverage thresholds.",
+          "display_name": "Observed Pressure On Carrier",
+          "evidence_contract_ref": "evidence.observed_pressure_on_carrier.v1",
+          "id": "concept.observed_pressure_on_carrier",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "pressure",
+            "defending",
+            "relation",
+            "movement"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for pressure_on_carrier 0.1.0.",
+      "display_name": "pressure_on_carrier runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.observed_pressure_on_carrier.v1",
+          "inherits": [],
+          "optional": [
+            "nearest_defender_id"
+          ],
+          "replay_projection": [
+            "carrier_marker",
+            "closing_speed_badge",
+            "nearest_defender_marker",
+            "pressure_distance_badge"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "approach_angle_degrees",
+            "carrier_id",
+            "closing_speed_mps",
+            "coverage_status",
+            "maximum_approach_angle_degrees",
+            "maximum_pressure_distance_m",
+            "minimum_closing_speed_mps",
+            "minimum_pressure_duration_seconds",
+            "nearest_defender_distance_m",
+            "pressure_duration_seconds",
+            "pressure_frame_id",
+            "pressure_reason",
+            "pressure_status"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for pressure_on_carrier.",
+        "display_name": "pressure_on_carrier exposure",
+        "id": "exposure.runtime.pressure_on_carrier.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:relation:pressure_on_carrier:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current observed nearest-defender pressure implementation.",
+        "display_name": "Pressure On Carrier Python Implementation",
+        "id": "impl.pressure_on_carrier.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.observed_pressure_on_carrier.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for pressure_on_carrier.",
+        "display_name": "pressure_on_carrier maturity",
+        "id": "maturity.runtime.pressure_on_carrier.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:relation:pressure_on_carrier:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "anchor_available",
+            "carrier_coordinate_available",
+            "defending_outfield_positions_available"
+          ],
+          "claim_contract_ref": "claim.observed_pressure_on_carrier.v1",
+          "concept_refs": [
+            "concept.observed_pressure_on_carrier"
+          ],
+          "created_from": [],
+          "description": "Evaluate nearest-defender pressure on a carrier under declared geometric and kinematic thresholds.",
+          "display_name": "Observed Pressure On Carrier",
+          "evidence_contract_ref": "evidence.observed_pressure_on_carrier.v1",
+          "id": "op.observed_pressure_on_carrier.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "observed_defending_positions",
+              "required": true,
+              "type": {
+                "container": "EntitySetSignal",
+                "coordinate_frame": "pitch_absolute",
+                "entity_scope": "team",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Point"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "nearest_defender_selection",
+            "distance_threshold",
+            "closing_speed_estimate",
+            "approach_angle_estimate",
+            "duration_window_check"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "pressure_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "pressure_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "pressure_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "7ec71cc62ba83fa9843affeccb793e08b8ac5636e6dfbcb89e85f0d74917a424",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "pressure_on_carrier",
+        "kind": "relation",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "pressure_status",
+          "pressure_reason",
+          "pressure_frame_id",
+          "carrier_id",
+          "nearest_defender_id",
+          "nearest_defender_distance_m",
+          "closing_speed_mps",
+          "approach_angle_degrees",
+          "pressure_duration_seconds",
+          "coverage_status"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Observed geometric/kinematic pressure only.",
+          "Does not infer pressure quality, defensive intent, scanning, decision quality, or causation.",
+          "Missing carrier or defender tracking produces UNKNOWN rather than false pressure."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "pressure_on_carrier",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "pressure_status",
+              "pressure_reason",
+              "pressure_frame_id",
+              "carrier_id",
+              "nearest_defender_id",
+              "nearest_defender_distance_m",
+              "closing_speed_mps",
+              "approach_angle_degrees",
+              "pressure_duration_seconds",
+              "maximum_pressure_distance_m",
+              "minimum_closing_speed_mps",
+              "maximum_approach_angle_degrees",
+              "minimum_pressure_duration_seconds",
+              "coverage_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "pressure_status",
+              "pressure_reason",
+              "coverage_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "pressure_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "controlled_reception_frame_id"
+            },
+            "description": "Anchor-record frame field where pressure is evaluated.",
+            "name": "frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "receiver_id",
+              "passer_id",
+              "relay_player_id",
+              "terminal_receiver_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "receiver_id"
+            },
+            "description": "Anchor-record field containing the pressured carrier id.",
+            "name": "carrier_id_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 4.0
+            },
+            "description": "Nearest-defender distance required for observed pressure.",
+            "maximum": 15.0,
+            "minimum": 0.5,
+            "name": "maximum_pressure_distance_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 0.2
+            },
+            "description": "Minimum defender-to-carrier closing speed in metres per second.",
+            "maximum": 10.0,
+            "minimum": -5.0,
+            "name": "minimum_closing_speed_mps",
+            "payload_type": "number",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 100.0
+            },
+            "description": "Maximum angle between defender velocity and defender-to-carrier vector.",
+            "maximum": 180.0,
+            "minimum": 0.0,
+            "name": "maximum_approach_angle_degrees",
+            "payload_type": "number",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.0
+            },
+            "description": "Minimum observed duration satisfying the pressure condition ending at the evaluation frame.",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "minimum_pressure_duration_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.4
+            },
+            "description": "Velocity lookback interval for closing-speed and approach-angle estimates.",
+            "maximum": 3.0,
+            "minimum": 0.04,
+            "name": "lookback_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "allowed_values": [
+              "defending_outfield"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "defending_outfield"
+            },
+            "description": "Candidate defender scope. v0.1 supports observed defending outfield players.",
+            "name": "candidate_scope",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Evaluate observed nearest-defender pressure on an anchor carrier using distance, closing speed, approach angle, duration/window, and tracking coverage.",
+        "runtime_id": "relation:pressure_on_carrier:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:relation:pressure_on_carrier:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
         "id": "binding.relation.support_arrival_relation.0_1_0",
         "input_bindings": {
           "anchors": {
@@ -8448,6 +11890,8 @@
           "maximum_support_distance_m": "maximum_support_distance_m",
           "minimum_duration_seconds": "minimum_duration_seconds",
           "minimum_supporting_players": "minimum_supporting_players",
+          "required_anchor_status_field": "required_anchor_status_field",
+          "required_anchor_status_value": "required_anchor_status_value",
           "support_region_mode": "support_region_mode"
         },
         "semantic_parameters": [
@@ -8589,6 +12033,50 @@
               "temporal_basis": "canonical_frame_time",
               "unit": "count",
               "value": "Scalar"
+            }
+          },
+          {
+            "allowed_values": [
+              "none",
+              "line_break_status",
+              "receiver_line_transition_status"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "",
+            "name": "required_anchor_status_field",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
+            }
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "",
+            "name": "required_anchor_status_value",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Enum"
             }
           }
         ],
@@ -8855,7 +12343,7 @@
           "version": "1.0.0"
         }
       ],
-      "passport_hash": "93442d50268f28433774d8bdba25a83b1e19e80f6df853d720090bc3dca18918",
+      "passport_hash": "af317b1a72a2c01d4649b42235b6d101e598da47190990fe100fb67fddf05eeb",
       "projection_membership": {
         "ai": true,
         "product": true
@@ -8886,7 +12374,9 @@
           "evaluated_candidate_player_ids",
           "coverage_status",
           "config_evidence",
-          "reference_point"
+          "reference_point",
+          "required_anchor_status_field",
+          "required_anchor_status_value"
         ],
         "executable": true,
         "inputs": [
@@ -8933,7 +12423,9 @@
               "evaluated_candidate_player_ids",
               "coverage_status",
               "config_evidence",
-              "reference_point"
+              "reference_point",
+              "required_anchor_status_field",
+              "required_anchor_status_value"
             ],
             "missing_data_semantics": "unknown",
             "name": "anchor_evaluations",
@@ -9066,6 +12558,40 @@
             "payload_type": "number",
             "required": false,
             "unit": "count"
+          },
+          {
+            "allowed_values": [
+              "none",
+              "line_break_status",
+              "receiver_line_transition_status"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "none"
+            },
+            "description": "Optional upstream status field that must equal the required value before support is evaluated.",
+            "name": "required_anchor_status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Required upstream status value when required_anchor_status_field is not none.",
+            "name": "required_anchor_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
           }
         ],
         "purpose": "Evaluate whether observed candidate teammates enter a declared geometric support region around an anchor reference point within a declared time window and duration.",
@@ -9082,13 +12608,13 @@
     "baseline_artifact_revision": "878510d6fb01403e67d2a1938133285a167aeff2e9eebcde7775bc5da161c534",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "62cd5a9558fc62e0bac63d5cedf97f3b39a992726bd02840081912dcd0ed01ea",
+    "lock_hash": "aafc22e7c76a5dd93f6e26c0437245fdfc67e9fa5c63b02b4a304a931e26d587",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "2694a80981d8a73aa2e75c5dfc5d81c2b324b944ff86eab74d9e2b4eeb5c546a",
+    "registry_revision": "74152d49ec7075c93e4b6b55ce1f3ecf3bd42e0a4ef6fff54bfd8beb1e8a9a6d",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "4fc19cdda8b6ea6dfa617fee0a830857d017d923023eed357ad3e08e58381563",
+    "runtime_manifest_revision": "817f8fd6f6deaa6a621bcfb13e0b9a0c7aaf84377c395c7e8eda81fcc166a3f5",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

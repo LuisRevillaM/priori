@@ -83,6 +83,62 @@ concepts:
     evidence_contract_ref: evidence.pass_chain_episode.v1
     tags: [pass, chain, relay, controlled_reception]
 
+  - id: concept.provider_action_event_anchor
+    kind: Concept
+    display_name: Provider Action Event Anchor
+    description: Provider event rows aligned to nearest tracking frames as typed action anchors.
+    claim_contract_ref: claim.provider_action_event_anchor.v1
+    evidence_contract_ref: evidence.provider_action_event_anchor.v1
+    tags: [events, anchor, action]
+
+  - id: concept.action_chain
+    kind: Concept
+    display_name: Action Chain
+    description: Ordered same-team provider action anchors connected inside declared event-time gaps.
+    claim_contract_ref: claim.action_chain.v1
+    evidence_contract_ref: evidence.action_chain.v1
+    tags: [events, chain, action]
+
+  - id: concept.tracking_quality
+    kind: Concept
+    display_name: Tracking Quality
+    description: Availability of ball and declared entity coordinates at an anchor-relative frame.
+    claim_contract_ref: claim.tracking_quality.v1
+    evidence_contract_ref: evidence.tracking_quality.v1
+    tags: [tracking, quality, coverage]
+
+  - id: concept.pairwise_distance
+    kind: Concept
+    display_name: Pairwise Distance
+    description: Observed geometric distance between two anchor-relative entities, or an entity and the ball.
+    claim_contract_ref: claim.pairwise_distance.v1
+    evidence_contract_ref: evidence.pairwise_distance.v1
+    tags: [distance, geometry, measurement]
+
+  - id: concept.observed_entity_velocity
+    kind: Concept
+    display_name: Observed Entity Velocity
+    description: Displacement-derived velocity for an observed entity around an anchor-relative frame.
+    claim_contract_ref: claim.observed_entity_velocity.v1
+    evidence_contract_ref: evidence.observed_entity_velocity.v1
+    tags: [velocity, tracking, movement]
+
+  - id: concept.observed_multi_line_model
+    kind: Concept
+    display_name: Observed Multi-Line Model
+    description: Ranked observed geometric defending line bands at supplied anchor frames.
+    claim_contract_ref: claim.observed_multi_line_model.v1
+    evidence_contract_ref: evidence.observed_multi_line_model.v1
+    tags: [defending, lines, geometry]
+
+  - id: concept.observed_pressure_on_carrier
+    kind: Concept
+    display_name: Observed Pressure On Carrier
+    description: Nearest-defender pressure on a carrier under declared distance, closing-speed, approach-angle, duration, and coverage thresholds.
+    claim_contract_ref: claim.observed_pressure_on_carrier.v1
+    evidence_contract_ref: evidence.observed_pressure_on_carrier.v1
+    tags: [pressure, defending, relation, movement]
+
   - id: concept.observed_lane_occupancy
     kind: Concept
     display_name: Observed Lane Occupancy
@@ -418,6 +474,162 @@ operationalizations:
     lowering: [relay_pass_id_join, terminal_controlled_reception_check, chain_continuity_check]
     claim_contract_ref: claim.pass_chain_episode.v1
     evidence_contract_ref: evidence.pass_chain_episode.v1
+
+  - id: op.provider_action_event_anchor.v1
+    kind: Operationalization
+    display_name: Provider Action Event Anchor
+    description: Align supported provider action events to nearest tracking frames as action anchors.
+    concept_refs: [concept.provider_action_event_anchor]
+    semantic_basis: INFERRED_CANDIDATE
+    required_modalities: [events, tracking]
+    applicability: [provider_event_available, nearest_tracking_frame_available]
+    inputs:
+      - name: candidate_action_events
+        type: {container: EventSet, value: ProviderEvent, unit: none}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: action_event_anchor, unit: none, entity_scope: anchor}
+      - name: action_event_status
+        type: {container: FrameSignal, value: Enum, quantity: action_event_status, unit: none, entity_scope: anchor}
+    lowering: [provider_event_filter, nearest_tracking_frame_alignment, action_anchor_projection]
+    claim_contract_ref: claim.provider_action_event_anchor.v1
+    evidence_contract_ref: evidence.provider_action_event_anchor.v1
+
+  - id: op.same_team_action_chain.v1
+    kind: Operationalization
+    display_name: Same-Team Action Chain
+    description: Join ordered provider action anchors from the same team inside a declared event-time gap.
+    concept_refs: [concept.action_chain]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [events]
+    applicability: [action_anchors_available]
+    inputs:
+      - name: actions
+        type: {container: EpisodeSet, value: AnchorRef, quantity: action_event_anchor, unit: none, entity_scope: anchor}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: action_chain_evaluation, unit: none, entity_scope: anchor}
+      - name: action_chain_status
+        type: {container: FrameSignal, value: Enum, quantity: action_chain_status, unit: none, entity_scope: anchor}
+    lowering: [action_sorting, same_team_join, event_gap_threshold]
+    claim_contract_ref: claim.action_chain.v1
+    evidence_contract_ref: evidence.action_chain.v1
+
+  - id: op.anchor_tracking_quality.v1
+    kind: Operationalization
+    display_name: Anchor Tracking Quality
+    description: Evaluate coordinate availability for the ball and declared anchor entities at an anchor-relative frame.
+    concept_refs: [concept.tracking_quality]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, tracking_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: canonical_match_state
+        type: {container: WorldState, value: MatchState, unit: none}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: tracking_quality_evaluation, unit: none, entity_scope: anchor}
+      - name: tracking_quality_status
+        type: {container: FrameSignal, value: Enum, quantity: tracking_quality_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, ball_coordinate_check, entity_coordinate_check]
+    claim_contract_ref: claim.tracking_quality.v1
+    evidence_contract_ref: evidence.tracking_quality.v1
+
+  - id: op.anchor_pairwise_distance.v1
+    kind: Operationalization
+    display_name: Anchor Pairwise Distance
+    description: Measure anchor-relative distance between two declared entities, or an entity and the ball.
+    concept_refs: [concept.pairwise_distance]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, endpoint_coordinates_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: tracking_window
+        type: {container: TrajectorySet, value: Position, unit: metre, coordinate_frame: pitch_absolute}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: pairwise_distance_evaluation, unit: none, entity_scope: anchor}
+      - name: distance_m
+        type: {container: FrameSignal, value: Scalar, quantity: distance, unit: metre, entity_scope: anchor}
+      - name: pairwise_distance_status
+        type: {container: FrameSignal, value: Enum, quantity: pairwise_distance_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, endpoint_coordinate_lookup, euclidean_distance, threshold_evaluation]
+    claim_contract_ref: claim.pairwise_distance.v1
+    evidence_contract_ref: evidence.pairwise_distance.v1
+
+  - id: op.observed_entity_velocity.v1
+    kind: Operationalization
+    display_name: Observed Entity Velocity
+    description: Estimate an entity's displacement-derived velocity over a bounded lookback window.
+    concept_refs: [concept.observed_entity_velocity]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, entity_coordinates_available_at_two_frames]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: tracking_window
+        type: {container: TrajectorySet, value: Position, unit: metre, coordinate_frame: pitch_absolute}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: velocity_evaluation, unit: none, entity_scope: anchor}
+      - name: speed_mps
+        type: {container: FrameSignal, value: Scalar, quantity: speed, unit: none, entity_scope: anchor}
+      - name: velocity_status
+        type: {container: FrameSignal, value: Enum, quantity: velocity_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, lookback_frame_selection, displacement_vector, speed_magnitude]
+    claim_contract_ref: claim.observed_entity_velocity.v1
+    evidence_contract_ref: evidence.observed_entity_velocity.v1
+
+  - id: op.observed_multi_line_model.v1
+    kind: Operationalization
+    display_name: Observed Multi-Line Model
+    description: Fit ranked observed geometric defending line bands at supplied anchor frames.
+    concept_refs: [concept.observed_multi_line_model]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, ball_position_available, defending_outfield_positions_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: ball_position
+        type: {container: PointSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: ball}
+      - name: defending_outfield_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: multi_line_evaluation, unit: none, entity_scope: anchor}
+      - name: multi_line_status
+        type: {container: FrameSignal, value: Enum, quantity: multi_line_status, unit: none, entity_scope: anchor}
+    lowering: [attacking_direction_normalization, goal_side_filter, ranked_compact_line_bands, target_rank_selection]
+    claim_contract_ref: claim.observed_multi_line_model.v1
+    evidence_contract_ref: evidence.observed_multi_line_model.v1
+
+  - id: op.observed_pressure_on_carrier.v1
+    kind: Operationalization
+    display_name: Observed Pressure On Carrier
+    description: Evaluate nearest-defender pressure on a carrier under declared geometric and kinematic thresholds.
+    concept_refs: [concept.observed_pressure_on_carrier]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, carrier_coordinate_available, defending_outfield_positions_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: observed_defending_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: pressure_evaluation, unit: none, entity_scope: anchor}
+      - name: pressure_status
+        type: {container: FrameSignal, value: Enum, quantity: pressure_status, unit: none, entity_scope: anchor}
+    lowering: [nearest_defender_selection, distance_threshold, closing_speed_estimate, approach_angle_estimate, duration_window_check]
+    claim_contract_ref: claim.observed_pressure_on_carrier.v1
+    evidence_contract_ref: evidence.observed_pressure_on_carrier.v1
 
   - id: op.observed_lateral_lane_occupancy.v1
     kind: Operationalization
@@ -772,6 +984,48 @@ implementations:
     description: Current event-linked relay plus terminal controlled reception implementation.
     implements: [op.event_linked_pass_chain_episode.v1]
     source_refs: [src/tqe/runtime/one_touch.py, src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.action_event_anchor.python.v1
+    kind: Implementation
+    display_name: Action Event Anchor Python Implementation
+    description: Current provider event anchor implementation.
+    implements: [op.provider_action_event_anchor.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.action_chain.python.v1
+    kind: Implementation
+    display_name: Action Chain Python Implementation
+    description: Current ordered same-team action-chain implementation.
+    implements: [op.same_team_action_chain.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.tracking_quality.python.v1
+    kind: Implementation
+    display_name: Tracking Quality Python Implementation
+    description: Current anchor-relative coordinate-availability implementation.
+    implements: [op.anchor_tracking_quality.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.pairwise_distance.python.v1
+    kind: Implementation
+    display_name: Pairwise Distance Python Implementation
+    description: Current anchor-relative pairwise-distance implementation.
+    implements: [op.anchor_pairwise_distance.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.velocity.python.v1
+    kind: Implementation
+    display_name: Velocity Python Implementation
+    description: Current displacement-derived entity velocity implementation.
+    implements: [op.observed_entity_velocity.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.multi_line_model.python.v1
+    kind: Implementation
+    display_name: Multi-Line Model Python Implementation
+    description: Current ranked observed geometric defending-line implementation.
+    implements: [op.observed_multi_line_model.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.pressure_on_carrier.python.v1
+    kind: Implementation
+    display_name: Pressure On Carrier Python Implementation
+    description: Current observed nearest-defender pressure implementation.
+    implements: [op.observed_pressure_on_carrier.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.lane_occupancy.python.v1
     kind: Implementation
     display_name: Lane Occupancy Python Implementation
@@ -901,6 +1155,11 @@ runtime_bindings:
         default: {payload_type: number, value: 0.24, unit: second}
         minimum: 0.04
         maximum: 2.0
+      - name: event_type_filter
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: any, unit: none}
+        allowed_values: [any, Play_Pass, ThrowIn_Play_Pass, GoalKick_Play_Pass]
     parameter_bindings:
       release_search_before_seconds: release_search_before_seconds
       release_search_after_seconds: release_search_after_seconds
@@ -908,7 +1167,168 @@ runtime_bindings:
       control_distance_m: control_distance_m
       nearest_teammate_margin_m: nearest_teammate_margin_m
       minimum_receiver_dwell_seconds: minimum_receiver_dwell_seconds
+      event_type_filter: event_type_filter
     uncovered_runtime_outputs: [episodes]
+
+  - id: binding.primitive.action_event_anchor.0_1_0
+    kind: RuntimeBinding
+    display_name: action_event_anchor runtime binding
+    description: Canonical runtime binding for action_event_anchor 0.1.0.
+    runtime_capability: {id: action_event_anchor, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.action_event_anchor.python.v1
+    implements: [op.provider_action_event_anchor.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 supports provider completed-pass action anchors only.]
+    input_bindings:
+      candidate_action_events: {source: RUNTIME_CONTEXT, context_ref: provider_event_stream.completed_pass_events}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      action_event_status: {runtime_port: action_event_status}
+    semantic_parameters:
+      - name: action_type
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: successful_pass, unit: none}
+        allowed_values: [successful_pass, throw_in_successful_pass]
+    parameter_bindings:
+      action_type: action_type
+
+  - id: binding.primitive.action_chain.0_1_0
+    kind: RuntimeBinding
+    display_name: action_chain runtime binding
+    description: Canonical runtime binding for action_chain 0.1.0.
+    runtime_capability: {id: action_chain, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.action_chain.python.v1
+    implements: [op.same_team_action_chain.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 supports adjacent same-team action pairs only.]
+    input_bindings:
+      actions: {source: NODE_INPUT, runtime_port: actions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      action_chain_status: {runtime_port: action_chain_status}
+    semantic_parameters:
+      - name: maximum_action_gap_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 5.0, unit: second}
+        minimum: 0.0
+        maximum: 20.0
+      - name: chain_length
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 2, unit: count}
+        minimum: 2.0
+        maximum: 2.0
+    parameter_bindings:
+      maximum_action_gap_seconds: maximum_action_gap_seconds
+      chain_length: chain_length
+
+  - id: binding.primitive.tracking_quality.0_1_0
+    kind: RuntimeBinding
+    display_name: tracking_quality runtime binding
+    description: Canonical runtime binding for tracking_quality 0.1.0.
+    runtime_capability: {id: tracking_quality, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.tracking_quality.python.v1
+    implements: [op.anchor_tracking_quality.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 checks coordinate presence rather than full tracking accuracy.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      canonical_match_state: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      tracking_quality_status: {runtime_port: tracking_quality_status}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+    parameter_bindings:
+      frame_field: frame_field
+
+  - id: binding.primitive.pairwise_distance.0_1_0
+    kind: RuntimeBinding
+    display_name: pairwise_distance runtime binding
+    description: Canonical runtime binding for pairwise_distance 0.1.0.
+    runtime_capability: {id: pairwise_distance, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.pairwise_distance.python.v1
+    implements: [op.anchor_pairwise_distance.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 selects endpoints from bounded anchor-record fields rather than a general entity selector.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      tracking_window: {source: RUNTIME_CONTEXT, context_ref: canonical_tracking_window}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      distance_m: {runtime_port: distance_m}
+      pairwise_distance_status: {runtime_port: pairwise_distance_status}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+      - name: entity_a_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id]
+      - name: entity_b_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: ball, unit: none}
+        allowed_values: [ball, receiver_id, passer_id, relay_player_id, terminal_receiver_id]
+      - name: maximum_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 10.0, unit: metre}
+        minimum: 0.0
+        maximum: 80.0
+    parameter_bindings:
+      frame_field: frame_field
+      entity_a_field: entity_a_field
+      entity_b_field: entity_b_field
+      maximum_distance_m: maximum_distance_m
+
+  - id: binding.primitive.velocity.0_1_0
+    kind: RuntimeBinding
+    display_name: velocity runtime binding
+    description: Canonical runtime binding for velocity 0.1.0.
+    runtime_capability: {id: velocity, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.velocity.python.v1
+    implements: [op.observed_entity_velocity.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 reports displacement-derived velocity only and uses unit none for metres-per-second scalar fields.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      tracking_window: {source: RUNTIME_CONTEXT, context_ref: canonical_tracking_window}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      speed_mps: {runtime_port: speed_mps}
+      velocity_status: {runtime_port: velocity_status}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+      - name: entity_id_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id]
+      - name: lookback_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 0.4, unit: second}
+        minimum: 0.04
+        maximum: 3.0
+    parameter_bindings:
+      frame_field: frame_field
+      entity_id_field: entity_id_field
+      lookback_seconds: lookback_seconds
 
   - id: binding.primitive.ball_lateral_fraction.0_1_0
     kind: RuntimeBinding
@@ -981,6 +1401,59 @@ runtime_bindings:
       goal_side_buffer_m: goal_side_buffer_m
       line_band_width_m: line_band_width_m
       minimum_line_defenders: minimum_line_defenders
+      anchor_frame_field: anchor_frame_field
+
+  - id: binding.primitive.multi_line_model.0_1_0
+    kind: RuntimeBinding
+    display_name: multi_line_model runtime binding
+    description: Canonical runtime binding for multi_line_model 0.1.0.
+    runtime_capability: {id: multi_line_model, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.multi_line_model.python.v1
+    implements: [op.observed_multi_line_model.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Line rank is geometric observed order only and does not identify tactical line roles.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      ball_position: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.ball_position}
+      defending_outfield_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.defending_outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      multi_line_status: {runtime_port: multi_line_status}
+    semantic_parameters:
+      - name: goal_side_buffer_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 1.0, unit: metre}
+        minimum: 0.0
+        maximum: 10.0
+      - name: line_band_width_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 2.0, unit: metre}
+        minimum: 0.1
+        maximum: 15.0
+      - name: minimum_line_defenders
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 3, unit: count}
+        minimum: 2.0
+        maximum: 10.0
+      - name: target_line_rank
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: false
+        default: {payload_type: number, value: 2, unit: count}
+        minimum: 1.0
+        maximum: 4.0
+      - name: anchor_frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: physical_release_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, event_anchor_frame_id]
+    parameter_bindings:
+      goal_side_buffer_m: goal_side_buffer_m
+      line_band_width_m: line_band_width_m
+      minimum_line_defenders: minimum_line_defenders
+      target_line_rank: target_line_rank
       anchor_frame_field: anchor_frame_field
 
   - id: binding.primitive.relative_position_to_line.0_1_0
@@ -1214,6 +1687,16 @@ runtime_bindings:
         default: {payload_type: number, value: 1, unit: count}
         minimum: 1.0
         maximum: 10.0
+      - name: required_anchor_status_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: none, unit: none}
+        allowed_values: [none, line_break_status, receiver_line_transition_status]
+      - name: required_anchor_status_value
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: PASS, unit: none}
+        allowed_values: [PASS, FAIL, UNKNOWN]
     parameter_bindings:
       anchor_frame_field: anchor_frame_field
       candidate_scope: candidate_scope
@@ -1222,6 +1705,79 @@ runtime_bindings:
       minimum_duration_seconds: minimum_duration_seconds
       maximum_support_distance_m: maximum_support_distance_m
       minimum_supporting_players: minimum_supporting_players
+      required_anchor_status_field: required_anchor_status_field
+      required_anchor_status_value: required_anchor_status_value
+
+  - id: binding.relation.pressure_on_carrier.0_1_0
+    kind: RuntimeBinding
+    display_name: pressure_on_carrier runtime binding
+    description: Canonical runtime binding for pressure_on_carrier 0.1.0.
+    runtime_capability: {id: pressure_on_carrier, version: 0.1.0, kind: relation}
+    implementation_ref: impl.pressure_on_carrier.python.v1
+    implements: [op.observed_pressure_on_carrier.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Nearest-defender pressure is operationalized through declared geometry and kinematics; it does not infer pressure quality or defender intent.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      observed_defending_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.defending_outfield_positions}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      pressure_status: {runtime_port: pressure_status}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: controlled_reception_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+      - name: carrier_id_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: receiver_id, unit: none}
+        allowed_values: [receiver_id, passer_id, relay_player_id, terminal_receiver_id]
+      - name: maximum_pressure_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 4.0, unit: metre}
+        minimum: 0.5
+        maximum: 15.0
+      - name: minimum_closing_speed_mps
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 0.2, unit: none}
+        minimum: -5.0
+        maximum: 10.0
+      - name: maximum_approach_angle_degrees
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 100.0, unit: none}
+        minimum: 0.0
+        maximum: 180.0
+      - name: minimum_pressure_duration_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 0.0, unit: second}
+        minimum: 0.0
+        maximum: 5.0
+      - name: lookback_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 0.4, unit: second}
+        minimum: 0.04
+        maximum: 3.0
+      - name: candidate_scope
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: defending_outfield, unit: none}
+        allowed_values: [defending_outfield]
+    parameter_bindings:
+      frame_field: frame_field
+      carrier_id_field: carrier_id_field
+      maximum_pressure_distance_m: maximum_pressure_distance_m
+      minimum_closing_speed_mps: minimum_closing_speed_mps
+      maximum_approach_angle_degrees: maximum_approach_angle_degrees
+      minimum_pressure_duration_seconds: minimum_pressure_duration_seconds
+      lookback_seconds: lookback_seconds
+      candidate_scope: candidate_scope
 
   - id: binding.relation.local_number_relation.0_1_0
     kind: RuntimeBinding
@@ -1713,6 +2269,55 @@ claim_contracts:
     permitted: [event_linked_relay_and_terminal_controlled_reception_observed]
     prohibited: [planned_combination_inferred, third_man_combination_claimed, player_intent_inferred, pass_was_optimal, pass_probability_inferred, decision_quality_inferred, tactical_causation_inferred]
     unknown_conditions: [relay_evidence_missing, terminal_controlled_pass_evidence_missing, terminal_reception_unknown]
+  - id: claim.provider_action_event_anchor.v1
+    kind: ClaimContract
+    display_name: Provider Action Event Anchor Claims
+    description: Claims permitted for provider event anchors aligned to tracking frames.
+    permitted: [provider_action_event_aligned_to_tracking_frame]
+    prohibited: [controlled_reception_proven, player_intent_inferred, tactical_role_identified, decision_quality_inferred, pass_was_optimal]
+    unknown_conditions: [event_identity_missing, tracking_frame_alignment_missing]
+  - id: claim.action_chain.v1
+    kind: ClaimContract
+    display_name: Action Chain Claims
+    description: Claims permitted for ordered same-team provider action chains.
+    permitted: [ordered_same_team_action_chain_observed_under_declared_gap]
+    prohibited: [planned_combination_inferred, tactical_causation_inferred, player_intent_inferred, decision_quality_inferred, pass_was_optimal]
+    unknown_conditions: [action_anchor_missing, event_time_missing, team_identity_missing]
+  - id: claim.tracking_quality.v1
+    kind: ClaimContract
+    display_name: Tracking Quality Claims
+    description: Claims permitted for anchor-relative coordinate-availability checks.
+    permitted: [declared_tracking_coordinates_available_at_anchor_frame]
+    prohibited: [tracking_accuracy_proven, player_intent_inferred, tactical_role_identified]
+    unknown_conditions: [anchor_frame_missing, ball_coordinates_missing, declared_entity_coordinates_missing]
+  - id: claim.pairwise_distance.v1
+    kind: ClaimContract
+    display_name: Pairwise Distance Claims
+    description: Claims permitted for observed pairwise distance measurements.
+    permitted: [declared_pairwise_distance_measured, declared_distance_threshold_evaluated]
+    prohibited: [pressure_quality_inferred, marking_assignment_inferred, player_intent_inferred, pass_was_optimal]
+    unknown_conditions: [endpoint_coordinate_missing, anchor_frame_missing, entity_identity_missing]
+  - id: claim.observed_entity_velocity.v1
+    kind: ClaimContract
+    display_name: Observed Entity Velocity Claims
+    description: Claims permitted for displacement-derived entity velocity measurements.
+    permitted: [declared_entity_velocity_measured_from_tracking_displacement]
+    prohibited: [player_effort_inferred, player_intent_inferred, tactical_role_identified, pressure_quality_inferred]
+    unknown_conditions: [current_position_missing, prior_position_missing, invalid_time_delta]
+  - id: claim.observed_multi_line_model.v1
+    kind: ClaimContract
+    display_name: Observed Multi-Line Model Claims
+    description: Claims permitted for ranked observed geometric defending line bands.
+    permitted: [observed_geometric_line_rank_fit_under_declared_thresholds, target_line_rank_absent_when_evidence_complete]
+    prohibited: [tactical_line_role_identified, defensive_line_was_broken, defender_intent_inferred, player_intent_inferred, pass_was_optimal]
+    unknown_conditions: [ball_position_missing, attacking_direction_missing_or_invalid, defending_outfield_positions_incomplete, ambiguous_candidate_lines]
+  - id: claim.observed_pressure_on_carrier.v1
+    kind: ClaimContract
+    display_name: Observed Pressure On Carrier Claims
+    description: Claims permitted for observed nearest-defender pressure on a carrier.
+    permitted: [nearest_defender_pressure_condition_evaluated_under_declared_thresholds]
+    prohibited: [pressure_quality_inferred, defender_intent_inferred, player_intent_inferred, decision_quality_inferred, tactical_causation_inferred, pass_was_optimal]
+    unknown_conditions: [carrier_position_missing, defender_positions_missing, velocity_endpoint_missing, duration_coverage_incomplete]
   - id: claim.observed_lane_occupancy.v1
     kind: ClaimContract
     display_name: Observed Lane Occupancy Claims
@@ -1894,6 +2499,54 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, pass_chain_status, pass_chain_reason, input_pass_episode_id, relay_pass_episode_id, terminal_pass_episode_id, relay_player_id, declared_next_pass_recipient_id, terminal_receiver_id, relay_touch_frame_id, terminal_controlled_reception_frame_id]
     optional: [terminal_forward_progression_m, terminal_controlled_pass_status, terminal_reception_ball_point, terminal_reception_receiver_point]
     replay_projection: [input_release_frame, relay_touch_frame, terminal_reception_frame, chain_path, terminal_receiver_marker]
+  - id: evidence.provider_action_event_anchor.v1
+    kind: EvidenceContract
+    display_name: Provider Action Event Anchor Evidence
+    description: Evidence required for provider event anchors.
+    required: [anchor_id, anchor_frame_id, action_event_status, action_type, event_type, event_row_index, event_anchor_frame_id, event_frame_offset_ms]
+    optional: [team_role, passer_id, receiver_id]
+    replay_projection: [event_anchor_frame, action_actor_markers]
+  - id: evidence.action_chain.v1
+    kind: EvidenceContract
+    display_name: Action Chain Evidence
+    description: Evidence required for ordered same-team action chains.
+    required: [anchor_id, anchor_frame_id, action_chain_status, action_chain_reason, chain_length, maximum_action_gap_seconds, first_action_anchor_id, second_action_anchor_id]
+    optional: [action_gap_seconds]
+    replay_projection: [first_action_frame, second_action_frame, chain_gap_badge]
+  - id: evidence.tracking_quality.v1
+    kind: EvidenceContract
+    display_name: Tracking Quality Evidence
+    description: Evidence required for anchor-relative coordinate-availability checks.
+    required: [anchor_id, anchor_frame_id, tracking_quality_status, tracking_quality_reason, tracking_quality_frame_id, ball_position_present]
+    optional: [expected_entity_ids, missing_entity_ids]
+    replay_projection: [quality_frame, missing_entity_badge]
+  - id: evidence.pairwise_distance.v1
+    kind: EvidenceContract
+    display_name: Pairwise Distance Evidence
+    description: Evidence required for observed pairwise-distance measurements.
+    required: [anchor_id, anchor_frame_id, pairwise_distance_status, pairwise_distance_reason, distance_frame_id, entity_a_id, entity_b_id, distance_m, maximum_distance_m]
+    replay_projection: [entity_a_marker, entity_b_marker, distance_badge]
+  - id: evidence.observed_entity_velocity.v1
+    kind: EvidenceContract
+    display_name: Observed Entity Velocity Evidence
+    description: Evidence required for displacement-derived entity velocity measurements.
+    required: [anchor_id, anchor_frame_id, velocity_status, velocity_reason, velocity_frame_id, velocity_entity_id, velocity_lookback_frames, velocity_dt_seconds, velocity_vx_mps, velocity_vy_mps, speed_mps]
+    optional: [velocity_prior_frame_id]
+    replay_projection: [velocity_frame, prior_frame, velocity_vector_badge]
+  - id: evidence.observed_multi_line_model.v1
+    kind: EvidenceContract
+    display_name: Observed Multi-Line Model Evidence
+    description: Evidence required for ranked observed geometric line bands.
+    required: [anchor_id, anchor_frame_id, multi_line_status, multi_line_reason, line_evaluation_frame_id, target_line_rank, observed_line_count]
+    optional: [observed_lines, selected_line, line_x_m, normalized_line_x_m, defensive_line_player_ids]
+    replay_projection: [ball_marker, ranked_line_bands, selected_line_badge]
+  - id: evidence.observed_pressure_on_carrier.v1
+    kind: EvidenceContract
+    display_name: Observed Pressure On Carrier Evidence
+    description: Evidence required for observed nearest-defender pressure measurements.
+    required: [anchor_id, anchor_frame_id, pressure_status, pressure_reason, pressure_frame_id, carrier_id, nearest_defender_distance_m, closing_speed_mps, approach_angle_degrees, pressure_duration_seconds, maximum_pressure_distance_m, minimum_closing_speed_mps, maximum_approach_angle_degrees, minimum_pressure_duration_seconds, coverage_status]
+    optional: [nearest_defender_id]
+    replay_projection: [carrier_marker, nearest_defender_marker, pressure_distance_badge, closing_speed_badge]
   - id: evidence.observed_lane_occupancy.v1
     kind: EvidenceContract
     display_name: Observed Lane Occupancy Evidence
@@ -2090,6 +2743,55 @@ exposure_policies:
     subject_ref: runtime:primitive:pass_chain_episode:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.action_event_anchor.0_1_0
+    kind: ExposurePolicy
+    display_name: action_event_anchor exposure
+    description: Exposure policy for action_event_anchor.
+    subject_ref: runtime:primitive:action_event_anchor:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.action_chain.0_1_0
+    kind: ExposurePolicy
+    display_name: action_chain exposure
+    description: Exposure policy for action_chain.
+    subject_ref: runtime:primitive:action_chain:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.tracking_quality.0_1_0
+    kind: ExposurePolicy
+    display_name: tracking_quality exposure
+    description: Exposure policy for tracking_quality.
+    subject_ref: runtime:primitive:tracking_quality:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.pairwise_distance.0_1_0
+    kind: ExposurePolicy
+    display_name: pairwise_distance exposure
+    description: Exposure policy for pairwise_distance.
+    subject_ref: runtime:primitive:pairwise_distance:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.velocity.0_1_0
+    kind: ExposurePolicy
+    display_name: velocity exposure
+    description: Exposure policy for velocity.
+    subject_ref: runtime:primitive:velocity:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.multi_line_model.0_1_0
+    kind: ExposurePolicy
+    display_name: multi_line_model exposure
+    description: Exposure policy for multi_line_model.
+    subject_ref: runtime:primitive:multi_line_model:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.pressure_on_carrier.0_1_0
+    kind: ExposurePolicy
+    display_name: pressure_on_carrier exposure
+    description: Exposure policy for pressure_on_carrier.
+    subject_ref: runtime:relation:pressure_on_carrier:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
   - id: exposure.runtime.signed_lateral_shift.0_1_0
     kind: ExposurePolicy
     display_name: signed_lateral_shift exposure
@@ -2231,6 +2933,55 @@ projection_policies:
         permitted_fields: []
         rationale: Pass-chain episode is intentionally added as part of the first pass-chain package.
         review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:action_event_anchor:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 8e62f3e65d93fb12cdaa92a9b38012efde2443efd6375c9fd2ec255352368fa4
+        permitted_fields: []
+        rationale: Provider action event anchors are intentionally added for northstar substrate action sequencing.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:action_chain:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: f137a3c7d7031b39578febe9f6c2b4ce8a0032aa3720c99ee9d554efc714bb6b
+        permitted_fields: []
+        rationale: Action chains are intentionally added for northstar substrate sequencing.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:tracking_quality:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 9f365bf1bada6bfac3d546cf0f03d26edc178305393d62ba42b24ccd033c4df9
+        permitted_fields: []
+        rationale: Tracking quality is intentionally added to preserve UNKNOWN under poor coordinate coverage.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:pairwise_distance:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: cd5eb8ef82b23a544d7bc3ee9b989ed3a3fe61a42e9f21bded34a097a05b104a
+        permitted_fields: []
+        rationale: Pairwise distance is intentionally added as a geometric substrate primitive.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:velocity:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: f4369cac5b49256675f49d03dee288a0b3d0b202a4ddffce5e4b5387e7a5ee0a
+        permitted_fields: []
+        rationale: Velocity is intentionally added as a kinematic substrate primitive for pressure and movement clauses.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:multi_line_model:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 5e2bcb5c0c1202caf872612333c0302cc8f9014b1603a7d7df90bed298accfbe
+        permitted_fields: []
+        rationale: Multi-line model is intentionally added for observed ranked geometric line clauses.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:relation:pressure_on_carrier:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 12bcebc22867494d5e6063c375767e726fbbfeb824c71bf03dd0ac0928fd7bc2
+        permitted_fields: []
+        rationale: Pressure on carrier is intentionally added as a first-class observed pressure relation.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 91fcabf7351c1253b89e552f75c188b83f7afe8aa591a7299b801e254234425f
+        projection_contract_hash: 0ae83df9a078907612759f473b3ab3b0b640ae2e021eb2d7571f3c8995f20652
+        permitted_fields: [evidence_fields, outputs, parameters]
+        rationale: Existing controlled-pass capability now exposes provider event type and a bounded event-type filter for throw-in clauses.
+        review_condition: Re-review if the changed field set expands beyond event-type evidence/filtering.
       - subject_ref: runtime:primitive:defensive_line_model:0.1.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: bd6f7561243d065bbf5a50c3f3882d4e3d20600bb1a83bc68f661b0f0872b5df
@@ -2245,6 +2996,13 @@ projection_policies:
         permitted_fields: [parameters]
         rationale: Existing relative-position helper accepts additional relay entity/frame fields for the pass-chain package.
         review_condition: Re-review if the changed field set expands beyond bounded parameter allowed-values.
+      - subject_ref: runtime:relation:support_arrival_relation:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 13f4c07504e0a6190e0ae9008b52efe1b998de38d35da98aeb403e9f4570289b
+        projection_contract_hash: 5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d
+        permitted_fields: [evidence_fields, outputs, parameters]
+        rationale: Existing support-arrival relation now exposes bounded upstream-status guards used to avoid coercing UNKNOWN into no support.
+        review_condition: Re-review if the changed field set expands beyond status-guard evidence and parameters.
   - id: projection.ai.v1
     kind: ProjectionPolicy
     display_name: AI Projection Policy
@@ -2289,6 +3047,55 @@ projection_policies:
         permitted_fields: []
         rationale: Pass-chain episode is intentionally added as an authorable pass-chain capability.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:action_event_anchor:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 8e62f3e65d93fb12cdaa92a9b38012efde2443efd6375c9fd2ec255352368fa4
+        permitted_fields: []
+        rationale: Provider action event anchors are intentionally added as authorable northstar action-sequencing substrate.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:action_chain:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: f137a3c7d7031b39578febe9f6c2b4ce8a0032aa3720c99ee9d554efc714bb6b
+        permitted_fields: []
+        rationale: Action chains are intentionally added as authorable northstar action-sequencing substrate.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:tracking_quality:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 9f365bf1bada6bfac3d546cf0f03d26edc178305393d62ba42b24ccd033c4df9
+        permitted_fields: []
+        rationale: Tracking quality is intentionally added so AI-authored plans can preserve UNKNOWN under poor coordinate coverage.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:pairwise_distance:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: cd5eb8ef82b23a544d7bc3ee9b989ed3a3fe61a42e9f21bded34a097a05b104a
+        permitted_fields: []
+        rationale: Pairwise distance is intentionally added as an authorable geometric substrate primitive.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:velocity:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: f4369cac5b49256675f49d03dee288a0b3d0b202a4ddffce5e4b5387e7a5ee0a
+        permitted_fields: []
+        rationale: Velocity is intentionally added as an authorable kinematic substrate primitive.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:multi_line_model:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 5e2bcb5c0c1202caf872612333c0302cc8f9014b1603a7d7df90bed298accfbe
+        permitted_fields: []
+        rationale: Multi-line model is intentionally added as an authorable observed ranked-line capability.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:relation:pressure_on_carrier:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 12bcebc22867494d5e6063c375767e726fbbfeb824c71bf03dd0ac0928fd7bc2
+        permitted_fields: []
+        rationale: Pressure on carrier is intentionally added as an authorable observed pressure relation.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 91fcabf7351c1253b89e552f75c188b83f7afe8aa591a7299b801e254234425f
+        projection_contract_hash: 0ae83df9a078907612759f473b3ab3b0b640ae2e021eb2d7571f3c8995f20652
+        permitted_fields: [evidence_fields, outputs, parameters]
+        rationale: Existing controlled-pass capability now exposes provider event type and bounded event-type filtering for throw-in clauses.
+        review_condition: Re-review if the changed field set expands beyond event-type evidence/filtering.
       - subject_ref: runtime:primitive:defensive_line_model:0.1.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: bd6f7561243d065bbf5a50c3f3882d4e3d20600bb1a83bc68f661b0f0872b5df
@@ -2303,6 +3110,13 @@ projection_policies:
         permitted_fields: [parameters]
         rationale: Existing relative-position helper accepts additional relay entity/frame fields for the pass-chain package.
         review_condition: Re-review if the changed field set expands beyond bounded parameter allowed-values.
+      - subject_ref: runtime:relation:support_arrival_relation:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 13f4c07504e0a6190e0ae9008b52efe1b998de38d35da98aeb403e9f4570289b
+        projection_contract_hash: 5f4bd59cc6e4d71348dcaff1f0e7767e57fd835d230a54bfe4b938c3b22e314d
+        permitted_fields: [evidence_fields, outputs, parameters]
+        rationale: Existing support-arrival relation now exposes bounded upstream-status guards used to avoid coercing UNKNOWN into no support.
+        review_condition: Re-review if the changed field set expands beyond status-guard evidence and parameters.
       - subject_ref: recipe:ball_side_block_shift_v1:1.0.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: 00bc3c9303cd4b29f5cab4d760d741d7fcc89c69107ebe7f55c13a7786ef5c9a
@@ -2479,6 +3293,76 @@ maturity_assessments:
     display_name: pass_chain_episode maturity
     description: Maturity assessment for pass_chain_episode.
     subject_ref: runtime:primitive:pass_chain_episode:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.action_event_anchor.0_1_0
+    kind: MaturityAssessment
+    display_name: action_event_anchor maturity
+    description: Maturity assessment for action_event_anchor.
+    subject_ref: runtime:primitive:action_event_anchor:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.action_chain.0_1_0
+    kind: MaturityAssessment
+    display_name: action_chain maturity
+    description: Maturity assessment for action_chain.
+    subject_ref: runtime:primitive:action_chain:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.tracking_quality.0_1_0
+    kind: MaturityAssessment
+    display_name: tracking_quality maturity
+    description: Maturity assessment for tracking_quality.
+    subject_ref: runtime:primitive:tracking_quality:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.pairwise_distance.0_1_0
+    kind: MaturityAssessment
+    display_name: pairwise_distance maturity
+    description: Maturity assessment for pairwise_distance.
+    subject_ref: runtime:primitive:pairwise_distance:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.velocity.0_1_0
+    kind: MaturityAssessment
+    display_name: velocity maturity
+    description: Maturity assessment for velocity.
+    subject_ref: runtime:primitive:velocity:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.multi_line_model.0_1_0
+    kind: MaturityAssessment
+    display_name: multi_line_model maturity
+    description: Maturity assessment for multi_line_model.
+    subject_ref: runtime:primitive:multi_line_model:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.pressure_on_carrier.0_1_0
+    kind: MaturityAssessment
+    display_name: pressure_on_carrier maturity
+    description: Maturity assessment for pressure_on_carrier.
+    subject_ref: runtime:relation:pressure_on_carrier:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED
