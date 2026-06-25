@@ -1,0 +1,343 @@
+{
+ "schema_version": "coverage-map.v0",
+ "claim_status": "internal_steering_only_v0_estimated_not_external_claim",
+ "catalog_basis": "codex/afl08-passport-loop substrate (slices 1-5 + line/possession families)",
+ "denominator_note": "Coverage of Priori's authored 741-concept atlas inventory \u2014 NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
+ "audit_note": "30-row stratified audit corrected aggregation/extremum operator inflation; additional audits are required before external coverage claims.",
+ "roadmap_implications": [
+  "Q5 remains the next substrate milestone for transition_anchor/phase/outcome-window work.",
+  "After Q5, prioritize time_to_arrival before lower-unlock substrate because the atlas ranks it second by unlock count.",
+  "Regenerate the coverage map after every substrate package so supported/partial/gap counts remain a living metric.",
+  "Treat composition constraints as compiler-alignment backlog, not hidden plan-wiring knowledge."
+ ],
+ "total_concepts": 741,
+ "coverage_counts": {
+  "supported": 325,
+  "partial_with_typed_gap": 155,
+  "missing_modality": 42,
+  "ambiguous_or_needs_definition": 9,
+  "role_or_reference_gap": 13,
+  "missing_primitive": 197
+ },
+ "coverage_pct": {
+  "supported": 43.9,
+  "partial_with_typed_gap": 20.9,
+  "missing_modality": 5.7,
+  "ambiguous_or_needs_definition": 1.2,
+  "role_or_reference_gap": 1.8,
+  "missing_primitive": 26.6
+ },
+ "reachable_now_or_one_gap_pct": 64.8,
+ "top_missing_primitives_by_unlock": [
+  [
+   "transition_anchor",
+   31
+  ],
+  [
+   "time_to_arrival",
+   30
+  ],
+  [
+   "carry_episode",
+   17
+  ],
+  [
+   "set_piece_structure",
+   12
+  ],
+  [
+   "off_ball_run",
+   10
+  ],
+  [
+   "acceleration",
+   7
+  ],
+  [
+   "marking",
+   6
+  ],
+  [
+   "cover_shadow",
+   5
+  ],
+  [
+   "team-press",
+   5
+  ],
+  [
+   "structured_zones (for dynamic-region targets)",
+   5
+  ],
+  [
+   "aggregation/extremum operator (argmax/integral/median/quantile)",
+   4
+  ],
+  [
+   "time_to_arrival (lane openness)",
+   4
+  ],
+  [
+   "contact/touch primitive",
+   4
+  ],
+  [
+   "shot_geometry (shot anchor)",
+   3
+  ],
+  [
+   "structured_zones",
+   3
+  ]
+ ],
+ "composition_constraint_count": 89,
+ "family_coverage": {
+  "Ball contact, control, contest, and possession": {
+   "missing_primitive": 7,
+   "supported": 11,
+   "partial_with_typed_gap": 6
+  },
+  "Carrying, dribbling, evasion, and ball progression on foot": {
+   "partial_with_typed_gap": 1,
+   "missing_primitive": 17
+  },
+  "Data quality, synchronization, and provenance": {
+   "supported": 13,
+   "ambiguous_or_needs_definition": 6,
+   "role_or_reference_gap": 1
+  },
+  "Dynamic graphs and interaction structure": {
+   "missing_primitive": 12,
+   "partial_with_typed_gap": 6
+  },
+  "Entities, availability, roles, and tactical identity": {
+   "supported": 9,
+   "role_or_reference_gap": 7
+  },
+  "Evidence, replay, tests, and capability governance": {
+   "supported": 26
+  },
+  "Kinematics and trajectory structure": {
+   "missing_primitive": 8,
+   "supported": 16,
+   "partial_with_typed_gap": 3,
+   "missing_modality": 1
+  },
+  "Learned probability, value, and counterfactual models": {
+   "missing_modality": 26
+  },
+  "Lines, gaps, penetration, and structural breaks": {
+   "supported": 13,
+   "missing_primitive": 6,
+   "partial_with_typed_gap": 5
+  },
+  "Match clock, laws, and contextual state": {
+   "supported": 6,
+   "partial_with_typed_gap": 6,
+   "role_or_reference_gap": 2,
+   "missing_modality": 1
+  },
+  "Off-ball attacking movement and behavior": {
+   "supported": 16,
+   "partial_with_typed_gap": 13,
+   "missing_primitive": 14
+  },
+  "Outcomes, continuation, and consequences": {
+   "ambiguous_or_needs_definition": 1,
+   "partial_with_typed_gap": 7,
+   "supported": 10
+  },
+  "Passing lanes, windows, reception, and distribution effects": {
+   "supported": 13,
+   "missing_modality": 3,
+   "missing_primitive": 12,
+   "partial_with_typed_gap": 4
+  },
+  "Phases of play and team behavioral states": {
+   "supported": 4,
+   "partial_with_typed_gap": 12,
+   "missing_primitive": 3,
+   "role_or_reference_gap": 1,
+   "ambiguous_or_needs_definition": 1,
+   "missing_modality": 1
+  },
+  "Physical action reconstruction": {
+   "supported": 12,
+   "partial_with_typed_gap": 7,
+   "missing_primitive": 11,
+   "missing_modality": 1
+  },
+  "Possession behavior, circulation, combinations, and repeated patterns": {
+   "partial_with_typed_gap": 4,
+   "supported": 28,
+   "ambiguous_or_needs_definition": 1
+  },
+  "Pressure, marking, cover, denial, and collective defending": {
+   "partial_with_typed_gap": 9,
+   "supported": 11,
+   "missing_primitive": 17
+  },
+  "Reachability, interception, space control, and spatial value": {
+   "missing_primitive": 20,
+   "missing_modality": 5
+  },
+  "Reference frames and dynamic football regions": {
+   "supported": 7,
+   "missing_primitive": 11,
+   "partial_with_typed_gap": 10
+  },
+  "Restarts and set-piece behavior": {
+   "missing_primitive": 13,
+   "partial_with_typed_gap": 8,
+   "supported": 6,
+   "role_or_reference_gap": 1
+  },
+  "Shooting, chance structure, goalmouth defense, and goalkeeper behavior": {
+   "supported": 1,
+   "missing_primitive": 23,
+   "partial_with_typed_gap": 7,
+   "missing_modality": 3
+  },
+  "Spatial geometry and topological relations": {
+   "supported": 20,
+   "partial_with_typed_gap": 9,
+   "missing_primitive": 5
+  },
+  "Support, options, numerical relations, and local structure": {
+   "partial_with_typed_gap": 7,
+   "supported": 19,
+   "missing_primitive": 1,
+   "role_or_reference_gap": 1
+  },
+  "Team shape, units, lines, occupation, and structural change": {
+   "missing_primitive": 6,
+   "supported": 25,
+   "partial_with_typed_gap": 8
+  },
+  "Temporal logic, set operations, and aggregation": {
+   "supported": 59,
+   "partial_with_typed_gap": 8,
+   "missing_modality": 1
+  },
+  "Transitions, counterpressure, recovery, and rest defense": {
+   "missing_primitive": 11,
+   "partial_with_typed_gap": 15
+  }
+ },
+ "calibration_spotcheck": [
+  {
+   "check": "carrying->missing_primitive",
+   "matched": 17,
+   "in_expected_class": 16,
+   "examples": [
+    [
+     "carry_between_units",
+     "missing_primitive"
+    ],
+    [
+     "carry_beyond_unit",
+     "missing_primitive"
+    ],
+    [
+     "carry_displacement",
+     "missing_primitive"
+    ],
+    [
+     "carry_duration",
+     "missing_primitive"
+    ]
+   ]
+  },
+  {
+   "check": "possession->supported",
+   "matched": 7,
+   "in_expected_class": 6,
+   "examples": [
+    [
+     "central_circulation_episode",
+     "supported"
+    ],
+    [
+     "circulation_speed",
+     "supported"
+    ],
+    [
+     "possession_duration",
+     "supported"
+    ],
+    [
+     "side_circulation_episode",
+     "supported"
+    ]
+   ]
+  },
+  {
+   "check": "learned/xg->missing_modality",
+   "matched": 6,
+   "in_expected_class": 6,
+   "examples": [
+    [
+     "post_shot_expected_goal",
+     "missing_modality"
+    ],
+    [
+     "shot_expected_goal",
+     "missing_modality"
+    ],
+    [
+     "pass_completion_probability",
+     "missing_modality"
+    ],
+    [
+     "pitch_control_field",
+     "missing_modality"
+    ]
+   ]
+  },
+  {
+   "check": "cover/reach->time_to_arrival",
+   "matched": 9,
+   "in_expected_class": 9,
+   "examples": [
+    [
+     "local_reachability_balance",
+     "missing_primitive"
+    ],
+    [
+     "reachability_graph",
+     "missing_primitive"
+    ],
+    [
+     "pass_lane_interception_margin",
+     "missing_primitive"
+    ],
+    [
+     "cover_shadow_region",
+     "missing_primitive"
+    ]
+   ]
+  },
+  {
+   "check": "roles->role_gap",
+   "matched": 2,
+   "in_expected_class": 2,
+   "examples": [
+    [
+     "tactical_role_assignment",
+     "role_or_reference_gap"
+    ],
+    [
+     "tactical_role_episode",
+     "role_or_reference_gap"
+    ]
+   ]
+  }
+ ],
+ "audit_sample": {
+  "rows_reviewed": 30,
+  "approx_solid_rows": 26,
+  "systematic_correction": "aggregation/extremum operator rows were downgraded from supported to partial_with_typed_gap because no generic argmax/argmin/local extremum operator exists.",
+  "supported_pct_after_correction": 43.9,
+  "reachable_now_or_one_gap_pct_after_correction": 64.8
+ }
+}

@@ -262,3 +262,7 @@ m1-2-verify:
 
 test:
 	$(PYTHON) -m unittest discover -s tests
+
+.PHONY: coverage-map
+coverage-map:
+	$(PYTHON) scripts/coverage_map/aggregate.py
