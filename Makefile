@@ -233,6 +233,9 @@ afl-substrate-q3-verify:
 afl-substrate-q4-verify:
 	$(PYTHON) -m tqe.verification.afl_substrate_q4
 
+afl-substrate-q5-verify:
+	$(PYTHON) -m tqe.verification.afl_substrate_q5
+
 afl-substrate-q6-verify:
 	$(PYTHON) -m tqe.verification.afl_substrate_q6
 

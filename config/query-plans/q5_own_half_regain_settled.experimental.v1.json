@@ -1,0 +1,551 @@
+{
+  "default_invocation": {
+    "execution_mode": "execute",
+    "invocation_id": "q5_own_half_regain_settled_probe",
+    "match_ids": [
+      "J03WOH",
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9",
+      "J03WMX",
+      "J03WN1"
+    ],
+    "max_results": 20,
+    "parameters": {},
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "schema_version": "1.0"
+  },
+  "draft_plan": {
+    "anchor_source": {
+      "output_name": "anchor_evaluations",
+      "source_node_id": "settled_outcome_window"
+    },
+    "classification_mode": "partial_declared",
+    "classification_rules": [
+      {
+        "description": "Observed own-half regain followed by retained ball-alive possession inside the declared window.",
+        "label": "Q5_OWN_HALF_REGAIN_SETTLED_WITHIN_WINDOW",
+        "predicate_ids": [
+          "transition_pass",
+          "zone_pass",
+          "settled_pass"
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "catalog_ref": "transition_anchor",
+        "kind": "primitive",
+        "node_id": "regain_transition",
+        "parameters": {
+          "minimum_prior_possession_seconds": {
+            "kind": "parameter",
+            "name": "minimum_prior_possession_seconds"
+          },
+          "transition_type": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "regain"
+          },
+          "zone_boundary_buffer_m": {
+            "kind": "parameter",
+            "name": "zone_boundary_buffer_m"
+          },
+          "zone_filter": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "any"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "structured_zone",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "regain_transition"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "own_half_zone",
+        "parameters": {
+          "frame_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "transition_frame_id"
+          },
+          "zone_boundary_buffer_m": {
+            "kind": "parameter",
+            "name": "zone_boundary_buffer_m"
+          },
+          "zone_name": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "own_half"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "outcome_window",
+        "inputs": {
+          "anchors": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "own_half_zone"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "settled_outcome_window",
+        "parameters": {
+          "maximum_window_seconds": {
+            "kind": "parameter",
+            "name": "maximum_window_seconds"
+          },
+          "minimum_settled_possession_seconds": {
+            "kind": "parameter",
+            "name": "minimum_settled_possession_seconds"
+          },
+          "required_anchor_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "zone_status"
+          },
+          "required_anchor_status_value": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "PASS"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "transition_status",
+          "source_node_id": "regain_transition"
+        },
+        "kind": "predicate",
+        "node_id": "transition_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "zone_status",
+          "source_node_id": "own_half_zone"
+        },
+        "kind": "predicate",
+        "node_id": "zone_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "outcome_window_status",
+          "source_node_id": "settled_outcome_window"
+        },
+        "kind": "predicate",
+        "node_id": "settled_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      }
+    ],
+    "plan_id": "q5_own_half_regain_settled",
+    "plan_version": "0.1.0",
+    "recipe_id": "q5_own_half_regain_settled_v1",
+    "recipe_version": "0.1.0",
+    "requested_evidence": [
+      {
+        "alias": "transition_transition_status",
+        "field": "transition_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "regain_transition"
+        }
+      },
+      {
+        "alias": "transition_transition_reason",
+        "field": "transition_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "regain_transition"
+        }
+      },
+      {
+        "alias": "transition_transition_type",
+        "field": "transition_type",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "regain_transition"
+        }
+      },
+      {
+        "alias": "transition_transition_frame_id",
+        "field": "transition_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "regain_transition"
+        }
+      },
+      {
+        "alias": "transition_previous_frame_id",
+        "field": "previous_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "regain_transition"
+        }
+      },
+      {
+        "alias": "transition_previous_team_role",
+        "field": "previous_team_role",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "regain_transition"
+        }
+      },
+      {
+        "alias": "transition_new_team_role",
+        "field": "new_team_role",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "regain_transition"
+        }
+      },
+      {
+        "alias": "transition_prior_possession_frame_count",
+        "field": "prior_possession_frame_count",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "regain_transition"
+        }
+      },
+      {
+        "alias": "transition_minimum_prior_possession_seconds",
+        "field": "minimum_prior_possession_seconds",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "regain_transition"
+        }
+      },
+      {
+        "alias": "transition_transition_match_time_ms",
+        "field": "transition_match_time_ms",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "regain_transition"
+        }
+      },
+      {
+        "alias": "own_half_zone_status",
+        "field": "zone_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "own_half_zone"
+        }
+      },
+      {
+        "alias": "own_half_zone_reason",
+        "field": "zone_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "own_half_zone"
+        }
+      },
+      {
+        "alias": "own_half_zone_name",
+        "field": "zone_name",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "own_half_zone"
+        }
+      },
+      {
+        "alias": "own_half_zone_frame_id",
+        "field": "zone_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "own_half_zone"
+        }
+      },
+      {
+        "alias": "own_half_zone_ball_x_m",
+        "field": "zone_ball_x_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "own_half_zone"
+        }
+      },
+      {
+        "alias": "own_half_zone_ball_y_m",
+        "field": "zone_ball_y_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "own_half_zone"
+        }
+      },
+      {
+        "alias": "own_half_zone_normalized_ball_x_m",
+        "field": "zone_normalized_ball_x_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "own_half_zone"
+        }
+      },
+      {
+        "alias": "own_half_zone_boundary_buffer_m",
+        "field": "zone_boundary_buffer_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "own_half_zone"
+        }
+      },
+      {
+        "alias": "own_half_attacking_direction",
+        "field": "attacking_direction",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "own_half_zone"
+        }
+      },
+      {
+        "alias": "settled_outcome_window_status",
+        "field": "outcome_window_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_outcome_window_reason",
+        "field": "outcome_window_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_possession_phase_status",
+        "field": "possession_phase_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_outcome_window_start_frame_id",
+        "field": "outcome_window_start_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_outcome_window_end_frame_id",
+        "field": "outcome_window_end_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_maximum_window_seconds",
+        "field": "maximum_window_seconds",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_minimum_settled_possession_seconds",
+        "field": "minimum_settled_possession_seconds",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_settled_start_frame_id",
+        "field": "settled_start_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_settled_end_frame_id",
+        "field": "settled_end_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_required_anchor_status_field",
+        "field": "required_anchor_status_field",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_required_anchor_status_value",
+        "field": "required_anchor_status_value",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_loss_frame_id",
+        "field": "loss_frame_id",
+        "required": false,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      },
+      {
+        "alias": "settled_stoppage_frame_id",
+        "field": "stoppage_frame_id",
+        "required": false,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "settled_outcome_window"
+        }
+      }
+    ],
+    "schema_version": "1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate"
+  },
+  "recipe": {
+    "allowed_claims": [
+      "A possession-role transition from defending to the perspective team was observed.",
+      "The ball was in the perspective team's own half at the transition frame under a declared buffer.",
+      "The perspective team retained ball-alive possession for the declared duration inside the declared outcome window."
+    ],
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "description": "Experimental northstar Q5 composition: an observed regain transition occurs with the ball in the perspective team's own half, then possession is retained for a declared settled-duration threshold inside a declared outcome window. Alignment: structured-zone evaluation uses the transition_frame_id from the transition anchor; outcome-window evaluation starts at that same anchor_frame_id and preserves the same team perspective.",
+    "disallowed_claims": [
+      "The system inferred transition intent, counterattack quality, decision quality, or tactical causation.",
+      "The system inferred coaching-quality settled possession beyond the frozen duration threshold.",
+      "The system inferred pressure, role taxonomy, optimality, or player intent."
+    ],
+    "display_name": "Own-Half Regain Into Settled Possession",
+    "limitations": [
+      "Transition is derived from the canonical possession-role stream, not from tactical phase labeling.",
+      "Own-half is a coarse attacking-direction-normalized zone, not a full pitch-control or territory model.",
+      "Settled possession means retained ball-alive possession for the declared duration, not possession quality.",
+      "UNKNOWN evidence is excluded rather than treated as not settled."
+    ],
+    "output_classifications": [
+      "Q5_OWN_HALF_REGAIN_SETTLED_WITHIN_WINDOW"
+    ],
+    "parameters": [
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.4
+        },
+        "description": "Minimum prior opponent-possession continuity before the regain.",
+        "name": "minimum_prior_possession_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 0.5
+        },
+        "description": "Boundary buffer for own-half zone uncertainty.",
+        "name": "zone_boundary_buffer_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 8.0
+        },
+        "description": "Maximum window after the regain transition.",
+        "name": "maximum_window_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 4.0
+        },
+        "description": "Required retained-possession duration inside the window.",
+        "name": "minimum_settled_possession_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      }
+    ],
+    "recipe_id": "q5_own_half_regain_settled_v1",
+    "recipe_version": "0.1.0",
+    "schema_version": "1.0"
+  },
+  "schema_version": "1.0"
+}

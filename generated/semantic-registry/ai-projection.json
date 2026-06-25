@@ -2267,6 +2267,182 @@
     {
       "agent_safety_maturity": "APPROVED",
       "ai_exposure": "ALLOWED",
+      "binding_id": "binding.primitive.outcome_window.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "outcome_window",
+      "implements": [
+        "op.observed_outcome_window.v1"
+      ],
+      "kind": "primitive",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "outcome_window_status",
+          "outcome_window_reason",
+          "possession_phase_status",
+          "outcome_window_start_frame_id",
+          "outcome_window_end_frame_id",
+          "settled_start_frame_id",
+          "settled_end_frame_id",
+          "loss_frame_id",
+          "stoppage_frame_id"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Settled possession is a frozen duration threshold, not a judgement of possession quality.",
+          "Does not infer intent, counterattack quality, or tactical causation."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "outcome_window",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "outcome_window_status",
+              "outcome_window_reason",
+              "possession_phase_status",
+              "outcome_window_start_frame_id",
+              "outcome_window_end_frame_id",
+              "settled_start_frame_id",
+              "settled_end_frame_id",
+              "maximum_window_seconds",
+              "minimum_settled_possession_seconds",
+              "loss_frame_id",
+              "stoppage_frame_id",
+              "required_anchor_status_field",
+              "required_anchor_status_value"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "outcome_window_status",
+              "outcome_window_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "outcome_window_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "SETTLED",
+              "NOT_SETTLED",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "possession_phase_status",
+              "outcome_window_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "possession_phase_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 8.0
+            },
+            "description": "Maximum time after the anchor in which the settled threshold may be reached.",
+            "maximum": 30.0,
+            "minimum": 0.1,
+            "name": "maximum_window_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 4.0
+            },
+            "description": "Continuous same-team active-ball possession duration required for SETTLED.",
+            "maximum": 20.0,
+            "minimum": 0.1,
+            "name": "minimum_settled_possession_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "allowed_values": [
+              "none",
+              "transition_status",
+              "zone_status"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "transition_status"
+            },
+            "description": "Optional upstream status field that must match before the window is evaluated.",
+            "name": "required_anchor_status_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "PASS"
+            },
+            "description": "Required upstream status value.",
+            "name": "required_anchor_status_value",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Evaluate whether same-team possession reaches a declared settled-duration threshold inside an anchor-relative window.",
+        "runtime_id": "primitive:outcome_window:0.1.0",
+        "version": "0.1.0"
+      },
+      "version": "0.1.0"
+    },
+    {
+      "agent_safety_maturity": "APPROVED",
+      "ai_exposure": "ALLOWED",
       "binding_id": "binding.primitive.pairwise_distance.0_1_0",
       "conformance": "PARTIAL",
       "id": "pairwise_distance",
@@ -3301,6 +3477,147 @@
     {
       "agent_safety_maturity": "APPROVED",
       "ai_exposure": "ALLOWED",
+      "binding_id": "binding.primitive.structured_zone.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "structured_zone",
+      "implements": [
+        "op.observed_structured_zone.v1"
+      ],
+      "kind": "primitive",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "zone_status",
+          "zone_reason",
+          "zone_name",
+          "zone_frame_id",
+          "zone_ball_x_m",
+          "zone_ball_y_m",
+          "zone_normalized_ball_x_m"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Coarse zones only; not a tactical role or detailed positional-lane taxonomy.",
+          "Does not infer team intent, build-up phase quality, or territorial value."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "structured_zone",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "zone_status",
+              "zone_reason",
+              "zone_name",
+              "zone_frame_id",
+              "zone_ball_x_m",
+              "zone_ball_y_m",
+              "zone_normalized_ball_x_m",
+              "zone_boundary_buffer_m",
+              "attacking_direction"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "zone_status",
+              "zone_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "zone_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "anchor_frame_id",
+              "transition_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "anchor_frame_id"
+            },
+            "description": "Anchor-record frame field where ball-zone membership is evaluated.",
+            "name": "frame_field",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "own_half",
+              "attacking_half",
+              "defensive_third",
+              "middle_third",
+              "final_third"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "own_half"
+            },
+            "description": "Coarse attacking-direction-normalized pitch zone.",
+            "name": "zone_name",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.5
+            },
+            "description": "Boundary buffer that turns near-boundary zone calls into UNKNOWN.",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "zone_boundary_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          }
+        ],
+        "purpose": "Evaluate whether the ball is inside a declared coarse pitch zone at an anchor-relative frame.",
+        "runtime_id": "primitive:structured_zone:0.1.0",
+        "version": "0.1.0"
+      },
+      "version": "0.1.0"
+    },
+    {
+      "agent_safety_maturity": "APPROVED",
+      "ai_exposure": "ALLOWED",
       "binding_id": "binding.relation.support_arrival_relation.0_1_0",
       "conformance": "PARTIAL",
       "id": "support_arrival_relation",
@@ -3968,6 +4285,162 @@
         ],
         "purpose": "Report whether ball and declared anchor entities have usable coordinates at an anchor-relative frame.",
         "runtime_id": "primitive:tracking_quality:0.1.0",
+        "version": "0.1.0"
+      },
+      "version": "0.1.0"
+    },
+    {
+      "agent_safety_maturity": "APPROVED",
+      "ai_exposure": "ALLOWED",
+      "binding_id": "binding.primitive.transition_anchor.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "transition_anchor",
+      "implements": [
+        "op.observed_transition_anchor.v1"
+      ],
+      "kind": "primitive",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "transition_status",
+          "transition_reason",
+          "transition_type",
+          "transition_frame_id",
+          "previous_frame_id",
+          "previous_team_role",
+          "new_team_role",
+          "zone_name",
+          "zone_status",
+          "zone_normalized_ball_x_m"
+        ],
+        "executable": true,
+        "inputs": [],
+        "kind": "primitive",
+        "limitations": [
+          "Uses the observed tracking possession-role stream as the transition source.",
+          "Does not infer pressing trigger, transition intent, or tactical phase quality."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "transition_anchor",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "transition_status",
+              "transition_reason",
+              "transition_type",
+              "transition_frame_id",
+              "previous_frame_id",
+              "previous_team_role",
+              "new_team_role",
+              "prior_possession_frame_count",
+              "minimum_prior_possession_seconds",
+              "transition_match_time_ms",
+              "zone_name",
+              "zone_status",
+              "zone_reason",
+              "zone_ball_x_m",
+              "zone_ball_y_m",
+              "zone_normalized_ball_x_m",
+              "zone_boundary_buffer_m",
+              "attacking_direction"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "transition_status",
+              "transition_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "transition_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "allowed_values": [
+              "regain",
+              "loss"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "regain"
+            },
+            "description": "Perspective-team possession boundary to expose.",
+            "name": "transition_type",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.4
+            },
+            "description": "Minimum prior continuous possession by the other team before the transition is PASS.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "minimum_prior_possession_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "allowed_values": [
+              "any",
+              "own_half",
+              "attacking_half",
+              "defensive_third",
+              "middle_third",
+              "final_third"
+            ],
+            "default": {
+              "payload_type": "enum",
+              "unit": "none",
+              "value": "any"
+            },
+            "description": "Optional ball-zone filter evaluated at the transition frame.",
+            "name": "zone_filter",
+            "payload_type": "enum",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 0.5
+            },
+            "description": "Boundary buffer that turns near-boundary zone calls into UNKNOWN.",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "zone_boundary_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          }
+        ],
+        "purpose": "Expose observed possession-change hinges for the perspective team from the tracking possession stream.",
+        "runtime_id": "primitive:transition_anchor:0.1.0",
         "version": "0.1.0"
       },
       "version": "0.1.0"
@@ -4876,13 +5349,13 @@
     "baseline_artifact_revision": "878510d6fb01403e67d2a1938133285a167aeff2e9eebcde7775bc5da161c534",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "f089d7ddcd8e2edf194f4a1eecfdb032b92e7a5eef542fd9a67df61607662f43",
+    "lock_hash": "b3cda60a18de35eaf744f6c789e5090ba02ce37d1e0e51a5eb5b8847283a0d16",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "ed9a392a5fb20039b2ec9715d46038cd1fa13afa7dc82a3c0205ec8aa7dfea1b",
+    "registry_revision": "23585fbaa3e7ab84c1e29eabb33841ffe8571ccf25b5a2bb6dc8ad729b0bd588",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "4758821eaad7d4f346a49ad617590654643a2f87d6d5d1951cacffce8dc93cee",
+    "runtime_manifest_revision": "b727f01e4fdeea498e4bfeb7e549656323a9273d66cf2cff212c0be8051b98af",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

@@ -163,6 +163,30 @@ concepts:
     evidence_contract_ref: evidence.observed_change_across_anchor.v1
     tags: [change, temporal, comparison]
 
+  - id: concept.observed_transition_anchor
+    kind: Concept
+    display_name: Observed Transition Anchor
+    description: Observed possession-role boundary for the perspective team from the canonical tracking possession stream.
+    claim_contract_ref: claim.observed_transition_anchor.v1
+    evidence_contract_ref: evidence.observed_transition_anchor.v1
+    tags: [transition, possession, anchor]
+
+  - id: concept.observed_structured_zone
+    kind: Concept
+    display_name: Observed Structured Zone
+    description: Coarse attacking-direction-normalized ball-zone membership at an anchor-relative frame.
+    claim_contract_ref: claim.observed_structured_zone.v1
+    evidence_contract_ref: evidence.observed_structured_zone.v1
+    tags: [zone, pitch, geometry]
+
+  - id: concept.observed_outcome_window
+    kind: Concept
+    display_name: Observed Outcome Window
+    description: Anchor-relative retained-possession window evaluated against a frozen settled-duration threshold.
+    claim_contract_ref: claim.observed_outcome_window.v1
+    evidence_contract_ref: evidence.observed_outcome_window.v1
+    tags: [outcome, possession, temporal]
+
   - id: concept.observed_lane_occupancy
     kind: Concept
     display_name: Observed Lane Occupancy
@@ -721,6 +745,76 @@ operationalizations:
     claim_contract_ref: claim.observed_change_across_anchor.v1
     evidence_contract_ref: evidence.observed_change_across_anchor.v1
 
+  - id: op.observed_transition_anchor.v1
+    kind: Operationalization
+    display_name: Observed Transition Anchor
+    description: Expose perspective-team possession-role boundaries from canonical tracking possession labels.
+    concept_refs: [concept.observed_transition_anchor]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [possession_role_stream_available, ball_alive_status_available]
+    inputs:
+      - name: canonical_possession_stream
+        type: {container: FrameSignal, value: Enum, quantity: possession_team_role, unit: none, entity_scope: team}
+      - name: ball_alive
+        type: {container: FrameSignal, value: Boolean, quantity: ball_alive, unit: none, entity_scope: ball}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: transition_anchor_evaluation, unit: none, entity_scope: anchor}
+      - name: transition_status
+        type: {container: FrameSignal, value: Enum, quantity: transition_status, unit: none, entity_scope: anchor}
+    lowering: [possession_role_boundary_detection, prior_possession_continuity_check, optional_zone_filter]
+    claim_contract_ref: claim.observed_transition_anchor.v1
+    evidence_contract_ref: evidence.observed_transition_anchor.v1
+
+  - id: op.observed_structured_zone.v1
+    kind: Operationalization
+    display_name: Observed Structured Zone
+    description: Evaluate coarse attacking-direction-normalized ball-zone membership at an anchor-relative frame.
+    concept_refs: [concept.observed_structured_zone]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, ball_position_available, attacking_direction_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: ball_position
+        type: {container: PointSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: ball}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: structured_zone_evaluation, unit: none, entity_scope: anchor}
+      - name: zone_status
+        type: {container: FrameSignal, value: Enum, quantity: zone_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_frame_selection, attacking_direction_normalization, coarse_zone_threshold_check]
+    claim_contract_ref: claim.observed_structured_zone.v1
+    evidence_contract_ref: evidence.observed_structured_zone.v1
+
+  - id: op.observed_outcome_window.v1
+    kind: Operationalization
+    display_name: Observed Outcome Window
+    description: Evaluate whether retained possession reaches a declared duration threshold inside an anchor-relative window.
+    concept_refs: [concept.observed_outcome_window]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, possession_role_stream_available, ball_alive_status_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor, unit: none, entity_scope: anchor}
+      - name: canonical_possession_stream
+        type: {container: FrameSignal, value: Enum, quantity: possession_team_role, unit: none, entity_scope: team}
+      - name: ball_alive
+        type: {container: FrameSignal, value: Boolean, quantity: ball_alive, unit: none, entity_scope: ball}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: outcome_window_evaluation, unit: none, entity_scope: anchor}
+      - name: outcome_window_status
+        type: {container: FrameSignal, value: Enum, quantity: outcome_window_status, unit: none, entity_scope: anchor}
+      - name: possession_phase_status
+        type: {container: FrameSignal, value: Enum, quantity: possession_phase_status, unit: none, entity_scope: anchor}
+    lowering: [anchor_window_selection, same_team_possession_continuity, settled_duration_threshold]
+    claim_contract_ref: claim.observed_outcome_window.v1
+    evidence_contract_ref: evidence.observed_outcome_window.v1
+
   - id: op.observed_lateral_lane_occupancy.v1
     kind: Operationalization
     display_name: Observed Lateral Lane Occupancy
@@ -1133,6 +1227,24 @@ implementations:
     display_name: Change Across Anchor Python Implementation
     description: Current before-after numeric evidence comparison implementation.
     implements: [op.observed_change_across_anchor.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.transition_anchor.python.v1
+    kind: Implementation
+    display_name: Transition Anchor Python Implementation
+    description: Current observed possession-role transition implementation.
+    implements: [op.observed_transition_anchor.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.structured_zone.python.v1
+    kind: Implementation
+    display_name: Structured Zone Python Implementation
+    description: Current coarse ball-zone membership implementation.
+    implements: [op.observed_structured_zone.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.outcome_window.python.v1
+    kind: Implementation
+    display_name: Outcome Window Python Implementation
+    description: Current retained-possession outcome-window implementation.
+    implements: [op.observed_outcome_window.v1]
     source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.lane_occupancy.python.v1
     kind: Implementation
@@ -2052,6 +2164,133 @@ runtime_bindings:
       minimum_change_m: minimum_change_m
       maximum_before_value_m: maximum_before_value_m
 
+  - id: binding.primitive.transition_anchor.0_1_0
+    kind: RuntimeBinding
+    display_name: transition_anchor runtime binding
+    description: Canonical runtime binding for transition_anchor 0.1.0.
+    runtime_capability: {id: transition_anchor, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.transition_anchor.python.v1
+    implements: [op.observed_transition_anchor.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Uses canonical tracking possession-role boundaries; it does not infer transition intent or phase quality.]
+    input_bindings:
+      canonical_possession_stream: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.possession_role}
+      ball_alive: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.ball_alive}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      transition_status: {runtime_port: transition_status}
+    semantic_parameters:
+      - name: transition_type
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: regain, unit: none}
+        allowed_values: [regain, loss]
+      - name: minimum_prior_possession_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 0.4, unit: second}
+        minimum: 0.0
+        maximum: 10.0
+      - name: zone_filter
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: any, unit: none}
+        allowed_values: [any, own_half, attacking_half, defensive_third, middle_third, final_third]
+      - name: zone_boundary_buffer_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 0.5, unit: metre}
+        minimum: 0.0
+        maximum: 5.0
+    parameter_bindings:
+      transition_type: transition_type
+      minimum_prior_possession_seconds: minimum_prior_possession_seconds
+      zone_filter: zone_filter
+      zone_boundary_buffer_m: zone_boundary_buffer_m
+
+  - id: binding.primitive.structured_zone.0_1_0
+    kind: RuntimeBinding
+    display_name: structured_zone runtime binding
+    description: Canonical runtime binding for structured_zone 0.1.0.
+    runtime_capability: {id: structured_zone, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.structured_zone.python.v1
+    implements: [op.observed_structured_zone.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Uses coarse pitch zones only; it does not infer territorial value or tactical phase quality.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      ball_position: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.ball_position}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      zone_status: {runtime_port: zone_status}
+    semantic_parameters:
+      - name: frame_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: anchor_frame_id, unit: none}
+        allowed_values: [anchor_frame_id, transition_frame_id, physical_release_frame_id, controlled_reception_frame_id]
+      - name: zone_name
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: own_half, unit: none}
+        allowed_values: [own_half, attacking_half, defensive_third, middle_third, final_third]
+      - name: zone_boundary_buffer_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 0.5, unit: metre}
+        minimum: 0.0
+        maximum: 5.0
+    parameter_bindings:
+      frame_field: frame_field
+      zone_name: zone_name
+      zone_boundary_buffer_m: zone_boundary_buffer_m
+
+  - id: binding.primitive.outcome_window.0_1_0
+    kind: RuntimeBinding
+    display_name: outcome_window runtime binding
+    description: Canonical runtime binding for outcome_window 0.1.0.
+    runtime_capability: {id: outcome_window, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.outcome_window.python.v1
+    implements: [op.observed_outcome_window.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Settled possession is a frozen retained-possession duration threshold, not a tactical quality judgement.]
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+      canonical_possession_stream: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.possession_role}
+      ball_alive: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.ball_alive}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      outcome_window_status: {runtime_port: outcome_window_status}
+      possession_phase_status: {runtime_port: possession_phase_status}
+    semantic_parameters:
+      - name: maximum_window_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 8.0, unit: second}
+        minimum: 0.1
+        maximum: 30.0
+      - name: minimum_settled_possession_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 4.0, unit: second}
+        minimum: 0.1
+        maximum: 20.0
+      - name: required_anchor_status_field
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: transition_status, unit: none}
+        allowed_values: [none, transition_status, zone_status]
+      - name: required_anchor_status_value
+        type: {container: Scalar, value: Enum, unit: none}
+        required: false
+        default: {payload_type: enum, value: PASS, unit: none}
+        allowed_values: [PASS, FAIL, UNKNOWN]
+    parameter_bindings:
+      maximum_window_seconds: maximum_window_seconds
+      minimum_settled_possession_seconds: minimum_settled_possession_seconds
+      required_anchor_status_field: required_anchor_status_field
+      required_anchor_status_value: required_anchor_status_value
+
   - id: binding.relation.local_number_relation.0_1_0
     kind: RuntimeBinding
     display_name: local_number_relation runtime binding
@@ -2612,6 +2851,27 @@ claim_contracts:
     permitted: [declared_before_after_numeric_change_evaluated]
     prohibited: [causal_change_inferred, tactical_causation_inferred, lane_coverage_proven, player_intent_inferred]
     unknown_conditions: [before_record_missing, after_record_missing, before_value_missing, after_value_missing, anchor_correlation_missing]
+  - id: claim.observed_transition_anchor.v1
+    kind: ClaimContract
+    display_name: Observed Transition Anchor Claims
+    description: Claims permitted for observed possession-role transition anchors.
+    permitted: [observed_possession_role_transition_evaluated, declared_prior_possession_continuity_checked]
+    prohibited: [transition_intent_inferred, counterattack_quality_inferred, tactical_causation_inferred, player_intent_inferred, role_taxonomy_inferred]
+    unknown_conditions: [possession_role_stream_missing, ball_alive_status_missing, prior_possession_window_incomplete, transition_frame_not_ball_alive]
+  - id: claim.observed_structured_zone.v1
+    kind: ClaimContract
+    display_name: Observed Structured Zone Claims
+    description: Claims permitted for coarse attacking-direction-normalized ball-zone checks.
+    permitted: [declared_ball_zone_membership_evaluated]
+    prohibited: [territorial_value_inferred, tactical_phase_quality_inferred, role_taxonomy_inferred, tactical_causation_inferred, player_intent_inferred]
+    unknown_conditions: [ball_position_missing, attacking_direction_missing_or_invalid, ball_near_zone_boundary]
+  - id: claim.observed_outcome_window.v1
+    kind: ClaimContract
+    display_name: Observed Outcome Window Claims
+    description: Claims permitted for retained-possession outcome-window checks.
+    permitted: [retained_possession_duration_threshold_evaluated, possession_phase_threshold_status_reported]
+    prohibited: [settled_quality_inferred, transition_intent_inferred, counterattack_quality_inferred, tactical_causation_inferred, decision_quality_inferred, optimality_inferred]
+    unknown_conditions: [anchor_frame_missing, outcome_window_incomplete, possession_role_stream_missing, ball_alive_status_missing, required_anchor_status_unknown]
   - id: claim.observed_lane_occupancy.v1
     kind: ClaimContract
     display_name: Observed Lane Occupancy Claims
@@ -2862,6 +3122,26 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, change_status, change_reason, before_value_field, after_value_field, before_value, after_value, change_value, change_mode, minimum_change_m, maximum_before_value_m]
     optional: [before_status_field, after_status_field, before_status, after_status]
     replay_projection: [before_frame, after_frame, before_after_measurement_badges]
+  - id: evidence.observed_transition_anchor.v1
+    kind: EvidenceContract
+    display_name: Observed Transition Anchor Evidence
+    description: Evidence required for observed possession-role transition anchors.
+    required: [anchor_id, anchor_frame_id, transition_status, transition_reason, transition_type, transition_frame_id, previous_frame_id, previous_team_role, new_team_role, prior_possession_frame_count, minimum_prior_possession_seconds, transition_match_time_ms]
+    optional: [zone_name, zone_status, zone_reason, zone_normalized_ball_x_m]
+    replay_projection: [transition_frame, previous_frame, possession_role_badge]
+  - id: evidence.observed_structured_zone.v1
+    kind: EvidenceContract
+    display_name: Observed Structured Zone Evidence
+    description: Evidence required for coarse ball-zone membership checks.
+    required: [anchor_id, anchor_frame_id, zone_status, zone_reason, zone_name, zone_frame_id, zone_ball_x_m, zone_ball_y_m, zone_normalized_ball_x_m, zone_boundary_buffer_m, attacking_direction]
+    replay_projection: [zone_frame, ball_marker, coarse_zone_badge]
+  - id: evidence.observed_outcome_window.v1
+    kind: EvidenceContract
+    display_name: Observed Outcome Window Evidence
+    description: Evidence required for retained-possession outcome-window checks.
+    required: [anchor_id, anchor_frame_id, outcome_window_status, outcome_window_reason, possession_phase_status, outcome_window_start_frame_id, outcome_window_end_frame_id, maximum_window_seconds, minimum_settled_possession_seconds, required_anchor_status_field, required_anchor_status_value]
+    optional: [settled_start_frame_id, settled_end_frame_id, loss_frame_id, stoppage_frame_id]
+    replay_projection: [outcome_window, settled_interval, loss_or_stoppage_marker]
   - id: evidence.observed_lane_occupancy.v1
     kind: EvidenceContract
     display_name: Observed Lane Occupancy Evidence
@@ -3128,6 +3408,27 @@ exposure_policies:
     subject_ref: runtime:primitive:change_across_anchor:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.transition_anchor.0_1_0
+    kind: ExposurePolicy
+    display_name: transition_anchor exposure
+    description: Exposure policy for transition_anchor.
+    subject_ref: runtime:primitive:transition_anchor:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.structured_zone.0_1_0
+    kind: ExposurePolicy
+    display_name: structured_zone exposure
+    description: Exposure policy for structured_zone.
+    subject_ref: runtime:primitive:structured_zone:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.outcome_window.0_1_0
+    kind: ExposurePolicy
+    display_name: outcome_window exposure
+    description: Exposure policy for outcome_window.
+    subject_ref: runtime:primitive:outcome_window:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
   - id: exposure.runtime.signed_lateral_shift.0_1_0
     kind: ExposurePolicy
     display_name: signed_lateral_shift exposure
@@ -3329,6 +3630,24 @@ projection_policies:
         permitted_fields: []
         rationale: Change across anchor is intentionally added for the Q4 compact-then-switch executable prefix.
         review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:transition_anchor:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 3e9945aa75b6d02953acd3c4eb7576372675e66cc442f6b2f29cd4021a3a4ee8
+        permitted_fields: []
+        rationale: Transition anchor is intentionally added for Q5 regain/outcome-window substrate.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:structured_zone:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 8ff674254979bc5bb021d218f9283ddfe5756ec7910e99297973ad39037d7c1c
+        permitted_fields: []
+        rationale: Structured zone is intentionally added for Q5 own-half and later zone clauses.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:outcome_window:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: b6b4021e18ac226e8d05fd5aa7216f2d564e3d89e3931c69f21b9e5d94c91148
+        permitted_fields: []
+        rationale: Outcome window is intentionally added for Q5 retained-possession outcome clauses.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
       - subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: 91fcabf7351c1253b89e552f75c188b83f7afe8aa591a7299b801e254234425f
@@ -3460,6 +3779,24 @@ projection_policies:
         projection_contract_hash: 6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd
         permitted_fields: []
         rationale: Change across anchor is intentionally added as an authorable Q4 before/after comparison primitive.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:transition_anchor:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 3e9945aa75b6d02953acd3c4eb7576372675e66cc442f6b2f29cd4021a3a4ee8
+        permitted_fields: []
+        rationale: Transition anchor is intentionally added as an authorable Q5 regain/outcome-window substrate primitive.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:structured_zone:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: 8ff674254979bc5bb021d218f9283ddfe5756ec7910e99297973ad39037d7c1c
+        permitted_fields: []
+        rationale: Structured zone is intentionally added as an authorable coarse-zone substrate primitive.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:outcome_window:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: b6b4021e18ac226e8d05fd5aa7216f2d564e3d89e3931c69f21b9e5d94c91148
+        permitted_fields: []
+        rationale: Outcome window is intentionally added as an authorable retained-possession outcome primitive.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
       - subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
         difference_kind: CONTRACT_CHANGED
@@ -3765,6 +4102,36 @@ maturity_assessments:
     display_name: change_across_anchor maturity
     description: Maturity assessment for change_across_anchor.
     subject_ref: runtime:primitive:change_across_anchor:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.transition_anchor.0_1_0
+    kind: MaturityAssessment
+    display_name: transition_anchor maturity
+    description: Maturity assessment for transition_anchor.
+    subject_ref: runtime:primitive:transition_anchor:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.structured_zone.0_1_0
+    kind: MaturityAssessment
+    display_name: structured_zone maturity
+    description: Maturity assessment for structured_zone.
+    subject_ref: runtime:primitive:structured_zone:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.outcome_window.0_1_0
+    kind: MaturityAssessment
+    display_name: outcome_window maturity
+    description: Maturity assessment for outcome_window.
+    subject_ref: runtime:primitive:outcome_window:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

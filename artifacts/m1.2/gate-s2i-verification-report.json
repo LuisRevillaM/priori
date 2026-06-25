@@ -2,8 +2,8 @@
   "checks": [
     {
       "details": {
-        "actual": "074d76e9377401b5d25ca1f125d2553fc135b1622e017261424eb780f04dad46",
-        "expected": "074d76e9377401b5d25ca1f125d2553fc135b1622e017261424eb780f04dad46"
+        "actual": "c152e0d09df79f02805851f67c1f0a752e072c42492ae7d0fa61572b4a192192",
+        "expected": "c152e0d09df79f02805851f67c1f0a752e072c42492ae7d0fa61572b4a192192"
       },
       "name": "pack.hash.matches_content",
       "ok": true
@@ -29,7 +29,9 @@
       "details": {
         "recipe_ids": [
           "ball_side_block_shift_v1",
+          "first_time_relay_after_receiver_line_transition_v1",
           "high_bypass_completed_pass_v1",
+          "line_break_support_response_v1",
           "opposite_corridor_after_shift_v1",
           "possession_corridor_availability_v1"
         ]
@@ -41,7 +43,9 @@
       "details": {
         "recipe_ids": [
           "ball_side_block_shift_v1",
+          "first_time_relay_after_receiver_line_transition_v1",
           "high_bypass_completed_pass_v1",
+          "line_break_support_response_v1",
           "opposite_corridor_after_shift_v1",
           "possession_corridor_availability_v1"
         ]
@@ -53,7 +57,9 @@
       "details": {
         "recipe_ids": [
           "ball_side_block_shift_v1",
+          "first_time_relay_after_receiver_line_transition_v1",
           "high_bypass_completed_pass_v1",
+          "line_break_support_response_v1",
           "opposite_corridor_after_shift_v1",
           "possession_corridor_availability_v1"
         ]
@@ -86,13 +92,22 @@
       "details": {
         "advertised_refs": [
           "ball_lateral_fraction",
+          "controlled_line_break_episode",
           "controlled_pass_episode",
+          "defensive_line_model",
           "defensive_outfield_centroid",
           "geometric_progressive_corridor",
           "geometric_progressive_corridor_from_anchor_set",
+          "lane_occupancy",
+          "local_number_relation",
+          "one_touch_relay_episode",
           "opponents_bypassed_by_action",
+          "pass_chain_episode",
           "possession_segment",
-          "signed_lateral_shift"
+          "receiver_line_transition_during_pass_leg",
+          "relative_position_to_line",
+          "signed_lateral_shift",
+          "support_arrival_relation"
         ]
       },
       "name": "pack.recipes.do_not_advertise_trusted_wrapper_as_authorable",
@@ -207,7 +222,7 @@
     },
     {
       "details": {
-        "count": 17
+        "count": 19
       },
       "name": "pack.source_hashes.present",
       "ok": true
@@ -221,8 +236,8 @@
     },
     {
       "details": {
-        "approx_tokens": 76531,
-        "json_chars": 306126
+        "approx_tokens": 118658,
+        "json_chars": 474635
       },
       "name": "pack.size.recorded",
       "ok": true
@@ -288,10 +303,10 @@
     }
   ],
   "gate": "S2I_A_tactical_knowledge_pack",
-  "generated_at": "2026-06-24T19:33:29+00:00",
+  "generated_at": "2026-06-25T11:21:28+00:00",
   "knowledge_pack_markdown_path": "generated/tactical-knowledge-pack.md",
   "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
-  "knowledge_pack_sha256": "074d76e9377401b5d25ca1f125d2553fc135b1622e017261424eb780f04dad46",
+  "knowledge_pack_sha256": "c152e0d09df79f02805851f67c1f0a752e072c42492ae7d0fa61572b4a192192",
   "passed": true,
   "schema_version": "1.0"
 }

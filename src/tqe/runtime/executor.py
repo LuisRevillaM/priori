@@ -94,6 +94,7 @@ BALL_ENTITY_ID = "DFL-OBJ-0000XT"
 BALL_TEAM_ID = "BALL"
 FRAME_RATE_HZ = 25
 PITCH_HALF_WIDTH_M = 34.0
+PITCH_HALF_LENGTH_M = 52.5
 
 DEFAULT_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 DEFAULT_CANONICAL_ROOT = Path(os.environ.get("TQE_DATA_ROOT", "data/canonical/v1"))
@@ -245,6 +246,9 @@ class TacticalQueryExecutor:
         )
         self.primitives: dict[str, PrimitiveImplementation] = {
             "possession_segment": primitive_possession_segment,
+            "transition_anchor": primitive_transition_anchor,
+            "structured_zone": primitive_structured_zone,
+            "outcome_window": primitive_outcome_window,
             "action_event_anchor": primitive_action_event_anchor,
             "action_chain": primitive_action_chain,
             "tracking_quality": primitive_tracking_quality,
@@ -2199,6 +2203,483 @@ def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) -> 
         for start, end in segment_true(possession_mask, minimum_frames)
     ]
     state.signals[node.node_id] = {"episodes": segments, "anchors": segments}
+
+
+def primitive_transition_anchor(state: PeriodState, node: BoundCatalogNode) -> None:
+    transition_type = node_parameter_text(node, "transition_type", "regain")
+    minimum_prior_possession_seconds = node_parameter_number(node, "minimum_prior_possession_seconds", 0.4)
+    zone_filter = node_parameter_text(node, "zone_filter", "any")
+    zone_boundary_buffer_m = node_parameter_number(node, "zone_boundary_buffer_m", 0.5)
+    if transition_type not in {"regain", "loss"}:
+        raise RuntimeError(f"Unsupported transition_type {transition_type}")
+    if zone_filter not in {"any", "own_half", "attacking_half", "middle_third", "final_third", "defensive_third"}:
+        raise RuntimeError(f"Unsupported transition zone_filter {zone_filter}")
+    analysis_rate_hz = state.params.integer("analysis_rate_hz")
+    prior_frames_required = max(1, int(math.ceil(minimum_prior_possession_seconds * analysis_rate_hz - 1e-9)))
+    orientation = parquet_rows(state.canonical_root / "orientation.parquet")
+    attack_x_sign = attack_x_sign_for(
+        orientation,
+        state.match_id,
+        state.period,
+        state.perspective_team_role,
+    )
+    records: list[dict[str, Any]] = []
+    previous_role_required = state.defending_team_role if transition_type == "regain" else state.perspective_team_role
+    new_role_required = state.perspective_team_role if transition_type == "regain" else state.defending_team_role
+    for idx in range(1, len(state.frame_ids)):
+        previous_role = str(state.possession_role[idx - 1])
+        new_role = str(state.possession_role[idx])
+        if previous_role != previous_role_required or new_role != new_role_required:
+            continue
+        frame_id = int(state.frame_ids[idx])
+        previous_frame_id = int(state.frame_ids[idx - 1])
+        prior_start = max(0, idx - prior_frames_required)
+        prior_slice = state.possession_role[prior_start:idx]
+        prior_alive = state.ball_alive[prior_start:idx]
+        prior_complete = (
+            len(prior_slice) >= prior_frames_required
+            and bool(np.all(prior_slice == previous_role_required))
+            and bool(np.all(prior_alive))
+        )
+        transition_alive = bool(state.ball_alive[idx])
+        zone = zone_evaluation_at_frame(
+            state=state,
+            frame_id=frame_id,
+            zone_name=zone_filter if zone_filter != "any" else "any",
+            attack_x_sign=attack_x_sign,
+            zone_boundary_buffer_m=zone_boundary_buffer_m,
+        )
+        status = "PASS"
+        reason = "transition_observed"
+        if not transition_alive:
+            status = "UNKNOWN"
+            reason = "transition_frame_not_ball_alive"
+        elif not prior_complete:
+            status = "UNKNOWN"
+            reason = "prior_possession_window_incomplete"
+        elif zone_filter != "any" and zone["zone_status"] != "PASS":
+            status = zone["zone_status"]
+            reason = f"zone_{zone['zone_reason']}"
+        entity_refs = [state.perspective_team_id]
+        anchor_id = anchor_record_id(
+            match_id=state.match_id,
+            period=state.period,
+            anchor_frame_id=frame_id,
+            start_frame_id=previous_frame_id,
+            end_frame_id=frame_id,
+            entity_refs=entity_refs,
+        )
+        records.append(
+            {
+                "anchor_id": anchor_id,
+                "match_id": state.match_id,
+                "period": state.period,
+                "anchor_frame_id": frame_id,
+                "start_frame_id": previous_frame_id,
+                "end_frame_id": frame_id,
+                "entity_refs": entity_refs,
+                "transition_status": status,
+                "transition_reason": reason,
+                "transition_type": transition_type,
+                "transition_frame_id": frame_id,
+                "previous_frame_id": previous_frame_id,
+                "previous_team_role": previous_role,
+                "new_team_role": new_role,
+                "prior_possession_frame_count": int(len(prior_slice)),
+                "minimum_prior_possession_seconds": minimum_prior_possession_seconds,
+                "transition_match_time_ms": frame_match_time_ms(state, frame_id),
+                "attacking_direction": attack_x_sign,
+                **zone,
+            }
+        )
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "transition_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if record["transition_status"] == "UNKNOWN" else record["transition_status"]
+                for record in records
+            ],
+            unknown_mask=[record["transition_status"] == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "transition_status").entity_scope,
+        ),
+        "transition_status_records": records,
+    }
+
+
+def primitive_structured_zone(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchors = runtime_records(anchor_value)
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    zone_name = node_parameter_text(node, "zone_name", "own_half")
+    zone_boundary_buffer_m = node_parameter_number(node, "zone_boundary_buffer_m", 0.5)
+    orientation = parquet_rows(state.canonical_root / "orientation.parquet")
+    attack_x_sign = attack_x_sign_for(
+        orientation,
+        state.match_id,
+        state.period,
+        state.perspective_team_role,
+    )
+    records: list[dict[str, Any]] = []
+    for anchor in anchors:
+        frame_id = optional_int(anchor.get(frame_field)) or optional_int(anchor.get("anchor_frame_id"))
+        anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+        if frame_id is None or anchor_frame_id is None:
+            continue
+        zone = zone_evaluation_at_frame(
+            state=state,
+            frame_id=frame_id,
+            zone_name=zone_name,
+            attack_x_sign=attack_x_sign,
+            zone_boundary_buffer_m=zone_boundary_buffer_m,
+        )
+        records.append(
+            {
+                **anchor,
+                "match_id": state.match_id,
+                "period": state.period,
+                "anchor_id": str(anchor.get("anchor_id")),
+                "anchor_frame_id": anchor_frame_id,
+                "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+                "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+                "entity_refs": list(anchor.get("entity_refs") or []),
+                "zone_frame_field": frame_field,
+                "zone_frame_id": frame_id,
+                "attacking_direction": attack_x_sign,
+                **zone,
+            }
+        )
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "zone_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if record["zone_status"] == "UNKNOWN" else record["zone_status"]
+                for record in records
+            ],
+            unknown_mask=[record["zone_status"] == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "zone_status").entity_scope,
+        ),
+        "zone_status_records": records,
+    }
+
+
+def primitive_outcome_window(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchors = runtime_records(anchor_value)
+    maximum_window_seconds = node_parameter_number(node, "maximum_window_seconds", 8.0)
+    minimum_settled_possession_seconds = node_parameter_number(node, "minimum_settled_possession_seconds", 4.0)
+    required_anchor_status_field = node_parameter_text(node, "required_anchor_status_field", "transition_status")
+    required_anchor_status_value = node_parameter_text(node, "required_anchor_status_value", "PASS")
+    records = [
+        outcome_window_anchor_record(
+            state=state,
+            anchor=anchor,
+            maximum_window_seconds=maximum_window_seconds,
+            minimum_settled_possession_seconds=minimum_settled_possession_seconds,
+            required_anchor_status_field=required_anchor_status_field,
+            required_anchor_status_value=required_anchor_status_value,
+        )
+        for anchor in anchors
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "outcome_window_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if record["outcome_window_status"] == "UNKNOWN" else record["outcome_window_status"]
+                for record in records
+            ],
+            unknown_mask=[record["outcome_window_status"] == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "outcome_window_status").entity_scope,
+        ),
+        "outcome_window_status_records": records,
+        "possession_phase_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=[
+                None if record["possession_phase_status"] == "UNKNOWN" else record["possession_phase_status"]
+                for record in records
+            ],
+            unknown_mask=[record["possession_phase_status"] == "UNKNOWN" for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "possession_phase_status").entity_scope,
+        ),
+        "possession_phase_status_records": records,
+    }
+
+
+def zone_evaluation_at_frame(
+    *,
+    state: PeriodState,
+    frame_id: int,
+    zone_name: str,
+    attack_x_sign: int | None,
+    zone_boundary_buffer_m: float,
+) -> dict[str, Any]:
+    ball_point = ball_point_at_frame(state, frame_id)
+    if attack_x_sign not in {-1, 1}:
+        return {
+            "zone_name": zone_name,
+            "zone_status": "UNKNOWN",
+            "zone_reason": "attacking_direction_invalid",
+            "zone_ball_x_m": None,
+            "zone_ball_y_m": None,
+            "zone_normalized_ball_x_m": None,
+            "zone_boundary_buffer_m": zone_boundary_buffer_m,
+        }
+    if ball_point is None:
+        return {
+            "zone_name": zone_name,
+            "zone_status": "UNKNOWN",
+            "zone_reason": "ball_position_missing",
+            "zone_ball_x_m": None,
+            "zone_ball_y_m": None,
+            "zone_normalized_ball_x_m": None,
+            "zone_boundary_buffer_m": zone_boundary_buffer_m,
+        }
+    x_m = float(ball_point[0])
+    y_m = float(ball_point[1])
+    normalized_x = x_m * int(attack_x_sign)
+    buffer_m = max(0.0, zone_boundary_buffer_m)
+    status = "FAIL"
+    reason = "outside_declared_zone"
+    if zone_name == "any":
+        status = "PASS"
+        reason = "zone_not_filtered"
+    elif zone_name == "own_half":
+        if normalized_x < -buffer_m:
+            status = "PASS"
+            reason = "ball_in_own_half"
+        elif abs(normalized_x) <= buffer_m:
+            status = "UNKNOWN"
+            reason = "ball_near_halfway_boundary"
+    elif zone_name == "attacking_half":
+        if normalized_x > buffer_m:
+            status = "PASS"
+            reason = "ball_in_attacking_half"
+        elif abs(normalized_x) <= buffer_m:
+            status = "UNKNOWN"
+            reason = "ball_near_halfway_boundary"
+    elif zone_name == "defensive_third":
+        threshold = -PITCH_HALF_LENGTH_M / 3.0
+        if normalized_x < threshold - buffer_m:
+            status = "PASS"
+            reason = "ball_in_defensive_third"
+        elif abs(normalized_x - threshold) <= buffer_m:
+            status = "UNKNOWN"
+            reason = "ball_near_third_boundary"
+    elif zone_name == "middle_third":
+        threshold = PITCH_HALF_LENGTH_M / 3.0
+        if -threshold + buffer_m < normalized_x < threshold - buffer_m:
+            status = "PASS"
+            reason = "ball_in_middle_third"
+        elif abs(abs(normalized_x) - threshold) <= buffer_m:
+            status = "UNKNOWN"
+            reason = "ball_near_third_boundary"
+    elif zone_name == "final_third":
+        threshold = PITCH_HALF_LENGTH_M / 3.0
+        if normalized_x > threshold + buffer_m:
+            status = "PASS"
+            reason = "ball_in_final_third"
+        elif abs(normalized_x - threshold) <= buffer_m:
+            status = "UNKNOWN"
+            reason = "ball_near_third_boundary"
+    else:
+        status = "UNKNOWN"
+        reason = "unsupported_zone_name"
+    return {
+        "zone_name": zone_name,
+        "zone_status": status,
+        "zone_reason": reason,
+        "zone_ball_x_m": round(x_m, 3),
+        "zone_ball_y_m": round(y_m, 3),
+        "zone_normalized_ball_x_m": round(float(normalized_x), 3),
+        "zone_boundary_buffer_m": zone_boundary_buffer_m,
+    }
+
+
+def outcome_window_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    maximum_window_seconds: float,
+    minimum_settled_possession_seconds: float,
+    required_anchor_status_field: str,
+    required_anchor_status_value: str,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    if anchor_frame_id is None:
+        return None
+    if required_anchor_status_field != "none":
+        anchor_status = anchor.get(required_anchor_status_field)
+        if anchor_status is None or str(anchor_status) == "UNKNOWN":
+            return outcome_window_prefilter_record(
+                state=state,
+                anchor=anchor,
+                anchor_frame_id=anchor_frame_id,
+                maximum_window_seconds=maximum_window_seconds,
+                minimum_settled_possession_seconds=minimum_settled_possession_seconds,
+                required_anchor_status_field=required_anchor_status_field,
+                required_anchor_status_value=required_anchor_status_value,
+                status="UNKNOWN",
+                reason="required_anchor_status_unknown",
+            )
+        if str(anchor_status) != required_anchor_status_value:
+            return outcome_window_prefilter_record(
+                state=state,
+                anchor=anchor,
+                anchor_frame_id=anchor_frame_id,
+                maximum_window_seconds=maximum_window_seconds,
+                minimum_settled_possession_seconds=minimum_settled_possession_seconds,
+                required_anchor_status_field=required_anchor_status_field,
+                required_anchor_status_value=required_anchor_status_value,
+                status="FAIL",
+                reason="required_anchor_status_not_met",
+            )
+    frame_index = analysis_frame_index(state).get(anchor_frame_id)
+    if frame_index is None:
+        return outcome_window_prefilter_record(
+            state=state,
+            anchor=anchor,
+            anchor_frame_id=anchor_frame_id,
+            maximum_window_seconds=maximum_window_seconds,
+            minimum_settled_possession_seconds=minimum_settled_possession_seconds,
+            required_anchor_status_field=required_anchor_status_field,
+            required_anchor_status_value=required_anchor_status_value,
+            status="UNKNOWN",
+            reason="anchor_frame_not_in_analysis_stream",
+        )
+    analysis_rate_hz = state.params.integer("analysis_rate_hz")
+    horizon_frames = max(1, int(math.ceil(maximum_window_seconds * analysis_rate_hz - 1e-9)))
+    settled_frames = max(1, int(math.ceil(minimum_settled_possession_seconds * analysis_rate_hz - 1e-9)))
+    end_index_exclusive = min(len(state.frame_ids), frame_index + horizon_frames + 1)
+    window_roles = state.possession_role[frame_index:end_index_exclusive]
+    window_alive = state.ball_alive[frame_index:end_index_exclusive]
+    window_frame_ids = state.frame_ids[frame_index:end_index_exclusive]
+    if len(window_frame_ids) < settled_frames:
+        status = "UNKNOWN"
+        reason = "outcome_window_incomplete"
+        settled_start_frame_id = None
+        settled_end_frame_id = None
+        loss_frame_id = None
+        stoppage_frame_id = None
+    else:
+        retained_mask = (window_roles == state.perspective_team_role) & window_alive
+        segments = segment_true(retained_mask, settled_frames)
+        settled_segment = segments[0] if segments else None
+        loss_indices = np.where((window_roles != state.perspective_team_role) & window_alive)[0]
+        dead_indices = np.where(~window_alive)[0]
+        loss_frame_id = int(window_frame_ids[int(loss_indices[0])]) if len(loss_indices) else None
+        stoppage_frame_id = int(window_frame_ids[int(dead_indices[0])]) if len(dead_indices) else None
+        if settled_segment is not None:
+            start, end = settled_segment
+            status = "PASS"
+            reason = "settled_possession_window_observed"
+            settled_start_frame_id = int(window_frame_ids[start])
+            settled_end_frame_id = int(window_frame_ids[end])
+        elif loss_frame_id is not None:
+            status = "FAIL"
+            reason = "possession_lost_before_settled_window"
+            settled_start_frame_id = None
+            settled_end_frame_id = None
+        elif stoppage_frame_id is not None:
+            status = "FAIL"
+            reason = "stoppage_before_settled_window"
+            settled_start_frame_id = None
+            settled_end_frame_id = None
+        elif end_index_exclusive >= len(state.frame_ids):
+            status = "UNKNOWN"
+            reason = "period_ended_before_outcome_window_complete"
+            settled_start_frame_id = None
+            settled_end_frame_id = None
+        else:
+            status = "FAIL"
+            reason = "settled_threshold_not_met_within_window"
+            settled_start_frame_id = None
+            settled_end_frame_id = None
+    outcome_window_end_frame_id = int(window_frame_ids[-1]) if len(window_frame_ids) else anchor_frame_id
+    possession_phase_status = "SETTLED" if status == "PASS" else ("UNKNOWN" if status == "UNKNOWN" else "NOT_SETTLED")
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "outcome_window_status": status,
+        "outcome_window_reason": reason,
+        "possession_phase_status": possession_phase_status,
+        "outcome_window_start_frame_id": anchor_frame_id,
+        "outcome_window_end_frame_id": outcome_window_end_frame_id,
+        "maximum_window_seconds": maximum_window_seconds,
+        "minimum_settled_possession_seconds": minimum_settled_possession_seconds,
+        "settled_start_frame_id": settled_start_frame_id,
+        "settled_end_frame_id": settled_end_frame_id,
+        "loss_frame_id": loss_frame_id,
+        "stoppage_frame_id": stoppage_frame_id,
+        "required_anchor_status_field": required_anchor_status_field,
+        "required_anchor_status_value": required_anchor_status_value,
+    }
+
+
+def outcome_window_prefilter_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    anchor_frame_id: int,
+    maximum_window_seconds: float,
+    minimum_settled_possession_seconds: float,
+    required_anchor_status_field: str,
+    required_anchor_status_value: str,
+    status: str,
+    reason: str,
+) -> dict[str, Any]:
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "outcome_window_status": status,
+        "outcome_window_reason": reason,
+        "possession_phase_status": "UNKNOWN" if status == "UNKNOWN" else "NOT_SETTLED",
+        "outcome_window_start_frame_id": anchor_frame_id,
+        "outcome_window_end_frame_id": anchor_frame_id,
+        "maximum_window_seconds": maximum_window_seconds,
+        "minimum_settled_possession_seconds": minimum_settled_possession_seconds,
+        "settled_start_frame_id": None,
+        "settled_end_frame_id": None,
+        "loss_frame_id": None,
+        "stoppage_frame_id": None,
+        "required_anchor_status_field": required_anchor_status_field,
+        "required_anchor_status_value": required_anchor_status_value,
+    }
+
+
+def analysis_frame_index(state: PeriodState) -> dict[int, int]:
+    key = ("analysis_frame_index",)
+    if key not in state.lookup_cache:
+        state.lookup_cache[key] = {
+            int(frame_id): index
+            for index, frame_id in enumerate(state.frame_ids)
+        }
+    return state.lookup_cache[key]
 
 
 def primitive_action_event_anchor(state: PeriodState, node: BoundCatalogNode) -> None:
