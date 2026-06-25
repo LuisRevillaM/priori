@@ -1972,12 +1972,13 @@
   "concept": "carry_out_of_pressure",
   "family": "Carrying, dribbling, evasion, and ball progression on foot",
   "classification": "supported",
-  "justification": "carry_episode anchors movement-under-control; pressure_on_carrier at carry start/end plus change_across_anchor compares nearest-defender distance across the same carry. Q2 proves this pressure-reduction composition in an honest-zero capstone.",
+  "justification": "carry_episode anchors movement-under-control; pressure_on_carrier at carry start/end plus change_across_anchor compares nearest-defender distance across the same carry. Q2 now proves this pressure-reduction composition through reusable binary episode joins in an honest-zero capstone.",
   "required_missing_capability": "",
   "closest_supported_substitute": "carry_episode + pressure_on_carrier + change_across_anchor",
   "composition_constraint_needed": true,
   "priority_unlock": "HIGH",
-  "composition_constraint_note": "Requires pressure measured for the carrier at carry start and carry end under the same carry anchor; Q2 records this alignment explicitly."
+  "composition_constraint_note": "Requires pressure measured for the carrier at carry start and carry end under the same carry anchor; Q2 records this alignment explicitly.",
+  "compiler_reachability_status": "generically_composable"
  },
  {
   "concept": "carry_pressure_profile",

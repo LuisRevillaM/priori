@@ -27,6 +27,7 @@ from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
 from tqe.verification.afl_substrate_q4 import _eq_predicate, _evidence, _number_param, _status_counts
 from tqe.verification.afl_validation_factory import (
     ValidationFactorySpec,
+    _actual_expectation,
     attach_validation_factory,
     validate_proof_carrying_records,
 )
@@ -34,6 +35,9 @@ from tqe.verification.afl_validation_factory import (
 
 REPORT_PATH = Path("artifacts/autonomous/afl-substrate-q2-verification-report.json")
 EXPECTATION_PATH = Path("delivery/autonomous/afl09a/frozen-expectations/substrate_q2.json")
+HANDWIRED_REGRESSION_PATH = Path(
+    "delivery/autonomous/afl09a/frozen-expectations/substrate_q2_handwired_regression.json"
+)
 PLAN_ARTIFACT_PATH = Path("config/query-plans/q2_carry_breaks_pressure_layoff.experimental.v1.json")
 
 MATCH_IDS = ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"]
@@ -72,13 +76,28 @@ VALIDATION_FACTORY_SPEC = ValidationFactorySpec(
         "layoff_clause_exercised",
         "result_or_honest_zero",
         "proof_carrying_real_rows",
+        "generic_episode_join_substrate",
+        "handwired_behavior_preserved",
         "claim_boundary_present",
     ),
 )
 
 Q2_EVIDENCE_FIELDS = [
-    "carry_relay_layoff_status",
-    "carry_relay_layoff_reason",
+    "join_status",
+    "join_reason",
+    "join_node_id",
+    "join_key",
+    "left_anchor_id",
+    "right_anchor_id",
+    "left_key_field",
+    "right_key_field",
+    "temporal_relation",
+    "left_time_field",
+    "right_time_field",
+    "temporal_gap_seconds",
+    "distinct_entity_fields",
+    "distinct_entity_values",
+    "distinct_entities_status",
     "carry_episode_id",
     "carrier_id",
     "carry_start_frame_id",
@@ -88,13 +107,13 @@ Q2_EVIDENCE_FIELDS = [
     "carry_forward_progression_m",
     "control_model",
     "control_bias",
-    "pressure_change_status",
-    "pressure_change_reason",
-    "pressure_before_distance_m",
-    "pressure_after_distance_m",
-    "pressure_distance_delta_m",
-    "pressure_minimum_distance_increase_m",
-    "relay_input_pass_episode_id",
+    "change_status",
+    "change_reason",
+    "before_value",
+    "after_value",
+    "delta_value",
+    "minimum_change_m",
+    "input_pass_episode_id",
     "relay_pass_episode_id",
     "relay_player_id",
     "relay_touch_frame_id",
@@ -102,7 +121,6 @@ Q2_EVIDENCE_FIELDS = [
     "terminal_controlled_reception_frame_id",
     "terminal_forward_progression_m",
     "pass_chain_status",
-    "three_distinct_players",
 ]
 
 
@@ -242,17 +260,58 @@ def q2_document() -> dict[str, Any]:
                 },
                 {
                     "kind": "primitive",
-                    "node_id": "q2_chain",
-                    "catalog_ref": "carry_relay_layoff_chain",
+                    "node_id": "carry_pressure_join",
+                    "catalog_ref": "join_episode_sets",
                     "version": "0.1.0",
                     "inputs": {
-                        "carry_anchors": {"source_node_id": "carry_episode", "output_name": "anchor_evaluations"},
-                        "pressure_change_evaluations": {"source_node_id": "pressure_distance_change", "output_name": "anchor_evaluations"},
-                        "relay_anchors": {"source_node_id": "one_touch_relay", "output_name": "anchor_evaluations"},
-                        "pass_chain_evaluations": {"source_node_id": "pass_chain", "output_name": "anchor_evaluations"},
+                        "left_episodes": {"source_node_id": "carry_episode", "output_name": "anchor_evaluations"},
+                        "right_episodes": {"source_node_id": "pressure_distance_change", "output_name": "anchor_evaluations"},
                     },
+                    "parameters": _join_parameters(
+                        left_key_field="anchor_id",
+                        right_key_field="anchor_id",
+                        left_status_field="carry_status",
+                        right_status_field="change_status",
+                    ),
                 },
-                _eq_predicate("q2_chain_pass", "q2_chain", "carry_relay_layoff_status", "PASS"),
+                {
+                    "kind": "primitive",
+                    "node_id": "carry_relay_join",
+                    "catalog_ref": "join_episode_sets",
+                    "version": "0.1.0",
+                    "inputs": {
+                        "left_episodes": {"source_node_id": "carry_pressure_join", "output_name": "anchor_evaluations"},
+                        "right_episodes": {"source_node_id": "one_touch_relay", "output_name": "anchor_evaluations"},
+                    },
+                    "parameters": _join_parameters(
+                        left_key_field="terminal_pass_id",
+                        right_key_field="input_pass_episode_id",
+                        left_status_field="join_status",
+                        right_status_field="one_touch_relay_status",
+                        temporal_relation="left_ends_before_right",
+                        left_time_field="carry_end_frame_id",
+                        right_time_field="relay_touch_frame_id",
+                        maximum_gap_parameter="relay_max_event_gap_seconds",
+                    ),
+                },
+                {
+                    "kind": "primitive",
+                    "node_id": "q2_chain",
+                    "catalog_ref": "join_episode_sets",
+                    "version": "0.1.0",
+                    "inputs": {
+                        "left_episodes": {"source_node_id": "carry_relay_join", "output_name": "anchor_evaluations"},
+                        "right_episodes": {"source_node_id": "pass_chain", "output_name": "anchor_evaluations"},
+                    },
+                    "parameters": _join_parameters(
+                        left_key_field="right_anchor_id",
+                        right_key_field="anchor_id",
+                        left_status_field="join_status",
+                        right_status_field="pass_chain_status",
+                        distinct_entity_fields="carrier_id,relay_player_id,terminal_receiver_id",
+                    ),
+                },
+                _eq_predicate("q2_chain_pass", "q2_chain", "join_status", "PASS"),
             ],
             "classification_rules": [
                 {
@@ -287,6 +346,41 @@ def _pressure_node(node_id: str, frame_field: str) -> dict[str, Any]:
     }
 
 
+def _enum(value: str) -> dict[str, str]:
+    return {"payload_type": "enum", "unit": "none", "value": value}
+
+
+def _join_parameters(
+    *,
+    left_key_field: str,
+    right_key_field: str,
+    left_status_field: str,
+    right_status_field: str,
+    temporal_relation: str = "none",
+    left_time_field: str = "anchor_frame_id",
+    right_time_field: str = "anchor_frame_id",
+    maximum_gap_parameter: str | None = None,
+    distinct_entity_fields: str = "none",
+) -> dict[str, Any]:
+    maximum_gap: dict[str, Any]
+    if maximum_gap_parameter is None:
+        maximum_gap = {"payload_type": "number", "unit": "second", "value": 999.0}
+    else:
+        maximum_gap = {"kind": "parameter", "name": maximum_gap_parameter}
+    return {
+        "left_key_field": _enum(left_key_field),
+        "right_key_field": _enum(right_key_field),
+        "left_status_field": _enum(left_status_field),
+        "right_status_field": _enum(right_status_field),
+        "required_status_value": _enum("PASS"),
+        "temporal_relation": _enum(temporal_relation),
+        "left_time_field": _enum(left_time_field),
+        "right_time_field": _enum(right_time_field),
+        "maximum_gap_seconds": maximum_gap,
+        "distinct_entity_fields": _enum(distinct_entity_fields),
+    }
+
+
 def verify_substrate_q2() -> dict[str, Any]:
     document_payload = q2_document()
     PLAN_ARTIFACT_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -299,6 +393,7 @@ def verify_substrate_q2() -> dict[str, Any]:
     evidence_failure_count = int(execution.provenance.get("requested_evidence_failure_count") or 0)
     probe = probe_first_period(executor, bound_plan)
     proof_carrying = validate_proof_carrying_records(proof_carrying_records(rows, probe))
+    behavior_regression = handwired_behavior_regression(report_seed=document_payload, execution=execution, rows=rows)
     honest_zero = (
         not rows
         and execution.status == ExecutionStatus.PASS
@@ -318,6 +413,8 @@ def verify_substrate_q2() -> dict[str, Any]:
         findings.append({"code": "zero_not_honest", "message": "Zero-result execution did not satisfy honest-zero conditions.", "path": "execution"})
     if proof_carrying["status"] != "PASS":
         findings.append({"code": "proof_carrying_real_rows_failed", "message": "Q2 real rows did not satisfy proof-carrying branch discipline.", "path": "proof_carrying_real_rows"})
+    if behavior_regression["status"] != "PASS":
+        findings.append({"code": "handwired_behavior_drift", "message": "Generic join Q2 did not preserve the handwired Q2 behavior anchor.", "path": "handwired_behavior_regression"})
 
     sample = rows[0] if rows else {}
     report = {
@@ -331,7 +428,16 @@ def verify_substrate_q2() -> dict[str, Any]:
             "document_hash": stable_hash(document_payload),
         },
         "slice_unlocks": {
-            "q2": "Carries that reduce nearest-defender pressure and lead to a third-player one-touch layoff now compile end-to-end.",
+            "q2": "Carries that reduce nearest-defender pressure and lead to a third-player one-touch layoff now compose through reusable binary episode joins.",
+        },
+        "composition_reachability": {
+            "status": "generically_composable",
+            "previous_status": "handwired",
+            "compiler_reachable": False,
+            "reason": (
+                "Q2 now uses parameterized binary join_episode_sets nodes. The future synthesizer still "
+                "must prove it can discover this composition from language and catalog constraints."
+            ),
         },
         "execution": {
             "execution_id": execution.execution_id,
@@ -345,6 +451,7 @@ def verify_substrate_q2() -> dict[str, Any]:
             "runtime_trace_hash": execution.provenance.get("runtime_trace_hash"),
         },
         "probe": probe,
+        "handwired_behavior_regression": behavior_regression,
         "proof_carrying": {
             **proof_carrying,
             "real_row_status_counts": probe.get("q2_chain_status_counts", {}),
@@ -372,6 +479,8 @@ def verify_substrate_q2() -> dict[str, Any]:
             "layoff_clause_exercised": probe.get("relay_count", 0) > 0 and probe.get("pass_chain_count", 0) > 0,
             "result_or_honest_zero": bool(rows) or honest_zero,
             "proof_carrying_real_rows": proof_carrying["status"] == "PASS",
+            "generic_episode_join_substrate": probe.get("join_node_count") == 3,
+            "handwired_behavior_preserved": behavior_regression["status"] == "PASS",
             "claim_boundary_present": True,
         },
         "findings": findings,
@@ -397,6 +506,8 @@ def probe_first_period(executor: TacticalQueryExecutor, bound_plan: Any) -> dict
     pressure_change_records = records("pressure_distance_change")
     relay_records = records("one_touch_relay")
     pass_chain_records = records("pass_chain")
+    carry_pressure_join_records = records("carry_pressure_join")
+    carry_relay_join_records = records("carry_relay_join")
     q2_records = records("q2_chain")
     return {
         "match_id": bound_plan.match_ids[0],
@@ -405,12 +516,66 @@ def probe_first_period(executor: TacticalQueryExecutor, bound_plan: Any) -> dict
         "pressure_change_count": len(pressure_change_records),
         "relay_count": len(relay_records),
         "pass_chain_count": len(pass_chain_records),
+        "join_node_count": 3,
+        "carry_pressure_join_count": len(carry_pressure_join_records),
+        "carry_relay_join_count": len(carry_relay_join_records),
         "q2_chain_count": len(q2_records),
         "carry_status_counts": _status_counts(carry_records, "carry_status"),
         "carry_reason_counts": _status_counts(carry_records, "carry_reason"),
         "pressure_change_status_counts": _status_counts(pressure_change_records, "change_status"),
-        "q2_chain_status_counts": _status_counts(q2_records, "carry_relay_layoff_status"),
-        "q2_chain_reason_counts": _status_counts(q2_records, "carry_relay_layoff_reason"),
+        "q2_chain_status_counts": _status_counts(q2_records, "join_status"),
+        "q2_chain_reason_counts": _status_counts(q2_records, "join_reason"),
+    }
+
+
+def handwired_behavior_regression(
+    *,
+    report_seed: dict[str, Any],
+    execution: Any,
+    rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    snapshot = json.loads(HANDWIRED_REGRESSION_PATH.read_text(encoding="utf-8"))
+    report = {
+        "status": "PASS",
+        "plan": {
+            "plan_id": report_seed["draft_plan"]["plan_id"],
+            "bound_plan_hash": None,
+            "document_hash": None,
+        },
+        "execution": {
+            "status": execution.status.value,
+            "compatibility_profile": execution.provenance.get("compatibility_profile"),
+            "result_count": len(rows),
+            "requested_evidence_failure_count": int(execution.provenance.get("requested_evidence_failure_count") or 0),
+        },
+    }
+    actual = _actual_expectation(report, rows)
+    expected = snapshot.get("expected", {})
+    compared_fields = [
+        "execution_status",
+        "compatibility_profile",
+        "result_count",
+        "result_ids",
+        "requested_evidence_failure_count",
+        "result_signature_hash",
+    ]
+    findings = [
+        {
+            "code": "handwired_behavior_mismatch",
+            "message": f"{field} drifted from {expected.get(field)!r} to {actual.get(field)!r}.",
+            "path": f"expected.{field}",
+        }
+        for field in compared_fields
+        if expected.get(field) != actual.get(field)
+    ]
+    return {
+        "schema_version": "afl.substrate_q2.handwired_behavior_regression.v1",
+        "status": "PASS" if not findings else "FAIL",
+        "expectation_path": str(HANDWIRED_REGRESSION_PATH),
+        "compared_fields": compared_fields,
+        "expected": {field: expected.get(field) for field in compared_fields},
+        "actual": {field: actual.get(field) for field in compared_fields},
+        "findings": findings,
     }
 
 

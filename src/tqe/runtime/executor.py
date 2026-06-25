@@ -256,7 +256,7 @@ class TacticalQueryExecutor:
             "velocity": primitive_velocity,
             "time_to_arrival": primitive_time_to_arrival,
             "carry_episode": primitive_carry_episode,
-            "carry_relay_layoff_chain": primitive_carry_relay_layoff_chain,
+            "join_episode_sets": primitive_join_episode_sets,
             "team_compactness": primitive_team_compactness,
             "switch_of_play": primitive_switch_of_play,
             "change_across_anchor": primitive_change_across_anchor,
@@ -3944,152 +3944,314 @@ def primitive_carry_episode(state: PeriodState, node: BoundCatalogNode) -> None:
     }
 
 
-def primitive_carry_relay_layoff_chain(state: PeriodState, node: BoundCatalogNode) -> None:
-    carry_records = runtime_records(catalog_input_value(state, node, "carry_anchors"))
-    pressure_records = runtime_records(catalog_input_value(state, node, "pressure_change_evaluations"))
-    relay_records = runtime_records(catalog_input_value(state, node, "relay_anchors"))
-    pass_chain_records = runtime_records(catalog_input_value(state, node, "pass_chain_evaluations"))
-    pressure_by_anchor_id = record_by_anchor_id(pressure_records)
-    relay_by_input_pass_id = {
-        str(record.get("input_pass_episode_id")): record
-        for record in relay_records
-        if isinstance(record, dict) and record.get("input_pass_episode_id") is not None
-    }
-    pass_chain_by_anchor_id = record_by_anchor_id(pass_chain_records)
+def primitive_join_episode_sets(state: PeriodState, node: BoundCatalogNode) -> None:
+    left_records = runtime_records(catalog_input_value(state, node, "left_episodes"))
+    right_records = runtime_records(catalog_input_value(state, node, "right_episodes"))
+    left_key_field = node_parameter_text(node, "left_key_field", "anchor_id")
+    right_key_field = node_parameter_text(node, "right_key_field", "anchor_id")
+    left_status_field = node_parameter_text(node, "left_status_field", "none")
+    right_status_field = node_parameter_text(node, "right_status_field", "none")
+    required_status_value = node_parameter_text(node, "required_status_value", "PASS")
+    temporal_relation = node_parameter_text(node, "temporal_relation", "none")
+    left_time_field = node_parameter_text(node, "left_time_field", "anchor_frame_id")
+    right_time_field = node_parameter_text(node, "right_time_field", "anchor_frame_id")
+    maximum_gap_seconds = node_parameter_number(node, "maximum_gap_seconds", 999.0)
+    distinct_entity_fields = node_parameter_text(node, "distinct_entity_fields", "none")
+
+    right_by_key: dict[str, list[dict[str, Any]]] = {}
+    for right in right_records:
+        key = right.get(right_key_field)
+        if key is None:
+            continue
+        right_by_key.setdefault(str(key), []).append(right)
+
     records = [
-        carry_relay_layoff_chain_record(
+        join_episode_sets_record(
             state=state,
-            carry_record=carry_record,
-            pressure_record=pressure_by_anchor_id.get(str(carry_record.get("anchor_id"))) if isinstance(carry_record, dict) else None,
-            relay_record=relay_by_input_pass_id.get(str(carry_record.get("terminal_pass_id"))) if isinstance(carry_record, dict) else None,
-            pass_chain_by_anchor_id=pass_chain_by_anchor_id,
+            node=node,
+            left_record=left,
+            right_by_key=right_by_key,
+            left_key_field=left_key_field,
+            right_key_field=right_key_field,
+            left_status_field=left_status_field,
+            right_status_field=right_status_field,
+            required_status_value=required_status_value,
+            temporal_relation=temporal_relation,
+            left_time_field=left_time_field,
+            right_time_field=right_time_field,
+            maximum_gap_seconds=maximum_gap_seconds,
+            distinct_entity_fields=distinct_entity_fields,
         )
-        for carry_record in carry_records
-        if isinstance(carry_record, dict)
+        for left in left_records
+        if isinstance(left, dict)
     ]
     records = [record for record in records if record is not None]
-    episodes = [record for record in records if str(record.get("carry_relay_layoff_status")) == "PASS"]
+    episodes = [record for record in records if str(record.get("join_status")) == "PASS"]
     frame_ids = [int(record["anchor_frame_id"]) for record in records]
     state.signals[node.node_id] = {
         "episodes": episodes,
         "episodes_records": episodes,
         "anchor_evaluations": records,
         "anchor_evaluations_records": records,
-        "carry_relay_layoff_status": FrameSignal(
+        "join_status": FrameSignal(
             frame_ids=frame_ids,
             values=[
-                None
-                if str(record["carry_relay_layoff_status"]) == "UNKNOWN"
-                else str(record["carry_relay_layoff_status"])
+                None if str(record["join_status"]) == "UNKNOWN" else str(record["join_status"])
                 for record in records
             ],
-            unknown_mask=[str(record["carry_relay_layoff_status"]) == "UNKNOWN" for record in records],
+            unknown_mask=[str(record["join_status"]) == "UNKNOWN" for record in records],
             unit=Unit.NONE,
-            entity_scope=catalog_output(node, "carry_relay_layoff_status").entity_scope,
+            entity_scope=catalog_output(node, "join_status").entity_scope,
         ),
-        "carry_relay_layoff_status_records": records,
+        "join_status_records": records,
     }
 
 
-def carry_relay_layoff_chain_record(
+def join_episode_sets_record(
     *,
     state: PeriodState,
-    carry_record: dict[str, Any],
-    pressure_record: dict[str, Any] | None,
-    relay_record: dict[str, Any] | None,
-    pass_chain_by_anchor_id: dict[str, dict[str, Any]],
+    node: BoundCatalogNode,
+    left_record: dict[str, Any],
+    right_by_key: dict[str, list[dict[str, Any]]],
+    left_key_field: str,
+    right_key_field: str,
+    left_status_field: str,
+    right_status_field: str,
+    required_status_value: str,
+    temporal_relation: str,
+    left_time_field: str,
+    right_time_field: str,
+    maximum_gap_seconds: float,
+    distinct_entity_fields: str,
 ) -> dict[str, Any] | None:
-    anchor_frame_id = optional_int(carry_record.get("anchor_frame_id"))
+    anchor_frame_id = optional_int(left_record.get("anchor_frame_id"))
     if anchor_frame_id is None:
         return None
-    pass_chain_record = (
-        pass_chain_by_anchor_id.get(str(relay_record.get("anchor_id")))
-        if isinstance(relay_record, dict)
-        else None
-    )
-    carrier_id = str(carry_record.get("carrier_id") or "")
-    relay_player_id = str(relay_record.get("relay_player_id") or "") if isinstance(relay_record, dict) else ""
-    terminal_receiver_id = (
-        str(pass_chain_record.get("terminal_receiver_id") or "")
-        if isinstance(pass_chain_record, dict)
-        else ""
-    )
+    left_key = left_record.get(left_key_field)
+    matches = [] if left_key is None else right_by_key.get(str(left_key), [])
+    right_record = matches[0] if len(matches) == 1 else None
     status = "UNKNOWN"
-    reason = "chain_evidence_missing"
-    if str(carry_record.get("carry_status")) == "UNKNOWN":
-        reason = "carry_status_unknown"
-    elif str(carry_record.get("carry_status")) != "PASS":
+    reason = "join_evidence_missing"
+    if not status_satisfies_join(left_record, left_status_field, required_status_value):
+        status, reason = join_status_failure(left_record, "left", left_status_field, required_status_value)
+    elif left_key is None:
+        reason = "left_join_key_missing"
+    elif not matches:
         status = "FAIL"
-        reason = "carry_status_not_pass"
-    elif pressure_record is None:
-        reason = "pressure_change_record_missing"
-    elif str(pressure_record.get("change_status")) == "UNKNOWN":
-        reason = "pressure_change_unknown"
-    elif str(pressure_record.get("change_status")) != "PASS":
-        status = "FAIL"
-        reason = "pressure_reduction_not_observed"
-    elif relay_record is None:
-        status = "FAIL"
-        reason = "relay_not_linked_to_carry_terminal_pass"
-    elif str(relay_record.get("one_touch_relay_status")) == "UNKNOWN":
-        reason = "relay_status_unknown"
-    elif str(relay_record.get("one_touch_relay_status")) != "PASS":
-        status = "FAIL"
-        reason = "relay_status_not_pass"
-    elif str(relay_record.get("input_pass_episode_id")) != str(carry_record.get("terminal_pass_id")):
-        status = "FAIL"
-        reason = "carry_terminal_pass_not_relay_input"
-    elif carrier_id and str(relay_record.get("input_passer_id") or "") != carrier_id:
-        status = "FAIL"
-        reason = "carry_carrier_not_terminal_passer"
-    elif pass_chain_record is None:
-        reason = "pass_chain_record_missing"
-    elif str(pass_chain_record.get("pass_chain_status")) == "UNKNOWN":
-        reason = "pass_chain_status_unknown"
-    elif str(pass_chain_record.get("pass_chain_status")) != "PASS":
-        status = "FAIL"
-        reason = "pass_chain_status_not_pass"
-    elif not carrier_id or not relay_player_id or not terminal_receiver_id:
-        reason = "player_identity_missing"
-    elif len({carrier_id, relay_player_id, terminal_receiver_id}) < 3:
-        status = "FAIL"
-        reason = "third_player_not_distinct"
+        reason = "right_join_key_not_found"
+    elif len(matches) > 1:
+        reason = "right_join_key_not_unique"
+    elif right_record is None:
+        reason = "right_record_missing"
+    elif not status_satisfies_join(right_record, right_status_field, required_status_value):
+        status, reason = join_status_failure(right_record, "right", right_status_field, required_status_value)
     else:
-        status = "PASS"
-        reason = "carry_pressure_reduction_to_third_player_layoff_observed"
+        status, reason = temporal_join_status(
+            left_record=left_record,
+            right_record=right_record,
+            temporal_relation=temporal_relation,
+            left_time_field=left_time_field,
+            right_time_field=right_time_field,
+            maximum_gap_seconds=maximum_gap_seconds,
+        )
+        if status == "PASS":
+            status, reason = distinct_join_status(
+                joined=project_joined_record(left_record, right_record),
+                distinct_entity_fields=distinct_entity_fields,
+            )
+    joined = project_joined_record(left_record, right_record)
+    distinct_fields = parse_distinct_entity_fields(distinct_entity_fields)
+    distinct_values = {field: joined.get(field) for field in distinct_fields}
+    entity_refs = combined_entity_refs(left_record, right_record)
+    start_frame_id = optional_int(left_record.get("start_frame_id")) or anchor_frame_id
+    end_frame_id = optional_int(left_record.get("end_frame_id")) or anchor_frame_id
+    if right_record is not None:
+        right_end = optional_int(right_record.get("end_frame_id")) or optional_int(right_record.get("anchor_frame_id"))
+        if right_end is not None:
+            end_frame_id = max(end_frame_id, right_end)
+    anchor_id = anchor_record_id(
+        match_id=state.match_id,
+        period=state.period,
+        anchor_frame_id=anchor_frame_id,
+        start_frame_id=start_frame_id,
+        end_frame_id=end_frame_id,
+        entity_refs=entity_refs,
+    )
     return {
-        **carry_record,
+        **joined,
         "match_id": state.match_id,
         "period": state.period,
-        "anchor_id": str(carry_record.get("anchor_id")),
+        "anchor_id": anchor_id,
         "anchor_frame_id": anchor_frame_id,
-        "carry_relay_layoff_status": status,
-        "carry_relay_layoff_reason": reason,
-        "pressure_change_status": None if pressure_record is None else pressure_record.get("change_status"),
-        "pressure_change_reason": None if pressure_record is None else pressure_record.get("change_reason"),
-        "pressure_before_distance_m": None if pressure_record is None else pressure_record.get("before_value"),
-        "pressure_after_distance_m": None if pressure_record is None else pressure_record.get("after_value"),
-        "pressure_distance_delta_m": None if pressure_record is None else pressure_record.get("delta_value"),
-        "pressure_minimum_distance_increase_m": None if pressure_record is None else pressure_record.get("minimum_change_m"),
-        "relay_anchor_id": None if relay_record is None else relay_record.get("anchor_id"),
-        "relay_input_pass_episode_id": None if relay_record is None else relay_record.get("input_pass_episode_id"),
-        "relay_pass_episode_id": None if relay_record is None else relay_record.get("relay_pass_episode_id"),
-        "relay_player_id": relay_player_id or None,
-        "relay_touch_frame_id": None if relay_record is None else optional_int(relay_record.get("relay_touch_frame_id")),
-        "relay_physical_release_frame_id": None
-        if relay_record is None
-        else optional_int(relay_record.get("relay_physical_release_frame_id")),
-        "terminal_receiver_id": terminal_receiver_id or None,
-        "terminal_controlled_reception_frame_id": None
-        if pass_chain_record is None
-        else optional_int(pass_chain_record.get("terminal_controlled_reception_frame_id")),
-        "terminal_forward_progression_m": None if pass_chain_record is None else pass_chain_record.get("terminal_forward_progression_m"),
-        "pass_chain_status": None if pass_chain_record is None else pass_chain_record.get("pass_chain_status"),
-        "pass_chain_reason": None if pass_chain_record is None else pass_chain_record.get("pass_chain_reason"),
-        "three_distinct_players": len({carrier_id, relay_player_id, terminal_receiver_id}) == 3
-        if carrier_id and relay_player_id and terminal_receiver_id
-        else False,
+        "start_frame_id": start_frame_id,
+        "end_frame_id": end_frame_id,
+        "entity_refs": entity_refs,
+        "join_node_id": node.node_id,
+        "join_status": status,
+        "join_reason": reason,
+        "join_mode": "inner_by_key",
+        "left_key_field": left_key_field,
+        "right_key_field": right_key_field,
+        "join_key": None if left_key is None else str(left_key),
+        "left_anchor_id": left_record.get("anchor_id"),
+        "right_anchor_id": None if right_record is None else right_record.get("anchor_id"),
+        "left_status_field": left_status_field,
+        "right_status_field": right_status_field,
+        "required_status_value": required_status_value,
+        "temporal_relation": temporal_relation,
+        "left_time_field": left_time_field,
+        "right_time_field": right_time_field,
+        "left_time_frame_id": optional_int(left_record.get(left_time_field)),
+        "right_time_frame_id": None if right_record is None else optional_int(right_record.get(right_time_field)),
+        "temporal_gap_seconds": temporal_gap_seconds(left_record, right_record, left_time_field, right_time_field),
+        "maximum_gap_seconds": maximum_gap_seconds,
+        "distinct_entity_fields": distinct_fields,
+        "distinct_entity_values": distinct_values,
+        "distinct_entities_status": distinct_entities_status(distinct_values),
+        "right_match_count": len(matches),
     }
+
+
+def status_satisfies_join(record: dict[str, Any], field: str, required: str) -> bool:
+    if field == "none":
+        return True
+    value = record.get(field)
+    return value is not None and str(value) == required
+
+
+def join_status_failure(
+    record: dict[str, Any],
+    side: str,
+    field: str,
+    required: str,
+) -> tuple[str, str]:
+    if field == "none":
+        return "PASS", "status_not_required"
+    value = record.get(field)
+    if value is None or str(value) == "UNKNOWN":
+        return "UNKNOWN", f"{side}_{field}_unknown"
+    return "FAIL", f"{side}_{field}_not_{required.lower()}"
+
+
+def project_joined_record(
+    left_record: dict[str, Any],
+    right_record: dict[str, Any] | None,
+) -> dict[str, Any]:
+    joined = dict(left_record)
+    if "join_status" in joined:
+        joined["left_join_status"] = joined.get("join_status")
+        joined["left_join_reason"] = joined.get("join_reason")
+    if right_record is None:
+        return joined
+    for key, value in right_record.items():
+        if key not in joined:
+            joined[key] = value
+            continue
+        collision_key = f"right_{key}"
+        suffix = 2
+        while collision_key in joined:
+            collision_key = f"right_{suffix}_{key}"
+            suffix += 1
+        joined[collision_key] = value
+    return joined
+
+
+def combined_entity_refs(
+    left_record: dict[str, Any],
+    right_record: dict[str, Any] | None,
+) -> list[str]:
+    refs: list[str] = []
+    for record in (left_record, right_record or {}):
+        for value in record.get("entity_refs") or []:
+            if value is not None and str(value) not in refs:
+                refs.append(str(value))
+    return refs
+
+
+def temporal_join_status(
+    *,
+    left_record: dict[str, Any],
+    right_record: dict[str, Any],
+    temporal_relation: str,
+    left_time_field: str,
+    right_time_field: str,
+    maximum_gap_seconds: float,
+) -> tuple[str, str]:
+    if temporal_relation == "none":
+        return "PASS", "join_key_matched"
+    if temporal_relation == "overlaps":
+        left_start = optional_int(left_record.get("start_frame_id"))
+        left_end = optional_int(left_record.get("end_frame_id"))
+        right_start = optional_int(right_record.get("start_frame_id"))
+        right_end = optional_int(right_record.get("end_frame_id"))
+        if None in {left_start, left_end, right_start, right_end}:
+            return "UNKNOWN", "temporal_overlap_frame_missing"
+        return (
+            ("PASS", "join_key_matched_and_temporal_relation_satisfied")
+            if left_start <= right_end and right_start <= left_end
+            else ("FAIL", "temporal_overlap_not_satisfied")
+        )
+    left_frame = optional_int(left_record.get(left_time_field))
+    right_frame = optional_int(right_record.get(right_time_field))
+    if left_frame is None or right_frame is None:
+        return "UNKNOWN", "temporal_frame_missing"
+    gap_seconds = round((right_frame - left_frame) / FRAME_RATE_HZ, 3)
+    if temporal_relation == "left_ends_before_right":
+        if left_frame > right_frame:
+            return "FAIL", "temporal_order_not_satisfied"
+        if gap_seconds > maximum_gap_seconds:
+            return "FAIL", "temporal_gap_exceeded"
+        return "PASS", "join_key_matched_and_temporal_relation_satisfied"
+    if temporal_relation == "left_starts_before_right":
+        return (
+            ("PASS", "join_key_matched_and_temporal_relation_satisfied")
+            if left_frame <= right_frame
+            else ("FAIL", "temporal_order_not_satisfied")
+        )
+    raise RuntimeError(f"Unsupported join_episode_sets temporal_relation={temporal_relation}")
+
+
+def temporal_gap_seconds(
+    left_record: dict[str, Any],
+    right_record: dict[str, Any] | None,
+    left_time_field: str,
+    right_time_field: str,
+) -> float | None:
+    if right_record is None:
+        return None
+    left_frame = optional_int(left_record.get(left_time_field))
+    right_frame = optional_int(right_record.get(right_time_field))
+    if left_frame is None or right_frame is None:
+        return None
+    return round((right_frame - left_frame) / FRAME_RATE_HZ, 3)
+
+
+def parse_distinct_entity_fields(value: str) -> list[str]:
+    if value == "none":
+        return []
+    return [field.strip() for field in value.split(",") if field.strip()]
+
+
+def distinct_join_status(joined: dict[str, Any], distinct_entity_fields: str) -> tuple[str, str]:
+    fields = parse_distinct_entity_fields(distinct_entity_fields)
+    if not fields:
+        return "PASS", "join_key_matched"
+    values = [joined.get(field) for field in fields]
+    if any(value is None or str(value) == "" for value in values):
+        return "UNKNOWN", "distinct_entity_field_missing"
+    return (
+        ("PASS", "join_key_matched_and_distinct_entities_satisfied")
+        if len({str(value) for value in values}) == len(values)
+        else ("FAIL", "distinct_entity_constraint_failed")
+    )
+
+
+def distinct_entities_status(values: dict[str, Any]) -> str:
+    if not values:
+        return "NOT_REQUIRED"
+    if any(value is None or str(value) == "" for value in values.values()):
+        return "UNKNOWN"
+    return "PASS" if len({str(value) for value in values.values()}) == len(values) else "FAIL"
 
 
 def carry_episode_anchor_record(

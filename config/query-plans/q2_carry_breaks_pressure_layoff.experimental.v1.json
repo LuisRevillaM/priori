@@ -291,27 +291,206 @@
         "version": "0.1.0"
       },
       {
-        "catalog_ref": "carry_relay_layoff_chain",
+        "catalog_ref": "join_episode_sets",
         "inputs": {
-          "carry_anchors": {
+          "left_episodes": {
             "output_name": "anchor_evaluations",
             "source_node_id": "carry_episode"
           },
-          "pass_chain_evaluations": {
-            "output_name": "anchor_evaluations",
-            "source_node_id": "pass_chain"
-          },
-          "pressure_change_evaluations": {
+          "right_episodes": {
             "output_name": "anchor_evaluations",
             "source_node_id": "pressure_distance_change"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "carry_pressure_join",
+        "parameters": {
+          "distinct_entity_fields": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "none"
           },
-          "relay_anchors": {
+          "left_key_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_id"
+          },
+          "left_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "carry_status"
+          },
+          "left_time_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_frame_id"
+          },
+          "maximum_gap_seconds": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 999.0
+          },
+          "required_status_value": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "PASS"
+          },
+          "right_key_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_id"
+          },
+          "right_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "change_status"
+          },
+          "right_time_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_frame_id"
+          },
+          "temporal_relation": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "none"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "join_episode_sets",
+        "inputs": {
+          "left_episodes": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "carry_pressure_join"
+          },
+          "right_episodes": {
             "output_name": "anchor_evaluations",
             "source_node_id": "one_touch_relay"
           }
         },
         "kind": "primitive",
+        "node_id": "carry_relay_join",
+        "parameters": {
+          "distinct_entity_fields": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "none"
+          },
+          "left_key_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "terminal_pass_id"
+          },
+          "left_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "join_status"
+          },
+          "left_time_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "carry_end_frame_id"
+          },
+          "maximum_gap_seconds": {
+            "kind": "parameter",
+            "name": "relay_max_event_gap_seconds"
+          },
+          "required_status_value": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "PASS"
+          },
+          "right_key_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "input_pass_episode_id"
+          },
+          "right_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "one_touch_relay_status"
+          },
+          "right_time_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "relay_touch_frame_id"
+          },
+          "temporal_relation": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "left_ends_before_right"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "join_episode_sets",
+        "inputs": {
+          "left_episodes": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "carry_relay_join"
+          },
+          "right_episodes": {
+            "output_name": "anchor_evaluations",
+            "source_node_id": "pass_chain"
+          }
+        },
+        "kind": "primitive",
         "node_id": "q2_chain",
+        "parameters": {
+          "distinct_entity_fields": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "carrier_id,relay_player_id,terminal_receiver_id"
+          },
+          "left_key_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "right_anchor_id"
+          },
+          "left_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "join_status"
+          },
+          "left_time_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_frame_id"
+          },
+          "maximum_gap_seconds": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 999.0
+          },
+          "required_status_value": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "PASS"
+          },
+          "right_key_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_id"
+          },
+          "right_status_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "pass_chain_status"
+          },
+          "right_time_field": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "anchor_frame_id"
+          },
+          "temporal_relation": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "none"
+          }
+        },
         "version": "0.1.0"
       },
       {
@@ -321,7 +500,7 @@
           "value": "PASS"
         },
         "input": {
-          "output_name": "carry_relay_layoff_status",
+          "output_name": "join_status",
           "source_node_id": "q2_chain"
         },
         "kind": "predicate",
@@ -338,8 +517,8 @@
     "recipe_version": "0.1.0",
     "requested_evidence": [
       {
-        "alias": "carry_relay_layoff_status",
-        "field": "carry_relay_layoff_status",
+        "alias": "join_status",
+        "field": "join_status",
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
@@ -347,8 +526,125 @@
         }
       },
       {
-        "alias": "carry_relay_layoff_reason",
-        "field": "carry_relay_layoff_reason",
+        "alias": "join_reason",
+        "field": "join_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "join_node_id",
+        "field": "join_node_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "join_key",
+        "field": "join_key",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "left_anchor_id",
+        "field": "left_anchor_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "right_anchor_id",
+        "field": "right_anchor_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "left_key_field",
+        "field": "left_key_field",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "right_key_field",
+        "field": "right_key_field",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "temporal_relation",
+        "field": "temporal_relation",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "left_time_field",
+        "field": "left_time_field",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "right_time_field",
+        "field": "right_time_field",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "temporal_gap_seconds",
+        "field": "temporal_gap_seconds",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "distinct_entity_fields",
+        "field": "distinct_entity_fields",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "distinct_entity_values",
+        "field": "distinct_entity_values",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "q2_chain"
+        }
+      },
+      {
+        "alias": "distinct_entities_status",
+        "field": "distinct_entities_status",
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
@@ -437,8 +733,8 @@
         }
       },
       {
-        "alias": "pressure_change_status",
-        "field": "pressure_change_status",
+        "alias": "change_status",
+        "field": "change_status",
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
@@ -446,8 +742,8 @@
         }
       },
       {
-        "alias": "pressure_change_reason",
-        "field": "pressure_change_reason",
+        "alias": "change_reason",
+        "field": "change_reason",
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
@@ -455,8 +751,8 @@
         }
       },
       {
-        "alias": "pressure_before_distance_m",
-        "field": "pressure_before_distance_m",
+        "alias": "before_value",
+        "field": "before_value",
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
@@ -464,8 +760,8 @@
         }
       },
       {
-        "alias": "pressure_after_distance_m",
-        "field": "pressure_after_distance_m",
+        "alias": "after_value",
+        "field": "after_value",
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
@@ -473,8 +769,8 @@
         }
       },
       {
-        "alias": "pressure_distance_delta_m",
-        "field": "pressure_distance_delta_m",
+        "alias": "delta_value",
+        "field": "delta_value",
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
@@ -482,8 +778,8 @@
         }
       },
       {
-        "alias": "pressure_minimum_distance_increase_m",
-        "field": "pressure_minimum_distance_increase_m",
+        "alias": "minimum_change_m",
+        "field": "minimum_change_m",
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
@@ -491,8 +787,8 @@
         }
       },
       {
-        "alias": "relay_input_pass_episode_id",
-        "field": "relay_input_pass_episode_id",
+        "alias": "input_pass_episode_id",
+        "field": "input_pass_episode_id",
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
@@ -556,15 +852,6 @@
       {
         "alias": "pass_chain_status",
         "field": "pass_chain_status",
-        "required": true,
-        "source": {
-          "output_name": "anchor_evaluations",
-          "source_node_id": "q2_chain"
-        }
-      },
-      {
-        "alias": "three_distinct_players",
-        "field": "three_distinct_players",
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
