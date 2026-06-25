@@ -1,0 +1,48 @@
+{
+  "expectation_id": "afl09a.substrate_q5.0_1_0",
+  "expected": {
+    "bound_plan_hash": "e24373bf9c9407d930c3ca773c1485ae80e7ea6ce950f1f762803180fc653e43",
+    "compatibility_profile": "generic",
+    "document_hash": "046de0df0206785863a10faf215849011f9524725380ed4db5859fdaac695e27",
+    "execution_status": "pass",
+    "plan_id": "q5_own_half_regain_settled",
+    "report_status": "PASS",
+    "requested_evidence_failure_count": 0,
+    "result_count": 20,
+    "result_ids": [
+      "0241cdf597a3b756",
+      "09df6ea22abd2cb3",
+      "117d8f2190babc0e",
+      "4525c4076d99de48",
+      "492a5ea4760e9d6f",
+      "496d771b41c83bfa",
+      "4b4be492e6ce2bd7",
+      "4e5e0222578a5475",
+      "5058fbb9a5655cdd",
+      "50b9f4a38eb2aa79",
+      "516be2f6f8daa212",
+      "5af2b99dc5c47c69",
+      "5edaef2593d76e46",
+      "7d16561471f87ff4",
+      "89c63c68467ebd72",
+      "a6ddb6f7b599a9b0",
+      "bf04e0e99f50699e",
+      "c8fe825bbec99845",
+      "da8b44d895fba2d1",
+      "fe3c95a4acf68712"
+    ],
+    "result_signature_hash": "cc5b93c579863271b0330c95eac38c920112402663905a9a3d6595a7dcbca504"
+  },
+  "freeze_provenance": {
+    "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
+    "review": "controller_self_verified_original_real_data_verifier",
+    "runtime_semantics_dirty": false,
+    "source_commit": "274182d63f5417bc7ed90d463360122d67ac5296",
+    "source_verifier": "tqe.verification.afl_substrate_q5",
+    "source_verifier_status": "PASS",
+    "threshold_version": "q5_own_half_regain_settled.v0.1.0",
+    "worktree_dirty": false
+  },
+  "schema_version": "afl09a.frozen_expectation.v1",
+  "subject_ref": "recipe:q5_own_half_regain_settled_v1:0.1.0"
+}
