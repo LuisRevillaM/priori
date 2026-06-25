@@ -2336,18 +2336,9 @@
   "composition_constraint_needed": true,
   "priority_unlock": "HIGH",
   "composition_constraint_note": "Requires pressure measured for the carrier at carry start and carry end under the same carry anchor; Q2 records this alignment explicitly.",
-  "compiler_reachability_status": "compiler_reachable",
-  "composition_maturity": "compiler_reachable",
-  "composition_maturity_applicable": true,
-  "compiler_reachability_evidence": {
-   "synthesizer_version": "synthesizer.v0.1",
-   "synthesizer_strategy": "synthesizer.v0.1.strategy=typed_target_patterns.max_depth=4.max_branching=6",
-   "target_id": "target_carry_out_of_pressure_v0",
-   "report_path": "artifacts/autonomous/compiler-reachability-v0-report.json",
-   "document_hash": "dc4cc37789e80317d85dea6d41594255bc7f3b39d11b97d319347af1782d7d04",
-   "result_count": 2,
-   "honest_zero": false
-  }
+  "compiler_reachability_status": "generically_composable",
+  "composition_maturity": "generically_composable",
+  "composition_maturity_applicable": true
  },
  {
   "concept": "carry_pressure_profile",
@@ -2372,18 +2363,8 @@
   "composition_constraint_needed": false,
   "priority_unlock": "HIGH",
   "composition_constraint_note": "",
-  "composition_maturity": "compiler_reachable",
-  "composition_maturity_applicable": true,
-  "compiler_reachability_status": "compiler_reachable",
-  "compiler_reachability_evidence": {
-   "synthesizer_version": "synthesizer.v0.1",
-   "synthesizer_strategy": "synthesizer.v0.1.strategy=typed_target_patterns.max_depth=4.max_branching=6",
-   "target_id": "target_carry_progression_v0",
-   "report_path": "artifacts/autonomous/compiler-reachability-v0-report.json",
-   "document_hash": "356b0adf219665b73b6d07372c09129ec5b0fd118b4ba8f8ca347b6d37408895",
-   "result_count": 20,
-   "honest_zero": false
-  }
+  "composition_maturity": "handwired",
+  "composition_maturity_applicable": true
  },
  {
   "concept": "carry_speed_profile",
@@ -4397,18 +4378,8 @@
   "composition_constraint_needed": false,
   "priority_unlock": "LOW",
   "composition_constraint_note": "",
-  "composition_maturity": "compiler_reachable",
-  "composition_maturity_applicable": true,
-  "compiler_reachability_status": "compiler_reachable",
-  "compiler_reachability_evidence": {
-   "synthesizer_version": "synthesizer.v0.1",
-   "synthesizer_strategy": "synthesizer.v0.1.strategy=typed_target_patterns.max_depth=4.max_branching=6",
-   "target_id": "target_direct_pressure_candidate_v0",
-   "report_path": "artifacts/autonomous/compiler-reachability-v0-report.json",
-   "document_hash": "383c24d7163a801b331c206d3d96e5c05cde17e651de584856a93fbc7bc784bd",
-   "result_count": 20,
-   "honest_zero": false
-  }
+  "composition_maturity": "handwired",
+  "composition_maturity_applicable": true
  },
  {
   "concept": "forced_direction_candidate",
@@ -4914,18 +4885,8 @@
   "composition_constraint_needed": true,
   "priority_unlock": "MED",
   "composition_constraint_note": "Outcome window must start at the same regain anchor and preserve the same team perspective.",
-  "composition_maturity": "compiler_reachable",
-  "composition_maturity_applicable": true,
-  "compiler_reachability_status": "compiler_reachable",
-  "compiler_reachability_evidence": {
-   "synthesizer_version": "synthesizer.v0.1",
-   "synthesizer_strategy": "synthesizer.v0.1.strategy=typed_target_patterns.max_depth=4.max_branching=6",
-   "target_id": "target_post_regain_retention_v0",
-   "report_path": "artifacts/autonomous/compiler-reachability-v0-report.json",
-   "document_hash": "b672f8b9bfc47d4a68d673af5a7d4f4bff01193d7e05143fb4fe75422b4d3904",
-   "result_count": 20,
-   "honest_zero": false
-  }
+  "composition_maturity": "handwired",
+  "composition_maturity_applicable": true
  },
  {
   "concept": "recovery_shape_state",

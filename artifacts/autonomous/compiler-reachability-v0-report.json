@@ -1,23 +1,29 @@
 {
+  "claim_status": "HARNESS_ONLY_CIRCULAR_PATTERN_DISPATCH",
+  "compiler_reachability_claim_valid": false,
   "failure_distribution": {
-    "missing_constraint": 2
+    "predeclared_missing_constraint": 2
   },
   "findings": [],
-  "missing_composition_constraints_ranked": [
+  "harness_limitation": "target_contract.pattern is a hand-assigned dispatch hint that selects a concept-specific builder; outputs are not compiler-reachability evidence.",
+  "plan_dir": "generated/compiler-reachability-v0/plans",
+  "predeclared_missing_constraints_ranked": [
     [
-      "v0 target declares semantic alignment requirements that are not yet a searchable composition-rule object.",
+      "v0 harness target was predeclared unsupported by pattern label; this is not a discovered compiler gap.",
       2
     ]
   ],
-  "plan_dir": "generated/compiler-reachability-v0/plans",
-  "report_priority": "The compiler_reachable_pct is a bounded v0 sample signal. The failure-cause distribution is the actionable output.",
+  "report_priority": "Do not use this report as a compiler-reachability metric. It preserves the harness and removes circular compiler_reachable claims.",
   "row_csv_path": "generated/compiler-reachability-v0/row-ledger.csv",
   "row_ledger_path": "generated/compiler-reachability-v0/row-ledger.json",
   "schema_version": "compiler_reachability_report.v0",
   "scope": {
     "atlas_wide_execution": false,
+    "compiler_reachability_measurement": false,
+    "coverage_map_compiler_reachable_updates_allowed": false,
     "mode": "stratified_sample",
     "natural_language": false,
+    "pattern_dispatch_circular": true,
     "target_count": 6
   },
   "search_budget": {
@@ -64,16 +70,18 @@
     "max_branching": 6,
     "max_depth": 4
   },
-  "status": "PASS",
+  "status": "HARNESS_ONLY",
   "summary": {
-    "compiler_reachable_count": 4,
-    "compiler_reachable_pct": 0.5,
+    "compiler_reachable_count": 0,
+    "compiler_reachable_pct": 0.0,
     "coverage_supported_count": 350,
     "coverage_supported_pct": 47.2,
-    "reachable_vs_supported_gap_count": 346,
-    "reachable_vs_supported_gap_pct": 46.7,
-    "sample_compiler_reachable_count": 4,
-    "sample_compiler_reachable_pct": 66.7,
+    "reachable_vs_supported_gap_count": 350,
+    "reachable_vs_supported_gap_pct": 47.2,
+    "sample_compiler_reachable_count": 0,
+    "sample_compiler_reachable_pct": 0.0,
+    "sample_harness_plan_executed_count": 4,
+    "sample_harness_plan_executed_pct": 66.7,
     "sample_target_count": 6
   },
   "synthesizer_strategy": "synthesizer.v0.1.strategy=typed_target_patterns.max_depth=4.max_branching=6",

@@ -2,7 +2,7 @@
   "schema_version": "compiler_reachability_targets.v0",
   "strategy": "synthesizer.v0.1.strategy=typed_target_patterns.max_depth=4.max_branching=6",
   "sample_policy": "bounded_stratified_sample_before_atlas_wide_execution",
-  "note": "Concept ids are reporting/scoring labels only. Synthesis consumes target_contract fields.",
+  "note": "Concept ids are reporting/scoring labels only. This v0 file is retained as a harness fixture. target_contract.pattern is a known circular dispatch hint and must not be used as compiler-reachability evidence.",
   "targets": [
     {
       "target_id": "target_carry_progression_v0",

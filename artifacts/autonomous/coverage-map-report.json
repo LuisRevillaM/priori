@@ -38,8 +38,8 @@
   "handwired"
  ],
  "composition_maturity_counts": {
-  "handwired": 737,
-  "compiler_reachable": 4
+  "handwired": 740,
+  "generically_composable": 1
  },
  "reachable_now_or_one_gap_pct": 70.4,
  "top_missing_primitives_by_unlock": [

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Type-directed composition synthesizer v0.
+"""Compiler-reachability harness v0.
 
-This is not natural-language compilation. It measures whether a bounded,
-typed-target synthesizer can construct executable plans from catalog semantics
-without being handed the coverage-map gold chain.
+This is not natural-language compilation and not a valid compiler-reachability
+measurement. The current v0 harness still uses hand-assigned pattern dispatch,
+which is circular: the pattern selects a concept-specific builder. The harness
+is retained to exercise target ledgers, generated plan artifacts, and report
+shape while preventing any row from being promoted to compiler_reachable.
 """
 
 from __future__ import annotations
@@ -39,7 +41,16 @@ SYNTHESIZER_VERSION = "synthesizer.v0.1"
 SYNTHESIZER_STRATEGY = (
     "synthesizer.v0.1.strategy=typed_target_patterns.max_depth=4.max_branching=6"
 )
+CLAIM_STATUS = "HARNESS_ONLY_CIRCULAR_PATTERN_DISPATCH"
+HARNESS_LIMITATION = (
+    "target_contract.pattern is a hand-assigned dispatch hint that selects a "
+    "concept-specific builder; outputs are not compiler-reachability evidence."
+)
 MATCH_IDS = ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"]
+
+# This status existed before the circular v0 report and is preserved while
+# removing the false compiler_reachable upgrades introduced by this harness.
+PREEXISTING_GENERICALLY_COMPOSABLE = {"carry_out_of_pressure"}
 
 EXCLUDED_CATALOG_REFS = {
     # Trusted/bespoke or concept-shaped nodes are not available to v0 synthesis.
@@ -82,7 +93,7 @@ def main() -> int:
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(report["summary"], indent=2, sort_keys=True))
-    return 0 if report["status"] == "PASS" else 1
+    return 0 if report["status"] != "FAIL" else 1
 
 
 class CatalogIndex:
@@ -216,9 +227,9 @@ def evaluate_target(
     return row_result(
         target=target,
         row=row,
-        result="compiler_reachable",
+        result="harness_plan_executed",
         failure_taxonomy=None,
-        message="Synthesizer produced a valid executable plan under the declared v0 search budget.",
+        message="Pattern-dispatch harness produced an executable plan; this is not compiler-reachability evidence.",
         document_payload=document_payload,
         execution=execution,
         rows=rows,
@@ -249,8 +260,8 @@ def synthesize_document(
         return build_regain_settled_outcome(target_id, target_contract, catalog_index)
     if pattern == "unsupported_alignment_probe":
         raise SynthesisError(
-            "missing_constraint",
-            "v0 target declares semantic alignment requirements that are not yet a searchable composition-rule object.",
+            "predeclared_missing_constraint",
+            "v0 harness target was predeclared unsupported by pattern label; this is not a discovered compiler gap.",
         )
     raise SynthesisError("synthesis_gap", f"Unsupported v0 target pattern {pattern!r}.")
 
@@ -657,11 +668,13 @@ def row_result(
         "target_id": target["target_id"],
         "concept": target["concept"],
         "coverage_classification": row.get("classification"),
-        "input_composition_maturity": row.get("composition_maturity", "handwired"),
+        "input_composition_maturity": corrected_input_maturity(row),
         "target_contract_hash": stable_hash(target["target_contract"]),
         "concept_name_used_as_hint": concept_name_hint,
         "synthesizer_version": SYNTHESIZER_VERSION,
         "synthesizer_strategy": SYNTHESIZER_STRATEGY,
+        "claim_status": CLAIM_STATUS,
+        "harness_limitation": HARNESS_LIMITATION,
         "result": result,
         "failure_taxonomy": failure_taxonomy,
         "message": message,
@@ -677,6 +690,17 @@ def row_result(
         "declared_missing_constraints": target["target_contract"].get("known_composition_constraints", []),
         "gold_chain_audit": gold_chain_audit(row),
     }
+
+
+def corrected_input_maturity(row: dict[str, Any]) -> str:
+    if row.get("classification") != "supported":
+        return "handwired"
+    if row.get("concept") in PREEXISTING_GENERICALLY_COMPOSABLE:
+        return "generically_composable"
+    if row.get("compiler_reachability_evidence", {}).get("report_path") == str(REPORT.relative_to(ROOT)):
+        return "handwired"
+    maturity = row.get("composition_maturity") or row.get("compiler_reachability_status") or "handwired"
+    return "handwired" if maturity == "compiler_reachable" else maturity
 
 
 def gold_chain_audit(row: dict[str, Any]) -> dict[str, Any]:
@@ -711,24 +735,22 @@ def coverage_row(rows: list[dict[str, Any]], concept: str) -> dict[str, Any]:
 
 
 def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any]]) -> None:
-    by_concept = {result["concept"]: result for result in results}
+    sampled_concepts = {result["concept"] for result in results}
     for row in rows:
         maturity = row.get("composition_maturity") or row.get("compiler_reachability_status") or "handwired"
+        if row.get("concept") in sampled_concepts and (
+            row.get("compiler_reachability_status") == "compiler_reachable"
+            or row.get("compiler_reachability_evidence", {}).get("report_path") == str(REPORT.relative_to(ROOT))
+        ):
+            row.pop("compiler_reachability_evidence", None)
+            if row.get("concept") in PREEXISTING_GENERICALLY_COMPOSABLE:
+                row["compiler_reachability_status"] = "generically_composable"
+                maturity = "generically_composable"
+            else:
+                row.pop("compiler_reachability_status", None)
+                maturity = "handwired"
         if row.get("classification") != "supported":
             maturity = "handwired"
-        result = by_concept.get(row.get("concept"))
-        if result is not None and result["result"] == "compiler_reachable":
-            maturity = "compiler_reachable"
-            row["compiler_reachability_status"] = "compiler_reachable"
-            row["compiler_reachability_evidence"] = {
-                "synthesizer_version": SYNTHESIZER_VERSION,
-                "synthesizer_strategy": SYNTHESIZER_STRATEGY,
-                "target_id": result["target_id"],
-                "report_path": str(REPORT.relative_to(ROOT)),
-                "document_hash": result["document_hash"],
-                "result_count": result["result_count"],
-                "honest_zero": result["honest_zero"],
-            }
         row["composition_maturity"] = maturity
         row["composition_maturity_applicable"] = row.get("classification") == "supported"
 
@@ -774,16 +796,21 @@ def build_report(
     missing_constraints = collections.Counter(
         result["message"]
         for result in row_results
-        if result.get("failure_taxonomy") == "missing_constraint"
+        if result.get("failure_taxonomy") == "predeclared_missing_constraint"
     )
     findings: list[dict[str, str]] = []
     if not row_results:
         findings.append({"code": "empty_sample", "message": "No synthesizer targets were evaluated.", "path": "targets"})
     if any(result.get("concept_name_used_as_hint") for result in row_results):
         findings.append({"code": "concept_name_hint_used", "message": "A target used concept name as semantic input.", "path": "row_results"})
+    if any(result.get("result") == "compiler_reachable" for result in row_results):
+        findings.append({"code": "false_compiler_reachable_result", "message": "Harness row attempted to claim compiler_reachable.", "path": "row_results"})
     return {
         "schema_version": "compiler_reachability_report.v0",
-        "status": "PASS" if not findings else "FAIL",
+        "status": "HARNESS_ONLY" if not findings else "FAIL",
+        "claim_status": CLAIM_STATUS,
+        "harness_limitation": HARNESS_LIMITATION,
+        "compiler_reachability_claim_valid": false_like(),
         "synthesizer_version": SYNTHESIZER_VERSION,
         "synthesizer_strategy": targets_payload["strategy"],
         "search_budget": {
@@ -796,6 +823,9 @@ def build_report(
             "mode": "stratified_sample",
             "atlas_wide_execution": false_like(),
             "natural_language": false_like(),
+            "compiler_reachability_measurement": false_like(),
+            "pattern_dispatch_circular": True,
+            "coverage_map_compiler_reachable_updates_allowed": false_like(),
             "target_count": len(row_results),
         },
         "summary": {
@@ -803,21 +833,23 @@ def build_report(
             "coverage_supported_pct": round(100 * supported / total, 1),
             "compiler_reachable_count": compiler_reachable,
             "compiler_reachable_pct": round(100 * compiler_reachable / total, 1),
-            "sample_compiler_reachable_count": result_counts.get("compiler_reachable", 0),
+            "sample_compiler_reachable_count": 0,
             "sample_target_count": len(row_results),
-            "sample_compiler_reachable_pct": round(100 * result_counts.get("compiler_reachable", 0) / max(len(row_results), 1), 1),
+            "sample_compiler_reachable_pct": 0.0,
+            "sample_harness_plan_executed_count": result_counts.get("harness_plan_executed", 0),
+            "sample_harness_plan_executed_pct": round(100 * result_counts.get("harness_plan_executed", 0) / max(len(row_results), 1), 1),
             "reachable_vs_supported_gap_count": supported - compiler_reachable,
             "reachable_vs_supported_gap_pct": round(100 * (supported - compiler_reachable) / total, 1),
         },
         "failure_distribution": dict(sorted(failures.items())),
-        "missing_composition_constraints_ranked": missing_constraints.most_common(),
+        "predeclared_missing_constraints_ranked": missing_constraints.most_common(),
         "row_ledger_path": str(ROW_LEDGER.relative_to(ROOT)),
         "row_csv_path": str(ROW_CSV.relative_to(ROOT)),
         "plan_dir": str(PLAN_DIR.relative_to(ROOT)),
         "targets_path": str(TARGETS.relative_to(ROOT)),
         "report_priority": (
-            "The compiler_reachable_pct is a bounded v0 sample signal. "
-            "The failure-cause distribution is the actionable output."
+            "Do not use this report as a compiler-reachability metric. "
+            "It preserves the harness and removes circular compiler_reachable claims."
         ),
         "findings": findings,
     }
