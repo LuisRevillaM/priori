@@ -223,6 +223,291 @@
     {
       "ai_authorable_by_runtime_context": true,
       "evidence_fields": [
+        "carry_status",
+        "carry_reason",
+        "carry_episode_id",
+        "carrier_id",
+        "team_role",
+        "source_reception_pass_id",
+        "terminal_pass_id",
+        "terminal_detection_status",
+        "terminal_detection_reason",
+        "carry_start_frame_id",
+        "carry_end_frame_id",
+        "carry_duration_seconds",
+        "start_point",
+        "end_point",
+        "displacement_m",
+        "carry_forward_progression_m",
+        "possession_continuity_status",
+        "possession_continuity_reason",
+        "control_continuity_status",
+        "control_continuity_reason",
+        "controlled_frame_ratio",
+        "comoving_frame_ratio",
+        "missing_frame_ratio",
+        "control_model",
+        "control_bias",
+        "control_distance_m",
+        "nearest_teammate_margin_m",
+        "maximum_ball_player_speed_delta_mps",
+        "minimum_controlled_frame_ratio",
+        "minimum_comoving_frame_ratio",
+        "maximum_missing_frame_ratio",
+        "minimum_displacement_m"
+      ],
+      "executable": true,
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "controlled_pass_anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Claims only observed same-player movement with the ball under a conservative control criterion.",
+        "The base primitive is direction-neutral; progressive carry is a composition over forward_progression_m.",
+        "Does not infer dribbling skill, pressure-breaking quality, player intent, tactical causation, decision quality, or optimality.",
+        "Does not claim the carry beat, bypassed, or eliminated a defender.",
+        "Loose-ball, ambiguous-control, possession-change, or missing-tracking intervals are FAIL or UNKNOWN rather than carried across."
+      ],
+      "missing_data_semantics": "unknown",
+      "name": "carry_episode",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "carry_episode_id",
+            "carrier_id",
+            "carry_start_frame_id",
+            "carry_end_frame_id",
+            "carry_status",
+            "carry_reason",
+            "start_point",
+            "end_point",
+            "displacement_m",
+            "carry_forward_progression_m",
+            "control_model",
+            "control_bias"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "episodes",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "carry_episode_id",
+            "carrier_id",
+            "carry_status",
+            "carry_reason",
+            "source_reception_pass_id",
+            "terminal_pass_id",
+            "carry_start_frame_id",
+            "carry_end_frame_id",
+            "carry_duration_seconds",
+            "start_point",
+            "end_point",
+            "displacement_m",
+            "carry_forward_progression_m",
+            "possession_continuity_status",
+            "control_continuity_status",
+            "controlled_frame_ratio",
+            "comoving_frame_ratio",
+            "missing_frame_ratio",
+            "observed_frame_count",
+            "controlled_frame_count",
+            "comoving_frame_count",
+            "velocity_observed_frame_count",
+            "missing_frame_count",
+            "minimum_controlled_frame_ratio",
+            "minimum_comoving_frame_ratio",
+            "maximum_missing_frame_ratio",
+            "maximum_carry_seconds",
+            "control_model",
+            "control_bias"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ],
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "carry_status",
+            "carry_reason"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "carry_status",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        },
+        {
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "displacement_m"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "displacement_m",
+          "payload_type": "number",
+          "temporal_type": "frame_signal",
+          "unit": "metre"
+        },
+        {
+          "cardinality": "single",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "carry_forward_progression_m"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "forward_progression_m",
+          "payload_type": "number",
+          "temporal_type": "frame_signal",
+          "unit": "metre"
+        }
+      ],
+      "parameters": [
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "second",
+            "value": 10.0
+          },
+          "description": "Maximum interval from controlled reception to the carrier's next confirmed pass release.",
+          "maximum": 20.0,
+          "minimum": 0.4,
+          "name": "maximum_carry_seconds",
+          "payload_type": "number",
+          "required": false,
+          "unit": "second"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 3.0
+          },
+          "description": "Minimum carrier displacement required before PASS; distinguishes carries from stationary holds.",
+          "maximum": 40.0,
+          "minimum": 0.0,
+          "name": "minimum_displacement_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 2.5
+          },
+          "description": "Maximum ball-carrier distance used by the control criterion.",
+          "maximum": 5.0,
+          "minimum": 0.1,
+          "name": "control_distance_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "metre",
+            "value": 1.0
+          },
+          "description": "Margin allowing shared teammate proximity while preserving the controlled-pass control model.",
+          "maximum": 5.0,
+          "minimum": 0.0,
+          "name": "nearest_teammate_margin_m",
+          "payload_type": "number",
+          "required": false,
+          "unit": "metre"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "none",
+            "value": 10.0
+          },
+          "description": "Touch-tolerant maximum velocity-vector difference between ball and carrier for co-moving evidence.",
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "name": "maximum_ball_player_speed_delta_mps",
+          "payload_type": "number",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "none",
+            "value": 1.0
+          },
+          "description": "Minimum observed-frame ratio satisfying the distance/nearest-player control criterion.",
+          "maximum": 1.0,
+          "minimum": 0.5,
+          "name": "minimum_controlled_frame_ratio",
+          "payload_type": "number",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "none",
+            "value": 0.75
+          },
+          "description": "Minimum velocity-observed-frame ratio satisfying touch-tolerant co-moving evidence.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "name": "minimum_comoving_frame_ratio",
+          "payload_type": "number",
+          "required": false,
+          "unit": "none"
+        },
+        {
+          "default": {
+            "payload_type": "number",
+            "unit": "none",
+            "value": 0.02
+          },
+          "description": "Maximum missing ball/player tracking ratio before UNKNOWN.",
+          "maximum": 0.5,
+          "minimum": 0.0,
+          "name": "maximum_missing_frame_ratio",
+          "payload_type": "number",
+          "required": false,
+          "unit": "none"
+        }
+      ],
+      "purpose": "Identify observed same-player ball-carry intervals between a controlled reception and that player's next confirmed pass release, with conservative control continuity.",
+      "runtime_id": "primitive:carry_episode:0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "ai_authorable_by_runtime_context": true,
+      "evidence_fields": [
         "change_status",
         "change_reason",
         "before_value",
@@ -5480,6 +5765,6 @@
       "unit": "none"
     }
   ],
-  "runtime_manifest_revision": "49dc9ce2650bff1e5b682593689b18926289f17ea590b2cdce2fe383b7638681",
+  "runtime_manifest_revision": "46aafc14a3c32974245158bc7fe55fc150918f3461a2348ba5a7ca3ca44c3841",
   "schema_version": "1.0"
 }

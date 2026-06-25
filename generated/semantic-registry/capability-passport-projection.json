@@ -1,6 +1,6 @@
 {
-  "passport_count": 34,
-  "passport_revision": "926db451a9cbc4dbfb9978d31d64eb84e8fc9af566f9158c61b55b942c2cc5d6",
+  "passport_count": 35,
+  "passport_revision": "05135d955e55eee803c46e1456f987d70b621c9bd47ce541319c698e5d3d52cf",
   "passports": [
     {
       "binding": {
@@ -1016,6 +1016,825 @@
       },
       "status": "CURRENT",
       "subject_ref": "runtime:primitive:ball_lateral_fraction:0.1.0"
+    },
+    {
+      "binding": {
+        "conformance": "PARTIAL",
+        "id": "binding.primitive.carry_episode.0_1_0",
+        "input_bindings": {
+          "controlled_pass_anchors": {
+            "runtime_port": "controlled_pass_anchors",
+            "source": "NODE_INPUT"
+          },
+          "tracking_window": {
+            "context_ref": "canonical_tracking_window",
+            "source": "RUNTIME_CONTEXT"
+          }
+        },
+        "known_deviations": [
+          "v0.1 requires a same-player terminal controlled pass and does not model tracking-only carry endings."
+        ],
+        "output_bindings": {
+          "anchor_evaluations": {
+            "runtime_port": "anchor_evaluations"
+          },
+          "carry_status": {
+            "runtime_port": "carry_status"
+          },
+          "displacement_m": {
+            "runtime_port": "displacement_m"
+          },
+          "forward_progression_m": {
+            "runtime_port": "forward_progression_m"
+          }
+        },
+        "parameter_bindings": {
+          "control_distance_m": "control_distance_m",
+          "maximum_ball_player_speed_delta_mps": "maximum_ball_player_speed_delta_mps",
+          "maximum_carry_seconds": "maximum_carry_seconds",
+          "maximum_missing_frame_ratio": "maximum_missing_frame_ratio",
+          "minimum_comoving_frame_ratio": "minimum_comoving_frame_ratio",
+          "minimum_controlled_frame_ratio": "minimum_controlled_frame_ratio",
+          "minimum_displacement_m": "minimum_displacement_m",
+          "nearest_teammate_margin_m": "nearest_teammate_margin_m"
+        },
+        "semantic_parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 10.0
+            },
+            "description": "",
+            "maximum": 20.0,
+            "minimum": 0.4,
+            "name": "maximum_carry_seconds",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "second",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 3.0
+            },
+            "description": "",
+            "maximum": 40.0,
+            "minimum": 0.0,
+            "name": "minimum_displacement_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 2.5
+            },
+            "description": "",
+            "maximum": 5.0,
+            "minimum": 0.1,
+            "name": "control_distance_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 1.0
+            },
+            "description": "",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "nearest_teammate_margin_m",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "metre",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 10.0
+            },
+            "description": "",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "maximum_ball_player_speed_delta_mps",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 1.0
+            },
+            "description": "",
+            "maximum": 1.0,
+            "minimum": 0.5,
+            "name": "minimum_controlled_frame_ratio",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 0.75
+            },
+            "description": "",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "name": "minimum_comoving_frame_ratio",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Scalar"
+            }
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 0.02
+            },
+            "description": "",
+            "maximum": 0.5,
+            "minimum": 0.0,
+            "name": "maximum_missing_frame_ratio",
+            "required": false,
+            "type": {
+              "container": "Scalar",
+              "nullable": true,
+              "temporal_basis": "canonical_frame_time",
+              "unit": "none",
+              "value": "Scalar"
+            }
+          }
+        ],
+        "uncovered_runtime_inputs": [],
+        "uncovered_runtime_outputs": [
+          "episodes"
+        ],
+        "uncovered_runtime_parameters": [],
+        "uncovered_semantic_inputs": [],
+        "uncovered_semantic_outputs": [],
+        "uncovered_semantic_parameters": []
+      },
+      "claim_contracts": [
+        {
+          "contract_ref": "claim.controlled_carry_episode.v1",
+          "inherits": [
+            "claim.controlled_ball_transfer.v1"
+          ],
+          "permitted": [
+            "carry_displacement_measured",
+            "carry_forward_progression_measured",
+            "event_candidate_pass_identified",
+            "same_player_controlled_carry_interval_identified",
+            "tracking_confirmed_controlled_reception",
+            "tracking_confirmed_physical_release"
+          ],
+          "prohibited": [
+            "decision_quality_inferred",
+            "defender_bypassed_by_carry",
+            "dribbling_skill_inferred",
+            "optimality_inferred",
+            "pass_probability_inferred",
+            "pass_was_optimal",
+            "player_intent_inferred",
+            "pressure_break_quality_inferred",
+            "proves_pass_optimality",
+            "proves_pass_probability",
+            "proves_passer_intent",
+            "tactical_causation_inferred"
+          ],
+          "unknown_conditions": [
+            "attacking_direction_missing_or_invalid",
+            "ball_or_carrier_tracking_missing",
+            "control_continuity_unresolved",
+            "controlled_reception_unresolved",
+            "physical_release_unresolved",
+            "possession_continuity_unresolved",
+            "terminal_pass_unresolved"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "aliases": [],
+          "claim_contract_ref": "claim.controlled_carry_episode.v1",
+          "created_from": [],
+          "description": "Observed same-player movement with the ball under a conservative control criterion between controlled reception and next confirmed pass release.",
+          "display_name": "Controlled Carry Episode",
+          "evidence_contract_ref": "evidence.controlled_carry_episode.v1",
+          "id": "concept.controlled_carry_episode",
+          "kind": "Concept",
+          "owners": [],
+          "reviewers": [],
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [
+            "carry",
+            "control",
+            "tracking",
+            "action"
+          ],
+          "version": "1.0.0"
+        }
+      ],
+      "description": "Canonical runtime binding for carry_episode 0.1.0.",
+      "display_name": "carry_episode runtime binding",
+      "evidence_contracts": [
+        {
+          "contract_ref": "evidence.controlled_carry_episode.v1",
+          "inherits": [],
+          "optional": [
+            "comoving_frame_count",
+            "controlled_frame_count",
+            "end_match_time_ms",
+            "missing_frame_count",
+            "observed_frame_count",
+            "start_match_time_ms",
+            "terminal_passer_id",
+            "terminal_receiver_id",
+            "terminal_reception_frame_id",
+            "terminal_release_frame_id",
+            "velocity_observed_frame_count"
+          ],
+          "replay_projection": [
+            "ball_path",
+            "carrier_marker",
+            "carry_displacement_badge",
+            "carry_end_frame",
+            "carry_start_frame",
+            "control_model_badge"
+          ],
+          "required": [
+            "anchor_frame_id",
+            "anchor_id",
+            "carrier_id",
+            "carry_duration_seconds",
+            "carry_end_frame_id",
+            "carry_episode_id",
+            "carry_forward_progression_m",
+            "carry_reason",
+            "carry_start_frame_id",
+            "carry_status",
+            "comoving_frame_ratio",
+            "control_bias",
+            "control_continuity_reason",
+            "control_continuity_status",
+            "control_distance_m",
+            "control_model",
+            "controlled_frame_ratio",
+            "displacement_m",
+            "end_point",
+            "maximum_ball_player_speed_delta_mps",
+            "maximum_missing_frame_ratio",
+            "minimum_comoving_frame_ratio",
+            "minimum_controlled_frame_ratio",
+            "minimum_displacement_m",
+            "missing_frame_ratio",
+            "nearest_teammate_margin_m",
+            "possession_continuity_reason",
+            "possession_continuity_status",
+            "source_reception_pass_id",
+            "start_point",
+            "team_role",
+            "terminal_detection_reason",
+            "terminal_detection_status",
+            "terminal_pass_id"
+          ]
+        }
+      ],
+      "exposure_policy": {
+        "ai_compiler": "ALLOWED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Exposure policy for carry_episode.",
+        "display_name": "carry_episode exposure",
+        "id": "exposure.runtime.carry_episode.0_1_0",
+        "kind": "ExposurePolicy",
+        "owners": [],
+        "parameter_overrides": {},
+        "product": "ALLOWED",
+        "reasons": [],
+        "reviewed_recipes": "ALLOWED",
+        "reviewers": [],
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:carry_episode:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "implementation": {
+        "aliases": [],
+        "created_from": [],
+        "description": "Current conservative controlled-carry implementation.",
+        "display_name": "Carry Episode Python Implementation",
+        "id": "impl.carry_episode.python.v1",
+        "implementation_type": "python",
+        "implements": [
+          "op.controlled_carry_episode.v1"
+        ],
+        "kind": "Implementation",
+        "owners": [],
+        "reviewers": [],
+        "source_refs": [
+          "src/tqe/runtime/executor.py",
+          "src/tqe/runtime/catalog.py"
+        ],
+        "status": "CURRENT",
+        "supersedes": [],
+        "tags": [],
+        "version": "1.0.0"
+      },
+      "maturity_assessment": {
+        "agent_safety": "APPROVED",
+        "aliases": [],
+        "created_from": [],
+        "description": "Maturity assessment for carry_episode.",
+        "display_name": "carry_episode maturity",
+        "id": "maturity.runtime.carry_episode.0_1_0",
+        "implementation": "IMPLEMENTED",
+        "kind": "MaturityAssessment",
+        "owners": [],
+        "product": "EXPOSED",
+        "reviewers": [],
+        "semantic": "REVIEWED",
+        "status": "CURRENT",
+        "subject_ref": "runtime:primitive:carry_episode:0.1.0",
+        "supersedes": [],
+        "tags": [],
+        "validation": "VERIFIED",
+        "version": "1.0.0"
+      },
+      "operationalizations": [
+        {
+          "aliases": [],
+          "applicability": [
+            "controlled_pass_anchor_available",
+            "same_player_terminal_pass_available",
+            "possession_continuity_available",
+            "ball_and_carrier_tracking_available"
+          ],
+          "claim_contract_ref": "claim.controlled_carry_episode.v1",
+          "concept_refs": [
+            "concept.controlled_carry_episode"
+          ],
+          "created_from": [],
+          "description": "Identify same-player ball-carry intervals from controlled reception to the same player's next confirmed pass release under conservative control-continuity thresholds.",
+          "display_name": "Controlled Carry Episode",
+          "evidence_contract_ref": "evidence.controlled_carry_episode.v1",
+          "id": "op.controlled_carry_episode.v1",
+          "inputs": [
+            {
+              "description": "",
+              "name": "controlled_pass_anchors",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "controlled_pass_anchor",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "tracking_window",
+              "required": true,
+              "type": {
+                "container": "TrajectorySet",
+                "coordinate_frame": "pitch_absolute",
+                "nullable": true,
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Position"
+              }
+            }
+          ],
+          "kind": "Operationalization",
+          "lowering": [
+            "controlled_pass_reception_anchor",
+            "same_player_terminal_pass_release",
+            "possession_continuity_check",
+            "ball_carrier_distance_check",
+            "nearest_teammate_control_margin",
+            "ball_player_comovement_check",
+            "displacement_measurement"
+          ],
+          "outputs": [
+            {
+              "description": "",
+              "name": "anchor_evaluations",
+              "required": true,
+              "type": {
+                "container": "EpisodeSet",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "carry_evaluation",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "AnchorRef"
+              }
+            },
+            {
+              "description": "",
+              "name": "carry_status",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "carry_status",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "none",
+                "value": "Enum"
+              }
+            },
+            {
+              "description": "",
+              "name": "displacement_m",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "displacement",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Scalar"
+              }
+            },
+            {
+              "description": "",
+              "name": "forward_progression_m",
+              "required": true,
+              "type": {
+                "container": "FrameSignal",
+                "entity_scope": "anchor",
+                "nullable": true,
+                "quantity": "forward_progression",
+                "temporal_basis": "canonical_frame_time",
+                "unit": "metre",
+                "value": "Scalar"
+              }
+            }
+          ],
+          "owners": [],
+          "required_modalities": [
+            "event",
+            "tracking"
+          ],
+          "reviewers": [],
+          "semantic_basis": "DETERMINISTIC",
+          "status": "CURRENT",
+          "supersedes": [],
+          "tags": [],
+          "version": "1.0.0"
+        }
+      ],
+      "passport_hash": "be2e36ab8f6c8c1d1dc63f36cc862e0e2f085241b1815edc3a7282d5644147f9",
+      "projection_membership": {
+        "ai": true,
+        "product": true
+      },
+      "runtime_capability": {
+        "id": "carry_episode",
+        "kind": "primitive",
+        "version": "0.1.0"
+      },
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "carry_status",
+          "carry_reason",
+          "carry_episode_id",
+          "carrier_id",
+          "team_role",
+          "source_reception_pass_id",
+          "terminal_pass_id",
+          "terminal_detection_status",
+          "terminal_detection_reason",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "carry_duration_seconds",
+          "start_point",
+          "end_point",
+          "displacement_m",
+          "carry_forward_progression_m",
+          "possession_continuity_status",
+          "possession_continuity_reason",
+          "control_continuity_status",
+          "control_continuity_reason",
+          "controlled_frame_ratio",
+          "comoving_frame_ratio",
+          "missing_frame_ratio",
+          "control_model",
+          "control_bias",
+          "control_distance_m",
+          "nearest_teammate_margin_m",
+          "maximum_ball_player_speed_delta_mps",
+          "minimum_controlled_frame_ratio",
+          "minimum_comoving_frame_ratio",
+          "maximum_missing_frame_ratio",
+          "minimum_displacement_m"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "controlled_pass_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Claims only observed same-player movement with the ball under a conservative control criterion.",
+          "The base primitive is direction-neutral; progressive carry is a composition over forward_progression_m.",
+          "Does not infer dribbling skill, pressure-breaking quality, player intent, tactical causation, decision quality, or optimality.",
+          "Does not claim the carry beat, bypassed, or eliminated a defender.",
+          "Loose-ball, ambiguous-control, possession-change, or missing-tracking intervals are FAIL or UNKNOWN rather than carried across."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "carry_episode",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "carry_episode_id",
+              "carrier_id",
+              "carry_start_frame_id",
+              "carry_end_frame_id",
+              "carry_status",
+              "carry_reason",
+              "start_point",
+              "end_point",
+              "displacement_m",
+              "carry_forward_progression_m",
+              "control_model",
+              "control_bias"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "carry_episode_id",
+              "carrier_id",
+              "carry_status",
+              "carry_reason",
+              "source_reception_pass_id",
+              "terminal_pass_id",
+              "carry_start_frame_id",
+              "carry_end_frame_id",
+              "carry_duration_seconds",
+              "start_point",
+              "end_point",
+              "displacement_m",
+              "carry_forward_progression_m",
+              "possession_continuity_status",
+              "control_continuity_status",
+              "controlled_frame_ratio",
+              "comoving_frame_ratio",
+              "missing_frame_ratio",
+              "observed_frame_count",
+              "controlled_frame_count",
+              "comoving_frame_count",
+              "velocity_observed_frame_count",
+              "missing_frame_count",
+              "minimum_controlled_frame_ratio",
+              "minimum_comoving_frame_ratio",
+              "maximum_missing_frame_ratio",
+              "maximum_carry_seconds",
+              "control_model",
+              "control_bias"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "carry_status",
+              "carry_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "carry_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "displacement_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "displacement_m",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "metre"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "carry_forward_progression_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "forward_progression_m",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "metre"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 10.0
+            },
+            "description": "Maximum interval from controlled reception to the carrier's next confirmed pass release.",
+            "maximum": 20.0,
+            "minimum": 0.4,
+            "name": "maximum_carry_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 3.0
+            },
+            "description": "Minimum carrier displacement required before PASS; distinguishes carries from stationary holds.",
+            "maximum": 40.0,
+            "minimum": 0.0,
+            "name": "minimum_displacement_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 2.5
+            },
+            "description": "Maximum ball-carrier distance used by the control criterion.",
+            "maximum": 5.0,
+            "minimum": 0.1,
+            "name": "control_distance_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 1.0
+            },
+            "description": "Margin allowing shared teammate proximity while preserving the controlled-pass control model.",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "nearest_teammate_margin_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 10.0
+            },
+            "description": "Touch-tolerant maximum velocity-vector difference between ball and carrier for co-moving evidence.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "name": "maximum_ball_player_speed_delta_mps",
+            "payload_type": "number",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 1.0
+            },
+            "description": "Minimum observed-frame ratio satisfying the distance/nearest-player control criterion.",
+            "maximum": 1.0,
+            "minimum": 0.5,
+            "name": "minimum_controlled_frame_ratio",
+            "payload_type": "number",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 0.75
+            },
+            "description": "Minimum velocity-observed-frame ratio satisfying touch-tolerant co-moving evidence.",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "name": "minimum_comoving_frame_ratio",
+            "payload_type": "number",
+            "required": false,
+            "unit": "none"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "none",
+              "value": 0.02
+            },
+            "description": "Maximum missing ball/player tracking ratio before UNKNOWN.",
+            "maximum": 0.5,
+            "minimum": 0.0,
+            "name": "maximum_missing_frame_ratio",
+            "payload_type": "number",
+            "required": false,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Identify observed same-player ball-carry intervals between a controlled reception and that player's next confirmed pass release, with conservative control continuity.",
+        "runtime_id": "primitive:carry_episode:0.1.0",
+        "version": "0.1.0"
+      },
+      "status": "CURRENT",
+      "subject_ref": "runtime:primitive:carry_episode:0.1.0"
     },
     {
       "binding": {
@@ -16673,13 +17492,13 @@
     "baseline_artifact_revision": "1a1fa4a7b75453fa4ce0fef355550df1c10f3d151d2904cd3e08551b7d2c9c7c",
     "evidence_schema_version": "1.0",
     "generator_version": "scp0.generator.v1",
-    "lock_hash": "fb7691e59323b3ebae784f5fde838142aabe862a9e5805459a52a1ac9f0d2835",
+    "lock_hash": "6b8cc04649be311424db50fb72da1640dc2567856b0fa01b1ed4a4afe19fb706",
     "plan_artifact_revision": "1d61cdab6fff73fb204d567f5c4759b4896bf992fb208c20e77ab35b4acca4da",
     "product_projection_policy": "projection.product.v1",
     "recipe_projection_policy": "projection.recipe_library.v1",
-    "registry_revision": "0cda966713f958f78afae7fa0c6041aa63472b9c23e7982a2f5063c93a1b3cb8",
+    "registry_revision": "0eb974ec4e9c36395d773506ea7a55f86d454355d0da391a60774026118899e3",
     "research_atlas_projection_policy": "projection.research_atlas.v1",
-    "runtime_manifest_revision": "49dc9ce2650bff1e5b682593689b18926289f17ea590b2cdce2fe383b7638681",
+    "runtime_manifest_revision": "46aafc14a3c32974245158bc7fe55fc150918f3461a2348ba5a7ca3ca44c3841",
     "schema_version": "1.0",
     "typed_plan_schema_version": "1.0",
     "unsupported_projection_policy": "projection.unsupported.v1"

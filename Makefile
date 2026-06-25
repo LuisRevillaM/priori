@@ -264,6 +264,10 @@ m1-2-verify:
 afl-time-to-arrival-verify:
 	$(PYTHON) -m tqe.verification.afl_time_to_arrival
 
+.PHONY: afl-carry-episode-verify
+afl-carry-episode-verify:
+	$(PYTHON) -m tqe.verification.afl_carry_episode
+
 test:
 	$(PYTHON) -m unittest discover -s tests
 

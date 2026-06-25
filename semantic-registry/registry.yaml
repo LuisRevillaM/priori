@@ -131,6 +131,14 @@ concepts:
     evidence_contract_ref: evidence.time_to_arrival.v1
     tags: [reachability, tracking, arrival-time]
 
+  - id: concept.controlled_carry_episode
+    kind: Concept
+    display_name: Controlled Carry Episode
+    description: Observed same-player movement with the ball under a conservative control criterion between controlled reception and next confirmed pass release.
+    claim_contract_ref: claim.controlled_carry_episode.v1
+    evidence_contract_ref: evidence.controlled_carry_episode.v1
+    tags: [carry, control, tracking, action]
+
   - id: concept.observed_multi_line_model
     kind: Concept
     display_name: Observed Multi-Line Model
@@ -664,6 +672,32 @@ operationalizations:
     lowering: [anchor_frame_selection, target_point_resolution, candidate_scope_resolution, straight_line_distance, declared_speed_arrival_time, threshold_evaluation]
     claim_contract_ref: claim.time_to_arrival.v1
     evidence_contract_ref: evidence.time_to_arrival.v1
+
+  - id: op.controlled_carry_episode.v1
+    kind: Operationalization
+    display_name: Controlled Carry Episode
+    description: Identify same-player ball-carry intervals from controlled reception to the same player's next confirmed pass release under conservative control-continuity thresholds.
+    concept_refs: [concept.controlled_carry_episode]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [event, tracking]
+    applicability: [controlled_pass_anchor_available, same_player_terminal_pass_available, possession_continuity_available, ball_and_carrier_tracking_available]
+    inputs:
+      - name: controlled_pass_anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: controlled_pass_anchor, unit: none, entity_scope: anchor}
+      - name: tracking_window
+        type: {container: TrajectorySet, value: Position, unit: metre, coordinate_frame: pitch_absolute}
+    outputs:
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: AnchorRef, quantity: carry_evaluation, unit: none, entity_scope: anchor}
+      - name: carry_status
+        type: {container: FrameSignal, value: Enum, quantity: carry_status, unit: none, entity_scope: anchor}
+      - name: displacement_m
+        type: {container: FrameSignal, value: Scalar, quantity: displacement, unit: metre, entity_scope: anchor}
+      - name: forward_progression_m
+        type: {container: FrameSignal, value: Scalar, quantity: forward_progression, unit: metre, entity_scope: anchor}
+    lowering: [controlled_pass_reception_anchor, same_player_terminal_pass_release, possession_continuity_check, ball_carrier_distance_check, nearest_teammate_control_margin, ball_player_comovement_check, displacement_measurement]
+    claim_contract_ref: claim.controlled_carry_episode.v1
+    evidence_contract_ref: evidence.controlled_carry_episode.v1
 
   - id: op.observed_multi_line_model.v1
     kind: Operationalization
@@ -1236,6 +1270,12 @@ implementations:
     description: Current static-point reachability implementation.
     implements: [op.static_point_time_to_arrival.v1]
     source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.carry_episode.python.v1
+    kind: Implementation
+    display_name: Carry Episode Python Implementation
+    description: Current conservative controlled-carry implementation.
+    implements: [op.controlled_carry_episode.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
   - id: impl.multi_line_model.python.v1
     kind: Implementation
     display_name: Multi-Line Model Python Implementation
@@ -1663,6 +1703,83 @@ runtime_bindings:
       maximum_arrival_seconds: maximum_arrival_seconds
       maximum_player_speed_mps: maximum_player_speed_mps
       minimum_observed_candidates: minimum_observed_candidates
+
+  - id: binding.primitive.carry_episode.0_1_0
+    kind: RuntimeBinding
+    display_name: carry_episode runtime binding
+    description: Canonical runtime binding for carry_episode 0.1.0.
+    runtime_capability: {id: carry_episode, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.carry_episode.python.v1
+    implements: [op.controlled_carry_episode.v1]
+    conformance_status: PARTIAL
+    known_deviations: [v0.1 requires a same-player terminal controlled pass and does not model tracking-only carry endings.]
+    input_bindings:
+      controlled_pass_anchors: {source: NODE_INPUT, runtime_port: controlled_pass_anchors}
+      tracking_window: {source: RUNTIME_CONTEXT, context_ref: canonical_tracking_window}
+    output_bindings:
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+      carry_status: {runtime_port: carry_status}
+      displacement_m: {runtime_port: displacement_m}
+      forward_progression_m: {runtime_port: forward_progression_m}
+    semantic_parameters:
+      - name: maximum_carry_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+        default: {payload_type: number, value: 10.0, unit: second}
+        minimum: 0.4
+        maximum: 20.0
+      - name: minimum_displacement_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 3.0, unit: metre}
+        minimum: 0.0
+        maximum: 40.0
+      - name: control_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 2.5, unit: metre}
+        minimum: 0.1
+        maximum: 5.0
+      - name: nearest_teammate_margin_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+        default: {payload_type: number, value: 1.0, unit: metre}
+        minimum: 0.0
+        maximum: 5.0
+      - name: maximum_ball_player_speed_delta_mps
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 10.0, unit: none}
+        minimum: 0.0
+        maximum: 10.0
+      - name: minimum_controlled_frame_ratio
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 1.0, unit: none}
+        minimum: 0.5
+        maximum: 1.0
+      - name: minimum_comoving_frame_ratio
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 0.75, unit: none}
+        minimum: 0.0
+        maximum: 1.0
+      - name: maximum_missing_frame_ratio
+        type: {container: Scalar, value: Scalar, unit: none}
+        required: false
+        default: {payload_type: number, value: 0.02, unit: none}
+        minimum: 0.0
+        maximum: 0.5
+    parameter_bindings:
+      maximum_carry_seconds: maximum_carry_seconds
+      minimum_displacement_m: minimum_displacement_m
+      control_distance_m: control_distance_m
+      nearest_teammate_margin_m: nearest_teammate_margin_m
+      maximum_ball_player_speed_delta_mps: maximum_ball_player_speed_delta_mps
+      minimum_controlled_frame_ratio: minimum_controlled_frame_ratio
+      minimum_comoving_frame_ratio: minimum_comoving_frame_ratio
+      maximum_missing_frame_ratio: maximum_missing_frame_ratio
+    uncovered_runtime_outputs: [episodes]
 
   - id: binding.primitive.ball_lateral_fraction.0_1_0
     kind: RuntimeBinding
@@ -2937,6 +3054,14 @@ claim_contracts:
     permitted: [declared_static_point_arrival_time_estimated_under_declared_speed_assumption, declared_arrival_threshold_evaluated_for_observed_candidates]
     prohibited: [pitch_control_inferred, cover_shadow_inferred, moving_target_interception_inferred, player_intent_inferred, defender_intent_inferred, player_effort_inferred, tactical_causation_inferred, lane_denial_quality_inferred, pass_was_optimal]
     unknown_conditions: [target_point_missing, candidate_positions_missing, invalid_arrival_speed, insufficient_observed_candidates]
+  - id: claim.controlled_carry_episode.v1
+    kind: ClaimContract
+    display_name: Controlled Carry Episode Claims
+    description: Claims permitted for conservative observed carry episodes between controlled reception and same-player terminal pass release.
+    inherits: [claim.controlled_ball_transfer.v1]
+    permitted: [same_player_controlled_carry_interval_identified, carry_displacement_measured, carry_forward_progression_measured]
+    prohibited: [dribbling_skill_inferred, pressure_break_quality_inferred, defender_bypassed_by_carry, player_intent_inferred, tactical_causation_inferred, decision_quality_inferred, optimality_inferred, pass_probability_inferred, pass_was_optimal]
+    unknown_conditions: [terminal_pass_unresolved, possession_continuity_unresolved, ball_or_carrier_tracking_missing, control_continuity_unresolved, attacking_direction_missing_or_invalid]
   - id: claim.observed_multi_line_model.v1
     kind: ClaimContract
     display_name: Observed Multi-Line Model Claims
@@ -3215,6 +3340,13 @@ evidence_contracts:
     required: [anchor_id, anchor_frame_id, time_to_arrival_status, time_to_arrival_reason, arrival_frame_id, target_point, candidate_scope, candidate_player_ids, observed_candidate_player_ids, arrival_player_ids, nearest_arrival_player_id, minimum_arrival_seconds, maximum_arrival_seconds, maximum_player_speed_mps, reachability_model, momentum_policy, reachable_verdict_bias, coverage_status]
     optional: [missing_candidate_player_ids, nearest_arrival_distance_m, per_player_arrival_evidence]
     replay_projection: [target_point_marker, candidate_player_markers, arrival_time_badge, reachability_model_badge]
+  - id: evidence.controlled_carry_episode.v1
+    kind: EvidenceContract
+    display_name: Controlled Carry Episode Evidence
+    description: Evidence required for conservative observed carry episodes.
+    required: [anchor_id, anchor_frame_id, carry_status, carry_reason, carry_episode_id, carrier_id, team_role, source_reception_pass_id, terminal_pass_id, terminal_detection_status, terminal_detection_reason, carry_start_frame_id, carry_end_frame_id, carry_duration_seconds, start_point, end_point, displacement_m, carry_forward_progression_m, possession_continuity_status, possession_continuity_reason, control_continuity_status, control_continuity_reason, controlled_frame_ratio, comoving_frame_ratio, missing_frame_ratio, control_model, control_bias, control_distance_m, nearest_teammate_margin_m, maximum_ball_player_speed_delta_mps, minimum_controlled_frame_ratio, minimum_comoving_frame_ratio, maximum_missing_frame_ratio, minimum_displacement_m]
+    optional: [start_match_time_ms, end_match_time_ms, observed_frame_count, controlled_frame_count, comoving_frame_count, velocity_observed_frame_count, missing_frame_count, terminal_passer_id, terminal_receiver_id, terminal_release_frame_id, terminal_reception_frame_id]
+    replay_projection: [carry_start_frame, carry_end_frame, carrier_marker, ball_path, carry_displacement_badge, control_model_badge]
   - id: evidence.observed_multi_line_model.v1
     kind: EvidenceContract
     display_name: Observed Multi-Line Model Evidence
@@ -3508,6 +3640,13 @@ exposure_policies:
     subject_ref: runtime:primitive:time_to_arrival:0.1.0
     ai_compiler: ALLOWED
     product: ALLOWED
+  - id: exposure.runtime.carry_episode.0_1_0
+    kind: ExposurePolicy
+    display_name: carry_episode exposure
+    description: Exposure policy for carry_episode.
+    subject_ref: runtime:primitive:carry_episode:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
   - id: exposure.runtime.multi_line_model.0_1_0
     kind: ExposurePolicy
     display_name: multi_line_model exposure
@@ -3741,6 +3880,12 @@ projection_policies:
         permitted_fields: []
         rationale: Time-to-arrival is intentionally added as a reachability substrate primitive and closes the Q4 lane-coverage typed gap.
         review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:carry_episode:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: fac40aee740663083b4f48ee0fee9d5326ecbc12e9000a033a7c2d8e2ff239d7
+        permitted_fields: []
+        rationale: Carry episode is intentionally added as a conservative observed movement-under-control substrate primitive.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the capability.
       - subject_ref: runtime:primitive:multi_line_model:0.1.0
         difference_kind: ADDED
         projection_contract_hash: 5e2bcb5c0c1202caf872612333c0302cc8f9014b1603a7d7df90bed298accfbe
@@ -3836,6 +3981,12 @@ projection_policies:
         projection_contract_hash: 779ce10e289191634f45051d6c90f9bd37c41e0d5e1d3a2811e5cc20ad85423a
         permitted_fields: []
         rationale: Time-to-arrival is intentionally added as a model-visible reachability substrate primitive with explicit point-mass limitations.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
+      - subject_ref: runtime:primitive:carry_episode:0.1.0
+        difference_kind: ADDED
+        projection_contract_hash: fac40aee740663083b4f48ee0fee9d5326ecbc12e9000a033a7c2d8e2ff239d7
+        permitted_fields: []
+        rationale: Carry episode is intentionally added as a model-visible conservative movement-under-control substrate primitive.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
       - subject_ref: recipe:line_break_support_response_v1:0.1.0
         difference_kind: CONTRACT_CHANGED
@@ -4087,6 +4238,16 @@ maturity_assessments:
     display_name: time_to_arrival maturity
     description: Maturity assessment for time_to_arrival.
     subject_ref: runtime:primitive:time_to_arrival:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.carry_episode.0_1_0
+    kind: MaturityAssessment
+    display_name: carry_episode maturity
+    description: Maturity assessment for carry_episode.
+    subject_ref: runtime:primitive:carry_episode:0.1.0
     semantic: REVIEWED
     implementation: IMPLEMENTED
     validation: VERIFIED

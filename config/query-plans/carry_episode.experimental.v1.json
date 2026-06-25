@@ -1,0 +1,578 @@
+{
+  "default_invocation": {
+    "execution_mode": "execute",
+    "invocation_id": "carry_episode_probe",
+    "match_ids": [
+      "J03WOH",
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9",
+      "J03WMX",
+      "J03WN1"
+    ],
+    "max_results": 20,
+    "parameters": {},
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "schema_version": "1.0"
+  },
+  "draft_plan": {
+    "anchor_source": {
+      "output_name": "anchor_evaluations",
+      "source_node_id": "carry_episode"
+    },
+    "classification_mode": "partial_declared",
+    "classification_rules": [
+      {
+        "description": "Observed same-player movement-under-control carry under frozen thresholds.",
+        "label": "CONTROLLED_CARRY_EPISODE",
+        "predicate_ids": [
+          "carry_pass"
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "catalog_ref": "controlled_pass_episode",
+        "kind": "primitive",
+        "node_id": "controlled_pass",
+        "version": "0.1.0"
+      },
+      {
+        "catalog_ref": "carry_episode",
+        "inputs": {
+          "controlled_pass_anchors": {
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass"
+          }
+        },
+        "kind": "primitive",
+        "node_id": "carry_episode",
+        "parameters": {
+          "control_distance_m": {
+            "kind": "parameter",
+            "name": "control_distance_m"
+          },
+          "maximum_ball_player_speed_delta_mps": {
+            "kind": "parameter",
+            "name": "maximum_ball_player_speed_delta_mps"
+          },
+          "maximum_carry_seconds": {
+            "kind": "parameter",
+            "name": "maximum_carry_seconds"
+          },
+          "maximum_missing_frame_ratio": {
+            "kind": "parameter",
+            "name": "maximum_missing_frame_ratio"
+          },
+          "minimum_comoving_frame_ratio": {
+            "kind": "parameter",
+            "name": "minimum_comoving_frame_ratio"
+          },
+          "minimum_controlled_frame_ratio": {
+            "kind": "parameter",
+            "name": "minimum_controlled_frame_ratio"
+          },
+          "minimum_displacement_m": {
+            "kind": "parameter",
+            "name": "minimum_displacement_m"
+          },
+          "nearest_teammate_margin_m": {
+            "kind": "parameter",
+            "name": "nearest_teammate_margin_m"
+          }
+        },
+        "version": "0.1.0"
+      },
+      {
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "PASS"
+        },
+        "input": {
+          "output_name": "carry_status",
+          "source_node_id": "carry_episode"
+        },
+        "kind": "predicate",
+        "node_id": "carry_pass",
+        "operator": {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      }
+    ],
+    "plan_id": "carry_episode_probe",
+    "plan_version": "0.1.0",
+    "recipe_id": "carry_episode_probe_v1",
+    "recipe_version": "0.1.0",
+    "requested_evidence": [
+      {
+        "alias": "carry_status",
+        "field": "carry_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "carry_reason",
+        "field": "carry_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "carry_episode_id",
+        "field": "carry_episode_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "carrier_id",
+        "field": "carrier_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "team_role",
+        "field": "team_role",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "source_reception_pass_id",
+        "field": "source_reception_pass_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "terminal_pass_id",
+        "field": "terminal_pass_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "terminal_detection_status",
+        "field": "terminal_detection_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "terminal_detection_reason",
+        "field": "terminal_detection_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "carry_start_frame_id",
+        "field": "carry_start_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "carry_end_frame_id",
+        "field": "carry_end_frame_id",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "carry_duration_seconds",
+        "field": "carry_duration_seconds",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "start_point",
+        "field": "start_point",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "end_point",
+        "field": "end_point",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "displacement_m",
+        "field": "displacement_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "carry_forward_progression_m",
+        "field": "carry_forward_progression_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "possession_continuity_status",
+        "field": "possession_continuity_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "possession_continuity_reason",
+        "field": "possession_continuity_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "control_continuity_status",
+        "field": "control_continuity_status",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "control_continuity_reason",
+        "field": "control_continuity_reason",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "controlled_frame_ratio",
+        "field": "controlled_frame_ratio",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "comoving_frame_ratio",
+        "field": "comoving_frame_ratio",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "missing_frame_ratio",
+        "field": "missing_frame_ratio",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "observed_frame_count",
+        "field": "observed_frame_count",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "controlled_frame_count",
+        "field": "controlled_frame_count",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "comoving_frame_count",
+        "field": "comoving_frame_count",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "velocity_observed_frame_count",
+        "field": "velocity_observed_frame_count",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "missing_frame_count",
+        "field": "missing_frame_count",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "control_model",
+        "field": "control_model",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "control_bias",
+        "field": "control_bias",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "control_distance_m",
+        "field": "control_distance_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "nearest_teammate_margin_m",
+        "field": "nearest_teammate_margin_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "maximum_ball_player_speed_delta_mps",
+        "field": "maximum_ball_player_speed_delta_mps",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "minimum_controlled_frame_ratio",
+        "field": "minimum_controlled_frame_ratio",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "minimum_comoving_frame_ratio",
+        "field": "minimum_comoving_frame_ratio",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "maximum_missing_frame_ratio",
+        "field": "maximum_missing_frame_ratio",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "minimum_displacement_m",
+        "field": "minimum_displacement_m",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      },
+      {
+        "alias": "maximum_carry_seconds",
+        "field": "maximum_carry_seconds",
+        "required": true,
+        "source": {
+          "output_name": "anchor_evaluations",
+          "source_node_id": "carry_episode"
+        }
+      }
+    ],
+    "schema_version": "1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate"
+  },
+  "recipe": {
+    "allowed_claims": [
+      "A same-player carry interval was identified between controlled reception and confirmed pass release.",
+      "Carrier displacement and forward progression were measured from observed tracking endpoints.",
+      "Control continuity was evaluated with declared distance, nearest-player, co-movement, and missing-tracking thresholds."
+    ],
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "description": "Experimental substrate probe: identify observed same-player movement with the ball from controlled reception to the same player's next confirmed pass release under a conservative control-continuity model.",
+    "disallowed_claims": [
+      "The system inferred dribbling skill, pressure-breaking quality, intent, decision quality, or tactical causation.",
+      "The system claimed the carry beat or bypassed a defender.",
+      "The system inferred optimality or pass probability."
+    ],
+    "display_name": "Controlled Carry Episode Probe",
+    "limitations": [
+      "v0.1 ends carries at the same player's next confirmed pass release; tracking-only endings are deferred.",
+      "The base primitive is direction-neutral; progressive carry is a composition over forward_progression_m.",
+      "Ambiguous or missing ball/carrier tracking produces UNKNOWN rather than a carry."
+    ],
+    "output_classifications": [
+      "CONTROLLED_CARRY_EPISODE"
+    ],
+    "parameters": [
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 10.0
+        },
+        "description": "Maximum interval from controlled reception to same-player pass release.",
+        "name": "maximum_carry_seconds",
+        "payload_type": "number",
+        "unit": "second"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 3.0
+        },
+        "description": "Minimum movement distance required for a carry PASS.",
+        "name": "minimum_displacement_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 2.5
+        },
+        "description": "Maximum ball-carrier distance for control evidence.",
+        "name": "control_distance_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 1.0
+        },
+        "description": "Allowed nearest-teammate margin around the ball.",
+        "name": "nearest_teammate_margin_m",
+        "payload_type": "number",
+        "unit": "metre"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 10.0
+        },
+        "description": "Touch-tolerant maximum ball/player velocity-vector difference.",
+        "name": "maximum_ball_player_speed_delta_mps",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 1.0
+        },
+        "description": "Minimum observed-frame control ratio.",
+        "name": "minimum_controlled_frame_ratio",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 0.75
+        },
+        "description": "Minimum velocity-observed co-moving ratio.",
+        "name": "minimum_comoving_frame_ratio",
+        "payload_type": "number",
+        "unit": "none"
+      },
+      {
+        "default": {
+          "payload_type": "number",
+          "unit": "none",
+          "value": 0.02
+        },
+        "description": "Maximum missing ball/player tracking ratio.",
+        "name": "maximum_missing_frame_ratio",
+        "payload_type": "number",
+        "unit": "none"
+      }
+    ],
+    "recipe_id": "carry_episode_probe_v1",
+    "recipe_version": "0.1.0",
+    "schema_version": "1.0"
+  },
+  "schema_version": "1.0"
+}
