@@ -1,0 +1,48 @@
+{
+  "expectation_id": "afl09a.carry_episode.0_1_0",
+  "expected": {
+    "bound_plan_hash": "d138d6779a72d1bc62f95f7651975016ab4d1b2bed73368fd87f431caf68f2f1",
+    "compatibility_profile": "generic",
+    "document_hash": "a1019b08c2885ab8d7e55f7fa1f687cb149fb00d8f3a7d9db2070da9eab960f0",
+    "execution_status": "pass",
+    "plan_id": "carry_episode_probe",
+    "report_status": "PASS",
+    "requested_evidence_failure_count": 0,
+    "result_count": 20,
+    "result_ids": [
+      "0e4a06c19d5536d8",
+      "2f87302b34c43801",
+      "3591a32e5894e798",
+      "3a0b7c3c38398ca5",
+      "3de72627b57b9054",
+      "4a802a766e391d43",
+      "4aeebe012e283b81",
+      "5078db05405b10f5",
+      "507f0a60099d79d9",
+      "54eddd9129288348",
+      "6718e7fa9a5ead6e",
+      "7cc1f91f5e345bfd",
+      "91904626043982fd",
+      "a066c9de17f7ef1c",
+      "adde849dd0968b84",
+      "d30e2810e08aba53",
+      "e4cc0694a75d02ba",
+      "ebb887e0ac911c0f",
+      "f3f43e7997eacfd5",
+      "fbcae98f9cee2c4f"
+    ],
+    "result_signature_hash": "fe9f3b57ec3329b6c398e8d9e29513ed87cd22add0793759e5adfb897d3c8ff0"
+  },
+  "freeze_provenance": {
+    "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
+    "review": "controller_self_verified_original_real_data_verifier",
+    "runtime_semantics_dirty": false,
+    "source_commit": "503335c88ad30adb517a1c168c74ef67d515d1a6",
+    "source_verifier": "tqe.verification.afl_carry_episode",
+    "source_verifier_status": "PASS",
+    "threshold_version": "carry_episode.v0.1.0:min_displacement=3.0:max_seconds=10.0:control_distance=2.5:nearest_margin=1.0:max_speed_delta=10.0:min_controlled_ratio=1.0:min_comoving_ratio=0.75:max_missing_ratio=0.02",
+    "worktree_dirty": false
+  },
+  "schema_version": "afl09a.frozen_expectation.v1",
+  "subject_ref": "runtime:primitive:carry_episode:0.1.0"
+}
