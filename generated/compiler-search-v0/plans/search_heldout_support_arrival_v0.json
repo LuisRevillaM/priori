@@ -37,17 +37,17 @@
     ],
     "nodes": [
       {
-        "catalog_ref": "action_event_anchor",
+        "catalog_ref": "controlled_pass_episode",
         "kind": "primitive",
-        "node_id": "action_event_anchor",
+        "node_id": "controlled_pass_episode",
         "version": "0.1.0"
       },
       {
         "catalog_ref": "support_arrival_relation",
         "inputs": {
           "anchors": {
-            "output_name": "anchor_evaluations",
-            "source_node_id": "action_event_anchor"
+            "output_name": "anchors",
+            "source_node_id": "controlled_pass_episode"
           }
         },
         "kind": "relation",

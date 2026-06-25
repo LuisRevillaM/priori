@@ -171,6 +171,12 @@ class CatalogIndex:
         return None
 
 
+VALUE_FAMILY_FIELDS = {
+    "pressure_distance": ["nearest_defender_distance_m"],
+    "team_shape_width_or_depth": ["team_width_m", "team_depth_m", "team_area_m2"],
+}
+
+
 @dataclass
 class BuildResult:
     nodes: list[dict[str, Any]]
@@ -375,14 +381,25 @@ def build_entry(
     inputs: dict[str, dict[str, str]] = {}
     input_builds: list[BuildResult] = []
     for input_def in entry.inputs:
-        provider, output = choose_input_provider(context, consumer=entry, input_def=input_def, depth=depth)
-        child = build_entry(context, provider, required_fields_for_input(entry, input_def, required_fields), depth=depth + 1, input_context={})
+        child = prebuilt_input(input_context, input_def.name)
+        if child is None:
+            provider, output = choose_input_provider(context, consumer=entry, input_def=input_def, depth=depth)
+            child = build_entry(
+                context,
+                provider,
+                required_fields_for_input(entry, input_def, required_fields),
+                depth=depth + 1,
+                input_context={},
+            )
+            output_name = output.name if output.name in {out.name for out in provider.outputs} else child.terminal_output
+        else:
+            output_name = child.terminal_output
         input_builds.append(child)
         nodes.extend(child.nodes)
         field_sources.update(child.field_sources)
         rules_used.extend(child.rules_used)
         providers_used.extend(child.providers_used)
-        inputs[input_def.name] = ref(child.terminal_node_id, output.name if output.name in {out.name for out in provider.outputs} else child.terminal_output)
+        inputs[input_def.name] = ref(child.terminal_node_id, output_name)
 
     node_id = context.node_id(entry.name)
     output_name = context.catalog.anchor_output(entry).name
@@ -411,58 +428,89 @@ def build_change_across_anchor(
     depth: int,
     input_context: dict[str, Any],
 ) -> BuildResult:
-    rules = ["generic_before_after_change"]
-    carry_entry = require_entry(context, "carry_episode")
-    pressure_entry = require_entry(context, "pressure_on_carrier")
-    carry = build_entry(context, carry_entry, {"carry_status", "carry_start_frame_id", "carry_end_frame_id"}, depth=depth + 1, input_context={})
-    before = build_entry(
-        context,
-        pressure_entry,
-        {"pressure_status", "nearest_defender_distance_m"},
-        depth=depth + 1,
-        input_context={"anchors": carry, "frame_field": "carry_start_frame_id", "carrier_id_field": "carrier_id"},
-    )
-    after = build_entry(
-        context,
-        pressure_entry,
-        {"pressure_status", "nearest_defender_distance_m"},
-        depth=depth + 1,
-        input_context={"anchors": carry, "frame_field": "carry_end_frame_id", "carrier_id_field": "carrier_id"},
-    )
-    nodes = [*carry.nodes, *before.nodes, *after.nodes]
-    field_sources = {**carry.field_sources, **before.field_sources, **after.field_sources}
-    node_id = context.node_id(entry.name)
-    nodes.append(
-        catalog_node(
-            node_id,
-            entry,
-            inputs={
-                "anchors": ref(carry.terminal_node_id, carry.terminal_output),
-                "before_evaluations": ref(before.terminal_node_id, before.terminal_output),
-                "after_evaluations": ref(after.terminal_node_id, after.terminal_output),
-            },
-            parameters={
-                "before_value_field": enum("nearest_defender_distance_m"),
-                "after_value_field": enum("nearest_defender_distance_m"),
-                "before_status_field": enum("pressure_status"),
-                "after_status_field": enum("none"),
-                "required_status_value": enum("PASS"),
-                "change_mode": enum("increase_at_least"),
-                "minimum_change_m": number(2.0, "metre"),
-                "maximum_before_value_m": number(4.0, "metre"),
-            },
-        )
-    )
-    for field in context.catalog.field_set(entry):
-        field_sources.setdefault(field, (node_id, output_name_for_field(context.catalog, entry, field) or "anchor_evaluations"))
-    return BuildResult(
-        nodes=dedupe_nodes(nodes),
-        terminal_node_id=node_id,
-        terminal_entry=entry.name,
-        terminal_output="anchor_evaluations",
-        field_sources=field_sources,
-        rules_used=[*carry.rules_used, *before.rules_used, *after.rules_used, *rules],
-        providers_used=[*carry.providers_used, *before.providers_used, *after.providers_used, entry.name],
+    rules = ["generic_before_after_change", "typed_value_field_provider_discovery"]
+    attempts: list[dict[str, Any]] = []
+    for candidate in change_composition_candidates(context, entry)[: context.max_branching]:
+        try:
+            anchor = build_entry(
+                context,
+                candidate["anchor_entry"],
+                set(candidate["anchor_required_fields"]),
+                depth=depth + 1,
+                input_context={},
+            )
+            before = build_entry(
+                context,
+                candidate["evaluator_entry"],
+                {candidate["status_field"], candidate["value_field"]},
+                depth=depth + 1,
+                input_context=evaluator_input_context(
+                    anchor=anchor,
+                    frame_field=candidate["before_frame_field"],
+                    carrier_id_field=candidate.get("carrier_id_field"),
+                ),
+            )
+            after = build_entry(
+                context,
+                candidate["evaluator_entry"],
+                {candidate["status_field"], candidate["value_field"]},
+                depth=depth + 1,
+                input_context=evaluator_input_context(
+                    anchor=anchor,
+                    frame_field=candidate["after_frame_field"],
+                    carrier_id_field=candidate.get("carrier_id_field"),
+                ),
+            )
+            node_id = context.node_id(entry.name)
+            nodes = [*anchor.nodes, *before.nodes, *after.nodes]
+            nodes.append(
+                catalog_node(
+                    node_id,
+                    entry,
+                    inputs={
+                        "anchors": ref(anchor.terminal_node_id, anchor.terminal_output),
+                        "before_evaluations": ref(before.terminal_node_id, before.terminal_output),
+                        "after_evaluations": ref(after.terminal_node_id, after.terminal_output),
+                    },
+                    parameters={
+                        "before_value_field": enum(candidate["value_field"]),
+                        "after_value_field": enum(candidate["value_field"]),
+                        "before_status_field": enum(candidate["status_field"]),
+                        "after_status_field": enum(candidate["after_status_field"]),
+                        "required_status_value": enum("PASS"),
+                        "change_mode": enum(candidate["change_mode"]),
+                        "minimum_change_m": number(float(candidate["minimum_change_m"]), "metre"),
+                        "maximum_before_value_m": number(float(candidate["maximum_before_value_m"]), "metre"),
+                    },
+                )
+            )
+            field_sources = {**anchor.field_sources, **before.field_sources, **after.field_sources}
+            for field in context.catalog.field_set(entry):
+                field_sources.setdefault(field, (node_id, output_name_for_field(context.catalog, entry, field) or "anchor_evaluations"))
+            return BuildResult(
+                nodes=dedupe_nodes(nodes),
+                terminal_node_id=node_id,
+                terminal_entry=entry.name,
+                terminal_output="anchor_evaluations",
+                field_sources=field_sources,
+                rules_used=[*anchor.rules_used, *before.rules_used, *after.rules_used, *rules],
+                providers_used=[*anchor.providers_used, *before.providers_used, *after.providers_used, entry.name],
+            )
+        except SynthesisError as error:
+            attempts.append(
+                {
+                    "anchor_provider": candidate["anchor_entry"].name,
+                    "evaluator_provider": candidate["evaluator_entry"].name,
+                    "value_field": candidate["value_field"],
+                    "taxonomy": error.taxonomy,
+                    "message": error.message,
+                    **error.details,
+                }
+            )
+    raise SynthesisError(
+        "missing_constraint",
+        "No typed before/after evaluator composition satisfied change_across_anchor.",
+        {"attempted": attempts[: context.max_branching], "required_fields": sorted(required_fields)},
     )
 
 
@@ -473,59 +521,416 @@ def build_join_episode_sets(
     *,
     depth: int,
 ) -> BuildResult:
-    rules = ["generic_binary_episode_join"]
-    left_fields = {field for field in required_fields if field.startswith("carry_") or field in {"carrier_id"}}
-    right_fields = {
-        field
-        for field in required_fields
-        if field.startswith("change_") or field in {"before_value", "after_value", "delta_value"}
+    rules = ["generic_binary_episode_join", "typed_join_key_discovery"]
+    attempts: list[dict[str, Any]] = []
+    for candidate in join_composition_candidates(context, entry, required_fields)[: context.max_branching]:
+        try:
+            left = build_entry(context, candidate["left_entry"], set(candidate["left_fields"]), depth=depth + 1, input_context={})
+            right = build_entry(context, candidate["right_entry"], set(candidate["right_fields"]), depth=depth + 1, input_context={})
+            node_id = context.node_id(entry.name)
+            nodes = [*left.nodes, *right.nodes]
+            nodes.append(
+                catalog_node(
+                    node_id,
+                    entry,
+                    inputs={
+                        "left_episodes": ref(left.terminal_node_id, left.terminal_output),
+                        "right_episodes": ref(right.terminal_node_id, right.terminal_output),
+                    },
+                    parameters={
+                        "left_key_field": enum(candidate["left_key_field"]),
+                        "right_key_field": enum(candidate["right_key_field"]),
+                        "left_status_field": enum(candidate["left_status_field"]),
+                        "right_status_field": enum(candidate["right_status_field"]),
+                        "required_status_value": enum("PASS"),
+                        "temporal_relation": enum(candidate["temporal_relation"]),
+                        "left_time_field": enum(candidate["left_time_field"]),
+                        "right_time_field": enum(candidate["right_time_field"]),
+                        "maximum_gap_seconds": number(float(candidate["maximum_gap_seconds"]), "second"),
+                        "distinct_entity_fields": enum(candidate["distinct_entity_fields"]),
+                    },
+                )
+            )
+            field_sources = {**left.field_sources, **right.field_sources}
+            for field in context.catalog.field_set(entry):
+                field_sources.setdefault(field, (node_id, output_name_for_field(context.catalog, entry, field) or "anchor_evaluations"))
+            return BuildResult(
+                nodes=dedupe_nodes(nodes),
+                terminal_node_id=node_id,
+                terminal_entry=entry.name,
+                terminal_output="anchor_evaluations",
+                field_sources=field_sources,
+                rules_used=[*left.rules_used, *right.rules_used, *rules],
+                providers_used=[*left.providers_used, *right.providers_used, entry.name],
+            )
+        except SynthesisError as error:
+            attempts.append(
+                {
+                    "left_provider": candidate["left_entry"].name,
+                    "right_provider": candidate["right_entry"].name,
+                    "left_key_field": candidate["left_key_field"],
+                    "right_key_field": candidate["right_key_field"],
+                    "taxonomy": error.taxonomy,
+                    "message": error.message,
+                    **error.details,
+                }
+            )
+    raise SynthesisError(
+        "missing_constraint",
+        "No typed binary episode join satisfied the requested evidence fields.",
+        {"attempted": attempts[: context.max_branching], "required_fields": sorted(required_fields)},
+    )
+
+
+def prebuilt_input(input_context: dict[str, Any], input_name: str) -> BuildResult | None:
+    value = input_context.get(input_name)
+    if value is None and input_name == "anchors":
+        value = input_context.get("anchors")
+    return value if isinstance(value, BuildResult) else None
+
+
+def evaluator_input_context(
+    *,
+    anchor: BuildResult,
+    frame_field: str,
+    carrier_id_field: str | None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {"anchors": anchor, "frame_field": frame_field}
+    if carrier_id_field is not None:
+        payload["carrier_id_field"] = carrier_id_field
+    return payload
+
+
+def target_constraints(context: SearchContext, kind: str | None = None) -> list[dict[str, Any]]:
+    constraints = [
+        item
+        for item in context.target_contract.get("composition_constraints", [])
+        if isinstance(item, dict)
+    ]
+    if kind is None:
+        return constraints
+    return [item for item in constraints if item.get("kind") == kind]
+
+
+def first_target_constraint(context: SearchContext, kind: str) -> dict[str, Any]:
+    constraints = target_constraints(context, kind)
+    return constraints[0] if constraints else {}
+
+
+def allowed_parameter_values(entry: CatalogEntry, parameter_name: str) -> list[str]:
+    for parameter in entry.parameters:
+        if parameter.name != parameter_name:
+            continue
+        values = []
+        for allowed in parameter.allowed_values or []:
+            value = getattr(allowed, "value", allowed)
+            values.append(str(value))
+        if values:
+            return values
+        if parameter.default is not None:
+            return [str(getattr(parameter.default.value, "value", parameter.default.value))]
+    return []
+
+
+def constrained_value_fields(context: SearchContext, entry: CatalogEntry) -> list[str]:
+    allowed = allowed_parameter_values(entry, "before_value_field")
+    fields: list[str] = []
+    for constraint in target_constraints(context, "before_after_same_anchor"):
+        for field_name in constraint.get("value_fields", []):
+            if str(field_name) in allowed and str(field_name) not in fields:
+                fields.append(str(field_name))
+        family = constraint.get("value_family")
+        for field_name in VALUE_FAMILY_FIELDS.get(str(family), []):
+            if field_name in allowed and field_name not in fields:
+                fields.append(field_name)
+    return fields or allowed
+
+
+def constrained_status_fields(context: SearchContext, entry: CatalogEntry) -> list[str]:
+    allowed = allowed_parameter_values(entry, "before_status_field")
+    fields: list[str] = []
+    for constraint in target_constraints(context, "before_after_same_anchor"):
+        for field_name in constraint.get("status_fields", []):
+            if str(field_name) in allowed and str(field_name) not in fields:
+                fields.append(str(field_name))
+    return fields or allowed
+
+
+def change_parameter_constraint(context: SearchContext, name: str, default: Any) -> Any:
+    for constraint in target_constraints(context, "before_after_same_anchor"):
+        if name in constraint:
+            return constraint[name]
+    return default
+
+
+def change_composition_candidates(
+    context: SearchContext,
+    change_entry: CatalogEntry,
+) -> list[dict[str, Any]]:
+    value_fields = constrained_value_fields(context, change_entry)
+    status_fields = constrained_status_fields(context, change_entry)
+    before_frame_override = change_parameter_constraint(context, "before_frame_field", None)
+    after_frame_override = change_parameter_constraint(context, "after_frame_field", None)
+    frame_constraint = first_target_constraint(context, "frame_alignment")
+    before_frame_override = before_frame_override or frame_constraint.get("before_frame_field")
+    after_frame_override = after_frame_override or frame_constraint.get("after_frame_field")
+    change_mode = str(change_parameter_constraint(context, "change_mode", "increase_at_least"))
+    minimum_change_m = float(change_parameter_constraint(context, "minimum_change_m", 4.0))
+    maximum_before_value_m = float(change_parameter_constraint(context, "maximum_before_value_m", 12.0))
+    after_status_override = change_parameter_constraint(context, "after_status_field", None)
+
+    candidates: list[tuple[int, str, str, str, dict[str, Any]]] = []
+    for evaluator in context.catalog.entries.values():
+        if evaluator.name == change_entry.name or not has_single_anchor_input(evaluator):
+            continue
+        evaluator_fields = context.catalog.field_set(evaluator)
+        matched_values = [field for field in value_fields if field in evaluator_fields]
+        matched_status = [field for field in status_fields if field in evaluator_fields]
+        if not matched_values or not matched_status:
+            continue
+        input_def = evaluator.inputs[0]
+        for anchor_entry, _ in context.catalog.compatible_outputs(input_def):
+            if anchor_entry.name == evaluator.name:
+                continue
+            before_frame, after_frame = frame_pair_for_anchor(
+                anchor_entry,
+                evaluator,
+                before_override=None if before_frame_override is None else str(before_frame_override),
+                after_override=None if after_frame_override is None else str(after_frame_override),
+            )
+            if before_frame is None or after_frame is None:
+                continue
+            carrier_id_field = entity_field_for_evaluator(evaluator, anchor_entry)
+            if evaluator.name == "pressure_on_carrier" and carrier_id_field is None:
+                continue
+            anchor_required_fields = {before_frame, after_frame}
+            if carrier_id_field is not None:
+                anchor_required_fields.add(carrier_id_field)
+            anchor_fields = context.catalog.field_set(anchor_entry)
+            if not runtime_or_catalog_field_compatible(anchor_fields, anchor_required_fields):
+                continue
+            after_status_field = str(after_status_override or matched_status[0])
+            if after_status_field not in allowed_parameter_values(change_entry, "after_status_field"):
+                continue
+            score = 0
+            score += 20 * len(set(matched_values) & required_target_fields(context.target_contract))
+            score += 8 if before_frame != after_frame else 0
+            score += 6 if evaluator.name in {"pressure_on_carrier", "team_compactness"} else 0
+            score += 4 if anchor_entry.name in {"carry_episode", "controlled_pass_episode", "switch_of_play"} else 0
+            candidate = {
+                "anchor_entry": anchor_entry,
+                "evaluator_entry": evaluator,
+                "anchor_required_fields": sorted(anchor_required_fields),
+                "value_field": matched_values[0],
+                "status_field": matched_status[0],
+                "after_status_field": after_status_field,
+                "before_frame_field": before_frame,
+                "after_frame_field": after_frame,
+                "carrier_id_field": carrier_id_field,
+                "change_mode": change_mode,
+                "minimum_change_m": minimum_change_m,
+                "maximum_before_value_m": maximum_before_value_m,
+            }
+            candidates.append((-score, anchor_entry.name, evaluator.name, matched_values[0], candidate))
+    return [candidate for *_prefix, candidate in sorted(candidates)]
+
+
+def has_single_anchor_input(entry: CatalogEntry) -> bool:
+    return len(entry.inputs) == 1 and entry.inputs[0].name == "anchors"
+
+
+def frame_pair_for_anchor(
+    anchor_entry: CatalogEntry,
+    evaluator: CatalogEntry,
+    *,
+    before_override: str | None,
+    after_override: str | None,
+) -> tuple[str | None, str | None]:
+    allowed_frames = set(allowed_parameter_values(evaluator, "frame_field") or allowed_parameter_values(evaluator, "anchor_frame_field"))
+    anchor_fields = contextless_field_names(anchor_entry)
+    pairs = []
+    if before_override and after_override:
+        pairs.append((before_override, after_override))
+    pairs.extend(
+        [
+            ("carry_start_frame_id", "carry_end_frame_id"),
+            ("physical_release_frame_id", "controlled_reception_frame_id"),
+            ("start_frame_id", "end_frame_id"),
+            ("anchor_frame_id", "anchor_frame_id"),
+        ]
+    )
+    for before, after in pairs:
+        if before in allowed_frames and after in allowed_frames and before in anchor_fields and after in anchor_fields:
+            return before, after
+    return None, None
+
+
+def contextless_field_names(entry: CatalogEntry) -> set[str]:
+    fields = set(entry.evidence_fields)
+    for output in entry.outputs:
+        fields.add(output.name)
+        fields.update(output.evidence_fields)
+    return fields
+
+
+def runtime_or_catalog_field_compatible(fields: set[str], required: set[str]) -> bool:
+    return required.issubset(fields)
+
+
+def entity_field_for_evaluator(evaluator: CatalogEntry, anchor_entry: CatalogEntry) -> str | None:
+    allowed = allowed_parameter_values(evaluator, "carrier_id_field")
+    if not allowed:
+        return None
+    anchor_fields = contextless_field_names(anchor_entry)
+    for field_name in ("carrier_id", "receiver_id", "relay_player_id", "terminal_receiver_id", "passer_id"):
+        if field_name in allowed and field_name in anchor_fields:
+            return field_name
+    return None
+
+
+def join_composition_candidates(
+    context: SearchContext,
+    join_entry: CatalogEntry,
+    required_fields: set[str],
+) -> list[dict[str, Any]]:
+    left_key_hint = first_target_constraint(context, "same_anchor_identity").get("left_key_field")
+    right_key_hint = first_target_constraint(context, "same_anchor_identity").get("right_key_field")
+    left_key_allowed = allowed_parameter_values(join_entry, "left_key_field")
+    right_key_allowed = allowed_parameter_values(join_entry, "right_key_field")
+    candidate_entries = [
+        entry
+        for entry in context.catalog.entries.values()
+        if entry.name != join_entry.name and context.catalog.field_set(entry) & required_fields
+    ]
+    candidates: list[tuple[int, str, str, dict[str, Any]]] = []
+    for left_entry in candidate_entries:
+        for right_entry in candidate_entries:
+            if left_entry.name == right_entry.name:
+                continue
+            left_fields_all = context.catalog.field_set(left_entry)
+            right_fields_all = context.catalog.field_set(right_entry)
+            left_fields = left_fields_all & required_fields
+            right_fields = right_fields_all & required_fields
+            if not left_fields or not right_fields:
+                continue
+            if not (required_fields - context.catalog.field_set(join_entry)).issubset(left_fields_all | right_fields_all):
+                continue
+            key_pair = compatible_join_key_pair(
+                left_fields_all,
+                right_fields_all,
+                left_key_allowed,
+                right_key_allowed,
+                left_hint=None if left_key_hint is None else str(left_key_hint),
+                right_hint=None if right_key_hint is None else str(right_key_hint),
+            )
+            if key_pair is None:
+                continue
+            left_status = status_field_for(left_entry) or "none"
+            right_status = status_field_for(right_entry) or "none"
+            if left_status not in allowed_parameter_values(join_entry, "left_status_field"):
+                left_status = "none"
+            if right_status not in allowed_parameter_values(join_entry, "right_status_field"):
+                right_status = "none"
+            temporal = temporal_join_constraint(context, left_fields_all, right_fields_all, join_entry)
+            distinct_fields = distinct_entity_constraint(context, left_fields_all | right_fields_all, join_entry)
+            score = 0
+            score += 20 * len(left_fields | right_fields)
+            score += 10 * len(left_fields)
+            score += 10 * len(right_fields)
+            score += 5 if left_status != "none" and right_status != "none" else 0
+            score += 3 if key_pair == ("anchor_id", "anchor_id") else 0
+            candidate = {
+                "left_entry": left_entry,
+                "right_entry": right_entry,
+                "left_fields": sorted(required_fields_for_join_side(left_entry, left_fields, left_status, key_pair[0])),
+                "right_fields": sorted(required_fields_for_join_side(right_entry, right_fields, right_status, key_pair[1])),
+                "left_key_field": key_pair[0],
+                "right_key_field": key_pair[1],
+                "left_status_field": left_status,
+                "right_status_field": right_status,
+                "temporal_relation": temporal["temporal_relation"],
+                "left_time_field": temporal["left_time_field"],
+                "right_time_field": temporal["right_time_field"],
+                "maximum_gap_seconds": temporal["maximum_gap_seconds"],
+                "distinct_entity_fields": distinct_fields,
+            }
+            candidates.append((-score, left_entry.name, right_entry.name, candidate))
+    return [candidate for *_prefix, candidate in sorted(candidates)]
+
+
+def compatible_join_key_pair(
+    left_fields: set[str],
+    right_fields: set[str],
+    left_allowed: list[str],
+    right_allowed: list[str],
+    *,
+    left_hint: str | None,
+    right_hint: str | None,
+) -> tuple[str, str] | None:
+    hinted = (left_hint, right_hint)
+    if left_hint and right_hint and left_hint in left_allowed and right_hint in right_allowed and left_hint in left_fields and right_hint in right_fields:
+        return hinted  # type: ignore[return-value]
+    for left_key, right_key in [
+        ("anchor_id", "anchor_id"),
+        ("terminal_pass_id", "input_pass_episode_id"),
+        ("right_anchor_id", "anchor_id"),
+        ("input_pass_episode_id", "input_pass_episode_id"),
+        ("relay_pass_episode_id", "relay_pass_episode_id"),
+    ]:
+        if left_key in left_allowed and right_key in right_allowed and left_key in left_fields and right_key in right_fields:
+            return left_key, right_key
+    return None
+
+
+def required_fields_for_join_side(
+    entry: CatalogEntry,
+    target_side_fields: set[str],
+    status_field: str,
+    key_field: str,
+) -> set[str]:
+    fields = set(target_side_fields)
+    if status_field != "none":
+        fields.add(status_field)
+    fields.add(key_field)
+    return fields & contextless_field_names(entry)
+
+
+def temporal_join_constraint(context: SearchContext, left_fields: set[str], right_fields: set[str], join_entry: CatalogEntry) -> dict[str, Any]:
+    relation = "none"
+    left_time = "anchor_frame_id"
+    right_time = "anchor_frame_id"
+    maximum_gap = 999.0
+    for constraint in target_constraints(context):
+        if constraint.get("kind") == "temporal_order":
+            relation = str(constraint.get("temporal_relation", relation))
+            left_time = str(constraint.get("left_time_field", left_time))
+            right_time = str(constraint.get("right_time_field", right_time))
+            maximum_gap = float(constraint.get("maximum_gap_seconds", maximum_gap))
+    allowed_relation = allowed_parameter_values(join_entry, "temporal_relation")
+    allowed_left_time = allowed_parameter_values(join_entry, "left_time_field")
+    allowed_right_time = allowed_parameter_values(join_entry, "right_time_field")
+    if relation not in allowed_relation or left_time not in allowed_left_time or right_time not in allowed_right_time:
+        relation, left_time, right_time, maximum_gap = "none", "anchor_frame_id", "anchor_frame_id", 999.0
+    if relation != "none" and (left_time not in left_fields or right_time not in right_fields):
+        relation, left_time, right_time, maximum_gap = "none", "anchor_frame_id", "anchor_frame_id", 999.0
+    return {
+        "temporal_relation": relation,
+        "left_time_field": left_time,
+        "right_time_field": right_time,
+        "maximum_gap_seconds": maximum_gap,
     }
-    if not left_fields or not right_fields:
-        raise SynthesisError(
-            "missing_constraint",
-            "Binary join requires typed fields for both left and right episode inputs.",
-            {"required_fields": sorted(required_fields)},
-        )
-    left_entry = first_provider(context, left_fields)
-    right_entry = first_provider(context, right_fields)
-    left = build_entry(context, left_entry, left_fields, depth=depth + 1, input_context={})
-    right = build_entry(context, right_entry, right_fields, depth=depth + 1, input_context={})
-    node_id = context.node_id(entry.name)
-    nodes = [*left.nodes, *right.nodes]
-    nodes.append(
-        catalog_node(
-            node_id,
-            entry,
-            inputs={
-                "left_episodes": ref(left.terminal_node_id, left.terminal_output),
-                "right_episodes": ref(right.terminal_node_id, right.terminal_output),
-            },
-            parameters={
-                "left_key_field": enum("anchor_id"),
-                "right_key_field": enum("anchor_id"),
-                "left_status_field": enum(status_field_for(left_entry) or "none"),
-                "right_status_field": enum(status_field_for(right_entry) or "none"),
-                "required_status_value": enum("PASS"),
-                "temporal_relation": enum("none"),
-                "left_time_field": enum("anchor_frame_id"),
-                "right_time_field": enum("anchor_frame_id"),
-                "maximum_gap_seconds": number(999.0, "second"),
-                "distinct_entity_fields": enum("none"),
-            },
-        )
-    )
-    field_sources = {**left.field_sources, **right.field_sources}
-    for field in context.catalog.field_set(entry):
-        field_sources.setdefault(field, (node_id, output_name_for_field(context.catalog, entry, field) or "anchor_evaluations"))
-    return BuildResult(
-        nodes=dedupe_nodes(nodes),
-        terminal_node_id=node_id,
-        terminal_entry=entry.name,
-        terminal_output="anchor_evaluations",
-        field_sources=field_sources,
-        rules_used=[*left.rules_used, *right.rules_used, *rules],
-        providers_used=[*left.providers_used, *right.providers_used, entry.name],
-    )
+
+
+def distinct_entity_constraint(context: SearchContext, fields: set[str], join_entry: CatalogEntry) -> str:
+    allowed = allowed_parameter_values(join_entry, "distinct_entity_fields")
+    for constraint in target_constraints(context):
+        if constraint.get("kind") != "distinct_entity_fields":
+            continue
+        value = str(constraint.get("value", "none"))
+        required_fields = {field.strip() for field in value.split(",") if field.strip()}
+        if value in allowed and required_fields.issubset(fields):
+            return value
+    return "none"
 
 
 def choose_input_provider(
@@ -604,6 +1009,14 @@ def infer_parameters(
             "minimum_pressure_duration_seconds": number(0.0, "second"),
             "lookback_seconds": number(0.4, "second"),
             "candidate_scope": enum("defending_outfield"),
+        }
+    if entry.name == "team_compactness":
+        return {
+            "frame_field": enum(str(input_context.get("frame_field", "anchor_frame_id"))),
+            "player_scope": enum("defending_outfield"),
+            "maximum_team_width_m": number(45.0, "metre"),
+            "maximum_team_depth_m": number(35.0, "metre"),
+            "minimum_observed_players": number(8.0, "count"),
         }
     if entry.name == "transition_anchor":
         return {
@@ -753,6 +1166,7 @@ def row_result(
         "target_id": target["target_id"],
         "concept": target["concept"],
         "held_out": bool(target.get("held_out")),
+        "multi_step": bool(target.get("multi_step")),
         "coverage_classification": row.get("classification"),
         "input_composition_maturity": row.get("composition_maturity", "handwired"),
         "target_contract_hash": target_contract_hash,
@@ -817,6 +1231,13 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
     failure_counts = collections.Counter(result["failure_taxonomy"] for result in results if result.get("failure_taxonomy"))
     held_out = [result for result in results if result.get("held_out")]
     held_out_success = [result for result in held_out if result["result"] == "compiler_reachable"]
+    multi_step = [result for result in results if result.get("multi_step")]
+    multi_step_success = [result for result in multi_step if result["result"] == "compiler_reachable"]
+    held_out_multi_step = [result for result in multi_step if result.get("held_out")]
+    held_out_multi_step_success = [
+        result for result in held_out_multi_step if result["result"] == "compiler_reachable"
+    ]
+    carry_out_of_pressure = next((result for result in results if result["concept"] == "carry_out_of_pressure"), None)
     findings: list[dict[str, str]] = []
     if any(result.get("concept_name_used_as_hint") for result in results):
         findings.append({"code": "concept_name_hint_used", "message": "A target used concept name inside the typed contract.", "path": "row_ledger"})
@@ -826,6 +1247,22 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
         findings.append({"code": "pattern_dispatch_used", "message": "Pattern dispatch was used during search.", "path": "row_ledger"})
     if not held_out_success:
         findings.append({"code": "no_held_out_success", "message": "No held-out target became compiler_reachable.", "path": "row_ledger"})
+    if carry_out_of_pressure is None or carry_out_of_pressure["result"] != "compiler_reachable":
+        findings.append(
+            {
+                "code": "primary_multistep_flip_missing",
+                "message": "carry_out_of_pressure did not flip to compiler_reachable.",
+                "path": "row_ledger",
+            }
+        )
+    if not held_out_multi_step_success:
+        findings.append(
+            {
+                "code": "no_held_out_multistep_success",
+                "message": "No held-out multi-step target became compiler_reachable.",
+                "path": "row_ledger",
+            }
+        )
     return {
         "schema_version": "compiler_search_reachability_report.v0",
         "status": "PASS" if not findings else "FAIL",
@@ -862,10 +1299,16 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
             "held_out_target_count": len(held_out),
             "held_out_compiler_reachable_count": len(held_out_success),
             "held_out_compiler_reachable_pct": round(100 * len(held_out_success) / max(len(held_out), 1), 1),
+            "multi_step_target_count": len(multi_step),
+            "multi_step_compiler_reachable_count": len(multi_step_success),
+            "held_out_multi_step_target_count": len(held_out_multi_step),
+            "held_out_multi_step_compiler_reachable_count": len(held_out_multi_step_success),
         },
         "failure_distribution": dict(sorted(failure_counts.items())),
         "result_distribution": dict(sorted(result_counts.items())),
         "held_out_successes": [result["concept"] for result in held_out_success],
+        "multi_step_successes": [result["concept"] for result in multi_step_success],
+        "held_out_multi_step_successes": [result["concept"] for result in held_out_multi_step_success],
         "row_ledger_path": str(ROW_LEDGER.relative_to(ROOT)),
         "row_csv_path": str(ROW_CSV.relative_to(ROOT)),
         "plan_dir": str(PLAN_DIR.relative_to(ROOT)),
@@ -886,6 +1329,7 @@ def write_rows(results: list[dict[str, Any]]) -> None:
         "target_id",
         "concept",
         "held_out",
+        "multi_step",
         "coverage_classification",
         "input_composition_maturity",
         "result",

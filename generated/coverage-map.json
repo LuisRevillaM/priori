@@ -2123,7 +2123,7 @@
    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
    "target_id": "search_heldout_support_arrival_v0",
    "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "834984e926a73bf6f1ad1c38ef072dd672d7d3fcdbc234632a4e6a95bf338876",
+   "document_hash": "c8bdfb98c6323dd3013f360b09f743e0093ee48c78d8b1f8f7c38b25d579d235",
    "held_out": true,
    "result_count": 20,
    "honest_zero": false
@@ -2358,9 +2358,19 @@
   "composition_constraint_needed": true,
   "priority_unlock": "HIGH",
   "composition_constraint_note": "Requires pressure measured for the carrier at carry start and carry end under the same carry anchor; Q2 records this alignment explicitly.",
-  "compiler_reachability_status": "generically_composable",
-  "composition_maturity": "generically_composable",
-  "composition_maturity_applicable": true
+  "compiler_reachability_status": "compiler_reachable",
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "search_carry_out_of_pressure_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "a5ba593a0c438f36a189ef8cc1e9620934a782e3353cca819b934c2a7dd3eeb4",
+   "held_out": false,
+   "result_count": 2,
+   "honest_zero": false
+  }
  },
  {
   "concept": "carry_pressure_profile",
@@ -4419,7 +4429,7 @@
    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
    "target_id": "search_direct_pressure_candidate_v0",
    "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
-   "document_hash": "ad533983afc91cfecdc368debfbf8ef86ae3beeea401554f78af4b87baf0eb79",
+   "document_hash": "985fac93d5e6093715665762e7c3d9ea47bf45fe1ab3810af5e2fea9d6a1f98a",
    "held_out": false,
    "result_count": 20,
    "honest_zero": false
@@ -8385,8 +8395,19 @@
   "composition_constraint_needed": true,
   "priority_unlock": "MED",
   "composition_constraint_note": "",
-  "composition_maturity": "handwired",
-  "composition_maturity_applicable": true
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "search_heldout_shape_expansion_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "291299688021c7d4b4a65c0fab544f5160427ecba68c4f020ab7a6f6b485dcc7",
+   "held_out": true,
+   "result_count": 20,
+   "honest_zero": false
+  }
  },
  {
   "concept": "shape_translation_episode",

@@ -1,18 +1,26 @@
 {
   "failure_distribution": {
-    "missing_constraint": 2,
+    "missing_constraint": 1,
     "unsupported_modality": 1
   },
   "findings": [],
+  "held_out_multi_step_successes": [
+    "shape_expansion_episode"
+  ],
   "held_out_successes": [
     "carry_displacement",
-    "support_arrival_relation"
+    "support_arrival_relation",
+    "shape_expansion_episode"
+  ],
+  "multi_step_successes": [
+    "shape_expansion_episode",
+    "carry_out_of_pressure"
   ],
   "plan_dir": "generated/compiler-search-v0/plans",
   "report_priority": "Held-out successes and real failure distribution are the meaningful outputs.",
   "result_distribution": {
-    "compiler_reachable": 5,
-    "not_compiler_reachable": 3
+    "compiler_reachable": 7,
+    "not_compiler_reachable": 2
   },
   "row_csv_path": "generated/compiler-search-v0/row-ledger.csv",
   "row_ledger_path": "generated/compiler-search-v0/row-ledger.json",
@@ -24,7 +32,7 @@
     "mode": "bounded_stratified_sample_with_held_out_targets",
     "natural_language": false,
     "pattern_dispatch_allowed": false,
-    "target_count": 8
+    "target_count": 9
   },
   "search_budget": {
     "allowed_catalog_refs": [
@@ -77,16 +85,20 @@
   },
   "status": "PASS",
   "summary": {
-    "compiler_reachable_count": 5,
-    "compiler_reachable_pct": 0.7,
+    "compiler_reachable_count": 7,
+    "compiler_reachable_pct": 0.9,
     "coverage_supported_count": 350,
     "coverage_supported_pct": 47.2,
-    "held_out_compiler_reachable_count": 2,
+    "held_out_compiler_reachable_count": 3,
     "held_out_compiler_reachable_pct": 100.0,
-    "held_out_target_count": 2,
-    "sample_compiler_reachable_count": 5,
-    "sample_compiler_reachable_pct": 62.5,
-    "sample_target_count": 8
+    "held_out_multi_step_compiler_reachable_count": 1,
+    "held_out_multi_step_target_count": 1,
+    "held_out_target_count": 3,
+    "multi_step_compiler_reachable_count": 2,
+    "multi_step_target_count": 2,
+    "sample_compiler_reachable_count": 7,
+    "sample_compiler_reachable_pct": 77.8,
+    "sample_target_count": 9
   },
   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
   "synthesizer_version": "search_synthesizer.v0.1",

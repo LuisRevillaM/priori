@@ -138,9 +138,53 @@
       }
     },
     {
+      "target_id": "search_heldout_shape_expansion_v0",
+      "concept": "shape_expansion_episode",
+      "held_out": true,
+      "multi_step": true,
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "change_status",
+          "change_reason",
+          "before_value",
+          "after_value",
+          "delta_value",
+          "before_value_field",
+          "after_value_field",
+          "minimum_change_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "change_status",
+            "required_value": "PASS"
+          }
+        ],
+        "composition_constraints": [
+          {
+            "kind": "before_after_same_anchor",
+            "value_family": "team_shape_width_or_depth",
+            "value_fields": [
+              "team_width_m",
+              "team_depth_m",
+              "team_area_m2"
+            ],
+            "status_fields": [
+              "team_compactness_status"
+            ],
+            "change_mode": "increase_at_least",
+            "minimum_change_m": 4.0,
+            "maximum_before_value_m": 80.0
+          }
+        ],
+        "claim_boundary": "Observed team-shape expansion means a declared compactness measurement increased across a shared anchor; no defensive intent, tactical quality, or causation."
+      }
+    },
+    {
       "target_id": "search_carry_out_of_pressure_v0",
       "concept": "carry_out_of_pressure",
       "held_out": false,
+      "multi_step": true,
       "target_contract": {
         "desired_output": "classification",
         "required_evidence": [
@@ -171,6 +215,20 @@
             "kind": "frame_alignment",
             "before_frame_field": "carry_start_frame_id",
             "after_frame_field": "carry_end_frame_id"
+          },
+          {
+            "kind": "before_after_same_anchor",
+            "value_family": "pressure_distance",
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ],
+            "status_fields": [
+              "pressure_status"
+            ],
+            "after_status_field": "none",
+            "change_mode": "increase_at_least",
+            "minimum_change_m": 2.0,
+            "maximum_before_value_m": 4.0
           }
         ],
         "claim_boundary": "Pressure reduction means nearest-defender distance increased across the carry; no pressure-breaking quality, defender bypass, intent, or causation."
