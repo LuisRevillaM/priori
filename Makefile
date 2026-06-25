@@ -283,3 +283,8 @@ coverage-map:
 compiler-reachability:
 	$(PYTHON) scripts/coverage_map/compiler_reachability.py
 	$(PYTHON) scripts/coverage_map/aggregate.py
+
+.PHONY: compiler-search-reachability
+compiler-search-reachability:
+	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	$(PYTHON) scripts/coverage_map/aggregate.py

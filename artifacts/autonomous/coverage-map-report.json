@@ -38,7 +38,8 @@
   "handwired"
  ],
  "composition_maturity_counts": {
-  "handwired": 740,
+  "handwired": 735,
+  "compiler_reachable": 5,
   "generically_composable": 1
  },
  "reachable_now_or_one_gap_pct": 70.4,

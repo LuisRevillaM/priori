@@ -1,0 +1,219 @@
+{
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+  "sample_policy": "bounded_stratified_sample_with_held_out_targets",
+  "note": "Concept ids are reporting labels only. Synthesis consumes target_contract fields; no pattern labels, gold-chain paths, or concept names are permitted inside target_contract.",
+  "targets": [
+    {
+      "target_id": "search_heldout_carry_displacement_v0",
+      "concept": "carry_displacement",
+      "held_out": true,
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "displacement_m",
+          "control_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "displacement_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ],
+        "claim_boundary": "Observed movement-under-control displacement only; no dribbling skill, defender bypass, intent, or pressure-break quality."
+      }
+    },
+    {
+      "target_id": "search_heldout_support_arrival_v0",
+      "concept": "support_arrival_relation",
+      "held_out": true,
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_arrival_reason",
+          "support_anchor_frame_id",
+          "support_region_mode",
+          "supporting_player_ids",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ],
+        "claim_boundary": "Observed support arrival under frozen distance/timing parameters only; no tactical quality, optimality, intent, or decision value."
+      }
+    },
+    {
+      "target_id": "search_carry_progression_v0",
+      "concept": "carry_progression",
+      "held_out": false,
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "carry_forward_progression_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "carry_forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ],
+        "claim_boundary": "Observed movement-under-control with forward component; no dribbling skill, defender bypass, intent, or pressure-break quality."
+      }
+    },
+    {
+      "target_id": "search_direct_pressure_candidate_v0",
+      "concept": "direct_pressure_candidate",
+      "held_out": false,
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "pressure_reason",
+          "carrier_id",
+          "pressure_frame_id",
+          "nearest_defender_id",
+          "nearest_defender_distance_m",
+          "closing_speed_mps",
+          "approach_angle_degrees",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ],
+        "claim_boundary": "Observed nearest-defender pressure components only; no defender intent, pressure quality, or tactical causation."
+      }
+    },
+    {
+      "target_id": "search_post_regain_retention_v0",
+      "concept": "post_regain_retention",
+      "held_out": false,
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_type",
+          "transition_frame_id",
+          "outcome_window_status",
+          "outcome_window_reason",
+          "minimum_settled_possession_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ],
+        "claim_boundary": "Settled means retained ball-alive for the frozen duration threshold; no settled-possession quality or tactical intent."
+      }
+    },
+    {
+      "target_id": "search_carry_out_of_pressure_v0",
+      "concept": "carry_out_of_pressure",
+      "held_out": false,
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "join_status",
+          "join_reason",
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "change_status",
+          "before_value",
+          "after_value",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ],
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          },
+          {
+            "kind": "frame_alignment",
+            "before_frame_field": "carry_start_frame_id",
+            "after_frame_field": "carry_end_frame_id"
+          }
+        ],
+        "claim_boundary": "Pressure reduction means nearest-defender distance increased across the carry; no pressure-breaking quality, defender bypass, intent, or causation."
+      }
+    },
+    {
+      "target_id": "search_penetration_support_response_v0",
+      "concept": "penetration_support_response",
+      "held_out": false,
+      "target_contract": {
+        "desired_output": "classification",
+        "required_evidence": [
+          "line_break_status",
+          "support_arrival_status",
+          "support_region_mode"
+        ],
+        "composition_constraints": [
+          {
+            "kind": "support_after_reception",
+            "required": true
+          },
+          {
+            "kind": "same_receiver_identity",
+            "required": true
+          }
+        ],
+        "claim_boundary": "Requires support arrival aligned after controlled line break reception; no support quality, intent, or tactical causation."
+      }
+    },
+    {
+      "target_id": "search_expected_pass_completion_v0",
+      "concept": "expected_pass_completion",
+      "held_out": false,
+      "target_contract": {
+        "desired_output": "probability",
+        "required_modalities": [
+          "learned_probability_model"
+        ],
+        "required_evidence": [
+          "pass_completion_probability"
+        ],
+        "claim_boundary": "Expected pass completion requires a learned probability model; observed pass completion is not a probability estimate."
+      }
+    }
+  ]
+}

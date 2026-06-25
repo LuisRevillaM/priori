@@ -2115,8 +2115,19 @@
   "composition_constraint_needed": false,
   "priority_unlock": "LOW",
   "composition_constraint_note": "",
-  "composition_maturity": "handwired",
-  "composition_maturity_applicable": true
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "search_heldout_support_arrival_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "834984e926a73bf6f1ad1c38ef072dd672d7d3fcdbc234632a4e6a95bf338876",
+   "held_out": true,
+   "result_count": 20,
+   "honest_zero": false
+  }
  },
  {
   "concept": "support_depth",
@@ -2284,8 +2295,19 @@
   "composition_constraint_needed": false,
   "priority_unlock": "HIGH",
   "composition_constraint_note": "",
-  "composition_maturity": "handwired",
-  "composition_maturity_applicable": true
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "search_heldout_carry_displacement_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "d4f9d5e27747a0734ca08478d4728afe33140c62fe56c9381e66f3f61e69f048",
+   "held_out": true,
+   "result_count": 20,
+   "honest_zero": false
+  }
  },
  {
   "concept": "carry_duration",
@@ -2363,8 +2385,19 @@
   "composition_constraint_needed": false,
   "priority_unlock": "HIGH",
   "composition_constraint_note": "",
-  "composition_maturity": "handwired",
-  "composition_maturity_applicable": true
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "search_carry_progression_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "b58b07e9c40716bd13bf5aeab38c8b9c56cca7e95c0f811b686536f922a59d0e",
+   "held_out": false,
+   "result_count": 20,
+   "honest_zero": false
+  }
  },
  {
   "concept": "carry_speed_profile",
@@ -4378,8 +4411,19 @@
   "composition_constraint_needed": false,
   "priority_unlock": "LOW",
   "composition_constraint_note": "",
-  "composition_maturity": "handwired",
-  "composition_maturity_applicable": true
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "search_direct_pressure_candidate_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "ad533983afc91cfecdc368debfbf8ef86ae3beeea401554f78af4b87baf0eb79",
+   "held_out": false,
+   "result_count": 20,
+   "honest_zero": false
+  }
  },
  {
   "concept": "forced_direction_candidate",
@@ -4885,8 +4929,19 @@
   "composition_constraint_needed": true,
   "priority_unlock": "MED",
   "composition_constraint_note": "Outcome window must start at the same regain anchor and preserve the same team perspective.",
-  "composition_maturity": "handwired",
-  "composition_maturity_applicable": true
+  "composition_maturity": "compiler_reachable",
+  "composition_maturity_applicable": true,
+  "compiler_reachability_status": "compiler_reachable",
+  "compiler_reachability_evidence": {
+   "synthesizer_version": "search_synthesizer.v0.1",
+   "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+   "target_id": "search_post_regain_retention_v0",
+   "report_path": "artifacts/autonomous/compiler-search-v0-report.json",
+   "document_hash": "f1356fa06f9759ac9779cf32dcada6c9322f52669ff62c704d46e955ab99a54e",
+   "held_out": false,
+   "result_count": 20,
+   "honest_zero": false
+  }
  },
  {
   "concept": "recovery_shape_state",

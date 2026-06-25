@@ -1,0 +1,1237 @@
+[
+  {
+    "compatibility_profile": "generic",
+    "concept": "carry_displacement",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "Gold chain is read only after synthesis for audit comparison.",
+      "raw_chain": "carry_episode.displacement_m",
+      "status": "post_hoc_only"
+    },
+    "document_hash": "d4f9d5e27747a0734ca08478d4728afe33140c62fe56c9381e66f3f61e69f048",
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchor_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchors": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "carrier_id": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "carry_duration_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "carry_end_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "carry_episode_id": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "carry_forward_progression_m": {
+        "output_name": "forward_progression_m",
+        "source_node_id": "carry_episode"
+      },
+      "carry_reason": {
+        "output_name": "carry_status",
+        "source_node_id": "carry_episode"
+      },
+      "carry_start_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "carry_status": {
+        "output_name": "carry_status",
+        "source_node_id": "carry_episode"
+      },
+      "comoving_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "comoving_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "control_bias": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "control_continuity_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "control_continuity_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "control_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "control_model": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "controlled_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "controlled_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "controlled_pass_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "displacement_m": {
+        "output_name": "displacement_m",
+        "source_node_id": "carry_episode"
+      },
+      "end_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "end_point": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "episodes": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_type": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "forward_progression_m": {
+        "output_name": "forward_progression_m",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "maximum_ball_player_speed_delta_mps": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "maximum_carry_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "maximum_missing_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "minimum_comoving_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "minimum_controlled_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "minimum_displacement_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "missing_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "missing_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "nearest_teammate_margin_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "observed_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "pass_episode_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "passer_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "physical_release_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "possession_continuity_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "possession_continuity_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "receiver_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_receiver_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_control_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_detection_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_passer_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "source_reception_pass_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "start_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "start_point": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "terminal_detection_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "terminal_detection_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "terminal_pass_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "velocity_observed_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      }
+    },
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "compiler_reachable",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
+    "pattern_dispatch_used": false,
+    "plan_path": "generated/compiler-search-v0/plans/search_heldout_carry_displacement_v0.json",
+    "providers_used": [
+      "controlled_pass_episode",
+      "carry_episode"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "1b84fdb9f60e13d148fa1417c94ca9acc03e3101e1a5ff5dc41b4a089e13969d",
+    "runtime_value_count": 154,
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "ce760cf0bd2f6a3c225b1264dbc99e6df3f912222550072fb9ae9edeea9d4abd",
+    "target_id": "search_heldout_carry_displacement_v0",
+    "terminal_provider": "carry_episode"
+  },
+  {
+    "compatibility_profile": "generic",
+    "concept": "support_arrival_relation",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "Gold chain is read only after synthesis for audit comparison.",
+      "raw_chain": "support_arrival_relation",
+      "status": "post_hoc_only"
+    },
+    "document_hash": "834984e926a73bf6f1ad1c38ef072dd672d7d3fcdbc234632a4e6a95bf338876",
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "action_event_reason": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_event_status": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "candidate_player_ids": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "config_evidence": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "coverage_status": {
+        "output_name": "support_arrival_status",
+        "source_node_id": "support_arrival_relation"
+      },
+      "evaluated_candidate_player_ids": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "first_arrival_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "first_arrival_seconds_after_anchor": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "maximum_arrival_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "maximum_support_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "minimum_duration_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "minimum_supporting_players": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "reference_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "required_anchor_status_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "required_anchor_status_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "support_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "support_arrival_reason": {
+        "output_name": "support_arrival_status",
+        "source_node_id": "support_arrival_relation"
+      },
+      "support_arrival_status": {
+        "output_name": "support_arrival_status",
+        "source_node_id": "support_arrival_relation"
+      },
+      "support_duration_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "support_region_mode": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "support_window_end_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "support_window_start_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "supporting_player_ids": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "support_arrival_relation"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      }
+    },
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "compiler_reachable",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
+    "pattern_dispatch_used": false,
+    "plan_path": "generated/compiler-search-v0/plans/search_heldout_support_arrival_v0.json",
+    "providers_used": [
+      "action_event_anchor",
+      "support_arrival_relation"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "18fabb7f6c0c523cec4966472601743ee1135354df148ff6e837650df4b84475",
+    "runtime_value_count": 70,
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "c7c1e2a678895b794c1d0c423f087af304753b30b4b2efe684c6a542a29804c2",
+    "target_id": "search_heldout_support_arrival_v0",
+    "terminal_provider": "support_arrival_relation"
+  },
+  {
+    "compatibility_profile": "generic",
+    "concept": "carry_progression",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "Gold chain is read only after synthesis for audit comparison.",
+      "raw_chain": "carry_episode.forward_progression_m",
+      "status": "post_hoc_only"
+    },
+    "document_hash": "b58b07e9c40716bd13bf5aeab38c8b9c56cca7e95c0f811b686536f922a59d0e",
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchor_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchors": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "carrier_id": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "carry_duration_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "carry_end_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "carry_episode_id": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "carry_forward_progression_m": {
+        "output_name": "forward_progression_m",
+        "source_node_id": "carry_episode"
+      },
+      "carry_reason": {
+        "output_name": "carry_status",
+        "source_node_id": "carry_episode"
+      },
+      "carry_start_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "carry_status": {
+        "output_name": "carry_status",
+        "source_node_id": "carry_episode"
+      },
+      "comoving_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "comoving_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "control_bias": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "control_continuity_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "control_continuity_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "control_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "control_model": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "controlled_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "controlled_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "controlled_pass_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "displacement_m": {
+        "output_name": "displacement_m",
+        "source_node_id": "carry_episode"
+      },
+      "end_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "end_point": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "episodes": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_type": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "forward_progression_m": {
+        "output_name": "forward_progression_m",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "maximum_ball_player_speed_delta_mps": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "maximum_carry_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "maximum_missing_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "minimum_comoving_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "minimum_controlled_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "minimum_displacement_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "missing_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "missing_frame_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "nearest_teammate_margin_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "observed_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "pass_episode_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "passer_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "physical_release_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "possession_continuity_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "possession_continuity_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "receiver_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_receiver_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_control_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_detection_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_passer_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "source_reception_pass_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "start_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "start_point": {
+        "output_name": "episodes",
+        "source_node_id": "carry_episode"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "terminal_detection_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "terminal_detection_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "terminal_pass_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      },
+      "velocity_observed_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "carry_episode"
+      }
+    },
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
+    "pattern_dispatch_used": false,
+    "plan_path": "generated/compiler-search-v0/plans/search_carry_progression_v0.json",
+    "providers_used": [
+      "controlled_pass_episode",
+      "carry_episode"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "f821a63116f712f1b31bbf2e716e70202ed1e62150d71e16ec76b599aadbf307",
+    "runtime_value_count": 154,
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "f4d8407ee45c0e86a162244e67eea8b99e00623a679bae794fe149171f0eb3c0",
+    "target_id": "search_carry_progression_v0",
+    "terminal_provider": "carry_episode"
+  },
+  {
+    "compatibility_profile": "generic",
+    "concept": "direct_pressure_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "Gold chain is read only after synthesis for audit comparison.",
+      "raw_chain": "pressure_on_carrier",
+      "status": "post_hoc_only"
+    },
+    "document_hash": "ad533983afc91cfecdc368debfbf8ef86ae3beeea401554f78af4b87baf0eb79",
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "action_event_reason": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_event_status": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "approach_angle_degrees": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "carrier_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "closing_speed_mps": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "coverage_status": {
+        "output_name": "pressure_status",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "maximum_approach_angle_degrees": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "maximum_pressure_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "minimum_closing_speed_mps": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "minimum_pressure_duration_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "nearest_defender_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "nearest_defender_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "pressure_duration_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "pressure_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "pressure_reason": {
+        "output_name": "pressure_status",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "pressure_status": {
+        "output_name": "pressure_status",
+        "source_node_id": "pressure_on_carrier"
+      },
+      "receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      }
+    },
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "compiler_reachable",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
+    "pattern_dispatch_used": false,
+    "plan_path": "generated/compiler-search-v0/plans/search_direct_pressure_candidate_v0.json",
+    "providers_used": [
+      "action_event_anchor",
+      "pressure_on_carrier"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "6439f6e68a66d3c942484dda12fc096b707520285704e62517770a3e4a51ec9f",
+    "runtime_value_count": 70,
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "20da457b401f0b16d55cd969aa7fe10ab3197ac15e8f4b348b067122b69bed0f",
+    "target_id": "search_direct_pressure_candidate_v0",
+    "terminal_provider": "pressure_on_carrier"
+  },
+  {
+    "compatibility_profile": "generic",
+    "concept": "post_regain_retention",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "Gold chain is read only after synthesis for audit comparison.",
+      "raw_chain": "transition_anchor + outcome_window",
+      "status": "post_hoc_only"
+    },
+    "document_hash": "f1356fa06f9759ac9779cf32dcada6c9322f52669ff62c704d46e955ab99a54e",
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "attacking_direction": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "loss_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "outcome_window"
+      },
+      "maximum_window_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "outcome_window"
+      },
+      "minimum_prior_possession_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "minimum_settled_possession_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "outcome_window"
+      },
+      "new_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "outcome_window_end_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "outcome_window"
+      },
+      "outcome_window_reason": {
+        "output_name": "outcome_window_status",
+        "source_node_id": "outcome_window"
+      },
+      "outcome_window_start_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "outcome_window"
+      },
+      "outcome_window_status": {
+        "output_name": "outcome_window_status",
+        "source_node_id": "outcome_window"
+      },
+      "possession_phase_status": {
+        "output_name": "possession_phase_status",
+        "source_node_id": "outcome_window"
+      },
+      "previous_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "previous_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "prior_possession_frame_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "required_anchor_status_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "outcome_window"
+      },
+      "required_anchor_status_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "outcome_window"
+      },
+      "settled_end_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "outcome_window"
+      },
+      "settled_start_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "outcome_window"
+      },
+      "stoppage_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "outcome_window"
+      },
+      "transition_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "transition_match_time_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "transition_reason": {
+        "output_name": "transition_status",
+        "source_node_id": "transition_anchor_2"
+      },
+      "transition_status": {
+        "output_name": "transition_status",
+        "source_node_id": "transition_anchor_2"
+      },
+      "transition_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "zone_ball_x_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "zone_ball_y_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "zone_boundary_buffer_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "zone_name": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "zone_normalized_ball_x_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "zone_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      },
+      "zone_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "transition_anchor_2"
+      }
+    },
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "compiler_reachable",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
+    "pattern_dispatch_used": false,
+    "plan_path": "generated/compiler-search-v0/plans/search_post_regain_retention_v0.json",
+    "providers_used": [
+      "transition_anchor",
+      "outcome_window"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "03886ab8fab8ca9266abf77f1b0a7c8af96177aff826265d6214bae2296f8b1b",
+    "runtime_value_count": 98,
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "2117a3d1579403f44530c437950154cc98096b47d03f91c465fe571b4616d745",
+    "target_id": "search_post_regain_retention_v0",
+    "terminal_provider": "outcome_window"
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "carry_out_of_pressure",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "Gold chain is read only after synthesis for audit comparison.",
+      "raw_chain": "carry_episode + pressure_on_carrier + change_across_anchor",
+      "status": "post_hoc_only"
+    },
+    "document_hash": null,
+    "execution_status": null,
+    "failure_details": {
+      "attempted": [
+        {
+          "message": "Binary join requires typed fields for both left and right episode inputs.",
+          "provider": "join_episode_sets",
+          "required_fields": [
+            "after_value",
+            "before_value",
+            "change_status",
+            "delta_value"
+          ],
+          "taxonomy": "missing_constraint"
+        },
+        {
+          "message": "No predicates could be assembled from target semantics.",
+          "provider": "carry_episode",
+          "taxonomy": "missing_constraint"
+        },
+        {
+          "message": "No predicates could be assembled from target semantics.",
+          "provider": "change_across_anchor",
+          "taxonomy": "missing_constraint"
+        },
+        {
+          "message": "No predicates could be assembled from target semantics.",
+          "provider": "pressure_on_carrier",
+          "taxonomy": "missing_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "generically_composable",
+    "message": "Providers exist, but bounded search could not satisfy the required reusable composition.",
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "6ec18b5f14a14b3bb29f1fa741cdba863211c3a5aaa48bf1aa9616ebcf58b09a",
+    "target_id": "search_carry_out_of_pressure_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "penetration_support_response",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "Gold chain is read only after synthesis for audit comparison.",
+      "raw_chain": "controlled_line_break_episode + support_arrival_relation",
+      "status": "post_hoc_only"
+    },
+    "document_hash": null,
+    "execution_status": null,
+    "failure_details": {
+      "attempted": [
+        {
+          "message": "No predicates could be assembled from target semantics.",
+          "provider": "support_arrival_relation",
+          "taxonomy": "missing_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Providers exist, but bounded search could not satisfy the required reusable composition.",
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "39421f2b9c5fc5f520a07be83aa2eb2bba5d317f8deb81f2601ae4c23b05ef62",
+    "target_id": "search_penetration_support_response_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "expected_pass_completion",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_modality",
+    "coverage_gold_chain_audit": {
+      "note": "Gold chain is read only after synthesis for audit comparison.",
+      "raw_chain": "controlled_pass_episode (observed completion only)",
+      "status": "post_hoc_only"
+    },
+    "document_hash": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_modalities": [
+        "learned_probability_model"
+      ]
+    },
+    "failure_taxonomy": "unsupported_modality",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires unavailable data/model modalities.",
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "91371ea9c2feb13424c7e231411304d06f38fa37715173a78bd89f80f27517b9",
+    "target_id": "search_expected_pass_completion_v0",
+    "terminal_provider": null
+  }
+]
