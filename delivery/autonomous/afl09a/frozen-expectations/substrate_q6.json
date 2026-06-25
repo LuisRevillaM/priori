@@ -1,0 +1,27 @@
+{
+  "expectation_id": "afl09a.substrate_q6.0_1_0",
+  "expected": {
+    "bound_plan_hash": "78069091c494a36415e390a68d7d6ee55d62436c3dbac259427d48d6d533f352",
+    "compatibility_profile": "generic",
+    "document_hash": "8e4efdfa27863b06bd08a7d6ef740b184b88c598ef1c7b69b026f3baf02cd074",
+    "execution_status": "pass",
+    "plan_id": "q6_throw_in_first_action_under_pressure",
+    "report_status": "PASS",
+    "requested_evidence_failure_count": 0,
+    "result_count": 0,
+    "result_ids": [],
+    "result_signature_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "freeze_provenance": {
+    "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
+    "review": "controller_self_verified_original_real_data_verifier",
+    "runtime_semantics_dirty": false,
+    "source_commit": "83aa5e6d26f9f2edc2713b79450c7b1a6d2bc672",
+    "source_verifier": "tqe.verification.afl_substrate_q6",
+    "source_verifier_status": "PASS",
+    "threshold_version": "q6_throw_in_first_action_under_pressure.v0.1.0",
+    "worktree_dirty": false
+  },
+  "schema_version": "afl09a.frozen_expectation.v1",
+  "subject_ref": "recipe:q6_throw_in_first_action_under_pressure_v1:0.1.0"
+}
