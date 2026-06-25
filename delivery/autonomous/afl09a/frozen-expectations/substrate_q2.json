@@ -1,0 +1,27 @@
+{
+  "expectation_id": "afl09a.substrate_q2.0_1_0",
+  "expected": {
+    "bound_plan_hash": "6c2dead41aced05c36fec9b62990b955f535a79419a2cf65aeafed01ce0d7a90",
+    "compatibility_profile": "generic",
+    "document_hash": "1f0271a44f36e445c84d0baf02e92b80429d5066db071d814f78364687c54bf1",
+    "execution_status": "pass",
+    "plan_id": "q2_carry_breaks_pressure_layoff",
+    "report_status": "PASS",
+    "requested_evidence_failure_count": 0,
+    "result_count": 0,
+    "result_ids": [],
+    "result_signature_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "freeze_provenance": {
+    "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
+    "review": "controller_self_verified_original_real_data_verifier",
+    "runtime_semantics_dirty": false,
+    "source_commit": "b32d7366e91ad94f6ff0e409014f0aa9869bf6c2",
+    "source_verifier": "tqe.verification.afl_substrate_q2",
+    "source_verifier_status": "PASS",
+    "threshold_version": "q2_carry_breaks_pressure_layoff.v0.1.0:carry_min_displacement=3.0:carry_max_seconds=10.0:pressure_start_max_distance=4.0:pressure_distance_increase=2.0:relay_max_event_gap=3.0:max_relay_dwell=0.56",
+    "worktree_dirty": false
+  },
+  "schema_version": "afl09a.frozen_expectation.v1",
+  "subject_ref": "recipe:q2_carry_breaks_pressure_layoff_v1:0.1.0"
+}
