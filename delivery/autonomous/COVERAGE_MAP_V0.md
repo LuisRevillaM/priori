@@ -32,37 +32,37 @@ Authoritative generated artifacts:
 - `role_or_reference_gap`: the concept depends on a role taxonomy or ambiguous football reference not yet modeled.
 - `ambiguous_or_needs_definition`: the atlas entry is too underspecified to operationalize safely.
 
-## Post-Time-To-Arrival v0 Result
+## Post-Carry-Episode v0 Result
 
 The audited v0 map covers Priori's authored 741-concept atlas, not all possible user language. These numbers are after Q5 landed `transition_anchor`, `structured_zone`, and `outcome_window`, and after the transition-anchor backlog was conservatively redistributed into supported rows or the next precise blocker.
-They also include the first post-Q5 reachability slice: `time_to_arrival` v0.1, a static-point arrival primitive using straight-line travel at a declared max speed while carrying tracking coverage and point-mass limitation evidence.
+They also include `time_to_arrival` v0.1, a static-point arrival primitive using straight-line travel at a declared max speed while carrying tracking coverage and point-mass limitation evidence, and `carry_episode` v0.1, a conservative movement-under-control primitive with explicit control criteria and bias evidence.
 
 | Classification | Concepts | Share |
 | --- | ---: | ---: |
-| `supported` | 343 | 46.3% |
-| `partial_with_typed_gap` | 161 | 21.7% |
-| `missing_primitive` | 173 | 23.3% |
-| `missing_modality` | 42 | 5.7% |
+| `supported` | 349 | 47.1% |
+| `partial_with_typed_gap` | 173 | 23.3% |
+| `missing_primitive` | 154 | 20.8% |
+| `missing_modality` | 43 | 5.8% |
 | `role_or_reference_gap` | 13 | 1.8% |
 | `ambiguous_or_needs_definition` | 9 | 1.2% |
 
-Reachable now or with one named gap: 68.0%.
+Reachable now or with one named gap: 70.4%.
 
 ## Audit Posture
 
 This is `v0 estimated` and internal-only. A 30-row stratified audit found roughly 26/30 rows solid and identified one systematic inflation pattern: aggregation and extremum concepts such as `argmax`, `argmin`, `local_maximum`, and `nearest_entity` had been treated as supported even though the catalog has no generic extremum operator.
 
-That correction moved the affected rows from `supported` to `partial_with_typed_gap`, lowering supported coverage from 44.4% to 43.9%. After Q5 and `time_to_arrival`, conservative redistribution raises the current internal steering estimate to 46.3% supported and 68.0% reachable now or with one typed gap.
+That correction moved the affected rows from `supported` to `partial_with_typed_gap`, lowering supported coverage from 44.4% to 43.9%. After Q5, `time_to_arrival`, and `carry_episode`, conservative redistribution raises the current internal steering estimate to 47.1% supported and 70.4% reachable now or with one typed gap.
 
 Do not use this as an external coverage claim until additional audit passes and the held-out natural-language evaluation denominator exist.
 
 ## Current Roadmap Signal
 
-The top missing primitives by atlas unlock count after `time_to_arrival` are:
+The top missing primitives by atlas unlock count after `carry_episode` are:
 
-1. `carry_episode` — 17 concepts.
-2. `set_piece_structure` — 12 concepts.
-3. `off_ball_run` — 11 concepts.
+1. `set_piece_structure` — 12 concepts.
+2. `off_ball_run` — 11 concepts.
+3. `space_region_generation` — 7 concepts.
 4. `acceleration` — 7 concepts.
 5. `marking` / `cover_shadow` — 6 concepts each.
 
@@ -70,13 +70,14 @@ Roadmap implication:
 
 - Q5 has closed the generic transition-anchor blocker for the coverage map.
 - `time_to_arrival` has closed Q4's lane-coverage typed gap only for static target-point reachability. It does not claim moving-ball interception, pass-line coverage, cover shadows, pitch-control fields, or reachability regions.
-- Prioritize `carry_episode` next; it is now the clear top missing primitive after the reachability redistribution.
+- `carry_episode` has closed the base carrying blocker. Remaining carry-family gaps are narrower: defender-bypass-by-carry, carry-path lane/profile aggregation, generated space regions, contact/touch evidence, body orientation, and learned value.
+- `set_piece_structure` and `off_ball_run` are now the leading missing primitives. The cheap reachability follow-ons are `cover_shadow`, `marking`, and interception-margin compositions on top of `time_to_arrival`.
 - Treat remaining transition-family partials as their next precise gap, not as generic transition-anchor debt.
 - Regenerate the coverage map after every substrate package.
 
 ## Composition Constraint Backlog
 
-The map also identifies 105 concepts blocked by missing declared composition constraints rather than missing runtime primitives. Examples include:
+The map also identifies 109 concepts blocked by missing declared composition constraints rather than missing runtime primitives. Examples include:
 
 - same anchor identity;
 - same team perspective;

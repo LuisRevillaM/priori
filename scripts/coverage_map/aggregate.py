@@ -31,8 +31,10 @@ AUDIT_NOTE = (
 ROADMAP_IMPLICATIONS = [
     "Q5 landed transition_anchor / structured_zone / outcome_window and redistributed the prior transition-anchor backlog.",
     "time_to_arrival landed as a static-point reachability primitive; the prior reachability backlog has redistributed into supported rows or narrower next blockers.",
-    "carry_episode is now the clear top missing primitive by atlas unlock count and should be prioritized next.",
+    "carry_episode landed as a conservative movement-under-control primitive; the prior carry backlog has redistributed into supported rows or precise next blockers.",
+    "set_piece_structure and off_ball_run are now the top missing primitives by atlas unlock count.",
     "Remaining reachability gaps are mostly not this primitive: moving-target interception, pass-line interception, cover shadow, reachability-field/region generation, graph construction, or margin/rate operators.",
+    "Remaining carry-family gaps are mostly not base carrying: defender-bypass-by-carry, space generation, profile aggregation, contact/touch, body orientation, or learned value.",
     "Regenerate the coverage map after every substrate package so supported/partial/gap counts remain a living metric.",
     "Treat composition constraints as compiler-alignment backlog, not hidden plan-wiring knowledge.",
 ]
@@ -77,7 +79,7 @@ def main() -> None:
                 "examples": [(h["concept"], h["classification"]) for h in hits[:4]]}
 
     calibration = [
-        chk("carrying->missing_primitive", ["carry", "dribble"], {"missing_primitive", "partial_with_typed_gap"}),
+        chk("carrying->supported_or_precise_next_gap", ["carry", "dribble"], {"supported", "missing_primitive", "partial_with_typed_gap", "missing_modality"}),
         chk("possession->supported", ["possession_dur", "circulation", "retention"], {"supported", "partial_with_typed_gap"}),
         chk("learned/xg->missing_modality", ["expected_goal", "_xg", "value_model", "pitch_control", "completion_prob"], {"missing_modality"}),
         chk("cover/reach->supported_or_precise_next_gap", ["cover_shadow", "time_to_inter", "reachab", "interception_margin"], {"supported", "missing_primitive", "partial_with_typed_gap"}),
@@ -87,7 +89,7 @@ def main() -> None:
     report = {
         "schema_version": "coverage-map.v0",
         "claim_status": CLAIM_STATUS,
-        "catalog_basis": "codex/afl08-passport-loop substrate after Q5 plus time_to_arrival static-point reachability",
+        "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, and carry_episode movement-under-control",
         "denominator_note": "Coverage of Priori's authored 741-concept atlas inventory — NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
         "audit_note": AUDIT_NOTE,
         "roadmap_implications": ROADMAP_IMPLICATIONS,
@@ -105,8 +107,8 @@ def main() -> None:
             "systematic_correction": "aggregation/extremum operator rows were downgraded from supported to partial_with_typed_gap because no generic argmax/argmin/local extremum operator exists.",
             "initial_supported_pct_after_correction": 43.9,
             "initial_reachable_now_or_one_gap_pct_after_correction": 64.8,
-            "current_supported_pct_after_time_to_arrival_redistribution": pct(cls.get("supported", 0)),
-            "current_reachable_now_or_one_gap_pct_after_time_to_arrival_redistribution": pct(cls.get("supported", 0) + cls.get("partial_with_typed_gap", 0)),
+            "current_supported_pct_after_carry_episode_redistribution": pct(cls.get("supported", 0)),
+            "current_reachable_now_or_one_gap_pct_after_carry_episode_redistribution": pct(cls.get("supported", 0) + cls.get("partial_with_typed_gap", 0)),
         },
     }
     REPORT.write_text(json.dumps(report, indent=1) + "\n")

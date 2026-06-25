@@ -1,40 +1,38 @@
 {
  "schema_version": "coverage-map.v0",
  "claim_status": "internal_steering_only_v0_estimated_not_external_claim",
- "catalog_basis": "codex/afl08-passport-loop substrate after Q5 plus time_to_arrival static-point reachability",
+ "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, and carry_episode movement-under-control",
  "denominator_note": "Coverage of Priori's authored 741-concept atlas inventory \u2014 NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
  "audit_note": "30-row stratified audit corrected aggregation/extremum operator inflation; additional audits are required before external coverage claims.",
  "roadmap_implications": [
   "Q5 landed transition_anchor / structured_zone / outcome_window and redistributed the prior transition-anchor backlog.",
   "time_to_arrival landed as a static-point reachability primitive; the prior reachability backlog has redistributed into supported rows or narrower next blockers.",
-  "carry_episode is now the clear top missing primitive by atlas unlock count and should be prioritized next.",
+  "carry_episode landed as a conservative movement-under-control primitive; the prior carry backlog has redistributed into supported rows or precise next blockers.",
+  "set_piece_structure and off_ball_run are now the top missing primitives by atlas unlock count.",
   "Remaining reachability gaps are mostly not this primitive: moving-target interception, pass-line interception, cover shadow, reachability-field/region generation, graph construction, or margin/rate operators.",
+  "Remaining carry-family gaps are mostly not base carrying: defender-bypass-by-carry, space generation, profile aggregation, contact/touch, body orientation, or learned value.",
   "Regenerate the coverage map after every substrate package so supported/partial/gap counts remain a living metric.",
   "Treat composition constraints as compiler-alignment backlog, not hidden plan-wiring knowledge."
  ],
  "total_concepts": 741,
  "coverage_counts": {
-  "supported": 343,
-  "partial_with_typed_gap": 161,
-  "missing_modality": 42,
+  "supported": 349,
+  "partial_with_typed_gap": 173,
+  "missing_modality": 43,
   "ambiguous_or_needs_definition": 9,
   "role_or_reference_gap": 13,
-  "missing_primitive": 173
+  "missing_primitive": 154
  },
  "coverage_pct": {
-  "supported": 46.3,
-  "partial_with_typed_gap": 21.7,
-  "missing_modality": 5.7,
+  "supported": 47.1,
+  "partial_with_typed_gap": 23.3,
+  "missing_modality": 5.8,
   "ambiguous_or_needs_definition": 1.2,
   "role_or_reference_gap": 1.8,
-  "missing_primitive": 23.3
+  "missing_primitive": 20.8
  },
- "reachable_now_or_one_gap_pct": 68.0,
+ "reachable_now_or_one_gap_pct": 70.4,
  "top_missing_primitives_by_unlock": [
-  [
-   "carry_episode",
-   17
-  ],
   [
    "set_piece_structure",
    12
@@ -42,6 +40,10 @@
   [
    "off_ball_run",
    11
+  ],
+  [
+   "space_region_generation",
+   7
   ],
   [
    "acceleration",
@@ -57,10 +59,6 @@
   ],
   [
    "team-press",
-   5
-  ],
-  [
-   "space_region_generation",
    5
   ],
   [
@@ -90,9 +88,13 @@
   [
    "reachability_region_generation",
    3
+  ],
+  [
+   "moving_target_interception",
+   3
   ]
  ],
- "composition_constraint_count": 105,
+ "composition_constraint_count": 109,
  "family_coverage": {
   "Ball contact, control, contest, and possession": {
    "missing_primitive": 7,
@@ -100,8 +102,10 @@
    "partial_with_typed_gap": 6
   },
   "Carrying, dribbling, evasion, and ball progression on foot": {
-   "partial_with_typed_gap": 1,
-   "missing_primitive": 17
+   "partial_with_typed_gap": 11,
+   "supported": 5,
+   "missing_modality": 1,
+   "missing_primitive": 1
   },
   "Data quality, synchronization, and provenance": {
    "supported": 13,
@@ -163,9 +167,9 @@
    "missing_modality": 1
   },
   "Physical action reconstruction": {
-   "supported": 12,
-   "partial_with_typed_gap": 7,
-   "missing_primitive": 11,
+   "supported": 13,
+   "partial_with_typed_gap": 9,
+   "missing_primitive": 8,
    "missing_modality": 1
   },
   "Possession behavior, circulation, combinations, and repeated patterns": {
@@ -230,25 +234,25 @@
  },
  "calibration_spotcheck": [
   {
-   "check": "carrying->missing_primitive",
+   "check": "carrying->supported_or_precise_next_gap",
    "matched": 17,
-   "in_expected_class": 16,
+   "in_expected_class": 17,
    "examples": [
     [
      "carry_between_units",
-     "missing_primitive"
+     "supported"
     ],
     [
      "carry_beyond_unit",
-     "missing_primitive"
+     "supported"
     ],
     [
      "carry_displacement",
-     "missing_primitive"
+     "supported"
     ],
     [
      "carry_duration",
-     "missing_primitive"
+     "supported"
     ]
    ]
   },
@@ -343,7 +347,7 @@
   "systematic_correction": "aggregation/extremum operator rows were downgraded from supported to partial_with_typed_gap because no generic argmax/argmin/local extremum operator exists.",
   "initial_supported_pct_after_correction": 43.9,
   "initial_reachable_now_or_one_gap_pct_after_correction": 64.8,
-  "current_supported_pct_after_time_to_arrival_redistribution": 46.3,
-  "current_reachable_now_or_one_gap_pct_after_time_to_arrival_redistribution": 68.0
+  "current_supported_pct_after_carry_episode_redistribution": 47.1,
+  "current_reachable_now_or_one_gap_pct_after_carry_episode_redistribution": 70.4
  }
 }
