@@ -11,9 +11,11 @@ Coverage-map labels are used only after synthesis for audit/comparison.
 from __future__ import annotations
 
 import collections
+import concurrent.futures
 import csv
 import gzip
 import json
+import math
 import os
 import pickle
 import subprocess
@@ -64,6 +66,7 @@ NODE_CACHE_ROOT = repo_path(
 SYNTHESIZER_VERSION = "search_synthesizer.v0.1"
 MAX_DEPTH = int(os.environ.get("TQE_SEARCH_MAX_DEPTH", "4"))
 MAX_BRANCHING = int(os.environ.get("TQE_SEARCH_MAX_BRANCHING", "6"))
+WORKERS = max(1, int(os.environ.get("TQE_SEARCH_WORKERS", "1")))
 SEARCH_BUDGET_LABEL = f"max_depth={MAX_DEPTH}.max_branching={MAX_BRANCHING}"
 SYNTHESIZER_STRATEGY = f"bounded_backward_search.v0.1.{SEARCH_BUDGET_LABEL}"
 MATCH_IDS = ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"]
@@ -80,24 +83,14 @@ CONCEPT_SHAPED_MACROS = sorted(EXCLUDED_CATALOG_REFS)
 def main() -> int:
     targets_payload = load_json(TARGETS)
     coverage_rows = load_json(LEDGER)
-    catalog = CatalogIndex()
-    shared_node_cache = build_shared_node_cache()
-    executor = TacticalQueryExecutor(shared_node_output_cache=shared_node_cache)
     PLAN_DIR.mkdir(parents=True, exist_ok=True)
     for previous_plan in PLAN_DIR.glob("*.json"):
         previous_plan.unlink()
 
-    results: list[dict[str, Any]] = []
-    for target in targets_payload["targets"]:
-        print(f"[compiler-search] {target['target_id']}", flush=True)
-        row = coverage_row(coverage_rows, target["concept"])
-        result = evaluate_target(target=target, row=row, catalog=catalog, executor=executor)
-        results.append(result)
-        print(
-            f"[compiler-search] {target['target_id']} -> {result['result']} "
-            f"({result['failure_taxonomy'] or 'ok'})",
-            flush=True,
-        )
+    results, cache_backend_summary = run_targets(
+        targets=targets_payload["targets"],
+        coverage_rows=coverage_rows,
+    )
 
     if UPDATE_LEDGER:
         update_coverage_rows(coverage_rows, results)
@@ -107,12 +100,81 @@ def main() -> int:
         targets_payload=targets_payload,
         coverage_rows=coverage_rows,
         results=results,
-        cache_backend_summary=shared_cache_summary(shared_node_cache),
+        cache_backend_summary=cache_backend_summary,
     )
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(report["summary"], indent=2, sort_keys=True))
     return 0 if report["status"] == "PASS" else 1
+
+
+def run_targets(*, targets: list[dict[str, Any]], coverage_rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    worker_count = min(WORKERS, max(len(targets), 1))
+    if worker_count <= 1:
+        worker_result = evaluate_target_chunk(
+            {
+                "chunk_index": 0,
+                "targets": targets,
+                "coverage_rows": coverage_rows,
+            }
+        )
+        indexed_results = sorted(worker_result["results"], key=lambda item: item[0])
+        return [result for _index, result in indexed_results], worker_result["cache_backend_summary"]
+
+    chunks = [
+        {
+            "chunk_index": index,
+            "targets": chunk,
+            "coverage_rows": coverage_rows,
+        }
+        for index, chunk in enumerate(chunk_targets(targets, worker_count))
+        if chunk
+    ]
+    indexed_results: list[tuple[int, dict[str, Any]]] = []
+    cache_summaries: list[dict[str, Any]] = []
+    with concurrent.futures.ProcessPoolExecutor(max_workers=worker_count) as pool:
+        futures = [pool.submit(evaluate_target_chunk, chunk) for chunk in chunks]
+        for future in concurrent.futures.as_completed(futures):
+            payload = future.result()
+            cache_summaries.append(payload["cache_backend_summary"])
+            indexed_results.extend(payload["results"])
+            print(
+                f"[compiler-search] chunk {payload['chunk_index']} complete "
+                f"({len(payload['results'])} targets)",
+                flush=True,
+            )
+    indexed_results.sort(key=lambda item: item[0])
+    return [result for _index, result in indexed_results], aggregate_cache_backend_summaries(cache_summaries)
+
+
+def evaluate_target_chunk(payload: dict[str, Any]) -> dict[str, Any]:
+    catalog = CatalogIndex()
+    shared_node_cache = build_shared_node_cache()
+    executor = TacticalQueryExecutor(shared_node_output_cache=shared_node_cache)
+    coverage_rows = payload["coverage_rows"]
+    results: list[tuple[int, dict[str, Any]]] = []
+    for index, target in enumerate(payload["targets"]):
+        absolute_index = int(target.get("_target_index", index))
+        print(f"[compiler-search] {target['target_id']}", flush=True)
+        row = coverage_row(coverage_rows, target["concept"])
+        result = evaluate_target(target=target, row=row, catalog=catalog, executor=executor)
+        results.append((absolute_index, result))
+        print(
+            f"[compiler-search] {target['target_id']} -> {result['result']} "
+            f"({result['failure_taxonomy'] or 'ok'})",
+            flush=True,
+        )
+    return {
+        "chunk_index": payload["chunk_index"],
+        "results": results,
+        "cache_backend_summary": shared_cache_summary(shared_node_cache),
+    }
+
+
+def chunk_targets(targets: list[dict[str, Any]], worker_count: int) -> list[list[dict[str, Any]]]:
+    indexed = [{**target, "_target_index": index} for index, target in enumerate(targets)]
+    chunk_size = max(1, math.ceil(len(indexed) / worker_count))
+    return [indexed[index : index + chunk_size] for index in range(0, len(indexed), chunk_size)]
 
 
 class SynthesisError(Exception):
@@ -224,7 +286,7 @@ class PersistentNodeOutputCache(collections.abc.MutableMapping):
         self.memory[key] = value
         path = self.path_for(key)
         path.parent.mkdir(parents=True, exist_ok=True)
-        tmp_path = path.with_suffix(path.suffix + ".tmp")
+        tmp_path = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
         with gzip.open(tmp_path, "wb") as handle:
             pickle.dump(value, handle, protocol=pickle.HIGHEST_PROTOCOL)
         tmp_path.replace(path)
@@ -287,6 +349,45 @@ def shared_cache_summary(cache: Any) -> dict[str, Any]:
     if isinstance(cache, PersistentNodeOutputCache):
         return cache.summary()
     return {"enabled": True, "backend": "memory", "entry_count": len(cache)}
+
+
+def aggregate_cache_backend_summaries(summaries: list[dict[str, Any]]) -> dict[str, Any]:
+    if not summaries:
+        return {"enabled": False, "backend": "none", "worker_count": 0}
+    backends = sorted({str(summary.get("backend")) for summary in summaries})
+    totals: collections.Counter[str] = collections.Counter()
+    for summary in summaries:
+        for key in ("memory_entries", "disk_loads", "memory_loads", "stores"):
+            totals[key] += int(summary.get(key) or 0)
+    first = summaries[0]
+    persistent_root = first.get("root")
+    persistent_namespace = first.get("namespace")
+    persistent_shared_root = (
+        first.get("backend") == "persistent_pickle_gzip"
+        and persistent_root
+        and all(summary.get("root") == persistent_root for summary in summaries)
+        and all(summary.get("namespace") == persistent_namespace for summary in summaries)
+    )
+    if persistent_shared_root:
+        entry_count = len(list(repo_path(str(persistent_root)).glob("*/*.pkl.gz")))
+    else:
+        entry_count = sum(int(summary.get("entry_count") or 0) for summary in summaries)
+    payload: dict[str, Any] = {
+        "enabled": any(bool(summary.get("enabled")) for summary in summaries),
+        "backend": first.get("backend") if len(backends) == 1 else "mixed",
+        "worker_count": len(summaries),
+        "backends": backends,
+        "entry_count": entry_count,
+        "memory_entries": int(totals.get("memory_entries", 0)),
+        "disk_loads": int(totals.get("disk_loads", 0)),
+        "memory_loads": int(totals.get("memory_loads", 0)),
+        "stores": int(totals.get("stores", 0)),
+    }
+    if first.get("namespace") is not None:
+        payload["namespace"] = first["namespace"]
+    if first.get("root") is not None:
+        payload["root"] = first["root"]
+    return payload
 
 
 def persistent_cache_namespace() -> str:
@@ -1457,6 +1558,7 @@ def build_report(
             "coverage_ledger_update_enabled": UPDATE_LEDGER,
             "shared_node_cache_enabled": SHARED_NODE_CACHE_ENABLED,
             "persistent_node_cache_enabled": PERSISTENT_NODE_CACHE_ENABLED,
+            "search_worker_count": WORKERS,
             "pattern_dispatch_allowed": False,
             "coverage_gold_chain_allowed_as_input": False,
             "concept_name_allowed_as_input": False,
