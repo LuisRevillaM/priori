@@ -58,6 +58,130 @@ EXCLUDED_POSITIVE_FAMILY_PREFIXES = (
     "Match clock",
     "Learned probability",
 )
+CONTRACT_FIDELITY_INSUFFICIENT: dict[str, str] = {
+    "bounce_pass_sequence": (
+        "Named return/relay combinations need explicit player-linkage semantics; "
+        "a generic action anchor or chain would be a weak proxy."
+    ),
+    "give_and_go_sequence": (
+        "Give-and-go requires a two-pass player-return structure; the current "
+        "generated contracts cannot faithfully express that identity constraint."
+    ),
+    "up_back_through_sequence": (
+        "Up-back-through requires ordered leg roles and directional constraints "
+        "beyond the current generated contract templates."
+    ),
+    "wall_pass_sequence": (
+        "Wall-pass semantics require return-pass/player-linkage constraints that "
+        "cannot be represented by a generic action-anchor contract."
+    ),
+}
+FIDELITY_EXPECTATIONS: dict[str, dict[str, Any]] = {
+    "action_anchor": {
+        "minimum_unique_provider_count": 1,
+        "required_provider_all": ["action_event_anchor"],
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+    },
+    "action_chain": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["action_event_anchor", "action_chain"],
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+    },
+    "carry": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["controlled_pass_episode", "carry_episode"],
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+    },
+    "carry_pressure_change": {
+        "minimum_unique_provider_count": 5,
+        "required_provider_all": [
+            "controlled_pass_episode",
+            "carry_episode",
+            "pressure_on_carrier",
+            "change_across_anchor",
+            "join_episode_sets",
+        ],
+        "required_rule_all": [
+            "generic_before_after_change",
+            "generic_binary_episode_join",
+        ],
+        "reason": "Carry-out-of-pressure requires carry, pressure change, and a generic binary episode join.",
+    },
+    "compactness": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["action_event_anchor", "team_compactness"],
+        "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+    },
+    "compactness_change": {
+        "minimum_unique_provider_count": 3,
+        "required_provider_all": ["controlled_pass_episode", "team_compactness", "change_across_anchor"],
+        "required_rule_all": ["generic_before_after_change"],
+        "reason": "Shape-change contracts need before/after compactness over a shared anchor.",
+    },
+    "controlled_pass": {
+        "minimum_unique_provider_count": 1,
+        "required_provider_all": ["controlled_pass_episode"],
+        "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+    },
+    "distance": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["action_event_anchor", "pairwise_distance"],
+        "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+    },
+    "line": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_any": [["multi_line_model", "defensive_line_model"]],
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+    },
+    "local_number": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["local_number_relation"],
+        "required_provider_any": [["action_event_anchor", "controlled_pass_episode", "transition_anchor"]],
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+    },
+    "pass_chain": {
+        "minimum_unique_provider_count": 3,
+        "required_provider_all": ["one_touch_relay_episode", "controlled_pass_episode", "pass_chain_episode"],
+        "reason": "Pass-chain contracts must exercise the relay and terminal reception chain.",
+    },
+    "pressure": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["controlled_pass_episode", "pressure_on_carrier"],
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+    },
+    "support": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["support_arrival_relation"],
+        "required_provider_any": [["action_event_anchor", "controlled_pass_episode", "transition_anchor"]],
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+    },
+    "switch": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["switch_of_play"],
+        "required_provider_any": [["action_event_anchor", "controlled_pass_episode"]],
+        "reason": "Switch contracts need a legitimate action/pass anchor plus switch geometry.",
+    },
+    "time_to_arrival": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["action_event_anchor", "time_to_arrival"],
+        "reason": "Arrival contracts need an anchor plus reachability evaluation.",
+    },
+    "transition": {
+        "minimum_unique_provider_count": 1,
+        "required_provider_all": ["transition_anchor"],
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+    },
+    "transition_outcome": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["transition_anchor", "outcome_window"],
+        "reason": "Transition-outcome contracts need a transition plus an outcome window.",
+    },
+    "velocity": {
+        "minimum_unique_provider_count": 2,
+        "required_provider_all": ["action_event_anchor", "velocity"],
+        "reason": "Velocity contracts need an anchor plus displacement-derived velocity.",
+    },
+}
 
 
 def main() -> int:
@@ -188,6 +312,7 @@ def assess() -> int:
                     "terminal_provider": row.get("terminal_provider"),
                     "providers_used": row.get("providers_used", []),
                     "rules_used": row.get("rules_used", []),
+                    "fidelity_expectation": target.get("fidelity_expectation"),
                 }
             )
         concept_findings = assess_concept(concept, variants)
@@ -206,6 +331,7 @@ def assess() -> int:
     failure_counts = collections.Counter(row["failure_taxonomy"] for row in rows if row.get("failure_taxonomy"))
     positive_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "positive_probe"]
     known_negative_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "known_negative"]
+    fidelity_findings = [finding for finding in findings if finding.get("code") == "degenerate_reach_fidelity_violation"]
     report = {
         "schema_version": "atlas_scale_contract_sample_assessment.v0",
         "status": "PASS" if not findings else "FAIL",
@@ -224,6 +350,8 @@ def assess() -> int:
             "positive_target_count": len(positive_rows),
             "positive_compiler_reachable_count": sum(1 for item in positive_rows if item["result"] == "compiler_reachable"),
             "positive_compiler_reachable_pct": pct(sum(1 for item in positive_rows if item["result"] == "compiler_reachable"), len(positive_rows)),
+            "fidelity_checked_reachable_count": sum(1 for item in positive_rows if item["result"] == "compiler_reachable" and target_by_id[item["target_id"]].get("fidelity_expectation")),
+            "fidelity_violation_count": len(fidelity_findings),
             "known_negative_target_count": len(known_negative_rows),
             "known_negative_honest_failure_count": sum(1 for item in known_negative_rows if item["result"] != "compiler_reachable"),
             "known_negative_honest_failure_pct": pct(sum(1 for item in known_negative_rows if item["result"] != "compiler_reachable"), len(known_negative_rows)),
@@ -251,6 +379,15 @@ def select_positive_rows(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any
         if row.get("classification") != "supported":
             continue
         if is_excluded_positive_family(row):
+            continue
+        if row["concept"] in CONTRACT_FIDELITY_INSUFFICIENT:
+            skipped.append(
+                {
+                    "reason": "contract_fidelity_insufficient",
+                    "concept": row["concept"],
+                    "detail": CONTRACT_FIDELITY_INSUFFICIENT[row["concept"]],
+                }
+            )
             continue
         template = template_for_row(row)
         if template is None:
@@ -364,11 +501,19 @@ def target_from_variant(concept_config: dict[str, Any], variant: dict[str, Any])
         "sample_role": concept_config["sample_role"],
         "target_contract": variant["target_contract"],
     }
+    expectation = fidelity_expectation_for_template(concept_config["contract_template_id"])
+    if expectation:
+        target["fidelity_expectation"] = expectation
     if concept_config.get("expected_failure_taxonomy"):
         target["expected_failure_taxonomy"] = concept_config["expected_failure_taxonomy"]
-    if concept_config["contract_template_id"] in {"carry_pressure_change", "compactness_change"}:
+    if concept_config["contract_template_id"] in {"action_chain", "carry_pressure_change", "compactness_change", "pass_chain"}:
         target["multi_step"] = True
     return target
+
+
+def fidelity_expectation_for_template(template_id: str) -> dict[str, Any] | None:
+    expectation = FIDELITY_EXPECTATIONS.get(template_id)
+    return None if expectation is None else dict(expectation)
 
 
 def ledger_row_for_sample(concept_config: dict[str, Any]) -> dict[str, Any]:
@@ -427,7 +572,47 @@ def assess_concept(concept: str, variants: list[dict[str, Any]]) -> list[dict[st
                         "actual": variant["failure_taxonomy"],
                     }
                 )
+    else:
+        for variant in variants:
+            if variant["result"] == "compiler_reachable":
+                findings.extend(fidelity_findings_for_variant(concept, variant))
     return findings
+
+
+def fidelity_findings_for_variant(concept: str, variant: dict[str, Any]) -> list[dict[str, Any]]:
+    expectation = variant.get("fidelity_expectation")
+    if not isinstance(expectation, dict) or not expectation:
+        return []
+    providers = list(dict.fromkeys(str(provider) for provider in variant.get("providers_used", [])))
+    rules = set(str(rule) for rule in variant.get("rules_used", []))
+    violations: list[str] = []
+    minimum_count = int(expectation.get("minimum_unique_provider_count") or 0)
+    if minimum_count and len(providers) < minimum_count:
+        violations.append(f"expected at least {minimum_count} unique providers")
+    missing_all = [provider for provider in expectation.get("required_provider_all", []) if provider not in providers]
+    if missing_all:
+        violations.append(f"missing required providers: {', '.join(missing_all)}")
+    for group in expectation.get("required_provider_any", []):
+        group_values = [str(item) for item in group]
+        if group_values and not any(item in providers for item in group_values):
+            violations.append(f"missing one provider from: {', '.join(group_values)}")
+    missing_rules = [rule for rule in expectation.get("required_rule_all", []) if rule not in rules]
+    if missing_rules:
+        violations.append(f"missing required rules: {', '.join(missing_rules)}")
+    if not violations:
+        return []
+    return [
+        {
+            "code": "degenerate_reach_fidelity_violation",
+            "concept": concept,
+            "target_id": variant["target_id"],
+            "contract_template_id": variant.get("contract_template_id"),
+            "providers_used": providers,
+            "rules_used": sorted(rules),
+            "violations": violations,
+            "expectation": expectation,
+        }
+    ]
 
 
 def group_targets_by_concept(targets: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
@@ -785,6 +970,68 @@ def action_contracts(_concept: str) -> list[dict[str, Any]]:
     )
 
 
+def action_chain_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "action_chain",
+        {
+            "desired_output": "classification",
+            "required_evidence": [
+                "action_chain_status",
+                "chain_length",
+                "first_action_anchor_id",
+                "second_action_anchor_id",
+                "action_gap_seconds",
+            ],
+            "status_semantics": [{"field": "action_chain_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed adjacent same-team action sequence under a frozen event-time gap; no tactical pattern, plan, or causation claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": [
+                "action_chain_status",
+                "action_chain_reason",
+                "maximum_action_gap_seconds",
+                "first_action_anchor_id",
+                "second_action_anchor_id",
+            ],
+            "status_semantics": [{"field": "action_chain_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed ordered action-chain anchors only; no named-combination, role, intent, or quality claim.",
+        },
+    )
+
+
+def pass_chain_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "pass_chain",
+        {
+            "desired_output": "classification",
+            "required_evidence": [
+                "one_touch_relay_status",
+                "pass_chain_status",
+                "input_pass_episode_id",
+                "relay_player_id",
+                "terminal_receiver_id",
+                "terminal_controlled_reception_frame_id",
+            ],
+            "status_semantics": [{"field": "pass_chain_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed event-linked relay plus terminal controlled reception; no planned combination, third-man, or decision-quality claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": [
+                "one_touch_relay_status",
+                "pass_chain_status",
+                "pass_chain_reason",
+                "relay_touch_frame_id",
+                "terminal_pass_episode_id",
+                "declared_next_pass_recipient_id",
+            ],
+            "status_semantics": [{"field": "pass_chain_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed pass-chain receipt sequence under existing relay thresholds; no intent, optimality, or tactical causation claim.",
+        },
+    )
+
+
 def carry_pressure_change_contracts(_concept: str) -> list[dict[str, Any]]:
     base_constraints = [
         {"kind": "same_anchor_identity", "left_key_field": "anchor_id", "right_key_field": "anchor_id"},
@@ -856,6 +1103,8 @@ TEMPLATES: tuple[ContractTemplate, ...] = (
     ContractTemplate("carry_pressure_change", ("carry_out_of_pressure", "pressure_change_after"), carry_pressure_change_contracts),
     ContractTemplate("transition_outcome", ("retention", "retained", "settled", "outcome_window", "attacking_transition_window", "defensive_transition_window"), transition_outcome_contracts),
     ContractTemplate("compactness_change", ("shape_change_after", "line_state_change_after"), compactness_change_contracts),
+    ContractTemplate("pass_chain", ("pass_chain", "one_touch", "one touch", "relay", "layoff", "lay off"), pass_chain_contracts),
+    ContractTemplate("action_chain", ("action_chain", "action chain", "followed_by", "followed by", "sequence"), action_chain_contracts),
     ContractTemplate("pressure", ("pressure", "press", "carrier"), pressure_contracts),
     ContractTemplate("carry", ("carry", "dribbl"), carry_contracts),
     ContractTemplate("velocity", ("velocity", "speed", "movement", "run"), velocity_contracts),

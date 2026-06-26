@@ -6,9 +6,16 @@
   "targets": [
     {
       "atlas_scale_sample": true,
-      "concept": "give_and_go_sequence",
+      "concept": "possession_gain_anchor",
       "contract_template_id": "action_anchor",
       "contract_variant": "action_anchor_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+        "required_provider_all": [
+          "action_event_anchor"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -28,13 +35,20 @@
           }
         ]
       },
-      "target_id": "atlas_scale_give_and_go_sequence_action_anchor_a_v0"
+      "target_id": "atlas_scale_possession_gain_anchor_action_anchor_a_v0"
     },
     {
       "atlas_scale_sample": true,
-      "concept": "give_and_go_sequence",
+      "concept": "possession_gain_anchor",
       "contract_template_id": "action_anchor",
       "contract_variant": "action_anchor_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+        "required_provider_all": [
+          "action_event_anchor"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -53,13 +67,91 @@
           }
         ]
       },
-      "target_id": "atlas_scale_give_and_go_sequence_action_anchor_b_v0"
+      "target_id": "atlas_scale_possession_gain_anchor_action_anchor_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "central_progression_sequence",
+      "contract_template_id": "action_chain",
+      "contract_variant": "action_chain_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "action_chain"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed adjacent same-team action sequence under a frozen event-time gap; no tactical pattern, plan, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_status",
+          "chain_length",
+          "first_action_anchor_id",
+          "second_action_anchor_id",
+          "action_gap_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_central_progression_sequence_action_chain_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "central_progression_sequence",
+      "contract_template_id": "action_chain",
+      "contract_variant": "action_chain_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "action_chain"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed ordered action-chain anchors only; no named-combination, role, intent, or quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_status",
+          "action_chain_reason",
+          "maximum_action_gap_seconds",
+          "first_action_anchor_id",
+          "second_action_anchor_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_central_progression_sequence_action_chain_b_v0"
     },
     {
       "atlas_scale_sample": true,
       "concept": "carry_between_units",
       "contract_template_id": "carry",
       "contract_variant": "carry_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -92,6 +184,14 @@
       "concept": "carry_between_units",
       "contract_template_id": "carry",
       "contract_variant": "carry_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -124,6 +224,21 @@
       "concept": "pressure_change_after",
       "contract_template_id": "carry_pressure_change",
       "contract_variant": "carry_pressure_change_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 5,
+        "reason": "Carry-out-of-pressure requires carry, pressure change, and a generic binary episode join.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode",
+          "pressure_on_carrier",
+          "change_across_anchor",
+          "join_episode_sets"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change",
+          "generic_binary_episode_join"
+        ]
+      },
       "held_out": true,
       "multi_step": true,
       "sample_role": "positive_probe",
@@ -181,6 +296,21 @@
       "concept": "pressure_change_after",
       "contract_template_id": "carry_pressure_change",
       "contract_variant": "carry_pressure_change_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 5,
+        "reason": "Carry-out-of-pressure requires carry, pressure change, and a generic binary episode join.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode",
+          "pressure_on_carrier",
+          "change_across_anchor",
+          "join_episode_sets"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change",
+          "generic_binary_episode_join"
+        ]
+      },
       "held_out": true,
       "multi_step": true,
       "sample_role": "positive_probe",
@@ -236,6 +366,14 @@
       "concept": "possession_depth",
       "contract_template_id": "compactness",
       "contract_variant": "compactness_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "team_compactness"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -262,6 +400,14 @@
       "concept": "possession_depth",
       "contract_template_id": "compactness",
       "contract_variant": "compactness_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "team_compactness"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -287,6 +433,18 @@
       "concept": "line_state_change_after",
       "contract_template_id": "compactness_change",
       "contract_variant": "compactness_change_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 3,
+        "reason": "Shape-change contracts need before/after compactness over a shared anchor.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "team_compactness",
+          "change_across_anchor"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change"
+        ]
+      },
       "held_out": true,
       "multi_step": true,
       "sample_role": "positive_probe",
@@ -335,6 +493,18 @@
       "concept": "line_state_change_after",
       "contract_template_id": "compactness_change",
       "contract_variant": "compactness_change_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 3,
+        "reason": "Shape-change contracts need before/after compactness over a shared anchor.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "team_compactness",
+          "change_across_anchor"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change"
+        ]
+      },
       "held_out": true,
       "multi_step": true,
       "sample_role": "positive_probe",
@@ -380,9 +550,16 @@
     },
     {
       "atlas_scale_sample": true,
-      "concept": "bounce_pass_sequence",
+      "concept": "pass_tempo",
       "contract_template_id": "controlled_pass",
       "contract_variant": "controlled_pass_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+        "required_provider_all": [
+          "controlled_pass_episode"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -402,13 +579,20 @@
           }
         ]
       },
-      "target_id": "atlas_scale_bounce_pass_sequence_controlled_pass_a_v0"
+      "target_id": "atlas_scale_pass_tempo_controlled_pass_a_v0"
     },
     {
       "atlas_scale_sample": true,
-      "concept": "bounce_pass_sequence",
+      "concept": "pass_tempo",
       "contract_template_id": "controlled_pass",
       "contract_variant": "controlled_pass_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+        "required_provider_all": [
+          "controlled_pass_episode"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -427,13 +611,21 @@
           }
         ]
       },
-      "target_id": "atlas_scale_bounce_pass_sequence_controlled_pass_b_v0"
+      "target_id": "atlas_scale_pass_tempo_controlled_pass_b_v0"
     },
     {
       "atlas_scale_sample": true,
       "concept": "possession_distance_advanced",
       "contract_template_id": "distance",
       "contract_variant": "distance_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "pairwise_distance"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -460,6 +652,14 @@
       "concept": "possession_distance_advanced",
       "contract_template_id": "distance",
       "contract_variant": "distance_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "pairwise_distance"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -485,6 +685,16 @@
       "concept": "receive_behind_unit",
       "contract_template_id": "line",
       "contract_variant": "line_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+        "required_provider_any": [
+          [
+            "multi_line_model",
+            "defensive_line_model"
+          ]
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -511,6 +721,16 @@
       "concept": "receive_behind_unit",
       "contract_template_id": "line",
       "contract_variant": "line_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+        "required_provider_any": [
+          [
+            "multi_line_model",
+            "defensive_line_model"
+          ]
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -536,6 +756,20 @@
       "concept": "local_attacker_count",
       "contract_template_id": "local_number",
       "contract_variant": "local_number_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+        "required_provider_all": [
+          "local_number_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -562,6 +796,20 @@
       "concept": "local_attacker_count",
       "contract_template_id": "local_number",
       "contract_variant": "local_number_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+        "required_provider_all": [
+          "local_number_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -585,9 +833,91 @@
     },
     {
       "atlas_scale_sample": true,
+      "concept": "one_touch_distribution_candidate",
+      "contract_template_id": "pass_chain",
+      "contract_variant": "pass_chain_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 3,
+        "reason": "Pass-chain contracts must exercise the relay and terminal reception chain.",
+        "required_provider_all": [
+          "one_touch_relay_episode",
+          "controlled_pass_episode",
+          "pass_chain_episode"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event-linked relay plus terminal controlled reception; no planned combination, third-man, or decision-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "one_touch_relay_status",
+          "pass_chain_status",
+          "input_pass_episode_id",
+          "relay_player_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_one_touch_distribution_candidate_pass_chain_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "one_touch_distribution_candidate",
+      "contract_template_id": "pass_chain",
+      "contract_variant": "pass_chain_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 3,
+        "reason": "Pass-chain contracts must exercise the relay and terminal reception chain.",
+        "required_provider_all": [
+          "one_touch_relay_episode",
+          "controlled_pass_episode",
+          "pass_chain_episode"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed pass-chain receipt sequence under existing relay thresholds; no intent, optimality, or tactical causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "one_touch_relay_status",
+          "pass_chain_status",
+          "pass_chain_reason",
+          "relay_touch_frame_id",
+          "terminal_pass_episode_id",
+          "declared_next_pass_recipient_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_one_touch_distribution_candidate_pass_chain_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
       "concept": "receive_under_pressure",
       "contract_template_id": "pressure",
       "contract_variant": "pressure_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "pressure_on_carrier"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -615,6 +945,14 @@
       "concept": "receive_under_pressure",
       "contract_template_id": "pressure",
       "contract_variant": "pressure_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "pressure_on_carrier"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -642,6 +980,20 @@
       "concept": "one_v_one_isolation",
       "contract_template_id": "support",
       "contract_variant": "support_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+        "required_provider_all": [
+          "support_arrival_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -668,6 +1020,20 @@
       "concept": "one_v_one_isolation",
       "contract_template_id": "support",
       "contract_variant": "support_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+        "required_provider_all": [
+          "support_arrival_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -693,6 +1059,19 @@
       "concept": "switch_frequency",
       "contract_template_id": "switch",
       "contract_variant": "switch_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Switch contracts need a legitimate action/pass anchor plus switch geometry.",
+        "required_provider_all": [
+          "switch_of_play"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode"
+          ]
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -718,6 +1097,19 @@
       "concept": "switch_frequency",
       "contract_template_id": "switch",
       "contract_variant": "switch_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Switch contracts need a legitimate action/pass anchor plus switch geometry.",
+        "required_provider_all": [
+          "switch_of_play"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode"
+          ]
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -744,6 +1136,14 @@
       "concept": "time_to_location",
       "contract_template_id": "time_to_arrival",
       "contract_variant": "time_to_arrival_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Arrival contracts need an anchor plus reachability evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "time_to_arrival"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -769,6 +1169,14 @@
       "concept": "time_to_location",
       "contract_template_id": "time_to_arrival",
       "contract_variant": "time_to_arrival_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Arrival contracts need an anchor plus reachability evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "time_to_arrival"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -795,6 +1203,13 @@
       "concept": "first_action_after_regain",
       "contract_template_id": "transition",
       "contract_variant": "transition_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+        "required_provider_all": [
+          "transition_anchor"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -821,6 +1236,13 @@
       "concept": "first_action_after_regain",
       "contract_template_id": "transition",
       "contract_variant": "transition_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+        "required_provider_all": [
+          "transition_anchor"
+        ]
+      },
       "held_out": true,
       "sample_role": "positive_probe",
       "target_contract": {
@@ -841,122 +1263,6 @@
         ]
       },
       "target_id": "atlas_scale_first_action_after_regain_transition_b_v0"
-    },
-    {
-      "atlas_scale_sample": true,
-      "concept": "possession_retained_for",
-      "contract_template_id": "transition_outcome",
-      "contract_variant": "transition_outcome_a",
-      "held_out": true,
-      "sample_role": "positive_probe",
-      "target_contract": {
-        "claim_boundary": "Observed transition followed by ball-alive retention for a frozen duration; no settled-possession quality or intent.",
-        "desired_output": "classification",
-        "required_evidence": [
-          "transition_status",
-          "transition_frame_id",
-          "outcome_window_status",
-          "minimum_settled_possession_seconds"
-        ],
-        "status_semantics": [
-          {
-            "field": "transition_status",
-            "required_value": "PASS"
-          },
-          {
-            "field": "outcome_window_status",
-            "required_value": "PASS"
-          }
-        ]
-      },
-      "target_id": "atlas_scale_possession_retained_for_transition_outcome_a_v0"
-    },
-    {
-      "atlas_scale_sample": true,
-      "concept": "possession_retained_for",
-      "contract_template_id": "transition_outcome",
-      "contract_variant": "transition_outcome_b",
-      "held_out": true,
-      "sample_role": "positive_probe",
-      "target_contract": {
-        "claim_boundary": "Observed transition and declared outcome window only; no phase quality, causal, or decision claim.",
-        "desired_output": "classification",
-        "required_evidence": [
-          "transition_status",
-          "outcome_window_status",
-          "outcome_window_start_frame_id",
-          "outcome_window_end_frame_id"
-        ],
-        "status_semantics": [
-          {
-            "field": "transition_status",
-            "required_value": "PASS"
-          },
-          {
-            "field": "outcome_window_status",
-            "required_value": "PASS"
-          }
-        ]
-      },
-      "target_id": "atlas_scale_possession_retained_for_transition_outcome_b_v0"
-    },
-    {
-      "atlas_scale_sample": true,
-      "concept": "arrive_in_region_episode",
-      "contract_template_id": "velocity",
-      "contract_variant": "velocity_a",
-      "held_out": true,
-      "sample_role": "positive_probe",
-      "target_contract": {
-        "claim_boundary": "Displacement-derived velocity components over a lookback window; no effort, intent, or future trajectory claim.",
-        "desired_output": "classification",
-        "required_evidence": [
-          "velocity_status",
-          "speed_mps",
-          "velocity_vx_mps",
-          "velocity_vy_mps",
-          "velocity_frame_id"
-        ],
-        "status_semantics": [
-          {
-            "field": "velocity_status",
-            "required_value": "PASS"
-          }
-        ]
-      },
-      "target_id": "atlas_scale_arrive_in_region_episode_velocity_a_v0"
-    },
-    {
-      "atlas_scale_sample": true,
-      "concept": "arrive_in_region_episode",
-      "contract_template_id": "velocity",
-      "contract_variant": "velocity_b",
-      "held_out": true,
-      "sample_role": "positive_probe",
-      "target_contract": {
-        "claim_boundary": "Observed speed above a declared threshold; no run type, fatigue, or effort-quality claim.",
-        "desired_output": "classification",
-        "required_evidence": [
-          "velocity_status",
-          "velocity_reason",
-          "speed_mps",
-          "velocity_dt_seconds",
-          "velocity_entity_id"
-        ],
-        "status_semantics": [
-          {
-            "field": "velocity_status",
-            "required_value": "PASS"
-          },
-          {
-            "field": "speed_mps",
-            "operator": "gte",
-            "threshold": 0.5,
-            "unit": "none"
-          }
-        ]
-      },
-      "target_id": "atlas_scale_arrive_in_region_episode_velocity_b_v0"
     },
     {
       "atlas_scale_sample": true,

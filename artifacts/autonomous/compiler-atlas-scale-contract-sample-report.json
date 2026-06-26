@@ -1,96 +1,6 @@
 {
   "concepts": [
     {
-      "concept": "arrive_in_region_episode",
-      "contract_template_id": "velocity",
-      "findings": [],
-      "sample_role": "positive_probe",
-      "variants": [
-        {
-          "contract_template_id": "velocity",
-          "expected_failure_taxonomy": null,
-          "failure_taxonomy": null,
-          "honest_zero": false,
-          "providers_used": [
-            "action_event_anchor",
-            "velocity"
-          ],
-          "result": "compiler_reachable",
-          "result_count": 20,
-          "rules_used": [
-            "provider_field_backward_search"
-          ],
-          "sample_role": "positive_probe",
-          "target_id": "atlas_scale_arrive_in_region_episode_velocity_a_v0",
-          "terminal_provider": "velocity",
-          "variant_id": "velocity_a"
-        },
-        {
-          "contract_template_id": "velocity",
-          "expected_failure_taxonomy": null,
-          "failure_taxonomy": null,
-          "honest_zero": false,
-          "providers_used": [
-            "action_event_anchor",
-            "velocity"
-          ],
-          "result": "compiler_reachable",
-          "result_count": 20,
-          "rules_used": [
-            "provider_field_backward_search"
-          ],
-          "sample_role": "positive_probe",
-          "target_id": "atlas_scale_arrive_in_region_episode_velocity_b_v0",
-          "terminal_provider": "velocity",
-          "variant_id": "velocity_b"
-        }
-      ]
-    },
-    {
-      "concept": "bounce_pass_sequence",
-      "contract_template_id": "controlled_pass",
-      "findings": [],
-      "sample_role": "positive_probe",
-      "variants": [
-        {
-          "contract_template_id": "controlled_pass",
-          "expected_failure_taxonomy": null,
-          "failure_taxonomy": null,
-          "honest_zero": false,
-          "providers_used": [
-            "controlled_pass_episode"
-          ],
-          "result": "compiler_reachable",
-          "result_count": 20,
-          "rules_used": [
-            "provider_field_backward_search"
-          ],
-          "sample_role": "positive_probe",
-          "target_id": "atlas_scale_bounce_pass_sequence_controlled_pass_a_v0",
-          "terminal_provider": "controlled_pass_episode",
-          "variant_id": "controlled_pass_a"
-        },
-        {
-          "contract_template_id": "controlled_pass",
-          "expected_failure_taxonomy": null,
-          "failure_taxonomy": null,
-          "honest_zero": false,
-          "providers_used": [
-            "controlled_pass_episode"
-          ],
-          "result": "compiler_reachable",
-          "result_count": 20,
-          "rules_used": [
-            "provider_field_backward_search"
-          ],
-          "sample_role": "positive_probe",
-          "target_id": "atlas_scale_bounce_pass_sequence_controlled_pass_b_v0",
-          "terminal_provider": "controlled_pass_episode",
-          "variant_id": "controlled_pass_b"
-        }
-      ]
-    },
-    {
       "concept": "carry_between_units",
       "contract_template_id": "carry",
       "findings": [],
@@ -100,6 +10,14 @@
           "contract_template_id": "carry",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+            "required_provider_all": [
+              "controlled_pass_episode",
+              "carry_episode"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -119,6 +37,14 @@
           "contract_template_id": "carry",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+            "required_provider_all": [
+              "controlled_pass_episode",
+              "carry_episode"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -137,6 +63,68 @@
       ]
     },
     {
+      "concept": "central_progression_sequence",
+      "contract_template_id": "action_chain",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "action_chain",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+            "required_provider_all": [
+              "action_event_anchor",
+              "action_chain"
+            ]
+          },
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "action_chain"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_central_progression_sequence_action_chain_a_v0",
+          "terminal_provider": "action_chain",
+          "variant_id": "action_chain_a"
+        },
+        {
+          "contract_template_id": "action_chain",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+            "required_provider_all": [
+              "action_event_anchor",
+              "action_chain"
+            ]
+          },
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "action_chain"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_central_progression_sequence_action_chain_b_v0",
+          "terminal_provider": "action_chain",
+          "variant_id": "action_chain_b"
+        }
+      ]
+    },
+    {
       "concept": "cover_shadow_region",
       "contract_template_id": "known_negative_missing_primitive",
       "findings": [],
@@ -146,6 +134,7 @@
           "contract_template_id": "known_negative_missing_primitive",
           "expected_failure_taxonomy": "missing_primitive",
           "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -160,6 +149,7 @@
           "contract_template_id": "known_negative_missing_primitive",
           "expected_failure_taxonomy": "missing_primitive",
           "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -182,6 +172,7 @@
           "contract_template_id": "known_negative_missing_primitive",
           "expected_failure_taxonomy": "missing_primitive",
           "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -196,6 +187,7 @@
           "contract_template_id": "known_negative_missing_primitive",
           "expected_failure_taxonomy": "missing_primitive",
           "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -218,6 +210,7 @@
           "contract_template_id": "known_negative_unsupported_modality",
           "expected_failure_taxonomy": "unsupported_modality",
           "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -232,6 +225,7 @@
           "contract_template_id": "known_negative_unsupported_modality",
           "expected_failure_taxonomy": "unsupported_modality",
           "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -254,6 +248,13 @@
           "contract_template_id": "transition",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 1,
+            "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+            "required_provider_all": [
+              "transition_anchor"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "transition_anchor"
@@ -272,6 +273,13 @@
           "contract_template_id": "transition",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 1,
+            "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+            "required_provider_all": [
+              "transition_anchor"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "transition_anchor"
@@ -289,50 +297,6 @@
       ]
     },
     {
-      "concept": "give_and_go_sequence",
-      "contract_template_id": "action_anchor",
-      "findings": [],
-      "sample_role": "positive_probe",
-      "variants": [
-        {
-          "contract_template_id": "action_anchor",
-          "expected_failure_taxonomy": null,
-          "failure_taxonomy": null,
-          "honest_zero": false,
-          "providers_used": [
-            "action_event_anchor"
-          ],
-          "result": "compiler_reachable",
-          "result_count": 20,
-          "rules_used": [
-            "provider_field_backward_search"
-          ],
-          "sample_role": "positive_probe",
-          "target_id": "atlas_scale_give_and_go_sequence_action_anchor_a_v0",
-          "terminal_provider": "action_event_anchor",
-          "variant_id": "action_anchor_a"
-        },
-        {
-          "contract_template_id": "action_anchor",
-          "expected_failure_taxonomy": null,
-          "failure_taxonomy": null,
-          "honest_zero": false,
-          "providers_used": [
-            "action_event_anchor"
-          ],
-          "result": "compiler_reachable",
-          "result_count": 20,
-          "rules_used": [
-            "provider_field_backward_search"
-          ],
-          "sample_role": "positive_probe",
-          "target_id": "atlas_scale_give_and_go_sequence_action_anchor_b_v0",
-          "terminal_provider": "action_event_anchor",
-          "variant_id": "action_anchor_b"
-        }
-      ]
-    },
-    {
       "concept": "goal_kick_build_structure",
       "contract_template_id": "known_negative_missing_primitive",
       "findings": [],
@@ -342,6 +306,7 @@
           "contract_template_id": "known_negative_missing_primitive",
           "expected_failure_taxonomy": "missing_primitive",
           "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -356,6 +321,7 @@
           "contract_template_id": "known_negative_missing_primitive",
           "expected_failure_taxonomy": "missing_primitive",
           "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -378,6 +344,7 @@
           "contract_template_id": "known_negative_unsupported_modality",
           "expected_failure_taxonomy": "unsupported_modality",
           "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -392,6 +359,7 @@
           "contract_template_id": "known_negative_unsupported_modality",
           "expected_failure_taxonomy": "unsupported_modality",
           "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -414,6 +382,18 @@
           "contract_template_id": "compactness_change",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 3,
+            "reason": "Shape-change contracts need before/after compactness over a shared anchor.",
+            "required_provider_all": [
+              "controlled_pass_episode",
+              "team_compactness",
+              "change_across_anchor"
+            ],
+            "required_rule_all": [
+              "generic_before_after_change"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -439,6 +419,18 @@
           "contract_template_id": "compactness_change",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 3,
+            "reason": "Shape-change contracts need before/after compactness over a shared anchor.",
+            "required_provider_all": [
+              "controlled_pass_episode",
+              "team_compactness",
+              "change_across_anchor"
+            ],
+            "required_rule_all": [
+              "generic_before_after_change"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -472,6 +464,20 @@
           "contract_template_id": "local_number",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+            "required_provider_all": [
+              "local_number_relation"
+            ],
+            "required_provider_any": [
+              [
+                "action_event_anchor",
+                "controlled_pass_episode",
+                "transition_anchor"
+              ]
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -491,6 +497,20 @@
           "contract_template_id": "local_number",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+            "required_provider_all": [
+              "local_number_relation"
+            ],
+            "required_provider_any": [
+              [
+                "action_event_anchor",
+                "controlled_pass_episode",
+                "transition_anchor"
+              ]
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -518,6 +538,7 @@
           "contract_template_id": "known_negative_missing_primitive",
           "expected_failure_taxonomy": "missing_primitive",
           "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -532,6 +553,7 @@
           "contract_template_id": "known_negative_missing_primitive",
           "expected_failure_taxonomy": "missing_primitive",
           "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -545,6 +567,72 @@
       ]
     },
     {
+      "concept": "one_touch_distribution_candidate",
+      "contract_template_id": "pass_chain",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "pass_chain",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 3,
+            "reason": "Pass-chain contracts must exercise the relay and terminal reception chain.",
+            "required_provider_all": [
+              "one_touch_relay_episode",
+              "controlled_pass_episode",
+              "pass_chain_episode"
+            ]
+          },
+          "honest_zero": false,
+          "providers_used": [
+            "one_touch_relay_episode",
+            "controlled_pass_episode",
+            "pass_chain_episode"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_one_touch_distribution_candidate_pass_chain_a_v0",
+          "terminal_provider": "pass_chain_episode",
+          "variant_id": "pass_chain_a"
+        },
+        {
+          "contract_template_id": "pass_chain",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 3,
+            "reason": "Pass-chain contracts must exercise the relay and terminal reception chain.",
+            "required_provider_all": [
+              "one_touch_relay_episode",
+              "controlled_pass_episode",
+              "pass_chain_episode"
+            ]
+          },
+          "honest_zero": false,
+          "providers_used": [
+            "one_touch_relay_episode",
+            "controlled_pass_episode",
+            "pass_chain_episode"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_one_touch_distribution_candidate_pass_chain_b_v0",
+          "terminal_provider": "pass_chain_episode",
+          "variant_id": "pass_chain_b"
+        }
+      ]
+    },
+    {
       "concept": "one_v_one_isolation",
       "contract_template_id": "support",
       "findings": [],
@@ -554,6 +642,20 @@
           "contract_template_id": "support",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+            "required_provider_all": [
+              "support_arrival_relation"
+            ],
+            "required_provider_any": [
+              [
+                "action_event_anchor",
+                "controlled_pass_episode",
+                "transition_anchor"
+              ]
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -573,6 +675,20 @@
           "contract_template_id": "support",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+            "required_provider_all": [
+              "support_arrival_relation"
+            ],
+            "required_provider_any": [
+              [
+                "action_event_anchor",
+                "controlled_pass_episode",
+                "transition_anchor"
+              ]
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -600,6 +716,7 @@
           "contract_template_id": "known_negative_unsupported_modality",
           "expected_failure_taxonomy": "unsupported_modality",
           "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -614,6 +731,7 @@
           "contract_template_id": "known_negative_unsupported_modality",
           "expected_failure_taxonomy": "unsupported_modality",
           "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -627,6 +745,64 @@
       ]
     },
     {
+      "concept": "pass_tempo",
+      "contract_template_id": "controlled_pass",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "controlled_pass",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 1,
+            "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+            "required_provider_all": [
+              "controlled_pass_episode"
+            ]
+          },
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_pass_tempo_controlled_pass_a_v0",
+          "terminal_provider": "controlled_pass_episode",
+          "variant_id": "controlled_pass_a"
+        },
+        {
+          "contract_template_id": "controlled_pass",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 1,
+            "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+            "required_provider_all": [
+              "controlled_pass_episode"
+            ]
+          },
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_pass_tempo_controlled_pass_b_v0",
+          "terminal_provider": "controlled_pass_episode",
+          "variant_id": "controlled_pass_b"
+        }
+      ]
+    },
+    {
       "concept": "possession_depth",
       "contract_template_id": "compactness",
       "findings": [],
@@ -636,6 +812,14 @@
           "contract_template_id": "compactness",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+            "required_provider_all": [
+              "action_event_anchor",
+              "team_compactness"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "action_event_anchor",
@@ -655,6 +839,14 @@
           "contract_template_id": "compactness",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+            "required_provider_all": [
+              "action_event_anchor",
+              "team_compactness"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "action_event_anchor",
@@ -682,6 +874,14 @@
           "contract_template_id": "distance",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+            "required_provider_all": [
+              "action_event_anchor",
+              "pairwise_distance"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "action_event_anchor",
@@ -701,6 +901,14 @@
           "contract_template_id": "distance",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+            "required_provider_all": [
+              "action_event_anchor",
+              "pairwise_distance"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "action_event_anchor",
@@ -719,19 +927,25 @@
       ]
     },
     {
-      "concept": "possession_retained_for",
-      "contract_template_id": "transition_outcome",
+      "concept": "possession_gain_anchor",
+      "contract_template_id": "action_anchor",
       "findings": [],
       "sample_role": "positive_probe",
       "variants": [
         {
-          "contract_template_id": "transition_outcome",
+          "contract_template_id": "action_anchor",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 1,
+            "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+            "required_provider_all": [
+              "action_event_anchor"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
-            "transition_anchor",
-            "outcome_window"
+            "action_event_anchor"
           ],
           "result": "compiler_reachable",
           "result_count": 20,
@@ -739,18 +953,24 @@
             "provider_field_backward_search"
           ],
           "sample_role": "positive_probe",
-          "target_id": "atlas_scale_possession_retained_for_transition_outcome_a_v0",
-          "terminal_provider": "outcome_window",
-          "variant_id": "transition_outcome_a"
+          "target_id": "atlas_scale_possession_gain_anchor_action_anchor_a_v0",
+          "terminal_provider": "action_event_anchor",
+          "variant_id": "action_anchor_a"
         },
         {
-          "contract_template_id": "transition_outcome",
+          "contract_template_id": "action_anchor",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 1,
+            "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+            "required_provider_all": [
+              "action_event_anchor"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
-            "transition_anchor",
-            "outcome_window"
+            "action_event_anchor"
           ],
           "result": "compiler_reachable",
           "result_count": 20,
@@ -758,9 +978,9 @@
             "provider_field_backward_search"
           ],
           "sample_role": "positive_probe",
-          "target_id": "atlas_scale_possession_retained_for_transition_outcome_b_v0",
-          "terminal_provider": "outcome_window",
-          "variant_id": "transition_outcome_b"
+          "target_id": "atlas_scale_possession_gain_anchor_action_anchor_b_v0",
+          "terminal_provider": "action_event_anchor",
+          "variant_id": "action_anchor_b"
         }
       ]
     },
@@ -774,6 +994,21 @@
           "contract_template_id": "carry_pressure_change",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 5,
+            "reason": "Carry-out-of-pressure requires carry, pressure change, and a generic binary episode join.",
+            "required_provider_all": [
+              "controlled_pass_episode",
+              "carry_episode",
+              "pressure_on_carrier",
+              "change_across_anchor",
+              "join_episode_sets"
+            ],
+            "required_rule_all": [
+              "generic_before_after_change",
+              "generic_binary_episode_join"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -807,6 +1042,21 @@
           "contract_template_id": "carry_pressure_change",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 5,
+            "reason": "Carry-out-of-pressure requires carry, pressure change, and a generic binary episode join.",
+            "required_provider_all": [
+              "controlled_pass_episode",
+              "carry_episode",
+              "pressure_on_carrier",
+              "change_across_anchor",
+              "join_episode_sets"
+            ],
+            "required_rule_all": [
+              "generic_before_after_change",
+              "generic_binary_episode_join"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -848,6 +1098,16 @@
           "contract_template_id": "line",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+            "required_provider_any": [
+              [
+                "multi_line_model",
+                "defensive_line_model"
+              ]
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -867,6 +1127,16 @@
           "contract_template_id": "line",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+            "required_provider_any": [
+              [
+                "multi_line_model",
+                "defensive_line_model"
+              ]
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "action_event_anchor",
@@ -894,6 +1164,14 @@
           "contract_template_id": "pressure",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+            "required_provider_all": [
+              "controlled_pass_episode",
+              "pressure_on_carrier"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -913,6 +1191,14 @@
           "contract_template_id": "pressure",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+            "required_provider_all": [
+              "controlled_pass_episode",
+              "pressure_on_carrier"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "controlled_pass_episode",
@@ -940,6 +1226,7 @@
           "contract_template_id": "known_negative_unsupported_modality",
           "expected_failure_taxonomy": "unsupported_modality",
           "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -954,6 +1241,7 @@
           "contract_template_id": "known_negative_unsupported_modality",
           "expected_failure_taxonomy": "unsupported_modality",
           "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
           "honest_zero": false,
           "providers_used": [],
           "result": "not_compiler_reachable",
@@ -976,6 +1264,19 @@
           "contract_template_id": "switch",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Switch contracts need a legitimate action/pass anchor plus switch geometry.",
+            "required_provider_all": [
+              "switch_of_play"
+            ],
+            "required_provider_any": [
+              [
+                "action_event_anchor",
+                "controlled_pass_episode"
+              ]
+            ]
+          },
           "honest_zero": true,
           "providers_used": [
             "action_event_anchor",
@@ -995,6 +1296,19 @@
           "contract_template_id": "switch",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Switch contracts need a legitimate action/pass anchor plus switch geometry.",
+            "required_provider_all": [
+              "switch_of_play"
+            ],
+            "required_provider_any": [
+              [
+                "action_event_anchor",
+                "controlled_pass_episode"
+              ]
+            ]
+          },
           "honest_zero": true,
           "providers_used": [
             "action_event_anchor",
@@ -1022,6 +1336,14 @@
           "contract_template_id": "time_to_arrival",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Arrival contracts need an anchor plus reachability evaluation.",
+            "required_provider_all": [
+              "action_event_anchor",
+              "time_to_arrival"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "action_event_anchor",
@@ -1041,6 +1363,14 @@
           "contract_template_id": "time_to_arrival",
           "expected_failure_taxonomy": null,
           "failure_taxonomy": null,
+          "fidelity_expectation": {
+            "minimum_unique_provider_count": 2,
+            "reason": "Arrival contracts need an anchor plus reachability evaluation.",
+            "required_provider_all": [
+              "action_event_anchor",
+              "time_to_arrival"
+            ]
+          },
           "honest_zero": false,
           "providers_used": [
             "action_event_anchor",
@@ -1077,15 +1407,17 @@
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
-      "hits": 460,
+      "hits": 448,
       "local_hits": 28,
-      "misses": 576,
-      "shared_hits": 432
+      "misses": 616,
+      "shared_hits": 420
     },
     "failure_distribution": {
       "missing_primitive": 8,
       "unsupported_modality": 8
     },
+    "fidelity_checked_reachable_count": 32,
+    "fidelity_violation_count": 0,
     "known_negative_honest_failure_count": 16,
     "known_negative_honest_failure_pct": 100.0,
     "known_negative_target_count": 16,
