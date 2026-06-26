@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import hashlib
 import json
 import os
 import re
@@ -38,10 +39,14 @@ ASSESS_REPORT = ROOT / os.environ.get(
 )
 
 MAX_POSITIVE_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_POSITIVE_CONCEPTS", "16"))
+MAX_BLIND_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_BLIND_CONCEPTS", str(MAX_POSITIVE_CONCEPTS)))
 MAX_NEGATIVE_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_NEGATIVE_CONCEPTS", "8"))
 MAX_POSITIVES_PER_TEMPLATE = int(os.environ.get("TQE_ATLAS_SCALE_POSITIVES_PER_TEMPLATE", "3"))
+BLIND_SAMPLE_SEED = os.environ.get("TQE_ATLAS_SCALE_BLIND_SAMPLE_SEED", "supported_blind_draw_v0")
 SAMPLE_POLICY = os.environ.get("TQE_ATLAS_SCALE_SAMPLE_POLICY", "atlas_scale_stratified_contract_sample_v0")
 INCLUDE_KNOWN_GOOD_CONTROLS = os.environ.get("TQE_ATLAS_SCALE_INCLUDE_KNOWN_GOOD_CONTROLS", "0") == "1"
+BLIND_SUPPORTED_DRAW = os.environ.get("TQE_ATLAS_SCALE_BLIND_SUPPORTED_DRAW", "0") == "1"
+MEASURED_SAMPLE_ROLES = {"blind_probe", "positive_probe"}
 
 SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
 FORBIDDEN_CONTRACT_KEYS = {
@@ -214,10 +219,16 @@ class ContractTemplate:
 
 def prepare() -> int:
     rows = load_json(COVERAGE_LEDGER)
-    positive_configs, skipped_positive_rows = select_positive_rows(rows)
+    if BLIND_SUPPORTED_DRAW:
+        measured_configs, skipped_measured_rows = select_blind_supported_rows(rows)
+        positive_configs: list[dict[str, Any]] = []
+        blind_configs = measured_configs
+    else:
+        positive_configs, skipped_measured_rows = select_positive_rows(rows)
+        blind_configs = []
     negative_configs = select_known_negative_rows(rows)
-    known_good_configs = select_known_good_control_rows(rows, skipped_positive_rows) if INCLUDE_KNOWN_GOOD_CONTROLS else []
-    concept_configs = [*positive_configs, *negative_configs, *known_good_configs]
+    known_good_configs = select_known_good_control_rows(rows, skipped_measured_rows) if INCLUDE_KNOWN_GOOD_CONTROLS else []
+    concept_configs = [*blind_configs, *positive_configs, *negative_configs, *known_good_configs]
 
     targets: list[dict[str, Any]] = []
     ledger_rows: list[dict[str, Any]] = []
@@ -263,6 +274,7 @@ def prepare() -> int:
         "scope": {
             "atlas_wide": False,
             "large_stratified_sample": True,
+            "blind_supported_draw": BLIND_SUPPORTED_DRAW,
             "natural_language": False,
             "coverage_map_gold_chain_used": False,
             "pattern_labels_used": False,
@@ -270,22 +282,29 @@ def prepare() -> int:
             "template_variants_not_true_independent_authors": True,
             "known_negative_controls_required": True,
             "known_good_controls_included": INCLUDE_KNOWN_GOOD_CONTROLS,
+            "blind_rows_have_expected_result": False,
         },
         "summary": {
+            "blind_supported_concept_count": len(blind_configs),
             "positive_concept_count": len(positive_configs),
             "known_negative_concept_count": len(negative_configs),
             "known_good_control_concept_count": len(known_good_configs),
             "concept_count": len(concept_configs),
             "target_count": len(targets),
-            "template_distribution": dict(sorted(collections.Counter(item["contract_template_id"] for item in positive_configs).items())),
+            "measured_template_distribution": dict(sorted(collections.Counter(item["contract_template_id"] for item in [*blind_configs, *positive_configs]).items())),
             "negative_distribution": dict(sorted(collections.Counter(item.get("expected_failure_taxonomy") for item in negative_configs).items())),
             "known_good_control_distribution": dict(sorted(collections.Counter(item.get("known_good_control_family") for item in known_good_configs).items())),
+            "skipped_measured_row_count": len(skipped_measured_rows),
+            "skipped_measured_row_distribution": dict(sorted(collections.Counter(item.get("reason") for item in skipped_measured_rows).items())),
         },
         "selection": {
             "max_positive_concepts": MAX_POSITIVE_CONCEPTS,
+            "max_blind_concepts": MAX_BLIND_CONCEPTS,
             "max_negative_concepts": MAX_NEGATIVE_CONCEPTS,
             "max_positives_per_template": MAX_POSITIVES_PER_TEMPLATE,
-            "skipped_positive_rows": skipped_positive_rows,
+            "blind_sample_seed": BLIND_SAMPLE_SEED,
+            "skipped_measured_rows": skipped_measured_rows,
+            "skipped_positive_rows": skipped_measured_rows,
         },
         "anti_circularity": {
             "forbidden_contract_keys": sorted(FORBIDDEN_CONTRACT_KEYS),
@@ -351,6 +370,8 @@ def assess() -> int:
 
     result_counts = collections.Counter(row["result"] for row in rows)
     failure_counts = collections.Counter(row["failure_taxonomy"] for row in rows if row.get("failure_taxonomy"))
+    measured_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] in MEASURED_SAMPLE_ROLES]
+    blind_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "blind_probe"]
     positive_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "positive_probe"]
     known_negative_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "known_negative"]
     known_good_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "known_good_control"]
@@ -369,17 +390,27 @@ def assess() -> int:
             "large_stratified_sample": True,
             "natural_language": False,
             "claim": (
-                "Large stratified atlas target-contract sample with template-variant stability "
-                "and known-negative honesty controls; not a 741-row compiler-reachable percentage."
+                "Large stratified atlas target-contract sample. In blind mode, measured rows carry "
+                "no expected result; seeded known-character rows remain calibration controls. "
+                "This is not a 741-row compiler-reachable percentage."
             ),
         },
         "summary": {
             "concept_count": len(concept_reports),
             "target_count": len(rows),
+            "measured_target_count": len(measured_rows),
+            "measured_compiler_reachable_count": sum(1 for item in measured_rows if item["result"] == "compiler_reachable"),
+            "measured_compiler_reachable_pct": pct(sum(1 for item in measured_rows if item["result"] == "compiler_reachable"), len(measured_rows)),
+            "blind_target_count": len(blind_rows),
+            "blind_compiler_reachable_count": sum(1 for item in blind_rows if item["result"] == "compiler_reachable"),
+            "blind_compiler_reachable_pct": pct(sum(1 for item in blind_rows if item["result"] == "compiler_reachable"), len(blind_rows)),
+            "blind_failure_distribution": dict(
+                sorted(collections.Counter(row.get("failure_taxonomy") for row in blind_rows if row.get("failure_taxonomy")).items())
+            ),
             "positive_target_count": len(positive_rows),
             "positive_compiler_reachable_count": sum(1 for item in positive_rows if item["result"] == "compiler_reachable"),
             "positive_compiler_reachable_pct": pct(sum(1 for item in positive_rows if item["result"] == "compiler_reachable"), len(positive_rows)),
-            "fidelity_checked_reachable_count": sum(1 for item in positive_rows if item["result"] == "compiler_reachable" and target_by_id[item["target_id"]].get("fidelity_expectation")),
+            "fidelity_checked_reachable_count": sum(1 for item in measured_rows if item["result"] == "compiler_reachable" and target_by_id[item["target_id"]].get("fidelity_expectation")),
             "fidelity_violation_count": len(fidelity_findings),
             "contract_fidelity_refusal_count": len(contract_fidelity_refusals),
             "known_negative_target_count": len(known_negative_rows),
@@ -410,7 +441,7 @@ def contract_fidelity_refusals_from_prep_report() -> list[dict[str, Any]]:
     if not PREP_REPORT.exists():
         return []
     report = load_json(PREP_REPORT)
-    rows = report.get("selection", {}).get("skipped_positive_rows", [])
+    rows = report.get("selection", {}).get("skipped_measured_rows", report.get("selection", {}).get("skipped_positive_rows", []))
     if not isinstance(rows, list):
         return []
     return [
@@ -445,6 +476,113 @@ def select_known_good_control_rows(rows: list[dict[str, Any]], skipped_positive_
             }
         )
     return configs
+
+
+def select_blind_supported_rows(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    candidates: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for row in rows:
+        if row.get("classification") != "supported":
+            continue
+        if is_excluded_positive_family(row):
+            continue
+        concept = str(row["concept"])
+        if concept in CONTRACT_FIDELITY_INSUFFICIENT:
+            candidates.append(
+                {
+                    "selection_kind": "contract_fidelity_insufficient",
+                    "template_id": "known_good_identity_constrained_combination",
+                    "row": row,
+                }
+            )
+            continue
+        template = template_for_row(row)
+        if template is None:
+            continue
+        variants = template.build(concept)
+        if any(contract_has_concept_hint(concept, variant["target_contract"]) for variant in variants):
+            candidates.append(
+                {
+                    "selection_kind": "concept_hint_risk",
+                    "template_id": template.template_id,
+                    "row": row,
+                }
+            )
+            continue
+        candidates.append(
+            {
+                "selection_kind": "target_contract",
+                "template_id": template.template_id,
+                "row": row,
+                "variants": variants,
+            }
+        )
+
+    selected_descriptors = stratified_blind_selection(candidates)
+    selected: list[dict[str, Any]] = []
+    for descriptor in selected_descriptors:
+        row = descriptor["row"]
+        concept = str(row["concept"])
+        if descriptor["selection_kind"] == "contract_fidelity_insufficient":
+            skipped.append(
+                {
+                    "reason": "contract_fidelity_insufficient",
+                    "concept": concept,
+                    "detail": CONTRACT_FIDELITY_INSUFFICIENT[concept],
+                    "selected_by_blind_draw": True,
+                }
+            )
+            continue
+        if descriptor["selection_kind"] == "concept_hint_risk":
+            skipped.append(
+                {
+                    "reason": "concept_hint_risk",
+                    "concept": concept,
+                    "contract_template_id": descriptor["template_id"],
+                    "selected_by_blind_draw": True,
+                }
+            )
+            continue
+        selected.append(
+            {
+                **row,
+                "sample_role": "blind_probe",
+                "contract_template_id": descriptor["template_id"],
+                "variants": descriptor["variants"],
+                "blind_sample_seed": BLIND_SAMPLE_SEED,
+            }
+        )
+    return selected, skipped
+
+
+def stratified_blind_selection(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    buckets: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
+    for candidate in candidates:
+        buckets[str(candidate["template_id"])].append(candidate)
+    for template_id, bucket in buckets.items():
+        bucket.sort(key=lambda item: stable_sample_key(str(item["row"]["concept"]), template_id))
+
+    selected: list[dict[str, Any]] = []
+    template_ids = sorted(buckets)
+    round_index = 0
+    while len(selected) < MAX_BLIND_CONCEPTS:
+        added = False
+        for template_id in template_ids:
+            if len(selected) >= MAX_BLIND_CONCEPTS:
+                break
+            bucket = buckets[template_id]
+            if round_index >= len(bucket):
+                continue
+            selected.append(bucket[round_index])
+            added = True
+        if not added:
+            break
+        round_index += 1
+    return selected
+
+
+def stable_sample_key(concept: str, template_id: str) -> str:
+    return hashlib.sha256(f"{BLIND_SAMPLE_SEED}:{template_id}:{concept}".encode("utf-8")).hexdigest()
 
 
 def select_positive_rows(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -688,7 +826,7 @@ def measurement_buckets(
     entries: list[dict[str, Any]] = []
     for row in rows:
         target = target_by_id[row["target_id"]]
-        if target.get("sample_role") != "positive_probe":
+        if target.get("sample_role") not in MEASURED_SAMPLE_ROLES:
             continue
         bucket = bucket_for_positive_row(
             row,

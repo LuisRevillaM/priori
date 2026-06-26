@@ -1,0 +1,4948 @@
+{
+  "note": "Large deterministic atlas sample. Contract variants are generated from intrinsic evidence/status requirements, not gold chains. Template ids are audit metadata outside target_contract and are not consumed by synthesis.",
+  "sample_policy": "supported_blind_draw_with_calibration_v0",
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.atlas_scale_stratified_contract_sample",
+  "targets": [
+    {
+      "atlas_scale_sample": true,
+      "concept": "action_origin",
+      "contract_template_id": "action_anchor",
+      "contract_variant": "action_anchor_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+        "required_provider_all": [
+          "action_event_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event/action anchor from synchronized event data; no tactical pattern or intention claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_type",
+          "event_anchor_frame_id",
+          "passer_id",
+          "receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_action_origin_action_anchor_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "action_origin",
+      "contract_template_id": "action_anchor",
+      "contract_variant": "action_anchor_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+        "required_provider_all": [
+          "action_event_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed action-event alignment only; no quality, plan, or tactical causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_event_reason",
+          "event_type",
+          "event_frame_offset_ms"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_action_origin_action_anchor_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "switch_of_play_sequence",
+      "contract_template_id": "action_chain",
+      "contract_variant": "action_chain_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "action_chain"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed adjacent same-team action sequence under a frozen event-time gap; no tactical pattern, plan, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_status",
+          "chain_length",
+          "first_action_anchor_id",
+          "second_action_anchor_id",
+          "action_gap_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_switch_of_play_sequence_action_chain_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "switch_of_play_sequence",
+      "contract_template_id": "action_chain",
+      "contract_variant": "action_chain_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "action_chain"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed ordered action-chain anchors only; no named-combination, role, intent, or quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_status",
+          "action_chain_reason",
+          "maximum_action_gap_seconds",
+          "first_action_anchor_id",
+          "second_action_anchor_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_switch_of_play_sequence_action_chain_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_between_units",
+      "contract_template_id": "carry",
+      "contract_variant": "carry_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed controlled ball movement with a declared forward component; no skill, opponent-bypass, intent, or value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "carry_forward_progression_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "carry_forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_between_units_carry_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_between_units",
+      "contract_template_id": "carry",
+      "contract_variant": "carry_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed movement-under-control under frozen control thresholds; no dribbling quality, defender-bypass, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carry_reason",
+          "carrier_id",
+          "displacement_m",
+          "control_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "displacement_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_between_units_carry_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_out_of_pressure",
+      "contract_template_id": "carry_pressure_change",
+      "contract_variant": "carry_pressure_change_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 5,
+        "reason": "Carry-out-of-pressure requires carry, pressure change, and a generic binary episode join.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode",
+          "pressure_on_carrier",
+          "change_across_anchor",
+          "join_episode_sets"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change",
+          "generic_binary_episode_join"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Nearest-defender distance increased across an observed carry; no pressure-breaking quality, opponent bypass, intent, or causation.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          },
+          {
+            "after_frame_field": "carry_end_frame_id",
+            "before_frame_field": "carry_start_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "none",
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 4.0,
+            "minimum_change_m": 2.0,
+            "status_fields": [
+              "pressure_status"
+            ],
+            "value_family": "pressure_distance",
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "join_status",
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "change_status",
+          "before_value",
+          "after_value",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_out_of_pressure_carry_pressure_change_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_out_of_pressure",
+      "contract_template_id": "carry_pressure_change",
+      "contract_variant": "carry_pressure_change_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 5,
+        "reason": "Carry-out-of-pressure requires carry, pressure change, and a generic binary episode join.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode",
+          "pressure_on_carrier",
+          "change_across_anchor",
+          "join_episode_sets"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change",
+          "generic_binary_episode_join"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed carry joined to before/after pressure-distance change; no defender-beaten or decision-quality claim.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          },
+          {
+            "after_frame_field": "carry_end_frame_id",
+            "before_frame_field": "carry_start_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "none",
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 4.0,
+            "minimum_change_m": 2.0,
+            "status_fields": [
+              "pressure_status"
+            ],
+            "value_family": "pressure_distance",
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "join_status",
+          "join_reason",
+          "carry_status",
+          "change_status",
+          "before_value_field",
+          "after_value_field",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_out_of_pressure_carry_pressure_change_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "players_ahead_of_ball",
+      "contract_template_id": "compactness",
+      "contract_variant": "compactness_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "team_compactness"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed team shape dimensions at a declared frame; no tactical quality or role taxonomy.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "team_compactness_status",
+          "team_width_m",
+          "team_depth_m",
+          "team_area_m2",
+          "observed_player_count"
+        ],
+        "status_semantics": [
+          {
+            "field": "team_compactness_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_players_ahead_of_ball_compactness_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "players_ahead_of_ball",
+      "contract_template_id": "compactness",
+      "contract_variant": "compactness_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "team_compactness"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed compactness threshold relation only; no quality, intent, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "team_compactness_status",
+          "team_compactness_reason",
+          "maximum_team_width_m",
+          "maximum_team_depth_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "team_compactness_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_players_ahead_of_ball_compactness_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shape_change_after",
+      "contract_template_id": "compactness_change",
+      "contract_variant": "compactness_change_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 3,
+        "reason": "Shape-change contracts need before/after compactness over a shared anchor.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "team_compactness",
+          "change_across_anchor"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed team-width change across a shared action anchor; no tactical quality, causation, or intent claim.",
+        "composition_constraints": [
+          {
+            "after_frame_field": "controlled_reception_frame_id",
+            "before_frame_field": "physical_release_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "team_compactness_status",
+            "change_mode": "absolute_delta_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 80.0,
+            "minimum_change_m": 4.0,
+            "status_fields": [
+              "team_compactness_status"
+            ],
+            "value_family": "team_width",
+            "value_fields": [
+              "team_width_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "change_status",
+          "before_value",
+          "after_value",
+          "delta_value",
+          "minimum_change_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "change_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shape_change_after_compactness_change_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shape_change_after",
+      "contract_template_id": "compactness_change",
+      "contract_variant": "compactness_change_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 3,
+        "reason": "Shape-change contracts need before/after compactness over a shared anchor.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "team_compactness",
+          "change_across_anchor"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed before/after compactness delta only; no shape-quality or coaching interpretation.",
+        "composition_constraints": [
+          {
+            "after_frame_field": "controlled_reception_frame_id",
+            "before_frame_field": "physical_release_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "team_compactness_status",
+            "change_mode": "absolute_delta_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 80.0,
+            "minimum_change_m": 4.0,
+            "status_fields": [
+              "team_compactness_status"
+            ],
+            "value_family": "team_width",
+            "value_fields": [
+              "team_width_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "change_status",
+          "change_reason",
+          "before_value_field",
+          "after_value_field",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "change_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shape_change_after_compactness_change_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_distance_advanced",
+      "contract_template_id": "distance",
+      "contract_variant": "distance_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "pairwise_distance"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed pairwise distance at a declared frame; no availability, intent, or tactical value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pairwise_distance_status",
+          "distance_m",
+          "entity_a_id",
+          "entity_b_id",
+          "distance_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pairwise_distance_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_distance_advanced_distance_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_distance_advanced",
+      "contract_template_id": "distance",
+      "contract_variant": "distance_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "pairwise_distance"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed distance threshold relation only; no pressure or marking assignment claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pairwise_distance_status",
+          "pairwise_distance_reason",
+          "distance_m",
+          "maximum_distance_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "pairwise_distance_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_distance_advanced_distance_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "unit_height",
+      "contract_template_id": "line",
+      "contract_variant": "line_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+        "required_provider_any": [
+          [
+            "multi_line_model",
+            "defensive_line_model"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed geometric line rank from tracked defenders; no tactical role taxonomy or definitive line-break claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "multi_line_status",
+          "observed_line_count",
+          "target_line_rank",
+          "line_x_m",
+          "defensive_line_player_ids"
+        ],
+        "status_semantics": [
+          {
+            "field": "multi_line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_unit_height_line_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "unit_height",
+      "contract_template_id": "line",
+      "contract_variant": "line_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+        "required_provider_any": [
+          [
+            "multi_line_model",
+            "defensive_line_model"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed defensive-line geometry only; no midfield/backline role label, intent, or quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "line_status",
+          "line_x_m",
+          "line_compactness_m",
+          "defenders_goal_side_count"
+        ],
+        "status_semantics": [
+          {
+            "field": "line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_unit_height_line_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "local_defender_count",
+      "contract_template_id": "local_number",
+      "contract_variant": "local_number_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+        "required_provider_all": [
+          "local_number_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed local player counts around a reference point; no pressure, role, or support-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "local_number_status",
+          "perspective_count",
+          "defending_count",
+          "local_number_difference",
+          "radius_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_local_defender_count_local_number_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "local_defender_count",
+      "contract_template_id": "local_number",
+      "contract_variant": "local_number_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+        "required_provider_all": [
+          "local_number_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed local numerical relation with coverage evidence; no tactical role or superiority-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "local_number_status",
+          "local_number_reason",
+          "perspective_in_region_player_ids",
+          "defending_in_region_player_ids",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_local_defender_count_local_number_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "one_touch_distribution_candidate",
+      "contract_template_id": "pass_chain",
+      "contract_variant": "pass_chain_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 3,
+        "reason": "Pass-chain contracts must exercise the relay and terminal reception chain.",
+        "required_provider_all": [
+          "one_touch_relay_episode",
+          "controlled_pass_episode",
+          "pass_chain_episode"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event-linked relay plus terminal controlled reception; no planned combination, third-man, or decision-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "one_touch_relay_status",
+          "pass_chain_status",
+          "input_pass_episode_id",
+          "relay_player_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_one_touch_distribution_candidate_pass_chain_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "one_touch_distribution_candidate",
+      "contract_template_id": "pass_chain",
+      "contract_variant": "pass_chain_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 3,
+        "reason": "Pass-chain contracts must exercise the relay and terminal reception chain.",
+        "required_provider_all": [
+          "one_touch_relay_episode",
+          "controlled_pass_episode",
+          "pass_chain_episode"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed pass-chain receipt sequence under existing relay thresholds; no intent, optimality, or tactical causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "one_touch_relay_status",
+          "pass_chain_status",
+          "pass_chain_reason",
+          "relay_touch_frame_id",
+          "terminal_pass_episode_id",
+          "declared_next_pass_recipient_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_one_touch_distribution_candidate_pass_chain_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defender_arrival_time",
+      "contract_template_id": "pressure",
+      "contract_variant": "pressure_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "pressure_on_carrier"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed nearest-defender distance, closing speed, and approach angle; no defender intent, pressure quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "nearest_defender_id",
+          "nearest_defender_distance_m",
+          "closing_speed_mps",
+          "approach_angle_degrees",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defender_arrival_time_pressure_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defender_arrival_time",
+      "contract_template_id": "pressure",
+      "contract_variant": "pressure_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "pressure_on_carrier"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed carrier-pressure components under declared thresholds; no effort, intent, quality, or decision-value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "pressure_reason",
+          "carrier_id",
+          "pressure_frame_id",
+          "pressure_duration_seconds",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defender_arrival_time_pressure_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "receiver_isolation_candidate",
+      "contract_template_id": "support",
+      "contract_variant": "support_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+        "required_provider_all": [
+          "support_arrival_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed teammate support arrival under a declared region/window; no support quality, intent, or optimality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_region_mode",
+          "support_anchor_frame_id",
+          "supporting_player_ids",
+          "maximum_arrival_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_receiver_isolation_candidate_support_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "receiver_isolation_candidate",
+      "contract_template_id": "support",
+      "contract_variant": "support_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+        "required_provider_all": [
+          "support_arrival_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed support timing and coverage only; no communication, role, or tactical correctness claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_arrival_reason",
+          "first_arrival_seconds_after_anchor",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_receiver_isolation_candidate_support_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "switch_frequency",
+      "contract_template_id": "switch",
+      "contract_variant": "switch_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Switch contracts need a legitimate action/pass anchor plus switch geometry.",
+        "required_provider_all": [
+          "switch_of_play"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed lateral ball movement across declared thresholds; no tactical intent or success-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "switch_status",
+          "lateral_displacement_m",
+          "release_frame_id",
+          "reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "switch_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_switch_frequency_switch_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "switch_frequency",
+      "contract_template_id": "switch",
+      "contract_variant": "switch_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Switch contracts need a legitimate action/pass anchor plus switch geometry.",
+        "required_provider_all": [
+          "switch_of_play"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed switch-of-play geometry only; no claim that it was planned, optimal, or tactically correct.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "switch_status",
+          "switch_reason",
+          "release_lateral_side",
+          "reception_lateral_side",
+          "switch_duration_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "switch_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_switch_frequency_switch_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "time_to_location",
+      "contract_template_id": "time_to_arrival",
+      "contract_variant": "time_to_arrival_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Arrival contracts need an anchor plus reachability evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "time_to_arrival"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Static-point straight-line arrival estimate with explicit point-mass bias; no pitch control or intent claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "time_to_arrival_status",
+          "minimum_arrival_seconds",
+          "nearest_arrival_player_id",
+          "reachable_verdict_bias"
+        ],
+        "status_semantics": [
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_time_to_location_time_to_arrival_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "time_to_location",
+      "contract_template_id": "time_to_arrival",
+      "contract_variant": "time_to_arrival_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Arrival contracts need an anchor plus reachability evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "time_to_arrival"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed reachability under declared max-speed assumptions; no moving-ball interception or space-value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "time_to_arrival_status",
+          "time_to_arrival_reason",
+          "coverage_status",
+          "reachability_model",
+          "momentum_policy"
+        ],
+        "status_semantics": [
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_time_to_location_time_to_arrival_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_loss_anchor",
+      "contract_template_id": "transition",
+      "contract_variant": "transition_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+        "required_provider_all": [
+          "transition_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed possession-role change at a transition anchor; no transition intent, quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_type",
+          "transition_frame_id",
+          "previous_team_role",
+          "new_team_role"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_loss_anchor_transition_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_loss_anchor",
+      "contract_template_id": "transition",
+      "contract_variant": "transition_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+        "required_provider_all": [
+          "transition_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition anchor with optional zone evidence; no counterattack or recovery-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_reason",
+          "transition_frame_id",
+          "zone_status",
+          "zone_name"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_loss_anchor_transition_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "attacking_transition_window",
+      "contract_template_id": "transition_outcome",
+      "contract_variant": "transition_outcome_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Transition-outcome contracts need a transition plus an outcome window.",
+        "required_provider_all": [
+          "transition_anchor",
+          "outcome_window"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition followed by ball-alive retention for a frozen duration; no settled-possession quality or intent.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_frame_id",
+          "outcome_window_status",
+          "minimum_settled_possession_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_attacking_transition_window_transition_outcome_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "attacking_transition_window",
+      "contract_template_id": "transition_outcome",
+      "contract_variant": "transition_outcome_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Transition-outcome contracts need a transition plus an outcome window.",
+        "required_provider_all": [
+          "transition_anchor",
+          "outcome_window"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition and declared outcome window only; no phase quality, causal, or decision claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "outcome_window_status",
+          "outcome_window_start_frame_id",
+          "outcome_window_end_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_attacking_transition_window_transition_outcome_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "hold_width_candidate",
+      "contract_template_id": "velocity",
+      "contract_variant": "velocity_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Velocity contracts need an anchor plus displacement-derived velocity.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "velocity"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Displacement-derived velocity components over a lookback window; no effort, intent, or future trajectory claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "velocity_status",
+          "speed_mps",
+          "velocity_vx_mps",
+          "velocity_vy_mps",
+          "velocity_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_hold_width_candidate_velocity_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "hold_width_candidate",
+      "contract_template_id": "velocity",
+      "contract_variant": "velocity_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Velocity contracts need an anchor plus displacement-derived velocity.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "velocity"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed speed above a declared threshold; no run type, fatigue, or effort-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "velocity_status",
+          "velocity_reason",
+          "speed_mps",
+          "velocity_dt_seconds",
+          "velocity_entity_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "speed_mps",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_hold_width_candidate_velocity_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "through_ball_candidate",
+      "contract_template_id": "action_anchor",
+      "contract_variant": "action_anchor_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+        "required_provider_all": [
+          "action_event_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event/action anchor from synchronized event data; no tactical pattern or intention claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_type",
+          "event_anchor_frame_id",
+          "passer_id",
+          "receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_through_ball_candidate_action_anchor_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "through_ball_candidate",
+      "contract_template_id": "action_anchor",
+      "contract_variant": "action_anchor_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+        "required_provider_all": [
+          "action_event_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed action-event alignment only; no quality, plan, or tactical causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_event_reason",
+          "event_type",
+          "event_frame_offset_ms"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_through_ball_candidate_action_anchor_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "central_progression_sequence",
+      "contract_template_id": "action_chain",
+      "contract_variant": "action_chain_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "action_chain"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed adjacent same-team action sequence under a frozen event-time gap; no tactical pattern, plan, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_status",
+          "chain_length",
+          "first_action_anchor_id",
+          "second_action_anchor_id",
+          "action_gap_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_central_progression_sequence_action_chain_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "central_progression_sequence",
+      "contract_template_id": "action_chain",
+      "contract_variant": "action_chain_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "action_chain"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed ordered action-chain anchors only; no named-combination, role, intent, or quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_status",
+          "action_chain_reason",
+          "maximum_action_gap_seconds",
+          "first_action_anchor_id",
+          "second_action_anchor_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_central_progression_sequence_action_chain_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_beyond_unit",
+      "contract_template_id": "carry",
+      "contract_variant": "carry_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed controlled ball movement with a declared forward component; no skill, opponent-bypass, intent, or value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "carry_forward_progression_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "carry_forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_beyond_unit_carry_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_beyond_unit",
+      "contract_template_id": "carry",
+      "contract_variant": "carry_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed movement-under-control under frozen control thresholds; no dribbling quality, defender-bypass, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carry_reason",
+          "carrier_id",
+          "displacement_m",
+          "control_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "displacement_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_beyond_unit_carry_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pressure_change_after",
+      "contract_template_id": "carry_pressure_change",
+      "contract_variant": "carry_pressure_change_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 5,
+        "reason": "Carry-out-of-pressure requires carry, pressure change, and a generic binary episode join.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode",
+          "pressure_on_carrier",
+          "change_across_anchor",
+          "join_episode_sets"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change",
+          "generic_binary_episode_join"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Nearest-defender distance increased across an observed carry; no pressure-breaking quality, opponent bypass, intent, or causation.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          },
+          {
+            "after_frame_field": "carry_end_frame_id",
+            "before_frame_field": "carry_start_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "none",
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 4.0,
+            "minimum_change_m": 2.0,
+            "status_fields": [
+              "pressure_status"
+            ],
+            "value_family": "pressure_distance",
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "join_status",
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "change_status",
+          "before_value",
+          "after_value",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pressure_change_after_carry_pressure_change_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pressure_change_after",
+      "contract_template_id": "carry_pressure_change",
+      "contract_variant": "carry_pressure_change_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 5,
+        "reason": "Carry-out-of-pressure requires carry, pressure change, and a generic binary episode join.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode",
+          "pressure_on_carrier",
+          "change_across_anchor",
+          "join_episode_sets"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change",
+          "generic_binary_episode_join"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed carry joined to before/after pressure-distance change; no defender-beaten or decision-quality claim.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          },
+          {
+            "after_frame_field": "carry_end_frame_id",
+            "before_frame_field": "carry_start_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "none",
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 4.0,
+            "minimum_change_m": 2.0,
+            "status_fields": [
+              "pressure_status"
+            ],
+            "value_family": "pressure_distance",
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "join_status",
+          "join_reason",
+          "carry_status",
+          "change_status",
+          "before_value_field",
+          "after_value_field",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pressure_change_after_carry_pressure_change_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "team_length",
+      "contract_template_id": "compactness",
+      "contract_variant": "compactness_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "team_compactness"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed team shape dimensions at a declared frame; no tactical quality or role taxonomy.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "team_compactness_status",
+          "team_width_m",
+          "team_depth_m",
+          "team_area_m2",
+          "observed_player_count"
+        ],
+        "status_semantics": [
+          {
+            "field": "team_compactness_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_team_length_compactness_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "team_length",
+      "contract_template_id": "compactness",
+      "contract_variant": "compactness_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "team_compactness"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed compactness threshold relation only; no quality, intent, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "team_compactness_status",
+          "team_compactness_reason",
+          "maximum_team_width_m",
+          "maximum_team_depth_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "team_compactness_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_team_length_compactness_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "line_state_change_after",
+      "contract_template_id": "compactness_change",
+      "contract_variant": "compactness_change_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 3,
+        "reason": "Shape-change contracts need before/after compactness over a shared anchor.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "team_compactness",
+          "change_across_anchor"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed team-width change across a shared action anchor; no tactical quality, causation, or intent claim.",
+        "composition_constraints": [
+          {
+            "after_frame_field": "controlled_reception_frame_id",
+            "before_frame_field": "physical_release_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "team_compactness_status",
+            "change_mode": "absolute_delta_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 80.0,
+            "minimum_change_m": 4.0,
+            "status_fields": [
+              "team_compactness_status"
+            ],
+            "value_family": "team_width",
+            "value_fields": [
+              "team_width_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "change_status",
+          "before_value",
+          "after_value",
+          "delta_value",
+          "minimum_change_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "change_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_line_state_change_after_compactness_change_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "line_state_change_after",
+      "contract_template_id": "compactness_change",
+      "contract_variant": "compactness_change_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 3,
+        "reason": "Shape-change contracts need before/after compactness over a shared anchor.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "team_compactness",
+          "change_across_anchor"
+        ],
+        "required_rule_all": [
+          "generic_before_after_change"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed before/after compactness delta only; no shape-quality or coaching interpretation.",
+        "composition_constraints": [
+          {
+            "after_frame_field": "controlled_reception_frame_id",
+            "before_frame_field": "physical_release_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "team_compactness_status",
+            "change_mode": "absolute_delta_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 80.0,
+            "minimum_change_m": 4.0,
+            "status_fields": [
+              "team_compactness_status"
+            ],
+            "value_family": "team_width",
+            "value_fields": [
+              "team_width_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "change_status",
+          "change_reason",
+          "before_value_field",
+          "after_value_field",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "change_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_line_state_change_after_compactness_change_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "receive_between_units",
+      "contract_template_id": "controlled_pass",
+      "contract_variant": "controlled_pass_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+        "required_provider_all": [
+          "controlled_pass_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event-linked controlled pass with tracking-confirmed endpoints; no pass quality or intent claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "controlled_pass_status",
+          "pass_episode_id",
+          "physical_release_frame_id",
+          "controlled_reception_frame_id",
+          "receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "controlled_pass_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_receive_between_units_controlled_pass_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "receive_between_units",
+      "contract_template_id": "controlled_pass",
+      "contract_variant": "controlled_pass_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+        "required_provider_all": [
+          "controlled_pass_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed controlled pass episode and forward progression only; no tactical or probabilistic claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "controlled_pass_status",
+          "forward_progression_m",
+          "release_detection_status",
+          "controlled_reception_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "controlled_pass_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_receive_between_units_controlled_pass_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "distance_to_goal",
+      "contract_template_id": "distance",
+      "contract_variant": "distance_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "pairwise_distance"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed pairwise distance at a declared frame; no availability, intent, or tactical value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pairwise_distance_status",
+          "distance_m",
+          "entity_a_id",
+          "entity_b_id",
+          "distance_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pairwise_distance_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_distance_to_goal_distance_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "distance_to_goal",
+      "contract_template_id": "distance",
+      "contract_variant": "distance_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "pairwise_distance"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed distance threshold relation only; no pressure or marking assignment claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pairwise_distance_status",
+          "pairwise_distance_reason",
+          "distance_m",
+          "maximum_distance_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "pairwise_distance_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_distance_to_goal_distance_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "line_drop_episode",
+      "contract_template_id": "line",
+      "contract_variant": "line_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+        "required_provider_any": [
+          [
+            "multi_line_model",
+            "defensive_line_model"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed geometric line rank from tracked defenders; no tactical role taxonomy or definitive line-break claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "multi_line_status",
+          "observed_line_count",
+          "target_line_rank",
+          "line_x_m",
+          "defensive_line_player_ids"
+        ],
+        "status_semantics": [
+          {
+            "field": "multi_line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_line_drop_episode_line_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "line_drop_episode",
+      "contract_template_id": "line",
+      "contract_variant": "line_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+        "required_provider_any": [
+          [
+            "multi_line_model",
+            "defensive_line_model"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed defensive-line geometry only; no midfield/backline role label, intent, or quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "line_status",
+          "line_x_m",
+          "line_compactness_m",
+          "defenders_goal_side_count"
+        ],
+        "status_semantics": [
+          {
+            "field": "line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_line_drop_episode_line_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "numerical_inferiority_episode",
+      "contract_template_id": "local_number",
+      "contract_variant": "local_number_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+        "required_provider_all": [
+          "local_number_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed local player counts around a reference point; no pressure, role, or support-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "local_number_status",
+          "perspective_count",
+          "defending_count",
+          "local_number_difference",
+          "radius_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_numerical_inferiority_episode_local_number_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "numerical_inferiority_episode",
+      "contract_template_id": "local_number",
+      "contract_variant": "local_number_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+        "required_provider_all": [
+          "local_number_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed local numerical relation with coverage evidence; no tactical role or superiority-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "local_number_status",
+          "local_number_reason",
+          "perspective_in_region_player_ids",
+          "defending_in_region_player_ids",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_numerical_inferiority_episode_local_number_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "nearest_defender_relation",
+      "contract_template_id": "pressure",
+      "contract_variant": "pressure_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "pressure_on_carrier"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed nearest-defender distance, closing speed, and approach angle; no defender intent, pressure quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "nearest_defender_id",
+          "nearest_defender_distance_m",
+          "closing_speed_mps",
+          "approach_angle_degrees",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_nearest_defender_relation_pressure_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "nearest_defender_relation",
+      "contract_template_id": "pressure",
+      "contract_variant": "pressure_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "pressure_on_carrier"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed carrier-pressure components under declared thresholds; no effort, intent, quality, or decision-value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "pressure_reason",
+          "carrier_id",
+          "pressure_frame_id",
+          "pressure_duration_seconds",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_nearest_defender_relation_pressure_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "underload_relation",
+      "contract_template_id": "support",
+      "contract_variant": "support_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+        "required_provider_all": [
+          "support_arrival_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed teammate support arrival under a declared region/window; no support quality, intent, or optimality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_region_mode",
+          "support_anchor_frame_id",
+          "supporting_player_ids",
+          "maximum_arrival_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_underload_relation_support_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "underload_relation",
+      "contract_template_id": "support",
+      "contract_variant": "support_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+        "required_provider_all": [
+          "support_arrival_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed support timing and coverage only; no communication, role, or tactical correctness claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_arrival_reason",
+          "first_arrival_seconds_after_anchor",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_underload_relation_support_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "switch_of_play_action",
+      "contract_template_id": "switch",
+      "contract_variant": "switch_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Switch contracts need a legitimate action/pass anchor plus switch geometry.",
+        "required_provider_all": [
+          "switch_of_play"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed lateral ball movement across declared thresholds; no tactical intent or success-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "switch_status",
+          "lateral_displacement_m",
+          "release_frame_id",
+          "reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "switch_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_switch_of_play_action_switch_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "switch_of_play_action",
+      "contract_template_id": "switch",
+      "contract_variant": "switch_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Switch contracts need a legitimate action/pass anchor plus switch geometry.",
+        "required_provider_all": [
+          "switch_of_play"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed switch-of-play geometry only; no claim that it was planned, optimal, or tactically correct.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "switch_status",
+          "switch_reason",
+          "release_lateral_side",
+          "reception_lateral_side",
+          "switch_duration_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "switch_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_switch_of_play_action_switch_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "regain_location",
+      "contract_template_id": "transition",
+      "contract_variant": "transition_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+        "required_provider_all": [
+          "transition_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed possession-role change at a transition anchor; no transition intent, quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_type",
+          "transition_frame_id",
+          "previous_team_role",
+          "new_team_role"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_regain_location_transition_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "regain_location",
+      "contract_template_id": "transition",
+      "contract_variant": "transition_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+        "required_provider_all": [
+          "transition_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition anchor with optional zone evidence; no counterattack or recovery-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_reason",
+          "transition_frame_id",
+          "zone_status",
+          "zone_name"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_regain_location_transition_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_retained_for",
+      "contract_template_id": "transition_outcome",
+      "contract_variant": "transition_outcome_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Transition-outcome contracts need a transition plus an outcome window.",
+        "required_provider_all": [
+          "transition_anchor",
+          "outcome_window"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition followed by ball-alive retention for a frozen duration; no settled-possession quality or intent.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_frame_id",
+          "outcome_window_status",
+          "minimum_settled_possession_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_retained_for_transition_outcome_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_retained_for",
+      "contract_template_id": "transition_outcome",
+      "contract_variant": "transition_outcome_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Transition-outcome contracts need a transition plus an outcome window.",
+        "required_provider_all": [
+          "transition_anchor",
+          "outcome_window"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition and declared outcome window only; no phase quality, causal, or decision claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "outcome_window_status",
+          "outcome_window_start_frame_id",
+          "outcome_window_end_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_retained_for_transition_outcome_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "relative_velocity",
+      "contract_template_id": "velocity",
+      "contract_variant": "velocity_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Velocity contracts need an anchor plus displacement-derived velocity.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "velocity"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Displacement-derived velocity components over a lookback window; no effort, intent, or future trajectory claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "velocity_status",
+          "speed_mps",
+          "velocity_vx_mps",
+          "velocity_vy_mps",
+          "velocity_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_relative_velocity_velocity_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "relative_velocity",
+      "contract_template_id": "velocity",
+      "contract_variant": "velocity_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Velocity contracts need an anchor plus displacement-derived velocity.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "velocity"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed speed above a declared threshold; no run type, fatigue, or effort-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "velocity_status",
+          "velocity_reason",
+          "speed_mps",
+          "velocity_dt_seconds",
+          "velocity_entity_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "speed_mps",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_relative_velocity_velocity_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "action_ball_trajectory",
+      "contract_template_id": "action_anchor",
+      "contract_variant": "action_anchor_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+        "required_provider_all": [
+          "action_event_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event/action anchor from synchronized event data; no tactical pattern or intention claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_type",
+          "event_anchor_frame_id",
+          "passer_id",
+          "receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_action_ball_trajectory_action_anchor_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "action_ball_trajectory",
+      "contract_template_id": "action_anchor",
+      "contract_variant": "action_anchor_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+        "required_provider_all": [
+          "action_event_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed action-event alignment only; no quality, plan, or tactical causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_event_reason",
+          "event_type",
+          "event_frame_offset_ms"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_action_ball_trajectory_action_anchor_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_sequence",
+      "contract_template_id": "action_chain",
+      "contract_variant": "action_chain_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "action_chain"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed adjacent same-team action sequence under a frozen event-time gap; no tactical pattern, plan, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_status",
+          "chain_length",
+          "first_action_anchor_id",
+          "second_action_anchor_id",
+          "action_gap_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_sequence_action_chain_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_sequence",
+      "contract_template_id": "action_chain",
+      "contract_variant": "action_chain_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "action_chain"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed ordered action-chain anchors only; no named-combination, role, intent, or quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_status",
+          "action_chain_reason",
+          "maximum_action_gap_seconds",
+          "first_action_anchor_id",
+          "second_action_anchor_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_sequence_action_chain_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_progression",
+      "contract_template_id": "carry",
+      "contract_variant": "carry_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed controlled ball movement with a declared forward component; no skill, opponent-bypass, intent, or value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "carry_forward_progression_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "carry_forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_progression_carry_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_progression",
+      "contract_template_id": "carry",
+      "contract_variant": "carry_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed movement-under-control under frozen control thresholds; no dribbling quality, defender-bypass, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carry_reason",
+          "carrier_id",
+          "displacement_m",
+          "control_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "displacement_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_progression_carry_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_depth",
+      "contract_template_id": "compactness",
+      "contract_variant": "compactness_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "team_compactness"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed team shape dimensions at a declared frame; no tactical quality or role taxonomy.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "team_compactness_status",
+          "team_width_m",
+          "team_depth_m",
+          "team_area_m2",
+          "observed_player_count"
+        ],
+        "status_semantics": [
+          {
+            "field": "team_compactness_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_depth_compactness_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_depth",
+      "contract_template_id": "compactness",
+      "contract_variant": "compactness_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Shape contracts need an anchor plus team compactness evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "team_compactness"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed compactness threshold relation only; no quality, intent, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "team_compactness_status",
+          "team_compactness_reason",
+          "maximum_team_width_m",
+          "maximum_team_depth_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "team_compactness_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_depth_compactness_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_length",
+      "contract_template_id": "controlled_pass",
+      "contract_variant": "controlled_pass_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+        "required_provider_all": [
+          "controlled_pass_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event-linked controlled pass with tracking-confirmed endpoints; no pass quality or intent claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "controlled_pass_status",
+          "pass_episode_id",
+          "physical_release_frame_id",
+          "controlled_reception_frame_id",
+          "receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "controlled_pass_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_length_controlled_pass_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_length",
+      "contract_template_id": "controlled_pass",
+      "contract_variant": "controlled_pass_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+        "required_provider_all": [
+          "controlled_pass_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed controlled pass episode and forward progression only; no tactical or probabilistic claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "controlled_pass_status",
+          "forward_progression_m",
+          "release_detection_status",
+          "controlled_reception_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "controlled_pass_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_length_controlled_pass_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "unit_spacing",
+      "contract_template_id": "line",
+      "contract_variant": "line_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+        "required_provider_any": [
+          [
+            "multi_line_model",
+            "defensive_line_model"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed geometric line rank from tracked defenders; no tactical role taxonomy or definitive line-break claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "multi_line_status",
+          "observed_line_count",
+          "target_line_rank",
+          "line_x_m",
+          "defensive_line_player_ids"
+        ],
+        "status_semantics": [
+          {
+            "field": "multi_line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_unit_spacing_line_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "unit_spacing",
+      "contract_template_id": "line",
+      "contract_variant": "line_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+        "required_provider_any": [
+          [
+            "multi_line_model",
+            "defensive_line_model"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed defensive-line geometry only; no midfield/backline role label, intent, or quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "line_status",
+          "line_x_m",
+          "line_compactness_m",
+          "defenders_goal_side_count"
+        ],
+        "status_semantics": [
+          {
+            "field": "line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_unit_spacing_line_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "transition_overload",
+      "contract_template_id": "local_number",
+      "contract_variant": "local_number_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+        "required_provider_all": [
+          "local_number_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed local player counts around a reference point; no pressure, role, or support-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "local_number_status",
+          "perspective_count",
+          "defending_count",
+          "local_number_difference",
+          "radius_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_transition_overload_local_number_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "transition_overload",
+      "contract_template_id": "local_number",
+      "contract_variant": "local_number_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+        "required_provider_all": [
+          "local_number_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed local numerical relation with coverage evidence; no tactical role or superiority-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "local_number_status",
+          "local_number_reason",
+          "perspective_in_region_player_ids",
+          "defending_in_region_player_ids",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_transition_overload_local_number_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defensive_reaction_to_pass",
+      "contract_template_id": "pressure",
+      "contract_variant": "pressure_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "pressure_on_carrier"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed nearest-defender distance, closing speed, and approach angle; no defender intent, pressure quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "nearest_defender_id",
+          "nearest_defender_distance_m",
+          "closing_speed_mps",
+          "approach_angle_degrees",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defensive_reaction_to_pass_pressure_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defensive_reaction_to_pass",
+      "contract_template_id": "pressure",
+      "contract_variant": "pressure_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "pressure_on_carrier"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed carrier-pressure components under declared thresholds; no effort, intent, quality, or decision-value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "pressure_reason",
+          "carrier_id",
+          "pressure_frame_id",
+          "pressure_duration_seconds",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defensive_reaction_to_pass_pressure_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "two_v_one_relation",
+      "contract_template_id": "support",
+      "contract_variant": "support_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+        "required_provider_all": [
+          "support_arrival_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed teammate support arrival under a declared region/window; no support quality, intent, or optimality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_region_mode",
+          "support_anchor_frame_id",
+          "supporting_player_ids",
+          "maximum_arrival_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_two_v_one_relation_support_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "two_v_one_relation",
+      "contract_template_id": "support",
+      "contract_variant": "support_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+        "required_provider_all": [
+          "support_arrival_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed support timing and coverage only; no communication, role, or tactical correctness claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_arrival_reason",
+          "first_arrival_seconds_after_anchor",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_two_v_one_relation_support_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "loss_location",
+      "contract_template_id": "transition",
+      "contract_variant": "transition_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+        "required_provider_all": [
+          "transition_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed possession-role change at a transition anchor; no transition intent, quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_type",
+          "transition_frame_id",
+          "previous_team_role",
+          "new_team_role"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_loss_location_transition_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "loss_location",
+      "contract_template_id": "transition",
+      "contract_variant": "transition_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+        "required_provider_all": [
+          "transition_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition anchor with optional zone evidence; no counterattack or recovery-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_reason",
+          "transition_frame_id",
+          "zone_status",
+          "zone_name"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_loss_location_transition_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "penetration_retention",
+      "contract_template_id": "transition_outcome",
+      "contract_variant": "transition_outcome_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Transition-outcome contracts need a transition plus an outcome window.",
+        "required_provider_all": [
+          "transition_anchor",
+          "outcome_window"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition followed by ball-alive retention for a frozen duration; no settled-possession quality or intent.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_frame_id",
+          "outcome_window_status",
+          "minimum_settled_possession_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_penetration_retention_transition_outcome_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "penetration_retention",
+      "contract_template_id": "transition_outcome",
+      "contract_variant": "transition_outcome_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Transition-outcome contracts need a transition plus an outcome window.",
+        "required_provider_all": [
+          "transition_anchor",
+          "outcome_window"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition and declared outcome window only; no phase quality, causal, or decision claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "outcome_window_status",
+          "outcome_window_start_frame_id",
+          "outcome_window_end_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_penetration_retention_transition_outcome_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_speed_profile",
+      "contract_template_id": "velocity",
+      "contract_variant": "velocity_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Velocity contracts need an anchor plus displacement-derived velocity.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "velocity"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Displacement-derived velocity components over a lookback window; no effort, intent, or future trajectory claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "velocity_status",
+          "speed_mps",
+          "velocity_vx_mps",
+          "velocity_vy_mps",
+          "velocity_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_speed_profile_velocity_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_speed_profile",
+      "contract_template_id": "velocity",
+      "contract_variant": "velocity_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Velocity contracts need an anchor plus displacement-derived velocity.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "velocity"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed speed above a declared threshold; no run type, fatigue, or effort-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "velocity_status",
+          "velocity_reason",
+          "speed_mps",
+          "velocity_dt_seconds",
+          "velocity_entity_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "speed_mps",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_speed_profile_velocity_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "restart_taken_anchor",
+      "contract_template_id": "action_anchor",
+      "contract_variant": "action_anchor_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+        "required_provider_all": [
+          "action_event_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event/action anchor from synchronized event data; no tactical pattern or intention claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_type",
+          "event_anchor_frame_id",
+          "passer_id",
+          "receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_restart_taken_anchor_action_anchor_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "restart_taken_anchor",
+      "contract_template_id": "action_anchor",
+      "contract_variant": "action_anchor_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Single synchronized action anchor is the intended minimum for this contract.",
+        "required_provider_all": [
+          "action_event_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed action-event alignment only; no quality, plan, or tactical causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_event_reason",
+          "event_type",
+          "event_frame_offset_ms"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_restart_taken_anchor_action_anchor_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "outside_inside_sequence",
+      "contract_template_id": "action_chain",
+      "contract_variant": "action_chain_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "action_chain"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed adjacent same-team action sequence under a frozen event-time gap; no tactical pattern, plan, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_status",
+          "chain_length",
+          "first_action_anchor_id",
+          "second_action_anchor_id",
+          "action_gap_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_outside_inside_sequence_action_chain_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "outside_inside_sequence",
+      "contract_template_id": "action_chain",
+      "contract_variant": "action_chain_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "A sequence contract must be satisfied by an ordered action chain, not one action anchor.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "action_chain"
+        ]
+      },
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed ordered action-chain anchors only; no named-combination, role, intent, or quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_status",
+          "action_chain_reason",
+          "maximum_action_gap_seconds",
+          "first_action_anchor_id",
+          "second_action_anchor_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_outside_inside_sequence_action_chain_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_episode",
+      "contract_template_id": "carry",
+      "contract_variant": "carry_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed controlled ball movement with a declared forward component; no skill, opponent-bypass, intent, or value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "carry_forward_progression_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "carry_forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_episode_carry_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_episode",
+      "contract_template_id": "carry",
+      "contract_variant": "carry_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Carry contracts inherit controlled-pass anchoring before carry evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "carry_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed movement-under-control under frozen control thresholds; no dribbling quality, defender-bypass, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carry_reason",
+          "carrier_id",
+          "displacement_m",
+          "control_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "displacement_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_episode_carry_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "opponents_bypassed_by_action",
+      "contract_template_id": "controlled_pass",
+      "contract_variant": "controlled_pass_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+        "required_provider_all": [
+          "controlled_pass_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event-linked controlled pass with tracking-confirmed endpoints; no pass quality or intent claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "controlled_pass_status",
+          "pass_episode_id",
+          "physical_release_frame_id",
+          "controlled_reception_frame_id",
+          "receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "controlled_pass_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_opponents_bypassed_by_action_controlled_pass_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "opponents_bypassed_by_action",
+      "contract_template_id": "controlled_pass",
+      "contract_variant": "controlled_pass_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Controlled-pass contracts are satisfied by the controlled pass episode primitive.",
+        "required_provider_all": [
+          "controlled_pass_episode"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed controlled pass episode and forward progression only; no tactical or probabilistic claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "controlled_pass_status",
+          "forward_progression_m",
+          "release_detection_status",
+          "controlled_reception_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "controlled_pass_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_opponents_bypassed_by_action_controlled_pass_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "player_ball_proximity",
+      "contract_template_id": "distance",
+      "contract_variant": "distance_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "pairwise_distance"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed pairwise distance at a declared frame; no availability, intent, or tactical value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pairwise_distance_status",
+          "distance_m",
+          "entity_a_id",
+          "entity_b_id",
+          "distance_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pairwise_distance_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_player_ball_proximity_distance_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "player_ball_proximity",
+      "contract_template_id": "distance",
+      "contract_variant": "distance_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Distance contracts need an anchor plus pairwise-distance evaluation.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "pairwise_distance"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed distance threshold relation only; no pressure or marking assignment claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pairwise_distance_status",
+          "pairwise_distance_reason",
+          "distance_m",
+          "maximum_distance_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "pairwise_distance_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_player_ball_proximity_distance_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "line_shift_episode",
+      "contract_template_id": "line",
+      "contract_variant": "line_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+        "required_provider_any": [
+          [
+            "multi_line_model",
+            "defensive_line_model"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed geometric line rank from tracked defenders; no tactical role taxonomy or definitive line-break claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "multi_line_status",
+          "observed_line_count",
+          "target_line_rank",
+          "line_x_m",
+          "defensive_line_player_ids"
+        ],
+        "status_semantics": [
+          {
+            "field": "multi_line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_line_shift_episode_line_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "line_shift_episode",
+      "contract_template_id": "line",
+      "contract_variant": "line_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Line contracts need an observed line model, usually anchored to an event frame.",
+        "required_provider_any": [
+          [
+            "multi_line_model",
+            "defensive_line_model"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed defensive-line geometry only; no midfield/backline role label, intent, or quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "line_status",
+          "line_x_m",
+          "line_compactness_m",
+          "defenders_goal_side_count"
+        ],
+        "status_semantics": [
+          {
+            "field": "line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_line_shift_episode_line_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "local_number_balance",
+      "contract_template_id": "local_number",
+      "contract_variant": "local_number_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+        "required_provider_all": [
+          "local_number_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed local player counts around a reference point; no pressure, role, or support-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "local_number_status",
+          "perspective_count",
+          "defending_count",
+          "local_number_difference",
+          "radius_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_local_number_balance_local_number_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "local_number_balance",
+      "contract_template_id": "local_number",
+      "contract_variant": "local_number_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Local-number contracts need a legitimate anchor plus local player counts.",
+        "required_provider_all": [
+          "local_number_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed local numerical relation with coverage evidence; no tactical role or superiority-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "local_number_status",
+          "local_number_reason",
+          "perspective_in_region_player_ids",
+          "defending_in_region_player_ids",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_local_number_balance_local_number_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "press_release",
+      "contract_template_id": "pressure",
+      "contract_variant": "pressure_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "pressure_on_carrier"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed nearest-defender distance, closing speed, and approach angle; no defender intent, pressure quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "nearest_defender_id",
+          "nearest_defender_distance_m",
+          "closing_speed_mps",
+          "approach_angle_degrees",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_press_release_pressure_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "press_release",
+      "contract_template_id": "pressure",
+      "contract_variant": "pressure_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Pressure contracts need a carrier/reception anchor plus pressure evaluation.",
+        "required_provider_all": [
+          "controlled_pass_episode",
+          "pressure_on_carrier"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed carrier-pressure components under declared thresholds; no effort, intent, quality, or decision-value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "pressure_reason",
+          "carrier_id",
+          "pressure_frame_id",
+          "pressure_duration_seconds",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_press_release_pressure_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "penetration_support_response",
+      "contract_template_id": "support",
+      "contract_variant": "support_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+        "required_provider_all": [
+          "support_arrival_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed teammate support arrival under a declared region/window; no support quality, intent, or optimality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_region_mode",
+          "support_anchor_frame_id",
+          "supporting_player_ids",
+          "maximum_arrival_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_penetration_support_response_support_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "penetration_support_response",
+      "contract_template_id": "support",
+      "contract_variant": "support_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Support contracts need a legitimate anchor plus support-arrival evaluation.",
+        "required_provider_all": [
+          "support_arrival_relation"
+        ],
+        "required_provider_any": [
+          [
+            "action_event_anchor",
+            "controlled_pass_episode",
+            "transition_anchor"
+          ]
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed support timing and coverage only; no communication, role, or tactical correctness claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_arrival_reason",
+          "first_arrival_seconds_after_anchor",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_penetration_support_response_support_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "first_action_after_regain",
+      "contract_template_id": "transition",
+      "contract_variant": "transition_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+        "required_provider_all": [
+          "transition_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed possession-role change at a transition anchor; no transition intent, quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_type",
+          "transition_frame_id",
+          "previous_team_role",
+          "new_team_role"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_first_action_after_regain_transition_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "first_action_after_regain",
+      "contract_template_id": "transition",
+      "contract_variant": "transition_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 1,
+        "reason": "Transition contracts are satisfied by a genuine possession-change anchor.",
+        "required_provider_all": [
+          "transition_anchor"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition anchor with optional zone evidence; no counterattack or recovery-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_reason",
+          "transition_frame_id",
+          "zone_status",
+          "zone_name"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_first_action_after_regain_transition_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defensive_transition_window",
+      "contract_template_id": "transition_outcome",
+      "contract_variant": "transition_outcome_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Transition-outcome contracts need a transition plus an outcome window.",
+        "required_provider_all": [
+          "transition_anchor",
+          "outcome_window"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition followed by ball-alive retention for a frozen duration; no settled-possession quality or intent.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_frame_id",
+          "outcome_window_status",
+          "minimum_settled_possession_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defensive_transition_window_transition_outcome_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defensive_transition_window",
+      "contract_template_id": "transition_outcome",
+      "contract_variant": "transition_outcome_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Transition-outcome contracts need a transition plus an outcome window.",
+        "required_provider_all": [
+          "transition_anchor",
+          "outcome_window"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition and declared outcome window only; no phase quality, causal, or decision claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "outcome_window_status",
+          "outcome_window_start_frame_id",
+          "outcome_window_end_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defensive_transition_window_transition_outcome_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "movement_toward_ball",
+      "contract_template_id": "velocity",
+      "contract_variant": "velocity_a",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Velocity contracts need an anchor plus displacement-derived velocity.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "velocity"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Displacement-derived velocity components over a lookback window; no effort, intent, or future trajectory claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "velocity_status",
+          "speed_mps",
+          "velocity_vx_mps",
+          "velocity_vy_mps",
+          "velocity_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_movement_toward_ball_velocity_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "movement_toward_ball",
+      "contract_template_id": "velocity",
+      "contract_variant": "velocity_b",
+      "fidelity_expectation": {
+        "minimum_unique_provider_count": 2,
+        "reason": "Velocity contracts need an anchor plus displacement-derived velocity.",
+        "required_provider_all": [
+          "action_event_anchor",
+          "velocity"
+        ]
+      },
+      "held_out": true,
+      "sample_role": "blind_probe",
+      "target_contract": {
+        "claim_boundary": "Observed speed above a declared threshold; no run type, fatigue, or effort-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "velocity_status",
+          "velocity_reason",
+          "speed_mps",
+          "velocity_dt_seconds",
+          "velocity_entity_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "speed_mps",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_movement_toward_ball_velocity_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_completion_probability",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_completion_probability_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_completion_probability",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_completion_probability_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goalkeeper_set_position_proxy",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "body_orientation"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goalkeeper_set_position_proxy",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "body_orientation"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "expected_pass_completion",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_expected_pass_completion_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "expected_pass_completion",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_expected_pass_completion_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shot_expected_goal",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shot_expected_goal_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shot_expected_goal",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shot_expected_goal_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goal_kick_build_structure",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goal_kick_build_structure_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goal_kick_build_structure",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goal_kick_build_structure_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "marking_assignment_candidate",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_marking_assignment_candidate_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "marking_assignment_candidate",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_marking_assignment_candidate_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "cover_shadow_region",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_cover_shadow_region_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "cover_shadow_region",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_cover_shadow_region_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defender_bypassed_by_carry",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defender_bypassed_by_carry_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defender_bypassed_by_carry",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defender_bypassed_by_carry_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "bounce_pass_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "contract_variant": "known_good_identity_return",
+      "held_out": true,
+      "known_good_control_expected_failure": "missing_constraint",
+      "known_good_control_family": "identity_constrained_combination",
+      "sample_role": "known_good_control",
+      "target_contract": {
+        "claim_boundary": "Known-good identity-constrained combination contract: observed pass-chain where the terminal receiver is the original input passer. No planned combination, wall-pass intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "pass_chain_status",
+          "input_pass_episode_id",
+          "relay_pass_episode_id",
+          "input_passer_id",
+          "relay_player_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_bounce_pass_sequence_known_good_identity_return_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "up_back_through_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "contract_variant": "known_good_identity_return",
+      "held_out": true,
+      "known_good_control_expected_failure": "missing_constraint",
+      "known_good_control_family": "identity_constrained_combination",
+      "sample_role": "known_good_control",
+      "target_contract": {
+        "claim_boundary": "Known-good identity-constrained combination contract: observed pass-chain where the terminal receiver is the original input passer. No planned combination, wall-pass intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "pass_chain_status",
+          "input_pass_episode_id",
+          "relay_pass_episode_id",
+          "input_passer_id",
+          "relay_player_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_up_back_through_sequence_known_good_identity_return_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "give_and_go_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "contract_variant": "known_good_identity_return",
+      "held_out": true,
+      "known_good_control_expected_failure": "missing_constraint",
+      "known_good_control_family": "identity_constrained_combination",
+      "sample_role": "known_good_control",
+      "target_contract": {
+        "claim_boundary": "Known-good identity-constrained combination contract: observed pass-chain where the terminal receiver is the original input passer. No planned combination, wall-pass intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "pass_chain_status",
+          "input_pass_episode_id",
+          "relay_pass_episode_id",
+          "input_passer_id",
+          "relay_player_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_give_and_go_sequence_known_good_identity_return_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "wall_pass_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "contract_variant": "known_good_identity_return",
+      "held_out": true,
+      "known_good_control_expected_failure": "missing_constraint",
+      "known_good_control_family": "identity_constrained_combination",
+      "sample_role": "known_good_control",
+      "target_contract": {
+        "claim_boundary": "Known-good identity-constrained combination contract: observed pass-chain where the terminal receiver is the original input passer. No planned combination, wall-pass intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "pass_chain_status",
+          "input_pass_episode_id",
+          "relay_pass_episode_id",
+          "input_passer_id",
+          "relay_player_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_wall_pass_sequence_known_good_identity_return_v0"
+    }
+  ]
+}

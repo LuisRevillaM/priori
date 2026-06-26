@@ -445,3 +445,35 @@ compiler-search-supported-broad-draw:
 	TQE_ATLAS_SCALE_PREP_REPORT=artifacts/autonomous/compiler-supported-broad-draw-prep-report.json \
 	TQE_ATLAS_SCALE_ASSESS_REPORT=artifacts/autonomous/compiler-supported-broad-draw-assessment-report.json \
 	$(PYTHON) scripts/coverage_map/atlas_scale_contract_sample.py assess
+
+.PHONY: compiler-search-supported-blind-draw
+compiler-search-supported-blind-draw:
+	TQE_ATLAS_SCALE_SAMPLE_POLICY=supported_blind_draw_with_calibration_v0 \
+	TQE_ATLAS_SCALE_BLIND_SUPPORTED_DRAW=1 \
+	TQE_ATLAS_SCALE_BLIND_CONCEPTS=64 \
+	TQE_ATLAS_SCALE_INCLUDE_KNOWN_GOOD_CONTROLS=1 \
+	TQE_ATLAS_SCALE_OUT_DIR=generated/compiler-search-supported-blind-draw \
+	TQE_ATLAS_SCALE_TARGETS_FILENAME=supported-blind-draw-targets.v0.json \
+	TQE_ATLAS_SCALE_LEDGER_FILENAME=supported-blind-draw-coverage-ledger.json \
+	TQE_ATLAS_SCALE_PREP_REPORT=artifacts/autonomous/compiler-supported-blind-draw-prep-report.json \
+	TQE_ATLAS_SCALE_ASSESS_REPORT=artifacts/autonomous/compiler-supported-blind-draw-assessment-report.json \
+	$(PYTHON) scripts/coverage_map/atlas_scale_contract_sample.py prepare
+	TQE_SEARCH_WORKERS=4 \
+	TQE_SEARCH_SHARED_NODE_CACHE=1 \
+	TQE_SEARCH_PERSISTENT_NODE_CACHE=1 \
+	TQE_SEARCH_TARGETS=generated/compiler-search-supported-blind-draw/supported-blind-draw-targets.v0.json \
+	TQE_SEARCH_LEDGER=generated/compiler-search-supported-blind-draw/supported-blind-draw-coverage-ledger.json \
+	TQE_SEARCH_OUT_DIR=generated/compiler-search-supported-blind-draw/search-run \
+	TQE_SEARCH_REPORT=artifacts/autonomous/compiler-supported-blind-draw-search-report.json \
+	TQE_SEARCH_UPDATE_LEDGER=0 \
+	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	TQE_ATLAS_SCALE_SAMPLE_POLICY=supported_blind_draw_with_calibration_v0 \
+	TQE_ATLAS_SCALE_BLIND_SUPPORTED_DRAW=1 \
+	TQE_ATLAS_SCALE_BLIND_CONCEPTS=64 \
+	TQE_ATLAS_SCALE_INCLUDE_KNOWN_GOOD_CONTROLS=1 \
+	TQE_ATLAS_SCALE_OUT_DIR=generated/compiler-search-supported-blind-draw \
+	TQE_ATLAS_SCALE_TARGETS_FILENAME=supported-blind-draw-targets.v0.json \
+	TQE_ATLAS_SCALE_LEDGER_FILENAME=supported-blind-draw-coverage-ledger.json \
+	TQE_ATLAS_SCALE_PREP_REPORT=artifacts/autonomous/compiler-supported-blind-draw-prep-report.json \
+	TQE_ATLAS_SCALE_ASSESS_REPORT=artifacts/autonomous/compiler-supported-blind-draw-assessment-report.json \
+	$(PYTHON) scripts/coverage_map/atlas_scale_contract_sample.py assess
