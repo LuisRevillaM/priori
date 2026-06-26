@@ -71,6 +71,13 @@ SYNTHESIZER_STRATEGY = f"bounded_backward_search.v0.1.{SEARCH_BUDGET_LABEL}"
 MATCH_IDS = ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"]
 
 SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
+SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
+    "before_after_same_anchor",
+    "distinct_entity_fields",
+    "frame_alignment",
+    "same_anchor_identity",
+    "temporal_order",
+}
 EXCLUDED_CATALOG_REFS = {
     "controlled_line_break_episode",
     "relation_destination_entry_classification",
@@ -491,6 +498,17 @@ def evaluate_target(
             message="Target requires unavailable data/model modalities.",
             target_contract_hash=target_hash,
             failure_details={"unsupported_modalities": unsupported_modalities},
+        )
+    unsupported_constraints = unsupported_composition_constraints(contract)
+    if unsupported_constraints:
+        return row_result(
+            target=target,
+            row=row,
+            result="not_compiler_reachable",
+            failure_taxonomy="missing_constraint",
+            message="Target requires composition constraints the search cannot yet enforce.",
+            target_contract_hash=target_hash,
+            failure_details={"unsupported_composition_constraints": unsupported_constraints},
         )
 
     context = SearchContext(catalog=catalog, target_contract=contract)
@@ -1335,6 +1353,21 @@ def required_target_fields(contract: dict[str, Any]) -> set[str]:
         if field := item.get("field"):
             fields.add(str(field))
     return fields
+
+
+def unsupported_composition_constraints(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    unsupported: list[dict[str, Any]] = []
+    constraints = contract.get("composition_constraints", [])
+    if not isinstance(constraints, list):
+        return [{"kind": "<invalid>", "reason": "composition_constraints must be a list"}]
+    for index, constraint in enumerate(constraints):
+        if not isinstance(constraint, dict):
+            unsupported.append({"index": index, "kind": "<invalid>", "reason": "constraint must be an object"})
+            continue
+        kind = str(constraint.get("kind", ""))
+        if kind not in SUPPORTED_COMPOSITION_CONSTRAINT_KINDS:
+            unsupported.append({"index": index, "kind": kind or "<missing>"})
+    return unsupported
 
 
 def assemble_document(*, target: dict[str, Any], build: BuildResult) -> dict[str, Any]:

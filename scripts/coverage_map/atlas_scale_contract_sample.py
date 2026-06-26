@@ -24,16 +24,24 @@ from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[2]
 COVERAGE_LEDGER = ROOT / "generated" / "coverage-map.json"
-OUT_DIR = ROOT / "generated" / "compiler-search-atlas-scale-sample"
-TARGETS_OUT = OUT_DIR / "atlas-scale-targets.v0.json"
-LEDGER_OUT = OUT_DIR / "atlas-scale-coverage-ledger.json"
+OUT_DIR = ROOT / os.environ.get("TQE_ATLAS_SCALE_OUT_DIR", "generated/compiler-search-atlas-scale-sample")
+TARGETS_OUT = OUT_DIR / os.environ.get("TQE_ATLAS_SCALE_TARGETS_FILENAME", "atlas-scale-targets.v0.json")
+LEDGER_OUT = OUT_DIR / os.environ.get("TQE_ATLAS_SCALE_LEDGER_FILENAME", "atlas-scale-coverage-ledger.json")
 SEARCH_ROW_LEDGER = OUT_DIR / "search-run" / "row-ledger.json"
-PREP_REPORT = ROOT / "artifacts" / "autonomous" / "compiler-atlas-scale-contract-prep-report.json"
-ASSESS_REPORT = ROOT / "artifacts" / "autonomous" / "compiler-atlas-scale-contract-sample-report.json"
+PREP_REPORT = ROOT / os.environ.get(
+    "TQE_ATLAS_SCALE_PREP_REPORT",
+    "artifacts/autonomous/compiler-atlas-scale-contract-prep-report.json",
+)
+ASSESS_REPORT = ROOT / os.environ.get(
+    "TQE_ATLAS_SCALE_ASSESS_REPORT",
+    "artifacts/autonomous/compiler-atlas-scale-contract-sample-report.json",
+)
 
 MAX_POSITIVE_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_POSITIVE_CONCEPTS", "16"))
 MAX_NEGATIVE_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_NEGATIVE_CONCEPTS", "8"))
 MAX_POSITIVES_PER_TEMPLATE = int(os.environ.get("TQE_ATLAS_SCALE_POSITIVES_PER_TEMPLATE", "3"))
+SAMPLE_POLICY = os.environ.get("TQE_ATLAS_SCALE_SAMPLE_POLICY", "atlas_scale_stratified_contract_sample_v0")
+INCLUDE_KNOWN_GOOD_CONTROLS = os.environ.get("TQE_ATLAS_SCALE_INCLUDE_KNOWN_GOOD_CONTROLS", "0") == "1"
 
 SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
 FORBIDDEN_CONTRACT_KEYS = {
@@ -75,6 +83,12 @@ CONTRACT_FIDELITY_INSUFFICIENT: dict[str, str] = {
         "Wall-pass semantics require return-pass/player-linkage constraints that "
         "cannot be represented by a generic action-anchor contract."
     ),
+}
+KNOWN_GOOD_CONTROL_REASONS: dict[str, str] = {
+    "bounce_pass_sequence": "Requires identity-constrained return/relay linkage.",
+    "give_and_go_sequence": "Requires same-originating-player return after the relay.",
+    "up_back_through_sequence": "Requires ordered up/back/through leg roles plus player/linkage constraints.",
+    "wall_pass_sequence": "Requires one-two return-pass identity linkage.",
 }
 FIDELITY_EXPECTATIONS: dict[str, dict[str, Any]] = {
     "action_anchor": {
@@ -202,7 +216,8 @@ def prepare() -> int:
     rows = load_json(COVERAGE_LEDGER)
     positive_configs, skipped_positive_rows = select_positive_rows(rows)
     negative_configs = select_known_negative_rows(rows)
-    concept_configs = [*positive_configs, *negative_configs]
+    known_good_configs = select_known_good_control_rows(rows, skipped_positive_rows) if INCLUDE_KNOWN_GOOD_CONTROLS else []
+    concept_configs = [*positive_configs, *negative_configs, *known_good_configs]
 
     targets: list[dict[str, Any]] = []
     ledger_rows: list[dict[str, Any]] = []
@@ -210,12 +225,13 @@ def prepare() -> int:
     for concept_config in concept_configs:
         ledger_rows.append(ledger_row_for_sample(concept_config))
         variants = concept_config["variants"]
-        if len(variants) < 2:
+        required_variant_count = 2 if concept_config["sample_role"] in {"positive_probe", "known_negative"} else 1
+        if len(variants) < required_variant_count:
             findings.append(
                 {
                     "code": "insufficient_contract_variants",
                     "concept": concept_config["concept"],
-                    "message": "Every sampled concept must carry at least two contract variants.",
+                    "message": f"Sample role {concept_config['sample_role']} requires at least {required_variant_count} contract variant(s).",
                 }
             )
         for variant in variants:
@@ -228,7 +244,7 @@ def prepare() -> int:
     targets_payload = {
         "schema_version": "compiler_search_targets.v0",
         "strategy": "bounded_backward_search.v0.1.atlas_scale_stratified_contract_sample",
-        "sample_policy": "atlas_scale_stratified_contract_sample_v0",
+        "sample_policy": SAMPLE_POLICY,
         "note": (
             "Large deterministic atlas sample. Contract variants are generated from "
             "intrinsic evidence/status requirements, not gold chains. Template ids are "
@@ -253,14 +269,17 @@ def prepare() -> int:
             "runtime_or_catalog_refs_used_inside_target_contract": False,
             "template_variants_not_true_independent_authors": True,
             "known_negative_controls_required": True,
+            "known_good_controls_included": INCLUDE_KNOWN_GOOD_CONTROLS,
         },
         "summary": {
             "positive_concept_count": len(positive_configs),
             "known_negative_concept_count": len(negative_configs),
+            "known_good_control_concept_count": len(known_good_configs),
             "concept_count": len(concept_configs),
             "target_count": len(targets),
             "template_distribution": dict(sorted(collections.Counter(item["contract_template_id"] for item in positive_configs).items())),
             "negative_distribution": dict(sorted(collections.Counter(item.get("expected_failure_taxonomy") for item in negative_configs).items())),
+            "known_good_control_distribution": dict(sorted(collections.Counter(item.get("known_good_control_family") for item in known_good_configs).items())),
         },
         "selection": {
             "max_positive_concepts": MAX_POSITIVE_CONCEPTS,
@@ -306,6 +325,8 @@ def assess() -> int:
                     "sample_role": target["sample_role"],
                     "contract_template_id": target.get("contract_template_id"),
                     "expected_failure_taxonomy": target.get("expected_failure_taxonomy"),
+                    "known_good_control_expected_failure": target.get("known_good_control_expected_failure"),
+                    "known_good_control_family": target.get("known_good_control_family"),
                     "result": row["result"],
                     "failure_taxonomy": row.get("failure_taxonomy"),
                     "result_count": row.get("result_count"),
@@ -332,7 +353,14 @@ def assess() -> int:
     failure_counts = collections.Counter(row["failure_taxonomy"] for row in rows if row.get("failure_taxonomy"))
     positive_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "positive_probe"]
     known_negative_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "known_negative"]
+    known_good_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "known_good_control"]
     fidelity_findings = [finding for finding in findings if finding.get("code") == "degenerate_reach_fidelity_violation"]
+    measurement = measurement_buckets(
+        rows=rows,
+        target_by_id=target_by_id,
+        fidelity_findings=fidelity_findings,
+        contract_fidelity_refusals=contract_fidelity_refusals,
+    )
     report = {
         "schema_version": "atlas_scale_contract_sample_assessment.v0",
         "status": "PASS" if not findings else "FAIL",
@@ -357,12 +385,15 @@ def assess() -> int:
             "known_negative_target_count": len(known_negative_rows),
             "known_negative_honest_failure_count": sum(1 for item in known_negative_rows if item["result"] != "compiler_reachable"),
             "known_negative_honest_failure_pct": pct(sum(1 for item in known_negative_rows if item["result"] != "compiler_reachable"), len(known_negative_rows)),
+            "known_good_control_target_count": len(known_good_rows),
             "result_distribution": dict(sorted(result_counts.items())),
             "failure_distribution": dict(sorted(failure_counts.items())),
+            "measurement_bucket_distribution": measurement["bucket_distribution"],
             "execution_node_cache": execution_node_cache_summary(rows),
         },
         "concepts": concept_reports,
         "contract_fidelity_refusals": contract_fidelity_refusals,
+        "measurement_buckets": measurement,
         "findings": findings,
         "inputs": {
             "targets_path": relative_path(TARGETS_OUT),
@@ -391,6 +422,29 @@ def contract_fidelity_refusals_from_prep_report() -> list[dict[str, Any]]:
         for row in rows
         if isinstance(row, dict) and row.get("reason") == "contract_fidelity_insufficient"
     ]
+
+
+def select_known_good_control_rows(rows: list[dict[str, Any]], skipped_positive_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_concept = {row["concept"]: row for row in rows}
+    configs: list[dict[str, Any]] = []
+    for skipped in skipped_positive_rows:
+        concept = skipped.get("concept")
+        if skipped.get("reason") != "contract_fidelity_insufficient" or concept not in KNOWN_GOOD_CONTROL_REASONS:
+            continue
+        row = by_concept.get(str(concept))
+        if row is None:
+            continue
+        configs.append(
+            {
+                **row,
+                "sample_role": "known_good_control",
+                "contract_template_id": "known_good_identity_constrained_combination",
+                "known_good_control_family": "identity_constrained_combination",
+                "known_good_control_expected_failure": "missing_constraint",
+                "variants": known_good_combination_variants(str(concept)),
+            }
+        )
+    return configs
 
 
 def select_positive_rows(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -527,6 +581,10 @@ def target_from_variant(concept_config: dict[str, Any], variant: dict[str, Any])
         target["fidelity_expectation"] = expectation
     if concept_config.get("expected_failure_taxonomy"):
         target["expected_failure_taxonomy"] = concept_config["expected_failure_taxonomy"]
+    if concept_config.get("known_good_control_expected_failure"):
+        target["known_good_control_expected_failure"] = concept_config["known_good_control_expected_failure"]
+    if concept_config.get("known_good_control_family"):
+        target["known_good_control_family"] = concept_config["known_good_control_family"]
     if concept_config["contract_template_id"] in {"action_chain", "carry_pressure_change", "compactness_change", "pass_chain"}:
         target["multi_step"] = True
     return target
@@ -593,11 +651,141 @@ def assess_concept(concept: str, variants: list[dict[str, Any]]) -> list[dict[st
                         "actual": variant["failure_taxonomy"],
                     }
                 )
+    elif variants[0]["sample_role"] == "known_good_control":
+        expected = variants[0].get("expected_failure_taxonomy") or variants[0].get("known_good_control_expected_failure")
+        for variant in variants:
+            if expected and variant["result"] != "compiler_reachable" and variant["failure_taxonomy"] != expected:
+                findings.append(
+                    {
+                        "code": "known_good_control_wrong_failure",
+                        "concept": concept,
+                        "target_id": variant["target_id"],
+                        "expected": expected,
+                        "actual": variant["failure_taxonomy"],
+                    }
+                )
     else:
         for variant in variants:
             if variant["result"] == "compiler_reachable":
                 findings.extend(fidelity_findings_for_variant(concept, variant))
     return findings
+
+
+def measurement_buckets(
+    *,
+    rows: list[dict[str, Any]],
+    target_by_id: dict[str, dict[str, Any]],
+    fidelity_findings: list[dict[str, Any]],
+    contract_fidelity_refusals: list[dict[str, Any]],
+) -> dict[str, Any]:
+    fidelity_violation_target_ids = {str(finding.get("target_id")) for finding in fidelity_findings}
+    controls_by_concept: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
+    for row in rows:
+        target = target_by_id[row["target_id"]]
+        if target.get("sample_role") == "known_good_control":
+            controls_by_concept[row["concept"]].append(row)
+
+    entries: list[dict[str, Any]] = []
+    for row in rows:
+        target = target_by_id[row["target_id"]]
+        if target.get("sample_role") != "positive_probe":
+            continue
+        bucket = bucket_for_positive_row(
+            row,
+            target=target,
+            fidelity_violation_target_ids=fidelity_violation_target_ids,
+            controls=controls_by_concept.get(row["concept"], []),
+        )
+        entries.append(bucket)
+
+    for refusal in contract_fidelity_refusals:
+        concept = str(refusal["concept"])
+        bucket = bucket_for_refusal(refusal, controls=controls_by_concept.get(concept, []))
+        entries.append(bucket)
+
+    bucket_distribution = collections.Counter(entry["bucket"] for entry in entries)
+    bug_distribution = collections.Counter(
+        str(entry.get("subtype"))
+        for entry in entries
+        if entry["bucket"] == "contract_generation_bug" and entry.get("subtype")
+    )
+    family_distribution = collections.Counter(
+        str(entry.get("family"))
+        for entry in entries
+        if entry["bucket"] in {"genuine_gap", "unvalidated_refusal"} and entry.get("family")
+    )
+    return {
+        "bucket_distribution": dict(sorted(bucket_distribution.items())),
+        "contract_generation_bug_distribution": dict(sorted(bug_distribution.items())),
+        "gap_family_distribution": dict(sorted(family_distribution.items())),
+        "entries": entries,
+    }
+
+
+def bucket_for_positive_row(
+    row: dict[str, Any],
+    *,
+    target: dict[str, Any],
+    fidelity_violation_target_ids: set[str],
+    controls: list[dict[str, Any]],
+) -> dict[str, Any]:
+    target_id = str(row["target_id"])
+    if row["result"] == "compiler_reachable" and target_id not in fidelity_violation_target_ids:
+        return {
+            "concept": row["concept"],
+            "target_id": target_id,
+            "bucket": "clean_reach",
+            "providers_used": row.get("providers_used", []),
+        }
+    if row["result"] == "compiler_reachable" and target_id in fidelity_violation_target_ids:
+        control_bucket = bucket_from_known_good_controls(controls, clean_subtype="too_weak")
+        return {
+            "concept": row["concept"],
+            "target_id": target_id,
+            **control_bucket,
+            "auto_result": "degenerate_reach",
+            "providers_used": row.get("providers_used", []),
+        }
+    if row.get("failure_taxonomy") in {"unsupported_modality", "missing_primitive", "search_budget_exceeded", "runtime_gap"}:
+        return {
+            "concept": row["concept"],
+            "target_id": target_id,
+            "bucket": str(row.get("failure_taxonomy")),
+            "auto_result": row["result"],
+        }
+    control_bucket = bucket_from_known_good_controls(controls, clean_subtype="too_strict")
+    return {
+        "concept": row["concept"],
+        "target_id": target_id,
+        **control_bucket,
+        "auto_result": row["result"],
+        "failure_taxonomy": row.get("failure_taxonomy"),
+    }
+
+
+def bucket_for_refusal(refusal: dict[str, Any], *, controls: list[dict[str, Any]]) -> dict[str, Any]:
+    control_bucket = bucket_from_known_good_controls(controls, clean_subtype="too_weak")
+    return {
+        "concept": refusal["concept"],
+        **control_bucket,
+        "auto_result": "contract_fidelity_refused",
+        "refusal_reason": refusal.get("reason"),
+        "detail": refusal.get("detail"),
+    }
+
+
+def bucket_from_known_good_controls(controls: list[dict[str, Any]], *, clean_subtype: str) -> dict[str, Any]:
+    if not controls:
+        return {"bucket": "unvalidated_refusal"}
+    if any(row.get("result") == "compiler_reachable" for row in controls):
+        return {"bucket": "contract_generation_bug", "subtype": clean_subtype}
+    taxonomies = sorted({str(row.get("failure_taxonomy")) for row in controls if row.get("failure_taxonomy")})
+    if set(taxonomies) == {"missing_constraint"}:
+        return {"bucket": "genuine_gap", "family": "identity_constrained_combination", "known_good_failure_taxonomy": "missing_constraint"}
+    return {
+        "bucket": "unvalidated_refusal",
+        "known_good_failure_taxonomies": taxonomies,
+    }
 
 
 def fidelity_findings_for_variant(concept: str, variant: dict[str, Any]) -> list[dict[str, Any]]:
@@ -729,6 +917,51 @@ def known_negative_variants(concept: str, taxonomy: str, missing: str) -> list[d
                 "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
             },
         },
+    ]
+
+
+def known_good_combination_variants(_concept: str) -> list[dict[str, Any]]:
+    return [
+        {
+            "variant_id": "known_good_identity_return",
+            "target_contract": {
+                "desired_output": "classification",
+                "required_evidence": [
+                    "pass_chain_status",
+                    "input_pass_episode_id",
+                    "relay_pass_episode_id",
+                    "input_passer_id",
+                    "relay_player_id",
+                    "terminal_receiver_id",
+                    "terminal_controlled_reception_frame_id",
+                ],
+                "status_semantics": [{"field": "pass_chain_status", "required_value": "PASS"}],
+                "composition_constraints": [
+                    {
+                        "kind": "same_player_return",
+                        "left_field": "input_passer_id",
+                        "right_field": "terminal_receiver_id",
+                        "description": "The terminal receiver must be the original input passer.",
+                    },
+                    {
+                        "kind": "distinct_entity_fields",
+                        "value": "input_passer_id,relay_player_id",
+                    },
+                    {
+                        "kind": "temporal_order",
+                        "temporal_relation": "left_before_right",
+                        "left_time_field": "relay_touch_frame_id",
+                        "right_time_field": "terminal_controlled_reception_frame_id",
+                        "maximum_gap_seconds": 6.0,
+                    },
+                ],
+                "claim_boundary": (
+                    "Known-good identity-constrained combination contract: observed pass-chain where the terminal "
+                    "receiver is the original input passer. No planned combination, wall-pass intent, quality, "
+                    "causation, or optimality claim."
+                ),
+            },
+        }
     ]
 
 

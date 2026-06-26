@@ -1,0 +1,133 @@
+{
+  "anti_circularity": {
+    "findings": [],
+    "forbidden_contract_keys": [
+      "catalog_ref",
+      "catalog_refs",
+      "closest_supported_substitute",
+      "composition_pattern",
+      "gold_chain",
+      "gold_chain_path",
+      "pattern",
+      "provider_chain",
+      "runtime_capability",
+      "runtime_capability_ref",
+      "runtime_ref",
+      "runtime_refs",
+      "source_runtime_capability"
+    ]
+  },
+  "outputs": {
+    "ledger_path": "generated/compiler-search-supported-broad-draw/supported-broad-draw-coverage-ledger.json",
+    "targets_path": "generated/compiler-search-supported-broad-draw/supported-broad-draw-targets.v0.json"
+  },
+  "schema_version": "atlas_scale_contract_sample_prepare.v0",
+  "scope": {
+    "atlas_wide": false,
+    "coverage_map_gold_chain_used": false,
+    "known_good_controls_included": true,
+    "known_negative_controls_required": true,
+    "large_stratified_sample": true,
+    "natural_language": false,
+    "pattern_labels_used": false,
+    "runtime_or_catalog_refs_used_inside_target_contract": false,
+    "template_variants_not_true_independent_authors": true
+  },
+  "selection": {
+    "max_negative_concepts": 8,
+    "max_positive_concepts": 48,
+    "max_positives_per_template": 4,
+    "skipped_positive_rows": [
+      {
+        "concept": "bounce_pass_sequence",
+        "detail": "Named return/relay combinations need explicit player-linkage semantics; a generic action anchor or chain would be a weak proxy.",
+        "reason": "contract_fidelity_insufficient"
+      },
+      {
+        "concept": "give_and_go_sequence",
+        "detail": "Give-and-go requires a two-pass player-return structure; the current generated contracts cannot faithfully express that identity constraint.",
+        "reason": "contract_fidelity_insufficient"
+      },
+      {
+        "concept": "up_back_through_sequence",
+        "detail": "Up-back-through requires ordered leg roles and directional constraints beyond the current generated contract templates.",
+        "reason": "contract_fidelity_insufficient"
+      },
+      {
+        "concept": "wall_pass_sequence",
+        "detail": "Wall-pass semantics require return-pass/player-linkage constraints that cannot be represented by a generic action-anchor contract.",
+        "reason": "contract_fidelity_insufficient"
+      },
+      {
+        "concept": "forward_progression",
+        "contract_template_id": "controlled_pass",
+        "reason": "concept_hint_risk"
+      },
+      {
+        "concept": "speed",
+        "contract_template_id": "velocity",
+        "reason": "concept_hint_risk"
+      },
+      {
+        "concept": "velocity",
+        "contract_template_id": "velocity",
+        "reason": "concept_hint_risk"
+      },
+      {
+        "concept": "pass_episode",
+        "contract_template_id": "controlled_pass",
+        "reason": "concept_hint_risk"
+      },
+      {
+        "concept": "team_area",
+        "contract_template_id": "compactness",
+        "reason": "concept_hint_risk"
+      },
+      {
+        "concept": "team_width",
+        "contract_template_id": "compactness",
+        "reason": "concept_hint_risk"
+      },
+      {
+        "concept": "distance",
+        "contract_template_id": "distance",
+        "reason": "concept_hint_risk"
+      }
+    ]
+  },
+  "status": "PASS",
+  "summary": {
+    "concept_count": 60,
+    "known_good_control_concept_count": 4,
+    "known_good_control_distribution": {
+      "identity_constrained_combination": 4
+    },
+    "known_negative_concept_count": 8,
+    "negative_distribution": {
+      "missing_primitive": 4,
+      "unsupported_modality": 4
+    },
+    "positive_concept_count": 48,
+    "target_count": 116,
+    "template_distribution": {
+      "action_anchor": 4,
+      "action_chain": 3,
+      "carry": 3,
+      "carry_pressure_change": 2,
+      "compactness": 3,
+      "compactness_change": 2,
+      "controlled_pass": 3,
+      "distance": 3,
+      "line": 3,
+      "local_number": 3,
+      "pass_chain": 1,
+      "pressure": 3,
+      "support": 3,
+      "switch": 2,
+      "time_to_arrival": 1,
+      "transition": 3,
+      "transition_outcome": 3,
+      "velocity": 3
+    }
+  }
+}
