@@ -1,0 +1,192 @@
+{
+  "anti_circularity": {
+    "findings": [],
+    "forbidden_contract_keys": [
+      "catalog_ref",
+      "catalog_refs",
+      "closest_supported_substitute",
+      "composition_pattern",
+      "gold_chain",
+      "gold_chain_path",
+      "pattern",
+      "provider_chain",
+      "runtime_capability",
+      "runtime_capability_ref",
+      "runtime_ref",
+      "runtime_refs",
+      "source_runtime_capability"
+    ]
+  },
+  "measurement_status": "CONTRACT_PROJECTION_READY_NOT_ATLAS_SCALE",
+  "next_step": "Run the search runner against the projected target/ledger pair with TQE_SEARCH_UPDATE_LEDGER=0. Treat the result as registry-subset readiness, not as a 741-row compiler reachability percentage.",
+  "outputs": {
+    "ledger_path": "generated/compiler-search-contracts/registry-projected-coverage-ledger.json",
+    "targets_path": "generated/compiler-search-contracts/registry-projected-targets.v0.json"
+  },
+  "schema_version": "compiler_search_contract_projection.v0",
+  "scope": {
+    "atlas_wide": false,
+    "coverage_map_gold_chain_used": false,
+    "natural_language": false,
+    "pattern_labels_used": false,
+    "runtime_or_catalog_refs_used_inside_target_contract": false,
+    "source": "semantic_registry_passport_projection",
+    "source_path": "generated/semantic-registry/capability-passport-projection.json"
+  },
+  "skips": [
+    {
+      "missing_required_evidence": [
+        "anchor_frame_id"
+      ],
+      "passport_id": "binding.primitive.ball_lateral_fraction.0_1_0",
+      "runtime_capability": "ball_lateral_fraction",
+      "skip_reason": "required_evidence_not_declared_in_runtime_catalog"
+    },
+    {
+      "missing_required_evidence": [
+        "change_value"
+      ],
+      "passport_id": "binding.primitive.change_across_anchor.0_1_0",
+      "runtime_capability": "change_across_anchor",
+      "skip_reason": "required_evidence_not_declared_in_runtime_catalog"
+    },
+    {
+      "passport_id": "binding.primitive.controlled_line_break_episode.0_1_0",
+      "runtime_capability": "controlled_line_break_episode",
+      "skip_reason": "runtime_entry_not_in_search_catalog"
+    },
+    {
+      "missing_required_evidence": [
+        "defending_outfield_player_ids"
+      ],
+      "passport_id": "binding.primitive.defensive_outfield_centroid.0_1_0",
+      "runtime_capability": "defensive_outfield_centroid",
+      "skip_reason": "required_evidence_not_declared_in_runtime_catalog"
+    },
+    {
+      "passport_id": "binding.primitive.outcome_classification.0_1_0",
+      "runtime_capability": "outcome_classification",
+      "skip_reason": "not_ai_compiler_allowed"
+    },
+    {
+      "missing_required_evidence": [
+        "match_id",
+        "period"
+      ],
+      "passport_id": "binding.primitive.possession_segment.0_1_0",
+      "runtime_capability": "possession_segment",
+      "skip_reason": "required_evidence_not_declared_in_runtime_catalog"
+    },
+    {
+      "missing_required_evidence": [
+        "witness_frame_id"
+      ],
+      "passport_id": "binding.primitive.relation_destination_entry.0_1_0",
+      "runtime_capability": "relation_destination_entry",
+      "skip_reason": "required_evidence_not_declared_in_runtime_catalog"
+    },
+    {
+      "passport_id": "binding.primitive.relation_destination_entry_classification.0_1_0",
+      "runtime_capability": "relation_destination_entry_classification",
+      "skip_reason": "not_ai_compiler_allowed"
+    },
+    {
+      "allowed_values": [
+        "AHEAD_OF_LINE",
+        "BEHIND_LINE",
+        "LEVEL_WITH_LINE",
+        "UNKNOWN"
+      ],
+      "passport_id": "binding.primitive.relative_position_to_line.0_1_0",
+      "runtime_capability": "relative_position_to_line",
+      "skip_reason": "status_predicate_requires_declared_value",
+      "status_field": "relative_position_status"
+    },
+    {
+      "missing_required_evidence": [
+        "baseline_defensive_centroid_y_m",
+        "defending_outfield_player_ids",
+        "shift_frame_id"
+      ],
+      "passport_id": "binding.primitive.signed_lateral_shift.0_1_0",
+      "runtime_capability": "signed_lateral_shift",
+      "skip_reason": "required_evidence_not_declared_in_runtime_catalog"
+    },
+    {
+      "missing_required_evidence": [
+        "controlled_reception_frame_id",
+        "duration_seconds",
+        "maximum_duration_seconds",
+        "minimum_end_lateral_m",
+        "minimum_lateral_displacement_m",
+        "minimum_start_lateral_m",
+        "physical_release_frame_id"
+      ],
+      "passport_id": "binding.primitive.switch_of_play.0_1_0",
+      "runtime_capability": "switch_of_play",
+      "skip_reason": "required_evidence_not_declared_in_runtime_catalog"
+    },
+    {
+      "missing_required_evidence": [
+        "compactness_frame_id",
+        "minimum_observed_players"
+      ],
+      "passport_id": "binding.primitive.team_compactness.0_1_0",
+      "runtime_capability": "team_compactness",
+      "skip_reason": "required_evidence_not_declared_in_runtime_catalog"
+    },
+    {
+      "passport_id": "binding.relation.geometric_progressive_corridor.0_1_0",
+      "runtime_capability": "geometric_progressive_corridor",
+      "skip_reason": "no_status_predicate_available"
+    },
+    {
+      "passport_id": "binding.relation.geometric_progressive_corridor_from_anchor_set.0_1_0",
+      "runtime_capability": "geometric_progressive_corridor_from_anchor_set",
+      "skip_reason": "no_status_predicate_available"
+    },
+    {
+      "missing_required_evidence": [
+        "active_opponent_denominator"
+      ],
+      "passport_id": "binding.relation.opponents_bypassed_by_action.0_1_0",
+      "runtime_capability": "opponents_bypassed_by_action",
+      "skip_reason": "required_evidence_not_declared_in_runtime_catalog"
+    }
+  ],
+  "status": "PASS",
+  "summary": {
+    "passport_count": 35,
+    "projected_target_count": 20,
+    "skip_counts": {
+      "no_status_predicate_available": 2,
+      "not_ai_compiler_allowed": 2,
+      "required_evidence_not_declared_in_runtime_catalog": 9,
+      "runtime_entry_not_in_search_catalog": 1,
+      "status_predicate_requires_declared_value": 1
+    },
+    "skipped_count": 15,
+    "target_contract_hashes": {
+      "registry_projected_action_chain": "f9a1fa13f269fe04f65d1a0dbe144187dd3b655b75f3ab031802498b512203c8",
+      "registry_projected_action_event_anchor": "33403550b4904d0a9b08e87f6344635055d4e0f92a563879d97ac9508c4d6870",
+      "registry_projected_carry_episode": "79caaba8cb856b4d320ea420579d87493dc7313d28d497b307e0690d86804827",
+      "registry_projected_controlled_pass_episode": "7d05e158bf1ab802ad1c9f03323dcb48740328d4660026e3ac4c40963484a22f",
+      "registry_projected_defensive_line_model": "f2342c481b95d96b14d6a42f946a065c7f476b3b656f9e90006fb09f4231ff7e",
+      "registry_projected_lane_occupancy": "3b3b0ac7caf341406c4c0f4ebe6330cf57eab39b9c83d0fe9feca8e3572518eb",
+      "registry_projected_local_number_relation": "9e7332caa4c482142e7ff82e130879ff9e795f83bc68eac38bb07f5adbbc12f7",
+      "registry_projected_multi_line_model": "f35549bbd1c995cb7e70af0877caf73a33e6d2c19f6fedd673375db984a20961",
+      "registry_projected_one_touch_relay_episode": "bcb93e4151c85431394bff2eba44d9fe70640167c01d77d2f2304be33c614b14",
+      "registry_projected_outcome_window": "03d69b3acdb6ea5f8afdeb6048c49b9784b1d8ab8b61184802cbfe086dac4ffd",
+      "registry_projected_pairwise_distance": "3adc48613464dfd319e718a1c7520ceaedaa1ed28c6f9d4c2b3c3647cca39110",
+      "registry_projected_pass_chain_episode": "9f486f58be920a3f609e11f6fae70056e90d982eef2339af874b7da4f8b9d3aa",
+      "registry_projected_pressure_on_carrier": "858629671908bc3718493e3ab0cebebe30b1501a3e5d02783828a8c16b9970e3",
+      "registry_projected_receiver_line_transition_during_pass_leg": "131fdf833c084442ca2bceef5560e72f136fb4bfdabe1b486712d6220c75cedf",
+      "registry_projected_structured_zone": "5b38183e93492226f4b6df30ab2780a01abbf3341f5e7ba4680afedef5245955",
+      "registry_projected_support_arrival_relation": "9b0a8c85e18aa8ad4065deeef7ab24a25b56f5faa7e12958f899aac1fedd344a",
+      "registry_projected_time_to_arrival": "88c792e2e6ddf503822bd1c05ad191c3f7c3839768b51dc94869114e78273b94",
+      "registry_projected_tracking_quality": "ca88ade5c3614c4742821f6aade3dd7e15c4385a0e39be420cab7d42aafced29",
+      "registry_projected_transition_anchor": "95ae935ee909e528797b894cfa45c4a65a14908ee41ff6d8bbd5582308182425",
+      "registry_projected_velocity": "f6aeb6cf5876eec7a7d774b7750eab86bc3299ab9fc41830d86934130d5ee0ad"
+    }
+  }
+}

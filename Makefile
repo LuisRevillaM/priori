@@ -288,3 +288,7 @@ compiler-reachability:
 compiler-search-reachability:
 	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
 	$(PYTHON) scripts/coverage_map/aggregate.py
+
+.PHONY: compiler-search-contract-projection
+compiler-search-contract-projection:
+	$(PYTHON) scripts/coverage_map/project_search_contracts.py

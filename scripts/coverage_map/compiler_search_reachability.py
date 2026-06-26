@@ -39,13 +39,19 @@ from tqe.runtime.ir import (  # noqa: E402
 )
 
 
-TARGETS = ROOT / "config" / "compiler-reachability" / "search-targets.v0.json"
-LEDGER = ROOT / "generated" / "coverage-map.json"
-OUT_DIR = ROOT / "generated" / "compiler-search-v0"
+def repo_path(value: str | Path) -> Path:
+    path = Path(value)
+    return path if path.is_absolute() else ROOT / path
+
+
+TARGETS = repo_path(os.environ.get("TQE_SEARCH_TARGETS", ROOT / "config" / "compiler-reachability" / "search-targets.v0.json"))
+LEDGER = repo_path(os.environ.get("TQE_SEARCH_LEDGER", ROOT / "generated" / "coverage-map.json"))
+OUT_DIR = repo_path(os.environ.get("TQE_SEARCH_OUT_DIR", ROOT / "generated" / "compiler-search-v0"))
 PLAN_DIR = OUT_DIR / "plans"
 ROW_LEDGER = OUT_DIR / "row-ledger.json"
 ROW_CSV = OUT_DIR / "row-ledger.csv"
-REPORT = ROOT / "artifacts" / "autonomous" / "compiler-search-v0-report.json"
+REPORT = repo_path(os.environ.get("TQE_SEARCH_REPORT", ROOT / "artifacts" / "autonomous" / "compiler-search-v0-report.json"))
+UPDATE_LEDGER = os.environ.get("TQE_SEARCH_UPDATE_LEDGER", "1") != "0"
 
 SYNTHESIZER_VERSION = "search_synthesizer.v0.1"
 MAX_DEPTH = int(os.environ.get("TQE_SEARCH_MAX_DEPTH", "4"))
@@ -68,6 +74,8 @@ def main() -> int:
     coverage_rows = load_json(LEDGER)
     catalog = CatalogIndex()
     PLAN_DIR.mkdir(parents=True, exist_ok=True)
+    for previous_plan in PLAN_DIR.glob("*.json"):
+        previous_plan.unlink()
 
     results: list[dict[str, Any]] = []
     for target in targets_payload["targets"]:
@@ -81,8 +89,9 @@ def main() -> int:
             flush=True,
         )
 
-    update_coverage_rows(coverage_rows, results)
-    LEDGER.write_text(json.dumps(coverage_rows, indent=1) + "\n", encoding="utf-8")
+    if UPDATE_LEDGER:
+        update_coverage_rows(coverage_rows, results)
+        LEDGER.write_text(json.dumps(coverage_rows, indent=1) + "\n", encoding="utf-8")
     write_rows(results)
     report = build_report(targets_payload=targets_payload, coverage_rows=coverage_rows, results=results)
     REPORT.parent.mkdir(parents=True, exist_ok=True)
@@ -1192,7 +1201,7 @@ def row_result(
         "failure_taxonomy": failure_taxonomy,
         "failure_details": failure_details or {},
         "message": message,
-        "plan_path": None if document_payload is None else str((PLAN_DIR / f"{target['target_id']}.json").relative_to(ROOT)),
+        "plan_path": None if document_payload is None else relative_path(PLAN_DIR / f"{target['target_id']}.json"),
         "document_hash": None if document_payload is None else stable_hash(document_payload),
         "execution_status": None if execution is None else execution.status.value,
         "compatibility_profile": None if execution is None else execution.provenance.get("compatibility_profile"),
@@ -1228,7 +1237,7 @@ def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any
             "synthesizer_version": SYNTHESIZER_VERSION,
             "synthesizer_strategy": SYNTHESIZER_STRATEGY,
             "target_id": result["target_id"],
-            "report_path": str(REPORT.relative_to(ROOT)),
+            "report_path": relative_path(REPORT),
             "document_hash": result["document_hash"],
             "held_out": result["held_out"],
             "result_count": result["result_count"],
@@ -1237,6 +1246,8 @@ def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any
 
 
 def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[str, Any]], results: list[dict[str, Any]]) -> dict[str, Any]:
+    sample_policy = targets_payload.get("sample_policy", "bounded_stratified_sample_with_held_out_targets")
+    requires_held_out_acceptance = sample_policy == "bounded_stratified_sample_with_held_out_targets"
     total = len(coverage_rows)
     supported = sum(1 for row in coverage_rows if row.get("classification") == "supported")
     compiler_reachable = sum(1 for row in coverage_rows if row.get("composition_maturity") == "compiler_reachable")
@@ -1258,9 +1269,9 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
         findings.append({"code": "gold_chain_used_as_input", "message": "Coverage-map gold chain was consumed during synthesis.", "path": "row_ledger"})
     if any(result.get("pattern_dispatch_used") for result in results):
         findings.append({"code": "pattern_dispatch_used", "message": "Pattern dispatch was used during search.", "path": "row_ledger"})
-    if not held_out_success:
+    if requires_held_out_acceptance and not held_out_success:
         findings.append({"code": "no_held_out_success", "message": "No held-out target became compiler_reachable.", "path": "row_ledger"})
-    if carry_out_of_pressure is None or carry_out_of_pressure["result"] != "compiler_reachable":
+    if requires_held_out_acceptance and (carry_out_of_pressure is None or carry_out_of_pressure["result"] != "compiler_reachable"):
         findings.append(
             {
                 "code": "primary_multistep_flip_missing",
@@ -1268,7 +1279,7 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
                 "path": "row_ledger",
             }
         )
-    if not held_out_multi_step_success:
+    if requires_held_out_acceptance and not held_out_multi_step_success:
         findings.append(
             {
                 "code": "no_held_out_multistep_success",
@@ -1282,10 +1293,11 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
         "synthesizer_version": SYNTHESIZER_VERSION,
         "synthesizer_strategy": targets_payload["strategy"],
         "scope": {
-            "mode": "bounded_stratified_sample_with_held_out_targets",
+            "mode": sample_policy,
             "natural_language": False,
             "atlas_wide_execution": False,
             "target_count": len(results),
+            "coverage_ledger_update_enabled": UPDATE_LEDGER,
             "pattern_dispatch_allowed": False,
             "coverage_gold_chain_allowed_as_input": False,
             "concept_name_allowed_as_input": False,
@@ -1310,6 +1322,10 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
             "sample_target_count": len(results),
             "sample_compiler_reachable_count": result_counts.get("compiler_reachable", 0),
             "sample_compiler_reachable_pct": round(100 * result_counts.get("compiler_reachable", 0) / max(len(results), 1), 1),
+            "sample_only_note": (
+                "sample_* fields are the measurement for non-updating runs; "
+                "compiler_reachable_count reflects the supplied coverage ledger after mutation only when ledger updates are enabled."
+            ),
             "held_out_target_count": len(held_out),
             "held_out_compiler_reachable_count": len(held_out_success),
             "held_out_compiler_reachable_pct": round(100 * len(held_out_success) / max(len(held_out), 1), 1),
@@ -1323,10 +1339,10 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
         "held_out_successes": [result["concept"] for result in held_out_success],
         "multi_step_successes": [result["concept"] for result in multi_step_success],
         "held_out_multi_step_successes": [result["concept"] for result in held_out_multi_step_success],
-        "row_ledger_path": str(ROW_LEDGER.relative_to(ROOT)),
-        "row_csv_path": str(ROW_CSV.relative_to(ROOT)),
-        "plan_dir": str(PLAN_DIR.relative_to(ROOT)),
-        "targets_path": str(TARGETS.relative_to(ROOT)),
+        "row_ledger_path": relative_path(ROW_LEDGER),
+        "row_csv_path": relative_path(ROW_CSV),
+        "plan_dir": relative_path(PLAN_DIR),
+        "targets_path": relative_path(TARGETS),
         "report_priority": "Held-out successes and real failure distribution are the meaningful outputs.",
         "findings": findings,
     }
@@ -1507,6 +1523,13 @@ def coverage_row(rows: list[dict[str, Any]], concept: str) -> dict[str, Any]:
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def relative_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1006 @@
+{
+  "note": "Targets are projected from semantic registry passport claim/evidence contracts. They are not atlas-wide, do not use coverage-map gold chains, and are suitable for a registry-backed readiness search only.",
+  "projection_source": {
+    "passport_count": 35,
+    "passport_revision": "05135d955e55eee803c46e1456f987d70b621c9bd47ce541319c698e5d3d52cf",
+    "path": "generated/semantic-registry/capability-passport-projection.json",
+    "source": "semantic_registry_passport_projection"
+  },
+  "sample_policy": "registry_passport_projection_subset",
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.registry_projected_contracts",
+  "targets": [
+    {
+      "concept": "concept.action_chain",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.action_chain.v1"
+        ],
+        "concept_refs": [
+          "concept.action_chain"
+        ],
+        "evidence_contract_refs": [
+          "evidence.action_chain.v1"
+        ],
+        "operationalization_refs": [
+          "op.same_team_action_chain.v1"
+        ],
+        "passport_id": "binding.primitive.action_chain.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: ordered_same_team_action_chain_observed_under_declared_gap. Prohibited: decision_quality_inferred, pass_was_optimal, planned_combination_inferred, player_intent_inferred, tactical_causation_inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_chain_reason",
+          "action_chain_status",
+          "anchor_frame_id",
+          "anchor_id",
+          "chain_length",
+          "first_action_anchor_id",
+          "maximum_action_gap_seconds",
+          "second_action_anchor_id"
+        ],
+        "required_modalities": [
+          "events"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_action_chain"
+    },
+    {
+      "concept": "concept.provider_action_event_anchor",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.provider_action_event_anchor.v1"
+        ],
+        "concept_refs": [
+          "concept.provider_action_event_anchor"
+        ],
+        "evidence_contract_refs": [
+          "evidence.provider_action_event_anchor.v1"
+        ],
+        "operationalization_refs": [
+          "op.provider_action_event_anchor.v1"
+        ],
+        "passport_id": "binding.primitive.action_event_anchor.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: provider_action_event_aligned_to_tracking_frame. Prohibited: controlled_reception_proven, decision_quality_inferred, pass_was_optimal, player_intent_inferred, tactical_role_identified.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_type",
+          "anchor_frame_id",
+          "anchor_id",
+          "event_anchor_frame_id",
+          "event_frame_offset_ms",
+          "event_row_index",
+          "event_type"
+        ],
+        "required_modalities": [
+          "events",
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_action_event_anchor"
+    },
+    {
+      "concept": "concept.controlled_carry_episode",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.controlled_carry_episode.v1"
+        ],
+        "concept_refs": [
+          "concept.controlled_carry_episode"
+        ],
+        "evidence_contract_refs": [
+          "evidence.controlled_carry_episode.v1"
+        ],
+        "operationalization_refs": [
+          "op.controlled_carry_episode.v1"
+        ],
+        "passport_id": "binding.primitive.carry_episode.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: carry_displacement_measured, carry_forward_progression_measured, event_candidate_pass_identified, same_player_controlled_carry_interval_identified, tracking_confirmed_controlled_reception, tracking_confirmed_physical_release. Prohibited: decision_quality_inferred, defender_bypassed_by_carry, dribbling_skill_inferred, optimality_inferred, pass_probability_inferred, pass_was_optimal, player_intent_inferred, pressure_break_quality_inferred, proves_pass_optimality, proves_pass_probability, proves_passer_intent, tactical_causation_inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "carrier_id",
+          "carry_duration_seconds",
+          "carry_end_frame_id",
+          "carry_episode_id",
+          "carry_forward_progression_m",
+          "carry_reason",
+          "carry_start_frame_id",
+          "carry_status",
+          "comoving_frame_ratio",
+          "control_bias",
+          "control_continuity_reason",
+          "control_continuity_status",
+          "control_distance_m",
+          "control_model",
+          "controlled_frame_ratio",
+          "displacement_m",
+          "end_point",
+          "maximum_ball_player_speed_delta_mps",
+          "maximum_missing_frame_ratio",
+          "minimum_comoving_frame_ratio",
+          "minimum_controlled_frame_ratio",
+          "minimum_displacement_m",
+          "missing_frame_ratio",
+          "nearest_teammate_margin_m",
+          "possession_continuity_reason",
+          "possession_continuity_status",
+          "source_reception_pass_id",
+          "start_point",
+          "team_role",
+          "terminal_detection_reason",
+          "terminal_detection_status",
+          "terminal_pass_id"
+        ],
+        "required_modalities": [
+          "events",
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_carry_episode"
+    },
+    {
+      "concept": "concept.controlled_ball_transfer",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.controlled_ball_transfer.v1"
+        ],
+        "concept_refs": [
+          "concept.controlled_ball_transfer"
+        ],
+        "evidence_contract_refs": [
+          "evidence.controlled_ball_transfer.v1"
+        ],
+        "operationalization_refs": [
+          "op.event_seeded_tracking_confirmed_pass.v1"
+        ],
+        "passport_id": "binding.primitive.controlled_pass_episode.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: event_candidate_pass_identified, tracking_confirmed_controlled_reception, tracking_confirmed_physical_release. Prohibited: proves_pass_optimality, proves_pass_probability, proves_passer_intent.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "controlled_reception_frame_id",
+          "event_anchor_frame_id",
+          "forward_progression_m",
+          "passer_id",
+          "physical_release_frame_id",
+          "receiver_id",
+          "reception_ball_point",
+          "release_ball_point"
+        ],
+        "required_modalities": [
+          "events",
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "controlled_pass_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_controlled_pass_episode"
+    },
+    {
+      "concept": "concept.observed_geometric_defensive_line",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.observed_geometric_defensive_line.v1"
+        ],
+        "concept_refs": [
+          "concept.observed_geometric_defensive_line"
+        ],
+        "evidence_contract_refs": [
+          "evidence.observed_geometric_defensive_line.v1"
+        ],
+        "operationalization_refs": [
+          "op.observed_geometric_defensive_line.v1"
+        ],
+        "passport_id": "binding.primitive.defensive_line_model.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: no_qualifying_geometric_defensive_line_observed_when_evidence_complete, observed_geometric_defensive_line_fit_under_declared_thresholds. Prohibited: defender_intent_inferred, defensive_line_was_broken, pass_was_optimal, passer_intended_measured_outcome, tactical_line_role_identified.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "defender_positions_used",
+          "goal_side_buffer_m",
+          "line_band_width_m",
+          "line_reason",
+          "line_status",
+          "minimum_line_defenders"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_defensive_line_model"
+    },
+    {
+      "concept": "concept.observed_lane_occupancy",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.observed_lane_occupancy.v1"
+        ],
+        "concept_refs": [
+          "concept.observed_lane_occupancy"
+        ],
+        "evidence_contract_refs": [
+          "evidence.observed_lane_occupancy.v1"
+        ],
+        "operationalization_refs": [
+          "op.observed_lateral_lane_occupancy.v1"
+        ],
+        "passport_id": "binding.primitive.lane_occupancy.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: declared_lane_count_requirement_evaluated, observed_outfield_players_classified_into_declared_lateral_lanes. Prohibited: complete_active_player_lane_coverage_proven, defensive_line_was_broken, line_break_caused_by_pass, pass_was_optimal, player_intent_inferred, support_quality_inferred, tactical_role_identified.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "coverage_status",
+          "lane_counts",
+          "lane_definitions",
+          "lane_evaluation_frame_id",
+          "lane_occupancy_reason",
+          "lane_occupancy_status",
+          "lane_player_scope",
+          "occupied_lane_count",
+          "occupied_lanes",
+          "player_lane_assignments",
+          "required_occupied_lane_count"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "lane_occupancy_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_lane_occupancy"
+    },
+    {
+      "concept": "concept.observed_multi_line_model",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.observed_multi_line_model.v1"
+        ],
+        "concept_refs": [
+          "concept.observed_multi_line_model"
+        ],
+        "evidence_contract_refs": [
+          "evidence.observed_multi_line_model.v1"
+        ],
+        "operationalization_refs": [
+          "op.observed_multi_line_model.v1"
+        ],
+        "passport_id": "binding.primitive.multi_line_model.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: observed_geometric_line_rank_fit_under_declared_thresholds, target_line_rank_absent_when_evidence_complete. Prohibited: defender_intent_inferred, defensive_line_was_broken, pass_was_optimal, player_intent_inferred, tactical_line_role_identified.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "line_evaluation_frame_id",
+          "multi_line_reason",
+          "multi_line_status",
+          "observed_line_count",
+          "target_line_rank"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "multi_line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_multi_line_model"
+    },
+    {
+      "concept": "concept.one_touch_relay",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.one_touch_relay.v1"
+        ],
+        "concept_refs": [
+          "concept.one_touch_relay"
+        ],
+        "evidence_contract_refs": [
+          "evidence.one_touch_relay.v1"
+        ],
+        "operationalization_refs": [
+          "op.event_linked_one_touch_relay.v1"
+        ],
+        "passport_id": "binding.primitive.one_touch_relay_episode.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: event_candidate_pass_identified, event_linked_first_time_relay_observed_under_declared_thresholds, tracking_confirmed_controlled_reception, tracking_confirmed_physical_release. Prohibited: decision_quality_inferred, pass_crossed_line_claimed, pass_probability_inferred, pass_was_optimal, planned_combination_inferred, player_intent_inferred, proves_pass_optimality, proves_pass_probability, proves_passer_intent, third_man_combination_claimed.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "declared_next_pass_recipient_id",
+          "input_pass_episode_id",
+          "input_passer_id",
+          "input_physical_release_frame_id",
+          "one_touch_relay_reason",
+          "one_touch_relay_status",
+          "relay_dwell_seconds",
+          "relay_pass_episode_id",
+          "relay_physical_release_frame_id",
+          "relay_player_id",
+          "relay_touch_frame_id"
+        ],
+        "required_modalities": [
+          "events",
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "one_touch_relay_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_one_touch_relay_episode"
+    },
+    {
+      "concept": "concept.observed_outcome_window",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.observed_outcome_window.v1"
+        ],
+        "concept_refs": [
+          "concept.observed_outcome_window"
+        ],
+        "evidence_contract_refs": [
+          "evidence.observed_outcome_window.v1"
+        ],
+        "operationalization_refs": [
+          "op.observed_outcome_window.v1"
+        ],
+        "passport_id": "binding.primitive.outcome_window.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: possession_phase_threshold_status_reported, retained_possession_duration_threshold_evaluated. Prohibited: counterattack_quality_inferred, decision_quality_inferred, optimality_inferred, settled_quality_inferred, tactical_causation_inferred, transition_intent_inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "maximum_window_seconds",
+          "minimum_settled_possession_seconds",
+          "outcome_window_end_frame_id",
+          "outcome_window_reason",
+          "outcome_window_start_frame_id",
+          "outcome_window_status",
+          "possession_phase_status",
+          "required_anchor_status_field",
+          "required_anchor_status_value"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_outcome_window"
+    },
+    {
+      "concept": "concept.pairwise_distance",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.pairwise_distance.v1"
+        ],
+        "concept_refs": [
+          "concept.pairwise_distance"
+        ],
+        "evidence_contract_refs": [
+          "evidence.pairwise_distance.v1"
+        ],
+        "operationalization_refs": [
+          "op.anchor_pairwise_distance.v1"
+        ],
+        "passport_id": "binding.primitive.pairwise_distance.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: declared_distance_threshold_evaluated, declared_pairwise_distance_measured. Prohibited: marking_assignment_inferred, pass_was_optimal, player_intent_inferred, pressure_quality_inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "distance_frame_id",
+          "distance_m",
+          "entity_a_id",
+          "entity_b_id",
+          "maximum_distance_m",
+          "pairwise_distance_reason",
+          "pairwise_distance_status"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "pairwise_distance_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_pairwise_distance"
+    },
+    {
+      "concept": "concept.pass_chain_episode",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.pass_chain_episode.v1"
+        ],
+        "concept_refs": [
+          "concept.pass_chain_episode"
+        ],
+        "evidence_contract_refs": [
+          "evidence.pass_chain_episode.v1"
+        ],
+        "operationalization_refs": [
+          "op.event_linked_pass_chain_episode.v1"
+        ],
+        "passport_id": "binding.primitive.pass_chain_episode.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: event_candidate_pass_identified, event_linked_first_time_relay_observed_under_declared_thresholds, event_linked_relay_and_terminal_controlled_reception_observed, tracking_confirmed_controlled_reception, tracking_confirmed_physical_release. Prohibited: decision_quality_inferred, pass_crossed_line_claimed, pass_probability_inferred, pass_was_optimal, planned_combination_inferred, player_intent_inferred, proves_pass_optimality, proves_pass_probability, proves_passer_intent, tactical_causation_inferred, third_man_combination_claimed.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "declared_next_pass_recipient_id",
+          "input_pass_episode_id",
+          "pass_chain_reason",
+          "pass_chain_status",
+          "relay_pass_episode_id",
+          "relay_player_id",
+          "relay_touch_frame_id",
+          "terminal_controlled_reception_frame_id",
+          "terminal_pass_episode_id",
+          "terminal_receiver_id"
+        ],
+        "required_modalities": [
+          "events",
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_pass_chain_episode"
+    },
+    {
+      "concept": "concept.receiver_line_transition_during_pass_leg",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.receiver_line_transition_during_pass_leg.v1"
+        ],
+        "concept_refs": [
+          "concept.receiver_line_transition_during_pass_leg"
+        ],
+        "evidence_contract_refs": [
+          "evidence.receiver_line_transition_during_pass_leg.v1"
+        ],
+        "operationalization_refs": [
+          "op.receiver_line_transition_during_pass_leg.v1"
+        ],
+        "passport_id": "binding.primitive.receiver_line_transition_during_pass_leg.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: entity_position_classified_relative_to_supplied_line_under_declared_buffer, no_qualifying_geometric_defensive_line_observed_when_evidence_complete, observed_geometric_defensive_line_fit_under_declared_thresholds, receiver_player_transitioned_beyond_supplied_observed_line. Prohibited: decision_quality_inferred, defender_intent_inferred, defensive_line_was_broken, line_break_caused_by_pass, pass_crossed_line_claimed, pass_probability_inferred, pass_was_optimal, passer_intended_measured_outcome, player_intent_inferred, tactical_line_role_identified.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "input_physical_release_frame_id",
+          "line_x_m",
+          "receiver_line_transition_reason",
+          "receiver_line_transition_status",
+          "relay_player_id",
+          "relay_relative_position_status",
+          "relay_touch_frame_id",
+          "release_relative_position_status"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "receiver_line_transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_receiver_line_transition_during_pass_leg"
+    },
+    {
+      "concept": "concept.observed_structured_zone",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.observed_structured_zone.v1"
+        ],
+        "concept_refs": [
+          "concept.observed_structured_zone"
+        ],
+        "evidence_contract_refs": [
+          "evidence.observed_structured_zone.v1"
+        ],
+        "operationalization_refs": [
+          "op.observed_structured_zone.v1"
+        ],
+        "passport_id": "binding.primitive.structured_zone.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: declared_ball_zone_membership_evaluated. Prohibited: player_intent_inferred, role_taxonomy_inferred, tactical_causation_inferred, tactical_phase_quality_inferred, territorial_value_inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "attacking_direction",
+          "zone_ball_x_m",
+          "zone_ball_y_m",
+          "zone_boundary_buffer_m",
+          "zone_frame_id",
+          "zone_name",
+          "zone_normalized_ball_x_m",
+          "zone_reason",
+          "zone_status"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "zone_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_structured_zone"
+    },
+    {
+      "concept": "concept.time_to_arrival",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.time_to_arrival.v1"
+        ],
+        "concept_refs": [
+          "concept.time_to_arrival"
+        ],
+        "evidence_contract_refs": [
+          "evidence.time_to_arrival.v1"
+        ],
+        "operationalization_refs": [
+          "op.static_point_time_to_arrival.v1"
+        ],
+        "passport_id": "binding.primitive.time_to_arrival.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: declared_arrival_threshold_evaluated_for_observed_candidates, declared_static_point_arrival_time_estimated_under_declared_speed_assumption. Prohibited: cover_shadow_inferred, defender_intent_inferred, lane_denial_quality_inferred, moving_target_interception_inferred, pass_was_optimal, pitch_control_inferred, player_effort_inferred, player_intent_inferred, tactical_causation_inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "arrival_frame_id",
+          "arrival_player_ids",
+          "candidate_player_ids",
+          "candidate_scope",
+          "coverage_status",
+          "maximum_arrival_seconds",
+          "maximum_player_speed_mps",
+          "minimum_arrival_seconds",
+          "momentum_policy",
+          "nearest_arrival_player_id",
+          "observed_candidate_player_ids",
+          "reachability_model",
+          "reachable_verdict_bias",
+          "target_point",
+          "time_to_arrival_reason",
+          "time_to_arrival_status"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_time_to_arrival"
+    },
+    {
+      "concept": "concept.tracking_quality",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.tracking_quality.v1"
+        ],
+        "concept_refs": [
+          "concept.tracking_quality"
+        ],
+        "evidence_contract_refs": [
+          "evidence.tracking_quality.v1"
+        ],
+        "operationalization_refs": [
+          "op.anchor_tracking_quality.v1"
+        ],
+        "passport_id": "binding.primitive.tracking_quality.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: declared_tracking_coordinates_available_at_anchor_frame. Prohibited: player_intent_inferred, tactical_role_identified, tracking_accuracy_proven.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "ball_position_present",
+          "tracking_quality_frame_id",
+          "tracking_quality_reason",
+          "tracking_quality_status"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "tracking_quality_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_tracking_quality"
+    },
+    {
+      "concept": "concept.observed_transition_anchor",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.observed_transition_anchor.v1"
+        ],
+        "concept_refs": [
+          "concept.observed_transition_anchor"
+        ],
+        "evidence_contract_refs": [
+          "evidence.observed_transition_anchor.v1"
+        ],
+        "operationalization_refs": [
+          "op.observed_transition_anchor.v1"
+        ],
+        "passport_id": "binding.primitive.transition_anchor.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: declared_prior_possession_continuity_checked, observed_possession_role_transition_evaluated. Prohibited: counterattack_quality_inferred, player_intent_inferred, role_taxonomy_inferred, tactical_causation_inferred, transition_intent_inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "minimum_prior_possession_seconds",
+          "new_team_role",
+          "previous_frame_id",
+          "previous_team_role",
+          "prior_possession_frame_count",
+          "transition_frame_id",
+          "transition_match_time_ms",
+          "transition_reason",
+          "transition_status",
+          "transition_type"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_transition_anchor"
+    },
+    {
+      "concept": "concept.observed_entity_velocity",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.observed_entity_velocity.v1"
+        ],
+        "concept_refs": [
+          "concept.observed_entity_velocity"
+        ],
+        "evidence_contract_refs": [
+          "evidence.observed_entity_velocity.v1"
+        ],
+        "operationalization_refs": [
+          "op.observed_entity_velocity.v1"
+        ],
+        "passport_id": "binding.primitive.velocity.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: declared_entity_velocity_measured_from_tracking_displacement. Prohibited: player_effort_inferred, player_intent_inferred, pressure_quality_inferred, tactical_role_identified.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "speed_mps",
+          "velocity_dt_seconds",
+          "velocity_entity_id",
+          "velocity_frame_id",
+          "velocity_lookback_frames",
+          "velocity_reason",
+          "velocity_status",
+          "velocity_vx_mps",
+          "velocity_vy_mps"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_velocity"
+    },
+    {
+      "concept": "concept.observed_local_number_relation",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.observed_local_number_relation.v1"
+        ],
+        "concept_refs": [
+          "concept.observed_local_number_relation"
+        ],
+        "evidence_contract_refs": [
+          "evidence.observed_local_number_relation.v1"
+        ],
+        "operationalization_refs": [
+          "op.observed_local_number_relation.v1"
+        ],
+        "passport_id": "binding.relation.local_number_relation.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: declared_local_number_requirement_evaluated, observed_players_counted_in_declared_local_region. Prohibited: communication_inferred, line_break_caused_by_pass, pass_probability_inferred, pass_was_optimal, player_intent_inferred, pressure_inferred, scanning_inferred, support_quality_inferred, tactical_role_identified.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "coverage_status",
+          "defending_count",
+          "defending_in_region_player_ids",
+          "local_number_difference",
+          "local_number_frame_id",
+          "local_number_reason",
+          "local_number_status",
+          "maximum_defending_players",
+          "minimum_difference",
+          "minimum_perspective_players",
+          "perspective_count",
+          "perspective_in_region_player_ids",
+          "radius_m",
+          "reference_point"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_local_number_relation"
+    },
+    {
+      "concept": "concept.observed_pressure_on_carrier",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.observed_pressure_on_carrier.v1"
+        ],
+        "concept_refs": [
+          "concept.observed_pressure_on_carrier"
+        ],
+        "evidence_contract_refs": [
+          "evidence.observed_pressure_on_carrier.v1"
+        ],
+        "operationalization_refs": [
+          "op.observed_pressure_on_carrier.v1"
+        ],
+        "passport_id": "binding.relation.pressure_on_carrier.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: nearest_defender_pressure_condition_evaluated_under_declared_thresholds. Prohibited: decision_quality_inferred, defender_intent_inferred, pass_was_optimal, player_intent_inferred, pressure_quality_inferred, tactical_causation_inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "approach_angle_degrees",
+          "carrier_id",
+          "closing_speed_mps",
+          "coverage_status",
+          "maximum_approach_angle_degrees",
+          "maximum_pressure_distance_m",
+          "minimum_closing_speed_mps",
+          "minimum_pressure_duration_seconds",
+          "nearest_defender_distance_m",
+          "pressure_duration_seconds",
+          "pressure_frame_id",
+          "pressure_reason",
+          "pressure_status"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_pressure_on_carrier"
+    },
+    {
+      "concept": "concept.observed_support_arrival",
+      "held_out": false,
+      "projection_source": {
+        "claim_contract_refs": [
+          "claim.observed_support_arrival.v1"
+        ],
+        "concept_refs": [
+          "concept.observed_support_arrival"
+        ],
+        "evidence_contract_refs": [
+          "evidence.observed_support_arrival.v1"
+        ],
+        "operationalization_refs": [
+          "op.observed_geometric_support_arrival.v1"
+        ],
+        "passport_id": "binding.relation.support_arrival_relation.0_1_0",
+        "source": "semantic_registry_passport_projection"
+      },
+      "registry_projected": true,
+      "target_contract": {
+        "claim_boundary": "Permitted: declared_support_timing_requirement_evaluated, observed_candidate_entered_declared_support_region. Prohibited: communication_inferred, line_break_caused_support, pass_probability_inferred, pass_was_optimal, player_intent_inferred, scanning_inferred, support_quality_inferred, tactical_role_identified.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "anchor_frame_id",
+          "anchor_id",
+          "candidate_player_ids",
+          "coverage_status",
+          "evaluated_candidate_player_ids",
+          "maximum_arrival_seconds",
+          "maximum_support_distance_m",
+          "minimum_duration_seconds",
+          "minimum_supporting_players",
+          "reference_point",
+          "support_anchor_frame_id",
+          "support_arrival_reason",
+          "support_arrival_status",
+          "support_region_mode",
+          "support_window_end_frame_id",
+          "support_window_start_frame_id",
+          "supporting_player_ids"
+        ],
+        "required_modalities": [
+          "tracking"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "registry_projected_support_arrival_relation"
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "failure_distribution": {
+    "runtime_gap": 2
+  },
+  "findings": [],
+  "held_out_multi_step_successes": [],
+  "held_out_successes": [],
+  "multi_step_successes": [],
+  "plan_dir": "generated/compiler-search-contracts/search-run/plans",
+  "report_priority": "Held-out successes and real failure distribution are the meaningful outputs.",
+  "result_distribution": {
+    "compiler_reachable": 18,
+    "not_compiler_reachable": 2
+  },
+  "row_csv_path": "generated/compiler-search-contracts/search-run/row-ledger.csv",
+  "row_ledger_path": "generated/compiler-search-contracts/search-run/row-ledger.json",
+  "schema_version": "compiler_search_reachability_report.v0",
+  "scope": {
+    "atlas_wide_execution": false,
+    "concept_name_allowed_as_input": false,
+    "coverage_gold_chain_allowed_as_input": false,
+    "coverage_ledger_update_enabled": false,
+    "mode": "registry_passport_projection_subset",
+    "natural_language": false,
+    "pattern_dispatch_allowed": false,
+    "target_count": 20
+  },
+  "search_budget": {
+    "allowed_catalog_refs": [
+      "action_chain",
+      "action_event_anchor",
+      "ball_lateral_fraction",
+      "carry_episode",
+      "change_across_anchor",
+      "controlled_pass_episode",
+      "defensive_line_model",
+      "defensive_outfield_centroid",
+      "geometric_progressive_corridor",
+      "geometric_progressive_corridor_from_anchor_set",
+      "join_episode_sets",
+      "lane_occupancy",
+      "local_number_relation",
+      "multi_line_model",
+      "one_touch_relay_episode",
+      "opponents_bypassed_by_action",
+      "outcome_window",
+      "pairwise_distance",
+      "pass_chain_episode",
+      "possession_segment",
+      "pressure_on_carrier",
+      "receiver_line_transition_during_pass_leg",
+      "relation_destination_entry",
+      "relative_position_to_line",
+      "signed_lateral_shift",
+      "structured_zone",
+      "support_arrival_relation",
+      "switch_of_play",
+      "team_compactness",
+      "time_to_arrival",
+      "tracking_quality",
+      "transition_anchor",
+      "velocity"
+    ],
+    "budget_label": "max_depth=4.max_branching=6",
+    "excluded_catalog_refs": [
+      "controlled_line_break_episode",
+      "outcome_classification",
+      "relation_destination_entry_classification"
+    ],
+    "max_branching": 6,
+    "max_depth": 4,
+    "rules": [
+      "provider_field_backward_search",
+      "generic_before_after_change",
+      "generic_binary_episode_join"
+    ]
+  },
+  "status": "PASS",
+  "summary": {
+    "compiler_reachable_count": 0,
+    "compiler_reachable_pct": 0.0,
+    "coverage_supported_count": 20,
+    "coverage_supported_pct": 100.0,
+    "held_out_compiler_reachable_count": 0,
+    "held_out_compiler_reachable_pct": 0.0,
+    "held_out_multi_step_compiler_reachable_count": 0,
+    "held_out_multi_step_target_count": 0,
+    "held_out_target_count": 0,
+    "multi_step_compiler_reachable_count": 0,
+    "multi_step_target_count": 0,
+    "sample_compiler_reachable_count": 18,
+    "sample_compiler_reachable_pct": 90.0,
+    "sample_only_note": "sample_* fields are the measurement for non-updating runs; compiler_reachable_count reflects the supplied coverage ledger after mutation only when ledger updates are enabled.",
+    "sample_target_count": 20
+  },
+  "synthesizer_strategy": "bounded_backward_search.v0.1.registry_projected_contracts",
+  "synthesizer_version": "search_synthesizer.v0.1",
+  "targets_path": "generated/compiler-search-contracts/registry-projected-targets.v0.json"
+}
