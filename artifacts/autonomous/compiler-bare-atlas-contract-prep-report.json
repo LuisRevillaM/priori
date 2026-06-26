@@ -1,0 +1,44 @@
+{
+  "anti_circularity": {
+    "findings": [],
+    "forbidden_contract_keys": [
+      "catalog_ref",
+      "catalog_refs",
+      "closest_supported_substitute",
+      "composition_pattern",
+      "gold_chain",
+      "gold_chain_path",
+      "pattern",
+      "provider_chain",
+      "runtime_capability",
+      "runtime_capability_ref",
+      "runtime_ref",
+      "runtime_refs",
+      "source_runtime_capability"
+    ]
+  },
+  "outputs": {
+    "ledger_path": "generated/compiler-search-bare-atlas/bare-atlas-coverage-ledger.json",
+    "targets_path": "generated/compiler-search-bare-atlas/bare-atlas-targets.v0.json"
+  },
+  "schema_version": "bare_atlas_contract_sample_prepare.v0",
+  "scope": {
+    "atlas_wide": false,
+    "coverage_map_gold_chain_used": false,
+    "independent_author_variants_required": true,
+    "known_negative_controls_required": true,
+    "natural_language": false,
+    "pattern_labels_used": false,
+    "runtime_or_catalog_refs_used_inside_target_contract": false
+  },
+  "status": "PASS",
+  "summary": {
+    "author_variant_count": 14,
+    "concept_count": 7,
+    "role_counts": {
+      "known_negative": 3,
+      "positive_probe": 4
+    },
+    "target_count": 14
+  }
+}

@@ -1,0 +1,222 @@
+{
+  "concepts": [
+    {
+      "concept": "carry_progression",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "document_hash": "8dc795885eafb7259bdeee895f1dce027aec49a6628fe64eb2b6a8c3f8c3e6fe",
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "target_id": "bare_atlas_carry_progression_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "document_hash": "a6d9f4af921cfb9d474011d96e574bec4f7c6ac6cf58e6bf94147efbbefb2a62",
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "target_id": "bare_atlas_carry_progression_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "concept": "direct_pressure_candidate",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "document_hash": "845bdc17f993bae9a5b265b5c3abdbba3cbe07956cb3af38b4bfc7d968d231f0",
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "target_id": "bare_atlas_direct_pressure_candidate_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "document_hash": "99c6f5f8270e284d611556da1e97f585191d0f81caed4133b0de3250eb6f47d4",
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "target_id": "bare_atlas_direct_pressure_candidate_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "concept": "post_regain_retention",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "document_hash": "5eda96691c8cefd319e3361a7238ded7a7b29bb1834d2f0f141a5e54063ea0d9",
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "target_id": "bare_atlas_post_regain_retention_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "document_hash": "5bf06ab44b908efc5ae8cedd6b4f98c686f5092cc362433d31f7da3398a33270",
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "target_id": "bare_atlas_post_regain_retention_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "concept": "carry_out_of_pressure",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "document_hash": "d02ce8aaf44969a544fb17ea2d58e2024cb2ee1a267b17db356768515be4ba1c",
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "result": "compiler_reachable",
+          "result_count": 2,
+          "target_id": "bare_atlas_carry_out_of_pressure_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "document_hash": "3d55e0b02fab4590389adf9a8afaca3e422a17cede9a5f8912e48d9ea54b26d7",
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "result": "compiler_reachable",
+          "result_count": 2,
+          "target_id": "bare_atlas_carry_out_of_pressure_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "concept": "pass_completion_probability",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "expected_result": null,
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "document_hash": null,
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "target_id": "bare_atlas_pass_completion_probability_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "document_hash": null,
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "target_id": "bare_atlas_pass_completion_probability_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "concept": "goalkeeper_set_position_proxy",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "expected_result": null,
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "document_hash": null,
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "target_id": "bare_atlas_goalkeeper_set_position_proxy_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "document_hash": null,
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "target_id": "bare_atlas_goalkeeper_set_position_proxy_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "concept": "goal_kick_build_structure",
+      "expected_failure_taxonomy": "missing_primitive",
+      "expected_result": null,
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "document_hash": null,
+          "failure_taxonomy": "missing_primitive",
+          "honest_zero": false,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "target_id": "bare_atlas_goal_kick_build_structure_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "document_hash": null,
+          "failure_taxonomy": "missing_primitive",
+          "honest_zero": false,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "target_id": "bare_atlas_goal_kick_build_structure_blind_b_v0"
+        }
+      ]
+    }
+  ],
+  "findings": [],
+  "inputs": {
+    "config_path": "config/compiler-reachability/bare-atlas-contract-sample.v0.json",
+    "search_row_ledger": "generated/compiler-search-bare-atlas/search-run/row-ledger.json"
+  },
+  "schema_version": "bare_atlas_contract_sample_assessment.v0",
+  "scope": {
+    "atlas_wide": false,
+    "claim": "Small bare-atlas contract sample with author-variant consistency and known-negative honesty controls; not a compiler-reachable percentage for the 741 atlas.",
+    "natural_language": false,
+    "sample_policy": "bare_atlas_contract_sample_with_blind_variants_and_known_negatives"
+  },
+  "status": "PASS",
+  "summary": {
+    "concept_count": 7,
+    "failure_distribution": {
+      "missing_primitive": 2,
+      "unsupported_modality": 4
+    },
+    "known_negative_honest_failure_count": 6,
+    "known_negative_target_count": 6,
+    "positive_compiler_reachable_count": 8,
+    "positive_target_count": 8,
+    "result_distribution": {
+      "compiler_reachable": 8,
+      "not_compiler_reachable": 6
+    },
+    "target_count": 14
+  }
+}

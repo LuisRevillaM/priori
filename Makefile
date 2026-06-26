@@ -292,3 +292,14 @@ compiler-search-reachability:
 .PHONY: compiler-search-contract-projection
 compiler-search-contract-projection:
 	$(PYTHON) scripts/coverage_map/project_search_contracts.py
+
+.PHONY: compiler-bare-atlas-contract-sample
+compiler-bare-atlas-contract-sample:
+	$(PYTHON) scripts/coverage_map/bare_atlas_contract_sample.py prepare
+	TQE_SEARCH_TARGETS=generated/compiler-search-bare-atlas/bare-atlas-targets.v0.json \
+	TQE_SEARCH_LEDGER=generated/compiler-search-bare-atlas/bare-atlas-coverage-ledger.json \
+	TQE_SEARCH_OUT_DIR=generated/compiler-search-bare-atlas/search-run \
+	TQE_SEARCH_REPORT=artifacts/autonomous/compiler-bare-atlas-search-report.json \
+	TQE_SEARCH_UPDATE_LEDGER=0 \
+	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	$(PYTHON) scripts/coverage_map/bare_atlas_contract_sample.py assess

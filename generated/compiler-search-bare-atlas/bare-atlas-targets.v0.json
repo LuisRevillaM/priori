@@ -1,0 +1,430 @@
+{
+  "note": "Concept ids are reporting labels only. Variants emulate independently-authored typed contracts and must not contain pattern labels, catalog refs, runtime refs, or coverage-map gold chains.",
+  "sample_policy": "bare_atlas_contract_sample_with_blind_variants_and_known_negatives",
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.bare_atlas_contract_sample",
+  "targets": [
+    {
+      "author_variant": "blind_a",
+      "bare_atlas_sample": true,
+      "concept": "carry_progression",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed movement-under-control with a forward component; no dribbling skill, defender bypass, intent, or pressure-break quality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "carry_forward_progression_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "carry_forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "bare_atlas_carry_progression_blind_a_v0"
+    },
+    {
+      "author_variant": "blind_b",
+      "bare_atlas_sample": true,
+      "concept": "carry_progression",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed controlled ball movement with a declared forward-distance threshold; no skill, opponent-bypass, intention, or value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carry_reason",
+          "carrier_id",
+          "displacement_m",
+          "carry_forward_progression_m",
+          "control_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "carry_forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "bare_atlas_carry_progression_blind_b_v0"
+    },
+    {
+      "author_variant": "blind_a",
+      "bare_atlas_sample": true,
+      "concept": "direct_pressure_candidate",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed nearest-defender distance, closing speed, and approach angle only; no defender intent, pressure quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "pressure_reason",
+          "carrier_id",
+          "pressure_frame_id",
+          "nearest_defender_id",
+          "nearest_defender_distance_m",
+          "closing_speed_mps",
+          "approach_angle_degrees",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "bare_atlas_direct_pressure_candidate_blind_a_v0"
+    },
+    {
+      "author_variant": "blind_b",
+      "bare_atlas_sample": true,
+      "concept": "direct_pressure_candidate",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed defender proximity around the ball carrier under declared thresholds; no effort, intent, quality, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "nearest_defender_id",
+          "nearest_defender_distance_m",
+          "pressure_duration_seconds",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "bare_atlas_direct_pressure_candidate_blind_b_v0"
+    },
+    {
+      "author_variant": "blind_a",
+      "bare_atlas_sample": true,
+      "concept": "post_regain_retention",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Retained means ball-alive continuity for the frozen duration after an observed regain; no settled-possession quality or tactical intent.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_type",
+          "transition_frame_id",
+          "outcome_window_status",
+          "outcome_window_reason",
+          "minimum_settled_possession_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "bare_atlas_post_regain_retention_blind_a_v0"
+    },
+    {
+      "author_variant": "blind_b",
+      "bare_atlas_sample": true,
+      "concept": "post_regain_retention",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed team-possession change followed by ball-alive retention for a declared window; no phase quality, intent, or causal claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_reason",
+          "transition_frame_id",
+          "previous_team_role",
+          "new_team_role",
+          "outcome_window_status",
+          "minimum_settled_possession_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "bare_atlas_post_regain_retention_blind_b_v0"
+    },
+    {
+      "author_variant": "blind_a",
+      "bare_atlas_sample": true,
+      "concept": "carry_out_of_pressure",
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Pressure reduction means nearest-defender distance increased across the carry; no pressure-breaking quality, defender bypass, intent, or causation.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          },
+          {
+            "after_frame_field": "carry_end_frame_id",
+            "before_frame_field": "carry_start_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "none",
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 4.0,
+            "minimum_change_m": 2.0,
+            "status_fields": [
+              "pressure_status"
+            ],
+            "value_family": "pressure_distance",
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "join_status",
+          "join_reason",
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "change_status",
+          "before_value",
+          "after_value",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "bare_atlas_carry_out_of_pressure_blind_a_v0"
+    },
+    {
+      "author_variant": "blind_b",
+      "bare_atlas_sample": true,
+      "concept": "carry_out_of_pressure",
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed carrier movement where nearest-defender distance is larger at the end than at the start; no claim that pressure was beaten, caused, or optimally handled.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          },
+          {
+            "after_frame_field": "carry_end_frame_id",
+            "before_frame_field": "carry_start_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "none",
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 4.0,
+            "minimum_change_m": 2.0,
+            "status_fields": [
+              "pressure_status"
+            ],
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "join_status",
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "change_status",
+          "before_value",
+          "after_value",
+          "delta_value",
+          "before_value_field",
+          "after_value_field"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "bare_atlas_carry_out_of_pressure_blind_b_v0"
+    },
+    {
+      "author_variant": "blind_a",
+      "bare_atlas_sample": true,
+      "concept": "pass_completion_probability",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "A probability estimate requires a learned model; observed completion alone is not a probability.",
+        "desired_output": "probability",
+        "required_evidence": [
+          "completion_likelihood_score"
+        ],
+        "required_modalities": [
+          "learned_probability_model"
+        ]
+      },
+      "target_id": "bare_atlas_pass_completion_probability_blind_a_v0"
+    },
+    {
+      "author_variant": "blind_b",
+      "bare_atlas_sample": true,
+      "concept": "pass_completion_probability",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "A predicted likelihood requires model-derived probability evidence; tracking/event observations alone do not supply it.",
+        "desired_output": "probability",
+        "required_evidence": [
+          "successful_action_likelihood"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ]
+      },
+      "target_id": "bare_atlas_pass_completion_probability_blind_b_v0"
+    },
+    {
+      "author_variant": "blind_a",
+      "bare_atlas_sample": true,
+      "concept": "goalkeeper_set_position_proxy",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Goalkeeper stance requires body-shape or posture evidence; player coordinates alone are insufficient.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "keeper_stance_state",
+          "posture_confidence"
+        ],
+        "required_modalities": [
+          "body_pose_or_stance_model"
+        ]
+      },
+      "target_id": "bare_atlas_goalkeeper_set_position_proxy_blind_a_v0"
+    },
+    {
+      "author_variant": "blind_b",
+      "bare_atlas_sample": true,
+      "concept": "goalkeeper_set_position_proxy",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Ready/balanced posture is a biomechanical claim and cannot be inferred from ball/player centroids only.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "keeper_balance_state"
+        ],
+        "required_modalities": [
+          "biomechanics_or_orientation_model"
+        ]
+      },
+      "target_id": "bare_atlas_goalkeeper_set_position_proxy_blind_b_v0"
+    },
+    {
+      "author_variant": "blind_a",
+      "bare_atlas_sample": true,
+      "concept": "goal_kick_build_structure",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Requires a declared set-piece structure primitive; generic possession or pass events are not enough.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "restart_structure_status",
+          "restart_shape_anchor_id"
+        ],
+        "required_modalities": [
+          "tracking",
+          "events"
+        ],
+        "status_semantics": [
+          {
+            "field": "restart_structure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "bare_atlas_goal_kick_build_structure_blind_a_v0"
+    },
+    {
+      "author_variant": "blind_b",
+      "bare_atlas_sample": true,
+      "concept": "goal_kick_build_structure",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Build structure at a dead-ball restart requires a dedicated structure definition, not merely an event anchor.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "dead_ball_restart_shape_status",
+          "restart_team_shape_id"
+        ],
+        "required_modalities": [
+          "tracking_event_synchronized"
+        ],
+        "status_semantics": [
+          {
+            "field": "dead_ball_restart_shape_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "bare_atlas_goal_kick_build_structure_blind_b_v0"
+    }
+  ]
+}
