@@ -12,6 +12,7 @@ import json
 import math
 import os
 import sys
+from collections.abc import MutableMapping
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -225,7 +226,7 @@ class TacticalQueryExecutor:
         raw_root: Path = DEFAULT_RAW_ROOT,
         compatibility_profile: str = GENERIC_EXECUTION_PROFILE,
         enable_node_cache: bool | None = None,
-        shared_node_output_cache: dict[str, dict[str, Any]] | None = None,
+        shared_node_output_cache: MutableMapping[str, dict[str, Any]] | None = None,
         progress_callback: Callable[[dict[str, Any]], None] | None = None,
         progress_log: bool | None = None,
     ) -> None:

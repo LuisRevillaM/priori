@@ -19,10 +19,12 @@ CACHED_LEDGER = ROOT / os.environ.get(
     "TQE_SEARCH_CACHED_ROW_LEDGER",
     "generated/compiler-search-bare-atlas/search-run-shared/row-ledger.json",
 )
+CACHED_REPORT = ROOT / os.environ["TQE_SEARCH_CACHED_REPORT"] if os.environ.get("TQE_SEARCH_CACHED_REPORT") else None
 REPORT = ROOT / os.environ.get(
     "TQE_SEARCH_CACHE_EQUIVALENCE_REPORT",
     "artifacts/autonomous/compiler-search-cache-equivalence-report.json",
 )
+REQUIRE_PERSISTENT_DISK_HITS = os.environ.get("TQE_REQUIRE_PERSISTENT_DISK_HITS", "0") == "1"
 
 NON_SEMANTIC_ROW_KEYS = {
     "execution_node_cache",
@@ -63,6 +65,12 @@ def main() -> int:
 
     baseline_cache = cache_totals(baseline)
     cached_cache = cache_totals(cached)
+    cached_report = load_json(CACHED_REPORT) if CACHED_REPORT is not None and CACHED_REPORT.exists() else None
+    cached_backend = (
+        cached_report.get("summary", {}).get("execution_cache_backend", {})
+        if isinstance(cached_report, dict)
+        else {}
+    )
     if cached_cache.get("shared_hits", 0) <= 0:
         findings.append(
             {
@@ -77,6 +85,14 @@ def main() -> int:
                 "code": "baseline_shared_cache_exercised",
                 "message": "Baseline no-shared run unexpectedly produced shared cache hits.",
                 "baseline_node_cache": baseline_cache,
+            }
+        )
+    if REQUIRE_PERSISTENT_DISK_HITS and int(cached_backend.get("disk_loads") or 0) <= 0:
+        findings.append(
+            {
+                "code": "persistent_cache_not_exercised",
+                "message": "Persistent cached run produced no disk-backed cache loads.",
+                "cached_backend": cached_backend,
             }
         )
 
@@ -100,10 +116,12 @@ def main() -> int:
             "compared_target_count": compared,
             "baseline_node_cache": baseline_cache,
             "cached_node_cache": cached_cache,
+            "cached_cache_backend": cached_backend,
         },
         "inputs": {
             "baseline_row_ledger": relative_path(BASELINE_LEDGER),
             "cached_row_ledger": relative_path(CACHED_LEDGER),
+            "cached_report": None if CACHED_REPORT is None else relative_path(CACHED_REPORT),
         },
         "findings": findings,
     }

@@ -322,3 +322,41 @@ compiler-search-cache-equivalence:
 	TQE_SEARCH_UPDATE_LEDGER=0 \
 	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
 	$(PYTHON) scripts/coverage_map/compare_search_cache_equivalence.py
+
+.PHONY: compiler-search-persistent-cache-equivalence
+compiler-search-persistent-cache-equivalence:
+	$(PYTHON) scripts/coverage_map/bare_atlas_contract_sample.py prepare
+	rm -rf artifacts/autonomous/compiler-search-node-cache/persistent-equivalence
+	TQE_SEARCH_SHARED_NODE_CACHE=0 \
+	TQE_SEARCH_TARGETS=generated/compiler-search-bare-atlas/bare-atlas-targets.v0.json \
+	TQE_SEARCH_LEDGER=generated/compiler-search-bare-atlas/bare-atlas-coverage-ledger.json \
+	TQE_SEARCH_OUT_DIR=generated/compiler-search-bare-atlas/search-run-persistent-baseline \
+	TQE_SEARCH_REPORT=artifacts/autonomous/compiler-bare-atlas-search-persistent-baseline-report.json \
+	TQE_SEARCH_UPDATE_LEDGER=0 \
+	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	TQE_SEARCH_SHARED_NODE_CACHE=1 \
+	TQE_SEARCH_PERSISTENT_NODE_CACHE=1 \
+	TQE_SEARCH_NODE_CACHE_NAMESPACE=persistent-equivalence \
+	TQE_SEARCH_NODE_CACHE_ROOT=artifacts/autonomous/compiler-search-node-cache \
+	TQE_SEARCH_TARGETS=generated/compiler-search-bare-atlas/bare-atlas-targets.v0.json \
+	TQE_SEARCH_LEDGER=generated/compiler-search-bare-atlas/bare-atlas-coverage-ledger.json \
+	TQE_SEARCH_OUT_DIR=generated/compiler-search-bare-atlas/search-run-persistent-cold \
+	TQE_SEARCH_REPORT=artifacts/autonomous/compiler-bare-atlas-search-persistent-cold-report.json \
+	TQE_SEARCH_UPDATE_LEDGER=0 \
+	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	TQE_SEARCH_SHARED_NODE_CACHE=1 \
+	TQE_SEARCH_PERSISTENT_NODE_CACHE=1 \
+	TQE_SEARCH_NODE_CACHE_NAMESPACE=persistent-equivalence \
+	TQE_SEARCH_NODE_CACHE_ROOT=artifacts/autonomous/compiler-search-node-cache \
+	TQE_SEARCH_TARGETS=generated/compiler-search-bare-atlas/bare-atlas-targets.v0.json \
+	TQE_SEARCH_LEDGER=generated/compiler-search-bare-atlas/bare-atlas-coverage-ledger.json \
+	TQE_SEARCH_OUT_DIR=generated/compiler-search-bare-atlas/search-run-persistent-warm \
+	TQE_SEARCH_REPORT=artifacts/autonomous/compiler-bare-atlas-search-persistent-warm-report.json \
+	TQE_SEARCH_UPDATE_LEDGER=0 \
+	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	TQE_SEARCH_BASELINE_ROW_LEDGER=generated/compiler-search-bare-atlas/search-run-persistent-baseline/row-ledger.json \
+	TQE_SEARCH_CACHED_ROW_LEDGER=generated/compiler-search-bare-atlas/search-run-persistent-warm/row-ledger.json \
+	TQE_SEARCH_CACHED_REPORT=artifacts/autonomous/compiler-bare-atlas-search-persistent-warm-report.json \
+	TQE_SEARCH_CACHE_EQUIVALENCE_REPORT=artifacts/autonomous/compiler-search-persistent-cache-equivalence-report.json \
+	TQE_REQUIRE_PERSISTENT_DISK_HITS=1 \
+	$(PYTHON) scripts/coverage_map/compare_search_cache_equivalence.py

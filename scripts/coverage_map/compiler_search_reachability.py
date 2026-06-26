@@ -12,8 +12,11 @@ from __future__ import annotations
 
 import collections
 import csv
+import gzip
 import json
 import os
+import pickle
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -53,6 +56,10 @@ ROW_CSV = OUT_DIR / "row-ledger.csv"
 REPORT = repo_path(os.environ.get("TQE_SEARCH_REPORT", ROOT / "artifacts" / "autonomous" / "compiler-search-v0-report.json"))
 UPDATE_LEDGER = os.environ.get("TQE_SEARCH_UPDATE_LEDGER", "1") != "0"
 SHARED_NODE_CACHE_ENABLED = os.environ.get("TQE_SEARCH_SHARED_NODE_CACHE", "1") != "0"
+PERSISTENT_NODE_CACHE_ENABLED = os.environ.get("TQE_SEARCH_PERSISTENT_NODE_CACHE", "0") == "1"
+NODE_CACHE_ROOT = repo_path(
+    os.environ.get("TQE_SEARCH_NODE_CACHE_ROOT", ROOT / "artifacts" / "autonomous" / "compiler-search-node-cache")
+)
 
 SYNTHESIZER_VERSION = "search_synthesizer.v0.1"
 MAX_DEPTH = int(os.environ.get("TQE_SEARCH_MAX_DEPTH", "4"))
@@ -74,7 +81,7 @@ def main() -> int:
     targets_payload = load_json(TARGETS)
     coverage_rows = load_json(LEDGER)
     catalog = CatalogIndex()
-    shared_node_cache: dict[str, dict[str, Any]] | None = {} if SHARED_NODE_CACHE_ENABLED else None
+    shared_node_cache = build_shared_node_cache()
     executor = TacticalQueryExecutor(shared_node_output_cache=shared_node_cache)
     PLAN_DIR.mkdir(parents=True, exist_ok=True)
     for previous_plan in PLAN_DIR.glob("*.json"):
@@ -96,7 +103,12 @@ def main() -> int:
         update_coverage_rows(coverage_rows, results)
         LEDGER.write_text(json.dumps(coverage_rows, indent=1) + "\n", encoding="utf-8")
     write_rows(results)
-    report = build_report(targets_payload=targets_payload, coverage_rows=coverage_rows, results=results)
+    report = build_report(
+        targets_payload=targets_payload,
+        coverage_rows=coverage_rows,
+        results=results,
+        cache_backend_summary=shared_cache_summary(shared_node_cache),
+    )
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(report["summary"], indent=2, sort_keys=True))
@@ -183,6 +195,134 @@ class CatalogIndex:
             if field_name in output.evidence_fields:
                 return output
         return None
+
+
+class PersistentNodeOutputCache(collections.abc.MutableMapping):
+    """Small disk-backed mapping for deterministic compiler-search node outputs."""
+
+    def __init__(self, root: Path, *, namespace: str) -> None:
+        self.root = root / namespace
+        self.root.mkdir(parents=True, exist_ok=True)
+        self.memory: dict[str, dict[str, Any]] = {}
+        self.counters: collections.Counter[str] = collections.Counter()
+        self.namespace = namespace
+
+    def __getitem__(self, key: str) -> dict[str, Any]:
+        if key in self.memory:
+            self.counters["memory_loads"] += 1
+            return self.memory[key]
+        path = self.path_for(key)
+        if not path.exists():
+            raise KeyError(key)
+        with gzip.open(path, "rb") as handle:
+            value = pickle.load(handle)
+        self.memory[key] = value
+        self.counters["disk_loads"] += 1
+        return value
+
+    def __setitem__(self, key: str, value: dict[str, Any]) -> None:
+        self.memory[key] = value
+        path = self.path_for(key)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp_path = path.with_suffix(path.suffix + ".tmp")
+        with gzip.open(tmp_path, "wb") as handle:
+            pickle.dump(value, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        tmp_path.replace(path)
+        self.counters["stores"] += 1
+
+    def __delitem__(self, key: str) -> None:
+        self.memory.pop(key, None)
+        path = self.path_for(key)
+        if not path.exists():
+            raise KeyError(key)
+        path.unlink()
+
+    def __iter__(self):
+        yielded: set[str] = set()
+        for key in self.memory:
+            yielded.add(key)
+            yield key
+        for path in self.root.glob("*/*.pkl.gz"):
+            key = path.name.removesuffix(".pkl.gz")
+            if key not in yielded:
+                yield key
+
+    def __len__(self) -> int:
+        return len(set(iter(self)))
+
+    def __contains__(self, key: object) -> bool:
+        if not isinstance(key, str):
+            return False
+        return key in self.memory or self.path_for(key).exists()
+
+    def path_for(self, key: str) -> Path:
+        safe = "".join(char for char in key if char.isalnum()) or stable_hash(key)
+        return self.root / safe[:2] / f"{safe}.pkl.gz"
+
+    def summary(self) -> dict[str, Any]:
+        return {
+            "backend": "persistent_pickle_gzip",
+            "enabled": True,
+            "root": relative_path(self.root),
+            "namespace": self.namespace,
+            "entry_count": len(self),
+            "memory_entries": len(self.memory),
+            "disk_loads": int(self.counters.get("disk_loads", 0)),
+            "memory_loads": int(self.counters.get("memory_loads", 0)),
+            "stores": int(self.counters.get("stores", 0)),
+        }
+
+
+def build_shared_node_cache() -> collections.abc.MutableMapping[str, dict[str, Any]] | None:
+    if not SHARED_NODE_CACHE_ENABLED:
+        return None
+    if PERSISTENT_NODE_CACHE_ENABLED:
+        return PersistentNodeOutputCache(NODE_CACHE_ROOT, namespace=persistent_cache_namespace())
+    return {}
+
+
+def shared_cache_summary(cache: Any) -> dict[str, Any]:
+    if cache is None:
+        return {"enabled": False, "backend": "disabled"}
+    if isinstance(cache, PersistentNodeOutputCache):
+        return cache.summary()
+    return {"enabled": True, "backend": "memory", "entry_count": len(cache)}
+
+
+def persistent_cache_namespace() -> str:
+    override = os.environ.get("TQE_SEARCH_NODE_CACHE_NAMESPACE")
+    if override:
+        return sanitize_namespace(override)
+    commit = git_output(["rev-parse", "HEAD"]) or "unknown"
+    dirty = git_output(["diff", "--binary", "--", "src/tqe/runtime", "scripts/coverage_map"]) or ""
+    namespace_payload = {
+        "commit": commit,
+        "dirty_diff_hash": stable_hash(dirty) if dirty else None,
+        "synthesizer_version": SYNTHESIZER_VERSION,
+        "search_budget_label": SEARCH_BUDGET_LABEL,
+    }
+    suffix = stable_hash(namespace_payload)[:12]
+    return sanitize_namespace(f"{commit[:12]}-{suffix}")
+
+
+def git_output(args: list[str]) -> str | None:
+    try:
+        completed = subprocess.run(
+            ["git", *args],
+            cwd=ROOT,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return completed.stdout.strip()
+
+
+def sanitize_namespace(value: str) -> str:
+    sanitized = "".join(char if char.isalnum() or char in {"-", "_", "."} else "_" for char in value).strip("._-")
+    return sanitized or stable_hash(value)[:16]
 
 
 VALUE_FAMILY_FIELDS = {
@@ -1255,7 +1395,13 @@ def update_coverage_rows(rows: list[dict[str, Any]], results: list[dict[str, Any
         }
 
 
-def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[str, Any]], results: list[dict[str, Any]]) -> dict[str, Any]:
+def build_report(
+    *,
+    targets_payload: dict[str, Any],
+    coverage_rows: list[dict[str, Any]],
+    results: list[dict[str, Any]],
+    cache_backend_summary: dict[str, Any],
+) -> dict[str, Any]:
     sample_policy = targets_payload.get("sample_policy", "bounded_stratified_sample_with_held_out_targets")
     requires_held_out_acceptance = sample_policy == "bounded_stratified_sample_with_held_out_targets"
     total = len(coverage_rows)
@@ -1310,6 +1456,7 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
             "target_count": len(results),
             "coverage_ledger_update_enabled": UPDATE_LEDGER,
             "shared_node_cache_enabled": SHARED_NODE_CACHE_ENABLED,
+            "persistent_node_cache_enabled": PERSISTENT_NODE_CACHE_ENABLED,
             "pattern_dispatch_allowed": False,
             "coverage_gold_chain_allowed_as_input": False,
             "concept_name_allowed_as_input": False,
@@ -1347,6 +1494,7 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
             "held_out_multi_step_compiler_reachable_count": len(held_out_multi_step_success),
             "execution_reuse_enabled": SHARED_NODE_CACHE_ENABLED,
             "execution_node_cache": cache_summary,
+            "execution_cache_backend": cache_backend_summary,
         },
         "failure_distribution": dict(sorted(failure_counts.items())),
         "result_distribution": dict(sorted(result_counts.items())),

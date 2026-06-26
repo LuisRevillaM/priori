@@ -1,0 +1,50 @@
+{
+  "claim": "Cross-target shared catalog-node execution reuse preserves compiler-search semantic row results on the compared sample.",
+  "findings": [],
+  "inputs": {
+    "baseline_row_ledger": "generated/compiler-search-bare-atlas/search-run-persistent-baseline/row-ledger.json",
+    "cached_report": "artifacts/autonomous/compiler-bare-atlas-search-persistent-warm-report.json",
+    "cached_row_ledger": "generated/compiler-search-bare-atlas/search-run-persistent-warm/row-ledger.json"
+  },
+  "schema_version": "compiler_search_cache_equivalence.v0",
+  "scope": {
+    "atlas_wide": false,
+    "cache_on_off_equivalence": true,
+    "compares_final_query_results": true,
+    "compares_provider_chains": true,
+    "compares_runtime_trace_hashes": true,
+    "ignores_non_semantic_plan_paths": true,
+    "natural_language": false
+  },
+  "status": "PASS",
+  "summary": {
+    "baseline_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "hits": 28,
+      "local_hits": 28,
+      "misses": 364,
+      "shared_hits": 0
+    },
+    "cached_cache_backend": {
+      "backend": "persistent_pickle_gzip",
+      "disk_loads": 140,
+      "enabled": true,
+      "entry_count": 140,
+      "memory_entries": 140,
+      "memory_loads": 224,
+      "namespace": "persistent-equivalence",
+      "root": "artifacts/autonomous/compiler-search-node-cache/persistent-equivalence",
+      "stores": 0
+    },
+    "cached_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "hits": 392,
+      "local_hits": 28,
+      "misses": 0,
+      "shared_hits": 364
+    },
+    "compared_target_count": 14
+  }
+}
