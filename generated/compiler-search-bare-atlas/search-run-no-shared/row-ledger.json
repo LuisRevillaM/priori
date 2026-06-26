@@ -282,7 +282,7 @@
     "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": "generated/compiler-search-bare-atlas/search-run/plans/bare_atlas_carry_progression_blind_a_v0.json",
+    "plan_path": "generated/compiler-search-bare-atlas/search-run-no-shared/plans/bare_atlas_carry_progression_blind_a_v0.json",
     "providers_used": [
       "controlled_pass_episode",
       "carry_episode"
@@ -316,10 +316,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 28,
+      "hits": 0,
       "local_hits": 0,
-      "misses": 0,
-      "shared_hits": 28
+      "misses": 28,
+      "shared_hits": 0
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -585,7 +585,7 @@
     "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": "generated/compiler-search-bare-atlas/search-run/plans/bare_atlas_carry_progression_blind_b_v0.json",
+    "plan_path": "generated/compiler-search-bare-atlas/search-run-no-shared/plans/bare_atlas_carry_progression_blind_b_v0.json",
     "providers_used": [
       "controlled_pass_episode",
       "carry_episode"
@@ -619,10 +619,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 14,
+      "hits": 0,
       "local_hits": 0,
-      "misses": 14,
-      "shared_hits": 14
+      "misses": 28,
+      "shared_hits": 0
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -796,7 +796,7 @@
     "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": "generated/compiler-search-bare-atlas/search-run/plans/bare_atlas_direct_pressure_candidate_blind_a_v0.json",
+    "plan_path": "generated/compiler-search-bare-atlas/search-run-no-shared/plans/bare_atlas_direct_pressure_candidate_blind_a_v0.json",
     "providers_used": [
       "controlled_pass_episode",
       "pressure_on_carrier"
@@ -830,10 +830,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 28,
+      "hits": 0,
       "local_hits": 0,
-      "misses": 0,
-      "shared_hits": 28
+      "misses": 28,
+      "shared_hits": 0
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1007,7 +1007,7 @@
     "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": "generated/compiler-search-bare-atlas/search-run/plans/bare_atlas_direct_pressure_candidate_blind_b_v0.json",
+    "plan_path": "generated/compiler-search-bare-atlas/search-run-no-shared/plans/bare_atlas_direct_pressure_candidate_blind_b_v0.json",
     "providers_used": [
       "controlled_pass_episode",
       "pressure_on_carrier"
@@ -1194,7 +1194,7 @@
     "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": "generated/compiler-search-bare-atlas/search-run/plans/bare_atlas_post_regain_retention_blind_a_v0.json",
+    "plan_path": "generated/compiler-search-bare-atlas/search-run-no-shared/plans/bare_atlas_post_regain_retention_blind_a_v0.json",
     "providers_used": [
       "transition_anchor",
       "outcome_window"
@@ -1228,10 +1228,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 28,
+      "hits": 0,
       "local_hits": 0,
-      "misses": 0,
-      "shared_hits": 28
+      "misses": 28,
+      "shared_hits": 0
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1381,7 +1381,7 @@
     "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": "generated/compiler-search-bare-atlas/search-run/plans/bare_atlas_post_regain_retention_blind_b_v0.json",
+    "plan_path": "generated/compiler-search-bare-atlas/search-run-no-shared/plans/bare_atlas_post_regain_retention_blind_b_v0.json",
     "providers_used": [
       "transition_anchor",
       "outcome_window"
@@ -1415,10 +1415,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 42,
+      "hits": 14,
       "local_hits": 14,
-      "misses": 70,
-      "shared_hits": 28
+      "misses": 98,
+      "shared_hits": 0
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1900,7 +1900,7 @@
     "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": true,
     "pattern_dispatch_used": false,
-    "plan_path": "generated/compiler-search-bare-atlas/search-run/plans/bare_atlas_carry_out_of_pressure_blind_a_v0.json",
+    "plan_path": "generated/compiler-search-bare-atlas/search-run-no-shared/plans/bare_atlas_carry_out_of_pressure_blind_a_v0.json",
     "providers_used": [
       "controlled_pass_episode",
       "carry_episode",
@@ -1948,10 +1948,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 112,
+      "hits": 14,
       "local_hits": 14,
-      "misses": 0,
-      "shared_hits": 98
+      "misses": 98,
+      "shared_hits": 0
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2433,7 +2433,7 @@
     "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": true,
     "pattern_dispatch_used": false,
-    "plan_path": "generated/compiler-search-bare-atlas/search-run/plans/bare_atlas_carry_out_of_pressure_blind_b_v0.json",
+    "plan_path": "generated/compiler-search-bare-atlas/search-run-no-shared/plans/bare_atlas_carry_out_of_pressure_blind_b_v0.json",
     "providers_used": [
       "controlled_pass_episode",
       "carry_episode",

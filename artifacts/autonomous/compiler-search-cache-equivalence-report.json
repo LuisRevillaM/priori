@@ -1,0 +1,38 @@
+{
+  "claim": "Cross-target shared catalog-node execution reuse preserves compiler-search semantic row results on the compared sample.",
+  "findings": [],
+  "inputs": {
+    "baseline_row_ledger": "generated/compiler-search-bare-atlas/search-run-no-shared/row-ledger.json",
+    "cached_row_ledger": "generated/compiler-search-bare-atlas/search-run-shared/row-ledger.json"
+  },
+  "schema_version": "compiler_search_cache_equivalence.v0",
+  "scope": {
+    "atlas_wide": false,
+    "cache_on_off_equivalence": true,
+    "compares_final_query_results": true,
+    "compares_provider_chains": true,
+    "compares_runtime_trace_hashes": true,
+    "ignores_non_semantic_plan_paths": true,
+    "natural_language": false
+  },
+  "status": "PASS",
+  "summary": {
+    "baseline_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "hits": 28,
+      "local_hits": 28,
+      "misses": 364,
+      "shared_hits": 0
+    },
+    "cached_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "hits": 252,
+      "local_hits": 28,
+      "misses": 140,
+      "shared_hits": 224
+    },
+    "compared_target_count": 14
+  }
+}

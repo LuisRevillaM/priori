@@ -164,6 +164,9 @@ def assess() -> int:
                     "result_count": row.get("result_count"),
                     "honest_zero": row.get("honest_zero"),
                     "document_hash": row.get("document_hash"),
+                    "terminal_provider": row.get("terminal_provider"),
+                    "providers_used": row.get("providers_used", []),
+                    "rules_used": row.get("rules_used", []),
                 }
             )
         concept_findings = assess_concept(concept_config, variants)
@@ -214,6 +217,7 @@ def assess() -> int:
             "known_negative_honest_failure_count": sum(1 for item in known_negative_targets if item["result"] != "compiler_reachable"),
             "result_distribution": dict(sorted(result_counts.items())),
             "failure_distribution": dict(sorted(failure_counts.items())),
+            "execution_node_cache": execution_node_cache_summary(rows),
         },
         "concepts": concept_reports,
         "findings": findings,
@@ -241,6 +245,30 @@ def assess_concept(concept_config: dict[str, Any], variants: list[dict[str, Any]
             }
         )
     if concept_config["sample_role"] == "positive_probe":
+        positive_chains = {
+            (
+                tuple(variant.get("providers_used") or []),
+                tuple(sorted(variant.get("rules_used") or [])),
+                variant.get("terminal_provider"),
+            )
+            for variant in variants
+            if variant["result"] == "compiler_reachable"
+        }
+        if len(positive_chains) > 1:
+            findings.append(
+                {
+                    "code": "author_variant_provider_chain_diverged",
+                    "concept": concept,
+                    "chains": [
+                        {
+                            "providers_used": list(chain[0]),
+                            "rules_used": list(chain[1]),
+                            "terminal_provider": chain[2],
+                        }
+                        for chain in sorted(positive_chains)
+                    ],
+                }
+            )
         expected = concept_config.get("expected_result")
         if expected:
             for variant in variants:
@@ -277,6 +305,17 @@ def assess_concept(concept_config: dict[str, Any], variants: list[dict[str, Any]
                     }
                 )
     return findings
+
+
+def execution_node_cache_summary(rows: list[dict[str, Any]]) -> dict[str, int]:
+    summary: collections.Counter[str] = collections.Counter()
+    for row in rows:
+        cache = row.get("execution_node_cache")
+        if not isinstance(cache, dict):
+            continue
+        for key in ("hits", "local_hits", "shared_hits", "misses", "disabled", "bypassed"):
+            summary[key] += int(cache.get(key) or 0)
+    return dict(sorted(summary.items()))
 
 
 def target_from_variant(concept_config: dict[str, Any], variant: dict[str, Any]) -> dict[str, Any]:

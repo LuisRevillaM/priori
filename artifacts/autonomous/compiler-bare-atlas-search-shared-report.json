@@ -22,14 +22,14 @@
     "carry_out_of_pressure",
     "carry_out_of_pressure"
   ],
-  "plan_dir": "generated/compiler-search-bare-atlas/search-run/plans",
+  "plan_dir": "generated/compiler-search-bare-atlas/search-run-shared/plans",
   "report_priority": "Held-out successes and real failure distribution are the meaningful outputs.",
   "result_distribution": {
     "compiler_reachable": 8,
     "not_compiler_reachable": 6
   },
-  "row_csv_path": "generated/compiler-search-bare-atlas/search-run/row-ledger.csv",
-  "row_ledger_path": "generated/compiler-search-bare-atlas/search-run/row-ledger.json",
+  "row_csv_path": "generated/compiler-search-bare-atlas/search-run-shared/row-ledger.csv",
+  "row_ledger_path": "generated/compiler-search-bare-atlas/search-run-shared/row-ledger.json",
   "schema_version": "compiler_search_reachability_report.v0",
   "scope": {
     "atlas_wide_execution": false,

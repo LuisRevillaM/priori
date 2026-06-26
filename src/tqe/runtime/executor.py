@@ -225,6 +225,7 @@ class TacticalQueryExecutor:
         raw_root: Path = DEFAULT_RAW_ROOT,
         compatibility_profile: str = GENERIC_EXECUTION_PROFILE,
         enable_node_cache: bool | None = None,
+        shared_node_output_cache: dict[str, dict[str, Any]] | None = None,
         progress_callback: Callable[[dict[str, Any]], None] | None = None,
         progress_log: bool | None = None,
     ) -> None:
@@ -238,6 +239,7 @@ class TacticalQueryExecutor:
             if enable_node_cache is None
             else enable_node_cache
         )
+        self.shared_node_output_cache = shared_node_output_cache
         self.progress_callback = progress_callback
         self.progress_log = (
             os.environ.get("TQE_PROGRESS_LOG") == "1"
@@ -437,6 +439,8 @@ class TacticalQueryExecutor:
                 "node_cache": {
                     "enabled": self.enable_node_cache,
                     "hits": int(node_cache_summary.get("hit", 0)),
+                    "local_hits": int(node_cache_summary.get("local_hit", 0)),
+                    "shared_hits": int(node_cache_summary.get("shared_hit", 0)),
                     "misses": int(node_cache_summary.get("miss", 0)),
                     "disabled": int(node_cache_summary.get("disabled", 0)),
                     "bypassed": int(node_cache_summary.get("bypassed", 0)),
@@ -633,9 +637,21 @@ class TacticalQueryExecutor:
                     state.signals[node.node_id] = copy.deepcopy(state.node_output_cache[cache_key])
                     cache_status = "hit"
                     state.node_cache_summary["hit"] += 1
+                    state.node_cache_summary["local_hit"] += 1
+                elif self.shared_node_output_cache is not None and (
+                    shared_cache_key := shared_catalog_node_cache_key(state, node, cache_key)
+                ) in self.shared_node_output_cache:
+                    state.signals[node.node_id] = copy.deepcopy(self.shared_node_output_cache[shared_cache_key])
+                    state.node_output_cache[cache_key] = copy.deepcopy(state.signals[node.node_id])
+                    cache_status = "shared_hit"
+                    state.node_cache_summary["hit"] += 1
+                    state.node_cache_summary["shared_hit"] += 1
                 else:
                     implementation(state, node)
                     state.node_output_cache[cache_key] = copy.deepcopy(state.signals[node.node_id])
+                    if self.shared_node_output_cache is not None:
+                        shared_cache_key = shared_catalog_node_cache_key(state, node, cache_key)
+                        self.shared_node_output_cache[shared_cache_key] = copy.deepcopy(state.signals[node.node_id])
                     cache_status = "miss"
                     state.node_cache_summary["miss"] += 1
             else:
@@ -820,6 +836,23 @@ def catalog_node_cache_key(node: BoundCatalogNode) -> str:
             "input_types": payload.get("input_types", {}),
             "outputs": payload.get("outputs", []),
             "resolved_parameters": payload.get("resolved_parameters", {}),
+        }
+    )
+
+
+def shared_catalog_node_cache_key(state: PeriodState, node: BoundCatalogNode, node_cache_key: str) -> str:
+    return stable_hash(
+        {
+            "schema_version": "shared_catalog_node_output_cache.v0",
+            "canonical_root": str(state.canonical_root.resolve()),
+            "raw_tracking": str(state.raw_tracking.resolve()),
+            "match_id": state.match_id,
+            "period": state.period,
+            "perspective_team_role": state.perspective_team_role,
+            "defending_team_role": state.defending_team_role,
+            "runtime_parameters": state.params.values,
+            "catalog_ref": node.catalog_ref,
+            "catalog_node_cache_key": node_cache_key,
         }
     )
 

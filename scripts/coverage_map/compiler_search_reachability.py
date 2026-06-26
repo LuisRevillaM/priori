@@ -52,6 +52,7 @@ ROW_LEDGER = OUT_DIR / "row-ledger.json"
 ROW_CSV = OUT_DIR / "row-ledger.csv"
 REPORT = repo_path(os.environ.get("TQE_SEARCH_REPORT", ROOT / "artifacts" / "autonomous" / "compiler-search-v0-report.json"))
 UPDATE_LEDGER = os.environ.get("TQE_SEARCH_UPDATE_LEDGER", "1") != "0"
+SHARED_NODE_CACHE_ENABLED = os.environ.get("TQE_SEARCH_SHARED_NODE_CACHE", "1") != "0"
 
 SYNTHESIZER_VERSION = "search_synthesizer.v0.1"
 MAX_DEPTH = int(os.environ.get("TQE_SEARCH_MAX_DEPTH", "4"))
@@ -73,6 +74,8 @@ def main() -> int:
     targets_payload = load_json(TARGETS)
     coverage_rows = load_json(LEDGER)
     catalog = CatalogIndex()
+    shared_node_cache: dict[str, dict[str, Any]] | None = {} if SHARED_NODE_CACHE_ENABLED else None
+    executor = TacticalQueryExecutor(shared_node_output_cache=shared_node_cache)
     PLAN_DIR.mkdir(parents=True, exist_ok=True)
     for previous_plan in PLAN_DIR.glob("*.json"):
         previous_plan.unlink()
@@ -81,7 +84,7 @@ def main() -> int:
     for target in targets_payload["targets"]:
         print(f"[compiler-search] {target['target_id']}", flush=True)
         row = coverage_row(coverage_rows, target["concept"])
-        result = evaluate_target(target=target, row=row, catalog=catalog)
+        result = evaluate_target(target=target, row=row, catalog=catalog, executor=executor)
         results.append(result)
         print(
             f"[compiler-search] {target['target_id']} -> {result['result']} "
@@ -216,7 +219,13 @@ class SearchContext:
         return sanitized if suffix == 1 else f"{sanitized}_{suffix}"
 
 
-def evaluate_target(*, target: dict[str, Any], row: dict[str, Any], catalog: CatalogIndex) -> dict[str, Any]:
+def evaluate_target(
+    *,
+    target: dict[str, Any],
+    row: dict[str, Any],
+    catalog: CatalogIndex,
+    executor: TacticalQueryExecutor,
+) -> dict[str, Any]:
     contract = target["target_contract"]
     target_hash = stable_hash(contract)
     if concept_name_used_as_hint(target):
@@ -274,7 +283,7 @@ def evaluate_target(*, target: dict[str, Any], row: dict[str, Any], catalog: Cat
         )
 
     try:
-        execution = TacticalQueryExecutor().execute(bound)
+        execution = executor.execute(bound)
     except Exception as error:  # pragma: no cover - exact failure is serialized.
         return row_result(
             target=target,
@@ -1210,6 +1219,7 @@ def row_result(
         "requested_evidence_failure_count": evidence_failures,
         "runtime_trace_hash": None if execution is None else execution.provenance.get("runtime_trace_hash"),
         "runtime_value_count": None if execution is None else execution.provenance.get("runtime_value_count"),
+        "execution_node_cache": None if execution is None else execution.provenance.get("node_cache"),
         "providers_used": [] if build is None else build.get("providers_used", []),
         "terminal_provider": None if build is None else build.get("terminal_provider"),
         "rules_used": [] if build is None else build.get("rules_used", []),
@@ -1253,6 +1263,7 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
     compiler_reachable = sum(1 for row in coverage_rows if row.get("composition_maturity") == "compiler_reachable")
     result_counts = collections.Counter(result["result"] for result in results)
     failure_counts = collections.Counter(result["failure_taxonomy"] for result in results if result.get("failure_taxonomy"))
+    cache_summary = search_node_cache_summary(results)
     held_out = [result for result in results if result.get("held_out")]
     held_out_success = [result for result in held_out if result["result"] == "compiler_reachable"]
     multi_step = [result for result in results if result.get("multi_step")]
@@ -1298,6 +1309,7 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
             "atlas_wide_execution": False,
             "target_count": len(results),
             "coverage_ledger_update_enabled": UPDATE_LEDGER,
+            "shared_node_cache_enabled": SHARED_NODE_CACHE_ENABLED,
             "pattern_dispatch_allowed": False,
             "coverage_gold_chain_allowed_as_input": False,
             "concept_name_allowed_as_input": False,
@@ -1333,6 +1345,8 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
             "multi_step_compiler_reachable_count": len(multi_step_success),
             "held_out_multi_step_target_count": len(held_out_multi_step),
             "held_out_multi_step_compiler_reachable_count": len(held_out_multi_step_success),
+            "execution_reuse_enabled": SHARED_NODE_CACHE_ENABLED,
+            "execution_node_cache": cache_summary,
         },
         "failure_distribution": dict(sorted(failure_counts.items())),
         "result_distribution": dict(sorted(result_counts.items())),
@@ -1346,6 +1360,17 @@ def build_report(*, targets_payload: dict[str, Any], coverage_rows: list[dict[st
         "report_priority": "Held-out successes and real failure distribution are the meaningful outputs.",
         "findings": findings,
     }
+
+
+def search_node_cache_summary(results: list[dict[str, Any]]) -> dict[str, int]:
+    summary: collections.Counter[str] = collections.Counter()
+    for result in results:
+        cache = result.get("execution_node_cache")
+        if not isinstance(cache, dict):
+            continue
+        for key in ("hits", "local_hits", "shared_hits", "misses", "disabled", "bypassed"):
+            summary[key] += int(cache.get(key) or 0)
+    return dict(sorted(summary.items()))
 
 
 def default_allowed_catalog_refs() -> list[str]:
@@ -1368,6 +1393,7 @@ def write_rows(results: list[dict[str, Any]]) -> None:
         "result_count",
         "honest_zero",
         "requested_evidence_failure_count",
+        "execution_node_cache",
         "document_hash",
         "terminal_provider",
         "message",

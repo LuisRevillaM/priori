@@ -303,3 +303,22 @@ compiler-bare-atlas-contract-sample:
 	TQE_SEARCH_UPDATE_LEDGER=0 \
 	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
 	$(PYTHON) scripts/coverage_map/bare_atlas_contract_sample.py assess
+
+.PHONY: compiler-search-cache-equivalence
+compiler-search-cache-equivalence:
+	$(PYTHON) scripts/coverage_map/bare_atlas_contract_sample.py prepare
+	TQE_SEARCH_SHARED_NODE_CACHE=0 \
+	TQE_SEARCH_TARGETS=generated/compiler-search-bare-atlas/bare-atlas-targets.v0.json \
+	TQE_SEARCH_LEDGER=generated/compiler-search-bare-atlas/bare-atlas-coverage-ledger.json \
+	TQE_SEARCH_OUT_DIR=generated/compiler-search-bare-atlas/search-run-no-shared \
+	TQE_SEARCH_REPORT=artifacts/autonomous/compiler-bare-atlas-search-no-shared-report.json \
+	TQE_SEARCH_UPDATE_LEDGER=0 \
+	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	TQE_SEARCH_SHARED_NODE_CACHE=1 \
+	TQE_SEARCH_TARGETS=generated/compiler-search-bare-atlas/bare-atlas-targets.v0.json \
+	TQE_SEARCH_LEDGER=generated/compiler-search-bare-atlas/bare-atlas-coverage-ledger.json \
+	TQE_SEARCH_OUT_DIR=generated/compiler-search-bare-atlas/search-run-shared \
+	TQE_SEARCH_REPORT=artifacts/autonomous/compiler-bare-atlas-search-shared-report.json \
+	TQE_SEARCH_UPDATE_LEDGER=0 \
+	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	$(PYTHON) scripts/coverage_map/compare_search_cache_equivalence.py
