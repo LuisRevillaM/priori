@@ -1389,6 +1389,28 @@
       ]
     }
   ],
+  "contract_fidelity_refusals": [
+    {
+      "concept": "bounce_pass_sequence",
+      "detail": "Named return/relay combinations need explicit player-linkage semantics; a generic action anchor or chain would be a weak proxy.",
+      "reason": "contract_fidelity_insufficient"
+    },
+    {
+      "concept": "give_and_go_sequence",
+      "detail": "Give-and-go requires a two-pass player-return structure; the current generated contracts cannot faithfully express that identity constraint.",
+      "reason": "contract_fidelity_insufficient"
+    },
+    {
+      "concept": "up_back_through_sequence",
+      "detail": "Up-back-through requires ordered leg roles and directional constraints beyond the current generated contract templates.",
+      "reason": "contract_fidelity_insufficient"
+    },
+    {
+      "concept": "wall_pass_sequence",
+      "detail": "Wall-pass semantics require return-pass/player-linkage constraints that cannot be represented by a generic action-anchor contract.",
+      "reason": "contract_fidelity_insufficient"
+    }
+  ],
   "findings": [],
   "inputs": {
     "search_row_ledger": "generated/compiler-search-atlas-scale-sample/search-run/row-ledger.json",
@@ -1404,6 +1426,7 @@
   "status": "PASS",
   "summary": {
     "concept_count": 24,
+    "contract_fidelity_refusal_count": 4,
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,

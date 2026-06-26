@@ -288,6 +288,7 @@ def assess() -> int:
     target_by_id = {target["target_id"]: target for target in targets_payload["targets"]}
     rows = load_json(SEARCH_ROW_LEDGER)
     rows_by_target = {row["target_id"]: row for row in rows}
+    contract_fidelity_refusals = contract_fidelity_refusals_from_prep_report()
     findings: list[dict[str, Any]] = []
     concept_reports: list[dict[str, Any]] = []
 
@@ -352,6 +353,7 @@ def assess() -> int:
             "positive_compiler_reachable_pct": pct(sum(1 for item in positive_rows if item["result"] == "compiler_reachable"), len(positive_rows)),
             "fidelity_checked_reachable_count": sum(1 for item in positive_rows if item["result"] == "compiler_reachable" and target_by_id[item["target_id"]].get("fidelity_expectation")),
             "fidelity_violation_count": len(fidelity_findings),
+            "contract_fidelity_refusal_count": len(contract_fidelity_refusals),
             "known_negative_target_count": len(known_negative_rows),
             "known_negative_honest_failure_count": sum(1 for item in known_negative_rows if item["result"] != "compiler_reachable"),
             "known_negative_honest_failure_pct": pct(sum(1 for item in known_negative_rows if item["result"] != "compiler_reachable"), len(known_negative_rows)),
@@ -360,6 +362,7 @@ def assess() -> int:
             "execution_node_cache": execution_node_cache_summary(rows),
         },
         "concepts": concept_reports,
+        "contract_fidelity_refusals": contract_fidelity_refusals,
         "findings": findings,
         "inputs": {
             "targets_path": relative_path(TARGETS_OUT),
@@ -370,6 +373,24 @@ def assess() -> int:
     ASSESS_REPORT.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(report["summary"], indent=2, sort_keys=True))
     return 0 if report["status"] == "PASS" else 1
+
+
+def contract_fidelity_refusals_from_prep_report() -> list[dict[str, Any]]:
+    if not PREP_REPORT.exists():
+        return []
+    report = load_json(PREP_REPORT)
+    rows = report.get("selection", {}).get("skipped_positive_rows", [])
+    if not isinstance(rows, list):
+        return []
+    return [
+        {
+            "concept": str(row.get("concept")),
+            "reason": str(row.get("reason")),
+            "detail": str(row.get("detail")),
+        }
+        for row in rows
+        if isinstance(row, dict) and row.get("reason") == "contract_fidelity_insufficient"
+    ]
 
 
 def select_positive_rows(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
