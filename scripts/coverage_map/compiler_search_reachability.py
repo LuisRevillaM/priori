@@ -15,7 +15,6 @@ import concurrent.futures
 import csv
 import gzip
 import json
-import math
 import os
 import pickle
 import subprocess
@@ -173,8 +172,10 @@ def evaluate_target_chunk(payload: dict[str, Any]) -> dict[str, Any]:
 
 def chunk_targets(targets: list[dict[str, Any]], worker_count: int) -> list[list[dict[str, Any]]]:
     indexed = [{**target, "_target_index": index} for index, target in enumerate(targets)]
-    chunk_size = max(1, math.ceil(len(indexed) / worker_count))
-    return [indexed[index : index + chunk_size] for index in range(0, len(indexed), chunk_size)]
+    chunks: list[list[dict[str, Any]]] = [[] for _ in range(worker_count)]
+    for index, target in enumerate(indexed):
+        chunks[index % worker_count].append(target)
+    return chunks
 
 
 class SynthesisError(Exception):

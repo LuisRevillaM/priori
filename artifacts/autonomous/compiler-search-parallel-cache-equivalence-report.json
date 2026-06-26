@@ -31,11 +31,11 @@
       "backends": [
         "persistent_pickle_gzip"
       ],
-      "disk_loads": 168,
+      "disk_loads": 336,
       "enabled": true,
       "entry_count": 140,
-      "memory_entries": 168,
-      "memory_loads": 196,
+      "memory_entries": 336,
+      "memory_loads": 28,
       "namespace": "parallel-equivalence",
       "root": "artifacts/autonomous/compiler-search-node-cache/parallel-equivalence",
       "stores": 0,

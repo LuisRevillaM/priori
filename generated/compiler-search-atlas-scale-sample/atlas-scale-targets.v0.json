@@ -1,0 +1,1374 @@
+{
+  "note": "Large deterministic atlas sample. Contract variants are generated from intrinsic evidence/status requirements, not gold chains. Template ids are audit metadata outside target_contract and are not consumed by synthesis.",
+  "sample_policy": "atlas_scale_stratified_contract_sample_v0",
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.atlas_scale_stratified_contract_sample",
+  "targets": [
+    {
+      "atlas_scale_sample": true,
+      "concept": "give_and_go_sequence",
+      "contract_template_id": "action_anchor",
+      "contract_variant": "action_anchor_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event/action anchor from synchronized event data; no tactical pattern or intention claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_type",
+          "event_anchor_frame_id",
+          "passer_id",
+          "receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_give_and_go_sequence_action_anchor_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "give_and_go_sequence",
+      "contract_template_id": "action_anchor",
+      "contract_variant": "action_anchor_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed action-event alignment only; no quality, plan, or tactical causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "action_event_status",
+          "action_event_reason",
+          "event_type",
+          "event_frame_offset_ms"
+        ],
+        "status_semantics": [
+          {
+            "field": "action_event_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_give_and_go_sequence_action_anchor_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_between_units",
+      "contract_template_id": "carry",
+      "contract_variant": "carry_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed controlled ball movement with a declared forward component; no skill, opponent-bypass, intent, or value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "carry_forward_progression_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "carry_forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_between_units_carry_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_between_units",
+      "contract_template_id": "carry",
+      "contract_variant": "carry_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed movement-under-control under frozen control thresholds; no dribbling quality, defender-bypass, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "carry_status",
+          "carry_reason",
+          "carrier_id",
+          "displacement_m",
+          "control_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "displacement_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_between_units_carry_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pressure_change_after",
+      "contract_template_id": "carry_pressure_change",
+      "contract_variant": "carry_pressure_change_a",
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Nearest-defender distance increased across an observed carry; no pressure-breaking quality, opponent bypass, intent, or causation.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          },
+          {
+            "after_frame_field": "carry_end_frame_id",
+            "before_frame_field": "carry_start_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "none",
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 4.0,
+            "minimum_change_m": 2.0,
+            "status_fields": [
+              "pressure_status"
+            ],
+            "value_family": "pressure_distance",
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "join_status",
+          "carry_status",
+          "carrier_id",
+          "carry_start_frame_id",
+          "carry_end_frame_id",
+          "change_status",
+          "before_value",
+          "after_value",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pressure_change_after_carry_pressure_change_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pressure_change_after",
+      "contract_template_id": "carry_pressure_change",
+      "contract_variant": "carry_pressure_change_b",
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed carry joined to before/after pressure-distance change; no defender-beaten or decision-quality claim.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          },
+          {
+            "after_frame_field": "carry_end_frame_id",
+            "before_frame_field": "carry_start_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "none",
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 4.0,
+            "minimum_change_m": 2.0,
+            "status_fields": [
+              "pressure_status"
+            ],
+            "value_family": "pressure_distance",
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "join_status",
+          "join_reason",
+          "carry_status",
+          "change_status",
+          "before_value_field",
+          "after_value_field",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pressure_change_after_carry_pressure_change_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_depth",
+      "contract_template_id": "compactness",
+      "contract_variant": "compactness_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed team shape dimensions at a declared frame; no tactical quality or role taxonomy.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "team_compactness_status",
+          "team_width_m",
+          "team_depth_m",
+          "team_area_m2",
+          "observed_player_count"
+        ],
+        "status_semantics": [
+          {
+            "field": "team_compactness_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_depth_compactness_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_depth",
+      "contract_template_id": "compactness",
+      "contract_variant": "compactness_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed compactness threshold relation only; no quality, intent, or causation claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "team_compactness_status",
+          "team_compactness_reason",
+          "maximum_team_width_m",
+          "maximum_team_depth_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "team_compactness_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_depth_compactness_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "line_state_change_after",
+      "contract_template_id": "compactness_change",
+      "contract_variant": "compactness_change_a",
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed team-width change across a shared action anchor; no tactical quality, causation, or intent claim.",
+        "composition_constraints": [
+          {
+            "after_frame_field": "controlled_reception_frame_id",
+            "before_frame_field": "physical_release_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "team_compactness_status",
+            "change_mode": "absolute_delta_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 80.0,
+            "minimum_change_m": 4.0,
+            "status_fields": [
+              "team_compactness_status"
+            ],
+            "value_family": "team_width",
+            "value_fields": [
+              "team_width_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "change_status",
+          "before_value",
+          "after_value",
+          "delta_value",
+          "minimum_change_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "change_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_line_state_change_after_compactness_change_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "line_state_change_after",
+      "contract_template_id": "compactness_change",
+      "contract_variant": "compactness_change_b",
+      "held_out": true,
+      "multi_step": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed before/after compactness delta only; no shape-quality or coaching interpretation.",
+        "composition_constraints": [
+          {
+            "after_frame_field": "controlled_reception_frame_id",
+            "before_frame_field": "physical_release_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "after_status_field": "team_compactness_status",
+            "change_mode": "absolute_delta_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 80.0,
+            "minimum_change_m": 4.0,
+            "status_fields": [
+              "team_compactness_status"
+            ],
+            "value_family": "team_width",
+            "value_fields": [
+              "team_width_m"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "change_status",
+          "change_reason",
+          "before_value_field",
+          "after_value_field",
+          "delta_value"
+        ],
+        "status_semantics": [
+          {
+            "field": "change_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_line_state_change_after_compactness_change_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "bounce_pass_sequence",
+      "contract_template_id": "controlled_pass",
+      "contract_variant": "controlled_pass_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed event-linked controlled pass with tracking-confirmed endpoints; no pass quality or intent claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "controlled_pass_status",
+          "pass_episode_id",
+          "physical_release_frame_id",
+          "controlled_reception_frame_id",
+          "receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "controlled_pass_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_bounce_pass_sequence_controlled_pass_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "bounce_pass_sequence",
+      "contract_template_id": "controlled_pass",
+      "contract_variant": "controlled_pass_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed controlled pass episode and forward progression only; no tactical or probabilistic claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "controlled_pass_status",
+          "forward_progression_m",
+          "release_detection_status",
+          "controlled_reception_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "controlled_pass_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_bounce_pass_sequence_controlled_pass_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_distance_advanced",
+      "contract_template_id": "distance",
+      "contract_variant": "distance_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed pairwise distance at a declared frame; no availability, intent, or tactical value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pairwise_distance_status",
+          "distance_m",
+          "entity_a_id",
+          "entity_b_id",
+          "distance_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pairwise_distance_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_distance_advanced_distance_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_distance_advanced",
+      "contract_template_id": "distance",
+      "contract_variant": "distance_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed distance threshold relation only; no pressure or marking assignment claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pairwise_distance_status",
+          "pairwise_distance_reason",
+          "distance_m",
+          "maximum_distance_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "pairwise_distance_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_distance_advanced_distance_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "receive_behind_unit",
+      "contract_template_id": "line",
+      "contract_variant": "line_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed geometric line rank from tracked defenders; no tactical role taxonomy or definitive line-break claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "multi_line_status",
+          "observed_line_count",
+          "target_line_rank",
+          "line_x_m",
+          "defensive_line_player_ids"
+        ],
+        "status_semantics": [
+          {
+            "field": "multi_line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_receive_behind_unit_line_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "receive_behind_unit",
+      "contract_template_id": "line",
+      "contract_variant": "line_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed defensive-line geometry only; no midfield/backline role label, intent, or quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "line_status",
+          "line_x_m",
+          "line_compactness_m",
+          "defenders_goal_side_count"
+        ],
+        "status_semantics": [
+          {
+            "field": "line_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_receive_behind_unit_line_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "local_attacker_count",
+      "contract_template_id": "local_number",
+      "contract_variant": "local_number_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed local player counts around a reference point; no pressure, role, or support-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "local_number_status",
+          "perspective_count",
+          "defending_count",
+          "local_number_difference",
+          "radius_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_local_attacker_count_local_number_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "local_attacker_count",
+      "contract_template_id": "local_number",
+      "contract_variant": "local_number_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed local numerical relation with coverage evidence; no tactical role or superiority-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "local_number_status",
+          "local_number_reason",
+          "perspective_in_region_player_ids",
+          "defending_in_region_player_ids",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "local_number_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_local_attacker_count_local_number_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "receive_under_pressure",
+      "contract_template_id": "pressure",
+      "contract_variant": "pressure_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed nearest-defender distance, closing speed, and approach angle; no defender intent, pressure quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "nearest_defender_id",
+          "nearest_defender_distance_m",
+          "closing_speed_mps",
+          "approach_angle_degrees",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_receive_under_pressure_pressure_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "receive_under_pressure",
+      "contract_template_id": "pressure",
+      "contract_variant": "pressure_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed carrier-pressure components under declared thresholds; no effort, intent, quality, or decision-value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "pressure_status",
+          "pressure_reason",
+          "carrier_id",
+          "pressure_frame_id",
+          "pressure_duration_seconds",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_receive_under_pressure_pressure_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "one_v_one_isolation",
+      "contract_template_id": "support",
+      "contract_variant": "support_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed teammate support arrival under a declared region/window; no support quality, intent, or optimality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_region_mode",
+          "support_anchor_frame_id",
+          "supporting_player_ids",
+          "maximum_arrival_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_one_v_one_isolation_support_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "one_v_one_isolation",
+      "contract_template_id": "support",
+      "contract_variant": "support_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed support timing and coverage only; no communication, role, or tactical correctness claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "support_arrival_status",
+          "support_arrival_reason",
+          "first_arrival_seconds_after_anchor",
+          "coverage_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "support_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_one_v_one_isolation_support_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "switch_frequency",
+      "contract_template_id": "switch",
+      "contract_variant": "switch_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed lateral ball movement across declared thresholds; no tactical intent or success-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "switch_status",
+          "lateral_displacement_m",
+          "release_frame_id",
+          "reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "switch_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_switch_frequency_switch_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "switch_frequency",
+      "contract_template_id": "switch",
+      "contract_variant": "switch_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed switch-of-play geometry only; no claim that it was planned, optimal, or tactically correct.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "switch_status",
+          "switch_reason",
+          "release_lateral_side",
+          "reception_lateral_side",
+          "switch_duration_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "switch_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_switch_frequency_switch_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "time_to_location",
+      "contract_template_id": "time_to_arrival",
+      "contract_variant": "time_to_arrival_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Static-point straight-line arrival estimate with explicit point-mass bias; no pitch control or intent claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "time_to_arrival_status",
+          "minimum_arrival_seconds",
+          "nearest_arrival_player_id",
+          "reachable_verdict_bias"
+        ],
+        "status_semantics": [
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_time_to_location_time_to_arrival_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "time_to_location",
+      "contract_template_id": "time_to_arrival",
+      "contract_variant": "time_to_arrival_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed reachability under declared max-speed assumptions; no moving-ball interception or space-value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "time_to_arrival_status",
+          "time_to_arrival_reason",
+          "coverage_status",
+          "reachability_model",
+          "momentum_policy"
+        ],
+        "status_semantics": [
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_time_to_location_time_to_arrival_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "first_action_after_regain",
+      "contract_template_id": "transition",
+      "contract_variant": "transition_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed possession-role change at a transition anchor; no transition intent, quality, or tactical causation.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_type",
+          "transition_frame_id",
+          "previous_team_role",
+          "new_team_role"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_first_action_after_regain_transition_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "first_action_after_regain",
+      "contract_template_id": "transition",
+      "contract_variant": "transition_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition anchor with optional zone evidence; no counterattack or recovery-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_reason",
+          "transition_frame_id",
+          "zone_status",
+          "zone_name"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_first_action_after_regain_transition_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_retained_for",
+      "contract_template_id": "transition_outcome",
+      "contract_variant": "transition_outcome_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition followed by ball-alive retention for a frozen duration; no settled-possession quality or intent.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "transition_frame_id",
+          "outcome_window_status",
+          "minimum_settled_possession_seconds"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_retained_for_transition_outcome_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "possession_retained_for",
+      "contract_template_id": "transition_outcome",
+      "contract_variant": "transition_outcome_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed transition and declared outcome window only; no phase quality, causal, or decision claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "transition_status",
+          "outcome_window_status",
+          "outcome_window_start_frame_id",
+          "outcome_window_end_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "transition_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "outcome_window_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_possession_retained_for_transition_outcome_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "arrive_in_region_episode",
+      "contract_template_id": "velocity",
+      "contract_variant": "velocity_a",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Displacement-derived velocity components over a lookback window; no effort, intent, or future trajectory claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "velocity_status",
+          "speed_mps",
+          "velocity_vx_mps",
+          "velocity_vy_mps",
+          "velocity_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_arrive_in_region_episode_velocity_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "arrive_in_region_episode",
+      "contract_template_id": "velocity",
+      "contract_variant": "velocity_b",
+      "held_out": true,
+      "sample_role": "positive_probe",
+      "target_contract": {
+        "claim_boundary": "Observed speed above a declared threshold; no run type, fatigue, or effort-quality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "velocity_status",
+          "velocity_reason",
+          "speed_mps",
+          "velocity_dt_seconds",
+          "velocity_entity_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "velocity_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "speed_mps",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_arrive_in_region_episode_velocity_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_completion_probability",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_completion_probability_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_completion_probability",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_completion_probability_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goalkeeper_set_position_proxy",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "body_orientation"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goalkeeper_set_position_proxy",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "body_orientation"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "expected_pass_completion",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_expected_pass_completion_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "expected_pass_completion",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_expected_pass_completion_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shot_expected_goal",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shot_expected_goal_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shot_expected_goal",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shot_expected_goal_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goal_kick_build_structure",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goal_kick_build_structure_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goal_kick_build_structure",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goal_kick_build_structure_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "marking_assignment_candidate",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_marking_assignment_candidate_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "marking_assignment_candidate",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_marking_assignment_candidate_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "cover_shadow_region",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_cover_shadow_region_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "cover_shadow_region",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_cover_shadow_region_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defender_bypassed_by_carry",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defender_bypassed_by_carry_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defender_bypassed_by_carry",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defender_bypassed_by_carry_negative_b_v0"
+    }
+  ]
+}

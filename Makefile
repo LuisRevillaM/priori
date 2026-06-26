@@ -401,3 +401,17 @@ compiler-search-parallel-cache-equivalence:
 	TQE_SEARCH_CACHE_EQUIVALENCE_REPORT=artifacts/autonomous/compiler-search-parallel-cache-equivalence-report.json \
 	TQE_REQUIRE_PERSISTENT_DISK_HITS=1 \
 	$(PYTHON) scripts/coverage_map/compare_search_cache_equivalence.py
+
+.PHONY: compiler-search-atlas-scale-sample
+compiler-search-atlas-scale-sample:
+	$(PYTHON) scripts/coverage_map/atlas_scale_contract_sample.py prepare
+	TQE_SEARCH_WORKERS=4 \
+	TQE_SEARCH_SHARED_NODE_CACHE=1 \
+	TQE_SEARCH_PERSISTENT_NODE_CACHE=1 \
+	TQE_SEARCH_TARGETS=generated/compiler-search-atlas-scale-sample/atlas-scale-targets.v0.json \
+	TQE_SEARCH_LEDGER=generated/compiler-search-atlas-scale-sample/atlas-scale-coverage-ledger.json \
+	TQE_SEARCH_OUT_DIR=generated/compiler-search-atlas-scale-sample/search-run \
+	TQE_SEARCH_REPORT=artifacts/autonomous/compiler-atlas-scale-search-report.json \
+	TQE_SEARCH_UPDATE_LEDGER=0 \
+	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	$(PYTHON) scripts/coverage_map/atlas_scale_contract_sample.py assess

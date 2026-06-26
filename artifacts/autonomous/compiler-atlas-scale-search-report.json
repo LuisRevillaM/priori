@@ -1,48 +1,76 @@
 {
   "failure_distribution": {
-    "missing_primitive": 2,
-    "unsupported_modality": 4
+    "missing_primitive": 8,
+    "unsupported_modality": 8
   },
   "findings": [],
   "held_out_multi_step_successes": [
-    "carry_out_of_pressure",
-    "carry_out_of_pressure"
+    "pressure_change_after",
+    "pressure_change_after",
+    "line_state_change_after",
+    "line_state_change_after"
   ],
   "held_out_successes": [
-    "carry_progression",
-    "carry_progression",
-    "direct_pressure_candidate",
-    "direct_pressure_candidate",
-    "post_regain_retention",
-    "post_regain_retention",
-    "carry_out_of_pressure",
-    "carry_out_of_pressure"
+    "give_and_go_sequence",
+    "give_and_go_sequence",
+    "carry_between_units",
+    "carry_between_units",
+    "pressure_change_after",
+    "pressure_change_after",
+    "possession_depth",
+    "possession_depth",
+    "line_state_change_after",
+    "line_state_change_after",
+    "bounce_pass_sequence",
+    "bounce_pass_sequence",
+    "possession_distance_advanced",
+    "possession_distance_advanced",
+    "receive_behind_unit",
+    "receive_behind_unit",
+    "local_attacker_count",
+    "local_attacker_count",
+    "receive_under_pressure",
+    "receive_under_pressure",
+    "one_v_one_isolation",
+    "one_v_one_isolation",
+    "switch_frequency",
+    "switch_frequency",
+    "time_to_location",
+    "time_to_location",
+    "first_action_after_regain",
+    "first_action_after_regain",
+    "possession_retained_for",
+    "possession_retained_for",
+    "arrive_in_region_episode",
+    "arrive_in_region_episode"
   ],
   "multi_step_successes": [
-    "carry_out_of_pressure",
-    "carry_out_of_pressure"
+    "pressure_change_after",
+    "pressure_change_after",
+    "line_state_change_after",
+    "line_state_change_after"
   ],
-  "plan_dir": "generated/compiler-search-bare-atlas/search-run-parallel-warm/plans",
+  "plan_dir": "generated/compiler-search-atlas-scale-sample/search-run/plans",
   "report_priority": "Held-out successes and real failure distribution are the meaningful outputs.",
   "result_distribution": {
-    "compiler_reachable": 8,
-    "not_compiler_reachable": 6
+    "compiler_reachable": 32,
+    "not_compiler_reachable": 16
   },
-  "row_csv_path": "generated/compiler-search-bare-atlas/search-run-parallel-warm/row-ledger.csv",
-  "row_ledger_path": "generated/compiler-search-bare-atlas/search-run-parallel-warm/row-ledger.json",
+  "row_csv_path": "generated/compiler-search-atlas-scale-sample/search-run/row-ledger.csv",
+  "row_ledger_path": "generated/compiler-search-atlas-scale-sample/search-run/row-ledger.json",
   "schema_version": "compiler_search_reachability_report.v0",
   "scope": {
     "atlas_wide_execution": false,
     "concept_name_allowed_as_input": false,
     "coverage_gold_chain_allowed_as_input": false,
     "coverage_ledger_update_enabled": false,
-    "mode": "bare_atlas_contract_sample_with_blind_variants_and_known_negatives",
+    "mode": "atlas_scale_stratified_contract_sample_v0",
     "natural_language": false,
     "pattern_dispatch_allowed": false,
     "persistent_node_cache_enabled": true,
     "search_worker_count": 4,
     "shared_node_cache_enabled": true,
-    "target_count": 14
+    "target_count": 48
   },
   "search_budget": {
     "allowed_catalog_refs": [
@@ -98,45 +126,45 @@
   "summary": {
     "compiler_reachable_count": 0,
     "compiler_reachable_pct": 0.0,
-    "coverage_supported_count": 4,
-    "coverage_supported_pct": 57.1,
+    "coverage_supported_count": 16,
+    "coverage_supported_pct": 66.7,
     "execution_cache_backend": {
       "backend": "persistent_pickle_gzip",
       "backends": [
         "persistent_pickle_gzip"
       ],
-      "disk_loads": 336,
+      "disk_loads": 152,
       "enabled": true,
-      "entry_count": 140,
-      "memory_entries": 336,
-      "memory_loads": 28,
-      "namespace": "parallel-equivalence",
-      "root": "artifacts/autonomous/compiler-search-node-cache/parallel-equivalence",
-      "stores": 0,
+      "entry_count": 336,
+      "memory_entries": 728,
+      "memory_loads": 280,
+      "namespace": "6d48b972f4d2-d02689848f24",
+      "root": "artifacts/autonomous/compiler-search-node-cache/6d48b972f4d2-d02689848f24",
+      "stores": 576,
       "worker_count": 4
     },
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
-      "hits": 392,
+      "hits": 460,
       "local_hits": 28,
-      "misses": 0,
-      "shared_hits": 364
+      "misses": 576,
+      "shared_hits": 432
     },
     "execution_reuse_enabled": true,
-    "held_out_compiler_reachable_count": 8,
-    "held_out_compiler_reachable_pct": 57.1,
-    "held_out_multi_step_compiler_reachable_count": 2,
-    "held_out_multi_step_target_count": 2,
-    "held_out_target_count": 14,
-    "multi_step_compiler_reachable_count": 2,
-    "multi_step_target_count": 2,
-    "sample_compiler_reachable_count": 8,
-    "sample_compiler_reachable_pct": 57.1,
+    "held_out_compiler_reachable_count": 32,
+    "held_out_compiler_reachable_pct": 66.7,
+    "held_out_multi_step_compiler_reachable_count": 4,
+    "held_out_multi_step_target_count": 4,
+    "held_out_target_count": 48,
+    "multi_step_compiler_reachable_count": 4,
+    "multi_step_target_count": 4,
+    "sample_compiler_reachable_count": 32,
+    "sample_compiler_reachable_pct": 66.7,
     "sample_only_note": "sample_* fields are the measurement for non-updating runs; compiler_reachable_count reflects the supplied coverage ledger after mutation only when ledger updates are enabled.",
-    "sample_target_count": 14
+    "sample_target_count": 48
   },
-  "synthesizer_strategy": "bounded_backward_search.v0.1.bare_atlas_contract_sample",
+  "synthesizer_strategy": "bounded_backward_search.v0.1.atlas_scale_stratified_contract_sample",
   "synthesizer_version": "search_synthesizer.v0.1",
-  "targets_path": "generated/compiler-search-bare-atlas/bare-atlas-targets.v0.json"
+  "targets_path": "generated/compiler-search-atlas-scale-sample/atlas-scale-targets.v0.json"
 }

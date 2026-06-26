@@ -1,0 +1,891 @@
+#!/usr/bin/env python3
+"""Prepare and assess a larger atlas compiler-search contract sample.
+
+This is a scale step, not a 741-row population claim. It projects typed target
+contracts for a deterministic, stratified subset of the current coverage map,
+then assesses the search ledger with honesty controls:
+
+- generated contracts cannot contain synthesis path hints;
+- supported-row positives are measured, not assumed reachable;
+- known-negative controls must fail with the expected taxonomy;
+- author/template variants must agree at the verdict level.
+"""
+
+from __future__ import annotations
+
+import argparse
+import collections
+import json
+import os
+import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Callable
+
+ROOT = Path(__file__).resolve().parents[2]
+COVERAGE_LEDGER = ROOT / "generated" / "coverage-map.json"
+OUT_DIR = ROOT / "generated" / "compiler-search-atlas-scale-sample"
+TARGETS_OUT = OUT_DIR / "atlas-scale-targets.v0.json"
+LEDGER_OUT = OUT_DIR / "atlas-scale-coverage-ledger.json"
+SEARCH_ROW_LEDGER = OUT_DIR / "search-run" / "row-ledger.json"
+PREP_REPORT = ROOT / "artifacts" / "autonomous" / "compiler-atlas-scale-contract-prep-report.json"
+ASSESS_REPORT = ROOT / "artifacts" / "autonomous" / "compiler-atlas-scale-contract-sample-report.json"
+
+MAX_POSITIVE_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_POSITIVE_CONCEPTS", "16"))
+MAX_NEGATIVE_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_NEGATIVE_CONCEPTS", "8"))
+MAX_POSITIVES_PER_TEMPLATE = int(os.environ.get("TQE_ATLAS_SCALE_POSITIVES_PER_TEMPLATE", "3"))
+
+SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
+FORBIDDEN_CONTRACT_KEYS = {
+    "catalog_ref",
+    "catalog_refs",
+    "closest_supported_substitute",
+    "composition_pattern",
+    "gold_chain",
+    "gold_chain_path",
+    "pattern",
+    "provider_chain",
+    "runtime_capability",
+    "runtime_capability_ref",
+    "runtime_ref",
+    "runtime_refs",
+    "source_runtime_capability",
+}
+EXCLUDED_POSITIVE_FAMILY_PREFIXES = (
+    "Temporal logic",
+    "Evidence, replay",
+    "Data quality",
+    "Match clock",
+    "Learned probability",
+)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("mode", choices=["prepare", "assess"])
+    args = parser.parse_args()
+    return prepare() if args.mode == "prepare" else assess()
+
+
+@dataclass(frozen=True)
+class ContractTemplate:
+    template_id: str
+    selectors: tuple[str, ...]
+    build: Callable[[str], list[dict[str, Any]]]
+
+
+def prepare() -> int:
+    rows = load_json(COVERAGE_LEDGER)
+    positive_configs, skipped_positive_rows = select_positive_rows(rows)
+    negative_configs = select_known_negative_rows(rows)
+    concept_configs = [*positive_configs, *negative_configs]
+
+    targets: list[dict[str, Any]] = []
+    ledger_rows: list[dict[str, Any]] = []
+    findings: list[dict[str, Any]] = []
+    for concept_config in concept_configs:
+        ledger_rows.append(ledger_row_for_sample(concept_config))
+        variants = concept_config["variants"]
+        if len(variants) < 2:
+            findings.append(
+                {
+                    "code": "insufficient_contract_variants",
+                    "concept": concept_config["concept"],
+                    "message": "Every sampled concept must carry at least two contract variants.",
+                }
+            )
+        for variant in variants:
+            target = target_from_variant(concept_config, variant)
+            target_findings = contract_findings(target)
+            findings.extend(target_findings)
+            if not target_findings:
+                targets.append(target)
+
+    targets_payload = {
+        "schema_version": "compiler_search_targets.v0",
+        "strategy": "bounded_backward_search.v0.1.atlas_scale_stratified_contract_sample",
+        "sample_policy": "atlas_scale_stratified_contract_sample_v0",
+        "note": (
+            "Large deterministic atlas sample. Contract variants are generated from "
+            "intrinsic evidence/status requirements, not gold chains. Template ids are "
+            "audit metadata outside target_contract and are not consumed by synthesis."
+        ),
+        "targets": targets,
+    }
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    TARGETS_OUT.write_text(json.dumps(targets_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    LEDGER_OUT.write_text(json.dumps(ledger_rows, indent=1) + "\n", encoding="utf-8")
+
+    report = {
+        "schema_version": "atlas_scale_contract_sample_prepare.v0",
+        "status": "PASS" if not findings else "FAIL",
+        "scope": {
+            "atlas_wide": False,
+            "large_stratified_sample": True,
+            "natural_language": False,
+            "coverage_map_gold_chain_used": False,
+            "pattern_labels_used": False,
+            "runtime_or_catalog_refs_used_inside_target_contract": False,
+            "template_variants_not_true_independent_authors": True,
+            "known_negative_controls_required": True,
+        },
+        "summary": {
+            "positive_concept_count": len(positive_configs),
+            "known_negative_concept_count": len(negative_configs),
+            "concept_count": len(concept_configs),
+            "target_count": len(targets),
+            "template_distribution": dict(sorted(collections.Counter(item["contract_template_id"] for item in positive_configs).items())),
+            "negative_distribution": dict(sorted(collections.Counter(item.get("expected_failure_taxonomy") for item in negative_configs).items())),
+        },
+        "selection": {
+            "max_positive_concepts": MAX_POSITIVE_CONCEPTS,
+            "max_negative_concepts": MAX_NEGATIVE_CONCEPTS,
+            "max_positives_per_template": MAX_POSITIVES_PER_TEMPLATE,
+            "skipped_positive_rows": skipped_positive_rows,
+        },
+        "anti_circularity": {
+            "forbidden_contract_keys": sorted(FORBIDDEN_CONTRACT_KEYS),
+            "findings": findings,
+        },
+        "outputs": {
+            "targets_path": relative_path(TARGETS_OUT),
+            "ledger_path": relative_path(LEDGER_OUT),
+        },
+    }
+    PREP_REPORT.parent.mkdir(parents=True, exist_ok=True)
+    PREP_REPORT.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps(report["summary"], indent=2, sort_keys=True))
+    return 0 if report["status"] == "PASS" else 1
+
+
+def assess() -> int:
+    targets_payload = load_json(TARGETS_OUT)
+    target_by_id = {target["target_id"]: target for target in targets_payload["targets"]}
+    rows = load_json(SEARCH_ROW_LEDGER)
+    rows_by_target = {row["target_id"]: row for row in rows}
+    findings: list[dict[str, Any]] = []
+    concept_reports: list[dict[str, Any]] = []
+
+    for concept, targets in group_targets_by_concept(targets_payload["targets"]).items():
+        variants = []
+        for target in targets:
+            row = rows_by_target.get(target["target_id"])
+            if row is None:
+                findings.append({"code": "missing_search_row", "concept": concept, "target_id": target["target_id"]})
+                continue
+            variants.append(
+                {
+                    "variant_id": target["contract_variant"],
+                    "target_id": target["target_id"],
+                    "sample_role": target["sample_role"],
+                    "contract_template_id": target.get("contract_template_id"),
+                    "expected_failure_taxonomy": target.get("expected_failure_taxonomy"),
+                    "result": row["result"],
+                    "failure_taxonomy": row.get("failure_taxonomy"),
+                    "result_count": row.get("result_count"),
+                    "honest_zero": row.get("honest_zero"),
+                    "terminal_provider": row.get("terminal_provider"),
+                    "providers_used": row.get("providers_used", []),
+                    "rules_used": row.get("rules_used", []),
+                }
+            )
+        concept_findings = assess_concept(concept, variants)
+        findings.extend(concept_findings)
+        concept_reports.append(
+            {
+                "concept": concept,
+                "sample_role": targets[0]["sample_role"],
+                "contract_template_id": targets[0].get("contract_template_id"),
+                "variants": variants,
+                "findings": concept_findings,
+            }
+        )
+
+    result_counts = collections.Counter(row["result"] for row in rows)
+    failure_counts = collections.Counter(row["failure_taxonomy"] for row in rows if row.get("failure_taxonomy"))
+    positive_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "positive_probe"]
+    known_negative_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "known_negative"]
+    report = {
+        "schema_version": "atlas_scale_contract_sample_assessment.v0",
+        "status": "PASS" if not findings else "FAIL",
+        "scope": {
+            "atlas_wide": False,
+            "large_stratified_sample": True,
+            "natural_language": False,
+            "claim": (
+                "Large stratified atlas target-contract sample with template-variant stability "
+                "and known-negative honesty controls; not a 741-row compiler-reachable percentage."
+            ),
+        },
+        "summary": {
+            "concept_count": len(concept_reports),
+            "target_count": len(rows),
+            "positive_target_count": len(positive_rows),
+            "positive_compiler_reachable_count": sum(1 for item in positive_rows if item["result"] == "compiler_reachable"),
+            "positive_compiler_reachable_pct": pct(sum(1 for item in positive_rows if item["result"] == "compiler_reachable"), len(positive_rows)),
+            "known_negative_target_count": len(known_negative_rows),
+            "known_negative_honest_failure_count": sum(1 for item in known_negative_rows if item["result"] != "compiler_reachable"),
+            "known_negative_honest_failure_pct": pct(sum(1 for item in known_negative_rows if item["result"] != "compiler_reachable"), len(known_negative_rows)),
+            "result_distribution": dict(sorted(result_counts.items())),
+            "failure_distribution": dict(sorted(failure_counts.items())),
+            "execution_node_cache": execution_node_cache_summary(rows),
+        },
+        "concepts": concept_reports,
+        "findings": findings,
+        "inputs": {
+            "targets_path": relative_path(TARGETS_OUT),
+            "search_row_ledger": relative_path(SEARCH_ROW_LEDGER),
+        },
+    }
+    ASSESS_REPORT.parent.mkdir(parents=True, exist_ok=True)
+    ASSESS_REPORT.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps(report["summary"], indent=2, sort_keys=True))
+    return 0 if report["status"] == "PASS" else 1
+
+
+def select_positive_rows(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    candidates: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
+    skipped: list[dict[str, Any]] = []
+    for row in rows:
+        if row.get("classification") != "supported":
+            continue
+        if is_excluded_positive_family(row):
+            continue
+        template = template_for_row(row)
+        if template is None:
+            continue
+        variants = template.build(row["concept"])
+        if any(contract_has_concept_hint(row["concept"], variant["target_contract"]) for variant in variants):
+            skipped.append(
+                {
+                    "reason": "concept_hint_risk",
+                    "concept": row["concept"],
+                    "contract_template_id": template.template_id,
+                }
+            )
+            continue
+        candidates[template.template_id].append(
+            {
+                **row,
+                "sample_role": "positive_probe",
+                "contract_template_id": template.template_id,
+                "variants": variants,
+            }
+        )
+
+    selected: list[dict[str, Any]] = []
+    template_ids = sorted(candidates)
+    round_index = 0
+    per_template: collections.Counter[str] = collections.Counter()
+    while len(selected) < MAX_POSITIVE_CONCEPTS:
+        added = False
+        for template_id in template_ids:
+            if len(selected) >= MAX_POSITIVE_CONCEPTS:
+                break
+            if per_template[template_id] >= MAX_POSITIVES_PER_TEMPLATE:
+                continue
+            bucket = candidates[template_id]
+            if round_index >= len(bucket):
+                continue
+            selected.append(bucket[round_index])
+            per_template[template_id] += 1
+            added = True
+        if not added:
+            break
+        round_index += 1
+    return selected, skipped
+
+
+def is_excluded_positive_family(row: dict[str, Any]) -> bool:
+    family = str(row.get("family") or "")
+    return any(family.startswith(prefix) for prefix in EXCLUDED_POSITIVE_FAMILY_PREFIXES)
+
+
+def select_known_negative_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    priority = [
+        ("pass_completion_probability", "unsupported_modality", "learned_model"),
+        ("goalkeeper_set_position_proxy", "unsupported_modality", "body_orientation"),
+        ("expected_pass_completion", "unsupported_modality", "learned_model"),
+        ("shot_expected_goal", "unsupported_modality", "learned_model"),
+        ("goal_kick_build_structure", "missing_primitive", "set_piece_structure"),
+        ("marking_assignment_candidate", "missing_primitive", "marking"),
+        ("cover_shadow_region", "missing_primitive", "cover_shadow"),
+        ("defender_bypassed_by_carry", "missing_primitive", "defender_bypassed_by_carry"),
+    ]
+    by_concept = {row["concept"]: row for row in rows}
+    selected = []
+    for concept, taxonomy, missing in priority[:MAX_NEGATIVE_CONCEPTS]:
+        row = by_concept.get(concept)
+        if row is None:
+            continue
+        selected.append(
+            {
+                **row,
+                "sample_role": "known_negative",
+                "contract_template_id": f"known_negative_{taxonomy}",
+                "expected_failure_taxonomy": taxonomy,
+                "variants": known_negative_variants(concept, taxonomy, missing),
+            }
+        )
+    return selected
+
+
+def template_for_row(row: dict[str, Any]) -> ContractTemplate | None:
+    haystack = " ".join(
+        normalize_match_text(str(row.get(key, "")))
+        for key in ("concept", "family")
+    )
+    for template in TEMPLATES:
+        if any(selector_matches(haystack, selector) for selector in template.selectors):
+            return template
+    return None
+
+
+def normalize_match_text(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
+
+
+def selector_matches(haystack: str, selector: str) -> bool:
+    selector_text = normalize_match_text(selector)
+    if not selector_text:
+        return False
+    return re.search(rf"(^|\s){re.escape(selector_text)}($|\s)", haystack) is not None
+
+
+def target_from_variant(concept_config: dict[str, Any], variant: dict[str, Any]) -> dict[str, Any]:
+    target = {
+        "target_id": target_id_for(concept_config["concept"], variant["variant_id"]),
+        "concept": concept_config["concept"],
+        "held_out": True,
+        "atlas_scale_sample": True,
+        "contract_variant": variant["variant_id"],
+        "contract_template_id": concept_config["contract_template_id"],
+        "sample_role": concept_config["sample_role"],
+        "target_contract": variant["target_contract"],
+    }
+    if concept_config.get("expected_failure_taxonomy"):
+        target["expected_failure_taxonomy"] = concept_config["expected_failure_taxonomy"]
+    if concept_config["contract_template_id"] in {"carry_pressure_change", "compactness_change"}:
+        target["multi_step"] = True
+    return target
+
+
+def ledger_row_for_sample(concept_config: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "concept": concept_config["concept"],
+        "family": concept_config.get("family", "atlas_scale_sample"),
+        "classification": concept_config.get("classification", "supported"),
+        "justification": concept_config.get("justification", "Atlas-scale contract sample row."),
+        "required_missing_capability": concept_config.get("required_missing_capability", ""),
+        "closest_supported_substitute": "",
+        "composition_constraint_needed": bool(concept_config.get("composition_constraint_needed", False)),
+        "priority_unlock": concept_config.get("priority_unlock", "INTERNAL"),
+        "composition_constraint_note": concept_config.get("composition_constraint_note", ""),
+        "source_composition_maturity": concept_config.get("composition_maturity", "handwired"),
+        "composition_maturity": "handwired",
+        "composition_maturity_applicable": concept_config.get("classification") == "supported",
+    }
+
+
+def contract_findings(target: dict[str, Any]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    forbidden_paths = forbidden_key_paths(target["target_contract"])
+    if forbidden_paths:
+        findings.append({"code": "forbidden_contract_hint_key", "target_id": target["target_id"], "paths": forbidden_paths})
+    if contract_has_concept_hint(target["concept"], target["target_contract"]):
+        findings.append({"code": "concept_id_used_as_contract_hint", "target_id": target["target_id"], "concept": target["concept"]})
+    unsupported_modalities = [
+        modality
+        for modality in target["target_contract"].get("required_modalities", [])
+        if modality not in SUPPORTED_MODALITIES
+    ]
+    if target.get("sample_role") == "known_negative" and target.get("expected_failure_taxonomy") == "unsupported_modality" and not unsupported_modalities:
+        findings.append({"code": "unsupported_modality_control_has_no_unsupported_modality", "target_id": target["target_id"]})
+    return findings
+
+
+def assess_concept(concept: str, variants: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    verdicts = {(variant["result"], variant["failure_taxonomy"]) for variant in variants}
+    if len(verdicts) > 1:
+        findings.append({"code": "contract_variant_verdict_diverged", "concept": concept, "verdicts": sorted([list(item) for item in verdicts])})
+    if not variants:
+        return findings
+    if variants[0]["sample_role"] == "known_negative":
+        expected = variants[0].get("expected_failure_taxonomy")
+        for variant in variants:
+            if variant["result"] == "compiler_reachable":
+                findings.append({"code": "known_negative_became_reachable", "concept": concept, "target_id": variant["target_id"]})
+            if expected and variant["failure_taxonomy"] != expected:
+                findings.append(
+                    {
+                        "code": "known_negative_wrong_failure",
+                        "concept": concept,
+                        "target_id": variant["target_id"],
+                        "expected": expected,
+                        "actual": variant["failure_taxonomy"],
+                    }
+                )
+    return findings
+
+
+def group_targets_by_concept(targets: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    grouped: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
+    for target in targets:
+        grouped[target["concept"]].append(target)
+    return dict(sorted(grouped.items()))
+
+
+def execution_node_cache_summary(rows: list[dict[str, Any]]) -> dict[str, int]:
+    summary: collections.Counter[str] = collections.Counter()
+    for row in rows:
+        cache = row.get("execution_node_cache")
+        if not isinstance(cache, dict):
+            continue
+        for key in ("hits", "local_hits", "shared_hits", "misses", "disabled", "bypassed"):
+            summary[key] += int(cache.get(key) or 0)
+    return dict(sorted(summary.items()))
+
+
+def forbidden_key_paths(value: Any, *, path: str = "$") -> list[str]:
+    paths: list[str] = []
+    if isinstance(value, dict):
+        for key, child in value.items():
+            child_path = f"{path}.{key}"
+            if str(key) in FORBIDDEN_CONTRACT_KEYS:
+                paths.append(child_path)
+            paths.extend(forbidden_key_paths(child, path=child_path))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            paths.extend(forbidden_key_paths(child, path=f"{path}[{index}]"))
+    return paths
+
+
+def contract_has_concept_hint(concept: str, contract: dict[str, Any]) -> bool:
+    return bool(concept) and concept.lower() in json.dumps(contract, sort_keys=True).lower()
+
+
+def target_id_for(concept: str, variant_id: str) -> str:
+    return sanitize_id(f"atlas_scale_{concept}_{variant_id}_v0")
+
+
+def sanitize_id(value: str) -> str:
+    sanitized = re.sub(r"[^a-z0-9_]+", "_", value.lower()).strip("_")
+    if not sanitized or not sanitized[0].isalpha():
+        sanitized = f"target_{sanitized}"
+    return sanitized
+
+
+def known_negative_variants(concept: str, taxonomy: str, missing: str) -> list[dict[str, Any]]:
+    if taxonomy == "unsupported_modality":
+        modality = "body_orientation" if "body" in missing or "orientation" in missing else "learned_model"
+        return [
+            {
+                "variant_id": "negative_a",
+                "target_contract": {
+                    "desired_output": "classification",
+                    "required_modalities": [modality],
+                    "required_evidence": ["unavailable_model_score"],
+                    "status_semantics": [{"field": "unavailable_model_score", "operator": "gte", "threshold": 0.5, "unit": "none"}],
+                    "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+                },
+            },
+            {
+                "variant_id": "negative_b",
+                "target_contract": {
+                    "desired_output": "classification",
+                    "required_modalities": [modality],
+                    "required_evidence": ["unavailable_probability"],
+                    "status_semantics": [{"field": "unavailable_probability", "operator": "gte", "threshold": 0.5, "unit": "none"}],
+                    "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+                },
+            },
+        ]
+    field = "unavailable_primitive_status"
+    reason_field = "unavailable_primitive_reason"
+    return [
+        {
+            "variant_id": "negative_a",
+            "target_contract": {
+                "desired_output": "classification",
+                "required_evidence": [field],
+                "status_semantics": [{"field": field, "required_value": "PASS"}],
+                "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+            },
+        },
+        {
+            "variant_id": "negative_b",
+            "target_contract": {
+                "desired_output": "classification",
+                "required_evidence": [field, reason_field],
+                "status_semantics": [{"field": field, "required_value": "PASS"}],
+                "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+            },
+        },
+    ]
+
+
+def variants(template_id: str, a: dict[str, Any], b: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        {"variant_id": f"{template_id}_a", "target_contract": a},
+        {"variant_id": f"{template_id}_b", "target_contract": b},
+    ]
+
+
+def carry_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "carry",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["carry_status", "carrier_id", "carry_start_frame_id", "carry_end_frame_id", "carry_forward_progression_m"],
+            "status_semantics": [{"field": "carry_status", "required_value": "PASS"}, {"field": "carry_forward_progression_m", "operator": "gte", "threshold": 3.0, "unit": "metre"}],
+            "claim_boundary": "Observed controlled ball movement with a declared forward component; no skill, opponent-bypass, intent, or value claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["carry_status", "carry_reason", "carrier_id", "displacement_m", "control_model"],
+            "status_semantics": [{"field": "carry_status", "required_value": "PASS"}, {"field": "displacement_m", "operator": "gte", "threshold": 3.0, "unit": "metre"}],
+            "claim_boundary": "Observed movement-under-control under frozen control thresholds; no dribbling quality, defender-bypass, or causation claim.",
+        },
+    )
+
+
+def pressure_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "pressure",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["pressure_status", "nearest_defender_id", "nearest_defender_distance_m", "closing_speed_mps", "approach_angle_degrees", "coverage_status"],
+            "status_semantics": [{"field": "pressure_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed nearest-defender distance, closing speed, and approach angle; no defender intent, pressure quality, or tactical causation.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["pressure_status", "pressure_reason", "carrier_id", "pressure_frame_id", "pressure_duration_seconds", "coverage_status"],
+            "status_semantics": [{"field": "pressure_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed carrier-pressure components under declared thresholds; no effort, intent, quality, or decision-value claim.",
+        },
+    )
+
+
+def transition_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "transition",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["transition_status", "transition_type", "transition_frame_id", "previous_team_role", "new_team_role"],
+            "status_semantics": [{"field": "transition_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed possession-role change at a transition anchor; no transition intent, quality, or tactical causation.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["transition_status", "transition_reason", "transition_frame_id", "zone_status", "zone_name"],
+            "status_semantics": [{"field": "transition_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed transition anchor with optional zone evidence; no counterattack or recovery-quality claim.",
+        },
+    )
+
+
+def transition_outcome_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "transition_outcome",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["transition_status", "transition_frame_id", "outcome_window_status", "minimum_settled_possession_seconds"],
+            "status_semantics": [{"field": "transition_status", "required_value": "PASS"}, {"field": "outcome_window_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed transition followed by ball-alive retention for a frozen duration; no settled-possession quality or intent.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["transition_status", "outcome_window_status", "outcome_window_start_frame_id", "outcome_window_end_frame_id"],
+            "status_semantics": [{"field": "transition_status", "required_value": "PASS"}, {"field": "outcome_window_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed transition and declared outcome window only; no phase quality, causal, or decision claim.",
+        },
+    )
+
+
+def support_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "support",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["support_arrival_status", "support_region_mode", "support_anchor_frame_id", "supporting_player_ids", "maximum_arrival_seconds"],
+            "status_semantics": [{"field": "support_arrival_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed teammate support arrival under a declared region/window; no support quality, intent, or optimality.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["support_arrival_status", "support_arrival_reason", "first_arrival_seconds_after_anchor", "coverage_status"],
+            "status_semantics": [{"field": "support_arrival_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed support timing and coverage only; no communication, role, or tactical correctness claim.",
+        },
+    )
+
+
+def local_number_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "local_number",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["local_number_status", "perspective_count", "defending_count", "local_number_difference", "radius_m"],
+            "status_semantics": [{"field": "local_number_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed local player counts around a reference point; no pressure, role, or support-quality claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["local_number_status", "local_number_reason", "perspective_in_region_player_ids", "defending_in_region_player_ids", "coverage_status"],
+            "status_semantics": [{"field": "local_number_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed local numerical relation with coverage evidence; no tactical role or superiority-quality claim.",
+        },
+    )
+
+
+def distance_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "distance",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["pairwise_distance_status", "distance_m", "entity_a_id", "entity_b_id", "distance_frame_id"],
+            "status_semantics": [{"field": "pairwise_distance_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed pairwise distance at a declared frame; no availability, intent, or tactical value claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["pairwise_distance_status", "pairwise_distance_reason", "distance_m", "maximum_distance_m"],
+            "status_semantics": [{"field": "pairwise_distance_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed distance threshold relation only; no pressure or marking assignment claim.",
+        },
+    )
+
+
+def velocity_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "velocity",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["velocity_status", "speed_mps", "velocity_vx_mps", "velocity_vy_mps", "velocity_frame_id"],
+            "status_semantics": [{"field": "velocity_status", "required_value": "PASS"}],
+            "claim_boundary": "Displacement-derived velocity components over a lookback window; no effort, intent, or future trajectory claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["velocity_status", "velocity_reason", "speed_mps", "velocity_dt_seconds", "velocity_entity_id"],
+            "status_semantics": [{"field": "velocity_status", "required_value": "PASS"}, {"field": "speed_mps", "operator": "gte", "threshold": 0.5, "unit": "none"}],
+            "claim_boundary": "Observed speed above a declared threshold; no run type, fatigue, or effort-quality claim.",
+        },
+    )
+
+
+def time_to_arrival_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "time_to_arrival",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["time_to_arrival_status", "minimum_arrival_seconds", "nearest_arrival_player_id", "reachable_verdict_bias"],
+            "status_semantics": [{"field": "time_to_arrival_status", "required_value": "PASS"}],
+            "claim_boundary": "Static-point straight-line arrival estimate with explicit point-mass bias; no pitch control or intent claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["time_to_arrival_status", "time_to_arrival_reason", "coverage_status", "reachability_model", "momentum_policy"],
+            "status_semantics": [{"field": "time_to_arrival_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed reachability under declared max-speed assumptions; no moving-ball interception or space-value claim.",
+        },
+    )
+
+
+def compactness_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "compactness",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["team_compactness_status", "team_width_m", "team_depth_m", "team_area_m2", "observed_player_count"],
+            "status_semantics": [{"field": "team_compactness_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed team shape dimensions at a declared frame; no tactical quality or role taxonomy.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["team_compactness_status", "team_compactness_reason", "maximum_team_width_m", "maximum_team_depth_m"],
+            "status_semantics": [{"field": "team_compactness_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed compactness threshold relation only; no quality, intent, or causation claim.",
+        },
+    )
+
+
+def switch_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "switch",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["switch_status", "lateral_displacement_m", "release_frame_id", "reception_frame_id"],
+            "status_semantics": [{"field": "switch_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed lateral ball movement across declared thresholds; no tactical intent or success-quality claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["switch_status", "switch_reason", "release_lateral_side", "reception_lateral_side", "switch_duration_seconds"],
+            "status_semantics": [{"field": "switch_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed switch-of-play geometry only; no claim that it was planned, optimal, or tactically correct.",
+        },
+    )
+
+
+def line_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "line",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["multi_line_status", "observed_line_count", "target_line_rank", "line_x_m", "defensive_line_player_ids"],
+            "status_semantics": [{"field": "multi_line_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed geometric line rank from tracked defenders; no tactical role taxonomy or definitive line-break claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["line_status", "line_x_m", "line_compactness_m", "defenders_goal_side_count"],
+            "status_semantics": [{"field": "line_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed defensive-line geometry only; no midfield/backline role label, intent, or quality claim.",
+        },
+    )
+
+
+def pass_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "controlled_pass",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["controlled_pass_status", "pass_episode_id", "physical_release_frame_id", "controlled_reception_frame_id", "receiver_id"],
+            "status_semantics": [{"field": "controlled_pass_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed event-linked controlled pass with tracking-confirmed endpoints; no pass quality or intent claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["controlled_pass_status", "forward_progression_m", "release_detection_status", "controlled_reception_status"],
+            "status_semantics": [{"field": "controlled_pass_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed controlled pass episode and forward progression only; no tactical or probabilistic claim.",
+        },
+    )
+
+
+def action_contracts(_concept: str) -> list[dict[str, Any]]:
+    return variants(
+        "action_anchor",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["action_event_status", "action_type", "event_anchor_frame_id", "passer_id", "receiver_id"],
+            "status_semantics": [{"field": "action_event_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed event/action anchor from synchronized event data; no tactical pattern or intention claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["action_event_status", "action_event_reason", "event_type", "event_frame_offset_ms"],
+            "status_semantics": [{"field": "action_event_status", "required_value": "PASS"}],
+            "claim_boundary": "Observed action-event alignment only; no quality, plan, or tactical causation claim.",
+        },
+    )
+
+
+def carry_pressure_change_contracts(_concept: str) -> list[dict[str, Any]]:
+    base_constraints = [
+        {"kind": "same_anchor_identity", "left_key_field": "anchor_id", "right_key_field": "anchor_id"},
+        {"kind": "frame_alignment", "before_frame_field": "carry_start_frame_id", "after_frame_field": "carry_end_frame_id"},
+        {
+            "kind": "before_after_same_anchor",
+            "value_family": "pressure_distance",
+            "value_fields": ["nearest_defender_distance_m"],
+            "status_fields": ["pressure_status"],
+            "after_status_field": "none",
+            "change_mode": "increase_at_least",
+            "minimum_change_m": 2.0,
+            "maximum_before_value_m": 4.0,
+        },
+    ]
+    return variants(
+        "carry_pressure_change",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["join_status", "carry_status", "carrier_id", "carry_start_frame_id", "carry_end_frame_id", "change_status", "before_value", "after_value", "delta_value"],
+            "status_semantics": [{"field": "join_status", "required_value": "PASS"}],
+            "composition_constraints": base_constraints,
+            "claim_boundary": "Nearest-defender distance increased across an observed carry; no pressure-breaking quality, opponent bypass, intent, or causation.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["join_status", "join_reason", "carry_status", "change_status", "before_value_field", "after_value_field", "delta_value"],
+            "status_semantics": [{"field": "join_status", "required_value": "PASS"}],
+            "composition_constraints": base_constraints,
+            "claim_boundary": "Observed carry joined to before/after pressure-distance change; no defender-beaten or decision-quality claim.",
+        },
+    )
+
+
+def compactness_change_contracts(_concept: str) -> list[dict[str, Any]]:
+    constraints = [
+        {"kind": "frame_alignment", "before_frame_field": "physical_release_frame_id", "after_frame_field": "controlled_reception_frame_id"},
+        {
+            "kind": "before_after_same_anchor",
+            "value_family": "team_width",
+            "value_fields": ["team_width_m"],
+            "status_fields": ["team_compactness_status"],
+            "after_status_field": "team_compactness_status",
+            "change_mode": "absolute_delta_at_least",
+            "minimum_change_m": 4.0,
+            "maximum_before_value_m": 80.0,
+        },
+    ]
+    return variants(
+        "compactness_change",
+        {
+            "desired_output": "classification",
+            "required_evidence": ["change_status", "before_value", "after_value", "delta_value", "minimum_change_m"],
+            "status_semantics": [{"field": "change_status", "required_value": "PASS"}],
+            "composition_constraints": constraints,
+            "claim_boundary": "Observed team-width change across a shared action anchor; no tactical quality, causation, or intent claim.",
+        },
+        {
+            "desired_output": "classification",
+            "required_evidence": ["change_status", "change_reason", "before_value_field", "after_value_field", "delta_value"],
+            "status_semantics": [{"field": "change_status", "required_value": "PASS"}],
+            "composition_constraints": constraints,
+            "claim_boundary": "Observed before/after compactness delta only; no shape-quality or coaching interpretation.",
+        },
+    )
+
+
+TEMPLATES: tuple[ContractTemplate, ...] = (
+    ContractTemplate("carry_pressure_change", ("carry_out_of_pressure", "pressure_change_after"), carry_pressure_change_contracts),
+    ContractTemplate("transition_outcome", ("retention", "retained", "settled", "outcome_window", "attacking_transition_window", "defensive_transition_window"), transition_outcome_contracts),
+    ContractTemplate("compactness_change", ("shape_change_after", "line_state_change_after"), compactness_change_contracts),
+    ContractTemplate("pressure", ("pressure", "press", "carrier"), pressure_contracts),
+    ContractTemplate("carry", ("carry", "dribbl"), carry_contracts),
+    ContractTemplate("velocity", ("velocity", "speed", "movement", "run"), velocity_contracts),
+    ContractTemplate("local_number", ("local_number", "number", "count", "superiority", "inferiority", "overload", "balance"), local_number_contracts),
+    ContractTemplate("support", ("support", "option"), support_contracts),
+    ContractTemplate("time_to_arrival", ("arrival", "reachability", "time_to_location"), time_to_arrival_contracts),
+    ContractTemplate("switch", ("switch",), switch_contracts),
+    ContractTemplate("line", ("line", "unit"), line_contracts),
+    ContractTemplate("compactness", ("compactness", "shape", "width", "depth"), compactness_contracts),
+    ContractTemplate("distance", ("distance", "proximity"), distance_contracts),
+    ContractTemplate("transition", ("transition", "regain", "loss"), transition_contracts),
+    ContractTemplate("controlled_pass", ("pass", "reception", "receive", "progression"), pass_contracts),
+    ContractTemplate("action_anchor", ("action", "restart", "followed_by", "sequence", "anchor"), action_contracts),
+)
+
+
+def pct(numerator: int, denominator: int) -> float:
+    return round(100 * numerator / max(denominator, 1), 1)
+
+
+def load_json(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def relative_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,1101 @@
+{
+  "concepts": [
+    {
+      "concept": "arrive_in_region_episode",
+      "contract_template_id": "velocity",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "velocity",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "velocity"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_arrive_in_region_episode_velocity_a_v0",
+          "terminal_provider": "velocity",
+          "variant_id": "velocity_a"
+        },
+        {
+          "contract_template_id": "velocity",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "velocity"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_arrive_in_region_episode_velocity_b_v0",
+          "terminal_provider": "velocity",
+          "variant_id": "velocity_b"
+        }
+      ]
+    },
+    {
+      "concept": "bounce_pass_sequence",
+      "contract_template_id": "controlled_pass",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "controlled_pass",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_bounce_pass_sequence_controlled_pass_a_v0",
+          "terminal_provider": "controlled_pass_episode",
+          "variant_id": "controlled_pass_a"
+        },
+        {
+          "contract_template_id": "controlled_pass",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_bounce_pass_sequence_controlled_pass_b_v0",
+          "terminal_provider": "controlled_pass_episode",
+          "variant_id": "controlled_pass_b"
+        }
+      ]
+    },
+    {
+      "concept": "carry_between_units",
+      "contract_template_id": "carry",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "carry",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "carry_episode"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_carry_between_units_carry_a_v0",
+          "terminal_provider": "carry_episode",
+          "variant_id": "carry_a"
+        },
+        {
+          "contract_template_id": "carry",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "carry_episode"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_carry_between_units_carry_b_v0",
+          "terminal_provider": "carry_episode",
+          "variant_id": "carry_b"
+        }
+      ]
+    },
+    {
+      "concept": "cover_shadow_region",
+      "contract_template_id": "known_negative_missing_primitive",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_cover_shadow_region_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_cover_shadow_region_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "defender_bypassed_by_carry",
+      "contract_template_id": "known_negative_missing_primitive",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_defender_bypassed_by_carry_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_defender_bypassed_by_carry_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "expected_pass_completion",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_expected_pass_completion_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_expected_pass_completion_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "first_action_after_regain",
+      "contract_template_id": "transition",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "transition",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "transition_anchor"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_first_action_after_regain_transition_a_v0",
+          "terminal_provider": "transition_anchor",
+          "variant_id": "transition_a"
+        },
+        {
+          "contract_template_id": "transition",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "transition_anchor"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_first_action_after_regain_transition_b_v0",
+          "terminal_provider": "transition_anchor",
+          "variant_id": "transition_b"
+        }
+      ]
+    },
+    {
+      "concept": "give_and_go_sequence",
+      "contract_template_id": "action_anchor",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "action_anchor",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_give_and_go_sequence_action_anchor_a_v0",
+          "terminal_provider": "action_event_anchor",
+          "variant_id": "action_anchor_a"
+        },
+        {
+          "contract_template_id": "action_anchor",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_give_and_go_sequence_action_anchor_b_v0",
+          "terminal_provider": "action_event_anchor",
+          "variant_id": "action_anchor_b"
+        }
+      ]
+    },
+    {
+      "concept": "goal_kick_build_structure",
+      "contract_template_id": "known_negative_missing_primitive",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_goal_kick_build_structure_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_goal_kick_build_structure_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "goalkeeper_set_position_proxy",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "line_state_change_after",
+      "contract_template_id": "compactness_change",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "compactness_change",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "controlled_pass_episode",
+            "team_compactness",
+            "controlled_pass_episode",
+            "team_compactness",
+            "change_across_anchor"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "generic_before_after_change",
+            "provider_field_backward_search",
+            "typed_value_field_provider_discovery"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_line_state_change_after_compactness_change_a_v0",
+          "terminal_provider": "change_across_anchor",
+          "variant_id": "compactness_change_a"
+        },
+        {
+          "contract_template_id": "compactness_change",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "controlled_pass_episode",
+            "team_compactness",
+            "controlled_pass_episode",
+            "team_compactness",
+            "change_across_anchor"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "generic_before_after_change",
+            "provider_field_backward_search",
+            "typed_value_field_provider_discovery"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_line_state_change_after_compactness_change_b_v0",
+          "terminal_provider": "change_across_anchor",
+          "variant_id": "compactness_change_b"
+        }
+      ]
+    },
+    {
+      "concept": "local_attacker_count",
+      "contract_template_id": "local_number",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "local_number",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "local_number_relation"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_local_attacker_count_local_number_a_v0",
+          "terminal_provider": "local_number_relation",
+          "variant_id": "local_number_a"
+        },
+        {
+          "contract_template_id": "local_number",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "local_number_relation"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_local_attacker_count_local_number_b_v0",
+          "terminal_provider": "local_number_relation",
+          "variant_id": "local_number_b"
+        }
+      ]
+    },
+    {
+      "concept": "marking_assignment_candidate",
+      "contract_template_id": "known_negative_missing_primitive",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_marking_assignment_candidate_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_marking_assignment_candidate_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "one_v_one_isolation",
+      "contract_template_id": "support",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "support",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "support_arrival_relation"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_one_v_one_isolation_support_a_v0",
+          "terminal_provider": "support_arrival_relation",
+          "variant_id": "support_a"
+        },
+        {
+          "contract_template_id": "support",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "support_arrival_relation"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_one_v_one_isolation_support_b_v0",
+          "terminal_provider": "support_arrival_relation",
+          "variant_id": "support_b"
+        }
+      ]
+    },
+    {
+      "concept": "pass_completion_probability",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_pass_completion_probability_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_pass_completion_probability_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "possession_depth",
+      "contract_template_id": "compactness",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "compactness",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "team_compactness"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_possession_depth_compactness_a_v0",
+          "terminal_provider": "team_compactness",
+          "variant_id": "compactness_a"
+        },
+        {
+          "contract_template_id": "compactness",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "team_compactness"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_possession_depth_compactness_b_v0",
+          "terminal_provider": "team_compactness",
+          "variant_id": "compactness_b"
+        }
+      ]
+    },
+    {
+      "concept": "possession_distance_advanced",
+      "contract_template_id": "distance",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "distance",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "pairwise_distance"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_possession_distance_advanced_distance_a_v0",
+          "terminal_provider": "pairwise_distance",
+          "variant_id": "distance_a"
+        },
+        {
+          "contract_template_id": "distance",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "pairwise_distance"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_possession_distance_advanced_distance_b_v0",
+          "terminal_provider": "pairwise_distance",
+          "variant_id": "distance_b"
+        }
+      ]
+    },
+    {
+      "concept": "possession_retained_for",
+      "contract_template_id": "transition_outcome",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "transition_outcome",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "transition_anchor",
+            "outcome_window"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_possession_retained_for_transition_outcome_a_v0",
+          "terminal_provider": "outcome_window",
+          "variant_id": "transition_outcome_a"
+        },
+        {
+          "contract_template_id": "transition_outcome",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "transition_anchor",
+            "outcome_window"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_possession_retained_for_transition_outcome_b_v0",
+          "terminal_provider": "outcome_window",
+          "variant_id": "transition_outcome_b"
+        }
+      ]
+    },
+    {
+      "concept": "pressure_change_after",
+      "contract_template_id": "carry_pressure_change",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "carry_pressure_change",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "carry_episode",
+            "controlled_pass_episode",
+            "carry_episode",
+            "controlled_pass_episode",
+            "carry_episode",
+            "pressure_on_carrier",
+            "controlled_pass_episode",
+            "carry_episode",
+            "pressure_on_carrier",
+            "change_across_anchor",
+            "join_episode_sets"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 2,
+          "rules_used": [
+            "generic_before_after_change",
+            "generic_binary_episode_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery",
+            "typed_value_field_provider_discovery"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_pressure_change_after_carry_pressure_change_a_v0",
+          "terminal_provider": "join_episode_sets",
+          "variant_id": "carry_pressure_change_a"
+        },
+        {
+          "contract_template_id": "carry_pressure_change",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "carry_episode",
+            "controlled_pass_episode",
+            "carry_episode",
+            "controlled_pass_episode",
+            "carry_episode",
+            "pressure_on_carrier",
+            "controlled_pass_episode",
+            "carry_episode",
+            "pressure_on_carrier",
+            "change_across_anchor",
+            "join_episode_sets"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 2,
+          "rules_used": [
+            "generic_before_after_change",
+            "generic_binary_episode_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery",
+            "typed_value_field_provider_discovery"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_pressure_change_after_carry_pressure_change_b_v0",
+          "terminal_provider": "join_episode_sets",
+          "variant_id": "carry_pressure_change_b"
+        }
+      ]
+    },
+    {
+      "concept": "receive_behind_unit",
+      "contract_template_id": "line",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "line",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "multi_line_model"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_receive_behind_unit_line_a_v0",
+          "terminal_provider": "multi_line_model",
+          "variant_id": "line_a"
+        },
+        {
+          "contract_template_id": "line",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "defensive_line_model"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_receive_behind_unit_line_b_v0",
+          "terminal_provider": "defensive_line_model",
+          "variant_id": "line_b"
+        }
+      ]
+    },
+    {
+      "concept": "receive_under_pressure",
+      "contract_template_id": "pressure",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "pressure",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "pressure_on_carrier"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_receive_under_pressure_pressure_a_v0",
+          "terminal_provider": "pressure_on_carrier",
+          "variant_id": "pressure_a"
+        },
+        {
+          "contract_template_id": "pressure",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "pressure_on_carrier"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_receive_under_pressure_pressure_b_v0",
+          "terminal_provider": "pressure_on_carrier",
+          "variant_id": "pressure_b"
+        }
+      ]
+    },
+    {
+      "concept": "shot_expected_goal",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_shot_expected_goal_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "honest_zero": false,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_shot_expected_goal_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "switch_frequency",
+      "contract_template_id": "switch",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "switch",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": true,
+          "providers_used": [
+            "action_event_anchor",
+            "switch_of_play"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 0,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_switch_frequency_switch_a_v0",
+          "terminal_provider": "switch_of_play",
+          "variant_id": "switch_a"
+        },
+        {
+          "contract_template_id": "switch",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": true,
+          "providers_used": [
+            "action_event_anchor",
+            "switch_of_play"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 0,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_switch_frequency_switch_b_v0",
+          "terminal_provider": "switch_of_play",
+          "variant_id": "switch_b"
+        }
+      ]
+    },
+    {
+      "concept": "time_to_location",
+      "contract_template_id": "time_to_arrival",
+      "findings": [],
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "contract_template_id": "time_to_arrival",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "time_to_arrival"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_time_to_location_time_to_arrival_a_v0",
+          "terminal_provider": "time_to_arrival",
+          "variant_id": "time_to_arrival_a"
+        },
+        {
+          "contract_template_id": "time_to_arrival",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": null,
+          "honest_zero": false,
+          "providers_used": [
+            "action_event_anchor",
+            "time_to_arrival"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "sample_role": "positive_probe",
+          "target_id": "atlas_scale_time_to_location_time_to_arrival_b_v0",
+          "terminal_provider": "time_to_arrival",
+          "variant_id": "time_to_arrival_b"
+        }
+      ]
+    }
+  ],
+  "findings": [],
+  "inputs": {
+    "search_row_ledger": "generated/compiler-search-atlas-scale-sample/search-run/row-ledger.json",
+    "targets_path": "generated/compiler-search-atlas-scale-sample/atlas-scale-targets.v0.json"
+  },
+  "schema_version": "atlas_scale_contract_sample_assessment.v0",
+  "scope": {
+    "atlas_wide": false,
+    "claim": "Large stratified atlas target-contract sample with template-variant stability and known-negative honesty controls; not a 741-row compiler-reachable percentage.",
+    "large_stratified_sample": true,
+    "natural_language": false
+  },
+  "status": "PASS",
+  "summary": {
+    "concept_count": 24,
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "hits": 460,
+      "local_hits": 28,
+      "misses": 576,
+      "shared_hits": 432
+    },
+    "failure_distribution": {
+      "missing_primitive": 8,
+      "unsupported_modality": 8
+    },
+    "known_negative_honest_failure_count": 16,
+    "known_negative_honest_failure_pct": 100.0,
+    "known_negative_target_count": 16,
+    "positive_compiler_reachable_count": 32,
+    "positive_compiler_reachable_pct": 100.0,
+    "positive_target_count": 32,
+    "result_distribution": {
+      "compiler_reachable": 32,
+      "not_compiler_reachable": 16
+    },
+    "target_count": 48
+  }
+}
