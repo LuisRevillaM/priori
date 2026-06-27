@@ -146,13 +146,12 @@
         ],
         "definition_count": 12
       },
-      "meaning.missing_primitive.off_ball_run": {
-        "case_count": 2,
+      "meaning.missing_primitive.off_ball_run_type": {
+        "case_count": 1,
         "cases": [
-          "scl1_018",
           "scl1_019"
         ],
-        "definition_count": 12
+        "definition_count": 6
       },
       "meaning.missing_primitive.restart_structure": {
         "case_count": 1,
@@ -197,6 +196,14 @@
           "scl0_006"
         ],
         "definition_count": 4
+      },
+      "meaning.movement.off_ball_run": {
+        "case_count": 2,
+        "cases": [
+          "scl1_018",
+          "scl1_019"
+        ],
+        "definition_count": 84
       },
       "meaning.pass_chain.connected_sequence": {
         "case_count": 1,

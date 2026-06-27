@@ -276,6 +276,10 @@ afl-acceleration-verify:
 afl-set-piece-structure-verify:
 	$(PYTHON) -m tqe.verification.afl_set_piece_structure
 
+.PHONY: afl-off-ball-run-verify
+afl-off-ball-run-verify:
+	$(PYTHON) -m tqe.verification.afl_off_ball_run
+
 .PHONY: afl-substrate-q2-verify
 afl-substrate-q2-verify:
 	$(PYTHON) -m tqe.verification.afl_substrate_q2

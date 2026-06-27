@@ -1,0 +1,114 @@
+{
+  "claim_boundary": {
+    "allowed_claim": "Observed off-ball endpoint-window movement by a non-ball actor under frozen displacement, speed, and ball-distance thresholds.",
+    "prohibited_claims": [
+      "decoy_inferred",
+      "marker_dragging_inferred",
+      "optimality_inferred",
+      "player_intent_inferred",
+      "player_role_inferred",
+      "run_purpose_inferred",
+      "run_quality_inferred",
+      "run_type_inferred",
+      "space_creation_inferred",
+      "tactical_causation_inferred"
+    ],
+    "unknown_policy": "Missing ball endpoints, end-of-period windows, or insufficient candidate tracking produce UNKNOWN, not a run/no-run claim."
+  },
+  "findings": [],
+  "milestone": "AFL-08 off_ball_run primitive / SCL named-gap closure",
+  "plans": {
+    "off_ball_run": {
+      "document_hash": "cb197e4722cb2c6377e0c7ba5e427e1f7f9d77a85fde6f6483ef879c29a0fb86",
+      "execution_status": "pass",
+      "path": "generated/semantic-contract-scl0/search-run/plans/scl1_018_blind_a_v0.json",
+      "requested_evidence_failure_count": 0,
+      "result_count": 20
+    }
+  },
+  "primitive_probe": {
+    "coverage_policy": "PASS/FAIL only when enough declared-scope outfield candidates are observed at both endpoints; missing ball/window/candidate coverage is UNKNOWN.",
+    "evidence_presence_sample": {
+      "candidate_scope": true,
+      "candidate_team_role": true,
+      "coverage_status": true,
+      "off_ball_distance_policy": true,
+      "off_ball_run_claim_boundary": true,
+      "off_ball_run_model": true,
+      "off_ball_run_reason": true,
+      "off_ball_run_status": true,
+      "run_displacement_m": true,
+      "run_duration_seconds": true,
+      "run_end_ball_distance_m": true,
+      "run_end_frame_id": true,
+      "run_forward_progression_m": true,
+      "run_lateral_displacement_m": true,
+      "run_player_id": true,
+      "run_speed_mps": true,
+      "run_start_ball_distance_m": true,
+      "run_start_frame_id": true,
+      "source_anchor_id": true
+    },
+    "model": "anchor_scoped_outfield_endpoint_displacement_v0_1",
+    "reason_counts": {
+      "candidate_not_off_ball_at_endpoint": 432,
+      "off_ball_run_observed": 2846,
+      "run_displacement_below_threshold": 1372
+    },
+    "record_count": 4650,
+    "status_counts": {
+      "FAIL": 1804,
+      "PASS": 2846
+    },
+    "unknown_fixture": {
+      "off_ball_run_reason": "run_window_exceeds_period",
+      "off_ball_run_status": "UNKNOWN"
+    }
+  },
+  "schema_version": "afl.off_ball_run.v1",
+  "scl_gap_closure": {
+    "closure_claim": "scl1_018 flipped from missing_primitive to compiler_reachable through generic provider search; scl1_019 run-in-behind/path-purpose typing remains an honest missing primitive.",
+    "targets": {
+      "scl1_018_blind_a_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "off_ball_run"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_018_blind_b_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "off_ball_run"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_019_blind_a_v0": {
+        "failure_taxonomy": "missing_primitive",
+        "providers_used": [],
+        "result": "not_compiler_reachable",
+        "rules_used": []
+      },
+      "scl1_019_blind_b_v0": {
+        "failure_taxonomy": "missing_primitive",
+        "providers_used": [],
+        "result": "not_compiler_reachable",
+        "rules_used": []
+      }
+    }
+  },
+  "status": "PASS",
+  "threshold_version": "off_ball_run.v0.1.0:lookahead=1.2:min_displacement=4.0:min_speed=3.0:min_ball_distance=5.0:min_observed_candidates=6:max_missing_candidate_ratio=0.35:model=anchor_scoped_outfield_endpoint_displacement"
+}

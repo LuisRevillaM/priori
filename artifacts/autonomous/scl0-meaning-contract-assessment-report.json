@@ -838,38 +838,48 @@
     {
       "case_id": "scl1_018",
       "concept": "off_ball_run_candidate",
-      "expected_failure_taxonomy": "missing_primitive",
-      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
       "findings": [],
       "held_out": false,
-      "sample_role": "scl1_missing_substrate_probe",
+      "sample_role": "scl1_off_ball_run_gap_closure_probe",
       "variants": [
         {
           "author_id": "blind_a",
           "concept_name_used_as_hint": false,
-          "contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
-          "failure_taxonomy": "missing_primitive",
+          "contract_hash": "b7afc9cfddd022aeae24a2089ded738a8fc8f195300c513757e8445cfb646655",
+          "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
-          "providers_used": [],
-          "requested_evidence_failure_count": null,
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "action_event_anchor",
+            "off_ball_run"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
           "target_id": "scl1_018_blind_a_v0"
         },
         {
           "author_id": "blind_b",
           "concept_name_used_as_hint": false,
-          "contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
-          "failure_taxonomy": "missing_primitive",
+          "contract_hash": "b7afc9cfddd022aeae24a2089ded738a8fc8f195300c513757e8445cfb646655",
+          "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
-          "providers_used": [],
-          "requested_evidence_failure_count": null,
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "action_event_anchor",
+            "off_ball_run"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
           "target_id": "scl1_018_blind_b_v0"
         }
       ]
@@ -886,7 +896,7 @@
         {
           "author_id": "blind_a",
           "concept_name_used_as_hint": false,
-          "contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
+          "contract_hash": "7b1c45375bece38cfbc93589a8b7a9bc502031b4717ebe4624181f70d8da3160",
           "failure_taxonomy": "missing_primitive",
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
@@ -900,7 +910,7 @@
         {
           "author_id": "blind_b",
           "concept_name_used_as_hint": false,
-          "contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
+          "contract_hash": "7b1c45375bece38cfbc93589a8b7a9bc502031b4717ebe4624181f70d8da3160",
           "failure_taxonomy": "missing_primitive",
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
@@ -1326,7 +1336,7 @@
   "summary": {
     "case_count": 28,
     "failure_distribution": {
-      "missing_primitive": 24,
+      "missing_primitive": 22,
       "unsupported_modality": 4
     },
     "findings_count": 0,
@@ -1335,8 +1345,8 @@
     "known_negative_honest_failure_count": 6,
     "known_negative_target_count": 6,
     "result_distribution": {
-      "compiler_reachable": 28,
-      "not_compiler_reachable": 28
+      "compiler_reachable": 30,
+      "not_compiler_reachable": 26
     },
     "target_count": 56
   }

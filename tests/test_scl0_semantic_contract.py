@@ -97,13 +97,37 @@ class Scl0SemanticContractTests(unittest.TestCase):
         for text, evidence in [
             ("A cover shadow is a defended passing lane region hidden behind the pressing defender.", "scl1_cover_shadow_status"),
             ("A marker relation identifies which defender is marking a particular attacker.", "scl1_marking_status"),
-            ("Off ball run typing identifies a player's run while they are away from the ball.", "scl1_off_ball_run_status"),
             ("A corner variant is a set piece routine pattern used from the corner restart.", "scl1_set_piece_routine_status"),
             ("A team press is a collective defensive pressing structure rather than one nearest defender.", "scl1_team_press_status"),
             ("A free space region is an open space area produced by the current player positions.", "scl1_space_region_generation_status"),
         ]:
             contract, _ = generate_contract_from_meaning(text)
             self.assertIn(evidence, contract["required_evidence"])
+
+    def test_off_ball_run_element_maps_to_observed_movement_not_run_type(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "An off ball run episode identifies a player's observed run while they are away from the ball."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("off_ball_run_status", contract["required_evidence"])
+        self.assertIn("run_player_id", contract["required_evidence"])
+        self.assertIn("run_displacement_m", contract["required_evidence"])
+        self.assertIn("run_start_ball_distance_m", contract["required_evidence"])
+        self.assertIn("off_ball_run_claim_boundary", contract["required_evidence"])
+        self.assertNotIn("scl1_off_ball_run_type_status", contract["required_evidence"])
+        self.assertIn("meaning.movement.off_ball_run", trace_rules)
+
+    def test_run_in_behind_keeps_type_gap_on_top_of_base_run(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "A run in behind is an off-ball run into space behind the defensive line."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("off_ball_run_status", contract["required_evidence"])
+        self.assertIn("scl1_off_ball_run_type_status", contract["required_evidence"])
+        self.assertIn("meaning.movement.off_ball_run", trace_rules)
+        self.assertIn("meaning.missing_primitive.off_ball_run_type", trace_rules)
 
     def test_set_piece_structure_element_maps_to_observed_restart_shape_not_routine(self) -> None:
         contract, traces = generate_contract_from_meaning(

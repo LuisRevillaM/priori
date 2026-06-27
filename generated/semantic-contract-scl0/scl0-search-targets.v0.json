@@ -1055,14 +1055,32 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+        "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_off_ball_run_status"
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "off_ball_distance_policy",
+          "off_ball_run_claim_boundary",
+          "off_ball_run_model",
+          "off_ball_run_reason",
+          "off_ball_run_status",
+          "run_displacement_m",
+          "run_duration_seconds",
+          "run_end_ball_distance_m",
+          "run_end_frame_id",
+          "run_forward_progression_m",
+          "run_lateral_displacement_m",
+          "run_player_id",
+          "run_speed_mps",
+          "run_start_ball_distance_m",
+          "run_start_frame_id",
+          "source_anchor_id"
         ],
         "status_semantics": [
           {
-            "field": "scl1_off_ball_run_status",
+            "field": "off_ball_run_status",
             "required_value": "PASS"
           }
         ]
@@ -1074,14 +1092,32 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+        "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_off_ball_run_status"
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "off_ball_distance_policy",
+          "off_ball_run_claim_boundary",
+          "off_ball_run_model",
+          "off_ball_run_reason",
+          "off_ball_run_status",
+          "run_displacement_m",
+          "run_duration_seconds",
+          "run_end_ball_distance_m",
+          "run_end_frame_id",
+          "run_forward_progression_m",
+          "run_lateral_displacement_m",
+          "run_player_id",
+          "run_speed_mps",
+          "run_start_ball_distance_m",
+          "run_start_frame_id",
+          "source_anchor_id"
         ],
         "status_semantics": [
           {
-            "field": "scl1_off_ball_run_status",
+            "field": "off_ball_run_status",
             "required_value": "PASS"
           }
         ]
@@ -1093,14 +1129,37 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+        "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Requires directional/path/purpose typing over an observed off-ball run; the base movement episode is not treated as run type, decoy, or tactical purpose.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_off_ball_run_status"
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "off_ball_distance_policy",
+          "off_ball_run_claim_boundary",
+          "off_ball_run_model",
+          "off_ball_run_reason",
+          "off_ball_run_status",
+          "run_displacement_m",
+          "run_duration_seconds",
+          "run_end_ball_distance_m",
+          "run_end_frame_id",
+          "run_forward_progression_m",
+          "run_lateral_displacement_m",
+          "run_player_id",
+          "run_speed_mps",
+          "run_start_ball_distance_m",
+          "run_start_frame_id",
+          "scl1_off_ball_run_type_status",
+          "source_anchor_id"
         ],
         "status_semantics": [
           {
-            "field": "scl1_off_ball_run_status",
+            "field": "off_ball_run_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "scl1_off_ball_run_type_status",
             "required_value": "PASS"
           }
         ]
@@ -1112,14 +1171,37 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+        "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Requires directional/path/purpose typing over an observed off-ball run; the base movement episode is not treated as run type, decoy, or tactical purpose.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_off_ball_run_status"
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "off_ball_distance_policy",
+          "off_ball_run_claim_boundary",
+          "off_ball_run_model",
+          "off_ball_run_reason",
+          "off_ball_run_status",
+          "run_displacement_m",
+          "run_duration_seconds",
+          "run_end_ball_distance_m",
+          "run_end_frame_id",
+          "run_forward_progression_m",
+          "run_lateral_displacement_m",
+          "run_player_id",
+          "run_speed_mps",
+          "run_start_ball_distance_m",
+          "run_start_frame_id",
+          "scl1_off_ball_run_type_status",
+          "source_anchor_id"
         ],
         "status_semantics": [
           {
-            "field": "scl1_off_ball_run_status",
+            "field": "off_ball_run_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "scl1_off_ball_run_type_status",
             "required_value": "PASS"
           }
         ]

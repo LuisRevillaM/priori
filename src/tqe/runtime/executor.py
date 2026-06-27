@@ -258,6 +258,7 @@ class TacticalQueryExecutor:
             "pairwise_distance": primitive_pairwise_distance,
             "velocity": primitive_velocity,
             "acceleration": primitive_acceleration,
+            "off_ball_run": primitive_off_ball_run,
             "set_piece_structure": primitive_set_piece_structure,
             "time_to_arrival": primitive_time_to_arrival,
             "carry_episode": primitive_carry_episode,
@@ -3645,6 +3646,60 @@ def primitive_acceleration(state: PeriodState, node: BoundCatalogNode) -> None:
     }
 
 
+def primitive_off_ball_run(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    candidate_scope = node_parameter_text(node, "candidate_scope", "same_team_outfield_as_anchor")
+    lookahead_seconds = node_parameter_number(node, "lookahead_seconds", 1.2)
+    minimum_run_displacement_m = node_parameter_number(node, "minimum_run_displacement_m", 4.0)
+    minimum_run_speed_mps = node_parameter_number(node, "minimum_run_speed_mps", 3.0)
+    minimum_ball_distance_m = node_parameter_number(node, "minimum_ball_distance_m", 5.0)
+    minimum_observed_candidates = node_parameter_integer(node, "minimum_observed_candidates", 6)
+    maximum_missing_candidate_ratio = node_parameter_number(node, "maximum_missing_candidate_ratio", 0.35)
+    records = [
+        off_ball_run_anchor_record(
+            state=state,
+            anchor=record,
+            frame_field=frame_field,
+            candidate_scope=candidate_scope,
+            lookahead_seconds=lookahead_seconds,
+            minimum_run_displacement_m=minimum_run_displacement_m,
+            minimum_run_speed_mps=minimum_run_speed_mps,
+            minimum_ball_distance_m=minimum_ball_distance_m,
+            minimum_observed_candidates=minimum_observed_candidates,
+            maximum_missing_candidate_ratio=maximum_missing_candidate_ratio,
+        )
+        for record in runtime_records(anchor_value)
+        if isinstance(record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["off_ball_run_status"]) == "UNKNOWN" else str(record["off_ball_run_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "off_ball_run_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "off_ball_run_status").entity_scope,
+        ),
+        "off_ball_run_status_records": records,
+        "run_speed_mps": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record.get("run_speed_mps") for record in records],
+            unknown_mask=[record.get("run_speed_mps") is None for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "run_speed_mps").entity_scope,
+        ),
+        "run_speed_mps_records": records,
+    }
+
+
 def primitive_time_to_arrival(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
     frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
@@ -4141,6 +4196,258 @@ def acceleration_sample(
         "acceleration_mps2": round(float(acceleration), 3),
         "previous_velocity_sample": previous_sample,
         "current_velocity_sample": current_sample,
+    }
+
+
+def off_ball_run_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    candidate_scope: str,
+    lookahead_seconds: float,
+    minimum_run_displacement_m: float,
+    minimum_run_speed_mps: float,
+    minimum_ball_distance_m: float,
+    minimum_observed_candidates: int,
+    maximum_missing_candidate_ratio: float,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    start_frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or start_frame_id is None:
+        return None
+    window_frames = max(1, int(math.ceil(max(lookahead_seconds, 0.2) * FRAME_RATE_HZ - 1e-9)))
+    end_frame_id = int(start_frame_id) + window_frames
+    candidate_team_role = off_ball_run_candidate_team_role(state, anchor, candidate_scope)
+    excluded_player_ids = off_ball_run_excluded_player_ids(anchor)
+    model = "anchor_scoped_outfield_endpoint_displacement_v0_1"
+    distance_policy = "candidate must be at least the frozen ball-distance threshold from the ball at both observation endpoints"
+    claim_boundary = (
+        "Observed off-ball endpoint-window movement only; no run type, purpose, decoy, marker-dragging, "
+        "space creation, role, intent, tactical causation, quality, or optimality claim."
+    )
+
+    def base(status: str, reason: str, **extra: Any) -> dict[str, Any]:
+        run_player_id = None if extra.get("run_player_id") in {None, ""} else str(extra.get("run_player_id"))
+        entity_refs = [] if run_player_id is None else [run_player_id]
+        off_ball_anchor_id = anchor_record_id(
+            match_id=state.match_id,
+            period=state.period,
+            anchor_frame_id=anchor_frame_id,
+            start_frame_id=start_frame_id,
+            end_frame_id=end_frame_id,
+            entity_refs=entity_refs,
+        )
+        return {
+            **anchor,
+            "match_id": state.match_id,
+            "period": state.period,
+            "anchor_id": off_ball_anchor_id,
+            "source_anchor_id": str(anchor.get("anchor_id") or ""),
+            "anchor_frame_id": anchor_frame_id,
+            "start_frame_id": start_frame_id,
+            "end_frame_id": end_frame_id,
+            "entity_refs": entity_refs,
+            "off_ball_run_status": status,
+            "off_ball_run_reason": reason,
+            "run_player_id": run_player_id,
+            "run_start_frame_id": start_frame_id,
+            "run_end_frame_id": end_frame_id,
+            "run_duration_seconds": round(window_frames / FRAME_RATE_HZ, 3),
+            "run_displacement_m": extra.get("run_displacement_m"),
+            "run_forward_progression_m": extra.get("run_forward_progression_m"),
+            "run_lateral_displacement_m": extra.get("run_lateral_displacement_m"),
+            "run_speed_mps": extra.get("run_speed_mps"),
+            "run_start_ball_distance_m": extra.get("run_start_ball_distance_m"),
+            "run_end_ball_distance_m": extra.get("run_end_ball_distance_m"),
+            "run_start_point": extra.get("run_start_point"),
+            "run_end_point": extra.get("run_end_point"),
+            "candidate_scope": candidate_scope,
+            "candidate_team_role": candidate_team_role,
+            "excluded_player_ids": sorted(excluded_player_ids),
+            "observed_candidate_count": extra.get("observed_candidate_count", 0),
+            "expected_candidate_count": extra.get("expected_candidate_count", 0),
+            "missing_candidate_count": extra.get("missing_candidate_count", 0),
+            "missing_candidate_ratio": extra.get("missing_candidate_ratio"),
+            "observed_candidate_ids": extra.get("observed_candidate_ids", []),
+            "candidate_evaluation_sample": extra.get("candidate_evaluation_sample", []),
+            "minimum_observed_candidates": int(minimum_observed_candidates),
+            "minimum_run_displacement_m": round(float(minimum_run_displacement_m), 3),
+            "minimum_run_speed_mps": round(float(minimum_run_speed_mps), 3),
+            "minimum_ball_distance_m": round(float(minimum_ball_distance_m), 3),
+            "maximum_missing_candidate_ratio": round(float(maximum_missing_candidate_ratio), 3),
+            "off_ball_run_model": model,
+            "off_ball_distance_policy": distance_policy,
+            "tracking_quality_status": "UNKNOWN" if status == "UNKNOWN" else "PASS",
+            "coverage_status": "UNKNOWN" if status == "UNKNOWN" else "PASS",
+            "off_ball_run_claim_boundary": claim_boundary,
+        }
+
+    if candidate_team_role not in {"home", "away"}:
+        return base("UNKNOWN", "candidate_team_role_missing")
+    if end_frame_id > int(state.frame_ids[-1]):
+        return base("UNKNOWN", "run_window_exceeds_period")
+    ball_start = ball_point_at_frame(state, start_frame_id)
+    ball_end = ball_point_at_frame(state, end_frame_id)
+    if ball_start is None or ball_end is None:
+        return base("UNKNOWN", "ball_endpoint_missing")
+
+    outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, candidate_team_role) - excluded_player_ids
+    start_records = {
+        str(item["player_id"]): item
+        for item in cached_observed_outfield_positions_at_frame(state, start_frame_id, candidate_team_role, outfield_ids)
+        if item.get("x_m") is not None and item.get("y_m") is not None
+    }
+    end_records = {
+        str(item["player_id"]): item
+        for item in cached_observed_outfield_positions_at_frame(state, end_frame_id, candidate_team_role, outfield_ids)
+        if item.get("x_m") is not None and item.get("y_m") is not None
+    }
+    observed_denominator_ids = set(start_records) | set(end_records)
+    observed_ids = sorted(set(start_records) & set(end_records))
+    expected_candidate_count = len(observed_denominator_ids)
+    missing_candidate_count = max(0, expected_candidate_count - len(observed_ids))
+    missing_candidate_ratio = (
+        None
+        if expected_candidate_count == 0
+        else round(float(missing_candidate_count) / float(expected_candidate_count), 3)
+    )
+    coverage_payload = {
+        "expected_candidate_count": expected_candidate_count,
+        "observed_candidate_count": len(observed_ids),
+        "missing_candidate_count": missing_candidate_count,
+        "missing_candidate_ratio": missing_candidate_ratio,
+        "observed_candidate_ids": observed_ids,
+    }
+    if expected_candidate_count == 0:
+        return base("UNKNOWN", "candidate_denominator_missing", **coverage_payload)
+    if len(observed_ids) < int(minimum_observed_candidates):
+        return base("UNKNOWN", "insufficient_observed_candidates", **coverage_payload)
+    if missing_candidate_ratio is not None and float(missing_candidate_ratio) > maximum_missing_candidate_ratio:
+        return base("UNKNOWN", "candidate_tracking_coverage_below_threshold", **coverage_payload)
+
+    orientation = parquet_rows(state.canonical_root / "orientation.parquet")
+    attack_x_sign = attack_x_sign_for(
+        orientation,
+        state.match_id,
+        state.period,
+        candidate_team_role,
+    )
+    candidate_records = [
+        off_ball_run_candidate_record(
+            player_id=player_id,
+            start_record=start_records[player_id],
+            end_record=end_records[player_id],
+            ball_start=ball_start,
+            ball_end=ball_end,
+            duration_seconds=window_frames / FRAME_RATE_HZ,
+            attack_x_sign=attack_x_sign,
+            minimum_run_displacement_m=minimum_run_displacement_m,
+            minimum_run_speed_mps=minimum_run_speed_mps,
+            minimum_ball_distance_m=minimum_ball_distance_m,
+        )
+        for player_id in observed_ids
+    ]
+    candidate_records = sorted(
+        candidate_records,
+        key=lambda item: (
+            item["candidate_status"] == "PASS",
+            float(item.get("run_displacement_m") or 0.0),
+            float(item.get("run_speed_mps") or 0.0),
+        ),
+        reverse=True,
+    )
+    if not candidate_records:
+        return base("FAIL", "no_evaluable_off_ball_candidate", **coverage_payload)
+    best = candidate_records[0]
+    status = str(best["candidate_status"])
+    reason = str(best["candidate_reason"])
+    return base(
+        status,
+        reason,
+        **coverage_payload,
+        run_player_id=best["run_player_id"],
+        run_displacement_m=best["run_displacement_m"],
+        run_forward_progression_m=best["run_forward_progression_m"],
+        run_lateral_displacement_m=best["run_lateral_displacement_m"],
+        run_speed_mps=best["run_speed_mps"],
+        run_start_ball_distance_m=best["run_start_ball_distance_m"],
+        run_end_ball_distance_m=best["run_end_ball_distance_m"],
+        run_start_point=best["run_start_point"],
+        run_end_point=best["run_end_point"],
+        candidate_evaluation_sample=candidate_records[:5],
+    )
+
+
+def off_ball_run_candidate_team_role(state: PeriodState, anchor: dict[str, Any], candidate_scope: str) -> str:
+    if candidate_scope == "perspective_outfield":
+        return state.perspective_team_role
+    if candidate_scope == "defending_outfield":
+        return state.defending_team_role
+    team_role = str(anchor.get("team_role") or "")
+    return team_role if team_role in {"home", "away"} else state.perspective_team_role
+
+
+def off_ball_run_excluded_player_ids(anchor: dict[str, Any]) -> set[str]:
+    excluded_fields = {
+        "passer_id",
+        "carrier_id",
+        "relay_player_id",
+        "input_passer_id",
+    }
+    excluded: set[str] = set()
+    for field_name in excluded_fields:
+        value = anchor.get(field_name)
+        if value not in {None, ""}:
+            excluded.add(str(value))
+    return excluded
+
+
+def off_ball_run_candidate_record(
+    *,
+    player_id: str,
+    start_record: dict[str, Any],
+    end_record: dict[str, Any],
+    ball_start: tuple[float, float],
+    ball_end: tuple[float, float],
+    duration_seconds: float,
+    attack_x_sign: int | None,
+    minimum_run_displacement_m: float,
+    minimum_run_speed_mps: float,
+    minimum_ball_distance_m: float,
+) -> dict[str, Any]:
+    start_point = (float(start_record["x_m"]), float(start_record["y_m"]))
+    end_point = (float(end_record["x_m"]), float(end_record["y_m"]))
+    dx = float(end_point[0]) - float(start_point[0])
+    dy = float(end_point[1]) - float(start_point[1])
+    displacement = math.hypot(dx, dy)
+    speed = displacement / max(float(duration_seconds), 1e-9)
+    start_ball_distance = math.dist(start_point, ball_start)
+    end_ball_distance = math.dist(end_point, ball_end)
+    forward_progression = None if attack_x_sign not in {-1, 1} else dx * int(attack_x_sign)
+    status = "PASS"
+    reason = "off_ball_run_observed"
+    if start_ball_distance < minimum_ball_distance_m or end_ball_distance < minimum_ball_distance_m:
+        status = "FAIL"
+        reason = "candidate_not_off_ball_at_endpoint"
+    elif displacement < minimum_run_displacement_m:
+        status = "FAIL"
+        reason = "run_displacement_below_threshold"
+    elif speed < minimum_run_speed_mps:
+        status = "FAIL"
+        reason = "run_speed_below_threshold"
+    return {
+        "run_player_id": str(player_id),
+        "candidate_status": status,
+        "candidate_reason": reason,
+        "run_start_point": point_from_xy(start_point[0], start_point[1]),
+        "run_end_point": point_from_xy(end_point[0], end_point[1]),
+        "run_displacement_m": round(float(displacement), 3),
+        "run_forward_progression_m": None if forward_progression is None else round(float(forward_progression), 3),
+        "run_lateral_displacement_m": round(abs(float(dy)), 3),
+        "run_speed_mps": round(float(speed), 3),
+        "run_start_ball_distance_m": round(float(start_ball_distance), 3),
+        "run_end_ball_distance_m": round(float(end_ball_distance), 3),
     }
 
 

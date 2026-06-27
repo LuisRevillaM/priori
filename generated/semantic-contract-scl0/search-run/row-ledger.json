@@ -13,10 +13,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 34,
+      "hits": 45,
       "local_hits": 14,
-      "misses": 36,
-      "shared_hits": 20
+      "misses": 25,
+      "shared_hits": 31
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -422,10 +422,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 25,
+      "hits": 15,
       "local_hits": 14,
-      "misses": 45,
-      "shared_hits": 11
+      "misses": 55,
+      "shared_hits": 1
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1253,10 +1253,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 65,
+      "hits": 55,
       "local_hits": 14,
-      "misses": 47,
-      "shared_hits": 51
+      "misses": 57,
+      "shared_hits": 41
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1802,10 +1802,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 55,
+      "hits": 51,
       "local_hits": 14,
-      "misses": 57,
-      "shared_hits": 41
+      "misses": 61,
+      "shared_hits": 37
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2351,10 +2351,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 32,
+      "hits": 38,
       "local_hits": 14,
-      "misses": 38,
-      "shared_hits": 18
+      "misses": 32,
+      "shared_hits": 24
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2875,10 +2875,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 36,
+      "hits": 28,
       "local_hits": 14,
-      "misses": 34,
-      "shared_hits": 22
+      "misses": 42,
+      "shared_hits": 14
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -3399,10 +3399,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 17,
+      "hits": 18,
       "local_hits": 0,
-      "misses": 39,
-      "shared_hits": 17
+      "misses": 38,
+      "shared_hits": 18
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -3640,10 +3640,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 19,
+      "hits": 21,
       "local_hits": 0,
-      "misses": 37,
-      "shared_hits": 19
+      "misses": 35,
+      "shared_hits": 21
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -4461,10 +4461,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 1,
+      "hits": 2,
       "local_hits": 0,
-      "misses": 27,
-      "shared_hits": 1
+      "misses": 26,
+      "shared_hits": 2
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5089,10 +5089,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 14,
+      "hits": 15,
       "local_hits": 0,
-      "misses": 14,
-      "shared_hits": 14
+      "misses": 13,
+      "shared_hits": 15
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5378,15 +5378,15 @@
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": "1699ea0cacf9bd725b8f95464ac053417d08c41e4036145df52aa9fc36894b86",
+    "document_hash": "36ee4585ef5c561dfa2a8e7bdb94179c08df654310de389e24d3a295a6fc0193",
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 32,
+      "hits": 28,
       "local_hits": 14,
-      "misses": 38,
-      "shared_hits": 18
+      "misses": 42,
+      "shared_hits": 14
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5394,15 +5394,15 @@
     "field_sources": {
       "action_event_reason": {
         "output_name": "action_event_status",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "action_event_status": {
         "output_name": "action_event_status",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "action_type": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "after_value": {
         "output_name": "anchor_evaluations",
@@ -5410,15 +5410,15 @@
       },
       "anchor_evaluations": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "anchor_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "anchor_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "arrival_frame_id": {
         "output_name": "anchor_evaluations",
@@ -5506,19 +5506,19 @@
       },
       "event_anchor_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "event_frame_offset_ms": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "event_row_index": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "event_type": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "input_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -5638,7 +5638,7 @@
       },
       "passer_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "player_lane_assignments": {
         "output_name": "anchor_evaluations",
@@ -5654,7 +5654,7 @@
       },
       "receiver_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "relay_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -5718,7 +5718,7 @@
       },
       "team_role": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "temporal_gap_seconds": {
         "output_name": "anchor_evaluations",
@@ -5776,7 +5776,7 @@
       "provider_field_backward_search",
       "typed_join_key_discovery"
     ],
-    "runtime_trace_hash": "ddc868854ac392eb423000b87f49c1759e2eb7d62b6f4a16a1601b83d29b6fe6",
+    "runtime_trace_hash": "fb6154845bfe52e687a8312d80b06949b831109bdc602eb375dc60d109b9e6e5",
     "runtime_value_count": 196,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
@@ -5794,7 +5794,7 @@
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": "95386caa0a979a5339d2c56b63667595970ca855e353a106293aaf1e42cf38c7",
+    "document_hash": "13a2b8c1b01c735e2f5666263960a0150fe0116dec74aa488bb15872da0a758f",
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
@@ -5810,15 +5810,15 @@
     "field_sources": {
       "action_event_reason": {
         "output_name": "action_event_status",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "action_event_status": {
         "output_name": "action_event_status",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "action_type": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "after_value": {
         "output_name": "anchor_evaluations",
@@ -5826,15 +5826,15 @@
       },
       "anchor_evaluations": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "anchor_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "anchor_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "arrival_frame_id": {
         "output_name": "anchor_evaluations",
@@ -5922,19 +5922,19 @@
       },
       "event_anchor_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "event_frame_offset_ms": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "event_row_index": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "event_type": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "input_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -6054,7 +6054,7 @@
       },
       "passer_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "player_lane_assignments": {
         "output_name": "anchor_evaluations",
@@ -6070,7 +6070,7 @@
       },
       "receiver_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "relay_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -6134,7 +6134,7 @@
       },
       "team_role": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_5"
+        "source_node_id": "action_event_anchor_6"
       },
       "temporal_gap_seconds": {
         "output_name": "anchor_evaluations",
@@ -6192,7 +6192,7 @@
       "provider_field_backward_search",
       "typed_join_key_discovery"
     ],
-    "runtime_trace_hash": "4025135b8dcfd2c3baa516efa82e6b5ebaa4f9e56eb44592045bd576747ef654",
+    "runtime_trace_hash": "6a8b0418669bf50f74e1429296e4199b1da631f40845a66bca02d7bd54231ca3",
     "runtime_value_count": 196,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
@@ -6530,86 +6530,434 @@
     "terminal_provider": null
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_018",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "missing_primitive",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "fields": [
-        "scl1_off_ball_run_status"
-      ]
+    "document_hash": "cb197e4722cb2c6377e0c7ba5e427e1f7f9d77a85fde6f6483ef879c29a0fb86",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 14,
+      "local_hits": 0,
+      "misses": 14,
+      "shared_hits": 14
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "action_event_reason": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_event_status": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "candidate_scope": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "candidate_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "coverage_status": {
+        "output_name": "off_ball_run_status",
+        "source_node_id": "off_ball_run"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "expected_candidate_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "minimum_ball_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "minimum_observed_candidates": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "minimum_run_displacement_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "minimum_run_speed_mps": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "missing_candidate_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "missing_candidate_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "observed_candidate_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "off_ball_distance_policy": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "off_ball_run_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "off_ball_run_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "off_ball_run_reason": {
+        "output_name": "off_ball_run_status",
+        "source_node_id": "off_ball_run"
+      },
+      "off_ball_run_status": {
+        "output_name": "off_ball_run_status",
+        "source_node_id": "off_ball_run"
+      },
+      "passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "run_displacement_m": {
+        "output_name": "off_ball_run_status",
+        "source_node_id": "off_ball_run"
+      },
+      "run_duration_seconds": {
+        "output_name": "run_speed_mps",
+        "source_node_id": "off_ball_run"
+      },
+      "run_end_ball_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "run_end_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "run_forward_progression_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "run_lateral_displacement_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "run_player_id": {
+        "output_name": "off_ball_run_status",
+        "source_node_id": "off_ball_run"
+      },
+      "run_speed_mps": {
+        "output_name": "run_speed_mps",
+        "source_node_id": "off_ball_run"
+      },
+      "run_start_ball_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "run_start_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "source_anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "tracking_quality_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No catalog provider exposes one or more required target fields.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_018_blind_a_v0.json",
+    "providers_used": [
+      "action_event_anchor",
+      "off_ball_run"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "ec332a89ab297c71a36b101bcca3c9f2b75ae19fb2e42c3e051cced7e7d2e727",
+    "runtime_value_count": 84,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
+    "target_contract_hash": "b7afc9cfddd022aeae24a2089ded738a8fc8f195300c513757e8445cfb646655",
     "target_id": "scl1_018_blind_a_v0",
-    "terminal_provider": null
+    "terminal_provider": "off_ball_run"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_018",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "missing_primitive",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "fields": [
-        "scl1_off_ball_run_status"
-      ]
+    "document_hash": "aa998e46b2ec05b15d7b922d2b640928931d6d4daae5246940cbf6590b09ff2b",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 14,
+      "local_hits": 0,
+      "misses": 14,
+      "shared_hits": 14
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "action_event_reason": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_event_status": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "candidate_scope": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "candidate_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "coverage_status": {
+        "output_name": "off_ball_run_status",
+        "source_node_id": "off_ball_run"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "expected_candidate_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "minimum_ball_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "minimum_observed_candidates": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "minimum_run_displacement_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "minimum_run_speed_mps": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "missing_candidate_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "missing_candidate_ratio": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "observed_candidate_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "off_ball_distance_policy": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "off_ball_run_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "off_ball_run_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "off_ball_run_reason": {
+        "output_name": "off_ball_run_status",
+        "source_node_id": "off_ball_run"
+      },
+      "off_ball_run_status": {
+        "output_name": "off_ball_run_status",
+        "source_node_id": "off_ball_run"
+      },
+      "passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "run_displacement_m": {
+        "output_name": "off_ball_run_status",
+        "source_node_id": "off_ball_run"
+      },
+      "run_duration_seconds": {
+        "output_name": "run_speed_mps",
+        "source_node_id": "off_ball_run"
+      },
+      "run_end_ball_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "run_end_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "run_forward_progression_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "run_lateral_displacement_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "run_player_id": {
+        "output_name": "off_ball_run_status",
+        "source_node_id": "off_ball_run"
+      },
+      "run_speed_mps": {
+        "output_name": "run_speed_mps",
+        "source_node_id": "off_ball_run"
+      },
+      "run_start_ball_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "run_start_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "source_anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "tracking_quality_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "off_ball_run"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No catalog provider exposes one or more required target fields.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_018_blind_b_v0.json",
+    "providers_used": [
+      "action_event_anchor",
+      "off_ball_run"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "7444021bc778f856105d89abfffdfa60757b3c12a1cd6352186a20d6c571d8cf",
+    "runtime_value_count": 84,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
+    "target_contract_hash": "b7afc9cfddd022aeae24a2089ded738a8fc8f195300c513757e8445cfb646655",
     "target_id": "scl1_018_blind_b_v0",
-    "terminal_provider": null
+    "terminal_provider": "off_ball_run"
   },
   {
     "compatibility_profile": null,
@@ -6625,7 +6973,7 @@
     "execution_status": null,
     "failure_details": {
       "fields": [
-        "scl1_off_ball_run_status"
+        "scl1_off_ball_run_type_status"
       ]
     },
     "failure_taxonomy": "missing_primitive",
@@ -6648,7 +6996,7 @@
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
+    "target_contract_hash": "7b1c45375bece38cfbc93589a8b7a9bc502031b4717ebe4624181f70d8da3160",
     "target_id": "scl1_019_blind_a_v0",
     "terminal_provider": null
   },
@@ -6666,7 +7014,7 @@
     "execution_status": null,
     "failure_details": {
       "fields": [
-        "scl1_off_ball_run_status"
+        "scl1_off_ball_run_type_status"
       ]
     },
     "failure_taxonomy": "missing_primitive",
@@ -6689,7 +7037,7 @@
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
+    "target_contract_hash": "7b1c45375bece38cfbc93589a8b7a9bc502031b4717ebe4624181f70d8da3160",
     "target_id": "scl1_019_blind_b_v0",
     "terminal_provider": null
   },

@@ -59,9 +59,9 @@ CROSS_CONCEPT_REUSE_REQUIRED_RULES = {
     "meaning.kinematics.acceleration",
     "meaning.missing_primitive.cover_shadow",
     "meaning.missing_primitive.marking",
-    "meaning.missing_primitive.off_ball_run",
     "meaning.missing_primitive.space_region_generation",
     "meaning.missing_primitive.team_press",
+    "meaning.movement.off_ball_run",
     "meaning.reachability.time_to_arrival",
     "meaning.restart.set_piece_structure",
 }
@@ -509,13 +509,18 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         matched = True
 
     if is_off_ball_run_meaning(lower):
-        span = first_span(text, [r"off[- ]ball run", r"diagonal run", r"run in behind", r"run typing"]) or whole_span(text)
+        span = first_span(text, [r"off[- ]ball run", r"diagonal run", r"run[- ]in[- ]behind", r"run typing"]) or whole_span(text)
+        add_off_ball_run_element(builder, span)
+        matched = True
+
+    if is_off_ball_run_type_meaning(lower):
+        span = first_span(text, [r"diagonal run", r"run[- ]in[- ]behind", r"run typing", r"decoy", r"drag(?:ging)?", r"overlap", r"underlap", r"third[- ]man"]) or whole_span(text)
         add_missing_primitive_element(
             builder,
-            "scl1_off_ball_run_status",
+            "scl1_off_ball_run_type_status",
             span,
-            "meaning.missing_primitive.off_ball_run",
-            "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+            "meaning.missing_primitive.off_ball_run_type",
+            "Requires directional/path/purpose typing over an observed off-ball run; the base movement episode is not treated as run type, decoy, or tactical purpose.",
         )
         matched = True
 
@@ -737,6 +742,38 @@ def add_acceleration_element(builder: ContractBuilder, span: Span, *, direction:
     )
 
 
+def add_off_ball_run_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.movement.off_ball_run"
+    for field_name in [
+        "source_anchor_id",
+        "off_ball_run_status",
+        "off_ball_run_reason",
+        "run_player_id",
+        "run_start_frame_id",
+        "run_end_frame_id",
+        "run_duration_seconds",
+        "run_displacement_m",
+        "run_forward_progression_m",
+        "run_lateral_displacement_m",
+        "run_speed_mps",
+        "run_start_ball_distance_m",
+        "run_end_ball_distance_m",
+        "candidate_scope",
+        "candidate_team_role",
+        "coverage_status",
+        "off_ball_run_model",
+        "off_ball_distance_policy",
+        "off_ball_run_claim_boundary",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("off_ball_run_status", "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim.",
+        span,
+        rule_id,
+    )
+
+
 def add_set_piece_structure_element(builder: ContractBuilder, span: Span) -> None:
     rule_id = "meaning.restart.set_piece_structure"
     for field_name in [
@@ -950,7 +987,26 @@ def is_marking_meaning(lower: str) -> bool:
 
 
 def is_off_ball_run_meaning(lower: str) -> bool:
-    return any(phrase in lower for phrase in ("off-ball run", "off ball run", "diagonal run", "run in behind", "run typing"))
+    return any(phrase in lower for phrase in ("off-ball run", "off ball run", "diagonal run", "run in behind", "run-in-behind", "run typing"))
+
+
+def is_off_ball_run_type_meaning(lower: str) -> bool:
+    return any(
+        phrase in lower
+        for phrase in (
+            "diagonal run",
+            "run in behind",
+            "run-in-behind",
+            "run typing",
+            "decoy",
+            "dragging",
+            "drag a marker",
+            "overlap",
+            "underlap",
+            "third-man",
+            "third man",
+        )
+    )
 
 
 def is_acceleration_meaning(lower: str) -> bool:

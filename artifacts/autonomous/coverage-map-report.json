@@ -11,6 +11,7 @@
   "Q2 now composes through generic binary episode joins; carry_out_of_pressure is generically_composable, not yet compiler_reachable.",
   "acceleration landed as a conservative two-window speed-change primitive; speed-up/deceleration rows are supported while turn-rate, curvature, and jerk remain precise next blockers.",
   "set_piece_structure landed as observed restart/set-piece event plus at-frame outfield arrangement; routine typing, delivery trajectory, setup windows, and role/marking claims remain precise next blockers.",
+  "off_ball_run landed as observed off-ball endpoint-window movement; named run typing, decoy/marker-dragging, space-creation, coordination, and path-purpose claims remain precise next blockers.",
   "Remaining reachability gaps are mostly not this primitive: moving-target interception, pass-line interception, cover shadow, reachability-field/region generation, graph construction, or margin/rate operators.",
   "Remaining carry-family gaps are mostly not base carrying: defender-bypass-by-carry, space generation, profile aggregation, contact/touch, body orientation, or learned value.",
   "Regenerate the coverage map after every substrate package so supported/partial/gap counts remain a living metric.",
@@ -45,16 +46,16 @@
  "reachable_now_or_one_gap_pct": 71.1,
  "top_missing_primitives_by_unlock": [
   [
-   "off_ball_run",
-   11
-  ],
-  [
-   "space_region_generation",
-   7
+   "off_ball_run_type_or_path",
+   13
   ],
   [
    "marking",
-   6
+   10
+  ],
+  [
+   "space_region_generation",
+   8
   ],
   [
    "cover_shadow",
