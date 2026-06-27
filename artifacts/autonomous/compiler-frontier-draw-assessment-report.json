@@ -84,18 +84,29 @@
         {
           "contract_template_id": "known_good_identity_constrained_combination",
           "expected_failure_taxonomy": null,
-          "failure_taxonomy": "missing_constraint",
+          "failure_taxonomy": null,
           "fidelity_expectation": null,
           "honest_zero": false,
           "known_good_control_expected_failure": "missing_constraint",
           "known_good_control_family": "identity_constrained_combination",
-          "providers_used": [],
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "one_touch_relay_episode",
+            "one_touch_relay_episode",
+            "controlled_pass_episode",
+            "pass_chain_episode",
+            "join_episode_sets"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "generic_binary_episode_join",
+            "generic_same_entity_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery"
+          ],
           "sample_role": "known_good_control",
           "target_id": "atlas_scale_bounce_pass_sequence_known_good_identity_return_v0",
-          "terminal_provider": null,
+          "terminal_provider": "join_episode_sets",
           "variant_id": "known_good_identity_return"
         }
       ]
@@ -510,18 +521,29 @@
         {
           "contract_template_id": "known_good_identity_constrained_combination",
           "expected_failure_taxonomy": null,
-          "failure_taxonomy": "missing_constraint",
+          "failure_taxonomy": null,
           "fidelity_expectation": null,
           "honest_zero": false,
           "known_good_control_expected_failure": "missing_constraint",
           "known_good_control_family": "identity_constrained_combination",
-          "providers_used": [],
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "one_touch_relay_episode",
+            "one_touch_relay_episode",
+            "controlled_pass_episode",
+            "pass_chain_episode",
+            "join_episode_sets"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "generic_binary_episode_join",
+            "generic_same_entity_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery"
+          ],
           "sample_role": "known_good_control",
           "target_id": "atlas_scale_give_and_go_sequence_known_good_identity_return_v0",
-          "terminal_provider": null,
+          "terminal_provider": "join_episode_sets",
           "variant_id": "known_good_identity_return"
         }
       ]
@@ -1545,18 +1567,29 @@
         {
           "contract_template_id": "known_good_identity_constrained_combination",
           "expected_failure_taxonomy": null,
-          "failure_taxonomy": "missing_constraint",
+          "failure_taxonomy": null,
           "fidelity_expectation": null,
           "honest_zero": false,
           "known_good_control_expected_failure": "missing_constraint",
           "known_good_control_family": "identity_constrained_combination",
-          "providers_used": [],
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "one_touch_relay_episode",
+            "one_touch_relay_episode",
+            "controlled_pass_episode",
+            "pass_chain_episode",
+            "join_episode_sets"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "generic_binary_episode_join",
+            "generic_same_entity_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery"
+          ],
           "sample_role": "known_good_control",
           "target_id": "atlas_scale_up_back_through_sequence_known_good_identity_return_v0",
-          "terminal_provider": null,
+          "terminal_provider": "join_episode_sets",
           "variant_id": "known_good_identity_return"
         }
       ]
@@ -1595,18 +1628,29 @@
         {
           "contract_template_id": "known_good_identity_constrained_combination",
           "expected_failure_taxonomy": null,
-          "failure_taxonomy": "missing_constraint",
+          "failure_taxonomy": null,
           "fidelity_expectation": null,
           "honest_zero": false,
           "known_good_control_expected_failure": "missing_constraint",
           "known_good_control_family": "identity_constrained_combination",
-          "providers_used": [],
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "one_touch_relay_episode",
+            "one_touch_relay_episode",
+            "controlled_pass_episode",
+            "pass_chain_episode",
+            "join_episode_sets"
+          ],
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "generic_binary_episode_join",
+            "generic_same_entity_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery"
+          ],
           "sample_role": "known_good_control",
           "target_id": "atlas_scale_wall_pass_sequence_known_good_identity_return_v0",
-          "terminal_provider": null,
+          "terminal_provider": "join_episode_sets",
           "variant_id": "known_good_identity_return"
         }
       ]
@@ -1666,11 +1710,13 @@
   },
   "measurement_buckets": {
     "bucket_distribution": {
-      "genuine_gap": 4,
+      "contract_generation_bug": 4,
       "missing_constraint": 20,
       "missing_primitive": 28
     },
-    "contract_generation_bug_distribution": {},
+    "contract_generation_bug_distribution": {
+      "too_weak": 4
+    },
     "entries": [
       {
         "auto_result": "not_compiler_reachable",
@@ -2058,44 +2104,38 @@
       },
       {
         "auto_result": "contract_fidelity_refused",
-        "bucket": "genuine_gap",
+        "bucket": "contract_generation_bug",
         "concept": "bounce_pass_sequence",
         "detail": "Named return/relay combinations need explicit player-linkage semantics; a generic action anchor or chain would be a weak proxy.",
-        "family": "identity_constrained_combination",
-        "known_good_failure_taxonomy": "missing_constraint",
-        "refusal_reason": "contract_fidelity_insufficient"
+        "refusal_reason": "contract_fidelity_insufficient",
+        "subtype": "too_weak"
       },
       {
         "auto_result": "contract_fidelity_refused",
-        "bucket": "genuine_gap",
+        "bucket": "contract_generation_bug",
         "concept": "give_and_go_sequence",
         "detail": "Give-and-go requires a two-pass player-return structure; the current generated contracts cannot faithfully express that identity constraint.",
-        "family": "identity_constrained_combination",
-        "known_good_failure_taxonomy": "missing_constraint",
-        "refusal_reason": "contract_fidelity_insufficient"
+        "refusal_reason": "contract_fidelity_insufficient",
+        "subtype": "too_weak"
       },
       {
         "auto_result": "contract_fidelity_refused",
-        "bucket": "genuine_gap",
+        "bucket": "contract_generation_bug",
         "concept": "up_back_through_sequence",
         "detail": "Up-back-through requires ordered leg roles and directional constraints beyond the current generated contract templates.",
-        "family": "identity_constrained_combination",
-        "known_good_failure_taxonomy": "missing_constraint",
-        "refusal_reason": "contract_fidelity_insufficient"
+        "refusal_reason": "contract_fidelity_insufficient",
+        "subtype": "too_weak"
       },
       {
         "auto_result": "contract_fidelity_refused",
-        "bucket": "genuine_gap",
+        "bucket": "contract_generation_bug",
         "concept": "wall_pass_sequence",
         "detail": "Wall-pass semantics require return-pass/player-linkage constraints that cannot be represented by a generic action-anchor contract.",
-        "family": "identity_constrained_combination",
-        "known_good_failure_taxonomy": "missing_constraint",
-        "refusal_reason": "contract_fidelity_insufficient"
+        "refusal_reason": "contract_fidelity_insufficient",
+        "subtype": "too_weak"
       }
     ],
-    "gap_family_distribution": {
-      "identity_constrained_combination": 4
-    }
+    "gap_family_distribution": {}
   },
   "schema_version": "atlas_scale_contract_sample_assessment.v0",
   "scope": {
@@ -2112,9 +2152,16 @@
     "blind_target_count": 0,
     "concept_count": 60,
     "contract_fidelity_refusal_count": 4,
-    "execution_node_cache": {},
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "hits": 140,
+      "local_hits": 56,
+      "misses": 140,
+      "shared_hits": 84
+    },
     "failure_distribution": {
-      "missing_constraint": 24,
+      "missing_constraint": 20,
       "missing_primitive": 36,
       "unsupported_modality": 8
     },
@@ -2135,7 +2182,7 @@
     "measured_compiler_reachable_pct": 0.0,
     "measured_target_count": 48,
     "measurement_bucket_distribution": {
-      "genuine_gap": 4,
+      "contract_generation_bug": 4,
       "missing_constraint": 20,
       "missing_primitive": 28
     },
@@ -2143,7 +2190,8 @@
     "positive_compiler_reachable_pct": 0.0,
     "positive_target_count": 0,
     "result_distribution": {
-      "not_compiler_reachable": 68
+      "compiler_reachable": 4,
+      "not_compiler_reachable": 64
     },
     "target_count": 68
   }

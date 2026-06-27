@@ -2688,7 +2688,7 @@
     "terminal_provider": null
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "bounce_pass_sequence",
     "concept_name_used_as_hint": false,
     "coverage_classification": "supported",
@@ -2696,43 +2696,408 @@
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "unsupported_composition_constraints": [
-        {
-          "index": 0,
-          "kind": "same_player_return"
-        }
-      ]
+    "document_hash": "762203335cf0e787ed5d43308ea3d81ed8c4a733bd38cb04a05804d88fef044b",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 40,
+      "local_hits": 14,
+      "misses": 30,
+      "shared_hits": 26
     },
-    "failure_taxonomy": "missing_constraint",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "after_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchor_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchors": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "before_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carrier_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_end_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_forward_progression_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_start_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "change_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "change_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "control_bias": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "control_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "controlled_pass_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "declared_next_pass_recipient_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "delta_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "displacement_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entities_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entity_fields": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entity_values": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "end_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "episodes": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_type": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "forward_progression_m": {
+        "output_name": "forward_progression_m",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "input_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "input_passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "input_physical_release_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "join_key": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_mode": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_node_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_reason": {
+        "output_name": "join_status",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_status": {
+        "output_name": "join_status",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_key_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_status_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_time_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_time_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "maximum_gap_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "minimum_change_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "one_touch_relay_reason": {
+        "output_name": "one_touch_relay_status",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "one_touch_relay_status": {
+        "output_name": "one_touch_relay_status",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "pass_chain_reason": {
+        "output_name": "pass_chain_status",
+        "source_node_id": "pass_chain_episode"
+      },
+      "pass_chain_status": {
+        "output_name": "pass_chain_status",
+        "source_node_id": "pass_chain_episode"
+      },
+      "pass_episode_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "passer_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "physical_release_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "possession_continuity_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "receiver_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_receiver_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "relay_dwell_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_physical_release_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_player_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_ball_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_player_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "release_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_control_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_detection_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_passer_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "required_status_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_key_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_match_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_status_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_time_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_time_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_fields": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_values": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "start_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "temporal_gap_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "temporal_relation": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "terminal_controlled_pass_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_controlled_reception_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_forward_progression_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_pass_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "terminal_receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": true,
     "honest_zero": false,
     "input_composition_maturity": "handwired",
-    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/compiler-search-frontier-draw/search-run/plans/atlas_scale_bounce_pass_sequence_known_good_identity_return_v0.json",
+    "providers_used": [
+      "one_touch_relay_episode",
+      "one_touch_relay_episode",
+      "controlled_pass_episode",
+      "pass_chain_episode",
+      "join_episode_sets"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "generic_binary_episode_join",
+      "generic_same_entity_join",
+      "provider_field_backward_search",
+      "typed_join_key_discovery"
+    ],
+    "runtime_trace_hash": "86e2bae41290c9acb5414ebe822b772b040b8794ef6310f7fb9f7a66a837e2af",
+    "runtime_value_count": 210,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
     "target_contract_hash": "c4f35147826d07061348971d9f124ae3433da17b72c89f9fda1875c365960b5b",
     "target_id": "atlas_scale_bounce_pass_sequence_known_good_identity_return_v0",
-    "terminal_provider": null
+    "terminal_provider": "join_episode_sets"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "give_and_go_sequence",
     "concept_name_used_as_hint": false,
     "coverage_classification": "supported",
@@ -2740,43 +3105,408 @@
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "unsupported_composition_constraints": [
-        {
-          "index": 0,
-          "kind": "same_player_return"
-        }
-      ]
+    "document_hash": "c44b66f5bcb23247f2f81b465e5b1bda4fc15a5151187b431a157a8742a93caa",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 34,
+      "local_hits": 14,
+      "misses": 36,
+      "shared_hits": 20
     },
-    "failure_taxonomy": "missing_constraint",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "after_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchor_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchors": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "before_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carrier_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_end_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_forward_progression_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_start_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "change_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "change_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "control_bias": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "control_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "controlled_pass_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "declared_next_pass_recipient_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "delta_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "displacement_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entities_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entity_fields": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entity_values": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "end_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "episodes": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_type": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "forward_progression_m": {
+        "output_name": "forward_progression_m",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "input_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "input_passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "input_physical_release_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "join_key": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_mode": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_node_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_reason": {
+        "output_name": "join_status",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_status": {
+        "output_name": "join_status",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_key_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_status_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_time_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_time_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "maximum_gap_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "minimum_change_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "one_touch_relay_reason": {
+        "output_name": "one_touch_relay_status",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "one_touch_relay_status": {
+        "output_name": "one_touch_relay_status",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "pass_chain_reason": {
+        "output_name": "pass_chain_status",
+        "source_node_id": "pass_chain_episode"
+      },
+      "pass_chain_status": {
+        "output_name": "pass_chain_status",
+        "source_node_id": "pass_chain_episode"
+      },
+      "pass_episode_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "passer_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "physical_release_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "possession_continuity_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "receiver_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_receiver_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "relay_dwell_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_physical_release_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_player_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_ball_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_player_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "release_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_control_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_detection_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_passer_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "required_status_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_key_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_match_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_status_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_time_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_time_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_fields": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_values": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "start_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "temporal_gap_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "temporal_relation": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "terminal_controlled_pass_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_controlled_reception_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_forward_progression_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_pass_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "terminal_receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": true,
     "honest_zero": false,
     "input_composition_maturity": "handwired",
-    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/compiler-search-frontier-draw/search-run/plans/atlas_scale_give_and_go_sequence_known_good_identity_return_v0.json",
+    "providers_used": [
+      "one_touch_relay_episode",
+      "one_touch_relay_episode",
+      "controlled_pass_episode",
+      "pass_chain_episode",
+      "join_episode_sets"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "generic_binary_episode_join",
+      "generic_same_entity_join",
+      "provider_field_backward_search",
+      "typed_join_key_discovery"
+    ],
+    "runtime_trace_hash": "5bcad9a737d8a43fda98bd066dcb84b45d186e501869688d3715eaa66d2bddd4",
+    "runtime_value_count": 210,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
     "target_contract_hash": "c4f35147826d07061348971d9f124ae3433da17b72c89f9fda1875c365960b5b",
     "target_id": "atlas_scale_give_and_go_sequence_known_good_identity_return_v0",
-    "terminal_provider": null
+    "terminal_provider": "join_episode_sets"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "up_back_through_sequence",
     "concept_name_used_as_hint": false,
     "coverage_classification": "supported",
@@ -2784,43 +3514,408 @@
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "unsupported_composition_constraints": [
-        {
-          "index": 0,
-          "kind": "same_player_return"
-        }
-      ]
+    "document_hash": "402e23429fa7c49740aefcf11d331c36b12143b5da826fa252dd7dbef1c71b24",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 32,
+      "local_hits": 14,
+      "misses": 38,
+      "shared_hits": 18
     },
-    "failure_taxonomy": "missing_constraint",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "after_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchor_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchors": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "before_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carrier_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_end_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_forward_progression_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_start_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "change_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "change_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "control_bias": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "control_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "controlled_pass_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "declared_next_pass_recipient_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "delta_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "displacement_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entities_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entity_fields": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entity_values": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "end_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "episodes": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_type": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "forward_progression_m": {
+        "output_name": "forward_progression_m",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "input_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "input_passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "input_physical_release_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "join_key": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_mode": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_node_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_reason": {
+        "output_name": "join_status",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_status": {
+        "output_name": "join_status",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_key_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_status_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_time_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_time_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "maximum_gap_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "minimum_change_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "one_touch_relay_reason": {
+        "output_name": "one_touch_relay_status",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "one_touch_relay_status": {
+        "output_name": "one_touch_relay_status",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "pass_chain_reason": {
+        "output_name": "pass_chain_status",
+        "source_node_id": "pass_chain_episode"
+      },
+      "pass_chain_status": {
+        "output_name": "pass_chain_status",
+        "source_node_id": "pass_chain_episode"
+      },
+      "pass_episode_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "passer_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "physical_release_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "possession_continuity_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "receiver_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_receiver_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "relay_dwell_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_physical_release_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_player_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_ball_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_player_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "release_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_control_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_detection_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_passer_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "required_status_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_key_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_match_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_status_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_time_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_time_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_fields": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_values": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "start_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "temporal_gap_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "temporal_relation": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "terminal_controlled_pass_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_controlled_reception_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_forward_progression_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_pass_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "terminal_receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": true,
     "honest_zero": false,
     "input_composition_maturity": "handwired",
-    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/compiler-search-frontier-draw/search-run/plans/atlas_scale_up_back_through_sequence_known_good_identity_return_v0.json",
+    "providers_used": [
+      "one_touch_relay_episode",
+      "one_touch_relay_episode",
+      "controlled_pass_episode",
+      "pass_chain_episode",
+      "join_episode_sets"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "generic_binary_episode_join",
+      "generic_same_entity_join",
+      "provider_field_backward_search",
+      "typed_join_key_discovery"
+    ],
+    "runtime_trace_hash": "89cdfb5f0ef13580248a12345af20718520845da8a7e9e231c67074b90ab7c1e",
+    "runtime_value_count": 210,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
     "target_contract_hash": "c4f35147826d07061348971d9f124ae3433da17b72c89f9fda1875c365960b5b",
     "target_id": "atlas_scale_up_back_through_sequence_known_good_identity_return_v0",
-    "terminal_provider": null
+    "terminal_provider": "join_episode_sets"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "wall_pass_sequence",
     "concept_name_used_as_hint": false,
     "coverage_classification": "supported",
@@ -2828,39 +3923,404 @@
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "unsupported_composition_constraints": [
-        {
-          "index": 0,
-          "kind": "same_player_return"
-        }
-      ]
+    "document_hash": "740b84308b4529e3fdd75dc18426eefdb2befe30fc31fea0e2f0b1b59aa56c09",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 34,
+      "local_hits": 14,
+      "misses": 36,
+      "shared_hits": 20
     },
-    "failure_taxonomy": "missing_constraint",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "after_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchor_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "anchors": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "before_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carrier_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_end_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_forward_progression_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_start_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "carry_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "change_reason": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "change_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "control_bias": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "control_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "controlled_pass_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "controlled_reception_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "declared_next_pass_recipient_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "delta_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "displacement_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entities_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entity_fields": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "distinct_entity_values": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "end_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "episodes": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "event_type": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "forward_progression_m": {
+        "output_name": "forward_progression_m",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "input_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "input_passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "input_physical_release_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "join_key": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_mode": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_node_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_reason": {
+        "output_name": "join_status",
+        "source_node_id": "join_episode_sets"
+      },
+      "join_status": {
+        "output_name": "join_status",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_key_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_status_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_time_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "left_time_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "maximum_gap_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "minimum_change_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "one_touch_relay_reason": {
+        "output_name": "one_touch_relay_status",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "one_touch_relay_status": {
+        "output_name": "one_touch_relay_status",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "pass_chain_reason": {
+        "output_name": "pass_chain_status",
+        "source_node_id": "pass_chain_episode"
+      },
+      "pass_chain_status": {
+        "output_name": "pass_chain_status",
+        "source_node_id": "pass_chain_episode"
+      },
+      "pass_episode_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "passer_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "physical_release_frame_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "possession_continuity_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "receiver_id": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "reception_receiver_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "relay_dwell_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_physical_release_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_player_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_ball_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "relay_touch_player_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "one_touch_relay_episode_2"
+      },
+      "release_ball_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_control_status": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_detection_status": {
+        "output_name": "controlled_pass_status",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_match_time_ms": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "release_passer_point": {
+        "output_name": "episodes",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "required_status_value": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_key_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_match_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_status_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_time_field": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "right_time_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_fields": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "same_entity_values": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "start_frame_id": {
+        "output_name": "anchors",
+        "source_node_id": "controlled_pass_episode"
+      },
+      "temporal_gap_seconds": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "temporal_relation": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "terminal_controlled_pass_status": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_controlled_reception_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_forward_progression_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_pass_episode_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      },
+      "terminal_pass_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "join_episode_sets"
+      },
+      "terminal_receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "pass_chain_episode"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": true,
     "honest_zero": false,
     "input_composition_maturity": "handwired",
-    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/compiler-search-frontier-draw/search-run/plans/atlas_scale_wall_pass_sequence_known_good_identity_return_v0.json",
+    "providers_used": [
+      "one_touch_relay_episode",
+      "one_touch_relay_episode",
+      "controlled_pass_episode",
+      "pass_chain_episode",
+      "join_episode_sets"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "generic_binary_episode_join",
+      "generic_same_entity_join",
+      "provider_field_backward_search",
+      "typed_join_key_discovery"
+    ],
+    "runtime_trace_hash": "1e60b6da468d9e161b5e718141c7edb95c8cc98243d4b4a075bad969c46761c2",
+    "runtime_value_count": 210,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
     "target_contract_hash": "c4f35147826d07061348971d9f124ae3433da17b72c89f9fda1875c365960b5b",
     "target_id": "atlas_scale_wall_pass_sequence_known_good_identity_return_v0",
-    "terminal_provider": null
+    "terminal_provider": "join_episode_sets"
   }
 ]

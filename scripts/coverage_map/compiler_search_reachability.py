@@ -76,6 +76,7 @@ SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
     "distinct_entity_fields",
     "frame_alignment",
     "same_anchor_identity",
+    "same_player_return",
     "temporal_order",
 }
 EXCLUDED_CATALOG_REFS = {
@@ -590,6 +591,8 @@ def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context
     contract = target["target_contract"]
     required_fields = required_target_fields(contract)
     providers = context.catalog.providers_covering_any(required_fields)
+    if target_constraints(context, "same_player_return"):
+        providers = [entry for entry in providers if entry.name == "join_episode_sets"]
     if not providers:
         raise SynthesisError(
             "missing_primitive",
@@ -812,6 +815,8 @@ def build_join_episode_sets(
     depth: int,
 ) -> BuildResult:
     rules = ["generic_binary_episode_join", "typed_join_key_discovery"]
+    if target_constraints(context, "same_player_return"):
+        rules.append("generic_same_entity_join")
     attempts: list[dict[str, Any]] = []
     for candidate in join_composition_candidates(context, entry, required_fields)[: context.max_branching]:
         try:
@@ -838,6 +843,7 @@ def build_join_episode_sets(
                         "right_time_field": enum(candidate["right_time_field"]),
                         "maximum_gap_seconds": number(float(candidate["maximum_gap_seconds"]), "second"),
                         "distinct_entity_fields": enum(candidate["distinct_entity_fields"]),
+                        "same_entity_fields": enum(candidate["same_entity_fields"]),
                     },
                 )
             )
@@ -1123,17 +1129,35 @@ def join_composition_candidates(
                 right_status = "none"
             temporal = temporal_join_constraint(context, left_fields_all, right_fields_all, join_entry)
             distinct_fields = distinct_entity_constraint(context, left_fields_all | right_fields_all, join_entry)
+            same_entity_fields = same_entity_constraint(context, left_fields_all, right_fields_all, join_entry)
+            if target_constraints(context, "same_player_return") and same_entity_fields == "none":
+                continue
             score = 0
             score += 20 * len(left_fields | right_fields)
             score += 10 * len(left_fields)
             score += 10 * len(right_fields)
             score += 5 if left_status != "none" and right_status != "none" else 0
             score += 3 if key_pair == ("anchor_id", "anchor_id") else 0
+            score += 6 if same_entity_fields != "none" else 0
             candidate = {
                 "left_entry": left_entry,
                 "right_entry": right_entry,
-                "left_fields": sorted(required_fields_for_join_side(left_entry, left_fields, left_status, key_pair[0])),
-                "right_fields": sorted(required_fields_for_join_side(right_entry, right_fields, right_status, key_pair[1])),
+                "left_fields": sorted(
+                    required_fields_for_join_side(
+                        left_entry,
+                        left_fields | same_entity_left_fields(same_entity_fields),
+                        left_status,
+                        key_pair[0],
+                    )
+                ),
+                "right_fields": sorted(
+                    required_fields_for_join_side(
+                        right_entry,
+                        right_fields | same_entity_right_fields(same_entity_fields),
+                        right_status,
+                        key_pair[1],
+                    )
+                ),
                 "left_key_field": key_pair[0],
                 "right_key_field": key_pair[1],
                 "left_status_field": left_status,
@@ -1143,6 +1167,7 @@ def join_composition_candidates(
                 "right_time_field": temporal["right_time_field"],
                 "maximum_gap_seconds": temporal["maximum_gap_seconds"],
                 "distinct_entity_fields": distinct_fields,
+                "same_entity_fields": same_entity_fields,
             }
             candidates.append((-score, left_entry.name, right_entry.name, candidate))
     return [candidate for *_prefix, candidate in sorted(candidates)]
@@ -1196,6 +1221,8 @@ def temporal_join_constraint(context: SearchContext, left_fields: set[str], righ
             left_time = str(constraint.get("left_time_field", left_time))
             right_time = str(constraint.get("right_time_field", right_time))
             maximum_gap = float(constraint.get("maximum_gap_seconds", maximum_gap))
+    if relation == "left_before_right":
+        relation = "left_ends_before_right"
     allowed_relation = allowed_parameter_values(join_entry, "temporal_relation")
     allowed_left_time = allowed_parameter_values(join_entry, "left_time_field")
     allowed_right_time = allowed_parameter_values(join_entry, "right_time_field")
@@ -1221,6 +1248,36 @@ def distinct_entity_constraint(context: SearchContext, fields: set[str], join_en
         if value in allowed and required_fields.issubset(fields):
             return value
     return "none"
+
+
+def same_entity_constraint(
+    context: SearchContext,
+    left_fields: set[str],
+    right_fields: set[str],
+    join_entry: CatalogEntry,
+) -> str:
+    allowed = allowed_parameter_values(join_entry, "same_entity_fields")
+    for constraint in target_constraints(context):
+        if constraint.get("kind") != "same_player_return":
+            continue
+        left_field = str(constraint.get("left_field", ""))
+        right_field = str(constraint.get("right_field", ""))
+        value = f"{left_field}={right_field}"
+        if value in allowed and left_field in left_fields and right_field in right_fields:
+            return value
+    return "none"
+
+
+def same_entity_left_fields(value: str) -> set[str]:
+    if value == "none" or "=" not in value:
+        return set()
+    return {value.split("=", 1)[0]}
+
+
+def same_entity_right_fields(value: str) -> set[str]:
+    if value == "none" or "=" not in value:
+        return set()
+    return {value.split("=", 1)[1]}
 
 
 def choose_input_provider(

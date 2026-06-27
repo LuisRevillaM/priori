@@ -3991,6 +3991,7 @@ def primitive_join_episode_sets(state: PeriodState, node: BoundCatalogNode) -> N
     right_time_field = node_parameter_text(node, "right_time_field", "anchor_frame_id")
     maximum_gap_seconds = node_parameter_number(node, "maximum_gap_seconds", 999.0)
     distinct_entity_fields = node_parameter_text(node, "distinct_entity_fields", "none")
+    same_entity_fields = node_parameter_text(node, "same_entity_fields", "none")
 
     right_by_key: dict[str, list[dict[str, Any]]] = {}
     for right in right_records:
@@ -4015,6 +4016,7 @@ def primitive_join_episode_sets(state: PeriodState, node: BoundCatalogNode) -> N
             right_time_field=right_time_field,
             maximum_gap_seconds=maximum_gap_seconds,
             distinct_entity_fields=distinct_entity_fields,
+            same_entity_fields=same_entity_fields,
         )
         for left in left_records
         if isinstance(left, dict)
@@ -4057,6 +4059,7 @@ def join_episode_sets_record(
     right_time_field: str,
     maximum_gap_seconds: float,
     distinct_entity_fields: str,
+    same_entity_fields: str,
 ) -> dict[str, Any] | None:
     anchor_frame_id = optional_int(left_record.get("anchor_frame_id"))
     if anchor_frame_id is None:
@@ -4093,9 +4096,22 @@ def join_episode_sets_record(
                 joined=project_joined_record(left_record, right_record),
                 distinct_entity_fields=distinct_entity_fields,
             )
+        if status == "PASS":
+            status, reason = same_entity_join_status(
+                joined=project_joined_record(left_record, right_record),
+                same_entity_fields=same_entity_fields,
+            )
     joined = project_joined_record(left_record, right_record)
     distinct_fields = parse_distinct_entity_fields(distinct_entity_fields)
     distinct_values = {field: joined.get(field) for field in distinct_fields}
+    same_pairs = parse_same_entity_fields(same_entity_fields)
+    same_values = {
+        f"{left_field}={right_field}": {
+            left_field: joined.get(left_field),
+            right_field: joined.get(right_field),
+        }
+        for left_field, right_field in same_pairs
+    }
     entity_refs = combined_entity_refs(left_record, right_record)
     start_frame_id = optional_int(left_record.get("start_frame_id")) or anchor_frame_id
     end_frame_id = optional_int(left_record.get("end_frame_id")) or anchor_frame_id
@@ -4142,6 +4158,9 @@ def join_episode_sets_record(
         "distinct_entity_fields": distinct_fields,
         "distinct_entity_values": distinct_values,
         "distinct_entities_status": distinct_entities_status(distinct_values),
+        "same_entity_fields": same_entity_fields,
+        "same_entity_values": same_values,
+        "same_entity_status": same_entity_status(same_values),
         "right_match_count": len(matches),
     }
 
@@ -4266,6 +4285,21 @@ def parse_distinct_entity_fields(value: str) -> list[str]:
     return [field.strip() for field in value.split(",") if field.strip()]
 
 
+def parse_same_entity_fields(value: str) -> list[tuple[str, str]]:
+    if value == "none":
+        return []
+    pairs: list[tuple[str, str]] = []
+    for raw_pair in value.split(";"):
+        if "=" not in raw_pair:
+            continue
+        left, right = raw_pair.split("=", 1)
+        left = left.strip()
+        right = right.strip()
+        if left and right:
+            pairs.append((left, right))
+    return pairs
+
+
 def distinct_join_status(joined: dict[str, Any], distinct_entity_fields: str) -> tuple[str, str]:
     fields = parse_distinct_entity_fields(distinct_entity_fields)
     if not fields:
@@ -4280,12 +4314,38 @@ def distinct_join_status(joined: dict[str, Any], distinct_entity_fields: str) ->
     )
 
 
+def same_entity_join_status(joined: dict[str, Any], same_entity_fields: str) -> tuple[str, str]:
+    pairs = parse_same_entity_fields(same_entity_fields)
+    if not pairs:
+        return "PASS", "join_key_matched"
+    for left_field, right_field in pairs:
+        left_value = joined.get(left_field)
+        right_value = joined.get(right_field)
+        if left_value is None or right_value is None or str(left_value) == "" or str(right_value) == "":
+            return "UNKNOWN", "same_entity_field_missing"
+        if str(left_value) != str(right_value):
+            return "FAIL", "same_entity_constraint_failed"
+    return "PASS", "join_key_matched_and_same_entity_satisfied"
+
+
 def distinct_entities_status(values: dict[str, Any]) -> str:
     if not values:
         return "NOT_REQUIRED"
     if any(value is None or str(value) == "" for value in values.values()):
         return "UNKNOWN"
     return "PASS" if len({str(value) for value in values.values()}) == len(values) else "FAIL"
+
+
+def same_entity_status(values: dict[str, dict[str, Any]]) -> str:
+    if not values:
+        return "NOT_REQUIRED"
+    for pair_values in values.values():
+        pair = list(pair_values.values())
+        if len(pair) != 2 or any(value is None or str(value) == "" for value in pair):
+            return "UNKNOWN"
+        if str(pair[0]) != str(pair[1]):
+            return "FAIL"
+    return "PASS"
 
 
 def carry_episode_anchor_record(
