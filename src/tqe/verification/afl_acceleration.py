@@ -30,6 +30,14 @@ REPORT_PATH = Path("artifacts/autonomous/afl-acceleration-verification-report.js
 SEARCH_ROW_LEDGER_PATH = Path("generated/semantic-contract-scl0/search-run/row-ledger.json")
 ACCELERATION_PLAN_PATH = Path("generated/semantic-contract-scl0/search-run/plans/scl1_020_blind_a_v0.json")
 DECELERATION_PLAN_PATH = Path("generated/semantic-contract-scl0/search-run/plans/scl1_021_blind_a_v0.json")
+THRESHOLD_VERSION = (
+    "acceleration.v0.1.0:"
+    "lookback=0.4:"
+    "min_delta_speed=0.4:"
+    "min_abs_acceleration=0.75:"
+    "max_speed=10.0:"
+    "max_abs_acceleration=12.0"
+)
 
 ACCELERATION_TARGETS = {
     "scl1_020_blind_a_v0",
@@ -191,6 +199,7 @@ def verify_acceleration() -> dict[str, Any]:
         "schema_version": "afl.acceleration.v1",
         "milestone": "AFL-08 acceleration primitive / SCL named-gap closure",
         "status": "PASS" if not findings else "FAIL",
+        "threshold_version": THRESHOLD_VERSION,
         "plans": {
             "acceleration": {
                 "path": str(ACCELERATION_PLAN_PATH),
@@ -223,6 +232,13 @@ def verify_acceleration() -> dict[str, Any]:
                 "UNKNOWN if either velocity window lacks tracking endpoints or if observed speed/acceleration "
                 "exceeds frozen plausibility limits; second derivatives amplify tracking noise."
             ),
+            "thresholds": {
+                "lookback_seconds": 0.4,
+                "minimum_abs_delta_speed_mps": 0.4,
+                "minimum_abs_acceleration_mps2": 0.75,
+                "maximum_player_speed_mps": 10.0,
+                "maximum_abs_acceleration_mps2": 12.0,
+            },
         },
         "claim_boundary": {
             "allowed_claim": "Observed speed-up or slow-down exceeded frozen two-window speed-change thresholds.",

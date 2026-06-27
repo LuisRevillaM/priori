@@ -65,7 +65,14 @@
       "tracking_endpoint_missing": 6
     },
     "record_count": 9300,
-    "smoothing_policy": "two_window_mean_displacement_velocity_no_additional_smoothing"
+    "smoothing_policy": "two_window_mean_displacement_velocity_no_additional_smoothing",
+    "thresholds": {
+      "lookback_seconds": 0.4,
+      "maximum_abs_acceleration_mps2": 12.0,
+      "maximum_player_speed_mps": 10.0,
+      "minimum_abs_acceleration_mps2": 0.75,
+      "minimum_abs_delta_speed_mps": 0.4
+    }
   },
   "schema_version": "afl.acceleration.v1",
   "scl_gap_closure": {
@@ -125,5 +132,6 @@
       }
     }
   },
-  "status": "PASS"
+  "status": "PASS",
+  "threshold_version": "acceleration.v0.1.0:lookback=0.4:min_delta_speed=0.4:min_abs_acceleration=0.75:max_speed=10.0:max_abs_acceleration=12.0"
 }
