@@ -43,6 +43,21 @@ class Scl0SemanticContractTests(unittest.TestCase):
 
         self.assertNotIn("body_orientation", contract.get("required_modalities", []))
 
+    def test_novel_element_combination_builds_from_parts(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "A carry under defender pressure that also progresses forward."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("carry_status", contract["required_evidence"])
+        self.assertIn("pressure_status", contract["required_evidence"])
+        self.assertIn("carry_forward_progression_m", contract["required_evidence"])
+        self.assertIn("join_status", contract["required_evidence"])
+        self.assertIn("meaning.element.carry", trace_rules)
+        self.assertIn("meaning.pressure.observed_components", trace_rules)
+        self.assertIn("meaning.element.forward_progression", trace_rules)
+        self.assertIn("meaning.composition.same_anchor_episode_join", trace_rules)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -25,7 +25,7 @@
  },
  {
   "concept": "scl0_005",
-  "classification": "missing_modality",
+  "classification": "supported",
   "composition_maturity": "semantic_contract_scl0",
   "original_concept_redacted_for_search": true
  },
@@ -37,6 +37,12 @@
  },
  {
   "concept": "scl0_007",
+  "classification": "missing_modality",
+  "composition_maturity": "semantic_contract_scl0",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl0_008",
   "classification": "missing_primitive",
   "composition_maturity": "semantic_contract_scl0",
   "original_concept_redacted_for_search": true

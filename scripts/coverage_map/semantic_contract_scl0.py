@@ -380,6 +380,10 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
     builder = ContractBuilder(text=text)
     lower = normalize(text)
     matched = False
+    has_pressure_change_phrase = any(
+        phrase in lower
+        for phrase in ("out of pressure", "pressure reduced", "less pressure", "pressure distance improves")
+    )
 
     if span := first_span(text, [r"probability", r"likelihood", r"expected(?:\s+\w+){0,3}", r"learned"]):
         builder.add_modality("learned_model", span, "meaning.modality.learned_probability")
@@ -399,7 +403,7 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
 
     if is_pass_chain_meaning(lower):
         span = first_span(text, [r"two-pass", r"wall-pass", r"pass(?:es|er)?", r"relayed?", r"combination"]) or whole_span(text)
-        add_pass_chain_contract(builder, span)
+        add_pass_chain_element(builder, span)
         matched = True
 
     if is_same_player_return_meaning(lower):
@@ -425,33 +429,40 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         builder.add_claim_part("Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim.", span, "meaning.constraint.same_player_return")
         matched = True
 
-    if ("under pressure" in lower or "defender pressure" in lower or "nearest-defender pressure" in lower) and (
-        "receive" in lower or "reception" in lower or "receiving" in lower
+    if span := first_span(text, [r"\bcarry\b", r"\bcarries\b", r"\bcarrying\b"]):
+        add_carry_element(builder, span)
+        matched = True
+
+    if "forward" in lower or "progress" in lower:
+        span = first_span(text, [r"forward", r"progress(?:es|ion)?"]) or whole_span(text)
+        add_forward_progression_element(builder, span)
+        matched = True
+
+    if not has_pressure_change_phrase and (
+        "under pressure" in lower or "defender pressure" in lower or "nearest-defender pressure" in lower
     ):
-        span = first_span(text, [r"under observed defender pressure", r"under pressure", r"nearest-defender pressure"]) or whole_span(text)
-        add_pressure_contract(builder, span)
+        span = first_span(text, [r"under observed defender pressure", r"under defender pressure", r"under pressure", r"nearest-defender pressure"]) or whole_span(text)
+        add_pressure_element(builder, span)
         builder.add_claim_part("Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim.", span, "meaning.pressure.receive_under_pressure")
         matched = True
 
-    if "carry" in lower and ("out of pressure" in lower or "pressure reduced" in lower or "less pressure" in lower or "pressure distance improves" in lower):
+    if has_pressure_change_phrase:
         span = first_span(text, [r"out of pressure", r"pressure reduced", r"less pressure", r"pressure distance improves"]) or whole_span(text)
-        add_carry_out_of_pressure_contract(builder, span)
-        builder.add_claim_part("Observed same-carrier pressure-distance change across a carry only; no pressure-breaking skill, intent, causation, or optimality claim.", span, "meaning.composition.carry_out_of_pressure")
+        add_pressure_change_element(builder, span)
+        builder.add_claim_part("Observed pressure-distance change only; no pressure-breaking skill, intent, causation, or optimality claim.", span, "meaning.element.pressure_change")
         matched = True
 
-    if ("shape" in lower and ("width" in lower or "depth" in lower) and ("increase" in lower or "larger" in lower or "expansion" in lower or "expands" in lower)):
-        span = first_span(text, [r"width or depth increases", r"width or depth gets larger", r"shape expansion", r"team-shape expansion"]) or whole_span(text)
-        add_shape_expansion_contract(builder, span)
-        builder.add_claim_part("Observed team-shape measurement increase across a shared anchor only; no tactical quality, intent, or causation claim.", span, "meaning.composition.shape_expansion")
+    if "shape" in lower and ("width" in lower or "depth" in lower):
+        span = first_span(text, [r"team shape width or depth", r"team width or depth", r"shape width or depth", r"team-shape", r"shape"]) or whole_span(text)
+        add_team_shape_element(builder, span)
         matched = True
 
-    if "carry" in lower and ("forward" in lower or "progress" in lower) and not any(
-        phrase in lower for phrase in ("out of pressure", "pressure reduced", "less pressure", "pressure distance improves")
-    ):
-        span = first_span(text, [r"forward", r"progress(?:es|ion)?"]) or whole_span(text)
-        add_carry_progression_contract(builder, span)
-        builder.add_claim_part("Observed movement-under-control with forward component only; no defender bypass, skill, intent, or pressure-break quality claim.", span, "meaning.carry.progression")
+    if "increase" in lower or "larger" in lower or "expansion" in lower or "expands" in lower:
+        span = first_span(text, [r"increases", r"gets larger", r"larger", r"expansion", r"expands"]) or whole_span(text)
+        add_increase_element(builder, span)
         matched = True
+
+    apply_generic_composition_rules(builder, text)
 
     if not matched:
         span = whole_span(text)
@@ -467,7 +478,7 @@ def add_status_contract(builder: ContractBuilder, field_name: str, span: Span, r
     builder.add_status(field_name, "PASS", span, rule_id)
 
 
-def add_pass_chain_contract(builder: ContractBuilder, span: Span) -> None:
+def add_pass_chain_element(builder: ContractBuilder, span: Span) -> None:
     rule_id = "meaning.pass_chain.connected_sequence"
     for field_name in [
         "pass_chain_status",
@@ -502,7 +513,7 @@ def add_pass_chain_contract(builder: ContractBuilder, span: Span) -> None:
     builder.add_claim_part("Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim.", span, rule_id)
 
 
-def add_pressure_contract(builder: ContractBuilder, span: Span) -> None:
+def add_pressure_element(builder: ContractBuilder, span: Span) -> None:
     rule_id = "meaning.pressure.observed_components"
     for field_name in [
         "pressure_status",
@@ -519,32 +530,36 @@ def add_pressure_contract(builder: ContractBuilder, span: Span) -> None:
     builder.add_status("pressure_status", "PASS", span, rule_id)
 
 
-def add_carry_out_of_pressure_contract(builder: ContractBuilder, span: Span) -> None:
-    rule_id = "meaning.composition.carry_pressure_change"
+def add_carry_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.element.carry"
     for field_name in [
-        "join_status",
-        "join_reason",
         "carry_status",
         "carrier_id",
         "carry_start_frame_id",
         "carry_end_frame_id",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("carry_status", "PASS", span, rule_id)
+    builder.add_claim_part("Observed movement-under-control only; no defender bypass, skill, intent, or pressure-break quality claim.", span, rule_id)
+
+
+def add_forward_progression_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.element.forward_progression"
+    builder.add_evidence("carry_forward_progression_m", span, rule_id)
+    builder.add_threshold("carry_forward_progression_m", operator="gte", threshold=3.0, unit="metre", span=span, rule_id=rule_id)
+    builder.add_claim_part("Observed forward component only; no tactical quality, intent, or optimality claim.", span, rule_id)
+
+
+def add_pressure_change_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.element.pressure_change"
+    for field_name in [
         "change_status",
         "before_value",
         "after_value",
         "delta_value",
     ]:
         builder.add_evidence(field_name, span, rule_id)
-    builder.add_status("join_status", "PASS", span, rule_id)
-    builder.add_constraint({"kind": "same_anchor_identity", "left_key_field": "anchor_id", "right_key_field": "anchor_id"}, span, rule_id)
-    builder.add_constraint(
-        {
-            "kind": "frame_alignment",
-            "before_frame_field": "carry_start_frame_id",
-            "after_frame_field": "carry_end_frame_id",
-        },
-        span,
-        rule_id,
-    )
+    builder.add_status("change_status", "PASS", span, rule_id)
     builder.add_constraint(
         {
             "kind": "before_after_same_anchor",
@@ -560,20 +575,15 @@ def add_carry_out_of_pressure_contract(builder: ContractBuilder, span: Span) -> 
     )
 
 
-def add_shape_expansion_contract(builder: ContractBuilder, span: Span) -> None:
-    rule_id = "meaning.composition.team_shape_expansion"
+def add_team_shape_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.element.team_shape"
     for field_name in [
-        "change_status",
-        "change_reason",
         "before_value",
         "after_value",
-        "delta_value",
         "before_value_field",
         "after_value_field",
-        "minimum_change_m",
     ]:
         builder.add_evidence(field_name, span, rule_id)
-    builder.add_status("change_status", "PASS", span, rule_id)
     builder.add_constraint(
         {
             "kind": "before_after_same_anchor",
@@ -587,20 +597,68 @@ def add_shape_expansion_contract(builder: ContractBuilder, span: Span) -> None:
         span,
         rule_id,
     )
+    builder.add_claim_part("Observed team-shape width/depth measurement only; no tactical quality, intent, or causation claim.", span, rule_id)
 
 
-def add_carry_progression_contract(builder: ContractBuilder, span: Span) -> None:
-    rule_id = "meaning.carry.forward_progression"
+def add_increase_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.element.increase"
     for field_name in [
-        "carry_status",
-        "carrier_id",
-        "carry_start_frame_id",
-        "carry_end_frame_id",
-        "carry_forward_progression_m",
+        "change_status",
+        "change_reason",
+        "delta_value",
+        "minimum_change_m",
     ]:
         builder.add_evidence(field_name, span, rule_id)
-    builder.add_status("carry_status", "PASS", span, rule_id)
-    builder.add_threshold("carry_forward_progression_m", operator="gte", threshold=3.0, unit="metre", span=span, rule_id=rule_id)
+    builder.add_status("change_status", "PASS", span, rule_id)
+    builder.add_claim_part("Observed increase across a shared anchor only; no tactical quality, intent, or causation claim.", span, rule_id)
+
+
+def apply_generic_composition_rules(builder: ContractBuilder, text: str) -> None:
+    lower = normalize(text)
+    span = whole_span(text)
+    has_carry = has_evidence(builder.contract, "carry_status")
+    has_pressure = has_evidence(builder.contract, "pressure_status")
+    has_pressure_change = has_pressure_distance_change_constraint(builder.contract)
+    has_change = has_evidence(builder.contract, "change_status")
+
+    if has_carry and (has_pressure or has_change):
+        rule_id = "meaning.composition.same_anchor_episode_join"
+        builder.add_evidence("join_status", span, rule_id)
+        builder.add_evidence("join_reason", span, rule_id)
+        builder.add_status("join_status", "PASS", span, rule_id)
+        builder.add_constraint({"kind": "same_anchor_identity", "left_key_field": "anchor_id", "right_key_field": "anchor_id"}, span, rule_id)
+        builder.add_claim_part("Observed same-anchor composition only; no tactical causation, quality, intent, or optimality claim.", span, rule_id)
+
+    if has_carry and has_pressure_change:
+        rule_id = "meaning.composition.carry_pressure_frame_alignment"
+        builder.add_constraint(
+            {
+                "kind": "frame_alignment",
+                "before_frame_field": "carry_start_frame_id",
+                "after_frame_field": "carry_end_frame_id",
+            },
+            span,
+            rule_id,
+        )
+        builder.add_claim_part("Pressure change is measured from carry start to carry end.", span, rule_id)
+
+    if has_carry and has_pressure and not has_pressure_change:
+        rule_id = "meaning.composition.carry_pressure_anchor_alignment"
+        builder.add_claim_part("Pressure is observed on the carrier at the joined carry anchor; no pressure-quality claim.", span, rule_id)
+
+    if "shape" in lower and has_change:
+        builder.add_claim_part("Shape change is evaluated as a measurement increase, not tactical intent.", span, "meaning.composition.shape_change")
+
+
+def has_evidence(contract: dict[str, Any], field_name: str) -> bool:
+    return field_name in contract.get("required_evidence", [])
+
+
+def has_pressure_distance_change_constraint(contract: dict[str, Any]) -> bool:
+    for constraint in contract.get("composition_constraints", []):
+        if constraint.get("kind") == "before_after_same_anchor" and constraint.get("value_family") == "pressure_distance":
+            return True
+    return False
 
 
 def is_pass_chain_meaning(lower: str) -> bool:

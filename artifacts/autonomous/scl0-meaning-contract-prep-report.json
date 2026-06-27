@@ -24,11 +24,11 @@
   },
   "status": "PASS",
   "summary": {
-    "case_count": 7,
-    "definition_count": 14,
+    "case_count": 8,
+    "definition_count": 16,
     "findings_count": 0,
-    "held_out_case_count": 1,
+    "held_out_case_count": 2,
     "known_negative_case_count": 3,
-    "target_count": 14
+    "target_count": 16
   }
 }

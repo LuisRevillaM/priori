@@ -63,6 +63,24 @@
     },
     {
       "case_id": "scl0_004",
+      "concept": "progressive_carry_under_pressure",
+      "sample_role": "held_out_positive",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "held_out": true,
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "A carry under defender pressure that also progresses forward."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A player carries the ball forward while under nearest-defender pressure."
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_005",
       "concept": "shape_expansion_episode",
       "sample_role": "held_out_positive",
       "expected_result": "compiler_reachable",
@@ -80,7 +98,7 @@
       ]
     },
     {
-      "case_id": "scl0_005",
+      "case_id": "scl0_006",
       "concept": "expected_pass_completion",
       "sample_role": "known_negative",
       "expected_result": "not_compiler_reachable",
@@ -98,7 +116,7 @@
       ]
     },
     {
-      "case_id": "scl0_006",
+      "case_id": "scl0_007",
       "concept": "goalkeeper_set_position_proxy",
       "sample_role": "known_negative",
       "expected_result": "not_compiler_reachable",
@@ -116,7 +134,7 @@
       ]
     },
     {
-      "case_id": "scl0_007",
+      "case_id": "scl0_008",
       "concept": "goal_kick_build_structure",
       "sample_role": "known_negative",
       "expected_result": "not_compiler_reachable",

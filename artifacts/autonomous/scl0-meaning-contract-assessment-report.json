@@ -122,7 +122,7 @@
         {
           "author_id": "blind_a",
           "concept_name_used_as_hint": false,
-          "contract_hash": "be0f38c80c7e9b7938fac7b49fa58df8f4bf46aff5940c8a5f92c0448b38e246",
+          "contract_hash": "87da38d79f58427c7537369b76b161448424265e432f55ddbe49915d11e3c71b",
           "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
@@ -155,7 +155,7 @@
         {
           "author_id": "blind_b",
           "concept_name_used_as_hint": false,
-          "contract_hash": "be0f38c80c7e9b7938fac7b49fa58df8f4bf46aff5940c8a5f92c0448b38e246",
+          "contract_hash": "87da38d79f58427c7537369b76b161448424265e432f55ddbe49915d11e3c71b",
           "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
@@ -189,6 +189,65 @@
     },
     {
       "case_id": "scl0_004",
+      "concept": "progressive_carry_under_pressure",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
+      "findings": [],
+      "held_out": true,
+      "sample_role": "held_out_positive",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "8a1e0813b0836af5622cd1869cc4e1c14ead58496a2d9785e30de0c53d2318a4",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "carry_episode",
+            "controlled_pass_episode",
+            "pressure_on_carrier",
+            "join_episode_sets"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 0,
+          "rules_used": [
+            "generic_binary_episode_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery"
+          ],
+          "target_id": "scl0_004_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "8a1e0813b0836af5622cd1869cc4e1c14ead58496a2d9785e30de0c53d2318a4",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "carry_episode",
+            "controlled_pass_episode",
+            "pressure_on_carrier",
+            "join_episode_sets"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 0,
+          "rules_used": [
+            "generic_binary_episode_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery"
+          ],
+          "target_id": "scl0_004_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_005",
       "concept": "shape_expansion_episode",
       "expected_failure_taxonomy": null,
       "expected_result": "compiler_reachable",
@@ -199,7 +258,7 @@
         {
           "author_id": "blind_a",
           "concept_name_used_as_hint": false,
-          "contract_hash": "e89bb629ec14099961fa9cb1afb9f82fc80750eae098dcfded35821e56496d72",
+          "contract_hash": "02fde37ebb63dd10f2252d563fee83856963af2a3bb0d61034611715ee5a611e",
           "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
@@ -219,12 +278,12 @@
             "provider_field_backward_search",
             "typed_value_field_provider_discovery"
           ],
-          "target_id": "scl0_004_blind_a_v0"
+          "target_id": "scl0_005_blind_a_v0"
         },
         {
           "author_id": "blind_b",
           "concept_name_used_as_hint": false,
-          "contract_hash": "e89bb629ec14099961fa9cb1afb9f82fc80750eae098dcfded35821e56496d72",
+          "contract_hash": "02fde37ebb63dd10f2252d563fee83856963af2a3bb0d61034611715ee5a611e",
           "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
@@ -244,12 +303,12 @@
             "provider_field_backward_search",
             "typed_value_field_provider_discovery"
           ],
-          "target_id": "scl0_004_blind_b_v0"
+          "target_id": "scl0_005_blind_b_v0"
         }
       ]
     },
     {
-      "case_id": "scl0_005",
+      "case_id": "scl0_006",
       "concept": "expected_pass_completion",
       "expected_failure_taxonomy": "unsupported_modality",
       "expected_result": "not_compiler_reachable",
@@ -269,7 +328,7 @@
           "result": "not_compiler_reachable",
           "result_count": 0,
           "rules_used": [],
-          "target_id": "scl0_005_blind_a_v0"
+          "target_id": "scl0_006_blind_a_v0"
         },
         {
           "author_id": "blind_b",
@@ -283,12 +342,12 @@
           "result": "not_compiler_reachable",
           "result_count": 0,
           "rules_used": [],
-          "target_id": "scl0_005_blind_b_v0"
+          "target_id": "scl0_006_blind_b_v0"
         }
       ]
     },
     {
-      "case_id": "scl0_006",
+      "case_id": "scl0_007",
       "concept": "goalkeeper_set_position_proxy",
       "expected_failure_taxonomy": "unsupported_modality",
       "expected_result": "not_compiler_reachable",
@@ -308,7 +367,7 @@
           "result": "not_compiler_reachable",
           "result_count": 0,
           "rules_used": [],
-          "target_id": "scl0_006_blind_a_v0"
+          "target_id": "scl0_007_blind_a_v0"
         },
         {
           "author_id": "blind_b",
@@ -322,12 +381,12 @@
           "result": "not_compiler_reachable",
           "result_count": 0,
           "rules_used": [],
-          "target_id": "scl0_006_blind_b_v0"
+          "target_id": "scl0_007_blind_b_v0"
         }
       ]
     },
     {
-      "case_id": "scl0_007",
+      "case_id": "scl0_008",
       "concept": "goal_kick_build_structure",
       "expected_failure_taxonomy": "missing_primitive",
       "expected_result": "not_compiler_reachable",
@@ -347,7 +406,7 @@
           "result": "not_compiler_reachable",
           "result_count": 0,
           "rules_used": [],
-          "target_id": "scl0_007_blind_a_v0"
+          "target_id": "scl0_008_blind_a_v0"
         },
         {
           "author_id": "blind_b",
@@ -361,7 +420,7 @@
           "result": "not_compiler_reachable",
           "result_count": 0,
           "rules_used": [],
-          "target_id": "scl0_007_blind_b_v0"
+          "target_id": "scl0_008_blind_b_v0"
         }
       ]
     }
@@ -389,20 +448,20 @@
   },
   "status": "PASS",
   "summary": {
-    "case_count": 7,
+    "case_count": 8,
     "failure_distribution": {
       "missing_primitive": 2,
       "unsupported_modality": 4
     },
     "findings_count": 0,
-    "held_out_compiler_reachable_count": 2,
-    "held_out_target_count": 2,
+    "held_out_compiler_reachable_count": 4,
+    "held_out_target_count": 4,
     "known_negative_honest_failure_count": 6,
     "known_negative_target_count": 6,
     "result_distribution": {
-      "compiler_reachable": 8,
+      "compiler_reachable": 10,
       "not_compiler_reachable": 6
     },
-    "target_count": 14
+    "target_count": 16
   }
 }
