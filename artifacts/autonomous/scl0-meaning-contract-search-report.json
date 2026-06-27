@@ -1,6 +1,6 @@
 {
   "failure_distribution": {
-    "missing_primitive": 2,
+    "missing_primitive": 14,
     "unsupported_modality": 4
   },
   "findings": [],
@@ -8,13 +8,17 @@
     "scl0_004",
     "scl0_004",
     "scl0_005",
-    "scl0_005"
+    "scl0_005",
+    "scl1_013",
+    "scl1_013"
   ],
   "held_out_successes": [
     "scl0_004",
     "scl0_004",
     "scl0_005",
-    "scl0_005"
+    "scl0_005",
+    "scl1_013",
+    "scl1_013"
   ],
   "multi_step_successes": [
     "scl0_001",
@@ -24,13 +28,15 @@
     "scl0_004",
     "scl0_004",
     "scl0_005",
-    "scl0_005"
+    "scl0_005",
+    "scl1_013",
+    "scl1_013"
   ],
   "plan_dir": "generated/semantic-contract-scl0/search-run/plans",
   "report_priority": "Held-out successes and real failure distribution are the meaningful outputs.",
   "result_distribution": {
-    "compiler_reachable": 10,
-    "not_compiler_reachable": 6
+    "compiler_reachable": 20,
+    "not_compiler_reachable": 18
   },
   "row_csv_path": "generated/semantic-contract-scl0/search-run/row-ledger.csv",
   "row_ledger_path": "generated/semantic-contract-scl0/search-run/row-ledger.json",
@@ -46,7 +52,7 @@
     "persistent_node_cache_enabled": true,
     "search_worker_count": 4,
     "shared_node_cache_enabled": true,
-    "target_count": 16
+    "target_count": 38
   },
   "search_budget": {
     "allowed_catalog_refs": [
@@ -102,43 +108,43 @@
   "summary": {
     "compiler_reachable_count": 0,
     "compiler_reachable_pct": 0.0,
-    "coverage_supported_count": 5,
-    "coverage_supported_pct": 62.5,
+    "coverage_supported_count": 10,
+    "coverage_supported_pct": 52.6,
     "execution_cache_backend": {
       "backend": "persistent_pickle_gzip",
       "backends": [
         "persistent_pickle_gzip"
       ],
-      "disk_loads": 103,
+      "disk_loads": 182,
       "enabled": true,
-      "entry_count": 224,
-      "memory_entries": 504,
-      "memory_loads": 84,
-      "namespace": "d33635f53036-f058e0f7e6ce",
-      "root": "artifacts/autonomous/compiler-search-node-cache/d33635f53036-f058e0f7e6ce",
-      "stores": 401,
+      "entry_count": 308,
+      "memory_entries": 756,
+      "memory_loads": 168,
+      "namespace": "e3953bbfc72c-4c2e0e6923fb",
+      "root": "artifacts/autonomous/compiler-search-node-cache/e3953bbfc72c-4c2e0e6923fb",
+      "stores": 574,
       "worker_count": 4
     },
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
-      "hits": 271,
-      "local_hits": 84,
-      "misses": 401,
-      "shared_hits": 187
+      "hits": 462,
+      "local_hits": 112,
+      "misses": 574,
+      "shared_hits": 350
     },
     "execution_reuse_enabled": true,
-    "held_out_compiler_reachable_count": 4,
+    "held_out_compiler_reachable_count": 6,
     "held_out_compiler_reachable_pct": 100.0,
-    "held_out_multi_step_compiler_reachable_count": 4,
-    "held_out_multi_step_target_count": 4,
-    "held_out_target_count": 4,
-    "multi_step_compiler_reachable_count": 8,
-    "multi_step_target_count": 8,
-    "sample_compiler_reachable_count": 10,
-    "sample_compiler_reachable_pct": 62.5,
+    "held_out_multi_step_compiler_reachable_count": 6,
+    "held_out_multi_step_target_count": 6,
+    "held_out_target_count": 6,
+    "multi_step_compiler_reachable_count": 10,
+    "multi_step_target_count": 10,
+    "sample_compiler_reachable_count": 20,
+    "sample_compiler_reachable_pct": 52.6,
     "sample_only_note": "sample_* fields are the measurement for non-updating runs; compiler_reachable_count reflects the supplied coverage ledger after mutation only when ledger updates are enabled.",
-    "sample_target_count": 16
+    "sample_target_count": 38
   },
   "synthesizer_strategy": "bounded_backward_search.v0.1.scl0_meaning_contracts",
   "synthesizer_version": "search_synthesizer.v0.1",

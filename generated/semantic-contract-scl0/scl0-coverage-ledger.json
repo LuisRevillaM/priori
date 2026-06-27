@@ -2,49 +2,115 @@
  {
   "concept": "scl0_001",
   "classification": "supported",
-  "composition_maturity": "semantic_contract_scl0",
+  "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },
  {
   "concept": "scl0_002",
   "classification": "supported",
-  "composition_maturity": "semantic_contract_scl0",
+  "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },
  {
   "concept": "scl0_003",
   "classification": "supported",
-  "composition_maturity": "semantic_contract_scl0",
+  "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },
  {
   "concept": "scl0_004",
   "classification": "supported",
-  "composition_maturity": "semantic_contract_scl0",
+  "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },
  {
   "concept": "scl0_005",
   "classification": "supported",
-  "composition_maturity": "semantic_contract_scl0",
+  "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },
  {
   "concept": "scl0_006",
   "classification": "missing_modality",
-  "composition_maturity": "semantic_contract_scl0",
+  "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },
  {
   "concept": "scl0_007",
   "classification": "missing_modality",
-  "composition_maturity": "semantic_contract_scl0",
+  "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },
  {
   "concept": "scl0_008",
   "classification": "missing_primitive",
-  "composition_maturity": "semantic_contract_scl0",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_009",
+  "classification": "supported",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_010",
+  "classification": "supported",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_011",
+  "classification": "supported",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_012",
+  "classification": "supported",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_013",
+  "classification": "supported",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_014",
+  "classification": "missing_primitive",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_015",
+  "classification": "missing_primitive",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_016",
+  "classification": "missing_primitive",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_017",
+  "classification": "partial_with_typed_gap",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_018",
+  "classification": "missing_primitive",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_019",
+  "classification": "partial_with_typed_gap",
+  "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  }
 ]

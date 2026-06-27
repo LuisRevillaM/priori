@@ -510,7 +510,7 @@ compiler-search-frontier-draw:
 	TQE_ATLAS_SCALE_ASSESS_REPORT=artifacts/autonomous/compiler-frontier-draw-assessment-report.json \
 	$(PYTHON) scripts/coverage_map/atlas_scale_contract_sample.py assess
 
-.PHONY: scl0-verify
+.PHONY: scl0-verify scl1-verify
 scl0-verify:
 	$(PYTHON) scripts/coverage_map/semantic_contract_scl0.py prepare
 	TQE_SEARCH_WORKERS=4 \
@@ -523,3 +523,5 @@ scl0-verify:
 	TQE_SEARCH_UPDATE_LEDGER=0 \
 	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
 	$(PYTHON) scripts/coverage_map/semantic_contract_scl0.py assess
+
+scl1-verify: scl0-verify

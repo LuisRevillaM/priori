@@ -2178,5 +2178,2257 @@
         "value": "Requires an executable goal-kick build-structure primitive; no substitute restart claim is inferred."
       }
     ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_009",
+    "concept": "defender_arrival_time",
+    "contract": {
+      "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "arrival_frame_id",
+        "candidate_scope",
+        "coverage_status",
+        "maximum_arrival_seconds",
+        "maximum_player_speed_mps",
+        "minimum_arrival_seconds",
+        "momentum_policy",
+        "nearest_arrival_player_id",
+        "reachability_model",
+        "reachable_verdict_bias",
+        "target_point",
+        "time_to_arrival_reason",
+        "time_to_arrival_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "time_to_arrival_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "4019c021d73e0b5c7a682c3c446e7b1f608feea1822aca5b768931ffaa5cba83",
+    "definition_text": "Defender arrival time means an observed defender can arrive at the target point within the declared arrival window.",
+    "opaque_search_concept": "scl1_009",
+    "target_id": "scl1_009_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "time_to_arrival_status"
+      },
+      {
+        "contract_path": "required_evidence.time_to_arrival_reason",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "time_to_arrival_reason"
+      },
+      {
+        "contract_path": "required_evidence.arrival_frame_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "arrival_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_point",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "target_point"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.nearest_arrival_player_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "nearest_arrival_player_id"
+      },
+      {
+        "contract_path": "required_evidence.minimum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "minimum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "maximum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_player_speed_mps",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "maximum_player_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.reachability_model",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "reachability_model"
+      },
+      {
+        "contract_path": "required_evidence.momentum_policy",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "momentum_policy"
+      },
+      {
+        "contract_path": "required_evidence.reachable_verdict_bias",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "reachable_verdict_bias"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 114,
+        "source_phrase": "arrival window",
+        "source_start": 100,
+        "value": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_009",
+    "concept": "defender_arrival_time",
+    "contract": {
+      "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "arrival_frame_id",
+        "candidate_scope",
+        "coverage_status",
+        "maximum_arrival_seconds",
+        "maximum_player_speed_mps",
+        "minimum_arrival_seconds",
+        "momentum_policy",
+        "nearest_arrival_player_id",
+        "reachability_model",
+        "reachable_verdict_bias",
+        "target_point",
+        "time_to_arrival_reason",
+        "time_to_arrival_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "time_to_arrival_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "4019c021d73e0b5c7a682c3c446e7b1f608feea1822aca5b768931ffaa5cba83",
+    "definition_text": "Reachability to a target means the observed defender is able to reach that point inside the arrival time threshold.",
+    "opaque_search_concept": "scl1_009",
+    "target_id": "scl1_009_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "time_to_arrival_status"
+      },
+      {
+        "contract_path": "required_evidence.time_to_arrival_reason",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "time_to_arrival_reason"
+      },
+      {
+        "contract_path": "required_evidence.arrival_frame_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "arrival_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_point",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "target_point"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.nearest_arrival_player_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "nearest_arrival_player_id"
+      },
+      {
+        "contract_path": "required_evidence.minimum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "minimum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "maximum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_player_speed_mps",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "maximum_player_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.reachability_model",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "reachability_model"
+      },
+      {
+        "contract_path": "required_evidence.momentum_policy",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "momentum_policy"
+      },
+      {
+        "contract_path": "required_evidence.reachable_verdict_bias",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "reachable_verdict_bias"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 104,
+        "source_phrase": "arrival time",
+        "source_start": 92,
+        "value": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_010",
+    "concept": "receiver_reachability_window",
+    "contract": {
+      "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "arrival_frame_id",
+        "candidate_scope",
+        "coverage_status",
+        "maximum_arrival_seconds",
+        "maximum_player_speed_mps",
+        "minimum_arrival_seconds",
+        "momentum_policy",
+        "nearest_arrival_player_id",
+        "reachability_model",
+        "reachable_verdict_bias",
+        "target_point",
+        "time_to_arrival_reason",
+        "time_to_arrival_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "time_to_arrival_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "4019c021d73e0b5c7a682c3c446e7b1f608feea1822aca5b768931ffaa5cba83",
+    "definition_text": "Receiver reachability window means observed candidates can reach the receiving point within the arrival window.",
+    "opaque_search_concept": "scl1_010",
+    "target_id": "scl1_010_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "time_to_arrival_status"
+      },
+      {
+        "contract_path": "required_evidence.time_to_arrival_reason",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "time_to_arrival_reason"
+      },
+      {
+        "contract_path": "required_evidence.arrival_frame_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "arrival_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_point",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "target_point"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.nearest_arrival_player_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "nearest_arrival_player_id"
+      },
+      {
+        "contract_path": "required_evidence.minimum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "minimum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "maximum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_player_speed_mps",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "maximum_player_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.reachability_model",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "reachability_model"
+      },
+      {
+        "contract_path": "required_evidence.momentum_policy",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "momentum_policy"
+      },
+      {
+        "contract_path": "required_evidence.reachable_verdict_bias",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "reachable_verdict_bias"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 110,
+        "source_phrase": "arrival window",
+        "source_start": 96,
+        "value": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_010",
+    "concept": "receiver_reachability_window",
+    "contract": {
+      "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "arrival_frame_id",
+        "candidate_scope",
+        "coverage_status",
+        "maximum_arrival_seconds",
+        "maximum_player_speed_mps",
+        "minimum_arrival_seconds",
+        "momentum_policy",
+        "nearest_arrival_player_id",
+        "reachability_model",
+        "reachable_verdict_bias",
+        "target_point",
+        "time_to_arrival_reason",
+        "time_to_arrival_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "time_to_arrival_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "4019c021d73e0b5c7a682c3c446e7b1f608feea1822aca5b768931ffaa5cba83",
+    "definition_text": "A receiving target is reachable when observed players are able to arrive at the target point before the arrival time limit.",
+    "opaque_search_concept": "scl1_010",
+    "target_id": "scl1_010_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "time_to_arrival_status"
+      },
+      {
+        "contract_path": "required_evidence.time_to_arrival_reason",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "time_to_arrival_reason"
+      },
+      {
+        "contract_path": "required_evidence.arrival_frame_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "arrival_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_point",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "target_point"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.nearest_arrival_player_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "nearest_arrival_player_id"
+      },
+      {
+        "contract_path": "required_evidence.minimum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "minimum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "maximum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_player_speed_mps",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "maximum_player_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.reachability_model",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "reachability_model"
+      },
+      {
+        "contract_path": "required_evidence.momentum_policy",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "momentum_policy"
+      },
+      {
+        "contract_path": "required_evidence.reachable_verdict_bias",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "reachable_verdict_bias"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 116,
+        "source_phrase": "arrival time",
+        "source_start": 104,
+        "value": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_011",
+    "concept": "lane_occupation_episode",
+    "contract": {
+      "claim_boundary": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "coverage_status",
+        "lane_counts",
+        "lane_evaluation_frame_id",
+        "lane_occupancy_reason",
+        "lane_occupancy_status",
+        "lane_player_scope",
+        "occupied_lane_count",
+        "occupied_lanes"
+      ],
+      "status_semantics": [
+        {
+          "field": "lane_occupancy_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "6e8b6d669c8d3016c0be8bbe6cfb73f31dc73a244dea38f8737dbcaed8f4fe63",
+    "definition_text": "Lane occupation means observed outfield players occupy at least one lateral lane at the anchor.",
+    "opaque_search_concept": "scl1_011",
+    "target_id": "scl1_011_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 80,
+        "source_phrase": "lateral lane",
+        "source_start": 68,
+        "value": "lane_occupancy_status"
+      },
+      {
+        "contract_path": "required_evidence.lane_occupancy_reason",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 80,
+        "source_phrase": "lateral lane",
+        "source_start": 68,
+        "value": "lane_occupancy_reason"
+      },
+      {
+        "contract_path": "required_evidence.lane_evaluation_frame_id",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 80,
+        "source_phrase": "lateral lane",
+        "source_start": 68,
+        "value": "lane_evaluation_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.lane_player_scope",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 80,
+        "source_phrase": "lateral lane",
+        "source_start": 68,
+        "value": "lane_player_scope"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lanes",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 80,
+        "source_phrase": "lateral lane",
+        "source_start": 68,
+        "value": "occupied_lanes"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lane_count",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 80,
+        "source_phrase": "lateral lane",
+        "source_start": 68,
+        "value": "occupied_lane_count"
+      },
+      {
+        "contract_path": "required_evidence.lane_counts",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 80,
+        "source_phrase": "lateral lane",
+        "source_start": 68,
+        "value": "lane_counts"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 80,
+        "source_phrase": "lateral lane",
+        "source_start": 68,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 80,
+        "source_phrase": "lateral lane",
+        "source_start": 68,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 80,
+        "source_phrase": "lateral lane",
+        "source_start": 68,
+        "value": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_011",
+    "concept": "lane_occupation_episode",
+    "contract": {
+      "claim_boundary": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "coverage_status",
+        "lane_counts",
+        "lane_evaluation_frame_id",
+        "lane_occupancy_reason",
+        "lane_occupancy_status",
+        "lane_player_scope",
+        "occupied_lane_count",
+        "occupied_lanes"
+      ],
+      "status_semantics": [
+        {
+          "field": "lane_occupancy_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "6e8b6d669c8d3016c0be8bbe6cfb73f31dc73a244dea38f8737dbcaed8f4fe63",
+    "definition_text": "Channel occupation occurs when observed outfield players are classified into an occupied pitch lane at the anchor.",
+    "opaque_search_concept": "scl1_011",
+    "target_id": "scl1_011_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 99,
+        "source_phrase": "pitch lane",
+        "source_start": 89,
+        "value": "lane_occupancy_status"
+      },
+      {
+        "contract_path": "required_evidence.lane_occupancy_reason",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 99,
+        "source_phrase": "pitch lane",
+        "source_start": 89,
+        "value": "lane_occupancy_reason"
+      },
+      {
+        "contract_path": "required_evidence.lane_evaluation_frame_id",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 99,
+        "source_phrase": "pitch lane",
+        "source_start": 89,
+        "value": "lane_evaluation_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.lane_player_scope",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 99,
+        "source_phrase": "pitch lane",
+        "source_start": 89,
+        "value": "lane_player_scope"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lanes",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 99,
+        "source_phrase": "pitch lane",
+        "source_start": 89,
+        "value": "occupied_lanes"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lane_count",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 99,
+        "source_phrase": "pitch lane",
+        "source_start": 89,
+        "value": "occupied_lane_count"
+      },
+      {
+        "contract_path": "required_evidence.lane_counts",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 99,
+        "source_phrase": "pitch lane",
+        "source_start": 89,
+        "value": "lane_counts"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 99,
+        "source_phrase": "pitch lane",
+        "source_start": 89,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 99,
+        "source_phrase": "pitch lane",
+        "source_start": 89,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 99,
+        "source_phrase": "pitch lane",
+        "source_start": 89,
+        "value": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_012",
+    "concept": "lane_classification_episode",
+    "contract": {
+      "claim_boundary": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "coverage_status",
+        "lane_counts",
+        "lane_evaluation_frame_id",
+        "lane_occupancy_reason",
+        "lane_occupancy_status",
+        "lane_player_scope",
+        "occupied_lane_count",
+        "occupied_lanes"
+      ],
+      "status_semantics": [
+        {
+          "field": "lane_occupancy_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "6e8b6d669c8d3016c0be8bbe6cfb73f31dc73a244dea38f8737dbcaed8f4fe63",
+    "definition_text": "Lane classification means observed outfield players are classified into lateral lanes at the anchor.",
+    "opaque_search_concept": "scl1_012",
+    "target_id": "scl1_012_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 85,
+        "source_phrase": "lateral lanes",
+        "source_start": 72,
+        "value": "lane_occupancy_status"
+      },
+      {
+        "contract_path": "required_evidence.lane_occupancy_reason",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 85,
+        "source_phrase": "lateral lanes",
+        "source_start": 72,
+        "value": "lane_occupancy_reason"
+      },
+      {
+        "contract_path": "required_evidence.lane_evaluation_frame_id",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 85,
+        "source_phrase": "lateral lanes",
+        "source_start": 72,
+        "value": "lane_evaluation_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.lane_player_scope",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 85,
+        "source_phrase": "lateral lanes",
+        "source_start": 72,
+        "value": "lane_player_scope"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lanes",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 85,
+        "source_phrase": "lateral lanes",
+        "source_start": 72,
+        "value": "occupied_lanes"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lane_count",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 85,
+        "source_phrase": "lateral lanes",
+        "source_start": 72,
+        "value": "occupied_lane_count"
+      },
+      {
+        "contract_path": "required_evidence.lane_counts",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 85,
+        "source_phrase": "lateral lanes",
+        "source_start": 72,
+        "value": "lane_counts"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 85,
+        "source_phrase": "lateral lanes",
+        "source_start": 72,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 85,
+        "source_phrase": "lateral lanes",
+        "source_start": 72,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 85,
+        "source_phrase": "lateral lanes",
+        "source_start": 72,
+        "value": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_012",
+    "concept": "lane_classification_episode",
+    "contract": {
+      "claim_boundary": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "coverage_status",
+        "lane_counts",
+        "lane_evaluation_frame_id",
+        "lane_occupancy_reason",
+        "lane_occupancy_status",
+        "lane_player_scope",
+        "occupied_lane_count",
+        "occupied_lanes"
+      ],
+      "status_semantics": [
+        {
+          "field": "lane_occupancy_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "6e8b6d669c8d3016c0be8bbe6cfb73f31dc73a244dea38f8737dbcaed8f4fe63",
+    "definition_text": "Channel classification occurs when observed outfield players are assigned to pitch lanes at the anchor.",
+    "opaque_search_concept": "scl1_012",
+    "target_id": "scl1_012_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 88,
+        "source_phrase": "pitch lanes",
+        "source_start": 77,
+        "value": "lane_occupancy_status"
+      },
+      {
+        "contract_path": "required_evidence.lane_occupancy_reason",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 88,
+        "source_phrase": "pitch lanes",
+        "source_start": 77,
+        "value": "lane_occupancy_reason"
+      },
+      {
+        "contract_path": "required_evidence.lane_evaluation_frame_id",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 88,
+        "source_phrase": "pitch lanes",
+        "source_start": 77,
+        "value": "lane_evaluation_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.lane_player_scope",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 88,
+        "source_phrase": "pitch lanes",
+        "source_start": 77,
+        "value": "lane_player_scope"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lanes",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 88,
+        "source_phrase": "pitch lanes",
+        "source_start": 77,
+        "value": "occupied_lanes"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lane_count",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 88,
+        "source_phrase": "pitch lanes",
+        "source_start": 77,
+        "value": "occupied_lane_count"
+      },
+      {
+        "contract_path": "required_evidence.lane_counts",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 88,
+        "source_phrase": "pitch lanes",
+        "source_start": 77,
+        "value": "lane_counts"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 88,
+        "source_phrase": "pitch lanes",
+        "source_start": 77,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 88,
+        "source_phrase": "pitch lanes",
+        "source_start": 77,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 88,
+        "source_phrase": "pitch lanes",
+        "source_start": 77,
+        "value": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_013",
+    "concept": "covered_lane_reachability",
+    "contract": {
+      "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred. Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred. Lane occupancy and reachability are joined on the same observed anchor only; no pitch-control or denial-quality claim is inferred.",
+      "composition_constraints": [
+        {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "arrival_frame_id",
+        "candidate_scope",
+        "coverage_status",
+        "join_reason",
+        "join_status",
+        "lane_counts",
+        "lane_evaluation_frame_id",
+        "lane_occupancy_reason",
+        "lane_occupancy_status",
+        "lane_player_scope",
+        "maximum_arrival_seconds",
+        "maximum_player_speed_mps",
+        "minimum_arrival_seconds",
+        "momentum_policy",
+        "nearest_arrival_player_id",
+        "occupied_lane_count",
+        "occupied_lanes",
+        "reachability_model",
+        "reachable_verdict_bias",
+        "target_point",
+        "time_to_arrival_reason",
+        "time_to_arrival_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "join_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "lane_occupancy_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "time_to_arrival_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "b228be104d3465adcfa1fd9570e4fe2eecbc22b82c7a716483f86007e27b0830",
+    "definition_text": "Covered lane reachability means observed outfield players occupy at least one lateral lane and observed defenders can arrive within the arrival window at the same anchor.",
+    "opaque_search_concept": "scl1_013",
+    "target_id": "scl1_013_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "time_to_arrival_status"
+      },
+      {
+        "contract_path": "required_evidence.time_to_arrival_reason",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "time_to_arrival_reason"
+      },
+      {
+        "contract_path": "required_evidence.arrival_frame_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "arrival_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_point",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "target_point"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.nearest_arrival_player_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "nearest_arrival_player_id"
+      },
+      {
+        "contract_path": "required_evidence.minimum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "minimum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "maximum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_player_speed_mps",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "maximum_player_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.reachability_model",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "reachability_model"
+      },
+      {
+        "contract_path": "required_evidence.momentum_policy",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "momentum_policy"
+      },
+      {
+        "contract_path": "required_evidence.reachable_verdict_bias",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "reachable_verdict_bias"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 150,
+        "source_phrase": "arrival window",
+        "source_start": 136,
+        "value": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred."
+      },
+      {
+        "contract_path": "required_evidence.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 90,
+        "source_phrase": "lateral lane",
+        "source_start": 78,
+        "value": "lane_occupancy_status"
+      },
+      {
+        "contract_path": "required_evidence.lane_occupancy_reason",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 90,
+        "source_phrase": "lateral lane",
+        "source_start": 78,
+        "value": "lane_occupancy_reason"
+      },
+      {
+        "contract_path": "required_evidence.lane_evaluation_frame_id",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 90,
+        "source_phrase": "lateral lane",
+        "source_start": 78,
+        "value": "lane_evaluation_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.lane_player_scope",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 90,
+        "source_phrase": "lateral lane",
+        "source_start": 78,
+        "value": "lane_player_scope"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lanes",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 90,
+        "source_phrase": "lateral lane",
+        "source_start": 78,
+        "value": "occupied_lanes"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lane_count",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 90,
+        "source_phrase": "lateral lane",
+        "source_start": 78,
+        "value": "occupied_lane_count"
+      },
+      {
+        "contract_path": "required_evidence.lane_counts",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 90,
+        "source_phrase": "lateral lane",
+        "source_start": 78,
+        "value": "lane_counts"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 90,
+        "source_phrase": "lateral lane",
+        "source_start": 78,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 90,
+        "source_phrase": "lateral lane",
+        "source_start": 78,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 90,
+        "source_phrase": "lateral lane",
+        "source_start": 78,
+        "value": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred."
+      },
+      {
+        "contract_path": "required_evidence.join_status",
+        "rule_id": "meaning.composition.lane_reachability_same_anchor",
+        "source_end": 170,
+        "source_phrase": "Covered lane reachability means observed outfield players occupy at least one lateral lane and observed defenders can arrive within the arrival window at the same anchor.",
+        "source_start": 0,
+        "value": "join_status"
+      },
+      {
+        "contract_path": "required_evidence.join_reason",
+        "rule_id": "meaning.composition.lane_reachability_same_anchor",
+        "source_end": 170,
+        "source_phrase": "Covered lane reachability means observed outfield players occupy at least one lateral lane and observed defenders can arrive within the arrival window at the same anchor.",
+        "source_start": 0,
+        "value": "join_reason"
+      },
+      {
+        "contract_path": "status_semantics.join_status",
+        "rule_id": "meaning.composition.lane_reachability_same_anchor",
+        "source_end": 170,
+        "source_phrase": "Covered lane reachability means observed outfield players occupy at least one lateral lane and observed defenders can arrive within the arrival window at the same anchor.",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.same_anchor_identity",
+        "rule_id": "meaning.composition.lane_reachability_same_anchor",
+        "source_end": 170,
+        "source_phrase": "Covered lane reachability means observed outfield players occupy at least one lateral lane and observed defenders can arrive within the arrival window at the same anchor.",
+        "source_start": 0,
+        "value": {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.composition.lane_reachability_same_anchor",
+        "source_end": 170,
+        "source_phrase": "Covered lane reachability means observed outfield players occupy at least one lateral lane and observed defenders can arrive within the arrival window at the same anchor.",
+        "source_start": 0,
+        "value": "Lane occupancy and reachability are joined on the same observed anchor only; no pitch-control or denial-quality claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_013",
+    "concept": "covered_lane_reachability",
+    "contract": {
+      "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred. Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred. Lane occupancy and reachability are joined on the same observed anchor only; no pitch-control or denial-quality claim is inferred.",
+      "composition_constraints": [
+        {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "arrival_frame_id",
+        "candidate_scope",
+        "coverage_status",
+        "join_reason",
+        "join_status",
+        "lane_counts",
+        "lane_evaluation_frame_id",
+        "lane_occupancy_reason",
+        "lane_occupancy_status",
+        "lane_player_scope",
+        "maximum_arrival_seconds",
+        "maximum_player_speed_mps",
+        "minimum_arrival_seconds",
+        "momentum_policy",
+        "nearest_arrival_player_id",
+        "occupied_lane_count",
+        "occupied_lanes",
+        "reachability_model",
+        "reachable_verdict_bias",
+        "target_point",
+        "time_to_arrival_reason",
+        "time_to_arrival_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "join_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "lane_occupancy_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "time_to_arrival_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "b228be104d3465adcfa1fd9570e4fe2eecbc22b82c7a716483f86007e27b0830",
+    "definition_text": "A channel is covered when outfield players occupy the pitch lanes and defenders are able to reach the target point inside the arrival time threshold.",
+    "opaque_search_concept": "scl1_013",
+    "target_id": "scl1_013_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "time_to_arrival_status"
+      },
+      {
+        "contract_path": "required_evidence.time_to_arrival_reason",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "time_to_arrival_reason"
+      },
+      {
+        "contract_path": "required_evidence.arrival_frame_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "arrival_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_point",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "target_point"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.nearest_arrival_player_id",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "nearest_arrival_player_id"
+      },
+      {
+        "contract_path": "required_evidence.minimum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "minimum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_arrival_seconds",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "maximum_arrival_seconds"
+      },
+      {
+        "contract_path": "required_evidence.maximum_player_speed_mps",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "maximum_player_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.reachability_model",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "reachability_model"
+      },
+      {
+        "contract_path": "required_evidence.momentum_policy",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "momentum_policy"
+      },
+      {
+        "contract_path": "required_evidence.reachable_verdict_bias",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "reachable_verdict_bias"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.time_to_arrival_status",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.reachability.time_to_arrival",
+        "source_end": 138,
+        "source_phrase": "arrival time",
+        "source_start": 126,
+        "value": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred."
+      },
+      {
+        "contract_path": "required_evidence.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 65,
+        "source_phrase": "pitch lanes",
+        "source_start": 54,
+        "value": "lane_occupancy_status"
+      },
+      {
+        "contract_path": "required_evidence.lane_occupancy_reason",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 65,
+        "source_phrase": "pitch lanes",
+        "source_start": 54,
+        "value": "lane_occupancy_reason"
+      },
+      {
+        "contract_path": "required_evidence.lane_evaluation_frame_id",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 65,
+        "source_phrase": "pitch lanes",
+        "source_start": 54,
+        "value": "lane_evaluation_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.lane_player_scope",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 65,
+        "source_phrase": "pitch lanes",
+        "source_start": 54,
+        "value": "lane_player_scope"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lanes",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 65,
+        "source_phrase": "pitch lanes",
+        "source_start": 54,
+        "value": "occupied_lanes"
+      },
+      {
+        "contract_path": "required_evidence.occupied_lane_count",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 65,
+        "source_phrase": "pitch lanes",
+        "source_start": 54,
+        "value": "occupied_lane_count"
+      },
+      {
+        "contract_path": "required_evidence.lane_counts",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 65,
+        "source_phrase": "pitch lanes",
+        "source_start": 54,
+        "value": "lane_counts"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 65,
+        "source_phrase": "pitch lanes",
+        "source_start": 54,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.lane_occupancy_status",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 65,
+        "source_phrase": "pitch lanes",
+        "source_start": 54,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.element.lane_occupancy",
+        "source_end": 65,
+        "source_phrase": "pitch lanes",
+        "source_start": 54,
+        "value": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred."
+      },
+      {
+        "contract_path": "required_evidence.join_status",
+        "rule_id": "meaning.composition.lane_reachability_same_anchor",
+        "source_end": 149,
+        "source_phrase": "A channel is covered when outfield players occupy the pitch lanes and defenders are able to reach the target point inside the arrival time threshold.",
+        "source_start": 0,
+        "value": "join_status"
+      },
+      {
+        "contract_path": "required_evidence.join_reason",
+        "rule_id": "meaning.composition.lane_reachability_same_anchor",
+        "source_end": 149,
+        "source_phrase": "A channel is covered when outfield players occupy the pitch lanes and defenders are able to reach the target point inside the arrival time threshold.",
+        "source_start": 0,
+        "value": "join_reason"
+      },
+      {
+        "contract_path": "status_semantics.join_status",
+        "rule_id": "meaning.composition.lane_reachability_same_anchor",
+        "source_end": 149,
+        "source_phrase": "A channel is covered when outfield players occupy the pitch lanes and defenders are able to reach the target point inside the arrival time threshold.",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.same_anchor_identity",
+        "rule_id": "meaning.composition.lane_reachability_same_anchor",
+        "source_end": 149,
+        "source_phrase": "A channel is covered when outfield players occupy the pitch lanes and defenders are able to reach the target point inside the arrival time threshold.",
+        "source_start": 0,
+        "value": {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.composition.lane_reachability_same_anchor",
+        "source_end": 149,
+        "source_phrase": "A channel is covered when outfield players occupy the pitch lanes and defenders are able to reach the target point inside the arrival time threshold.",
+        "source_start": 0,
+        "value": "Lane occupancy and reachability are joined on the same observed anchor only; no pitch-control or denial-quality claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_014",
+    "concept": "cover_shadow_region",
+    "contract": {
+      "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_cover_shadow_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_cover_shadow_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "definition_text": "Cover shadow region means the area behind a defender that the defender blocks or screens from the ball.",
+    "opaque_search_concept": "scl1_014",
+    "target_id": "scl1_014_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_cover_shadow_status",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "scl1_cover_shadow_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_cover_shadow_status",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_014",
+    "concept": "cover_shadow_region",
+    "contract": {
+      "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_cover_shadow_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_cover_shadow_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "definition_text": "A cover shadow is a defended passing lane region hidden behind the pressing defender.",
+    "opaque_search_concept": "scl1_014",
+    "target_id": "scl1_014_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_cover_shadow_status",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "scl1_cover_shadow_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_cover_shadow_status",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_015",
+    "concept": "passing_lane_denial",
+    "contract": {
+      "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_cover_shadow_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_cover_shadow_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "definition_text": "Passing-lane denial means a defender denies the passing lane between the ball and a potential receiver.",
+    "opaque_search_concept": "scl1_015",
+    "target_id": "scl1_015_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_cover_shadow_status",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "scl1_cover_shadow_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_cover_shadow_status",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_015",
+    "concept": "passing_lane_denial",
+    "contract": {
+      "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_cover_shadow_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_cover_shadow_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "definition_text": "Lane denial occurs when a defender blocks the passing lane or cover shadow toward a target teammate.",
+    "opaque_search_concept": "scl1_015",
+    "target_id": "scl1_015_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_cover_shadow_status",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "scl1_cover_shadow_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_cover_shadow_status",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_016",
+    "concept": "marking_assignment_candidate",
+    "contract": {
+      "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_marking_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_marking_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "definition_text": "Marking assignment means a defender is assigned as the marker of an attacking player.",
+    "opaque_search_concept": "scl1_016",
+    "target_id": "scl1_016_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_marking_status",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "scl1_marking_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_marking_status",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_016",
+    "concept": "marking_assignment_candidate",
+    "contract": {
+      "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_marking_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_marking_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "definition_text": "A marker relation identifies which defender is marking a particular attacker.",
+    "opaque_search_concept": "scl1_016",
+    "target_id": "scl1_016_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_marking_status",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "scl1_marking_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_marking_status",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_017",
+    "concept": "free_player_candidate",
+    "contract": {
+      "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_marking_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_marking_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "definition_text": "A free player means an attacker is unmarked by their nearest marker.",
+    "opaque_search_concept": "scl1_017",
+    "target_id": "scl1_017_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_marking_status",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "scl1_marking_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_marking_status",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_017",
+    "concept": "free_player_candidate",
+    "contract": {
+      "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_marking_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_marking_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "definition_text": "An unmarked player candidate asks whether a receiver is not closely marked by a defender.",
+    "opaque_search_concept": "scl1_017",
+    "target_id": "scl1_017_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_marking_status",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "scl1_marking_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_marking_status",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.marking",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_018",
+    "concept": "off_ball_run_candidate",
+    "contract": {
+      "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_off_ball_run_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_off_ball_run_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
+    "definition_text": "An off-ball run is a run by a player without the ball, tracked as a movement episode away from possession.",
+    "opaque_search_concept": "scl1_018",
+    "target_id": "scl1_018_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_off_ball_run_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 15,
+        "source_phrase": "off-ball run",
+        "source_start": 3,
+        "value": "scl1_off_ball_run_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_off_ball_run_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 15,
+        "source_phrase": "off-ball run",
+        "source_start": 3,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 15,
+        "source_phrase": "off-ball run",
+        "source_start": 3,
+        "value": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_018",
+    "concept": "off_ball_run_candidate",
+    "contract": {
+      "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_off_ball_run_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_off_ball_run_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
+    "definition_text": "Off ball run typing identifies a player's run while they are away from the ball.",
+    "opaque_search_concept": "scl1_018",
+    "target_id": "scl1_018_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_off_ball_run_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 12,
+        "source_phrase": "Off ball run",
+        "source_start": 0,
+        "value": "scl1_off_ball_run_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_off_ball_run_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 12,
+        "source_phrase": "Off ball run",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 12,
+        "source_phrase": "Off ball run",
+        "source_start": 0,
+        "value": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_019",
+    "concept": "run_in_behind_candidate",
+    "contract": {
+      "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_off_ball_run_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_off_ball_run_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
+    "definition_text": "A run in behind is an off-ball run into space behind the defensive line.",
+    "opaque_search_concept": "scl1_019",
+    "target_id": "scl1_019_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_off_ball_run_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 34,
+        "source_phrase": "off-ball run",
+        "source_start": 22,
+        "value": "scl1_off_ball_run_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_off_ball_run_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 34,
+        "source_phrase": "off-ball run",
+        "source_start": 22,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 34,
+        "source_phrase": "off-ball run",
+        "source_start": 22,
+        "value": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_019",
+    "concept": "run_in_behind_candidate",
+    "contract": {
+      "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_off_ball_run_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_off_ball_run_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
+    "definition_text": "Run-in-behind typing asks for an off ball run beyond the observed defensive line.",
+    "opaque_search_concept": "scl1_019",
+    "target_id": "scl1_019_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_off_ball_run_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 45,
+        "source_phrase": "off ball run",
+        "source_start": 33,
+        "value": "scl1_off_ball_run_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_off_ball_run_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 45,
+        "source_phrase": "off ball run",
+        "source_start": 33,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.off_ball_run",
+        "source_end": 45,
+        "source_phrase": "off ball run",
+        "source_start": 33,
+        "value": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type."
+      }
+    ]
   }
 ]

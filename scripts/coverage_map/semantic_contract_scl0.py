@@ -54,6 +54,14 @@ FORBIDDEN_MEANING_TERMS = {
     "same_player_return",
 }
 
+CROSS_CONCEPT_REUSE_REQUIRED_RULES = {
+    "meaning.element.lane_occupancy",
+    "meaning.missing_primitive.cover_shadow",
+    "meaning.missing_primitive.marking",
+    "meaning.missing_primitive.off_ball_run",
+    "meaning.reachability.time_to_arrival",
+}
+
 
 @dataclass(frozen=True)
 class Span:
@@ -203,6 +211,7 @@ def prepare() -> int:
             findings.extend(trace_findings(case_id, definition["author_id"], contract, traces))
         findings.extend(independent_stability_findings(case, generated_contracts))
         findings.extend(perturbation_findings(case))
+    findings.extend(cross_concept_reuse_findings(contract_rows))
 
     targets_payload = {
         "schema_version": "compiler_search_targets.v0",
@@ -238,6 +247,7 @@ def prepare() -> int:
             "held_out_case_count": sum(1 for case in config["cases"] if case.get("held_out")),
             "known_negative_case_count": sum(1 for case in config["cases"] if case.get("sample_role") == "known_negative"),
             "findings_count": len(findings),
+            "element_rule_usage": rule_usage_counts(contract_rows),
         },
         "six_gates": {
             "clean_meaning_input": not any(item["code"].startswith("meaning_") for item in findings),
@@ -438,6 +448,16 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         add_forward_progression_element(builder, span)
         matched = True
 
+    if is_reachability_meaning(lower):
+        span = first_span(text, [r"arrival window", r"arrival time", r"arrive(?:s|d)?", r"reach(?:es|able|ability)?"]) or whole_span(text)
+        add_time_to_arrival_element(builder, span)
+        matched = True
+
+    if is_lane_occupancy_meaning(lower):
+        span = first_span(text, [r"lateral lanes?", r"pitch lanes?", r"wide lanes?", r"channels?", r"lane occupation", r"occupied lanes?"]) or whole_span(text)
+        add_lane_occupancy_element(builder, span)
+        matched = True
+
     if not has_pressure_change_phrase and (
         "under pressure" in lower or "defender pressure" in lower or "nearest-defender pressure" in lower
     ):
@@ -462,6 +482,39 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         add_increase_element(builder, span)
         matched = True
 
+    if is_cover_shadow_meaning(lower):
+        span = first_span(text, [r"cover shadow", r"passing[- ]lane denial", r"denies? the passing lane", r"lane denial"]) or whole_span(text)
+        add_missing_primitive_element(
+            builder,
+            "scl1_cover_shadow_status",
+            span,
+            "meaning.missing_primitive.cover_shadow",
+            "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+        )
+        matched = True
+
+    if is_marking_meaning(lower):
+        span = first_span(text, [r"marking assignment", r"\bmarker\b", r"\bmarked\b", r"\bunmarked\b", r"free player"]) or whole_span(text)
+        add_missing_primitive_element(
+            builder,
+            "scl1_marking_status",
+            span,
+            "meaning.missing_primitive.marking",
+            "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+        )
+        matched = True
+
+    if is_off_ball_run_meaning(lower):
+        span = first_span(text, [r"off[- ]ball run", r"diagonal run", r"run in behind", r"run typing"]) or whole_span(text)
+        add_missing_primitive_element(
+            builder,
+            "scl1_off_ball_run_status",
+            span,
+            "meaning.missing_primitive.off_ball_run",
+            "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+        )
+        matched = True
+
     apply_generic_composition_rules(builder, text)
 
     if not matched:
@@ -476,6 +529,17 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
 def add_status_contract(builder: ContractBuilder, field_name: str, span: Span, rule_id: str) -> None:
     builder.add_evidence(field_name, span, rule_id)
     builder.add_status(field_name, "PASS", span, rule_id)
+
+
+def add_missing_primitive_element(
+    builder: ContractBuilder,
+    field_name: str,
+    span: Span,
+    rule_id: str,
+    claim_boundary: str,
+) -> None:
+    add_status_contract(builder, field_name, span, rule_id)
+    builder.add_claim_part(claim_boundary, span, rule_id)
 
 
 def add_pass_chain_element(builder: ContractBuilder, span: Span) -> None:
@@ -550,6 +614,53 @@ def add_forward_progression_element(builder: ContractBuilder, span: Span) -> Non
     builder.add_claim_part("Observed forward component only; no tactical quality, intent, or optimality claim.", span, rule_id)
 
 
+def add_time_to_arrival_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.reachability.time_to_arrival"
+    for field_name in [
+        "time_to_arrival_status",
+        "time_to_arrival_reason",
+        "arrival_frame_id",
+        "target_point",
+        "candidate_scope",
+        "nearest_arrival_player_id",
+        "minimum_arrival_seconds",
+        "maximum_arrival_seconds",
+        "maximum_player_speed_mps",
+        "reachability_model",
+        "momentum_policy",
+        "reachable_verdict_bias",
+        "coverage_status",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("time_to_arrival_status", "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred.",
+        span,
+        rule_id,
+    )
+
+
+def add_lane_occupancy_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.element.lane_occupancy"
+    for field_name in [
+        "lane_occupancy_status",
+        "lane_occupancy_reason",
+        "lane_evaluation_frame_id",
+        "lane_player_scope",
+        "occupied_lanes",
+        "occupied_lane_count",
+        "lane_counts",
+        "coverage_status",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("lane_occupancy_status", "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+        span,
+        rule_id,
+    )
+
+
 def add_pressure_change_element(builder: ContractBuilder, span: Span) -> None:
     rule_id = "meaning.element.pressure_change"
     for field_name in [
@@ -620,6 +731,8 @@ def apply_generic_composition_rules(builder: ContractBuilder, text: str) -> None
     has_pressure = has_evidence(builder.contract, "pressure_status")
     has_pressure_change = has_pressure_distance_change_constraint(builder.contract)
     has_change = has_evidence(builder.contract, "change_status")
+    has_lane = has_evidence(builder.contract, "lane_occupancy_status")
+    has_reachability = has_evidence(builder.contract, "time_to_arrival_status")
 
     if has_carry and (has_pressure or has_change):
         rule_id = "meaning.composition.same_anchor_episode_join"
@@ -648,6 +761,18 @@ def apply_generic_composition_rules(builder: ContractBuilder, text: str) -> None
 
     if "shape" in lower and has_change:
         builder.add_claim_part("Shape change is evaluated as a measurement increase, not tactical intent.", span, "meaning.composition.shape_change")
+
+    if has_lane and has_reachability:
+        rule_id = "meaning.composition.lane_reachability_same_anchor"
+        builder.add_evidence("join_status", span, rule_id)
+        builder.add_evidence("join_reason", span, rule_id)
+        builder.add_status("join_status", "PASS", span, rule_id)
+        builder.add_constraint({"kind": "same_anchor_identity", "left_key_field": "anchor_id", "right_key_field": "anchor_id"}, span, rule_id)
+        builder.add_claim_part(
+            "Lane occupancy and reachability are joined on the same observed anchor only; no pitch-control or denial-quality claim is inferred.",
+            span,
+            rule_id,
+        )
 
 
 def has_evidence(contract: dict[str, Any], field_name: str) -> bool:
@@ -679,6 +804,49 @@ def is_same_player_return_meaning(lower: str) -> bool:
         "same original passer",
     ]
     return any(pattern in lower for pattern in patterns)
+
+
+def is_reachability_meaning(lower: str) -> bool:
+    return any(
+        phrase in lower
+        for phrase in (
+            "arrival window",
+            "arrival time",
+            "can arrive",
+            "can reach",
+            "reachable",
+            "reachability",
+            "able to arrive",
+            "able to reach",
+        )
+    )
+
+
+def is_lane_occupancy_meaning(lower: str) -> bool:
+    return any(
+        phrase in lower
+        for phrase in (
+            "lateral lane",
+            "pitch lane",
+            "wide lane",
+            "occupied lane",
+            "lane occupation",
+            "channel occupation",
+            "channels",
+        )
+    )
+
+
+def is_cover_shadow_meaning(lower: str) -> bool:
+    return "cover shadow" in lower or "passing-lane denial" in lower or "passing lane denial" in lower or "lane denial" in lower
+
+
+def is_marking_meaning(lower: str) -> bool:
+    return any(phrase in lower for phrase in ("marking assignment", "marker", "marked", "unmarked", "free player"))
+
+
+def is_off_ball_run_meaning(lower: str) -> bool:
+    return any(phrase in lower for phrase in ("off-ball run", "off ball run", "diagonal run", "run in behind", "run typing"))
 
 
 def assess_case(case: dict[str, Any], variants: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -736,7 +904,7 @@ def search_blindness_findings(config: dict[str, Any], search_rows: list[dict[str
             if str(definition["text"]).lower() in serialized_targets:
                 findings.append({"code": "search_blindness_definition_text_in_targets", "case_id": case["case_id"]})
     for row in search_rows:
-        if not str(row.get("concept", "")).startswith("scl0_"):
+        if not str(row.get("concept", "")).startswith("scl"):
             findings.append({"code": "search_blindness_non_opaque_reporting_concept", "target_id": row.get("target_id"), "concept": row.get("concept")})
     return findings
 
@@ -770,7 +938,57 @@ def perturbation_findings(case: dict[str, Any]) -> list[dict[str, Any]]:
                     "constraint_kind": removed_kind,
                 }
             )
+        removed_evidence = perturbation.get("must_remove_required_evidence")
+        if removed_evidence and str(removed_evidence) in changed_contract.get("required_evidence", []):
+            findings.append(
+                {
+                    "code": "perturbation_expected_evidence_still_present",
+                    "case_id": case["case_id"],
+                    "perturbation_id": perturbation["perturbation_id"],
+                    "field": str(removed_evidence),
+                }
+            )
         findings.extend(trace_findings(case["case_id"], str(perturbation["perturbation_id"]), changed_contract, traces))
+    return findings
+
+
+def rule_usage_counts(contract_rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    usage: dict[str, set[str]] = collections.defaultdict(set)
+    definition_counts: collections.Counter[str] = collections.Counter()
+    for row in contract_rows:
+        case_id = str(row["case_id"])
+        for trace in row.get("trace") or []:
+            rule_id = str(trace.get("rule_id", ""))
+            if not rule_id:
+                continue
+            usage[rule_id].add(case_id)
+            definition_counts[rule_id] += 1
+    return {
+        rule_id: {
+            "case_count": len(case_ids),
+            "definition_count": int(definition_counts[rule_id]),
+            "cases": sorted(case_ids),
+        }
+        for rule_id, case_ids in sorted(usage.items())
+    }
+
+
+def cross_concept_reuse_findings(contract_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    usage = rule_usage_counts(contract_rows)
+    for rule_id in sorted(CROSS_CONCEPT_REUSE_REQUIRED_RULES):
+        if rule_id not in usage:
+            continue
+        case_count = int(usage[rule_id]["case_count"])
+        if case_count < 2:
+            findings.append(
+                {
+                    "code": "cross_concept_reuse_missing",
+                    "rule_id": rule_id,
+                    "case_count": case_count,
+                    "cases": usage[rule_id]["cases"],
+                }
+            )
     return findings
 
 
@@ -826,7 +1044,7 @@ def coverage_row(case: dict[str, Any], opaque_concept: str) -> dict[str, Any]:
     return {
         "concept": opaque_concept,
         "classification": case.get("coverage_classification", "supported"),
-        "composition_maturity": "semantic_contract_scl0",
+        "composition_maturity": "semantic_contract_layer_sample",
         "original_concept_redacted_for_search": True,
     }
 

@@ -24,11 +24,185 @@
   },
   "status": "PASS",
   "summary": {
-    "case_count": 8,
-    "definition_count": 16,
+    "case_count": 19,
+    "definition_count": 38,
+    "element_rule_usage": {
+      "meaning.composition.carry_pressure_anchor_alignment": {
+        "case_count": 1,
+        "cases": [
+          "scl0_004"
+        ],
+        "definition_count": 2
+      },
+      "meaning.composition.carry_pressure_frame_alignment": {
+        "case_count": 1,
+        "cases": [
+          "scl0_003"
+        ],
+        "definition_count": 4
+      },
+      "meaning.composition.lane_reachability_same_anchor": {
+        "case_count": 1,
+        "cases": [
+          "scl1_013"
+        ],
+        "definition_count": 10
+      },
+      "meaning.composition.same_anchor_episode_join": {
+        "case_count": 2,
+        "cases": [
+          "scl0_003",
+          "scl0_004"
+        ],
+        "definition_count": 20
+      },
+      "meaning.composition.shape_change": {
+        "case_count": 1,
+        "cases": [
+          "scl0_005"
+        ],
+        "definition_count": 2
+      },
+      "meaning.constraint.same_player_return": {
+        "case_count": 1,
+        "cases": [
+          "scl0_001"
+        ],
+        "definition_count": 4
+      },
+      "meaning.element.carry": {
+        "case_count": 2,
+        "cases": [
+          "scl0_003",
+          "scl0_004"
+        ],
+        "definition_count": 24
+      },
+      "meaning.element.forward_progression": {
+        "case_count": 1,
+        "cases": [
+          "scl0_004"
+        ],
+        "definition_count": 6
+      },
+      "meaning.element.increase": {
+        "case_count": 1,
+        "cases": [
+          "scl0_005"
+        ],
+        "definition_count": 12
+      },
+      "meaning.element.lane_occupancy": {
+        "case_count": 3,
+        "cases": [
+          "scl1_011",
+          "scl1_012",
+          "scl1_013"
+        ],
+        "definition_count": 60
+      },
+      "meaning.element.pressure_change": {
+        "case_count": 1,
+        "cases": [
+          "scl0_003"
+        ],
+        "definition_count": 14
+      },
+      "meaning.element.team_shape": {
+        "case_count": 1,
+        "cases": [
+          "scl0_005"
+        ],
+        "definition_count": 12
+      },
+      "meaning.missing_primitive.cover_shadow": {
+        "case_count": 2,
+        "cases": [
+          "scl1_014",
+          "scl1_015"
+        ],
+        "definition_count": 12
+      },
+      "meaning.missing_primitive.goal_kick_build_structure": {
+        "case_count": 1,
+        "cases": [
+          "scl0_008"
+        ],
+        "definition_count": 2
+      },
+      "meaning.missing_primitive.marking": {
+        "case_count": 2,
+        "cases": [
+          "scl1_016",
+          "scl1_017"
+        ],
+        "definition_count": 12
+      },
+      "meaning.missing_primitive.off_ball_run": {
+        "case_count": 2,
+        "cases": [
+          "scl1_018",
+          "scl1_019"
+        ],
+        "definition_count": 12
+      },
+      "meaning.missing_primitive.restart_structure": {
+        "case_count": 1,
+        "cases": [
+          "scl0_008"
+        ],
+        "definition_count": 4
+      },
+      "meaning.modality.body_orientation": {
+        "case_count": 1,
+        "cases": [
+          "scl0_007"
+        ],
+        "definition_count": 4
+      },
+      "meaning.modality.learned_probability": {
+        "case_count": 1,
+        "cases": [
+          "scl0_006"
+        ],
+        "definition_count": 4
+      },
+      "meaning.pass_chain.connected_sequence": {
+        "case_count": 1,
+        "cases": [
+          "scl0_001"
+        ],
+        "definition_count": 22
+      },
+      "meaning.pressure.observed_components": {
+        "case_count": 2,
+        "cases": [
+          "scl0_002",
+          "scl0_004"
+        ],
+        "definition_count": 40
+      },
+      "meaning.pressure.receive_under_pressure": {
+        "case_count": 2,
+        "cases": [
+          "scl0_002",
+          "scl0_004"
+        ],
+        "definition_count": 4
+      },
+      "meaning.reachability.time_to_arrival": {
+        "case_count": 3,
+        "cases": [
+          "scl1_009",
+          "scl1_010",
+          "scl1_013"
+        ],
+        "definition_count": 90
+      }
+    },
     "findings_count": 0,
-    "held_out_case_count": 2,
+    "held_out_case_count": 3,
     "known_negative_case_count": 3,
-    "target_count": 16
+    "target_count": 38
   }
 }

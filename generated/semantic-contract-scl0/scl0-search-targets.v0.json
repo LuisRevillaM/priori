@@ -559,6 +559,572 @@
         ]
       },
       "target_id": "scl0_008_blind_b_v0"
+    },
+    {
+      "concept": "scl1_009",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "arrival_frame_id",
+          "candidate_scope",
+          "coverage_status",
+          "maximum_arrival_seconds",
+          "maximum_player_speed_mps",
+          "minimum_arrival_seconds",
+          "momentum_policy",
+          "nearest_arrival_player_id",
+          "reachability_model",
+          "reachable_verdict_bias",
+          "target_point",
+          "time_to_arrival_reason",
+          "time_to_arrival_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_009_blind_a_v0"
+    },
+    {
+      "concept": "scl1_009",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "arrival_frame_id",
+          "candidate_scope",
+          "coverage_status",
+          "maximum_arrival_seconds",
+          "maximum_player_speed_mps",
+          "minimum_arrival_seconds",
+          "momentum_policy",
+          "nearest_arrival_player_id",
+          "reachability_model",
+          "reachable_verdict_bias",
+          "target_point",
+          "time_to_arrival_reason",
+          "time_to_arrival_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_009_blind_b_v0"
+    },
+    {
+      "concept": "scl1_010",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "arrival_frame_id",
+          "candidate_scope",
+          "coverage_status",
+          "maximum_arrival_seconds",
+          "maximum_player_speed_mps",
+          "minimum_arrival_seconds",
+          "momentum_policy",
+          "nearest_arrival_player_id",
+          "reachability_model",
+          "reachable_verdict_bias",
+          "target_point",
+          "time_to_arrival_reason",
+          "time_to_arrival_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_010_blind_a_v0"
+    },
+    {
+      "concept": "scl1_010",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "arrival_frame_id",
+          "candidate_scope",
+          "coverage_status",
+          "maximum_arrival_seconds",
+          "maximum_player_speed_mps",
+          "minimum_arrival_seconds",
+          "momentum_policy",
+          "nearest_arrival_player_id",
+          "reachability_model",
+          "reachable_verdict_bias",
+          "target_point",
+          "time_to_arrival_reason",
+          "time_to_arrival_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_010_blind_b_v0"
+    },
+    {
+      "concept": "scl1_011",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "coverage_status",
+          "lane_counts",
+          "lane_evaluation_frame_id",
+          "lane_occupancy_reason",
+          "lane_occupancy_status",
+          "lane_player_scope",
+          "occupied_lane_count",
+          "occupied_lanes"
+        ],
+        "status_semantics": [
+          {
+            "field": "lane_occupancy_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_011_blind_a_v0"
+    },
+    {
+      "concept": "scl1_011",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "coverage_status",
+          "lane_counts",
+          "lane_evaluation_frame_id",
+          "lane_occupancy_reason",
+          "lane_occupancy_status",
+          "lane_player_scope",
+          "occupied_lane_count",
+          "occupied_lanes"
+        ],
+        "status_semantics": [
+          {
+            "field": "lane_occupancy_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_011_blind_b_v0"
+    },
+    {
+      "concept": "scl1_012",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "coverage_status",
+          "lane_counts",
+          "lane_evaluation_frame_id",
+          "lane_occupancy_reason",
+          "lane_occupancy_status",
+          "lane_player_scope",
+          "occupied_lane_count",
+          "occupied_lanes"
+        ],
+        "status_semantics": [
+          {
+            "field": "lane_occupancy_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_012_blind_a_v0"
+    },
+    {
+      "concept": "scl1_012",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "coverage_status",
+          "lane_counts",
+          "lane_evaluation_frame_id",
+          "lane_occupancy_reason",
+          "lane_occupancy_status",
+          "lane_player_scope",
+          "occupied_lane_count",
+          "occupied_lanes"
+        ],
+        "status_semantics": [
+          {
+            "field": "lane_occupancy_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_012_blind_b_v0"
+    },
+    {
+      "concept": "scl1_013",
+      "held_out": true,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred. Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred. Lane occupancy and reachability are joined on the same observed anchor only; no pitch-control or denial-quality claim is inferred.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "arrival_frame_id",
+          "candidate_scope",
+          "coverage_status",
+          "join_reason",
+          "join_status",
+          "lane_counts",
+          "lane_evaluation_frame_id",
+          "lane_occupancy_reason",
+          "lane_occupancy_status",
+          "lane_player_scope",
+          "maximum_arrival_seconds",
+          "maximum_player_speed_mps",
+          "minimum_arrival_seconds",
+          "momentum_policy",
+          "nearest_arrival_player_id",
+          "occupied_lane_count",
+          "occupied_lanes",
+          "reachability_model",
+          "reachable_verdict_bias",
+          "target_point",
+          "time_to_arrival_reason",
+          "time_to_arrival_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "lane_occupancy_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_013_blind_a_v0"
+    },
+    {
+      "concept": "scl1_013",
+      "held_out": true,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed static-point reachability only; reachable is an optimistic straight-line bound and no intent, pitch-control, or lane-denial claim is inferred. Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred. Lane occupancy and reachability are joined on the same observed anchor only; no pitch-control or denial-quality claim is inferred.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "arrival_frame_id",
+          "candidate_scope",
+          "coverage_status",
+          "join_reason",
+          "join_status",
+          "lane_counts",
+          "lane_evaluation_frame_id",
+          "lane_occupancy_reason",
+          "lane_occupancy_status",
+          "lane_player_scope",
+          "maximum_arrival_seconds",
+          "maximum_player_speed_mps",
+          "minimum_arrival_seconds",
+          "momentum_policy",
+          "nearest_arrival_player_id",
+          "occupied_lane_count",
+          "occupied_lanes",
+          "reachability_model",
+          "reachable_verdict_bias",
+          "target_point",
+          "time_to_arrival_reason",
+          "time_to_arrival_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "lane_occupancy_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "time_to_arrival_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_013_blind_b_v0"
+    },
+    {
+      "concept": "scl1_014",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_cover_shadow_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_cover_shadow_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_014_blind_a_v0"
+    },
+    {
+      "concept": "scl1_014",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_cover_shadow_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_cover_shadow_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_014_blind_b_v0"
+    },
+    {
+      "concept": "scl1_015",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_cover_shadow_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_cover_shadow_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_015_blind_a_v0"
+    },
+    {
+      "concept": "scl1_015",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_cover_shadow_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_cover_shadow_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_015_blind_b_v0"
+    },
+    {
+      "concept": "scl1_016",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_marking_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_marking_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_016_blind_a_v0"
+    },
+    {
+      "concept": "scl1_016",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_marking_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_marking_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_016_blind_b_v0"
+    },
+    {
+      "concept": "scl1_017",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_marking_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_marking_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_017_blind_a_v0"
+    },
+    {
+      "concept": "scl1_017",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_marking_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_marking_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_017_blind_b_v0"
+    },
+    {
+      "concept": "scl1_018",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_off_ball_run_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_off_ball_run_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_018_blind_a_v0"
+    },
+    {
+      "concept": "scl1_018",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_off_ball_run_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_off_ball_run_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_018_blind_b_v0"
+    },
+    {
+      "concept": "scl1_019",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_off_ball_run_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_off_ball_run_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_019_blind_a_v0"
+    },
+    {
+      "concept": "scl1_019",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_off_ball_run_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_off_ball_run_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_019_blind_b_v0"
     }
   ]
 }

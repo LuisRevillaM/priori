@@ -150,6 +150,214 @@
           "text": "Goal kick build-up structure describes the restart shape and build pattern after the goal kick is taken."
         }
       ]
+    },
+    {
+      "case_id": "scl1_009",
+      "concept": "defender_arrival_time",
+      "sample_role": "scl1_reachability_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Defender arrival time means an observed defender can arrive at the target point within the declared arrival window."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Reachability to a target means the observed defender is able to reach that point inside the arrival time threshold."
+        }
+      ],
+      "perturbations": [
+        {
+          "perturbation_id": "drop_arrival_clause",
+          "text": "A target point is described without asking whether any defender can get there in time.",
+          "must_remove_required_evidence": "time_to_arrival_status"
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_010",
+      "concept": "receiver_reachability_window",
+      "sample_role": "scl1_reachability_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Receiver reachability window means observed candidates can reach the receiving point within the arrival window."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A receiving target is reachable when observed players are able to arrive at the target point before the arrival time limit."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_011",
+      "concept": "lane_occupation_episode",
+      "sample_role": "scl1_lane_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Lane occupation means observed outfield players occupy at least one lateral lane at the anchor."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Channel occupation occurs when observed outfield players are classified into an occupied pitch lane at the anchor."
+        }
+      ],
+      "perturbations": [
+        {
+          "perturbation_id": "drop_lane_clause",
+          "text": "Observed outfield players are present at the anchor without any lateral grouping claim.",
+          "must_remove_required_evidence": "lane_occupancy_status"
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_012",
+      "concept": "lane_classification_episode",
+      "sample_role": "scl1_lane_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Lane classification means observed outfield players are classified into lateral lanes at the anchor."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Channel classification occurs when observed outfield players are assigned to pitch lanes at the anchor."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_013",
+      "concept": "covered_lane_reachability",
+      "sample_role": "held_out_positive",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "held_out": true,
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Covered lane reachability means observed outfield players occupy at least one lateral lane and observed defenders can arrive within the arrival window at the same anchor."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A channel is covered when outfield players occupy the pitch lanes and defenders are able to reach the target point inside the arrival time threshold."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_014",
+      "concept": "cover_shadow_region",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Cover shadow region means the area behind a defender that the defender blocks or screens from the ball."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A cover shadow is a defended passing lane region hidden behind the pressing defender."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_015",
+      "concept": "passing_lane_denial",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Passing-lane denial means a defender denies the passing lane between the ball and a potential receiver."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Lane denial occurs when a defender blocks the passing lane or cover shadow toward a target teammate."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_016",
+      "concept": "marking_assignment_candidate",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Marking assignment means a defender is assigned as the marker of an attacking player."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A marker relation identifies which defender is marking a particular attacker."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_017",
+      "concept": "free_player_candidate",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "partial_with_typed_gap",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "A free player means an attacker is unmarked by their nearest marker."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "An unmarked player candidate asks whether a receiver is not closely marked by a defender."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_018",
+      "concept": "off_ball_run_candidate",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "An off-ball run is a run by a player without the ball, tracked as a movement episode away from possession."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Off ball run typing identifies a player's run while they are away from the ball."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_019",
+      "concept": "run_in_behind_candidate",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "partial_with_typed_gap",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "A run in behind is an off-ball run into space behind the defensive line."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Run-in-behind typing asks for an off ball run beyond the observed defensive line."
+        }
+      ]
     }
   ]
 }
