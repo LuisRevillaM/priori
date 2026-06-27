@@ -979,14 +979,34 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+        "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim. Requires marker-assignment or defensive-responsibility evidence; observed nearest-opponent proximity is not treated as assignment or scheme.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_marking_status"
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "marking_assignment_policy",
+          "marking_claim_boundary",
+          "marking_frame_id",
+          "marking_model",
+          "marking_reason",
+          "marking_status",
+          "maximum_marking_distance_m",
+          "nearest_marker_distance_m",
+          "nearest_marker_id",
+          "observed_marker_candidate_count",
+          "scl1_marking_assignment_status",
+          "target_player_id",
+          "target_player_team_role",
+          "unmarked_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_marking_status",
+            "field": "marking_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "scl1_marking_assignment_status",
             "required_value": "PASS"
           }
         ]
@@ -998,14 +1018,34 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+        "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim. Requires marker-assignment or defensive-responsibility evidence; observed nearest-opponent proximity is not treated as assignment or scheme.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_marking_status"
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "marking_assignment_policy",
+          "marking_claim_boundary",
+          "marking_frame_id",
+          "marking_model",
+          "marking_reason",
+          "marking_status",
+          "maximum_marking_distance_m",
+          "nearest_marker_distance_m",
+          "nearest_marker_id",
+          "observed_marker_candidate_count",
+          "scl1_marking_assignment_status",
+          "target_player_id",
+          "target_player_team_role",
+          "unmarked_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_marking_status",
+            "field": "marking_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "scl1_marking_assignment_status",
             "required_value": "PASS"
           }
         ]
@@ -1017,14 +1057,29 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+        "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_marking_status"
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "marking_assignment_policy",
+          "marking_claim_boundary",
+          "marking_frame_id",
+          "marking_model",
+          "marking_reason",
+          "marking_status",
+          "maximum_marking_distance_m",
+          "nearest_marker_distance_m",
+          "nearest_marker_id",
+          "observed_marker_candidate_count",
+          "target_player_id",
+          "target_player_team_role",
+          "unmarked_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_marking_status",
+            "field": "unmarked_status",
             "required_value": "PASS"
           }
         ]
@@ -1036,14 +1091,29 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+        "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_marking_status"
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "marking_assignment_policy",
+          "marking_claim_boundary",
+          "marking_frame_id",
+          "marking_model",
+          "marking_reason",
+          "marking_status",
+          "maximum_marking_distance_m",
+          "nearest_marker_distance_m",
+          "nearest_marker_id",
+          "observed_marker_candidate_count",
+          "target_player_id",
+          "target_player_team_role",
+          "unmarked_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_marking_status",
+            "field": "unmarked_status",
             "required_value": "PASS"
           }
         ]

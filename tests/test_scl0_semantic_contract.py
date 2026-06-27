@@ -96,13 +96,41 @@ class Scl0SemanticContractTests(unittest.TestCase):
     def test_missing_substrate_elements_gap_without_substitutes(self) -> None:
         for text, evidence in [
             ("A cover shadow is a defended passing lane region hidden behind the pressing defender.", "scl1_cover_shadow_status"),
-            ("A marker relation identifies which defender is marking a particular attacker.", "scl1_marking_status"),
             ("A corner variant is a set piece routine pattern used from the corner restart.", "scl1_set_piece_routine_status"),
             ("A team press is a collective defensive pressing structure rather than one nearest defender.", "scl1_team_press_status"),
             ("A free space region is an open space area produced by the current player positions.", "scl1_space_region_generation_status"),
         ]:
             contract, _ = generate_contract_from_meaning(text)
             self.assertIn(evidence, contract["required_evidence"])
+
+    def test_marking_element_maps_to_observed_proximity_not_assignment(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "An unmarked player candidate asks whether a receiver is not closely marked by a defender."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("marking_status", contract["required_evidence"])
+        self.assertIn("unmarked_status", contract["required_evidence"])
+        self.assertIn("nearest_marker_distance_m", contract["required_evidence"])
+        self.assertIn("marking_assignment_policy", contract["required_evidence"])
+        self.assertIn("marking_claim_boundary", contract["required_evidence"])
+        self.assertEqual(
+            {item["field"]: item["required_value"] for item in contract["status_semantics"]}["unmarked_status"],
+            "PASS",
+        )
+        self.assertNotIn("scl1_marking_assignment_status", contract["required_evidence"])
+        self.assertIn("meaning.relation.marking_proximity", trace_rules)
+
+    def test_marking_assignment_keeps_missing_assignment_gap_on_top_of_proximity(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "Marking assignment means a defender is assigned as the marker of an attacking player."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("marking_status", contract["required_evidence"])
+        self.assertIn("scl1_marking_assignment_status", contract["required_evidence"])
+        self.assertIn("meaning.relation.marking_proximity", trace_rules)
+        self.assertIn("meaning.missing_primitive.marking_assignment", trace_rules)
 
     def test_off_ball_run_element_maps_to_observed_movement_not_run_type(self) -> None:
         contract, traces = generate_contract_from_meaning(

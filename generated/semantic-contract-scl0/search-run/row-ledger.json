@@ -13,10 +13,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 45,
+      "hits": 44,
       "local_hits": 14,
-      "misses": 25,
-      "shared_hits": 31
+      "misses": 26,
+      "shared_hits": 30
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1253,10 +1253,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 55,
+      "hits": 50,
       "local_hits": 14,
-      "misses": 57,
-      "shared_hits": 41
+      "misses": 62,
+      "shared_hits": 36
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1802,10 +1802,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 51,
+      "hits": 49,
       "local_hits": 14,
-      "misses": 61,
-      "shared_hits": 37
+      "misses": 63,
+      "shared_hits": 35
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2346,15 +2346,15 @@
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": "50c47154b004fb867528ff6a6a6a1b97b40c711c7d2095a9e5c70c270ff6f24d",
+    "document_hash": "24feb1ff5965a2fe0c0653d76f145561d2143c7277e6a7d40e512d80789b7f1f",
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 38,
+      "hits": 33,
       "local_hits": 14,
-      "misses": 32,
-      "shared_hits": 24
+      "misses": 37,
+      "shared_hits": 19
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2366,23 +2366,23 @@
       },
       "anchor_evaluations": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "anchor_frame_id": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "anchor_id": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "anchors": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "approach_angle_degrees": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "before_value": {
         "output_name": "anchor_evaluations",
@@ -2390,7 +2390,7 @@
       },
       "carrier_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "carry_duration_seconds": {
         "output_name": "anchor_evaluations",
@@ -2430,7 +2430,7 @@
       },
       "closing_speed_mps": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "comoving_frame_count": {
         "output_name": "anchor_evaluations",
@@ -2470,19 +2470,19 @@
       },
       "controlled_pass_status": {
         "output_name": "controlled_pass_status",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "controlled_reception_frame_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "controlled_reception_status": {
         "output_name": "controlled_pass_status",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "coverage_status": {
         "output_name": "pressure_status",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "delta_value": {
         "output_name": "anchor_evaluations",
@@ -2506,7 +2506,7 @@
       },
       "end_frame_id": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "end_point": {
         "output_name": "episodes",
@@ -2514,19 +2514,19 @@
       },
       "episodes": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "event_anchor_frame_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "event_type": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "forward_progression_m": {
         "output_name": "forward_progression_m",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "input_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -2578,7 +2578,7 @@
       },
       "maximum_approach_angle_degrees": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "maximum_ball_player_speed_delta_mps": {
         "output_name": "anchor_evaluations",
@@ -2598,7 +2598,7 @@
       },
       "maximum_pressure_distance_m": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "minimum_change_m": {
         "output_name": "anchor_evaluations",
@@ -2606,7 +2606,7 @@
       },
       "minimum_closing_speed_mps": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "minimum_comoving_frame_ratio": {
         "output_name": "anchor_evaluations",
@@ -2622,7 +2622,7 @@
       },
       "minimum_pressure_duration_seconds": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "missing_frame_count": {
         "output_name": "anchor_evaluations",
@@ -2634,11 +2634,11 @@
       },
       "nearest_defender_distance_m": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "nearest_defender_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "nearest_teammate_margin_m": {
         "output_name": "anchor_evaluations",
@@ -2654,15 +2654,15 @@
       },
       "pass_episode_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "passer_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "physical_release_frame_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "possession_continuity_reason": {
         "output_name": "anchor_evaluations",
@@ -2670,39 +2670,39 @@
       },
       "possession_continuity_status": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "pressure_duration_seconds": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "pressure_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "pressure_reason": {
         "output_name": "pressure_status",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "pressure_status": {
         "output_name": "pressure_status",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "receiver_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "reception_ball_point": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "reception_match_time_ms": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "reception_receiver_point": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "relay_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -2718,23 +2718,23 @@
       },
       "release_ball_point": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "release_control_status": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "release_detection_status": {
         "output_name": "controlled_pass_status",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "release_match_time_ms": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "release_passer_point": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "required_status_value": {
         "output_name": "anchor_evaluations",
@@ -2782,7 +2782,7 @@
       },
       "start_frame_id": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "start_point": {
         "output_name": "episodes",
@@ -2852,7 +2852,7 @@
       "provider_field_backward_search",
       "typed_join_key_discovery"
     ],
-    "runtime_trace_hash": "0d164e2e18dae59a89d0cbf702ca73b2e98284207ffa411f1dc6dec84cfa3c51",
+    "runtime_trace_hash": "3e7ae7ed7ac847b355a68da5fe2e68a46a7154cc77a236837c323d7207d6b427",
     "runtime_value_count": 294,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
@@ -2870,15 +2870,15 @@
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": "db2b101b7fc703d90843690e575157226c407d74aa9ff70cc199b3515d06a2ef",
+    "document_hash": "230783c07fbfb8a931eac0b0fddfe13218fe24a238843df4dfd3e50db66cfd58",
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 28,
+      "hits": 30,
       "local_hits": 14,
-      "misses": 42,
-      "shared_hits": 14
+      "misses": 40,
+      "shared_hits": 16
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2890,23 +2890,23 @@
       },
       "anchor_evaluations": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "anchor_frame_id": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "anchor_id": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "anchors": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "approach_angle_degrees": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "before_value": {
         "output_name": "anchor_evaluations",
@@ -2914,7 +2914,7 @@
       },
       "carrier_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "carry_duration_seconds": {
         "output_name": "anchor_evaluations",
@@ -2954,7 +2954,7 @@
       },
       "closing_speed_mps": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "comoving_frame_count": {
         "output_name": "anchor_evaluations",
@@ -2994,19 +2994,19 @@
       },
       "controlled_pass_status": {
         "output_name": "controlled_pass_status",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "controlled_reception_frame_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "controlled_reception_status": {
         "output_name": "controlled_pass_status",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "coverage_status": {
         "output_name": "pressure_status",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "delta_value": {
         "output_name": "anchor_evaluations",
@@ -3030,7 +3030,7 @@
       },
       "end_frame_id": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "end_point": {
         "output_name": "episodes",
@@ -3038,19 +3038,19 @@
       },
       "episodes": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "event_anchor_frame_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "event_type": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "forward_progression_m": {
         "output_name": "forward_progression_m",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "input_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -3102,7 +3102,7 @@
       },
       "maximum_approach_angle_degrees": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "maximum_ball_player_speed_delta_mps": {
         "output_name": "anchor_evaluations",
@@ -3122,7 +3122,7 @@
       },
       "maximum_pressure_distance_m": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "minimum_change_m": {
         "output_name": "anchor_evaluations",
@@ -3130,7 +3130,7 @@
       },
       "minimum_closing_speed_mps": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "minimum_comoving_frame_ratio": {
         "output_name": "anchor_evaluations",
@@ -3146,7 +3146,7 @@
       },
       "minimum_pressure_duration_seconds": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "missing_frame_count": {
         "output_name": "anchor_evaluations",
@@ -3158,11 +3158,11 @@
       },
       "nearest_defender_distance_m": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "nearest_defender_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "nearest_teammate_margin_m": {
         "output_name": "anchor_evaluations",
@@ -3178,15 +3178,15 @@
       },
       "pass_episode_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "passer_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "physical_release_frame_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "possession_continuity_reason": {
         "output_name": "anchor_evaluations",
@@ -3194,39 +3194,39 @@
       },
       "possession_continuity_status": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "pressure_duration_seconds": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "pressure_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "pressure_reason": {
         "output_name": "pressure_status",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "pressure_status": {
         "output_name": "pressure_status",
-        "source_node_id": "pressure_on_carrier_2"
+        "source_node_id": "pressure_on_carrier"
       },
       "receiver_id": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "reception_ball_point": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "reception_match_time_ms": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "reception_receiver_point": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "relay_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -3242,23 +3242,23 @@
       },
       "release_ball_point": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "release_control_status": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "release_detection_status": {
         "output_name": "controlled_pass_status",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "release_match_time_ms": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "release_passer_point": {
         "output_name": "episodes",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "required_status_value": {
         "output_name": "anchor_evaluations",
@@ -3306,7 +3306,7 @@
       },
       "start_frame_id": {
         "output_name": "anchors",
-        "source_node_id": "controlled_pass_episode_3"
+        "source_node_id": "controlled_pass_episode_2"
       },
       "start_point": {
         "output_name": "episodes",
@@ -3376,7 +3376,7 @@
       "provider_field_backward_search",
       "typed_join_key_discovery"
     ],
-    "runtime_trace_hash": "9e19470ff26c94da1ca57690664e003f9ea1e3d858d6817112339bd3b2944663",
+    "runtime_trace_hash": "7e5d23fa15ba1389207b94eec10a56e47f8a867070efd9d0a1b2fcf6e6cbfe50",
     "runtime_value_count": 294,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
@@ -3399,10 +3399,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 18,
+      "hits": 19,
       "local_hits": 0,
-      "misses": 38,
-      "shared_hits": 18
+      "misses": 37,
+      "shared_hits": 19
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -3640,10 +3640,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 21,
+      "hits": 20,
       "local_hits": 0,
-      "misses": 35,
-      "shared_hits": 21
+      "misses": 36,
+      "shared_hits": 20
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -4461,10 +4461,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 2,
+      "hits": 0,
       "local_hits": 0,
-      "misses": 26,
-      "shared_hits": 2
+      "misses": 28,
+      "shared_hits": 0
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5378,15 +5378,15 @@
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": "36ee4585ef5c561dfa2a8e7bdb94179c08df654310de389e24d3a295a6fc0193",
+    "document_hash": "81c49f3e7accb3c56874a9244f73961cf48842f4eb06f2b6e395996610fc94a6",
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 28,
+      "hits": 43,
       "local_hits": 14,
-      "misses": 42,
-      "shared_hits": 14
+      "misses": 27,
+      "shared_hits": 29
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5394,15 +5394,15 @@
     "field_sources": {
       "action_event_reason": {
         "output_name": "action_event_status",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "action_event_status": {
         "output_name": "action_event_status",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "action_type": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "after_value": {
         "output_name": "anchor_evaluations",
@@ -5410,23 +5410,23 @@
       },
       "anchor_evaluations": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "anchor_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "anchor_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "arrival_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "arrival_player_ids": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "before_value": {
         "output_name": "anchor_evaluations",
@@ -5434,11 +5434,11 @@
       },
       "candidate_player_ids": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "candidate_scope": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "carrier_id": {
         "output_name": "anchor_evaluations",
@@ -5482,7 +5482,7 @@
       },
       "coverage_status": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "delta_value": {
         "output_name": "anchor_evaluations",
@@ -5506,19 +5506,19 @@
       },
       "event_anchor_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "event_frame_offset_ms": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "event_row_index": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "event_type": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "input_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -5550,27 +5550,27 @@
       },
       "lane_counts": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "lane_definitions": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "lane_evaluation_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "lane_occupancy_reason": {
         "output_name": "lane_occupancy_status",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "lane_occupancy_status": {
         "output_name": "lane_occupancy_status",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "lane_player_scope": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "left_anchor_id": {
         "output_name": "anchor_evaluations",
@@ -5594,7 +5594,7 @@
       },
       "maximum_arrival_seconds": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "maximum_gap_seconds": {
         "output_name": "anchor_evaluations",
@@ -5602,11 +5602,11 @@
       },
       "maximum_player_speed_mps": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "minimum_arrival_seconds": {
         "output_name": "minimum_arrival_seconds",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "minimum_change_m": {
         "output_name": "anchor_evaluations",
@@ -5614,23 +5614,23 @@
       },
       "momentum_policy": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "nearest_arrival_player_id": {
         "output_name": "minimum_arrival_seconds",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "observed_candidate_player_ids": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "occupied_lane_count": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "occupied_lanes": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "pass_chain_status": {
         "output_name": "anchor_evaluations",
@@ -5638,23 +5638,23 @@
       },
       "passer_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "player_lane_assignments": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "reachability_model": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "reachable_verdict_bias": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "receiver_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "relay_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -5670,7 +5670,7 @@
       },
       "required_occupied_lane_count": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "required_status_value": {
         "output_name": "anchor_evaluations",
@@ -5714,11 +5714,11 @@
       },
       "target_point": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "team_role": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "temporal_gap_seconds": {
         "output_name": "anchor_evaluations",
@@ -5746,11 +5746,11 @@
       },
       "time_to_arrival_reason": {
         "output_name": "time_to_arrival_status",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "time_to_arrival_status": {
         "output_name": "time_to_arrival_status",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       }
     },
     "gold_chain_used_as_input": false,
@@ -5776,7 +5776,7 @@
       "provider_field_backward_search",
       "typed_join_key_discovery"
     ],
-    "runtime_trace_hash": "fb6154845bfe52e687a8312d80b06949b831109bdc602eb375dc60d109b9e6e5",
+    "runtime_trace_hash": "8e3d79ff6d6e67cbcb0890af5b4af6514d3237597f8332121fd3ccf46d5c16fc",
     "runtime_value_count": 196,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
@@ -5794,15 +5794,15 @@
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": "13a2b8c1b01c735e2f5666263960a0150fe0116dec74aa488bb15872da0a758f",
+    "document_hash": "3b38bbf52fb99d34d907a75732a9b29778179a946087a0b3fb927fac3594c4e1",
     "execution_node_cache": {
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 31,
+      "hits": 43,
       "local_hits": 14,
-      "misses": 39,
-      "shared_hits": 17
+      "misses": 27,
+      "shared_hits": 29
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5810,15 +5810,15 @@
     "field_sources": {
       "action_event_reason": {
         "output_name": "action_event_status",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "action_event_status": {
         "output_name": "action_event_status",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "action_type": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "after_value": {
         "output_name": "anchor_evaluations",
@@ -5826,23 +5826,23 @@
       },
       "anchor_evaluations": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "anchor_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "anchor_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "arrival_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "arrival_player_ids": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "before_value": {
         "output_name": "anchor_evaluations",
@@ -5850,11 +5850,11 @@
       },
       "candidate_player_ids": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "candidate_scope": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "carrier_id": {
         "output_name": "anchor_evaluations",
@@ -5898,7 +5898,7 @@
       },
       "coverage_status": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "delta_value": {
         "output_name": "anchor_evaluations",
@@ -5922,19 +5922,19 @@
       },
       "event_anchor_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "event_frame_offset_ms": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "event_row_index": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "event_type": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "input_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -5966,27 +5966,27 @@
       },
       "lane_counts": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "lane_definitions": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "lane_evaluation_frame_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "lane_occupancy_reason": {
         "output_name": "lane_occupancy_status",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "lane_occupancy_status": {
         "output_name": "lane_occupancy_status",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "lane_player_scope": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "left_anchor_id": {
         "output_name": "anchor_evaluations",
@@ -6010,7 +6010,7 @@
       },
       "maximum_arrival_seconds": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "maximum_gap_seconds": {
         "output_name": "anchor_evaluations",
@@ -6018,11 +6018,11 @@
       },
       "maximum_player_speed_mps": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "minimum_arrival_seconds": {
         "output_name": "minimum_arrival_seconds",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "minimum_change_m": {
         "output_name": "anchor_evaluations",
@@ -6030,23 +6030,23 @@
       },
       "momentum_policy": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "nearest_arrival_player_id": {
         "output_name": "minimum_arrival_seconds",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "observed_candidate_player_ids": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "occupied_lane_count": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "occupied_lanes": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "pass_chain_status": {
         "output_name": "anchor_evaluations",
@@ -6054,23 +6054,23 @@
       },
       "passer_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "player_lane_assignments": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "reachability_model": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "reachable_verdict_bias": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "receiver_id": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "relay_pass_episode_id": {
         "output_name": "anchor_evaluations",
@@ -6086,7 +6086,7 @@
       },
       "required_occupied_lane_count": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "lane_occupancy_2"
+        "source_node_id": "lane_occupancy"
       },
       "required_status_value": {
         "output_name": "anchor_evaluations",
@@ -6130,11 +6130,11 @@
       },
       "target_point": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "team_role": {
         "output_name": "anchor_evaluations",
-        "source_node_id": "action_event_anchor_6"
+        "source_node_id": "action_event_anchor_2"
       },
       "temporal_gap_seconds": {
         "output_name": "anchor_evaluations",
@@ -6162,11 +6162,11 @@
       },
       "time_to_arrival_reason": {
         "output_name": "time_to_arrival_status",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       },
       "time_to_arrival_status": {
         "output_name": "time_to_arrival_status",
-        "source_node_id": "time_to_arrival_2"
+        "source_node_id": "time_to_arrival"
       }
     },
     "gold_chain_used_as_input": false,
@@ -6192,7 +6192,7 @@
       "provider_field_backward_search",
       "typed_join_key_discovery"
     ],
-    "runtime_trace_hash": "6a8b0418669bf50f74e1429296e4199b1da631f40845a66bca02d7bd54231ca3",
+    "runtime_trace_hash": "7a32bf231942e8c9ccaba7adf7b0579e904d049856430d89c423fe82479467da",
     "runtime_value_count": 196,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
@@ -6379,7 +6379,7 @@
     "execution_status": null,
     "failure_details": {
       "fields": [
-        "scl1_marking_status"
+        "scl1_marking_assignment_status"
       ]
     },
     "failure_taxonomy": "missing_primitive",
@@ -6402,7 +6402,7 @@
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "target_contract_hash": "b6ef3925c78271df36c9513fbb0479f64872b5f2c3790f6543568678d6855c57",
     "target_id": "scl1_016_blind_a_v0",
     "terminal_provider": null
   },
@@ -6420,7 +6420,7 @@
     "execution_status": null,
     "failure_details": {
       "fields": [
-        "scl1_marking_status"
+        "scl1_marking_assignment_status"
       ]
     },
     "failure_taxonomy": "missing_primitive",
@@ -6443,91 +6443,351 @@
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "target_contract_hash": "b6ef3925c78271df36c9513fbb0479f64872b5f2c3790f6543568678d6855c57",
     "target_id": "scl1_016_blind_b_v0",
     "terminal_provider": null
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_017",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "partial_with_typed_gap",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "fields": [
-        "scl1_marking_status"
-      ]
+    "document_hash": "f59cb9140a2d6884e5f0bc051d94d0b68067b6c6d25918971c77e96b9900299f",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 14,
+      "local_hits": 0,
+      "misses": 14,
+      "shared_hits": 14
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "action_event_reason": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_event_status": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "candidate_scope": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "candidate_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "coverage_status": {
+        "output_name": "marking_status",
+        "source_node_id": "marking"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "marking_assignment_policy": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "marking_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "marking_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "marking_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "marking_reason": {
+        "output_name": "marking_status",
+        "source_node_id": "marking"
+      },
+      "marking_status": {
+        "output_name": "marking_status",
+        "source_node_id": "marking"
+      },
+      "maximum_marking_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "minimum_observed_marker_candidates": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "nearest_marker_distance_m": {
+        "output_name": "nearest_marker_distance_m",
+        "source_node_id": "marking"
+      },
+      "nearest_marker_id": {
+        "output_name": "marking_status",
+        "source_node_id": "marking"
+      },
+      "observed_marker_candidate_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "target_player_id": {
+        "output_name": "marking_status",
+        "source_node_id": "marking"
+      },
+      "target_player_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "unmarked_status": {
+        "output_name": "unmarked_status",
+        "source_node_id": "marking"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No catalog provider exposes one or more required target fields.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_017_blind_a_v0.json",
+    "providers_used": [
+      "action_event_anchor",
+      "marking"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "76b57ce9ebfa17a9ad776399893b36526b696a556bb85a75ca2314859cc77290",
+    "runtime_value_count": 98,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "target_contract_hash": "7d7a74b7126c3bbc44a8e91b83b076f4c6918c363a42342d46e469abc2399780",
     "target_id": "scl1_017_blind_a_v0",
-    "terminal_provider": null
+    "terminal_provider": "marking"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_017",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "partial_with_typed_gap",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "fields": [
-        "scl1_marking_status"
-      ]
+    "document_hash": "14e7b5fc2d5d236f5247685e0f1a1da1089447fc9fc26c5649824bd8ce68392f",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 14,
+      "local_hits": 0,
+      "misses": 14,
+      "shared_hits": 14
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "action_event_reason": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_event_status": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "candidate_scope": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "candidate_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "coverage_status": {
+        "output_name": "marking_status",
+        "source_node_id": "marking"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "marking_assignment_policy": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "marking_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "marking_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "marking_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "marking_reason": {
+        "output_name": "marking_status",
+        "source_node_id": "marking"
+      },
+      "marking_status": {
+        "output_name": "marking_status",
+        "source_node_id": "marking"
+      },
+      "maximum_marking_distance_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "minimum_observed_marker_candidates": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "nearest_marker_distance_m": {
+        "output_name": "nearest_marker_distance_m",
+        "source_node_id": "marking"
+      },
+      "nearest_marker_id": {
+        "output_name": "marking_status",
+        "source_node_id": "marking"
+      },
+      "observed_marker_candidate_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "target_player_id": {
+        "output_name": "marking_status",
+        "source_node_id": "marking"
+      },
+      "target_player_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "marking"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "unmarked_status": {
+        "output_name": "unmarked_status",
+        "source_node_id": "marking"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No catalog provider exposes one or more required target fields.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_017_blind_b_v0.json",
+    "providers_used": [
+      "action_event_anchor",
+      "marking"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "5323f14038739f6142058e783eaf3cef8f8d14fe33ed777f2d29e1dc45aec9c8",
+    "runtime_value_count": 98,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "target_contract_hash": "7d7a74b7126c3bbc44a8e91b83b076f4c6918c363a42342d46e469abc2399780",
     "target_id": "scl1_017_blind_b_v0",
-    "terminal_provider": null
+    "terminal_provider": "marking"
   },
   {
     "compatibility_profile": "generic",

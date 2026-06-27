@@ -1,0 +1,114 @@
+{
+  "claim_boundary": {
+    "allowed_claim": "Observed nearest-opposition proximity to a target player under a frozen distance threshold.",
+    "prohibited_claims": [
+      "communication_inferred",
+      "man_or_zone_responsibility_inferred",
+      "marking_assignment_inferred",
+      "marking_quality_inferred",
+      "marking_scheme_inferred",
+      "optimality_inferred",
+      "player_intent_inferred",
+      "player_role_inferred",
+      "tactical_causation_inferred"
+    ],
+    "unknown_policy": "Missing target tracking or insufficient candidate tracking produces UNKNOWN, not marked/unmarked."
+  },
+  "findings": [],
+  "milestone": "AFL-08 marking proximity / SCL named-gap closure",
+  "plans": {
+    "marking": {
+      "document_hash": "f59cb9140a2d6884e5f0bc051d94d0b68067b6c6d25918971c77e96b9900299f",
+      "execution_status": "pass",
+      "path": "generated/semantic-contract-scl0/search-run/plans/scl1_017_blind_a_v0.json",
+      "requested_evidence_failure_count": 0,
+      "result_count": 20
+    }
+  },
+  "primitive_probe": {
+    "coverage_policy": "PASS/FAIL only when target tracking and enough observed opposition outfield candidates are present.",
+    "evidence_presence_sample": {
+      "candidate_scope": true,
+      "candidate_team_role": true,
+      "coverage_status": true,
+      "marking_assignment_policy": true,
+      "marking_claim_boundary": true,
+      "marking_frame_id": true,
+      "marking_model": true,
+      "marking_reason": true,
+      "marking_status": true,
+      "maximum_marking_distance_m": true,
+      "nearest_marker_distance_m": true,
+      "nearest_marker_id": true,
+      "observed_marker_candidate_count": true,
+      "target_player_id": true,
+      "target_player_team_role": true,
+      "unmarked_status": true
+    },
+    "marking_status_counts": {
+      "FAIL": 3941,
+      "PASS": 709
+    },
+    "model": "nearest_observed_opposition_distance_at_anchor_v0_1",
+    "reason_counts": {
+      "nearest_marker_outside_threshold": 3941,
+      "nearest_marker_within_threshold": 709
+    },
+    "record_count": 4650,
+    "unknown_fixture": {
+      "marking_reason": "target_tracking_missing",
+      "marking_status": "UNKNOWN",
+      "unmarked_status": "UNKNOWN"
+    },
+    "unmarked_status_counts": {
+      "FAIL": 709,
+      "PASS": 3941
+    }
+  },
+  "schema_version": "afl.marking.v1",
+  "scl_gap_closure": {
+    "closure_claim": "scl1_017 flipped from missing/partial to compiler_reachable through generic provider search; scl1_016 marker-assignment responsibility remains an honest missing primitive.",
+    "targets": {
+      "scl1_016_blind_a_v0": {
+        "failure_taxonomy": "missing_primitive",
+        "providers_used": [],
+        "result": "not_compiler_reachable",
+        "rules_used": []
+      },
+      "scl1_016_blind_b_v0": {
+        "failure_taxonomy": "missing_primitive",
+        "providers_used": [],
+        "result": "not_compiler_reachable",
+        "rules_used": []
+      },
+      "scl1_017_blind_a_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "marking"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_017_blind_b_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "marking"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      }
+    }
+  },
+  "status": "PASS",
+  "threshold_version": "marking.v0.1.0:frame=anchor_frame_id:target=receiver_id:candidate_scope=opposition_outfield_to_anchor_team:max_distance=3.0:min_observed_candidates=6:model=nearest_observed_opposition_distance_at_anchor"
+}

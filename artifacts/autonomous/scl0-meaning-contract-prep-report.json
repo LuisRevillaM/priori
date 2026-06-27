@@ -138,13 +138,12 @@
         ],
         "definition_count": 2
       },
-      "meaning.missing_primitive.marking": {
-        "case_count": 2,
+      "meaning.missing_primitive.marking_assignment": {
+        "case_count": 1,
         "cases": [
-          "scl1_016",
-          "scl1_017"
+          "scl1_016"
         ],
-        "definition_count": 12
+        "definition_count": 6
       },
       "meaning.missing_primitive.off_ball_run_type": {
         "case_count": 1,
@@ -236,6 +235,14 @@
           "scl1_013"
         ],
         "definition_count": 90
+      },
+      "meaning.relation.marking_proximity": {
+        "case_count": 2,
+        "cases": [
+          "scl1_016",
+          "scl1_017"
+        ],
+        "definition_count": 72
       },
       "meaning.restart.set_piece_structure": {
         "case_count": 3,

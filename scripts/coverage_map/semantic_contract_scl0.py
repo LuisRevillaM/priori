@@ -58,9 +58,9 @@ CROSS_CONCEPT_REUSE_REQUIRED_RULES = {
     "meaning.element.lane_occupancy",
     "meaning.kinematics.acceleration",
     "meaning.missing_primitive.cover_shadow",
-    "meaning.missing_primitive.marking",
     "meaning.missing_primitive.space_region_generation",
     "meaning.missing_primitive.team_press",
+    "meaning.relation.marking_proximity",
     "meaning.movement.off_ball_run",
     "meaning.reachability.time_to_arrival",
     "meaning.restart.set_piece_structure",
@@ -499,12 +499,21 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
 
     if is_marking_meaning(lower):
         span = first_span(text, [r"marking assignment", r"\bmarker\b", r"\bmarked\b", r"\bunmarked\b", r"free player"]) or whole_span(text)
+        add_marking_proximity_element(
+            builder,
+            span,
+            require_unmarked=is_unmarked_meaning(lower),
+        )
+        matched = True
+
+    if is_marking_assignment_meaning(lower):
+        span = first_span(text, [r"marking assignment", r"\bassigned\b", r"\bmarker relation\b", r"\bmarker\b"]) or whole_span(text)
         add_missing_primitive_element(
             builder,
-            "scl1_marking_status",
+            "scl1_marking_assignment_status",
             span,
-            "meaning.missing_primitive.marking",
-            "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+            "meaning.missing_primitive.marking_assignment",
+            "Requires marker-assignment or defensive-responsibility evidence; observed nearest-opponent proximity is not treated as assignment or scheme.",
         )
         matched = True
 
@@ -774,6 +783,35 @@ def add_off_ball_run_element(builder: ContractBuilder, span: Span) -> None:
     )
 
 
+def add_marking_proximity_element(builder: ContractBuilder, span: Span, *, require_unmarked: bool = False) -> None:
+    rule_id = "meaning.relation.marking_proximity"
+    for field_name in [
+        "marking_status",
+        "unmarked_status",
+        "marking_reason",
+        "marking_frame_id",
+        "target_player_id",
+        "nearest_marker_id",
+        "nearest_marker_distance_m",
+        "maximum_marking_distance_m",
+        "candidate_scope",
+        "target_player_team_role",
+        "candidate_team_role",
+        "observed_marker_candidate_count",
+        "coverage_status",
+        "marking_model",
+        "marking_assignment_policy",
+        "marking_claim_boundary",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("unmarked_status" if require_unmarked else "marking_status", "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim.",
+        span,
+        rule_id,
+    )
+
+
 def add_set_piece_structure_element(builder: ContractBuilder, span: Span) -> None:
     rule_id = "meaning.restart.set_piece_structure"
     for field_name in [
@@ -984,6 +1022,19 @@ def is_cover_shadow_meaning(lower: str) -> bool:
 
 def is_marking_meaning(lower: str) -> bool:
     return any(phrase in lower for phrase in ("marking assignment", "marker", "marked", "unmarked", "free player"))
+
+
+def is_marking_assignment_meaning(lower: str) -> bool:
+    return (
+        "marking assignment" in lower
+        or "marker relation" in lower
+        or "marking scheme" in lower
+        or ("assigned" in lower and ("marker" in lower or "marking" in lower))
+    )
+
+
+def is_unmarked_meaning(lower: str) -> bool:
+    return any(phrase in lower for phrase in ("unmarked", "free player", "not closely marked"))
 
 
 def is_off_ball_run_meaning(lower: str) -> bool:

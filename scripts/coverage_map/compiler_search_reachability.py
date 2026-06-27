@@ -602,6 +602,8 @@ def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context
     providers = context.catalog.providers_covering_any(required_fields)
     if target_constraints(context, "same_player_return"):
         providers = [entry for entry in providers if entry.name == "join_episode_sets"]
+    elif target_constraints(context, "same_anchor_identity") or {"join_status", "join_reason"} & required_fields:
+        providers = sorted(providers, key=lambda entry: (entry.name != "join_episode_sets", entry.name))
     if not providers:
         raise SynthesisError(
             "missing_primitive",

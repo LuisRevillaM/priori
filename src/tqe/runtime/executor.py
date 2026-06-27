@@ -256,6 +256,7 @@ class TacticalQueryExecutor:
             "action_chain": primitive_action_chain,
             "tracking_quality": primitive_tracking_quality,
             "pairwise_distance": primitive_pairwise_distance,
+            "marking": primitive_marking,
             "velocity": primitive_velocity,
             "acceleration": primitive_acceleration,
             "off_ball_run": primitive_off_ball_run,
@@ -3539,6 +3540,66 @@ def primitive_pairwise_distance(state: PeriodState, node: BoundCatalogNode) -> N
     }
 
 
+def primitive_marking(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    target_player_id_field = node_parameter_text(node, "target_player_id_field", "receiver_id")
+    candidate_scope = node_parameter_text(node, "candidate_scope", "opposition_outfield_to_anchor_team")
+    maximum_marking_distance_m = node_parameter_number(node, "maximum_marking_distance_m", 3.0)
+    minimum_observed_marker_candidates = node_parameter_integer(node, "minimum_observed_marker_candidates", 6)
+    records = [
+        marking_anchor_record(
+            state=state,
+            anchor=record,
+            frame_field=frame_field,
+            target_player_id_field=target_player_id_field,
+            candidate_scope=candidate_scope,
+            maximum_marking_distance_m=maximum_marking_distance_m,
+            minimum_observed_marker_candidates=minimum_observed_marker_candidates,
+        )
+        for record in runtime_records(anchor_value)
+        if isinstance(record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    marking_values = [
+        None if str(record["marking_status"]) == "UNKNOWN" else str(record["marking_status"])
+        for record in records
+    ]
+    unmarked_values = [
+        None if str(record["unmarked_status"]) == "UNKNOWN" else str(record["unmarked_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "marking_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=marking_values,
+            unknown_mask=[value is None for value in marking_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "marking_status").entity_scope,
+        ),
+        "marking_status_records": records,
+        "unmarked_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=unmarked_values,
+            unknown_mask=[value is None for value in unmarked_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "unmarked_status").entity_scope,
+        ),
+        "unmarked_status_records": records,
+        "nearest_marker_distance_m": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record.get("nearest_marker_distance_m") for record in records],
+            unknown_mask=[record.get("nearest_marker_distance_m") is None for record in records],
+            unit=Unit.METRE,
+            entity_scope=catalog_output(node, "nearest_marker_distance_m").entity_scope,
+        ),
+        "nearest_marker_distance_m_records": records,
+    }
+
+
 def primitive_velocity(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
     frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
@@ -3976,6 +4037,136 @@ def pairwise_distance_anchor_record(
         "entity_a_point": None if point_a is None else {"x_m": point_a[0], "y_m": point_a[1]},
         "entity_b_point": None if point_b is None else {"x_m": point_b[0], "y_m": point_b[1]},
     }
+
+
+def marking_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    target_player_id_field: str,
+    candidate_scope: str,
+    maximum_marking_distance_m: float,
+    minimum_observed_marker_candidates: int,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    marking_frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or marking_frame_id is None:
+        return None
+    target_player_id = str(anchor.get(target_player_id_field) or "")
+    target_point = tracked_point_at_frame(state, marking_frame_id, target_player_id)
+    target_team_role = marking_target_team_role(state, anchor, marking_frame_id, target_player_id)
+    candidate_team_role = marking_candidate_team_role(state, anchor, candidate_scope, target_team_role)
+    model = "nearest_observed_opposition_distance_at_anchor_v0_1"
+    assignment_policy = "observed nearest-opponent proximity only; no marker assignment, responsibility, or scheme inference"
+    claim_boundary = (
+        "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, "
+        "man-or-zone responsibility, role, intent, communication, causation, quality, or optimality claim."
+    )
+
+    def base(status: str, unmarked_status: str, reason: str, **extra: Any) -> dict[str, Any]:
+        return {
+            **anchor,
+            "match_id": state.match_id,
+            "period": state.period,
+            "anchor_id": str(anchor.get("anchor_id")),
+            "anchor_frame_id": anchor_frame_id,
+            "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+            "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+            "entity_refs": list(anchor.get("entity_refs") or []),
+            "marking_status": status,
+            "unmarked_status": unmarked_status,
+            "marking_reason": reason,
+            "marking_frame_id": marking_frame_id,
+            "target_player_id_field": target_player_id_field,
+            "target_player_id": target_player_id or None,
+            "target_player_team_role": target_team_role,
+            "candidate_scope": candidate_scope,
+            "candidate_team_role": candidate_team_role,
+            "nearest_marker_id": extra.get("nearest_marker_id"),
+            "nearest_marker_distance_m": extra.get("nearest_marker_distance_m"),
+            "target_player_point": extra.get("target_player_point"),
+            "nearest_marker_point": extra.get("nearest_marker_point"),
+            "maximum_marking_distance_m": round(float(maximum_marking_distance_m), 3),
+            "minimum_observed_marker_candidates": int(minimum_observed_marker_candidates),
+            "observed_marker_candidate_count": extra.get("observed_marker_candidate_count", 0),
+            "observed_marker_candidate_ids": extra.get("observed_marker_candidate_ids", []),
+            "marking_model": model,
+            "marking_assignment_policy": assignment_policy,
+            "coverage_status": "UNKNOWN" if status == "UNKNOWN" else "PASS",
+            "marking_claim_boundary": claim_boundary,
+        }
+
+    if not target_player_id:
+        return base("UNKNOWN", "UNKNOWN", "target_player_id_missing")
+    if target_point is None:
+        return base("UNKNOWN", "UNKNOWN", "target_tracking_missing")
+    if candidate_team_role not in {"home", "away"}:
+        return base("UNKNOWN", "UNKNOWN", "candidate_team_role_missing")
+    outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, candidate_team_role)
+    candidates = [
+        item
+        for item in cached_observed_outfield_positions_at_frame(state, marking_frame_id, candidate_team_role, outfield_ids)
+        if item.get("x_m") is not None and item.get("y_m") is not None
+    ]
+    candidate_ids = sorted(str(item["player_id"]) for item in candidates)
+    coverage_payload = {
+        "observed_marker_candidate_count": len(candidates),
+        "observed_marker_candidate_ids": candidate_ids,
+    }
+    if len(candidates) < int(minimum_observed_marker_candidates):
+        return base("UNKNOWN", "UNKNOWN", "insufficient_observed_marker_candidates", **coverage_payload)
+    nearest = min(
+        candidates,
+        key=lambda item: (
+            math.dist(target_point, (float(item["x_m"]), float(item["y_m"]))),
+            str(item["player_id"]),
+        ),
+    )
+    nearest_point = (float(nearest["x_m"]), float(nearest["y_m"]))
+    nearest_distance = math.dist(target_point, nearest_point)
+    marked = nearest_distance <= float(maximum_marking_distance_m)
+    return base(
+        "PASS" if marked else "FAIL",
+        "FAIL" if marked else "PASS",
+        "nearest_marker_within_threshold" if marked else "nearest_marker_outside_threshold",
+        **coverage_payload,
+        nearest_marker_id=str(nearest["player_id"]),
+        nearest_marker_distance_m=round(float(nearest_distance), 3),
+        target_player_point=point_from_xy(target_point[0], target_point[1]),
+        nearest_marker_point=point_from_xy(nearest_point[0], nearest_point[1]),
+    )
+
+
+def marking_target_team_role(state: PeriodState, anchor: dict[str, Any], frame_id: int, target_player_id: str) -> str | None:
+    if target_player_id:
+        record = player_records_at_frame(state, frame_id).get(str(target_player_id))
+        if record is not None:
+            team_role = str(record.get("team_role") or "")
+            if team_role in {"home", "away"}:
+                return team_role
+    team_role = str(anchor.get("team_role") or "")
+    return team_role if team_role in {"home", "away"} else None
+
+
+def marking_candidate_team_role(
+    state: PeriodState,
+    anchor: dict[str, Any],
+    candidate_scope: str,
+    target_team_role: str | None,
+) -> str | None:
+    if candidate_scope == "defending_outfield":
+        return state.defending_team_role
+    if candidate_scope == "perspective_outfield":
+        return state.perspective_team_role
+    if candidate_scope == "opposition_outfield_to_anchor_team":
+        team_role = target_team_role or str(anchor.get("team_role") or "")
+        if team_role == "home":
+            return "away"
+        if team_role == "away":
+            return "home"
+        return None
+    return None
 
 
 def velocity_anchor_record(

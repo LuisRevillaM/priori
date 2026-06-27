@@ -97,7 +97,7 @@
  },
  {
   "concept": "scl1_017",
-  "classification": "partial_with_typed_gap",
+  "classification": "supported",
   "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },

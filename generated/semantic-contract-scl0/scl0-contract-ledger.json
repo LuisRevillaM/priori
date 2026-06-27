@@ -4052,34 +4052,174 @@
     "case_id": "scl1_016",
     "concept": "marking_assignment_candidate",
     "contract": {
-      "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+      "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim. Requires marker-assignment or defensive-responsibility evidence; observed nearest-opponent proximity is not treated as assignment or scheme.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_marking_status"
+        "candidate_scope",
+        "candidate_team_role",
+        "coverage_status",
+        "marking_assignment_policy",
+        "marking_claim_boundary",
+        "marking_frame_id",
+        "marking_model",
+        "marking_reason",
+        "marking_status",
+        "maximum_marking_distance_m",
+        "nearest_marker_distance_m",
+        "nearest_marker_id",
+        "observed_marker_candidate_count",
+        "scl1_marking_assignment_status",
+        "target_player_id",
+        "target_player_team_role",
+        "unmarked_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_marking_status",
+          "field": "marking_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "scl1_marking_assignment_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "contract_hash": "b6ef3925c78271df36c9513fbb0479f64872b5f2c3790f6543568678d6855c57",
     "definition_text": "Marking assignment means a defender is assigned as the marker of an attacking player.",
     "opaque_search_concept": "scl1_016",
     "target_id": "scl1_016_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_marking_status",
-        "rule_id": "meaning.missing_primitive.marking",
+        "contract_path": "required_evidence.marking_status",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 18,
         "source_phrase": "Marking assignment",
         "source_start": 0,
-        "value": "scl1_marking_status"
+        "value": "marking_status"
       },
       {
-        "contract_path": "status_semantics.scl1_marking_status",
-        "rule_id": "meaning.missing_primitive.marking",
+        "contract_path": "required_evidence.unmarked_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "unmarked_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_reason",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "marking_reason"
+      },
+      {
+        "contract_path": "required_evidence.marking_frame_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "marking_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_player_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "target_player_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "nearest_marker_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "nearest_marker_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.maximum_marking_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "maximum_marking_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.target_player_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "target_player_team_role"
+      },
+      {
+        "contract_path": "required_evidence.candidate_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "candidate_team_role"
+      },
+      {
+        "contract_path": "required_evidence.observed_marker_candidate_count",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "observed_marker_candidate_count"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_model",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "marking_model"
+      },
+      {
+        "contract_path": "required_evidence.marking_assignment_policy",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "marking_assignment_policy"
+      },
+      {
+        "contract_path": "required_evidence.marking_claim_boundary",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "marking_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.marking_status",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 18,
         "source_phrase": "Marking assignment",
         "source_start": 0,
@@ -4087,11 +4227,35 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.marking",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 18,
         "source_phrase": "Marking assignment",
         "source_start": 0,
-        "value": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim."
+        "value": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.scl1_marking_assignment_status",
+        "rule_id": "meaning.missing_primitive.marking_assignment",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "scl1_marking_assignment_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_marking_assignment_status",
+        "rule_id": "meaning.missing_primitive.marking_assignment",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.marking_assignment",
+        "source_end": 18,
+        "source_phrase": "Marking assignment",
+        "source_start": 0,
+        "value": "Requires marker-assignment or defensive-responsibility evidence; observed nearest-opponent proximity is not treated as assignment or scheme."
       }
     ]
   },
@@ -4100,34 +4264,174 @@
     "case_id": "scl1_016",
     "concept": "marking_assignment_candidate",
     "contract": {
-      "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+      "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim. Requires marker-assignment or defensive-responsibility evidence; observed nearest-opponent proximity is not treated as assignment or scheme.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_marking_status"
+        "candidate_scope",
+        "candidate_team_role",
+        "coverage_status",
+        "marking_assignment_policy",
+        "marking_claim_boundary",
+        "marking_frame_id",
+        "marking_model",
+        "marking_reason",
+        "marking_status",
+        "maximum_marking_distance_m",
+        "nearest_marker_distance_m",
+        "nearest_marker_id",
+        "observed_marker_candidate_count",
+        "scl1_marking_assignment_status",
+        "target_player_id",
+        "target_player_team_role",
+        "unmarked_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_marking_status",
+          "field": "marking_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "scl1_marking_assignment_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "contract_hash": "b6ef3925c78271df36c9513fbb0479f64872b5f2c3790f6543568678d6855c57",
     "definition_text": "A marker relation identifies which defender is marking a particular attacker.",
     "opaque_search_concept": "scl1_016",
     "target_id": "scl1_016_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_marking_status",
-        "rule_id": "meaning.missing_primitive.marking",
+        "contract_path": "required_evidence.marking_status",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 8,
         "source_phrase": "marker",
         "source_start": 2,
-        "value": "scl1_marking_status"
+        "value": "marking_status"
       },
       {
-        "contract_path": "status_semantics.scl1_marking_status",
-        "rule_id": "meaning.missing_primitive.marking",
+        "contract_path": "required_evidence.unmarked_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "unmarked_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_reason",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_reason"
+      },
+      {
+        "contract_path": "required_evidence.marking_frame_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_player_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "target_player_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "nearest_marker_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "nearest_marker_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.maximum_marking_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "maximum_marking_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.target_player_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "target_player_team_role"
+      },
+      {
+        "contract_path": "required_evidence.candidate_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "candidate_team_role"
+      },
+      {
+        "contract_path": "required_evidence.observed_marker_candidate_count",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "observed_marker_candidate_count"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_model",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_model"
+      },
+      {
+        "contract_path": "required_evidence.marking_assignment_policy",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_assignment_policy"
+      },
+      {
+        "contract_path": "required_evidence.marking_claim_boundary",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.marking_status",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 8,
         "source_phrase": "marker",
         "source_start": 2,
@@ -4135,11 +4439,35 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.marking",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 8,
         "source_phrase": "marker",
         "source_start": 2,
-        "value": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim."
+        "value": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.scl1_marking_assignment_status",
+        "rule_id": "meaning.missing_primitive.marking_assignment",
+        "source_end": 17,
+        "source_phrase": "marker relation",
+        "source_start": 2,
+        "value": "scl1_marking_assignment_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_marking_assignment_status",
+        "rule_id": "meaning.missing_primitive.marking_assignment",
+        "source_end": 17,
+        "source_phrase": "marker relation",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.marking_assignment",
+        "source_end": 17,
+        "source_phrase": "marker relation",
+        "source_start": 2,
+        "value": "Requires marker-assignment or defensive-responsibility evidence; observed nearest-opponent proximity is not treated as assignment or scheme."
       }
     ]
   },
@@ -4148,34 +4476,169 @@
     "case_id": "scl1_017",
     "concept": "free_player_candidate",
     "contract": {
-      "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+      "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_marking_status"
+        "candidate_scope",
+        "candidate_team_role",
+        "coverage_status",
+        "marking_assignment_policy",
+        "marking_claim_boundary",
+        "marking_frame_id",
+        "marking_model",
+        "marking_reason",
+        "marking_status",
+        "maximum_marking_distance_m",
+        "nearest_marker_distance_m",
+        "nearest_marker_id",
+        "observed_marker_candidate_count",
+        "target_player_id",
+        "target_player_team_role",
+        "unmarked_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_marking_status",
+          "field": "unmarked_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "contract_hash": "7d7a74b7126c3bbc44a8e91b83b076f4c6918c363a42342d46e469abc2399780",
     "definition_text": "A free player means an attacker is unmarked by their nearest marker.",
     "opaque_search_concept": "scl1_017",
     "target_id": "scl1_017_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_marking_status",
-        "rule_id": "meaning.missing_primitive.marking",
+        "contract_path": "required_evidence.marking_status",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 67,
         "source_phrase": "marker",
         "source_start": 61,
-        "value": "scl1_marking_status"
+        "value": "marking_status"
       },
       {
-        "contract_path": "status_semantics.scl1_marking_status",
-        "rule_id": "meaning.missing_primitive.marking",
+        "contract_path": "required_evidence.unmarked_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "unmarked_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_reason",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "marking_reason"
+      },
+      {
+        "contract_path": "required_evidence.marking_frame_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "marking_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_player_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "target_player_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "nearest_marker_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "nearest_marker_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.maximum_marking_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "maximum_marking_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.target_player_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "target_player_team_role"
+      },
+      {
+        "contract_path": "required_evidence.candidate_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "candidate_team_role"
+      },
+      {
+        "contract_path": "required_evidence.observed_marker_candidate_count",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "observed_marker_candidate_count"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_model",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "marking_model"
+      },
+      {
+        "contract_path": "required_evidence.marking_assignment_policy",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "marking_assignment_policy"
+      },
+      {
+        "contract_path": "required_evidence.marking_claim_boundary",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 67,
+        "source_phrase": "marker",
+        "source_start": 61,
+        "value": "marking_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.unmarked_status",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 67,
         "source_phrase": "marker",
         "source_start": 61,
@@ -4183,11 +4646,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.marking",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 67,
         "source_phrase": "marker",
         "source_start": 61,
-        "value": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim."
+        "value": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim."
       }
     ]
   },
@@ -4196,34 +4659,169 @@
     "case_id": "scl1_017",
     "concept": "free_player_candidate",
     "contract": {
-      "claim_boundary": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim.",
+      "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_marking_status"
+        "candidate_scope",
+        "candidate_team_role",
+        "coverage_status",
+        "marking_assignment_policy",
+        "marking_claim_boundary",
+        "marking_frame_id",
+        "marking_model",
+        "marking_reason",
+        "marking_status",
+        "maximum_marking_distance_m",
+        "nearest_marker_distance_m",
+        "nearest_marker_id",
+        "observed_marker_candidate_count",
+        "target_player_id",
+        "target_player_team_role",
+        "unmarked_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_marking_status",
+          "field": "unmarked_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "c5742ce1e480f75b72862fdbef9d6342ae4b7e94d2753382807afa9d8422019b",
+    "contract_hash": "7d7a74b7126c3bbc44a8e91b83b076f4c6918c363a42342d46e469abc2399780",
     "definition_text": "An unmarked player candidate asks whether a receiver is not closely marked by a defender.",
     "opaque_search_concept": "scl1_017",
     "target_id": "scl1_017_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_marking_status",
-        "rule_id": "meaning.missing_primitive.marking",
+        "contract_path": "required_evidence.marking_status",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 74,
         "source_phrase": "marked",
         "source_start": 68,
-        "value": "scl1_marking_status"
+        "value": "marking_status"
       },
       {
-        "contract_path": "status_semantics.scl1_marking_status",
-        "rule_id": "meaning.missing_primitive.marking",
+        "contract_path": "required_evidence.unmarked_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "unmarked_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_reason",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "marking_reason"
+      },
+      {
+        "contract_path": "required_evidence.marking_frame_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "marking_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_player_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "target_player_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "nearest_marker_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "nearest_marker_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.maximum_marking_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "maximum_marking_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.target_player_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "target_player_team_role"
+      },
+      {
+        "contract_path": "required_evidence.candidate_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "candidate_team_role"
+      },
+      {
+        "contract_path": "required_evidence.observed_marker_candidate_count",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "observed_marker_candidate_count"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_model",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "marking_model"
+      },
+      {
+        "contract_path": "required_evidence.marking_assignment_policy",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "marking_assignment_policy"
+      },
+      {
+        "contract_path": "required_evidence.marking_claim_boundary",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 74,
+        "source_phrase": "marked",
+        "source_start": 68,
+        "value": "marking_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.unmarked_status",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 74,
         "source_phrase": "marked",
         "source_start": 68,
@@ -4231,11 +4829,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.marking",
+        "rule_id": "meaning.relation.marking_proximity",
         "source_end": 74,
         "source_phrase": "marked",
         "source_start": 68,
-        "value": "Requires a marking or marker-assignment primitive; nearest distance is not treated as a marking claim."
+        "value": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim."
       }
     ]
   },

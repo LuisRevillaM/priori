@@ -42,7 +42,7 @@
       {
         "catalog_ref": "controlled_pass_episode",
         "kind": "primitive",
-        "node_id": "controlled_pass_episode_2",
+        "node_id": "controlled_pass_episode",
         "version": "0.1.0"
       },
       {
@@ -50,7 +50,7 @@
         "inputs": {
           "controlled_pass_anchors": {
             "output_name": "anchors",
-            "source_node_id": "controlled_pass_episode_2"
+            "source_node_id": "controlled_pass_episode"
           }
         },
         "kind": "primitive",
@@ -60,7 +60,7 @@
       {
         "catalog_ref": "controlled_pass_episode",
         "kind": "primitive",
-        "node_id": "controlled_pass_episode_3",
+        "node_id": "controlled_pass_episode_2",
         "version": "0.1.0"
       },
       {
@@ -68,11 +68,11 @@
         "inputs": {
           "anchors": {
             "output_name": "anchors",
-            "source_node_id": "controlled_pass_episode_3"
+            "source_node_id": "controlled_pass_episode_2"
           }
         },
         "kind": "relation",
-        "node_id": "pressure_on_carrier_2",
+        "node_id": "pressure_on_carrier",
         "parameters": {
           "candidate_scope": {
             "payload_type": "enum",
@@ -126,7 +126,7 @@
           },
           "right_episodes": {
             "output_name": "anchor_evaluations",
-            "source_node_id": "pressure_on_carrier_2"
+            "source_node_id": "pressure_on_carrier"
           }
         },
         "kind": "primitive",
@@ -249,7 +249,7 @@
         },
         "input": {
           "output_name": "pressure_status",
-          "source_node_id": "pressure_on_carrier_2"
+          "source_node_id": "pressure_on_carrier"
         },
         "kind": "predicate",
         "node_id": "predicate_4",
@@ -270,7 +270,7 @@
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
-          "source_node_id": "pressure_on_carrier_2"
+          "source_node_id": "pressure_on_carrier"
         }
       },
       {
@@ -279,7 +279,7 @@
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
-          "source_node_id": "pressure_on_carrier_2"
+          "source_node_id": "pressure_on_carrier"
         }
       },
       {
@@ -324,7 +324,7 @@
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
-          "source_node_id": "pressure_on_carrier_2"
+          "source_node_id": "pressure_on_carrier"
         }
       },
       {
@@ -333,7 +333,7 @@
         "required": true,
         "source": {
           "output_name": "pressure_status",
-          "source_node_id": "pressure_on_carrier_2"
+          "source_node_id": "pressure_on_carrier"
         }
       },
       {
@@ -360,7 +360,7 @@
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
-          "source_node_id": "pressure_on_carrier_2"
+          "source_node_id": "pressure_on_carrier"
         }
       },
       {
@@ -369,7 +369,7 @@
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
-          "source_node_id": "pressure_on_carrier_2"
+          "source_node_id": "pressure_on_carrier"
         }
       },
       {
@@ -378,7 +378,7 @@
         "required": true,
         "source": {
           "output_name": "anchor_evaluations",
-          "source_node_id": "pressure_on_carrier_2"
+          "source_node_id": "pressure_on_carrier"
         }
       },
       {
@@ -387,7 +387,7 @@
         "required": true,
         "source": {
           "output_name": "pressure_status",
-          "source_node_id": "pressure_on_carrier_2"
+          "source_node_id": "pressure_on_carrier"
         }
       },
       {
@@ -396,7 +396,7 @@
         "required": true,
         "source": {
           "output_name": "pressure_status",
-          "source_node_id": "pressure_on_carrier_2"
+          "source_node_id": "pressure_on_carrier"
         }
       }
     ],

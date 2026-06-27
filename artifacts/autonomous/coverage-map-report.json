@@ -1,7 +1,7 @@
 {
  "schema_version": "coverage-map.v0",
  "claim_status": "internal_steering_only_v0_estimated_not_external_claim",
- "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, Q2 generic binary episode joins, acceleration, and set_piece_structure observed restart arrangement",
+ "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, Q2 generic binary episode joins, acceleration, set_piece_structure observed restart arrangement, off_ball_run observed movement, and marking observed proximity",
  "denominator_note": "Coverage of Priori's authored 741-concept atlas inventory \u2014 NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
  "audit_note": "30-row stratified audit corrected aggregation/extremum operator inflation; additional audits are required before external coverage claims.",
  "roadmap_implications": [
@@ -12,6 +12,7 @@
   "acceleration landed as a conservative two-window speed-change primitive; speed-up/deceleration rows are supported while turn-rate, curvature, and jerk remain precise next blockers.",
   "set_piece_structure landed as observed restart/set-piece event plus at-frame outfield arrangement; routine typing, delivery trajectory, setup windows, and role/marking claims remain precise next blockers.",
   "off_ball_run landed as observed off-ball endpoint-window movement; named run typing, decoy/marker-dragging, space-creation, coordination, and path-purpose claims remain precise next blockers.",
+  "marking landed as observed nearest-opposition proximity; marker assignment, man-or-zone responsibility, scheme, role, and intent remain precise next blockers.",
   "Remaining reachability gaps are mostly not this primitive: moving-target interception, pass-line interception, cover shadow, reachability-field/region generation, graph construction, or margin/rate operators.",
   "Remaining carry-family gaps are mostly not base carrying: defender-bypass-by-carry, space generation, profile aggregation, contact/touch, body orientation, or learned value.",
   "Regenerate the coverage map after every substrate package so supported/partial/gap counts remain a living metric.",
@@ -50,7 +51,7 @@
    13
   ],
   [
-   "marking",
+   "marking_assignment_or_scheme",
    10
   ],
   [
