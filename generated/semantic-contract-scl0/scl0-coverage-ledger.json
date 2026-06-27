@@ -112,5 +112,53 @@
   "classification": "partial_with_typed_gap",
   "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_020",
+  "classification": "missing_primitive",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_021",
+  "classification": "missing_primitive",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_022",
+  "classification": "missing_primitive",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_023",
+  "classification": "missing_primitive",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_024",
+  "classification": "missing_primitive",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_025",
+  "classification": "missing_primitive",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_026",
+  "classification": "partial_with_typed_gap",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_027",
+  "classification": "partial_with_typed_gap",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
  }
 ]

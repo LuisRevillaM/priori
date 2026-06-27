@@ -24,8 +24,8 @@
   },
   "status": "PASS",
   "summary": {
-    "case_count": 19,
-    "definition_count": 38,
+    "case_count": 27,
+    "definition_count": 54,
     "element_rule_usage": {
       "meaning.composition.carry_pressure_anchor_alignment": {
         "case_count": 1,
@@ -115,6 +115,14 @@
         ],
         "definition_count": 12
       },
+      "meaning.missing_primitive.acceleration": {
+        "case_count": 2,
+        "cases": [
+          "scl1_020",
+          "scl1_021"
+        ],
+        "definition_count": 12
+      },
       "meaning.missing_primitive.cover_shadow": {
         "case_count": 2,
         "cases": [
@@ -152,6 +160,30 @@
           "scl0_008"
         ],
         "definition_count": 4
+      },
+      "meaning.missing_primitive.set_piece_structure": {
+        "case_count": 2,
+        "cases": [
+          "scl1_022",
+          "scl1_023"
+        ],
+        "definition_count": 12
+      },
+      "meaning.missing_primitive.space_region_generation": {
+        "case_count": 2,
+        "cases": [
+          "scl1_026",
+          "scl1_027"
+        ],
+        "definition_count": 12
+      },
+      "meaning.missing_primitive.team_press": {
+        "case_count": 2,
+        "cases": [
+          "scl1_024",
+          "scl1_025"
+        ],
+        "definition_count": 12
       },
       "meaning.modality.body_orientation": {
         "case_count": 1,
@@ -203,6 +235,6 @@
     "findings_count": 0,
     "held_out_case_count": 3,
     "known_negative_case_count": 3,
-    "target_count": 38
+    "target_count": 54
   }
 }

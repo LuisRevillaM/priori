@@ -56,9 +56,13 @@ FORBIDDEN_MEANING_TERMS = {
 
 CROSS_CONCEPT_REUSE_REQUIRED_RULES = {
     "meaning.element.lane_occupancy",
+    "meaning.missing_primitive.acceleration",
     "meaning.missing_primitive.cover_shadow",
     "meaning.missing_primitive.marking",
     "meaning.missing_primitive.off_ball_run",
+    "meaning.missing_primitive.set_piece_structure",
+    "meaning.missing_primitive.space_region_generation",
+    "meaning.missing_primitive.team_press",
     "meaning.reachability.time_to_arrival",
 }
 
@@ -515,6 +519,50 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         )
         matched = True
 
+    if is_acceleration_meaning(lower):
+        span = first_span(text, [r"acceleration", r"accelerates?", r"deceleration", r"decelerates?", r"slowing down"]) or whole_span(text)
+        add_missing_primitive_element(
+            builder,
+            "scl1_acceleration_status",
+            span,
+            "meaning.missing_primitive.acceleration",
+            "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+        )
+        matched = True
+
+    if is_set_piece_structure_meaning(lower):
+        span = first_span(text, [r"set[- ]piece", r"corner routine", r"free[- ]kick routine", r"corner variant", r"restart routine"]) or whole_span(text)
+        add_missing_primitive_element(
+            builder,
+            "scl1_set_piece_structure_status",
+            span,
+            "meaning.missing_primitive.set_piece_structure",
+            "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+        )
+        matched = True
+
+    if is_team_press_meaning(lower):
+        span = first_span(text, [r"team press", r"pressing trap", r"pressing structure", r"collective press", r"counterpress(?:ing)?"]) or whole_span(text)
+        add_missing_primitive_element(
+            builder,
+            "scl1_team_press_status",
+            span,
+            "meaning.missing_primitive.team_press",
+            "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        )
+        matched = True
+
+    if is_space_region_generation_meaning(lower):
+        span = first_span(text, [r"space region", r"open space", r"free space", r"generated space", r"space creation"]) or whole_span(text)
+        add_missing_primitive_element(
+            builder,
+            "scl1_space_region_generation_status",
+            span,
+            "meaning.missing_primitive.space_region_generation",
+            "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        )
+        matched = True
+
     apply_generic_composition_rules(builder, text)
 
     if not matched:
@@ -847,6 +895,52 @@ def is_marking_meaning(lower: str) -> bool:
 
 def is_off_ball_run_meaning(lower: str) -> bool:
     return any(phrase in lower for phrase in ("off-ball run", "off ball run", "diagonal run", "run in behind", "run typing"))
+
+
+def is_acceleration_meaning(lower: str) -> bool:
+    return any(phrase in lower for phrase in ("acceleration", "accelerates", "accelerate", "deceleration", "decelerates", "slowing down", "slows down", "speeding up"))
+
+
+def is_set_piece_structure_meaning(lower: str) -> bool:
+    return any(
+        phrase in lower
+        for phrase in (
+            "set-piece",
+            "set piece",
+            "corner routine",
+            "corner variant",
+            "free-kick routine",
+            "free kick routine",
+            "restart routine",
+        )
+    )
+
+
+def is_team_press_meaning(lower: str) -> bool:
+    return any(
+        phrase in lower
+        for phrase in (
+            "team press",
+            "pressing trap",
+            "pressing structure",
+            "collective press",
+            "counterpress",
+            "counterpressing",
+        )
+    )
+
+
+def is_space_region_generation_meaning(lower: str) -> bool:
+    return any(
+        phrase in lower
+        for phrase in (
+            "space region",
+            "open space",
+            "free space",
+            "generated space",
+            "space creation",
+        )
+    )
 
 
 def assess_case(case: dict[str, Any], variants: list[dict[str, Any]]) -> list[dict[str, Any]]:

@@ -98,6 +98,10 @@ class Scl0SemanticContractTests(unittest.TestCase):
             ("A cover shadow is a defended passing lane region hidden behind the pressing defender.", "scl1_cover_shadow_status"),
             ("A marker relation identifies which defender is marking a particular attacker.", "scl1_marking_status"),
             ("Off ball run typing identifies a player's run while they are away from the ball.", "scl1_off_ball_run_status"),
+            ("A burst of acceleration is rapid speeding up across consecutive frames.", "scl1_acceleration_status"),
+            ("A corner variant is a set piece routine pattern used from the corner restart.", "scl1_set_piece_structure_status"),
+            ("A team press is a collective defensive pressing structure rather than one nearest defender.", "scl1_team_press_status"),
+            ("A free space region is an open space area produced by the current player positions.", "scl1_space_region_generation_status"),
         ]:
             contract, _ = generate_contract_from_meaning(text)
             self.assertEqual(contract["required_evidence"], [evidence])

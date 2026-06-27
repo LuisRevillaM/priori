@@ -4430,5 +4430,773 @@
         "value": "Requires an off-ball-run episode primitive; instantaneous velocity is not treated as a run type."
       }
     ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_020",
+    "concept": "acceleration_burst",
+    "contract": {
+      "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_acceleration_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_acceleration_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "definition_text": "Acceleration burst means a player accelerates sharply over a short observed interval.",
+    "opaque_search_concept": "scl1_020",
+    "target_id": "scl1_020_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_acceleration_status",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "scl1_acceleration_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_acceleration_status",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_020",
+    "concept": "acceleration_burst",
+    "contract": {
+      "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_acceleration_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_acceleration_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "definition_text": "A burst of acceleration is rapid speeding up across consecutive frames.",
+    "opaque_search_concept": "scl1_020",
+    "target_id": "scl1_020_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_acceleration_status",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "scl1_acceleration_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_acceleration_status",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_021",
+    "concept": "deceleration_after_receive",
+    "contract": {
+      "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_acceleration_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_acceleration_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "definition_text": "Deceleration after receiving means the receiver slows down after the first touch.",
+    "opaque_search_concept": "scl1_021",
+    "target_id": "scl1_021_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_acceleration_status",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "scl1_acceleration_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_acceleration_status",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_021",
+    "concept": "deceleration_after_receive",
+    "contract": {
+      "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_acceleration_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_acceleration_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "definition_text": "A receiving deceleration occurs when the player is slowing down after the reception moment.",
+    "opaque_search_concept": "scl1_021",
+    "target_id": "scl1_021_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_acceleration_status",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "scl1_acceleration_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_acceleration_status",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_022",
+    "concept": "corner_variant_candidate",
+    "contract": {
+      "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_set_piece_structure_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_set_piece_structure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "definition_text": "Corner variant candidate means a corner routine has a recognizable set-piece structure.",
+    "opaque_search_concept": "scl1_022",
+    "target_id": "scl1_022_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_set_piece_structure_status",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "scl1_set_piece_structure_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_set_piece_structure_status",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_022",
+    "concept": "corner_variant_candidate",
+    "contract": {
+      "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_set_piece_structure_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_set_piece_structure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "definition_text": "A corner variant is a set piece routine pattern used from the corner restart.",
+    "opaque_search_concept": "scl1_022",
+    "target_id": "scl1_022_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_set_piece_structure_status",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "scl1_set_piece_structure_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_set_piece_structure_status",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_023",
+    "concept": "set_piece_attacking_shape",
+    "contract": {
+      "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_set_piece_structure_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_set_piece_structure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "definition_text": "Set-piece attacking shape means the attackers form a structured set-piece arrangement before delivery.",
+    "opaque_search_concept": "scl1_023",
+    "target_id": "scl1_023_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_set_piece_structure_status",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "scl1_set_piece_structure_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_set_piece_structure_status",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_023",
+    "concept": "set_piece_attacking_shape",
+    "contract": {
+      "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_set_piece_structure_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_set_piece_structure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "definition_text": "Attacking shape at a set piece describes the routine structure of the attacking players.",
+    "opaque_search_concept": "scl1_023",
+    "target_id": "scl1_023_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_set_piece_structure_status",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "scl1_set_piece_structure_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_set_piece_structure_status",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_024",
+    "concept": "team_press_candidate",
+    "contract": {
+      "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_team_press_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_team_press_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "definition_text": "Team press candidate means several defenders act as a collective press around the ball.",
+    "opaque_search_concept": "scl1_024",
+    "target_id": "scl1_024_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_team_press_status",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "scl1_team_press_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_team_press_status",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_024",
+    "concept": "team_press_candidate",
+    "contract": {
+      "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_team_press_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_team_press_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "definition_text": "A team press is a collective defensive pressing structure rather than one nearest defender.",
+    "opaque_search_concept": "scl1_024",
+    "target_id": "scl1_024_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_team_press_status",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "scl1_team_press_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_team_press_status",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_025",
+    "concept": "pressing_trap_candidate",
+    "contract": {
+      "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_team_press_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_team_press_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "definition_text": "Pressing trap candidate means the defending team forms a pressing trap around a target area.",
+    "opaque_search_concept": "scl1_025",
+    "target_id": "scl1_025_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_team_press_status",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "scl1_team_press_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_team_press_status",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_025",
+    "concept": "pressing_trap_candidate",
+    "contract": {
+      "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_team_press_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_team_press_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "definition_text": "A pressing trap is a team press structure intended to constrain the ball carrier.",
+    "opaque_search_concept": "scl1_025",
+    "target_id": "scl1_025_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_team_press_status",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "scl1_team_press_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_team_press_status",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.team_press",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_026",
+    "concept": "open_space_region",
+    "contract": {
+      "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_space_region_generation_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_space_region_generation_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "definition_text": "Open space region means a generated area of free space available to attack.",
+    "opaque_search_concept": "scl1_026",
+    "target_id": "scl1_026_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_space_region_generation_status",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "scl1_space_region_generation_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_space_region_generation_status",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_026",
+    "concept": "open_space_region",
+    "contract": {
+      "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_space_region_generation_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_space_region_generation_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "definition_text": "A free space region is an open space area produced by the current player positions.",
+    "opaque_search_concept": "scl1_026",
+    "target_id": "scl1_026_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_space_region_generation_status",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "scl1_space_region_generation_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_space_region_generation_status",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_027",
+    "concept": "space_creation_candidate",
+    "contract": {
+      "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_space_region_generation_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_space_region_generation_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "definition_text": "Space creation candidate means an action creates generated space for a teammate.",
+    "opaque_search_concept": "scl1_027",
+    "target_id": "scl1_027_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_space_region_generation_status",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 64,
+        "source_phrase": "generated space",
+        "source_start": 49,
+        "value": "scl1_space_region_generation_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_space_region_generation_status",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 64,
+        "source_phrase": "generated space",
+        "source_start": 49,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 64,
+        "source_phrase": "generated space",
+        "source_start": 49,
+        "value": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_027",
+    "concept": "space_creation_candidate",
+    "contract": {
+      "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl1_space_region_generation_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl1_space_region_generation_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "definition_text": "Generated space creation asks whether a new free space region appears after the action.",
+    "opaque_search_concept": "scl1_027",
+    "target_id": "scl1_027_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl1_space_region_generation_status",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "scl1_space_region_generation_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_space_region_generation_status",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted."
+      }
+    ]
   }
 ]

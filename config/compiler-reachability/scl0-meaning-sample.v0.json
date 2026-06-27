@@ -358,6 +358,150 @@
           "text": "Run-in-behind typing asks for an off ball run beyond the observed defensive line."
         }
       ]
+    },
+    {
+      "case_id": "scl1_020",
+      "concept": "acceleration_burst",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Acceleration burst means a player accelerates sharply over a short observed interval."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A burst of acceleration is rapid speeding up across consecutive frames."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_021",
+      "concept": "deceleration_after_receive",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Deceleration after receiving means the receiver slows down after the first touch."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A receiving deceleration occurs when the player is slowing down after the reception moment."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_022",
+      "concept": "corner_variant_candidate",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Corner variant candidate means a corner routine has a recognizable set-piece structure."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A corner variant is a set piece routine pattern used from the corner restart."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_023",
+      "concept": "set_piece_attacking_shape",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Set-piece attacking shape means the attackers form a structured set-piece arrangement before delivery."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Attacking shape at a set piece describes the routine structure of the attacking players."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_024",
+      "concept": "team_press_candidate",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Team press candidate means several defenders act as a collective press around the ball."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A team press is a collective defensive pressing structure rather than one nearest defender."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_025",
+      "concept": "pressing_trap_candidate",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Pressing trap candidate means the defending team forms a pressing trap around a target area."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A pressing trap is a team press structure intended to constrain the ball carrier."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_026",
+      "concept": "open_space_region",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "partial_with_typed_gap",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Open space region means a generated area of free space available to attack."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A free space region is an open space area produced by the current player positions."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_027",
+      "concept": "space_creation_candidate",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "partial_with_typed_gap",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Space creation candidate means an action creates generated space for a teammate."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Generated space creation asks whether a new free space region appears after the action."
+        }
+      ]
     }
   ]
 }

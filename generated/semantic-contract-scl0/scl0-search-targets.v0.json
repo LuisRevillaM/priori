@@ -1125,6 +1125,310 @@
         ]
       },
       "target_id": "scl1_019_blind_b_v0"
+    },
+    {
+      "concept": "scl1_020",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_acceleration_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_acceleration_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_020_blind_a_v0"
+    },
+    {
+      "concept": "scl1_020",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_acceleration_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_acceleration_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_020_blind_b_v0"
+    },
+    {
+      "concept": "scl1_021",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_acceleration_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_acceleration_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_021_blind_a_v0"
+    },
+    {
+      "concept": "scl1_021",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_acceleration_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_acceleration_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_021_blind_b_v0"
+    },
+    {
+      "concept": "scl1_022",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_set_piece_structure_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_set_piece_structure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_022_blind_a_v0"
+    },
+    {
+      "concept": "scl1_022",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_set_piece_structure_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_set_piece_structure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_022_blind_b_v0"
+    },
+    {
+      "concept": "scl1_023",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_set_piece_structure_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_set_piece_structure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_023_blind_a_v0"
+    },
+    {
+      "concept": "scl1_023",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_set_piece_structure_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_set_piece_structure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_023_blind_b_v0"
+    },
+    {
+      "concept": "scl1_024",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_team_press_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_team_press_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_024_blind_a_v0"
+    },
+    {
+      "concept": "scl1_024",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_team_press_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_team_press_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_024_blind_b_v0"
+    },
+    {
+      "concept": "scl1_025",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_team_press_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_team_press_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_025_blind_a_v0"
+    },
+    {
+      "concept": "scl1_025",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_team_press_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_team_press_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_025_blind_b_v0"
+    },
+    {
+      "concept": "scl1_026",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_space_region_generation_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_space_region_generation_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_026_blind_a_v0"
+    },
+    {
+      "concept": "scl1_026",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_space_region_generation_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_space_region_generation_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_026_blind_b_v0"
+    },
+    {
+      "concept": "scl1_027",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_space_region_generation_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_space_region_generation_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_027_blind_a_v0"
+    },
+    {
+      "concept": "scl1_027",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_space_region_generation_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_space_region_generation_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_027_blind_b_v0"
     }
   ]
 }

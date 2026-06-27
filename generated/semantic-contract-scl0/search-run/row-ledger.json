@@ -13,10 +13,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 19,
+      "hits": 15,
       "local_hits": 14,
-      "misses": 51,
-      "shared_hits": 5
+      "misses": 55,
+      "shared_hits": 1
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -422,10 +422,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 37,
+      "hits": 43,
       "local_hits": 14,
-      "misses": 33,
-      "shared_hits": 23
+      "misses": 27,
+      "shared_hits": 29
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1253,10 +1253,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 42,
+      "hits": 47,
       "local_hits": 14,
-      "misses": 70,
-      "shared_hits": 28
+      "misses": 65,
+      "shared_hits": 33
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1802,10 +1802,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 65,
+      "hits": 61,
       "local_hits": 14,
-      "misses": 47,
-      "shared_hits": 51
+      "misses": 51,
+      "shared_hits": 47
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2351,10 +2351,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 36,
+      "hits": 32,
       "local_hits": 14,
-      "misses": 34,
-      "shared_hits": 22
+      "misses": 38,
+      "shared_hits": 18
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2875,10 +2875,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 30,
+      "hits": 31,
       "local_hits": 14,
-      "misses": 40,
-      "shared_hits": 16
+      "misses": 39,
+      "shared_hits": 17
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -3399,10 +3399,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 21,
+      "hits": 19,
       "local_hits": 0,
-      "misses": 35,
-      "shared_hits": 21
+      "misses": 37,
+      "shared_hits": 19
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -3640,10 +3640,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 16,
+      "hits": 20,
       "local_hits": 0,
-      "misses": 40,
-      "shared_hits": 16
+      "misses": 36,
+      "shared_hits": 20
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5383,10 +5383,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 28,
+      "hits": 29,
       "local_hits": 14,
-      "misses": 42,
-      "shared_hits": 14
+      "misses": 41,
+      "shared_hits": 15
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -6691,6 +6691,662 @@
     "synthesizer_version": "search_synthesizer.v0.1",
     "target_contract_hash": "f76866354ff3ed58944e425e8d31ac16bf32656592f5a872982c82bb08365127",
     "target_id": "scl1_019_blind_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_020",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_acceleration_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "target_id": "scl1_020_blind_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_020",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_acceleration_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "target_id": "scl1_020_blind_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_021",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_acceleration_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "target_id": "scl1_021_blind_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_021",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_acceleration_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "target_id": "scl1_021_blind_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_022",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_set_piece_structure_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "target_id": "scl1_022_blind_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_022",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_set_piece_structure_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "target_id": "scl1_022_blind_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_023",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_set_piece_structure_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "target_id": "scl1_023_blind_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_023",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_set_piece_structure_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "target_id": "scl1_023_blind_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_024",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_team_press_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "target_id": "scl1_024_blind_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_024",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_team_press_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "target_id": "scl1_024_blind_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_025",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_team_press_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "target_id": "scl1_025_blind_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_025",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_team_press_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "target_id": "scl1_025_blind_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_026",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_space_region_generation_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "target_id": "scl1_026_blind_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_026",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_space_region_generation_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "target_id": "scl1_026_blind_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_027",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_space_region_generation_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "target_id": "scl1_027_blind_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_027",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "scl1_space_region_generation_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "target_id": "scl1_027_blind_b_v0",
     "terminal_provider": null
   }
 ]
