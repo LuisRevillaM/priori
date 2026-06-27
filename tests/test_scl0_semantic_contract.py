@@ -146,16 +146,54 @@ class Scl0SemanticContractTests(unittest.TestCase):
         self.assertNotIn("scl1_off_ball_run_type_status", contract["required_evidence"])
         self.assertIn("meaning.movement.off_ball_run", trace_rules)
 
-    def test_run_in_behind_keeps_type_gap_on_top_of_base_run(self) -> None:
+    def test_run_in_behind_maps_to_observed_path_type(self) -> None:
         contract, traces = generate_contract_from_meaning(
             "A run in behind is an off-ball run into space behind the defensive line."
         )
         trace_rules = {trace["rule_id"] for trace in traces}
 
         self.assertIn("off_ball_run_status", contract["required_evidence"])
-        self.assertIn("scl1_off_ball_run_type_status", contract["required_evidence"])
+        self.assertIn("run_in_behind_status", contract["required_evidence"])
+        self.assertIn("off_ball_run_type_status", contract["required_evidence"])
+        self.assertIn("off_ball_run_type_claim_boundary", contract["required_evidence"])
+        self.assertEqual(
+            {item["field"]: item["required_value"] for item in contract["status_semantics"] if "required_value" in item}["run_in_behind_status"],
+            "PASS",
+        )
+        self.assertNotIn("scl1_off_ball_run_purpose_status", contract["required_evidence"])
         self.assertIn("meaning.movement.off_ball_run", trace_rules)
-        self.assertIn("meaning.missing_primitive.off_ball_run_type", trace_rules)
+        self.assertIn("meaning.run_type.observed_path", trace_rules)
+
+    def test_diagonal_run_maps_to_observed_path_type(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "A diagonal run is an off-ball run with both forward and lateral movement."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("off_ball_run_status", contract["required_evidence"])
+        self.assertIn("diagonal_run_status", contract["required_evidence"])
+        self.assertIn("run_forward_progression_m", contract["required_evidence"])
+        self.assertIn("run_lateral_displacement_m", contract["required_evidence"])
+        self.assertNotIn("carry_forward_progression_m", contract["required_evidence"])
+        self.assertEqual(
+            {item["field"]: item["required_value"] for item in contract["status_semantics"] if "required_value" in item}["diagonal_run_status"],
+            "PASS",
+        )
+        self.assertIn("meaning.movement.off_ball_run", trace_rules)
+        self.assertIn("meaning.run_type.observed_path", trace_rules)
+
+    def test_decoy_run_keeps_purpose_gap_on_top_of_base_run(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "A decoy run is an off-ball run intended to drag a marker away."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("off_ball_run_status", contract["required_evidence"])
+        self.assertIn("scl1_off_ball_run_purpose_status", contract["required_evidence"])
+        self.assertNotIn("run_in_behind_status", contract["required_evidence"])
+        self.assertNotIn("diagonal_run_status", contract["required_evidence"])
+        self.assertIn("meaning.movement.off_ball_run", trace_rules)
+        self.assertIn("meaning.missing_primitive.off_ball_run_purpose", trace_rules)
 
     def test_set_piece_structure_element_maps_to_observed_restart_shape_not_routine(self) -> None:
         contract, traces = generate_contract_from_meaning(

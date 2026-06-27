@@ -260,6 +260,7 @@ class TacticalQueryExecutor:
             "velocity": primitive_velocity,
             "acceleration": primitive_acceleration,
             "off_ball_run": primitive_off_ball_run,
+            "off_ball_run_type": primitive_off_ball_run_type,
             "set_piece_structure": primitive_set_piece_structure,
             "time_to_arrival": primitive_time_to_arrival,
             "carry_episode": primitive_carry_episode,
@@ -3761,6 +3762,66 @@ def primitive_off_ball_run(state: PeriodState, node: BoundCatalogNode) -> None:
     }
 
 
+def primitive_off_ball_run_type(state: PeriodState, node: BoundCatalogNode) -> None:
+    run_value = catalog_input_value(state, node, "runs")
+    minimum_forward_progression_m = node_parameter_number(node, "minimum_forward_progression_m", 4.0)
+    minimum_lateral_displacement_m = node_parameter_number(node, "minimum_lateral_displacement_m", 2.0)
+    minimum_observed_defenders = node_parameter_integer(node, "minimum_observed_defenders", 6)
+    records = [
+        off_ball_run_type_anchor_record(
+            state=state,
+            run=record,
+            minimum_forward_progression_m=minimum_forward_progression_m,
+            minimum_lateral_displacement_m=minimum_lateral_displacement_m,
+            minimum_observed_defenders=minimum_observed_defenders,
+        )
+        for record in runtime_records(run_value)
+        if isinstance(record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    type_values = [
+        None if str(record["off_ball_run_type_status"]) == "UNKNOWN" else str(record["off_ball_run_type_status"])
+        for record in records
+    ]
+    behind_values = [
+        None if str(record["run_in_behind_status"]) == "UNKNOWN" else str(record["run_in_behind_status"])
+        for record in records
+    ]
+    diagonal_values = [
+        None if str(record["diagonal_run_status"]) == "UNKNOWN" else str(record["diagonal_run_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "off_ball_run_type_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=type_values,
+            unknown_mask=[value is None for value in type_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "off_ball_run_type_status").entity_scope,
+        ),
+        "off_ball_run_type_status_records": records,
+        "run_in_behind_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=behind_values,
+            unknown_mask=[value is None for value in behind_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "run_in_behind_status").entity_scope,
+        ),
+        "run_in_behind_status_records": records,
+        "diagonal_run_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=diagonal_values,
+            unknown_mask=[value is None for value in diagonal_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "diagonal_run_status").entity_scope,
+        ),
+        "diagonal_run_status_records": records,
+    }
+
+
 def primitive_time_to_arrival(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
     frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
@@ -4640,6 +4701,193 @@ def off_ball_run_candidate_record(
         "run_start_ball_distance_m": round(float(start_ball_distance), 3),
         "run_end_ball_distance_m": round(float(end_ball_distance), 3),
     }
+
+
+def off_ball_run_type_anchor_record(
+    *,
+    state: PeriodState,
+    run: dict[str, Any],
+    minimum_forward_progression_m: float,
+    minimum_lateral_displacement_m: float,
+    minimum_observed_defenders: int,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(run.get("anchor_frame_id"))
+    start_frame_id = optional_int(run.get("run_start_frame_id")) or optional_int(run.get("start_frame_id"))
+    end_frame_id = optional_int(run.get("run_end_frame_id")) or optional_int(run.get("end_frame_id"))
+    if anchor_frame_id is None or start_frame_id is None or end_frame_id is None:
+        return None
+    model = "observed_off_ball_run_endpoint_path_geometry_v0_1"
+    claim_boundary = (
+        "Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, "
+        "third-player tactical purpose, intent, causation, quality, or optimality claim."
+    )
+
+    def base(
+        *,
+        type_status: str,
+        behind_status: str,
+        diagonal_status: str,
+        reason: str,
+        labels: list[str] | None = None,
+        **extra: Any,
+    ) -> dict[str, Any]:
+        return {
+            **run,
+            "match_id": state.match_id,
+            "period": state.period,
+            "anchor_id": str(run.get("anchor_id")),
+            "source_off_ball_run_anchor_id": str(run.get("anchor_id") or ""),
+            "anchor_frame_id": anchor_frame_id,
+            "start_frame_id": optional_int(run.get("start_frame_id")) or start_frame_id,
+            "end_frame_id": optional_int(run.get("end_frame_id")) or end_frame_id,
+            "entity_refs": list(run.get("entity_refs") or []),
+            "off_ball_run_type_status": type_status,
+            "off_ball_run_type_reason": reason,
+            "run_in_behind_status": behind_status,
+            "diagonal_run_status": diagonal_status,
+            "observed_run_type_labels": labels or [],
+            "minimum_forward_progression_m": round(float(minimum_forward_progression_m), 3),
+            "minimum_lateral_displacement_m": round(float(minimum_lateral_displacement_m), 3),
+            "minimum_observed_defenders": int(minimum_observed_defenders),
+            "off_ball_run_type_model": model,
+            "off_ball_run_type_claim_boundary": claim_boundary,
+            "coverage_status": "UNKNOWN" if type_status == "UNKNOWN" else "PASS",
+            **extra,
+        }
+
+    base_run_status = str(run.get("off_ball_run_status") or "UNKNOWN")
+    if base_run_status == "UNKNOWN":
+        return base(type_status="UNKNOWN", behind_status="UNKNOWN", diagonal_status="UNKNOWN", reason="base_off_ball_run_unknown")
+    if base_run_status != "PASS":
+        return base(type_status="FAIL", behind_status="FAIL", diagonal_status="FAIL", reason="base_off_ball_run_not_observed")
+
+    start_point = point_tuple_from_payload(run.get("run_start_point"))
+    end_point = point_tuple_from_payload(run.get("run_end_point"))
+    run_player_id = str(run.get("run_player_id") or "")
+    candidate_team_role = str(run.get("candidate_team_role") or "")
+    if start_point is None or end_point is None or not run_player_id:
+        return base(type_status="UNKNOWN", behind_status="UNKNOWN", diagonal_status="UNKNOWN", reason="run_endpoint_tracking_missing")
+    if candidate_team_role not in {"home", "away"}:
+        return base(type_status="UNKNOWN", behind_status="UNKNOWN", diagonal_status="UNKNOWN", reason="candidate_team_role_missing")
+
+    orientation = parquet_rows(state.canonical_root / "orientation.parquet")
+    attack_x_sign = attack_x_sign_for(orientation, state.match_id, state.period, candidate_team_role)
+    if attack_x_sign not in {-1, 1}:
+        return base(type_status="UNKNOWN", behind_status="UNKNOWN", diagonal_status="UNKNOWN", reason="attacking_direction_missing")
+    dx = float(end_point[0]) - float(start_point[0])
+    dy = float(end_point[1]) - float(start_point[1])
+    forward_progression = dx * int(attack_x_sign)
+    lateral_displacement = abs(dy)
+
+    diagonal_status = (
+        "PASS"
+        if forward_progression >= minimum_forward_progression_m and lateral_displacement >= minimum_lateral_displacement_m
+        else "FAIL"
+    )
+
+    opposition_team_role = "away" if candidate_team_role == "home" else "home"
+    start_line = observed_opposition_line_x(
+        state=state,
+        frame_id=start_frame_id,
+        team_role=opposition_team_role,
+        attack_x_sign=int(attack_x_sign),
+        minimum_observed_defenders=minimum_observed_defenders,
+    )
+    end_line = observed_opposition_line_x(
+        state=state,
+        frame_id=end_frame_id,
+        team_role=opposition_team_role,
+        attack_x_sign=int(attack_x_sign),
+        minimum_observed_defenders=minimum_observed_defenders,
+    )
+    line_payload = {
+        "run_player_id": run_player_id,
+        "run_start_frame_id": start_frame_id,
+        "run_end_frame_id": end_frame_id,
+        "run_forward_progression_m": round(float(forward_progression), 3),
+        "run_lateral_displacement_m": round(float(lateral_displacement), 3),
+        "attacking_direction": "positive_x" if int(attack_x_sign) == 1 else "negative_x",
+        "defensive_line_start_x_m": None if start_line is None else start_line["line_x_m"],
+        "defensive_line_end_x_m": None if end_line is None else end_line["line_x_m"],
+        "defensive_line_candidate_count_start": 0 if start_line is None else start_line["candidate_count"],
+        "defensive_line_candidate_count_end": 0 if end_line is None else end_line["candidate_count"],
+    }
+    if start_line is None or end_line is None:
+        behind_status = "UNKNOWN"
+        line_reason = "defensive_line_tracking_missing"
+        start_beyond = None
+        end_beyond = None
+    else:
+        start_beyond = is_beyond_line(start_point[0], float(start_line["line_x_m"]), int(attack_x_sign))
+        end_beyond = is_beyond_line(end_point[0], float(end_line["line_x_m"]), int(attack_x_sign))
+        behind_status = (
+            "PASS"
+            if (not start_beyond) and end_beyond and forward_progression >= minimum_forward_progression_m
+            else "FAIL"
+        )
+        line_reason = "run_crossed_behind_observed_line" if behind_status == "PASS" else "run_did_not_cross_behind_observed_line"
+    labels: list[str] = []
+    if behind_status == "PASS":
+        labels.append("run_in_behind")
+    if diagonal_status == "PASS":
+        labels.append("diagonal_run")
+    if labels:
+        type_status = "PASS"
+        reason = "observed_run_type:" + ",".join(labels)
+    elif behind_status == "UNKNOWN":
+        type_status = "UNKNOWN"
+        reason = line_reason
+    else:
+        type_status = "FAIL"
+        reason = "observed_run_type_threshold_not_met"
+    return base(
+        type_status=type_status,
+        behind_status=behind_status,
+        diagonal_status=diagonal_status,
+        reason=reason,
+        labels=labels,
+        run_start_beyond_line=start_beyond,
+        run_end_beyond_line=end_beyond,
+        **line_payload,
+    )
+
+
+def point_tuple_from_payload(value: Any) -> tuple[float, float] | None:
+    if not isinstance(value, dict):
+        return None
+    point = point_from_xy(value.get("x_m"), value.get("y_m"))
+    if point is None:
+        return None
+    return float(point["x_m"]), float(point["y_m"])
+
+
+def observed_opposition_line_x(
+    *,
+    state: PeriodState,
+    frame_id: int,
+    team_role: str,
+    attack_x_sign: int,
+    minimum_observed_defenders: int,
+) -> dict[str, Any] | None:
+    outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
+    candidates = [
+        item
+        for item in cached_observed_outfield_positions_at_frame(state, frame_id, team_role, outfield_ids)
+        if item.get("x_m") is not None and item.get("y_m") is not None
+    ]
+    if len(candidates) < int(minimum_observed_defenders):
+        return None
+    xs = [float(item["x_m"]) for item in candidates]
+    line_x = max(xs) if attack_x_sign == 1 else min(xs)
+    return {
+        "line_x_m": round(float(line_x), 3),
+        "candidate_count": len(candidates),
+        "candidate_ids": sorted(str(item["player_id"]) for item in candidates),
+    }
+
+
+def is_beyond_line(player_x: float, line_x: float, attack_x_sign: int) -> bool:
+    return bool(float(player_x) > float(line_x)) if attack_x_sign == 1 else bool(float(player_x) < float(line_x))
 
 
 def time_to_arrival_anchor_record(

@@ -67,7 +67,7 @@
   },
   "schema_version": "afl.off_ball_run.v1",
   "scl_gap_closure": {
-    "closure_claim": "scl1_018 flipped from missing_primitive to compiler_reachable through generic provider search; scl1_019 run-in-behind/path-purpose typing remains an honest missing primitive.",
+    "closure_claim": "scl1_018 flipped from missing_primitive to compiler_reachable through generic provider search; scl1_030 decoy/marker-dragging purpose remains an honest missing primitive.",
     "targets": {
       "scl1_018_blind_a_v0": {
         "failure_taxonomy": null,
@@ -95,13 +95,13 @@
           "provider_field_backward_search"
         ]
       },
-      "scl1_019_blind_a_v0": {
+      "scl1_030_blind_a_v0": {
         "failure_taxonomy": "missing_primitive",
         "providers_used": [],
         "result": "not_compiler_reachable",
         "rules_used": []
       },
-      "scl1_019_blind_b_v0": {
+      "scl1_030_blind_b_v0": {
         "failure_taxonomy": "missing_primitive",
         "providers_used": [],
         "result": "not_compiler_reachable",

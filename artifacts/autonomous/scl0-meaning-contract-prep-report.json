@@ -24,8 +24,8 @@
   },
   "status": "PASS",
   "summary": {
-    "case_count": 28,
-    "definition_count": 56,
+    "case_count": 30,
+    "definition_count": 60,
     "element_rule_usage": {
       "meaning.composition.carry_pressure_anchor_alignment": {
         "case_count": 1,
@@ -145,10 +145,10 @@
         ],
         "definition_count": 6
       },
-      "meaning.missing_primitive.off_ball_run_type": {
+      "meaning.missing_primitive.off_ball_run_purpose": {
         "case_count": 1,
         "cases": [
-          "scl1_019"
+          "scl1_030"
         ],
         "definition_count": 6
       },
@@ -197,12 +197,14 @@
         "definition_count": 4
       },
       "meaning.movement.off_ball_run": {
-        "case_count": 2,
+        "case_count": 4,
         "cases": [
           "scl1_018",
-          "scl1_019"
+          "scl1_019",
+          "scl1_029",
+          "scl1_030"
         ],
-        "definition_count": 84
+        "definition_count": 168
       },
       "meaning.pass_chain.connected_sequence": {
         "case_count": 1,
@@ -237,12 +239,13 @@
         "definition_count": 90
       },
       "meaning.relation.marking_proximity": {
-        "case_count": 2,
+        "case_count": 3,
         "cases": [
           "scl1_016",
-          "scl1_017"
+          "scl1_017",
+          "scl1_030"
         ],
-        "definition_count": 72
+        "definition_count": 108
       },
       "meaning.restart.set_piece_structure": {
         "case_count": 3,
@@ -252,11 +255,19 @@
           "scl1_024"
         ],
         "definition_count": 102
+      },
+      "meaning.run_type.observed_path": {
+        "case_count": 2,
+        "cases": [
+          "scl1_019",
+          "scl1_029"
+        ],
+        "definition_count": 80
       }
     },
     "findings_count": 0,
     "held_out_case_count": 3,
     "known_negative_case_count": 3,
-    "target_count": 56
+    "target_count": 60
   }
 }

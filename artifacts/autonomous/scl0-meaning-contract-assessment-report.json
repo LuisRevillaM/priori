@@ -897,38 +897,50 @@
     {
       "case_id": "scl1_019",
       "concept": "run_in_behind_candidate",
-      "expected_failure_taxonomy": "missing_primitive",
-      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
       "findings": [],
       "held_out": false,
-      "sample_role": "scl1_missing_substrate_probe",
+      "sample_role": "scl1_off_ball_run_type_gap_closure_probe",
       "variants": [
         {
           "author_id": "blind_a",
           "concept_name_used_as_hint": false,
-          "contract_hash": "7b1c45375bece38cfbc93589a8b7a9bc502031b4717ebe4624181f70d8da3160",
-          "failure_taxonomy": "missing_primitive",
+          "contract_hash": "e418a8a378d18afd1169e02ac3374a82bb7835309cb6bfa94ff2bb8515c590ad",
+          "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
-          "providers_used": [],
-          "requested_evidence_failure_count": null,
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "action_event_anchor",
+            "off_ball_run",
+            "off_ball_run_type"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
           "target_id": "scl1_019_blind_a_v0"
         },
         {
           "author_id": "blind_b",
           "concept_name_used_as_hint": false,
-          "contract_hash": "7b1c45375bece38cfbc93589a8b7a9bc502031b4717ebe4624181f70d8da3160",
-          "failure_taxonomy": "missing_primitive",
+          "contract_hash": "e418a8a378d18afd1169e02ac3374a82bb7835309cb6bfa94ff2bb8515c590ad",
+          "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
-          "providers_used": [],
-          "requested_evidence_failure_count": null,
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "action_event_anchor",
+            "off_ball_run",
+            "off_ball_run_type"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
           "target_id": "scl1_019_blind_b_v0"
         }
       ]
@@ -1319,6 +1331,96 @@
           "target_id": "scl1_028_blind_b_v0"
         }
       ]
+    },
+    {
+      "case_id": "scl1_029",
+      "concept": "diagonal_run_candidate",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
+      "findings": [],
+      "held_out": false,
+      "sample_role": "scl1_off_ball_run_type_gap_closure_probe",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "c64d95280be36625daba9087de1bff0490f81618f0f44c982697aa13d220ba90",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "action_event_anchor",
+            "off_ball_run",
+            "off_ball_run_type"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "target_id": "scl1_029_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "c64d95280be36625daba9087de1bff0490f81618f0f44c982697aa13d220ba90",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "action_event_anchor",
+            "off_ball_run",
+            "off_ball_run_type"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "target_id": "scl1_029_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_030",
+      "concept": "decoy_run_candidate",
+      "expected_failure_taxonomy": "missing_primitive",
+      "expected_result": "not_compiler_reachable",
+      "findings": [],
+      "held_out": false,
+      "sample_role": "scl1_missing_substrate_probe",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "960533358a963485455b3abf0e50b225c51f04b8e993a3c42196a9f4abca3f44",
+          "failure_taxonomy": "missing_primitive",
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [],
+          "requested_evidence_failure_count": null,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "target_id": "scl1_030_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "960533358a963485455b3abf0e50b225c51f04b8e993a3c42196a9f4abca3f44",
+          "failure_taxonomy": "missing_primitive",
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [],
+          "requested_evidence_failure_count": null,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "target_id": "scl1_030_blind_b_v0"
+        }
+      ]
     }
   ],
   "findings": [],
@@ -1344,7 +1446,7 @@
   },
   "status": "PASS",
   "summary": {
-    "case_count": 28,
+    "case_count": 30,
     "failure_distribution": {
       "missing_primitive": 20,
       "unsupported_modality": 4
@@ -1355,9 +1457,9 @@
     "known_negative_honest_failure_count": 6,
     "known_negative_target_count": 6,
     "result_distribution": {
-      "compiler_reachable": 32,
+      "compiler_reachable": 36,
       "not_compiler_reachable": 24
     },
-    "target_count": 56
+    "target_count": 60
   }
 }

@@ -62,6 +62,7 @@ CROSS_CONCEPT_REUSE_REQUIRED_RULES = {
     "meaning.missing_primitive.team_press",
     "meaning.relation.marking_proximity",
     "meaning.movement.off_ball_run",
+    "meaning.run_type.observed_path",
     "meaning.reachability.time_to_arrival",
     "meaning.restart.set_piece_structure",
 }
@@ -447,7 +448,7 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         add_carry_element(builder, span)
         matched = True
 
-    if "forward" in lower or "progress" in lower:
+    if ("forward" in lower or "progress" in lower) and any(token in lower for token in ("carry", "carries", "carrying", "carrier")):
         span = first_span(text, [r"forward", r"progress(?:es|ion)?"]) or whole_span(text)
         add_forward_progression_element(builder, span)
         matched = True
@@ -522,14 +523,24 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         add_off_ball_run_element(builder, span)
         matched = True
 
-    if is_off_ball_run_type_meaning(lower):
-        span = first_span(text, [r"diagonal run", r"run[- ]in[- ]behind", r"run typing", r"decoy", r"drag(?:ging)?", r"overlap", r"underlap", r"third[- ]man"]) or whole_span(text)
+    if is_observed_off_ball_run_path_meaning(lower):
+        span = first_span(text, [r"diagonal(?: off[- ]ball)? run", r"run[- ]in[- ]behind"]) or whole_span(text)
+        add_off_ball_run_type_element(
+            builder,
+            span,
+            require_run_in_behind="run in behind" in lower or "run-in-behind" in lower,
+            require_diagonal="diagonal" in lower and "run" in lower,
+        )
+        matched = True
+
+    if is_off_ball_run_purpose_or_role_meaning(lower):
+        span = first_span(text, [r"run typing", r"decoy", r"drag(?:ging)?", r"overlap", r"underlap", r"third[- ]man"]) or whole_span(text)
         add_missing_primitive_element(
             builder,
-            "scl1_off_ball_run_type_status",
+            "scl1_off_ball_run_purpose_status",
             span,
-            "meaning.missing_primitive.off_ball_run_type",
-            "Requires directional/path/purpose typing over an observed off-ball run; the base movement episode is not treated as run type, decoy, or tactical purpose.",
+            "meaning.missing_primitive.off_ball_run_purpose",
+            "Requires run purpose, role, coordination, or tactical typing evidence; observed off-ball path geometry is not treated as decoy, marker dragging, overlap/underlap role, or third-player purpose.",
         )
         matched = True
 
@@ -778,6 +789,48 @@ def add_off_ball_run_element(builder: ContractBuilder, span: Span) -> None:
     builder.add_status("off_ball_run_status", "PASS", span, rule_id)
     builder.add_claim_part(
         "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim.",
+        span,
+        rule_id,
+    )
+
+
+def add_off_ball_run_type_element(
+    builder: ContractBuilder,
+    span: Span,
+    *,
+    require_run_in_behind: bool,
+    require_diagonal: bool,
+) -> None:
+    rule_id = "meaning.run_type.observed_path"
+    for field_name in [
+        "off_ball_run_type_status",
+        "off_ball_run_type_reason",
+        "run_in_behind_status",
+        "diagonal_run_status",
+        "observed_run_type_labels",
+        "run_player_id",
+        "run_start_frame_id",
+        "run_end_frame_id",
+        "run_forward_progression_m",
+        "run_lateral_displacement_m",
+        "defensive_line_start_x_m",
+        "defensive_line_end_x_m",
+        "attacking_direction",
+        "run_start_beyond_line",
+        "run_end_beyond_line",
+        "coverage_status",
+        "off_ball_run_type_model",
+        "off_ball_run_type_claim_boundary",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    if require_run_in_behind:
+        builder.add_status("run_in_behind_status", "PASS", span, rule_id)
+    elif require_diagonal:
+        builder.add_status("diagonal_run_status", "PASS", span, rule_id)
+    else:
+        builder.add_status("off_ball_run_type_status", "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim.",
         span,
         rule_id,
     )
@@ -1041,13 +1094,14 @@ def is_off_ball_run_meaning(lower: str) -> bool:
     return any(phrase in lower for phrase in ("off-ball run", "off ball run", "diagonal run", "run in behind", "run-in-behind", "run typing"))
 
 
-def is_off_ball_run_type_meaning(lower: str) -> bool:
+def is_observed_off_ball_run_path_meaning(lower: str) -> bool:
+    return any(phrase in lower for phrase in ("diagonal run", "diagonal off-ball run", "diagonal off ball run", "run in behind", "run-in-behind"))
+
+
+def is_off_ball_run_purpose_or_role_meaning(lower: str) -> bool:
     return any(
         phrase in lower
         for phrase in (
-            "diagonal run",
-            "run in behind",
-            "run-in-behind",
             "run typing",
             "decoy",
             "dragging",

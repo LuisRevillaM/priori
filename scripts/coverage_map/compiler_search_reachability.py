@@ -1334,6 +1334,16 @@ def choose_input_provider(
 def required_fields_for_input(entry: CatalogEntry, input_def: CatalogInput, target_fields: set[str]) -> set[str]:
     if entry.name == "carry_episode" and input_def.name == "controlled_pass_anchors":
         return {"controlled_pass_status", "receiver_id", "controlled_reception_frame_id"}
+    if entry.name == "off_ball_run_type" and input_def.name == "runs":
+        return {
+            "candidate_team_role",
+            "off_ball_run_status",
+            "run_end_frame_id",
+            "run_forward_progression_m",
+            "run_lateral_displacement_m",
+            "run_player_id",
+            "run_start_frame_id",
+        }
     return field_dependencies_for_consumer(entry) or target_fields
 
 
@@ -1394,6 +1404,16 @@ def infer_parameters(
 
 
 def field_dependencies_for_consumer(entry: CatalogEntry) -> set[str]:
+    if entry.name == "off_ball_run_type":
+        return {
+            "candidate_team_role",
+            "off_ball_run_status",
+            "run_end_frame_id",
+            "run_forward_progression_m",
+            "run_lateral_displacement_m",
+            "run_player_id",
+            "run_start_frame_id",
+        }
     dependencies: set[str] = set()
     for parameter in entry.parameters:
         if "_field" not in parameter.name:

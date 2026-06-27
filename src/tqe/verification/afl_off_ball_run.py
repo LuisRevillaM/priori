@@ -2,8 +2,8 @@
 
 This slice closes the base observed off-ball movement episode gap. The claim is
 deliberately narrow: endpoint-window movement by an outfield player away from
-the ball. Named run type, purpose, marker-dragging, decoy, space creation, role,
-intent, quality, and tactical causation remain outside this primitive.
+the ball. Purpose, marker-dragging, decoy, space creation, role, intent,
+quality, and tactical causation remain outside this primitive.
 """
 
 from __future__ import annotations
@@ -45,9 +45,9 @@ OFF_BALL_RUN_REACHABLE_TARGETS = {
     "scl1_018_blind_a_v0",
     "scl1_018_blind_b_v0",
 }
-RUN_TYPE_GAP_TARGETS = {
-    "scl1_019_blind_a_v0",
-    "scl1_019_blind_b_v0",
+RUN_PURPOSE_GAP_TARGETS = {
+    "scl1_030_blind_a_v0",
+    "scl1_030_blind_b_v0",
 }
 
 REQUIRED_EVIDENCE_FIELDS = {
@@ -180,10 +180,10 @@ def verify_search_flip() -> tuple[list[dict[str, Any]], dict[str, Any]]:
             findings.append({"code": "off_ball_run_requested_evidence_missing", "target_id": target_id})
         if "provider_field_backward_search" not in set(row.get("rules_used") or []):
             findings.append({"code": "generic_search_rule_missing", "target_id": target_id})
-    for target_id in sorted(RUN_TYPE_GAP_TARGETS):
+    for target_id in sorted(RUN_PURPOSE_GAP_TARGETS):
         row = by_target.get(target_id)
         if row is None:
-            findings.append({"code": "off_ball_run_type_gap_target_missing", "target_id": target_id})
+            findings.append({"code": "off_ball_run_purpose_gap_target_missing", "target_id": target_id})
             continue
         target_summary[target_id] = {
             "result": row.get("result"),
@@ -192,9 +192,9 @@ def verify_search_flip() -> tuple[list[dict[str, Any]], dict[str, Any]]:
             "rules_used": row.get("rules_used"),
         }
         if row.get("result") == "compiler_reachable":
-            findings.append({"code": "off_ball_run_type_became_reachable", "target_id": target_id})
+            findings.append({"code": "off_ball_run_purpose_became_reachable", "target_id": target_id})
         if row.get("failure_taxonomy") != "missing_primitive":
-            findings.append({"code": "off_ball_run_type_wrong_gap_taxonomy", "target_id": target_id, "failure_taxonomy": row.get("failure_taxonomy")})
+            findings.append({"code": "off_ball_run_purpose_wrong_gap_taxonomy", "target_id": target_id, "failure_taxonomy": row.get("failure_taxonomy")})
     return findings, target_summary
 
 
@@ -258,7 +258,7 @@ def verify_off_ball_run() -> dict[str, Any]:
             "targets": target_summary,
             "closure_claim": (
                 "scl1_018 flipped from missing_primitive to compiler_reachable through generic provider search; "
-                "scl1_019 run-in-behind/path-purpose typing remains an honest missing primitive."
+                "scl1_030 decoy/marker-dragging purpose remains an honest missing primitive."
             ),
         },
         "primitive_probe": {

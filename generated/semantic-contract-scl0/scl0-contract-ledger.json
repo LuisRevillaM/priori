@@ -5262,28 +5262,39 @@
     "case_id": "scl1_019",
     "concept": "run_in_behind_candidate",
     "contract": {
-      "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Requires directional/path/purpose typing over an observed off-ball run; the base movement episode is not treated as run type, decoy, or tactical purpose.",
+      "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
+        "attacking_direction",
         "candidate_scope",
         "candidate_team_role",
         "coverage_status",
+        "defensive_line_end_x_m",
+        "defensive_line_start_x_m",
+        "diagonal_run_status",
+        "observed_run_type_labels",
         "off_ball_distance_policy",
         "off_ball_run_claim_boundary",
         "off_ball_run_model",
         "off_ball_run_reason",
         "off_ball_run_status",
+        "off_ball_run_type_claim_boundary",
+        "off_ball_run_type_model",
+        "off_ball_run_type_reason",
+        "off_ball_run_type_status",
         "run_displacement_m",
         "run_duration_seconds",
         "run_end_ball_distance_m",
+        "run_end_beyond_line",
         "run_end_frame_id",
         "run_forward_progression_m",
+        "run_in_behind_status",
         "run_lateral_displacement_m",
         "run_player_id",
         "run_speed_mps",
         "run_start_ball_distance_m",
+        "run_start_beyond_line",
         "run_start_frame_id",
-        "scl1_off_ball_run_type_status",
         "source_anchor_id"
       ],
       "status_semantics": [
@@ -5292,12 +5303,12 @@
           "required_value": "PASS"
         },
         {
-          "field": "scl1_off_ball_run_type_status",
+          "field": "run_in_behind_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "7b1c45375bece38cfbc93589a8b7a9bc502031b4717ebe4624181f70d8da3160",
+    "contract_hash": "e418a8a378d18afd1169e02ac3374a82bb7835309cb6bfa94ff2bb8515c590ad",
     "definition_text": "A run in behind is an off-ball run into space behind the defensive line.",
     "opaque_search_concept": "scl1_019",
     "target_id": "scl1_019_blind_a_v0",
@@ -5471,16 +5482,152 @@
         "value": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim."
       },
       {
-        "contract_path": "required_evidence.scl1_off_ball_run_type_status",
-        "rule_id": "meaning.missing_primitive.off_ball_run_type",
+        "contract_path": "required_evidence.off_ball_run_type_status",
+        "rule_id": "meaning.run_type.observed_path",
         "source_end": 15,
         "source_phrase": "run in behind",
         "source_start": 2,
-        "value": "scl1_off_ball_run_type_status"
+        "value": "off_ball_run_type_status"
       },
       {
-        "contract_path": "status_semantics.scl1_off_ball_run_type_status",
-        "rule_id": "meaning.missing_primitive.off_ball_run_type",
+        "contract_path": "required_evidence.off_ball_run_type_reason",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "off_ball_run_type_reason"
+      },
+      {
+        "contract_path": "required_evidence.run_in_behind_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "run_in_behind_status"
+      },
+      {
+        "contract_path": "required_evidence.diagonal_run_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "diagonal_run_status"
+      },
+      {
+        "contract_path": "required_evidence.observed_run_type_labels",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "observed_run_type_labels"
+      },
+      {
+        "contract_path": "required_evidence.run_player_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "run_player_id"
+      },
+      {
+        "contract_path": "required_evidence.run_start_frame_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "run_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_end_frame_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "run_end_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_forward_progression_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "run_forward_progression_m"
+      },
+      {
+        "contract_path": "required_evidence.run_lateral_displacement_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "run_lateral_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.defensive_line_start_x_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "defensive_line_start_x_m"
+      },
+      {
+        "contract_path": "required_evidence.defensive_line_end_x_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "defensive_line_end_x_m"
+      },
+      {
+        "contract_path": "required_evidence.attacking_direction",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "attacking_direction"
+      },
+      {
+        "contract_path": "required_evidence.run_start_beyond_line",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "run_start_beyond_line"
+      },
+      {
+        "contract_path": "required_evidence.run_end_beyond_line",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "run_end_beyond_line"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_model",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "off_ball_run_type_model"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_claim_boundary",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 15,
+        "source_phrase": "run in behind",
+        "source_start": 2,
+        "value": "off_ball_run_type_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.run_in_behind_status",
+        "rule_id": "meaning.run_type.observed_path",
         "source_end": 15,
         "source_phrase": "run in behind",
         "source_start": 2,
@@ -5488,11 +5635,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.off_ball_run_type",
+        "rule_id": "meaning.run_type.observed_path",
         "source_end": 15,
         "source_phrase": "run in behind",
         "source_start": 2,
-        "value": "Requires directional/path/purpose typing over an observed off-ball run; the base movement episode is not treated as run type, decoy, or tactical purpose."
+        "value": "Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim."
       }
     ]
   },
@@ -5501,28 +5648,39 @@
     "case_id": "scl1_019",
     "concept": "run_in_behind_candidate",
     "contract": {
-      "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Requires directional/path/purpose typing over an observed off-ball run; the base movement episode is not treated as run type, decoy, or tactical purpose.",
+      "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
+        "attacking_direction",
         "candidate_scope",
         "candidate_team_role",
         "coverage_status",
+        "defensive_line_end_x_m",
+        "defensive_line_start_x_m",
+        "diagonal_run_status",
+        "observed_run_type_labels",
         "off_ball_distance_policy",
         "off_ball_run_claim_boundary",
         "off_ball_run_model",
         "off_ball_run_reason",
         "off_ball_run_status",
+        "off_ball_run_type_claim_boundary",
+        "off_ball_run_type_model",
+        "off_ball_run_type_reason",
+        "off_ball_run_type_status",
         "run_displacement_m",
         "run_duration_seconds",
         "run_end_ball_distance_m",
+        "run_end_beyond_line",
         "run_end_frame_id",
         "run_forward_progression_m",
+        "run_in_behind_status",
         "run_lateral_displacement_m",
         "run_player_id",
         "run_speed_mps",
         "run_start_ball_distance_m",
+        "run_start_beyond_line",
         "run_start_frame_id",
-        "scl1_off_ball_run_type_status",
         "source_anchor_id"
       ],
       "status_semantics": [
@@ -5531,12 +5689,12 @@
           "required_value": "PASS"
         },
         {
-          "field": "scl1_off_ball_run_type_status",
+          "field": "run_in_behind_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "7b1c45375bece38cfbc93589a8b7a9bc502031b4717ebe4624181f70d8da3160",
+    "contract_hash": "e418a8a378d18afd1169e02ac3374a82bb7835309cb6bfa94ff2bb8515c590ad",
     "definition_text": "Run-in-behind typing asks for an off ball run beyond the observed defensive line.",
     "opaque_search_concept": "scl1_019",
     "target_id": "scl1_019_blind_b_v0",
@@ -5710,16 +5868,152 @@
         "value": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim."
       },
       {
-        "contract_path": "required_evidence.scl1_off_ball_run_type_status",
-        "rule_id": "meaning.missing_primitive.off_ball_run_type",
+        "contract_path": "required_evidence.off_ball_run_type_status",
+        "rule_id": "meaning.run_type.observed_path",
         "source_end": 13,
         "source_phrase": "Run-in-behind",
         "source_start": 0,
-        "value": "scl1_off_ball_run_type_status"
+        "value": "off_ball_run_type_status"
       },
       {
-        "contract_path": "status_semantics.scl1_off_ball_run_type_status",
-        "rule_id": "meaning.missing_primitive.off_ball_run_type",
+        "contract_path": "required_evidence.off_ball_run_type_reason",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "off_ball_run_type_reason"
+      },
+      {
+        "contract_path": "required_evidence.run_in_behind_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "run_in_behind_status"
+      },
+      {
+        "contract_path": "required_evidence.diagonal_run_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "diagonal_run_status"
+      },
+      {
+        "contract_path": "required_evidence.observed_run_type_labels",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "observed_run_type_labels"
+      },
+      {
+        "contract_path": "required_evidence.run_player_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "run_player_id"
+      },
+      {
+        "contract_path": "required_evidence.run_start_frame_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "run_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_end_frame_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "run_end_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_forward_progression_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "run_forward_progression_m"
+      },
+      {
+        "contract_path": "required_evidence.run_lateral_displacement_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "run_lateral_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.defensive_line_start_x_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "defensive_line_start_x_m"
+      },
+      {
+        "contract_path": "required_evidence.defensive_line_end_x_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "defensive_line_end_x_m"
+      },
+      {
+        "contract_path": "required_evidence.attacking_direction",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "attacking_direction"
+      },
+      {
+        "contract_path": "required_evidence.run_start_beyond_line",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "run_start_beyond_line"
+      },
+      {
+        "contract_path": "required_evidence.run_end_beyond_line",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "run_end_beyond_line"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_model",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "off_ball_run_type_model"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_claim_boundary",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 13,
+        "source_phrase": "Run-in-behind",
+        "source_start": 0,
+        "value": "off_ball_run_type_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.run_in_behind_status",
+        "rule_id": "meaning.run_type.observed_path",
         "source_end": 13,
         "source_phrase": "Run-in-behind",
         "source_start": 0,
@@ -5727,11 +6021,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.off_ball_run_type",
+        "rule_id": "meaning.run_type.observed_path",
         "source_end": 13,
         "source_phrase": "Run-in-behind",
         "source_start": 0,
-        "value": "Requires directional/path/purpose typing over an observed off-ball run; the base movement episode is not treated as run type, decoy, or tactical purpose."
+        "value": "Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim."
       }
     ]
   },
@@ -7878,6 +8172,1578 @@
         "source_phrase": "space region",
         "source_start": 49,
         "value": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_029",
+    "concept": "diagonal_run_candidate",
+    "contract": {
+      "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "attacking_direction",
+        "candidate_scope",
+        "candidate_team_role",
+        "coverage_status",
+        "defensive_line_end_x_m",
+        "defensive_line_start_x_m",
+        "diagonal_run_status",
+        "observed_run_type_labels",
+        "off_ball_distance_policy",
+        "off_ball_run_claim_boundary",
+        "off_ball_run_model",
+        "off_ball_run_reason",
+        "off_ball_run_status",
+        "off_ball_run_type_claim_boundary",
+        "off_ball_run_type_model",
+        "off_ball_run_type_reason",
+        "off_ball_run_type_status",
+        "run_displacement_m",
+        "run_duration_seconds",
+        "run_end_ball_distance_m",
+        "run_end_beyond_line",
+        "run_end_frame_id",
+        "run_forward_progression_m",
+        "run_in_behind_status",
+        "run_lateral_displacement_m",
+        "run_player_id",
+        "run_speed_mps",
+        "run_start_ball_distance_m",
+        "run_start_beyond_line",
+        "run_start_frame_id",
+        "source_anchor_id"
+      ],
+      "status_semantics": [
+        {
+          "field": "diagonal_run_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "off_ball_run_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "c64d95280be36625daba9087de1bff0490f81618f0f44c982697aa13d220ba90",
+    "definition_text": "A diagonal run is an off-ball run with both forward and lateral movement.",
+    "opaque_search_concept": "scl1_029",
+    "target_id": "scl1_029_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.source_anchor_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "source_anchor_id"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "off_ball_run_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_reason",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "off_ball_run_reason"
+      },
+      {
+        "contract_path": "required_evidence.run_player_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "run_player_id"
+      },
+      {
+        "contract_path": "required_evidence.run_start_frame_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "run_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_end_frame_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "run_end_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_duration_seconds",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "run_duration_seconds"
+      },
+      {
+        "contract_path": "required_evidence.run_displacement_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "run_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.run_forward_progression_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "run_forward_progression_m"
+      },
+      {
+        "contract_path": "required_evidence.run_lateral_displacement_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "run_lateral_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.run_speed_mps",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "run_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.run_start_ball_distance_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "run_start_ball_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.run_end_ball_distance_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "run_end_ball_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.candidate_team_role",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "candidate_team_role"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_model",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "off_ball_run_model"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_distance_policy",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "off_ball_distance_policy"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_claim_boundary",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "off_ball_run_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.off_ball_run_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 33,
+        "source_phrase": "off-ball run",
+        "source_start": 21,
+        "value": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "off_ball_run_type_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_reason",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "off_ball_run_type_reason"
+      },
+      {
+        "contract_path": "required_evidence.run_in_behind_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "run_in_behind_status"
+      },
+      {
+        "contract_path": "required_evidence.diagonal_run_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "diagonal_run_status"
+      },
+      {
+        "contract_path": "required_evidence.observed_run_type_labels",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "observed_run_type_labels"
+      },
+      {
+        "contract_path": "required_evidence.run_player_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "run_player_id"
+      },
+      {
+        "contract_path": "required_evidence.run_start_frame_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "run_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_end_frame_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "run_end_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_forward_progression_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "run_forward_progression_m"
+      },
+      {
+        "contract_path": "required_evidence.run_lateral_displacement_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "run_lateral_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.defensive_line_start_x_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "defensive_line_start_x_m"
+      },
+      {
+        "contract_path": "required_evidence.defensive_line_end_x_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "defensive_line_end_x_m"
+      },
+      {
+        "contract_path": "required_evidence.attacking_direction",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "attacking_direction"
+      },
+      {
+        "contract_path": "required_evidence.run_start_beyond_line",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "run_start_beyond_line"
+      },
+      {
+        "contract_path": "required_evidence.run_end_beyond_line",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "run_end_beyond_line"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_model",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "off_ball_run_type_model"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_claim_boundary",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "off_ball_run_type_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.diagonal_run_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 14,
+        "source_phrase": "diagonal run",
+        "source_start": 2,
+        "value": "Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_029",
+    "concept": "diagonal_run_candidate",
+    "contract": {
+      "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "attacking_direction",
+        "candidate_scope",
+        "candidate_team_role",
+        "coverage_status",
+        "defensive_line_end_x_m",
+        "defensive_line_start_x_m",
+        "diagonal_run_status",
+        "observed_run_type_labels",
+        "off_ball_distance_policy",
+        "off_ball_run_claim_boundary",
+        "off_ball_run_model",
+        "off_ball_run_reason",
+        "off_ball_run_status",
+        "off_ball_run_type_claim_boundary",
+        "off_ball_run_type_model",
+        "off_ball_run_type_reason",
+        "off_ball_run_type_status",
+        "run_displacement_m",
+        "run_duration_seconds",
+        "run_end_ball_distance_m",
+        "run_end_beyond_line",
+        "run_end_frame_id",
+        "run_forward_progression_m",
+        "run_in_behind_status",
+        "run_lateral_displacement_m",
+        "run_player_id",
+        "run_speed_mps",
+        "run_start_ball_distance_m",
+        "run_start_beyond_line",
+        "run_start_frame_id",
+        "source_anchor_id"
+      ],
+      "status_semantics": [
+        {
+          "field": "diagonal_run_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "off_ball_run_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "c64d95280be36625daba9087de1bff0490f81618f0f44c982697aa13d220ba90",
+    "definition_text": "A diagonal off-ball run moves forward while also moving laterally across the pitch.",
+    "opaque_search_concept": "scl1_029",
+    "target_id": "scl1_029_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.source_anchor_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "source_anchor_id"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "off_ball_run_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_reason",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "off_ball_run_reason"
+      },
+      {
+        "contract_path": "required_evidence.run_player_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "run_player_id"
+      },
+      {
+        "contract_path": "required_evidence.run_start_frame_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "run_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_end_frame_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "run_end_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_duration_seconds",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "run_duration_seconds"
+      },
+      {
+        "contract_path": "required_evidence.run_displacement_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "run_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.run_forward_progression_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "run_forward_progression_m"
+      },
+      {
+        "contract_path": "required_evidence.run_lateral_displacement_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "run_lateral_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.run_speed_mps",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "run_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.run_start_ball_distance_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "run_start_ball_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.run_end_ball_distance_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "run_end_ball_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.candidate_team_role",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "candidate_team_role"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_model",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "off_ball_run_model"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_distance_policy",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "off_ball_distance_policy"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_claim_boundary",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "off_ball_run_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.off_ball_run_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 23,
+        "source_phrase": "off-ball run",
+        "source_start": 11,
+        "value": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "off_ball_run_type_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_reason",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "off_ball_run_type_reason"
+      },
+      {
+        "contract_path": "required_evidence.run_in_behind_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "run_in_behind_status"
+      },
+      {
+        "contract_path": "required_evidence.diagonal_run_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "diagonal_run_status"
+      },
+      {
+        "contract_path": "required_evidence.observed_run_type_labels",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "observed_run_type_labels"
+      },
+      {
+        "contract_path": "required_evidence.run_player_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "run_player_id"
+      },
+      {
+        "contract_path": "required_evidence.run_start_frame_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "run_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_end_frame_id",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "run_end_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_forward_progression_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "run_forward_progression_m"
+      },
+      {
+        "contract_path": "required_evidence.run_lateral_displacement_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "run_lateral_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.defensive_line_start_x_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "defensive_line_start_x_m"
+      },
+      {
+        "contract_path": "required_evidence.defensive_line_end_x_m",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "defensive_line_end_x_m"
+      },
+      {
+        "contract_path": "required_evidence.attacking_direction",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "attacking_direction"
+      },
+      {
+        "contract_path": "required_evidence.run_start_beyond_line",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "run_start_beyond_line"
+      },
+      {
+        "contract_path": "required_evidence.run_end_beyond_line",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "run_end_beyond_line"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_model",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "off_ball_run_type_model"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_type_claim_boundary",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "off_ball_run_type_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.diagonal_run_status",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.run_type.observed_path",
+        "source_end": 23,
+        "source_phrase": "diagonal off-ball run",
+        "source_start": 2,
+        "value": "Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_030",
+    "concept": "decoy_run_candidate",
+    "contract": {
+      "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim. Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Requires run purpose, role, coordination, or tactical typing evidence; observed off-ball path geometry is not treated as decoy, marker dragging, overlap/underlap role, or third-player purpose.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "candidate_scope",
+        "candidate_team_role",
+        "coverage_status",
+        "marking_assignment_policy",
+        "marking_claim_boundary",
+        "marking_frame_id",
+        "marking_model",
+        "marking_reason",
+        "marking_status",
+        "maximum_marking_distance_m",
+        "nearest_marker_distance_m",
+        "nearest_marker_id",
+        "observed_marker_candidate_count",
+        "off_ball_distance_policy",
+        "off_ball_run_claim_boundary",
+        "off_ball_run_model",
+        "off_ball_run_reason",
+        "off_ball_run_status",
+        "run_displacement_m",
+        "run_duration_seconds",
+        "run_end_ball_distance_m",
+        "run_end_frame_id",
+        "run_forward_progression_m",
+        "run_lateral_displacement_m",
+        "run_player_id",
+        "run_speed_mps",
+        "run_start_ball_distance_m",
+        "run_start_frame_id",
+        "scl1_off_ball_run_purpose_status",
+        "source_anchor_id",
+        "target_player_id",
+        "target_player_team_role",
+        "unmarked_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "marking_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "off_ball_run_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "scl1_off_ball_run_purpose_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "960533358a963485455b3abf0e50b225c51f04b8e993a3c42196a9f4abca3f44",
+    "definition_text": "A decoy run is an off-ball run intended to drag a marker away.",
+    "opaque_search_concept": "scl1_030",
+    "target_id": "scl1_030_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.marking_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "marking_status"
+      },
+      {
+        "contract_path": "required_evidence.unmarked_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "unmarked_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_reason",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "marking_reason"
+      },
+      {
+        "contract_path": "required_evidence.marking_frame_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "marking_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_player_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "target_player_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "nearest_marker_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "nearest_marker_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.maximum_marking_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "maximum_marking_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.target_player_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "target_player_team_role"
+      },
+      {
+        "contract_path": "required_evidence.candidate_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "candidate_team_role"
+      },
+      {
+        "contract_path": "required_evidence.observed_marker_candidate_count",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "observed_marker_candidate_count"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_model",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "marking_model"
+      },
+      {
+        "contract_path": "required_evidence.marking_assignment_policy",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "marking_assignment_policy"
+      },
+      {
+        "contract_path": "required_evidence.marking_claim_boundary",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "marking_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.marking_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 56,
+        "source_phrase": "marker",
+        "source_start": 50,
+        "value": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.source_anchor_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "source_anchor_id"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "off_ball_run_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_reason",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "off_ball_run_reason"
+      },
+      {
+        "contract_path": "required_evidence.run_player_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "run_player_id"
+      },
+      {
+        "contract_path": "required_evidence.run_start_frame_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "run_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_end_frame_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "run_end_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_duration_seconds",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "run_duration_seconds"
+      },
+      {
+        "contract_path": "required_evidence.run_displacement_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "run_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.run_forward_progression_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "run_forward_progression_m"
+      },
+      {
+        "contract_path": "required_evidence.run_lateral_displacement_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "run_lateral_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.run_speed_mps",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "run_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.run_start_ball_distance_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "run_start_ball_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.run_end_ball_distance_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "run_end_ball_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.candidate_team_role",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "candidate_team_role"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_model",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "off_ball_run_model"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_distance_policy",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "off_ball_distance_policy"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_claim_boundary",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "off_ball_run_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.off_ball_run_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 30,
+        "source_phrase": "off-ball run",
+        "source_start": 18,
+        "value": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.scl1_off_ball_run_purpose_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run_purpose",
+        "source_end": 7,
+        "source_phrase": "decoy",
+        "source_start": 2,
+        "value": "scl1_off_ball_run_purpose_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_off_ball_run_purpose_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run_purpose",
+        "source_end": 7,
+        "source_phrase": "decoy",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.off_ball_run_purpose",
+        "source_end": 7,
+        "source_phrase": "decoy",
+        "source_start": 2,
+        "value": "Requires run purpose, role, coordination, or tactical typing evidence; observed off-ball path geometry is not treated as decoy, marker dragging, overlap/underlap role, or third-player purpose."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_030",
+    "concept": "decoy_run_candidate",
+    "contract": {
+      "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim. Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Requires run purpose, role, coordination, or tactical typing evidence; observed off-ball path geometry is not treated as decoy, marker dragging, overlap/underlap role, or third-player purpose.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "candidate_scope",
+        "candidate_team_role",
+        "coverage_status",
+        "marking_assignment_policy",
+        "marking_claim_boundary",
+        "marking_frame_id",
+        "marking_model",
+        "marking_reason",
+        "marking_status",
+        "maximum_marking_distance_m",
+        "nearest_marker_distance_m",
+        "nearest_marker_id",
+        "observed_marker_candidate_count",
+        "off_ball_distance_policy",
+        "off_ball_run_claim_boundary",
+        "off_ball_run_model",
+        "off_ball_run_reason",
+        "off_ball_run_status",
+        "run_displacement_m",
+        "run_duration_seconds",
+        "run_end_ball_distance_m",
+        "run_end_frame_id",
+        "run_forward_progression_m",
+        "run_lateral_displacement_m",
+        "run_player_id",
+        "run_speed_mps",
+        "run_start_ball_distance_m",
+        "run_start_frame_id",
+        "scl1_off_ball_run_purpose_status",
+        "source_anchor_id",
+        "target_player_id",
+        "target_player_team_role",
+        "unmarked_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "marking_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "off_ball_run_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "scl1_off_ball_run_purpose_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "960533358a963485455b3abf0e50b225c51f04b8e993a3c42196a9f4abca3f44",
+    "definition_text": "A marker-dragging run is an off ball run whose purpose is to pull a defender out of position.",
+    "opaque_search_concept": "scl1_030",
+    "target_id": "scl1_030_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.marking_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_status"
+      },
+      {
+        "contract_path": "required_evidence.unmarked_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "unmarked_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_reason",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_reason"
+      },
+      {
+        "contract_path": "required_evidence.marking_frame_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_player_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "target_player_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_id",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "nearest_marker_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_marker_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "nearest_marker_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.maximum_marking_distance_m",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "maximum_marking_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.target_player_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "target_player_team_role"
+      },
+      {
+        "contract_path": "required_evidence.candidate_team_role",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "candidate_team_role"
+      },
+      {
+        "contract_path": "required_evidence.observed_marker_candidate_count",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "observed_marker_candidate_count"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.marking_model",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_model"
+      },
+      {
+        "contract_path": "required_evidence.marking_assignment_policy",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_assignment_policy"
+      },
+      {
+        "contract_path": "required_evidence.marking_claim_boundary",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "marking_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.marking_status",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.relation.marking_proximity",
+        "source_end": 8,
+        "source_phrase": "marker",
+        "source_start": 2,
+        "value": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.source_anchor_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "source_anchor_id"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "off_ball_run_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_reason",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "off_ball_run_reason"
+      },
+      {
+        "contract_path": "required_evidence.run_player_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "run_player_id"
+      },
+      {
+        "contract_path": "required_evidence.run_start_frame_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "run_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_end_frame_id",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "run_end_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.run_duration_seconds",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "run_duration_seconds"
+      },
+      {
+        "contract_path": "required_evidence.run_displacement_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "run_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.run_forward_progression_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "run_forward_progression_m"
+      },
+      {
+        "contract_path": "required_evidence.run_lateral_displacement_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "run_lateral_displacement_m"
+      },
+      {
+        "contract_path": "required_evidence.run_speed_mps",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "run_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.run_start_ball_distance_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "run_start_ball_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.run_end_ball_distance_m",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "run_end_ball_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.candidate_team_role",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "candidate_team_role"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_model",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "off_ball_run_model"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_distance_policy",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "off_ball_distance_policy"
+      },
+      {
+        "contract_path": "required_evidence.off_ball_run_claim_boundary",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "off_ball_run_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.off_ball_run_status",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.movement.off_ball_run",
+        "source_end": 40,
+        "source_phrase": "off ball run",
+        "source_start": 28,
+        "value": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.scl1_off_ball_run_purpose_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run_purpose",
+        "source_end": 17,
+        "source_phrase": "dragging",
+        "source_start": 9,
+        "value": "scl1_off_ball_run_purpose_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_off_ball_run_purpose_status",
+        "rule_id": "meaning.missing_primitive.off_ball_run_purpose",
+        "source_end": 17,
+        "source_phrase": "dragging",
+        "source_start": 9,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.off_ball_run_purpose",
+        "source_end": 17,
+        "source_phrase": "dragging",
+        "source_start": 9,
+        "value": "Requires run purpose, role, coordination, or tactical typing evidence; observed off-ball path geometry is not treated as decoy, marker dragging, overlap/underlap role, or third-player purpose."
       }
     ]
   }

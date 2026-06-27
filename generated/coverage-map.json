@@ -1406,15 +1406,15 @@
  {
   "concept": "diagonal_run_candidate",
   "family": "Off-ball attacking movement and behavior",
-  "classification": "partial_with_typed_gap",
-  "justification": "diagonal = kinematic heading combining forward+lateral; velocity vector direction expresses it, but 'run' episode segmentation/typing is the gap.",
-  "required_missing_capability": "off_ball_run (run typing)",
-  "closest_supported_substitute": "velocity (diagonal heading component)",
+  "classification": "supported",
+  "justification": "Supported via off_ball_run + off_ball_run_type: an observed off-ball run whose endpoint path has both frozen-threshold forward progression and lateral displacement. No run purpose, role, intent, or tactical quality is inferred.",
+  "required_missing_capability": "",
+  "closest_supported_substitute": "off_ball_run_type diagonal_run_status",
   "composition_constraint_needed": false,
   "priority_unlock": "MED",
   "composition_constraint_note": "",
   "composition_maturity": "handwired",
-  "composition_maturity_applicable": false
+  "composition_maturity_applicable": true
  },
  {
   "concept": "dragging_run_candidate",

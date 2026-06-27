@@ -1199,28 +1199,39 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Requires directional/path/purpose typing over an observed off-ball run; the base movement episode is not treated as run type, decoy, or tactical purpose.",
+        "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
+          "attacking_direction",
           "candidate_scope",
           "candidate_team_role",
           "coverage_status",
+          "defensive_line_end_x_m",
+          "defensive_line_start_x_m",
+          "diagonal_run_status",
+          "observed_run_type_labels",
           "off_ball_distance_policy",
           "off_ball_run_claim_boundary",
           "off_ball_run_model",
           "off_ball_run_reason",
           "off_ball_run_status",
+          "off_ball_run_type_claim_boundary",
+          "off_ball_run_type_model",
+          "off_ball_run_type_reason",
+          "off_ball_run_type_status",
           "run_displacement_m",
           "run_duration_seconds",
           "run_end_ball_distance_m",
+          "run_end_beyond_line",
           "run_end_frame_id",
           "run_forward_progression_m",
+          "run_in_behind_status",
           "run_lateral_displacement_m",
           "run_player_id",
           "run_speed_mps",
           "run_start_ball_distance_m",
+          "run_start_beyond_line",
           "run_start_frame_id",
-          "scl1_off_ball_run_type_status",
           "source_anchor_id"
         ],
         "status_semantics": [
@@ -1229,7 +1240,7 @@
             "required_value": "PASS"
           },
           {
-            "field": "scl1_off_ball_run_type_status",
+            "field": "run_in_behind_status",
             "required_value": "PASS"
           }
         ]
@@ -1241,28 +1252,39 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Requires directional/path/purpose typing over an observed off-ball run; the base movement episode is not treated as run type, decoy, or tactical purpose.",
+        "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
+          "attacking_direction",
           "candidate_scope",
           "candidate_team_role",
           "coverage_status",
+          "defensive_line_end_x_m",
+          "defensive_line_start_x_m",
+          "diagonal_run_status",
+          "observed_run_type_labels",
           "off_ball_distance_policy",
           "off_ball_run_claim_boundary",
           "off_ball_run_model",
           "off_ball_run_reason",
           "off_ball_run_status",
+          "off_ball_run_type_claim_boundary",
+          "off_ball_run_type_model",
+          "off_ball_run_type_reason",
+          "off_ball_run_type_status",
           "run_displacement_m",
           "run_duration_seconds",
           "run_end_ball_distance_m",
+          "run_end_beyond_line",
           "run_end_frame_id",
           "run_forward_progression_m",
+          "run_in_behind_status",
           "run_lateral_displacement_m",
           "run_player_id",
           "run_speed_mps",
           "run_start_ball_distance_m",
+          "run_start_beyond_line",
           "run_start_frame_id",
-          "scl1_off_ball_run_type_status",
           "source_anchor_id"
         ],
         "status_semantics": [
@@ -1271,7 +1293,7 @@
             "required_value": "PASS"
           },
           {
-            "field": "scl1_off_ball_run_type_status",
+            "field": "run_in_behind_status",
             "required_value": "PASS"
           }
         ]
@@ -1765,6 +1787,230 @@
         ]
       },
       "target_id": "scl1_028_blind_b_v0"
+    },
+    {
+      "concept": "scl1_029",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "attacking_direction",
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "defensive_line_end_x_m",
+          "defensive_line_start_x_m",
+          "diagonal_run_status",
+          "observed_run_type_labels",
+          "off_ball_distance_policy",
+          "off_ball_run_claim_boundary",
+          "off_ball_run_model",
+          "off_ball_run_reason",
+          "off_ball_run_status",
+          "off_ball_run_type_claim_boundary",
+          "off_ball_run_type_model",
+          "off_ball_run_type_reason",
+          "off_ball_run_type_status",
+          "run_displacement_m",
+          "run_duration_seconds",
+          "run_end_ball_distance_m",
+          "run_end_beyond_line",
+          "run_end_frame_id",
+          "run_forward_progression_m",
+          "run_in_behind_status",
+          "run_lateral_displacement_m",
+          "run_player_id",
+          "run_speed_mps",
+          "run_start_ball_distance_m",
+          "run_start_beyond_line",
+          "run_start_frame_id",
+          "source_anchor_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "diagonal_run_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "off_ball_run_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_029_blind_a_v0"
+    },
+    {
+      "concept": "scl1_029",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Observed off-ball run path geometry only; no decoy, marker-dragging, space creation, overlap/underlap role, third-player purpose, intent, causation, quality, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "attacking_direction",
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "defensive_line_end_x_m",
+          "defensive_line_start_x_m",
+          "diagonal_run_status",
+          "observed_run_type_labels",
+          "off_ball_distance_policy",
+          "off_ball_run_claim_boundary",
+          "off_ball_run_model",
+          "off_ball_run_reason",
+          "off_ball_run_status",
+          "off_ball_run_type_claim_boundary",
+          "off_ball_run_type_model",
+          "off_ball_run_type_reason",
+          "off_ball_run_type_status",
+          "run_displacement_m",
+          "run_duration_seconds",
+          "run_end_ball_distance_m",
+          "run_end_beyond_line",
+          "run_end_frame_id",
+          "run_forward_progression_m",
+          "run_in_behind_status",
+          "run_lateral_displacement_m",
+          "run_player_id",
+          "run_speed_mps",
+          "run_start_ball_distance_m",
+          "run_start_beyond_line",
+          "run_start_frame_id",
+          "source_anchor_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "diagonal_run_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "off_ball_run_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_029_blind_b_v0"
+    },
+    {
+      "concept": "scl1_030",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim. Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Requires run purpose, role, coordination, or tactical typing evidence; observed off-ball path geometry is not treated as decoy, marker dragging, overlap/underlap role, or third-player purpose.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "marking_assignment_policy",
+          "marking_claim_boundary",
+          "marking_frame_id",
+          "marking_model",
+          "marking_reason",
+          "marking_status",
+          "maximum_marking_distance_m",
+          "nearest_marker_distance_m",
+          "nearest_marker_id",
+          "observed_marker_candidate_count",
+          "off_ball_distance_policy",
+          "off_ball_run_claim_boundary",
+          "off_ball_run_model",
+          "off_ball_run_reason",
+          "off_ball_run_status",
+          "run_displacement_m",
+          "run_duration_seconds",
+          "run_end_ball_distance_m",
+          "run_end_frame_id",
+          "run_forward_progression_m",
+          "run_lateral_displacement_m",
+          "run_player_id",
+          "run_speed_mps",
+          "run_start_ball_distance_m",
+          "run_start_frame_id",
+          "scl1_off_ball_run_purpose_status",
+          "source_anchor_id",
+          "target_player_id",
+          "target_player_team_role",
+          "unmarked_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "marking_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "off_ball_run_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "scl1_off_ball_run_purpose_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_030_blind_a_v0"
+    },
+    {
+      "concept": "scl1_030",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim. Observed off-ball movement episode only; no run type, purpose, decoy, marker-dragging, space creation, role, intent, quality, causation, or optimality claim. Requires run purpose, role, coordination, or tactical typing evidence; observed off-ball path geometry is not treated as decoy, marker dragging, overlap/underlap role, or third-player purpose.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "candidate_scope",
+          "candidate_team_role",
+          "coverage_status",
+          "marking_assignment_policy",
+          "marking_claim_boundary",
+          "marking_frame_id",
+          "marking_model",
+          "marking_reason",
+          "marking_status",
+          "maximum_marking_distance_m",
+          "nearest_marker_distance_m",
+          "nearest_marker_id",
+          "observed_marker_candidate_count",
+          "off_ball_distance_policy",
+          "off_ball_run_claim_boundary",
+          "off_ball_run_model",
+          "off_ball_run_reason",
+          "off_ball_run_status",
+          "run_displacement_m",
+          "run_duration_seconds",
+          "run_end_ball_distance_m",
+          "run_end_frame_id",
+          "run_forward_progression_m",
+          "run_lateral_displacement_m",
+          "run_player_id",
+          "run_speed_mps",
+          "run_start_ball_distance_m",
+          "run_start_frame_id",
+          "scl1_off_ball_run_purpose_status",
+          "source_anchor_id",
+          "target_player_id",
+          "target_player_team_role",
+          "unmarked_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "marking_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "off_ball_run_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "scl1_off_ball_run_purpose_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_030_blind_b_v0"
     }
   ]
 }

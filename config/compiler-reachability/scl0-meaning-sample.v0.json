@@ -342,10 +342,9 @@
     {
       "case_id": "scl1_019",
       "concept": "run_in_behind_candidate",
-      "sample_role": "scl1_missing_substrate_probe",
-      "expected_result": "not_compiler_reachable",
-      "expected_failure_taxonomy": "missing_primitive",
-      "coverage_classification": "partial_with_typed_gap",
+      "sample_role": "scl1_off_ball_run_type_gap_closure_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
       "definitions": [
         {
           "author_id": "blind_a",
@@ -512,6 +511,41 @@
         {
           "author_id": "blind_b",
           "text": "Generated space creation asks whether a new free space region appears after the action."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_029",
+      "concept": "diagonal_run_candidate",
+      "sample_role": "scl1_off_ball_run_type_gap_closure_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "A diagonal run is an off-ball run with both forward and lateral movement."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A diagonal off-ball run moves forward while also moving laterally across the pitch."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_030",
+      "concept": "decoy_run_candidate",
+      "sample_role": "scl1_missing_substrate_probe",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "A decoy run is an off-ball run intended to drag a marker away."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A marker-dragging run is an off ball run whose purpose is to pull a defender out of position."
         }
       ]
     }

@@ -109,7 +109,7 @@
  },
  {
   "concept": "scl1_019",
-  "classification": "partial_with_typed_gap",
+  "classification": "supported",
   "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },
@@ -164,6 +164,18 @@
  {
   "concept": "scl1_028",
   "classification": "partial_with_typed_gap",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_029",
+  "classification": "supported",
+  "composition_maturity": "semantic_contract_layer_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "scl1_030",
+  "classification": "missing_primitive",
   "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  }

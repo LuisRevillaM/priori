@@ -280,6 +280,10 @@ afl-set-piece-structure-verify:
 afl-off-ball-run-verify:
 	$(PYTHON) -m tqe.verification.afl_off_ball_run
 
+.PHONY: afl-off-ball-run-type-verify
+afl-off-ball-run-type-verify:
+	$(PYTHON) -m tqe.verification.afl_off_ball_run_type
+
 .PHONY: afl-marking-verify
 afl-marking-verify:
 	$(PYTHON) -m tqe.verification.afl_marking

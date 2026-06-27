@@ -1,7 +1,7 @@
 {
  "schema_version": "coverage-map.v0",
  "claim_status": "internal_steering_only_v0_estimated_not_external_claim",
- "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, Q2 generic binary episode joins, acceleration, set_piece_structure observed restart arrangement, off_ball_run observed movement, and marking observed proximity",
+ "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, Q2 generic binary episode joins, acceleration, set_piece_structure observed restart arrangement, off_ball_run observed movement, marking observed proximity, and off_ball_run_type observed path geometry",
  "denominator_note": "Coverage of Priori's authored 741-concept atlas inventory \u2014 NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
  "audit_note": "30-row stratified audit corrected aggregation/extremum operator inflation; additional audits are required before external coverage claims.",
  "roadmap_implications": [
@@ -13,6 +13,7 @@
   "set_piece_structure landed as observed restart/set-piece event plus at-frame outfield arrangement; routine typing, delivery trajectory, setup windows, and role/marking claims remain precise next blockers.",
   "off_ball_run landed as observed off-ball endpoint-window movement; named run typing, decoy/marker-dragging, space-creation, coordination, and path-purpose claims remain precise next blockers.",
   "marking landed as observed nearest-opposition proximity; marker assignment, man-or-zone responsibility, scheme, role, and intent remain precise next blockers.",
+  "off_ball_run_type landed for observed run-in-behind and diagonal path geometry over observed off-ball runs; decoy, marker-dragging, overlap/underlap role, third-player purpose, coordination, and tactical-purpose labels remain precise next blockers.",
   "Remaining reachability gaps are mostly not this primitive: moving-target interception, pass-line interception, cover shadow, reachability-field/region generation, graph construction, or margin/rate operators.",
   "Remaining carry-family gaps are mostly not base carrying: defender-bypass-by-carry, space generation, profile aggregation, contact/touch, body orientation, or learned value.",
   "Regenerate the coverage map after every substrate package so supported/partial/gap counts remain a living metric.",
@@ -20,16 +21,16 @@
  ],
  "total_concepts": 741,
  "coverage_counts": {
-  "supported": 355,
-  "partial_with_typed_gap": 172,
+  "supported": 356,
+  "partial_with_typed_gap": 171,
   "missing_modality": 43,
   "ambiguous_or_needs_definition": 9,
   "role_or_reference_gap": 13,
   "missing_primitive": 149
  },
  "coverage_pct": {
-  "supported": 47.9,
-  "partial_with_typed_gap": 23.2,
+  "supported": 48.0,
+  "partial_with_typed_gap": 23.1,
   "missing_modality": 5.8,
   "ambiguous_or_needs_definition": 1.2,
   "role_or_reference_gap": 1.8,
@@ -47,16 +48,16 @@
  "reachable_now_or_one_gap_pct": 71.1,
  "top_missing_primitives_by_unlock": [
   [
-   "off_ball_run_type_or_path",
-   13
-  ],
-  [
    "marking_assignment_or_scheme",
    10
   ],
   [
    "space_region_generation",
    8
+  ],
+  [
+   "off_ball_run_purpose_or_role",
+   6
   ],
   [
    "cover_shadow",
@@ -157,8 +158,8 @@
    "missing_modality": 1
   },
   "Off-ball attacking movement and behavior": {
-   "supported": 16,
-   "partial_with_typed_gap": 13,
+   "supported": 17,
+   "partial_with_typed_gap": 12,
    "missing_primitive": 14
   },
   "Outcomes, continuation, and consequences": {
@@ -360,7 +361,7 @@
   "systematic_correction": "aggregation/extremum operator rows were downgraded from supported to partial_with_typed_gap because no generic argmax/argmin/local extremum operator exists.",
   "initial_supported_pct_after_correction": 43.9,
   "initial_reachable_now_or_one_gap_pct_after_correction": 64.8,
-  "current_supported_pct_after_q2_redistribution": 47.9,
+  "current_supported_pct_after_q2_redistribution": 48.0,
   "current_reachable_now_or_one_gap_pct_after_q2_redistribution": 71.1
  }
 }
