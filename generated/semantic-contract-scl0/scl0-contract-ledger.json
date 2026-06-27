@@ -1,0 +1,1512 @@
+[
+  {
+    "author_id": "blind_a",
+    "case_id": "scl0_001",
+    "concept": "give_and_go_sequence",
+    "contract": {
+      "claim_boundary": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim. Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim.",
+      "composition_constraints": [
+        {
+          "description": "The terminal receiver must be the original input passer.",
+          "kind": "same_player_return",
+          "left_field": "input_passer_id",
+          "right_field": "terminal_receiver_id"
+        },
+        {
+          "kind": "distinct_entity_fields",
+          "value": "input_passer_id,relay_player_id"
+        },
+        {
+          "kind": "temporal_order",
+          "left_time_field": "relay_touch_frame_id",
+          "maximum_gap_seconds": 6.0,
+          "right_time_field": "terminal_controlled_reception_frame_id",
+          "temporal_relation": "left_before_right"
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "input_pass_episode_id",
+        "input_passer_id",
+        "pass_chain_status",
+        "relay_pass_episode_id",
+        "relay_player_id",
+        "terminal_controlled_reception_frame_id",
+        "terminal_receiver_id"
+      ],
+      "status_semantics": [
+        {
+          "field": "pass_chain_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "3aeb20da43030115bf4d7a17ba59c751891e2127dddea6f5fe04c0693afa5bf4",
+    "definition_text": "A give-and-go is a two-pass combination where the first passer plays to a teammate and then receives the return pass back as the terminal receiver.",
+    "opaque_search_concept": "scl0_001",
+    "target_id": "scl0_001_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.pass_chain_status",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "pass_chain_status"
+      },
+      {
+        "contract_path": "required_evidence.input_pass_episode_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "input_pass_episode_id"
+      },
+      {
+        "contract_path": "required_evidence.relay_pass_episode_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "relay_pass_episode_id"
+      },
+      {
+        "contract_path": "required_evidence.input_passer_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "input_passer_id"
+      },
+      {
+        "contract_path": "required_evidence.relay_player_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "relay_player_id"
+      },
+      {
+        "contract_path": "required_evidence.terminal_receiver_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "terminal_receiver_id"
+      },
+      {
+        "contract_path": "required_evidence.terminal_controlled_reception_frame_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "terminal_controlled_reception_frame_id"
+      },
+      {
+        "contract_path": "status_semantics.pass_chain_status",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.distinct_entity_fields",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": {
+          "kind": "distinct_entity_fields",
+          "value": "input_passer_id,relay_player_id"
+        }
+      },
+      {
+        "contract_path": "composition_constraints.temporal_order",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": {
+          "kind": "temporal_order",
+          "left_time_field": "relay_touch_frame_id",
+          "maximum_gap_seconds": 6.0,
+          "right_time_field": "terminal_controlled_reception_frame_id",
+          "temporal_relation": "left_before_right"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim."
+      },
+      {
+        "contract_path": "composition_constraints.same_player_return",
+        "rule_id": "meaning.constraint.same_player_return",
+        "source_end": 121,
+        "source_phrase": "return pass back",
+        "source_start": 105,
+        "value": {
+          "description": "The terminal receiver must be the original input passer.",
+          "kind": "same_player_return",
+          "left_field": "input_passer_id",
+          "right_field": "terminal_receiver_id"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.constraint.same_player_return",
+        "source_end": 121,
+        "source_phrase": "return pass back",
+        "source_start": 105,
+        "value": "Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl0_001",
+    "concept": "give_and_go_sequence",
+    "contract": {
+      "claim_boundary": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim. Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim.",
+      "composition_constraints": [
+        {
+          "description": "The terminal receiver must be the original input passer.",
+          "kind": "same_player_return",
+          "left_field": "input_passer_id",
+          "right_field": "terminal_receiver_id"
+        },
+        {
+          "kind": "distinct_entity_fields",
+          "value": "input_passer_id,relay_player_id"
+        },
+        {
+          "kind": "temporal_order",
+          "left_time_field": "relay_touch_frame_id",
+          "maximum_gap_seconds": 6.0,
+          "right_time_field": "terminal_controlled_reception_frame_id",
+          "temporal_relation": "left_before_right"
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "input_pass_episode_id",
+        "input_passer_id",
+        "pass_chain_status",
+        "relay_pass_episode_id",
+        "relay_player_id",
+        "terminal_controlled_reception_frame_id",
+        "terminal_receiver_id"
+      ],
+      "status_semantics": [
+        {
+          "field": "pass_chain_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "3aeb20da43030115bf4d7a17ba59c751891e2127dddea6f5fe04c0693afa5bf4",
+    "definition_text": "A wall-pass sequence has the ball leave the original passer, get relayed by a teammate, and come back to that same original passer.",
+    "opaque_search_concept": "scl0_001",
+    "target_id": "scl0_001_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.pass_chain_status",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": "pass_chain_status"
+      },
+      {
+        "contract_path": "required_evidence.input_pass_episode_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": "input_pass_episode_id"
+      },
+      {
+        "contract_path": "required_evidence.relay_pass_episode_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": "relay_pass_episode_id"
+      },
+      {
+        "contract_path": "required_evidence.input_passer_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": "input_passer_id"
+      },
+      {
+        "contract_path": "required_evidence.relay_player_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": "relay_player_id"
+      },
+      {
+        "contract_path": "required_evidence.terminal_receiver_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": "terminal_receiver_id"
+      },
+      {
+        "contract_path": "required_evidence.terminal_controlled_reception_frame_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": "terminal_controlled_reception_frame_id"
+      },
+      {
+        "contract_path": "status_semantics.pass_chain_status",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.distinct_entity_fields",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": {
+          "kind": "distinct_entity_fields",
+          "value": "input_passer_id,relay_player_id"
+        }
+      },
+      {
+        "contract_path": "composition_constraints.temporal_order",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": {
+          "kind": "temporal_order",
+          "left_time_field": "relay_touch_frame_id",
+          "maximum_gap_seconds": 6.0,
+          "right_time_field": "terminal_controlled_reception_frame_id",
+          "temporal_relation": "left_before_right"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 11,
+        "source_phrase": "wall-pass",
+        "source_start": 2,
+        "value": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim."
+      },
+      {
+        "contract_path": "composition_constraints.same_player_return",
+        "rule_id": "meaning.constraint.same_player_return",
+        "source_end": 130,
+        "source_phrase": "come back to that same original passer",
+        "source_start": 92,
+        "value": {
+          "description": "The terminal receiver must be the original input passer.",
+          "kind": "same_player_return",
+          "left_field": "input_passer_id",
+          "right_field": "terminal_receiver_id"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.constraint.same_player_return",
+        "source_end": 130,
+        "source_phrase": "come back to that same original passer",
+        "source_start": 92,
+        "value": "Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl0_002",
+    "concept": "receive_under_pressure",
+    "contract": {
+      "claim_boundary": "Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "approach_angle_degrees",
+        "carrier_id",
+        "closing_speed_mps",
+        "coverage_status",
+        "nearest_defender_distance_m",
+        "nearest_defender_id",
+        "pressure_frame_id",
+        "pressure_reason",
+        "pressure_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "pressure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "9d159fbef1968f7cdefb85502996958c3b11f04b2e0c42c01731b069b6ac5b1c",
+    "definition_text": "Receive under pressure means the ball receiver is under observed defender pressure at the reception moment.",
+    "opaque_search_concept": "scl0_002",
+    "target_id": "scl0_002_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.pressure_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "pressure_status"
+      },
+      {
+        "contract_path": "required_evidence.pressure_reason",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "pressure_reason"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.pressure_frame_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "pressure_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_defender_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "nearest_defender_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_defender_distance_m",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "nearest_defender_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.closing_speed_mps",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "closing_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.approach_angle_degrees",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "approach_angle_degrees"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.pressure_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.pressure.receive_under_pressure",
+        "source_end": 82,
+        "source_phrase": "under observed defender pressure",
+        "source_start": 50,
+        "value": "Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl0_002",
+    "concept": "receive_under_pressure",
+    "contract": {
+      "claim_boundary": "Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "approach_angle_degrees",
+        "carrier_id",
+        "closing_speed_mps",
+        "coverage_status",
+        "nearest_defender_distance_m",
+        "nearest_defender_id",
+        "pressure_frame_id",
+        "pressure_reason",
+        "pressure_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "pressure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "9d159fbef1968f7cdefb85502996958c3b11f04b2e0c42c01731b069b6ac5b1c",
+    "definition_text": "A reception under pressure occurs when the player receiving the ball has nearest-defender pressure at the receiving frame.",
+    "opaque_search_concept": "scl0_002",
+    "target_id": "scl0_002_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.pressure_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "pressure_status"
+      },
+      {
+        "contract_path": "required_evidence.pressure_reason",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "pressure_reason"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.pressure_frame_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "pressure_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_defender_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "nearest_defender_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_defender_distance_m",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "nearest_defender_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.closing_speed_mps",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "closing_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.approach_angle_degrees",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "approach_angle_degrees"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.pressure_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.pressure.receive_under_pressure",
+        "source_end": 26,
+        "source_phrase": "under pressure",
+        "source_start": 12,
+        "value": "Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl0_003",
+    "concept": "carry_out_of_pressure",
+    "contract": {
+      "claim_boundary": "Observed same-carrier pressure-distance change across a carry only; no pressure-breaking skill, intent, causation, or optimality claim.",
+      "composition_constraints": [
+        {
+          "after_frame_field": "carry_end_frame_id",
+          "before_frame_field": "carry_start_frame_id",
+          "kind": "frame_alignment"
+        },
+        {
+          "change_mode": "increase_at_least",
+          "kind": "before_after_same_anchor",
+          "maximum_before_value_m": 6.0,
+          "minimum_change_m": 1.5,
+          "status_fields": [
+            "pressure_status"
+          ],
+          "value_family": "pressure_distance",
+          "value_fields": [
+            "nearest_defender_distance_m"
+          ]
+        },
+        {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "after_value",
+        "before_value",
+        "carrier_id",
+        "carry_end_frame_id",
+        "carry_start_frame_id",
+        "carry_status",
+        "change_status",
+        "delta_value",
+        "join_reason",
+        "join_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "join_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "be0f38c80c7e9b7938fac7b49fa58df8f4bf46aff5940c8a5f92c0448b38e246",
+    "definition_text": "Carry out of pressure means the same carrier starts a carry under pressure and ends the carry with pressure reduced.",
+    "opaque_search_concept": "scl0_003",
+    "target_id": "scl0_003_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.join_status",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "join_status"
+      },
+      {
+        "contract_path": "required_evidence.join_reason",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "join_reason"
+      },
+      {
+        "contract_path": "required_evidence.carry_status",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "carry_status"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.carry_start_frame_id",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "carry_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.carry_end_frame_id",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "carry_end_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.change_status",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "change_status"
+      },
+      {
+        "contract_path": "required_evidence.before_value",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "before_value"
+      },
+      {
+        "contract_path": "required_evidence.after_value",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "after_value"
+      },
+      {
+        "contract_path": "required_evidence.delta_value",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "delta_value"
+      },
+      {
+        "contract_path": "status_semantics.join_status",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.same_anchor_identity",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      },
+      {
+        "contract_path": "composition_constraints.frame_alignment",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": {
+          "after_frame_field": "carry_end_frame_id",
+          "before_frame_field": "carry_start_frame_id",
+          "kind": "frame_alignment"
+        }
+      },
+      {
+        "contract_path": "composition_constraints.before_after_same_anchor",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": {
+          "change_mode": "increase_at_least",
+          "kind": "before_after_same_anchor",
+          "maximum_before_value_m": 6.0,
+          "minimum_change_m": 1.5,
+          "status_fields": [
+            "pressure_status"
+          ],
+          "value_family": "pressure_distance",
+          "value_fields": [
+            "nearest_defender_distance_m"
+          ]
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.composition.carry_out_of_pressure",
+        "source_end": 21,
+        "source_phrase": "out of pressure",
+        "source_start": 6,
+        "value": "Observed same-carrier pressure-distance change across a carry only; no pressure-breaking skill, intent, causation, or optimality claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl0_003",
+    "concept": "carry_out_of_pressure",
+    "contract": {
+      "claim_boundary": "Observed same-carrier pressure-distance change across a carry only; no pressure-breaking skill, intent, causation, or optimality claim.",
+      "composition_constraints": [
+        {
+          "after_frame_field": "carry_end_frame_id",
+          "before_frame_field": "carry_start_frame_id",
+          "kind": "frame_alignment"
+        },
+        {
+          "change_mode": "increase_at_least",
+          "kind": "before_after_same_anchor",
+          "maximum_before_value_m": 6.0,
+          "minimum_change_m": 1.5,
+          "status_fields": [
+            "pressure_status"
+          ],
+          "value_family": "pressure_distance",
+          "value_fields": [
+            "nearest_defender_distance_m"
+          ]
+        },
+        {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "after_value",
+        "before_value",
+        "carrier_id",
+        "carry_end_frame_id",
+        "carry_start_frame_id",
+        "carry_status",
+        "change_status",
+        "delta_value",
+        "join_reason",
+        "join_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "join_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "be0f38c80c7e9b7938fac7b49fa58df8f4bf46aff5940c8a5f92c0448b38e246",
+    "definition_text": "A player carries the ball from pressure into less pressure when the pressure distance improves between carry start and carry end.",
+    "opaque_search_concept": "scl0_003",
+    "target_id": "scl0_003_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.join_status",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "join_status"
+      },
+      {
+        "contract_path": "required_evidence.join_reason",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "join_reason"
+      },
+      {
+        "contract_path": "required_evidence.carry_status",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "carry_status"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.carry_start_frame_id",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "carry_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.carry_end_frame_id",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "carry_end_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.change_status",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "change_status"
+      },
+      {
+        "contract_path": "required_evidence.before_value",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "before_value"
+      },
+      {
+        "contract_path": "required_evidence.after_value",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "after_value"
+      },
+      {
+        "contract_path": "required_evidence.delta_value",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "delta_value"
+      },
+      {
+        "contract_path": "status_semantics.join_status",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.same_anchor_identity",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      },
+      {
+        "contract_path": "composition_constraints.frame_alignment",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": {
+          "after_frame_field": "carry_end_frame_id",
+          "before_frame_field": "carry_start_frame_id",
+          "kind": "frame_alignment"
+        }
+      },
+      {
+        "contract_path": "composition_constraints.before_after_same_anchor",
+        "rule_id": "meaning.composition.carry_pressure_change",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": {
+          "change_mode": "increase_at_least",
+          "kind": "before_after_same_anchor",
+          "maximum_before_value_m": 6.0,
+          "minimum_change_m": 1.5,
+          "status_fields": [
+            "pressure_status"
+          ],
+          "value_family": "pressure_distance",
+          "value_fields": [
+            "nearest_defender_distance_m"
+          ]
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.composition.carry_out_of_pressure",
+        "source_end": 58,
+        "source_phrase": "less pressure",
+        "source_start": 45,
+        "value": "Observed same-carrier pressure-distance change across a carry only; no pressure-breaking skill, intent, causation, or optimality claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl0_004",
+    "concept": "shape_expansion_episode",
+    "contract": {
+      "claim_boundary": "Observed team-shape measurement increase across a shared anchor only; no tactical quality, intent, or causation claim.",
+      "composition_constraints": [
+        {
+          "change_mode": "increase_at_least",
+          "kind": "before_after_same_anchor",
+          "maximum_before_value_m": 80.0,
+          "minimum_change_m": 4.0,
+          "status_fields": [
+            "team_compactness_status"
+          ],
+          "value_family": "team_shape_width_or_depth",
+          "value_fields": [
+            "team_width_m",
+            "team_depth_m",
+            "team_area_m2"
+          ]
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "after_value",
+        "after_value_field",
+        "before_value",
+        "before_value_field",
+        "change_reason",
+        "change_status",
+        "delta_value",
+        "minimum_change_m"
+      ],
+      "status_semantics": [
+        {
+          "field": "change_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "e89bb629ec14099961fa9cb1afb9f82fc80750eae098dcfded35821e56496d72",
+    "definition_text": "Shape expansion means team shape width or depth increases across the same anchor after the observed moment.",
+    "opaque_search_concept": "scl0_004",
+    "target_id": "scl0_004_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.change_status",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": "change_status"
+      },
+      {
+        "contract_path": "required_evidence.change_reason",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": "change_reason"
+      },
+      {
+        "contract_path": "required_evidence.before_value",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": "before_value"
+      },
+      {
+        "contract_path": "required_evidence.after_value",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": "after_value"
+      },
+      {
+        "contract_path": "required_evidence.delta_value",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": "delta_value"
+      },
+      {
+        "contract_path": "required_evidence.before_value_field",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": "before_value_field"
+      },
+      {
+        "contract_path": "required_evidence.after_value_field",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": "after_value_field"
+      },
+      {
+        "contract_path": "required_evidence.minimum_change_m",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": "minimum_change_m"
+      },
+      {
+        "contract_path": "status_semantics.change_status",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.before_after_same_anchor",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": {
+          "change_mode": "increase_at_least",
+          "kind": "before_after_same_anchor",
+          "maximum_before_value_m": 80.0,
+          "minimum_change_m": 4.0,
+          "status_fields": [
+            "team_compactness_status"
+          ],
+          "value_family": "team_shape_width_or_depth",
+          "value_fields": [
+            "team_width_m",
+            "team_depth_m",
+            "team_area_m2"
+          ]
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.composition.shape_expansion",
+        "source_end": 57,
+        "source_phrase": "width or depth increases",
+        "source_start": 33,
+        "value": "Observed team-shape measurement increase across a shared anchor only; no tactical quality, intent, or causation claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl0_004",
+    "concept": "shape_expansion_episode",
+    "contract": {
+      "claim_boundary": "Observed team-shape measurement increase across a shared anchor only; no tactical quality, intent, or causation claim.",
+      "composition_constraints": [
+        {
+          "change_mode": "increase_at_least",
+          "kind": "before_after_same_anchor",
+          "maximum_before_value_m": 80.0,
+          "minimum_change_m": 4.0,
+          "status_fields": [
+            "team_compactness_status"
+          ],
+          "value_family": "team_shape_width_or_depth",
+          "value_fields": [
+            "team_width_m",
+            "team_depth_m",
+            "team_area_m2"
+          ]
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "after_value",
+        "after_value_field",
+        "before_value",
+        "before_value_field",
+        "change_reason",
+        "change_status",
+        "delta_value",
+        "minimum_change_m"
+      ],
+      "status_semantics": [
+        {
+          "field": "change_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "e89bb629ec14099961fa9cb1afb9f82fc80750eae098dcfded35821e56496d72",
+    "definition_text": "A team-shape expansion occurs when the measured team width or depth gets larger after the anchor than before it.",
+    "opaque_search_concept": "scl0_004",
+    "target_id": "scl0_004_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.change_status",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": "change_status"
+      },
+      {
+        "contract_path": "required_evidence.change_reason",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": "change_reason"
+      },
+      {
+        "contract_path": "required_evidence.before_value",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": "before_value"
+      },
+      {
+        "contract_path": "required_evidence.after_value",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": "after_value"
+      },
+      {
+        "contract_path": "required_evidence.delta_value",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": "delta_value"
+      },
+      {
+        "contract_path": "required_evidence.before_value_field",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": "before_value_field"
+      },
+      {
+        "contract_path": "required_evidence.after_value_field",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": "after_value_field"
+      },
+      {
+        "contract_path": "required_evidence.minimum_change_m",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": "minimum_change_m"
+      },
+      {
+        "contract_path": "status_semantics.change_status",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.before_after_same_anchor",
+        "rule_id": "meaning.composition.team_shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": {
+          "change_mode": "increase_at_least",
+          "kind": "before_after_same_anchor",
+          "maximum_before_value_m": 80.0,
+          "minimum_change_m": 4.0,
+          "status_fields": [
+            "team_compactness_status"
+          ],
+          "value_family": "team_shape_width_or_depth",
+          "value_fields": [
+            "team_width_m",
+            "team_depth_m",
+            "team_area_m2"
+          ]
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.composition.shape_expansion",
+        "source_end": 79,
+        "source_phrase": "width or depth gets larger",
+        "source_start": 53,
+        "value": "Observed team-shape measurement increase across a shared anchor only; no tactical quality, intent, or causation claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl0_005",
+    "concept": "expected_pass_completion",
+    "contract": {
+      "claim_boundary": "Requires a learned probability/expectation model; tracking/events alone do not support this claim.",
+      "desired_output": "classification",
+      "required_evidence": [],
+      "required_modalities": [
+        "learned_model"
+      ],
+      "status_semantics": []
+    },
+    "contract_hash": "da0fe0015c96912e4df62c82df8b060aa9eaa9b7835662be427034103d7ae901",
+    "definition_text": "Expected pass completion is the model probability that a pass will be completed.",
+    "opaque_search_concept": "scl0_005",
+    "target_id": "scl0_005_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_modalities.learned_model",
+        "rule_id": "meaning.modality.learned_probability",
+        "source_end": 49,
+        "source_phrase": "probability",
+        "source_start": 38,
+        "value": "learned_model"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.modality.learned_probability",
+        "source_end": 49,
+        "source_phrase": "probability",
+        "source_start": 38,
+        "value": "Requires a learned probability/expectation model; tracking/events alone do not support this claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl0_005",
+    "concept": "expected_pass_completion",
+    "contract": {
+      "claim_boundary": "Requires a learned probability/expectation model; tracking/events alone do not support this claim.",
+      "desired_output": "classification",
+      "required_evidence": [],
+      "required_modalities": [
+        "learned_model"
+      ],
+      "status_semantics": []
+    },
+    "contract_hash": "da0fe0015c96912e4df62c82df8b060aa9eaa9b7835662be427034103d7ae901",
+    "definition_text": "Pass completion expectation means a learned likelihood or probability of a completed pass.",
+    "opaque_search_concept": "scl0_005",
+    "target_id": "scl0_005_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_modalities.learned_model",
+        "rule_id": "meaning.modality.learned_probability",
+        "source_end": 69,
+        "source_phrase": "probability",
+        "source_start": 58,
+        "value": "learned_model"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.modality.learned_probability",
+        "source_end": 69,
+        "source_phrase": "probability",
+        "source_start": 58,
+        "value": "Requires a learned probability/expectation model; tracking/events alone do not support this claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl0_006",
+    "concept": "goalkeeper_set_position_proxy",
+    "contract": {
+      "claim_boundary": "Requires body-orientation or stance data; tracking/events alone do not support this claim.",
+      "desired_output": "classification",
+      "required_evidence": [],
+      "required_modalities": [
+        "body_orientation"
+      ],
+      "status_semantics": []
+    },
+    "contract_hash": "ae528e06aff70a04a1edda6d67916b92cc44e34650edae87ef0604233caba7e1",
+    "definition_text": "Goalkeeper set position proxy depends on the goalkeeper's body orientation and stance before the action.",
+    "opaque_search_concept": "scl0_006",
+    "target_id": "scl0_006_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_modalities.body_orientation",
+        "rule_id": "meaning.modality.body_orientation",
+        "source_end": 74,
+        "source_phrase": "body orientation",
+        "source_start": 58,
+        "value": "body_orientation"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.modality.body_orientation",
+        "source_end": 74,
+        "source_phrase": "body orientation",
+        "source_start": 58,
+        "value": "Requires body-orientation or stance data; tracking/events alone do not support this claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl0_006",
+    "concept": "goalkeeper_set_position_proxy",
+    "contract": {
+      "claim_boundary": "Requires body-orientation or stance data; tracking/events alone do not support this claim.",
+      "desired_output": "classification",
+      "required_evidence": [],
+      "required_modalities": [
+        "body_orientation"
+      ],
+      "status_semantics": []
+    },
+    "contract_hash": "ae528e06aff70a04a1edda6d67916b92cc44e34650edae87ef0604233caba7e1",
+    "definition_text": "A keeper set-position proxy asks whether the goalkeeper is facing and set in a particular stance.",
+    "opaque_search_concept": "scl0_006",
+    "target_id": "scl0_006_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_modalities.body_orientation",
+        "rule_id": "meaning.modality.body_orientation",
+        "source_end": 96,
+        "source_phrase": "stance",
+        "source_start": 90,
+        "value": "body_orientation"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.modality.body_orientation",
+        "source_end": 96,
+        "source_phrase": "stance",
+        "source_start": 90,
+        "value": "Requires body-orientation or stance data; tracking/events alone do not support this claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl0_007",
+    "concept": "goal_kick_build_structure",
+    "contract": {
+      "claim_boundary": "Requires an executable goal-kick build-structure primitive; no substitute restart claim is inferred.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl0_restart_structure_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl0_restart_structure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "d7ba435a675a2d95f7424c25af710255f8174bd3d3f8ee7c78e25c86b027f200",
+    "definition_text": "Goal-kick build structure means the team shape and first build pattern from a goal kick restart.",
+    "opaque_search_concept": "scl0_007",
+    "target_id": "scl0_007_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl0_restart_structure_status",
+        "rule_id": "meaning.missing_primitive.restart_structure",
+        "source_end": 9,
+        "source_phrase": "Goal-kick",
+        "source_start": 0,
+        "value": "scl0_restart_structure_status"
+      },
+      {
+        "contract_path": "status_semantics.scl0_restart_structure_status",
+        "rule_id": "meaning.missing_primitive.restart_structure",
+        "source_end": 9,
+        "source_phrase": "Goal-kick",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.goal_kick_build_structure",
+        "source_end": 9,
+        "source_phrase": "Goal-kick",
+        "source_start": 0,
+        "value": "Requires an executable goal-kick build-structure primitive; no substitute restart claim is inferred."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl0_007",
+    "concept": "goal_kick_build_structure",
+    "contract": {
+      "claim_boundary": "Requires an executable goal-kick build-structure primitive; no substitute restart claim is inferred.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl0_restart_structure_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl0_restart_structure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "d7ba435a675a2d95f7424c25af710255f8174bd3d3f8ee7c78e25c86b027f200",
+    "definition_text": "Goal kick build-up structure describes the restart shape and build pattern after the goal kick is taken.",
+    "opaque_search_concept": "scl0_007",
+    "target_id": "scl0_007_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl0_restart_structure_status",
+        "rule_id": "meaning.missing_primitive.restart_structure",
+        "source_end": 9,
+        "source_phrase": "Goal kick",
+        "source_start": 0,
+        "value": "scl0_restart_structure_status"
+      },
+      {
+        "contract_path": "status_semantics.scl0_restart_structure_status",
+        "rule_id": "meaning.missing_primitive.restart_structure",
+        "source_end": 9,
+        "source_phrase": "Goal kick",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.goal_kick_build_structure",
+        "source_end": 9,
+        "source_phrase": "Goal kick",
+        "source_start": 0,
+        "value": "Requires an executable goal-kick build-structure primitive; no substitute restart claim is inferred."
+      }
+    ]
+  }
+]

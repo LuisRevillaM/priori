@@ -1,0 +1,440 @@
+{
+  "note": "Targets are opaque typed contracts generated from meaning definitions. Search receives no football concept name, definition text, gold chain, provider path, or pattern label.",
+  "sample_policy": "meaning_to_contract_scl0_six_gate_sample",
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.scl0_meaning_contracts",
+  "targets": [
+    {
+      "concept": "scl0_001",
+      "held_out": false,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim. Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "input_pass_episode_id",
+          "input_passer_id",
+          "pass_chain_status",
+          "relay_pass_episode_id",
+          "relay_player_id",
+          "terminal_controlled_reception_frame_id",
+          "terminal_receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl0_001_blind_a_v0"
+    },
+    {
+      "concept": "scl0_001",
+      "held_out": false,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim. Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "input_pass_episode_id",
+          "input_passer_id",
+          "pass_chain_status",
+          "relay_pass_episode_id",
+          "relay_player_id",
+          "terminal_controlled_reception_frame_id",
+          "terminal_receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl0_001_blind_b_v0"
+    },
+    {
+      "concept": "scl0_002",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "approach_angle_degrees",
+          "carrier_id",
+          "closing_speed_mps",
+          "coverage_status",
+          "nearest_defender_distance_m",
+          "nearest_defender_id",
+          "pressure_frame_id",
+          "pressure_reason",
+          "pressure_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl0_002_blind_a_v0"
+    },
+    {
+      "concept": "scl0_002",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "approach_angle_degrees",
+          "carrier_id",
+          "closing_speed_mps",
+          "coverage_status",
+          "nearest_defender_distance_m",
+          "nearest_defender_id",
+          "pressure_frame_id",
+          "pressure_reason",
+          "pressure_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl0_002_blind_b_v0"
+    },
+    {
+      "concept": "scl0_003",
+      "held_out": false,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed same-carrier pressure-distance change across a carry only; no pressure-breaking skill, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "after_frame_field": "carry_end_frame_id",
+            "before_frame_field": "carry_start_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 6.0,
+            "minimum_change_m": 1.5,
+            "status_fields": [
+              "pressure_status"
+            ],
+            "value_family": "pressure_distance",
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ]
+          },
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "after_value",
+          "before_value",
+          "carrier_id",
+          "carry_end_frame_id",
+          "carry_start_frame_id",
+          "carry_status",
+          "change_status",
+          "delta_value",
+          "join_reason",
+          "join_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl0_003_blind_a_v0"
+    },
+    {
+      "concept": "scl0_003",
+      "held_out": false,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed same-carrier pressure-distance change across a carry only; no pressure-breaking skill, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "after_frame_field": "carry_end_frame_id",
+            "before_frame_field": "carry_start_frame_id",
+            "kind": "frame_alignment"
+          },
+          {
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 6.0,
+            "minimum_change_m": 1.5,
+            "status_fields": [
+              "pressure_status"
+            ],
+            "value_family": "pressure_distance",
+            "value_fields": [
+              "nearest_defender_distance_m"
+            ]
+          },
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "after_value",
+          "before_value",
+          "carrier_id",
+          "carry_end_frame_id",
+          "carry_start_frame_id",
+          "carry_status",
+          "change_status",
+          "delta_value",
+          "join_reason",
+          "join_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl0_003_blind_b_v0"
+    },
+    {
+      "concept": "scl0_004",
+      "held_out": true,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed team-shape measurement increase across a shared anchor only; no tactical quality, intent, or causation claim.",
+        "composition_constraints": [
+          {
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 80.0,
+            "minimum_change_m": 4.0,
+            "status_fields": [
+              "team_compactness_status"
+            ],
+            "value_family": "team_shape_width_or_depth",
+            "value_fields": [
+              "team_width_m",
+              "team_depth_m",
+              "team_area_m2"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "after_value",
+          "after_value_field",
+          "before_value",
+          "before_value_field",
+          "change_reason",
+          "change_status",
+          "delta_value",
+          "minimum_change_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "change_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl0_004_blind_a_v0"
+    },
+    {
+      "concept": "scl0_004",
+      "held_out": true,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed team-shape measurement increase across a shared anchor only; no tactical quality, intent, or causation claim.",
+        "composition_constraints": [
+          {
+            "change_mode": "increase_at_least",
+            "kind": "before_after_same_anchor",
+            "maximum_before_value_m": 80.0,
+            "minimum_change_m": 4.0,
+            "status_fields": [
+              "team_compactness_status"
+            ],
+            "value_family": "team_shape_width_or_depth",
+            "value_fields": [
+              "team_width_m",
+              "team_depth_m",
+              "team_area_m2"
+            ]
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "after_value",
+          "after_value_field",
+          "before_value",
+          "before_value_field",
+          "change_reason",
+          "change_status",
+          "delta_value",
+          "minimum_change_m"
+        ],
+        "status_semantics": [
+          {
+            "field": "change_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl0_004_blind_b_v0"
+    },
+    {
+      "concept": "scl0_005",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires a learned probability/expectation model; tracking/events alone do not support this claim.",
+        "desired_output": "classification",
+        "required_evidence": [],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": []
+      },
+      "target_id": "scl0_005_blind_a_v0"
+    },
+    {
+      "concept": "scl0_005",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires a learned probability/expectation model; tracking/events alone do not support this claim.",
+        "desired_output": "classification",
+        "required_evidence": [],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": []
+      },
+      "target_id": "scl0_005_blind_b_v0"
+    },
+    {
+      "concept": "scl0_006",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires body-orientation or stance data; tracking/events alone do not support this claim.",
+        "desired_output": "classification",
+        "required_evidence": [],
+        "required_modalities": [
+          "body_orientation"
+        ],
+        "status_semantics": []
+      },
+      "target_id": "scl0_006_blind_a_v0"
+    },
+    {
+      "concept": "scl0_006",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires body-orientation or stance data; tracking/events alone do not support this claim.",
+        "desired_output": "classification",
+        "required_evidence": [],
+        "required_modalities": [
+          "body_orientation"
+        ],
+        "status_semantics": []
+      },
+      "target_id": "scl0_006_blind_b_v0"
+    },
+    {
+      "concept": "scl0_007",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires an executable goal-kick build-structure primitive; no substitute restart claim is inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl0_restart_structure_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl0_restart_structure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl0_007_blind_a_v0"
+    },
+    {
+      "concept": "scl0_007",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires an executable goal-kick build-structure primitive; no substitute restart claim is inferred.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl0_restart_structure_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl0_restart_structure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl0_007_blind_b_v0"
+    }
+  ]
+}

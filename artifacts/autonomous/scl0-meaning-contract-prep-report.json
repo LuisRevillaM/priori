@@ -1,0 +1,34 @@
+{
+  "findings": [],
+  "outputs": {
+    "contract_ledger_path": "generated/semantic-contract-scl0/scl0-contract-ledger.json",
+    "coverage_ledger_path": "generated/semantic-contract-scl0/scl0-coverage-ledger.json",
+    "targets_path": "generated/semantic-contract-scl0/scl0-search-targets.v0.json"
+  },
+  "schema_version": "scl0_meaning_contract_prepare.v0",
+  "scope": {
+    "catalog_refs_allowed_in_contract": false,
+    "generator_receives_concept_id": false,
+    "gold_chains_allowed_in_contract": false,
+    "natural_language_compiler": false,
+    "search_receives_definition_text": false,
+    "search_receives_football_concept_name": false
+  },
+  "six_gates": {
+    "clean_meaning_input": true,
+    "generator_faithfulness_trace_and_perturbation": true,
+    "held_out_configured": true,
+    "independent_author_stability": true,
+    "known_negatives_configured": true,
+    "no_provider_gold_pattern_leakage": true
+  },
+  "status": "PASS",
+  "summary": {
+    "case_count": 7,
+    "definition_count": 14,
+    "findings_count": 0,
+    "held_out_case_count": 1,
+    "known_negative_case_count": 3,
+    "target_count": 14
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "schema_version": "scl0_meaning_sample.v0",
+  "sample_policy": "meaning_to_contract_scl0_six_gate_sample",
+  "note": "Definitions are independently authored football meanings. The generator must consume only definition text, not concept ids, gold chains, catalog refs, or known provider paths.",
+  "cases": [
+    {
+      "case_id": "scl0_001",
+      "concept": "give_and_go_sequence",
+      "sample_role": "positive_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "A give-and-go is a two-pass combination where the first passer plays to a teammate and then receives the return pass back as the terminal receiver."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A wall-pass sequence has the ball leave the original passer, get relayed by a teammate, and come back to that same original passer."
+        }
+      ],
+      "perturbations": [
+        {
+          "perturbation_id": "drop_return_clause",
+          "text": "A two-pass sequence where the first passer plays to a teammate and the teammate continues the ball onward to a different terminal receiver.",
+          "must_remove_constraint_kind": "same_player_return"
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_002",
+      "concept": "receive_under_pressure",
+      "sample_role": "positive_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Receive under pressure means the ball receiver is under observed defender pressure at the reception moment."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A reception under pressure occurs when the player receiving the ball has nearest-defender pressure at the receiving frame."
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_003",
+      "concept": "carry_out_of_pressure",
+      "sample_role": "positive_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Carry out of pressure means the same carrier starts a carry under pressure and ends the carry with pressure reduced."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A player carries the ball from pressure into less pressure when the pressure distance improves between carry start and carry end."
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_004",
+      "concept": "shape_expansion_episode",
+      "sample_role": "held_out_positive",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "held_out": true,
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Shape expansion means team shape width or depth increases across the same anchor after the observed moment."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A team-shape expansion occurs when the measured team width or depth gets larger after the anchor than before it."
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_005",
+      "concept": "expected_pass_completion",
+      "sample_role": "known_negative",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "coverage_classification": "missing_modality",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Expected pass completion is the model probability that a pass will be completed."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Pass completion expectation means a learned likelihood or probability of a completed pass."
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_006",
+      "concept": "goalkeeper_set_position_proxy",
+      "sample_role": "known_negative",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "coverage_classification": "missing_modality",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Goalkeeper set position proxy depends on the goalkeeper's body orientation and stance before the action."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "A keeper set-position proxy asks whether the goalkeeper is facing and set in a particular stance."
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_007",
+      "concept": "goal_kick_build_structure",
+      "sample_role": "known_negative",
+      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": "missing_primitive",
+      "coverage_classification": "missing_primitive",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Goal-kick build structure means the team shape and first build pattern from a goal kick restart."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Goal kick build-up structure describes the restart shape and build pattern after the goal kick is taken."
+        }
+      ]
+    }
+  ]
+}

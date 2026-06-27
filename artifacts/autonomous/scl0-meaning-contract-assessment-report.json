@@ -1,0 +1,408 @@
+{
+  "cases": [
+    {
+      "case_id": "scl0_001",
+      "concept": "give_and_go_sequence",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
+      "findings": [],
+      "held_out": false,
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "3aeb20da43030115bf4d7a17ba59c751891e2127dddea6f5fe04c0693afa5bf4",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "one_touch_relay_episode",
+            "one_touch_relay_episode",
+            "controlled_pass_episode",
+            "pass_chain_episode",
+            "join_episode_sets"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "generic_binary_episode_join",
+            "generic_same_entity_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery"
+          ],
+          "target_id": "scl0_001_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "3aeb20da43030115bf4d7a17ba59c751891e2127dddea6f5fe04c0693afa5bf4",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "one_touch_relay_episode",
+            "one_touch_relay_episode",
+            "controlled_pass_episode",
+            "pass_chain_episode",
+            "join_episode_sets"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "generic_binary_episode_join",
+            "generic_same_entity_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery"
+          ],
+          "target_id": "scl0_001_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_002",
+      "concept": "receive_under_pressure",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
+      "findings": [],
+      "held_out": false,
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "9d159fbef1968f7cdefb85502996958c3b11f04b2e0c42c01731b069b6ac5b1c",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "pressure_on_carrier"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "target_id": "scl0_002_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "9d159fbef1968f7cdefb85502996958c3b11f04b2e0c42c01731b069b6ac5b1c",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "pressure_on_carrier"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
+          "target_id": "scl0_002_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_003",
+      "concept": "carry_out_of_pressure",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
+      "findings": [],
+      "held_out": false,
+      "sample_role": "positive_probe",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "be0f38c80c7e9b7938fac7b49fa58df8f4bf46aff5940c8a5f92c0448b38e246",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "carry_episode",
+            "controlled_pass_episode",
+            "carry_episode",
+            "controlled_pass_episode",
+            "carry_episode",
+            "pressure_on_carrier",
+            "controlled_pass_episode",
+            "carry_episode",
+            "pressure_on_carrier",
+            "change_across_anchor",
+            "join_episode_sets"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 0,
+          "rules_used": [
+            "generic_before_after_change",
+            "generic_binary_episode_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery",
+            "typed_value_field_provider_discovery"
+          ],
+          "target_id": "scl0_003_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "be0f38c80c7e9b7938fac7b49fa58df8f4bf46aff5940c8a5f92c0448b38e246",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "carry_episode",
+            "controlled_pass_episode",
+            "carry_episode",
+            "controlled_pass_episode",
+            "carry_episode",
+            "pressure_on_carrier",
+            "controlled_pass_episode",
+            "carry_episode",
+            "pressure_on_carrier",
+            "change_across_anchor",
+            "join_episode_sets"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 0,
+          "rules_used": [
+            "generic_before_after_change",
+            "generic_binary_episode_join",
+            "provider_field_backward_search",
+            "typed_join_key_discovery",
+            "typed_value_field_provider_discovery"
+          ],
+          "target_id": "scl0_003_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_004",
+      "concept": "shape_expansion_episode",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
+      "findings": [],
+      "held_out": true,
+      "sample_role": "held_out_positive",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "e89bb629ec14099961fa9cb1afb9f82fc80750eae098dcfded35821e56496d72",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "controlled_pass_episode",
+            "team_compactness",
+            "controlled_pass_episode",
+            "team_compactness",
+            "change_across_anchor"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "generic_before_after_change",
+            "provider_field_backward_search",
+            "typed_value_field_provider_discovery"
+          ],
+          "target_id": "scl0_004_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "e89bb629ec14099961fa9cb1afb9f82fc80750eae098dcfded35821e56496d72",
+          "failure_taxonomy": null,
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [
+            "controlled_pass_episode",
+            "controlled_pass_episode",
+            "team_compactness",
+            "controlled_pass_episode",
+            "team_compactness",
+            "change_across_anchor"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "generic_before_after_change",
+            "provider_field_backward_search",
+            "typed_value_field_provider_discovery"
+          ],
+          "target_id": "scl0_004_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_005",
+      "concept": "expected_pass_completion",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "expected_result": "not_compiler_reachable",
+      "findings": [],
+      "held_out": false,
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "da0fe0015c96912e4df62c82df8b060aa9eaa9b7835662be427034103d7ae901",
+          "failure_taxonomy": "unsupported_modality",
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [],
+          "requested_evidence_failure_count": null,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "target_id": "scl0_005_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "da0fe0015c96912e4df62c82df8b060aa9eaa9b7835662be427034103d7ae901",
+          "failure_taxonomy": "unsupported_modality",
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [],
+          "requested_evidence_failure_count": null,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "target_id": "scl0_005_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_006",
+      "concept": "goalkeeper_set_position_proxy",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "expected_result": "not_compiler_reachable",
+      "findings": [],
+      "held_out": false,
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "ae528e06aff70a04a1edda6d67916b92cc44e34650edae87ef0604233caba7e1",
+          "failure_taxonomy": "unsupported_modality",
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [],
+          "requested_evidence_failure_count": null,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "target_id": "scl0_006_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "ae528e06aff70a04a1edda6d67916b92cc44e34650edae87ef0604233caba7e1",
+          "failure_taxonomy": "unsupported_modality",
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [],
+          "requested_evidence_failure_count": null,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "target_id": "scl0_006_blind_b_v0"
+        }
+      ]
+    },
+    {
+      "case_id": "scl0_007",
+      "concept": "goal_kick_build_structure",
+      "expected_failure_taxonomy": "missing_primitive",
+      "expected_result": "not_compiler_reachable",
+      "findings": [],
+      "held_out": false,
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "author_id": "blind_a",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "d7ba435a675a2d95f7424c25af710255f8174bd3d3f8ee7c78e25c86b027f200",
+          "failure_taxonomy": "missing_primitive",
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [],
+          "requested_evidence_failure_count": null,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "target_id": "scl0_007_blind_a_v0"
+        },
+        {
+          "author_id": "blind_b",
+          "concept_name_used_as_hint": false,
+          "contract_hash": "d7ba435a675a2d95f7424c25af710255f8174bd3d3f8ee7c78e25c86b027f200",
+          "failure_taxonomy": "missing_primitive",
+          "gold_chain_used_as_input": false,
+          "pattern_dispatch_used": false,
+          "providers_used": [],
+          "requested_evidence_failure_count": null,
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "target_id": "scl0_007_blind_b_v0"
+        }
+      ]
+    }
+  ],
+  "findings": [],
+  "inputs": {
+    "contract_ledger": "generated/semantic-contract-scl0/scl0-contract-ledger.json",
+    "search_row_ledger": "generated/semantic-contract-scl0/search-run/row-ledger.json",
+    "targets": "generated/semantic-contract-scl0/scl0-search-targets.v0.json"
+  },
+  "schema_version": "scl0_meaning_contract_assessment.v0",
+  "scope": {
+    "atlas_wide": false,
+    "claim": "Small SCL-0 proof that traceable meaning definitions can generate typed contracts which the existing search compiler can execute or gap honestly. Not natural-language compilation.",
+    "search_receives_only_typed_contract": true
+  },
+  "six_gates": {
+    "clean_meaning_input": true,
+    "generator_faithfulness_trace_and_perturbation": true,
+    "held_out_concepts_work": true,
+    "independent_author_stability": true,
+    "known_negatives_fail_honestly": true,
+    "no_provider_gold_pattern_leakage": true,
+    "search_receives_only_contract": true
+  },
+  "status": "PASS",
+  "summary": {
+    "case_count": 7,
+    "failure_distribution": {
+      "missing_primitive": 2,
+      "unsupported_modality": 4
+    },
+    "findings_count": 0,
+    "held_out_compiler_reachable_count": 2,
+    "held_out_target_count": 2,
+    "known_negative_honest_failure_count": 6,
+    "known_negative_target_count": 6,
+    "result_distribution": {
+      "compiler_reachable": 8,
+      "not_compiler_reachable": 6
+    },
+    "target_count": 14
+  }
+}

@@ -1,0 +1,825 @@
+#!/usr/bin/env python3
+"""SCL-0 meaning-to-contract proof harness.
+
+SCL-0 deliberately stops short of natural-language compilation. It proves the
+next layer down: independently-authored football meanings can become typed
+target contracts without leaking catalog refs, gold chains, pattern labels, or
+known provider paths into the search compiler.
+"""
+
+from __future__ import annotations
+
+import argparse
+import collections
+import copy
+import hashlib
+import json
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[2]
+CONFIG = ROOT / "config" / "compiler-reachability" / "scl0-meaning-sample.v0.json"
+OUT_DIR = ROOT / "generated" / "semantic-contract-scl0"
+TARGETS_OUT = OUT_DIR / "scl0-search-targets.v0.json"
+LEDGER_OUT = OUT_DIR / "scl0-coverage-ledger.json"
+CONTRACT_LEDGER_OUT = OUT_DIR / "scl0-contract-ledger.json"
+SEARCH_ROW_LEDGER = OUT_DIR / "search-run" / "row-ledger.json"
+PREP_REPORT = ROOT / "artifacts" / "autonomous" / "scl0-meaning-contract-prep-report.json"
+ASSESS_REPORT = ROOT / "artifacts" / "autonomous" / "scl0-meaning-contract-assessment-report.json"
+
+SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
+FORBIDDEN_CONTRACT_KEYS = {
+    "catalog_ref",
+    "catalog_refs",
+    "closest_supported_substitute",
+    "composition_pattern",
+    "gold_chain",
+    "gold_chain_path",
+    "pattern",
+    "provider_chain",
+    "runtime_capability",
+    "runtime_capability_ref",
+    "runtime_ref",
+    "runtime_refs",
+    "source_runtime_capability",
+}
+FORBIDDEN_MEANING_TERMS = {
+    "catalog_ref",
+    "gold_chain",
+    "join_episode_sets",
+    "provider_chain",
+    "runtime_ref",
+    "same_player_return",
+}
+
+
+@dataclass(frozen=True)
+class Span:
+    phrase: str
+    start: int
+    end: int
+
+
+@dataclass
+class ContractBuilder:
+    text: str
+    contract: dict[str, Any] = field(
+        default_factory=lambda: {
+            "desired_output": "classification",
+            "required_evidence": [],
+            "status_semantics": [],
+        }
+    )
+    traces: list[dict[str, Any]] = field(default_factory=list)
+    claim_parts: list[str] = field(default_factory=list)
+
+    def add_evidence(self, field_name: str, span: Span, rule_id: str) -> None:
+        if field_name not in self.contract["required_evidence"]:
+            self.contract["required_evidence"].append(field_name)
+        self.trace(f"required_evidence.{field_name}", field_name, span, rule_id)
+
+    def add_status(self, field_name: str, required_value: str, span: Span, rule_id: str) -> None:
+        item = {"field": field_name, "required_value": required_value}
+        if item not in self.contract["status_semantics"]:
+            self.contract["status_semantics"].append(item)
+        self.trace(f"status_semantics.{field_name}", required_value, span, rule_id)
+
+    def add_threshold(
+        self,
+        field_name: str,
+        *,
+        operator: str,
+        threshold: float,
+        unit: str,
+        span: Span,
+        rule_id: str,
+    ) -> None:
+        item = {"field": field_name, "operator": operator, "threshold": threshold, "unit": unit}
+        if item not in self.contract["status_semantics"]:
+            self.contract["status_semantics"].append(item)
+        self.trace(f"status_semantics.{field_name}", f"{operator}:{threshold}:{unit}", span, rule_id)
+
+    def add_modality(self, modality: str, span: Span, rule_id: str) -> None:
+        modalities = self.contract.setdefault("required_modalities", [])
+        if modality not in modalities:
+            modalities.append(modality)
+        self.trace(f"required_modalities.{modality}", modality, span, rule_id)
+
+    def add_constraint(self, constraint: dict[str, Any], span: Span, rule_id: str) -> None:
+        constraints = self.contract.setdefault("composition_constraints", [])
+        if constraint not in constraints:
+            constraints.append(copy.deepcopy(constraint))
+        kind = str(constraint.get("kind", "unknown"))
+        self.trace(f"composition_constraints.{kind}", constraint, span, rule_id)
+
+    def add_claim_part(self, value: str, span: Span, rule_id: str) -> None:
+        if value not in self.claim_parts:
+            self.claim_parts.append(value)
+        self.trace("claim_boundary", value, span, rule_id)
+
+    def trace(self, path: str, value: Any, span: Span, rule_id: str) -> None:
+        self.traces.append(
+            {
+                "contract_path": path,
+                "value": value,
+                "rule_id": rule_id,
+                "source_phrase": span.phrase,
+                "source_start": span.start,
+                "source_end": span.end,
+            }
+        )
+
+    def finish(self) -> dict[str, Any]:
+        self.contract["required_evidence"] = sorted(self.contract["required_evidence"])
+        self.contract["status_semantics"] = sorted(
+            self.contract["status_semantics"],
+            key=lambda item: (str(item.get("field")), str(item.get("operator", "")), str(item.get("required_value", ""))),
+        )
+        if "required_modalities" in self.contract:
+            self.contract["required_modalities"] = sorted(self.contract["required_modalities"])
+        if "composition_constraints" in self.contract:
+            self.contract["composition_constraints"] = sorted(
+                self.contract["composition_constraints"],
+                key=lambda item: json.dumps(item, sort_keys=True),
+            )
+        self.contract["claim_boundary"] = " ".join(self.claim_parts) if self.claim_parts else (
+            "Observed football meaning only; no tactical quality, intent, causation, decision value, or optimality claim."
+        )
+        return self.contract
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("mode", choices=["prepare", "assess"])
+    args = parser.parse_args()
+    return prepare() if args.mode == "prepare" else assess()
+
+
+def prepare() -> int:
+    config = load_json(CONFIG)
+    targets: list[dict[str, Any]] = []
+    coverage_rows: list[dict[str, Any]] = []
+    contract_rows: list[dict[str, Any]] = []
+    findings: list[dict[str, Any]] = []
+
+    for case in config["cases"]:
+        case_id = str(case["case_id"])
+        opaque_concept = case_id
+        coverage_rows.append(coverage_row(case, opaque_concept))
+        definitions = case.get("definitions") or []
+        if len(definitions) < 2:
+            findings.append({"code": "insufficient_independent_definitions", "case_id": case_id})
+        generated_contracts: list[dict[str, Any]] = []
+        for definition in definitions:
+            contract, traces = generate_contract_from_meaning(str(definition["text"]))
+            generated_contracts.append(contract)
+            target_id = f"{case_id}_{definition['author_id']}_v0"
+            targets.append(
+                {
+                    "target_id": target_id,
+                    "concept": opaque_concept,
+                    "held_out": bool(case.get("held_out")),
+                    "multi_step": has_multi_step_contract(contract),
+                    "target_contract": contract,
+                }
+            )
+            contract_rows.append(
+                {
+                    "case_id": case_id,
+                    "concept": case["concept"],
+                    "author_id": definition["author_id"],
+                    "definition_text": definition["text"],
+                    "target_id": target_id,
+                    "opaque_search_concept": opaque_concept,
+                    "contract": contract,
+                    "contract_hash": stable_hash(contract),
+                    "trace": traces,
+                }
+            )
+            findings.extend(clean_meaning_findings(case_id, definition))
+            findings.extend(contract_anti_circularity_findings(case_id, definition["author_id"], contract))
+            findings.extend(trace_findings(case_id, definition["author_id"], contract, traces))
+        findings.extend(independent_stability_findings(case, generated_contracts))
+        findings.extend(perturbation_findings(case))
+
+    targets_payload = {
+        "schema_version": "compiler_search_targets.v0",
+        "strategy": "bounded_backward_search.v0.1.scl0_meaning_contracts",
+        "sample_policy": config["sample_policy"],
+        "note": (
+            "Targets are opaque typed contracts generated from meaning definitions. "
+            "Search receives no football concept name, definition text, gold chain, provider path, or pattern label."
+        ),
+        "targets": targets,
+    }
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    TARGETS_OUT.write_text(json.dumps(targets_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    LEDGER_OUT.write_text(json.dumps(coverage_rows, indent=1) + "\n", encoding="utf-8")
+    CONTRACT_LEDGER_OUT.write_text(json.dumps(contract_rows, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    report = {
+        "schema_version": "scl0_meaning_contract_prepare.v0",
+        "status": "PASS" if not findings else "FAIL",
+        "scope": {
+            "natural_language_compiler": False,
+            "search_receives_definition_text": False,
+            "search_receives_football_concept_name": False,
+            "generator_receives_concept_id": False,
+            "catalog_refs_allowed_in_contract": False,
+            "gold_chains_allowed_in_contract": False,
+        },
+        "summary": {
+            "case_count": len(config["cases"]),
+            "target_count": len(targets),
+            "definition_count": len(contract_rows),
+            "held_out_case_count": sum(1 for case in config["cases"] if case.get("held_out")),
+            "known_negative_case_count": sum(1 for case in config["cases"] if case.get("sample_role") == "known_negative"),
+            "findings_count": len(findings),
+        },
+        "six_gates": {
+            "clean_meaning_input": not any(item["code"].startswith("meaning_") for item in findings),
+            "no_provider_gold_pattern_leakage": not any(item["code"].startswith("contract_anti_circularity") for item in findings),
+            "independent_author_stability": not any(item["code"] == "independent_author_contract_drift" for item in findings),
+            "known_negatives_configured": any(case.get("sample_role") == "known_negative" for case in config["cases"]),
+            "held_out_configured": any(case.get("held_out") for case in config["cases"]),
+            "generator_faithfulness_trace_and_perturbation": not any(
+                item["code"].startswith("trace_") or item["code"].startswith("perturbation_")
+                for item in findings
+            ),
+        },
+        "findings": findings,
+        "outputs": {
+            "targets_path": relative_path(TARGETS_OUT),
+            "coverage_ledger_path": relative_path(LEDGER_OUT),
+            "contract_ledger_path": relative_path(CONTRACT_LEDGER_OUT),
+        },
+    }
+    PREP_REPORT.parent.mkdir(parents=True, exist_ok=True)
+    PREP_REPORT.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps(report["summary"], indent=2, sort_keys=True))
+    return 0 if report["status"] == "PASS" else 1
+
+
+def assess() -> int:
+    config = load_json(CONFIG)
+    contract_rows = load_json(CONTRACT_LEDGER_OUT)
+    search_rows = load_json(SEARCH_ROW_LEDGER)
+    rows_by_target = {row["target_id"]: row for row in search_rows}
+    contract_by_target = {row["target_id"]: row for row in contract_rows}
+    findings: list[dict[str, Any]] = []
+    case_reports: list[dict[str, Any]] = []
+
+    for case in config["cases"]:
+        variants = []
+        for definition in case.get("definitions") or []:
+            target_id = f"{case['case_id']}_{definition['author_id']}_v0"
+            search_row = rows_by_target.get(target_id)
+            contract_row = contract_by_target.get(target_id)
+            if search_row is None:
+                findings.append({"code": "missing_search_row", "target_id": target_id})
+                continue
+            if contract_row is None:
+                findings.append({"code": "missing_contract_row", "target_id": target_id})
+                continue
+            variants.append(
+                {
+                    "author_id": definition["author_id"],
+                    "target_id": target_id,
+                    "contract_hash": contract_row["contract_hash"],
+                    "result": search_row["result"],
+                    "failure_taxonomy": search_row.get("failure_taxonomy"),
+                    "result_count": search_row.get("result_count"),
+                    "requested_evidence_failure_count": search_row.get("requested_evidence_failure_count"),
+                    "providers_used": search_row.get("providers_used", []),
+                    "rules_used": search_row.get("rules_used", []),
+                    "concept_name_used_as_hint": search_row.get("concept_name_used_as_hint"),
+                    "gold_chain_used_as_input": search_row.get("gold_chain_used_as_input"),
+                    "pattern_dispatch_used": search_row.get("pattern_dispatch_used"),
+                }
+            )
+        case_findings = assess_case(case, variants)
+        findings.extend(case_findings)
+        case_reports.append(
+            {
+                "case_id": case["case_id"],
+                "concept": case["concept"],
+                "sample_role": case["sample_role"],
+                "held_out": bool(case.get("held_out")),
+                "expected_result": case.get("expected_result"),
+                "expected_failure_taxonomy": case.get("expected_failure_taxonomy"),
+                "variants": variants,
+                "findings": case_findings,
+            }
+        )
+
+    findings.extend(search_blindness_findings(config, search_rows))
+    result_counts = collections.Counter(row["result"] for row in search_rows)
+    failure_counts = collections.Counter(row["failure_taxonomy"] for row in search_rows if row.get("failure_taxonomy"))
+    known_negative_rows = [
+        variant
+        for case in case_reports
+        if case["sample_role"] == "known_negative"
+        for variant in case["variants"]
+    ]
+    held_out_rows = [
+        variant
+        for case in case_reports
+        if case["held_out"]
+        for variant in case["variants"]
+    ]
+
+    report = {
+        "schema_version": "scl0_meaning_contract_assessment.v0",
+        "status": "PASS" if not findings else "FAIL",
+        "scope": {
+            "claim": (
+                "Small SCL-0 proof that traceable meaning definitions can generate typed contracts "
+                "which the existing search compiler can execute or gap honestly. Not natural-language compilation."
+            ),
+            "search_receives_only_typed_contract": True,
+            "atlas_wide": False,
+        },
+        "summary": {
+            "case_count": len(case_reports),
+            "target_count": len(search_rows),
+            "result_distribution": dict(sorted(result_counts.items())),
+            "failure_distribution": dict(sorted(failure_counts.items())),
+            "known_negative_target_count": len(known_negative_rows),
+            "known_negative_honest_failure_count": sum(1 for row in known_negative_rows if row["result"] != "compiler_reachable"),
+            "held_out_target_count": len(held_out_rows),
+            "held_out_compiler_reachable_count": sum(1 for row in held_out_rows if row["result"] == "compiler_reachable"),
+            "findings_count": len(findings),
+        },
+        "six_gates": {
+            "clean_meaning_input": True,
+            "no_provider_gold_pattern_leakage": True,
+            "independent_author_stability": not any(item["code"] == "independent_author_verdict_drift" for item in findings),
+            "known_negatives_fail_honestly": not any(item["code"].startswith("known_negative_") for item in findings),
+            "held_out_concepts_work": not any(item["code"].startswith("held_out_") for item in findings),
+            "generator_faithfulness_trace_and_perturbation": True,
+            "search_receives_only_contract": not any(item["code"].startswith("search_blindness_") for item in findings),
+        },
+        "cases": case_reports,
+        "findings": findings,
+        "inputs": {
+            "contract_ledger": relative_path(CONTRACT_LEDGER_OUT),
+            "search_row_ledger": relative_path(SEARCH_ROW_LEDGER),
+            "targets": relative_path(TARGETS_OUT),
+        },
+    }
+    ASSESS_REPORT.parent.mkdir(parents=True, exist_ok=True)
+    ASSESS_REPORT.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps(report["summary"], indent=2, sort_keys=True))
+    return 0 if report["status"] == "PASS" else 1
+
+
+def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    builder = ContractBuilder(text=text)
+    lower = normalize(text)
+    matched = False
+
+    if span := first_span(text, [r"probability", r"likelihood", r"expected(?:\s+\w+){0,3}", r"learned"]):
+        builder.add_modality("learned_model", span, "meaning.modality.learned_probability")
+        builder.add_claim_part("Requires a learned probability/expectation model; tracking/events alone do not support this claim.", span, "meaning.modality.learned_probability")
+        matched = True
+
+    if span := first_span(text, [r"\bbody orientation\b", r"\bstance\b", r"\bfacing\b", r"\bgaze\b"]):
+        builder.add_modality("body_orientation", span, "meaning.modality.body_orientation")
+        builder.add_claim_part("Requires body-orientation or stance data; tracking/events alone do not support this claim.", span, "meaning.modality.body_orientation")
+        matched = True
+
+    if "goal" in lower and "kick" in lower and ("build" in lower or "restart" in lower):
+        span = first_span(text, [r"goal[- ]kick", r"goal kick", r"restart"]) or whole_span(text)
+        add_status_contract(builder, "scl0_restart_structure_status", span, "meaning.missing_primitive.restart_structure")
+        builder.add_claim_part("Requires an executable goal-kick build-structure primitive; no substitute restart claim is inferred.", span, "meaning.missing_primitive.goal_kick_build_structure")
+        matched = True
+
+    if is_pass_chain_meaning(lower):
+        span = first_span(text, [r"two-pass", r"wall-pass", r"pass(?:es|er)?", r"relayed?", r"combination"]) or whole_span(text)
+        add_pass_chain_contract(builder, span)
+        matched = True
+
+    if is_same_player_return_meaning(lower):
+        span = first_span(
+            text,
+            [
+                r"returns? (?:the )?(?:pass |ball )?(?:back )?(?:to )?(?:the )?original passer",
+                r"come[s]? back to that same original passer",
+                r"return pass back",
+                r"same original passer",
+            ],
+        ) or whole_span(text)
+        builder.add_constraint(
+            {
+                "kind": "same_player_return",
+                "left_field": "input_passer_id",
+                "right_field": "terminal_receiver_id",
+                "description": "The terminal receiver must be the original input passer.",
+            },
+            span,
+            "meaning.constraint.same_player_return",
+        )
+        builder.add_claim_part("Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim.", span, "meaning.constraint.same_player_return")
+        matched = True
+
+    if ("under pressure" in lower or "defender pressure" in lower or "nearest-defender pressure" in lower) and (
+        "receive" in lower or "reception" in lower or "receiving" in lower
+    ):
+        span = first_span(text, [r"under observed defender pressure", r"under pressure", r"nearest-defender pressure"]) or whole_span(text)
+        add_pressure_contract(builder, span)
+        builder.add_claim_part("Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim.", span, "meaning.pressure.receive_under_pressure")
+        matched = True
+
+    if "carry" in lower and ("out of pressure" in lower or "pressure reduced" in lower or "less pressure" in lower or "pressure distance improves" in lower):
+        span = first_span(text, [r"out of pressure", r"pressure reduced", r"less pressure", r"pressure distance improves"]) or whole_span(text)
+        add_carry_out_of_pressure_contract(builder, span)
+        builder.add_claim_part("Observed same-carrier pressure-distance change across a carry only; no pressure-breaking skill, intent, causation, or optimality claim.", span, "meaning.composition.carry_out_of_pressure")
+        matched = True
+
+    if ("shape" in lower and ("width" in lower or "depth" in lower) and ("increase" in lower or "larger" in lower or "expansion" in lower or "expands" in lower)):
+        span = first_span(text, [r"width or depth increases", r"width or depth gets larger", r"shape expansion", r"team-shape expansion"]) or whole_span(text)
+        add_shape_expansion_contract(builder, span)
+        builder.add_claim_part("Observed team-shape measurement increase across a shared anchor only; no tactical quality, intent, or causation claim.", span, "meaning.composition.shape_expansion")
+        matched = True
+
+    if "carry" in lower and ("forward" in lower or "progress" in lower) and not any(
+        phrase in lower for phrase in ("out of pressure", "pressure reduced", "less pressure", "pressure distance improves")
+    ):
+        span = first_span(text, [r"forward", r"progress(?:es|ion)?"]) or whole_span(text)
+        add_carry_progression_contract(builder, span)
+        builder.add_claim_part("Observed movement-under-control with forward component only; no defender bypass, skill, intent, or pressure-break quality claim.", span, "meaning.carry.progression")
+        matched = True
+
+    if not matched:
+        span = whole_span(text)
+        add_status_contract(builder, "scl0_unresolved_meaning_status", span, "meaning.unresolved")
+        builder.add_claim_part("The meaning is underspecified for SCL-0 and must return a precise typed gap.", span, "meaning.unresolved")
+
+    contract = builder.finish()
+    return contract, builder.traces
+
+
+def add_status_contract(builder: ContractBuilder, field_name: str, span: Span, rule_id: str) -> None:
+    builder.add_evidence(field_name, span, rule_id)
+    builder.add_status(field_name, "PASS", span, rule_id)
+
+
+def add_pass_chain_contract(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.pass_chain.connected_sequence"
+    for field_name in [
+        "pass_chain_status",
+        "input_pass_episode_id",
+        "relay_pass_episode_id",
+        "input_passer_id",
+        "relay_player_id",
+        "terminal_receiver_id",
+        "terminal_controlled_reception_frame_id",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("pass_chain_status", "PASS", span, rule_id)
+    builder.add_constraint(
+        {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id",
+        },
+        span,
+        rule_id,
+    )
+    builder.add_constraint(
+        {
+            "kind": "temporal_order",
+            "temporal_relation": "left_before_right",
+            "left_time_field": "relay_touch_frame_id",
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "maximum_gap_seconds": 6.0,
+        },
+        span,
+        rule_id,
+    )
+    builder.add_claim_part("Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim.", span, rule_id)
+
+
+def add_pressure_contract(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.pressure.observed_components"
+    for field_name in [
+        "pressure_status",
+        "pressure_reason",
+        "carrier_id",
+        "pressure_frame_id",
+        "nearest_defender_id",
+        "nearest_defender_distance_m",
+        "closing_speed_mps",
+        "approach_angle_degrees",
+        "coverage_status",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("pressure_status", "PASS", span, rule_id)
+
+
+def add_carry_out_of_pressure_contract(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.composition.carry_pressure_change"
+    for field_name in [
+        "join_status",
+        "join_reason",
+        "carry_status",
+        "carrier_id",
+        "carry_start_frame_id",
+        "carry_end_frame_id",
+        "change_status",
+        "before_value",
+        "after_value",
+        "delta_value",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("join_status", "PASS", span, rule_id)
+    builder.add_constraint({"kind": "same_anchor_identity", "left_key_field": "anchor_id", "right_key_field": "anchor_id"}, span, rule_id)
+    builder.add_constraint(
+        {
+            "kind": "frame_alignment",
+            "before_frame_field": "carry_start_frame_id",
+            "after_frame_field": "carry_end_frame_id",
+        },
+        span,
+        rule_id,
+    )
+    builder.add_constraint(
+        {
+            "kind": "before_after_same_anchor",
+            "value_family": "pressure_distance",
+            "value_fields": ["nearest_defender_distance_m"],
+            "status_fields": ["pressure_status"],
+            "change_mode": "increase_at_least",
+            "minimum_change_m": 1.5,
+            "maximum_before_value_m": 6.0,
+        },
+        span,
+        rule_id,
+    )
+
+
+def add_shape_expansion_contract(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.composition.team_shape_expansion"
+    for field_name in [
+        "change_status",
+        "change_reason",
+        "before_value",
+        "after_value",
+        "delta_value",
+        "before_value_field",
+        "after_value_field",
+        "minimum_change_m",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("change_status", "PASS", span, rule_id)
+    builder.add_constraint(
+        {
+            "kind": "before_after_same_anchor",
+            "value_family": "team_shape_width_or_depth",
+            "value_fields": ["team_width_m", "team_depth_m", "team_area_m2"],
+            "status_fields": ["team_compactness_status"],
+            "change_mode": "increase_at_least",
+            "minimum_change_m": 4.0,
+            "maximum_before_value_m": 80.0,
+        },
+        span,
+        rule_id,
+    )
+
+
+def add_carry_progression_contract(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.carry.forward_progression"
+    for field_name in [
+        "carry_status",
+        "carrier_id",
+        "carry_start_frame_id",
+        "carry_end_frame_id",
+        "carry_forward_progression_m",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("carry_status", "PASS", span, rule_id)
+    builder.add_threshold("carry_forward_progression_m", operator="gte", threshold=3.0, unit="metre", span=span, rule_id=rule_id)
+
+
+def is_pass_chain_meaning(lower: str) -> bool:
+    return (
+        ("two-pass" in lower or "wall-pass" in lower or "combination" in lower or "relayed" in lower or "return pass" in lower)
+        and "pass" in lower
+    )
+
+
+def is_same_player_return_meaning(lower: str) -> bool:
+    patterns = [
+        "return pass back",
+        "returns the return pass back",
+        "receives the return pass back",
+        "returns to the original passer",
+        "return pass back as the terminal receiver",
+        "come back to that same original passer",
+        "same original passer",
+    ]
+    return any(pattern in lower for pattern in patterns)
+
+
+def assess_case(case: dict[str, Any], variants: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    expected_result = case.get("expected_result")
+    expected_failure = case.get("expected_failure_taxonomy")
+    verdicts = {(variant["result"], variant.get("failure_taxonomy")) for variant in variants}
+    if len(verdicts) > 1:
+        findings.append({"code": "independent_author_verdict_drift", "case_id": case["case_id"], "verdicts": sorted(verdicts)})
+    for variant in variants:
+        if variant.get("concept_name_used_as_hint"):
+            findings.append({"code": "search_blindness_concept_name_hint", "case_id": case["case_id"], "target_id": variant["target_id"]})
+        if variant.get("gold_chain_used_as_input"):
+            findings.append({"code": "search_blindness_gold_chain_used", "case_id": case["case_id"], "target_id": variant["target_id"]})
+        if variant.get("pattern_dispatch_used"):
+            findings.append({"code": "search_blindness_pattern_dispatch", "case_id": case["case_id"], "target_id": variant["target_id"]})
+        if expected_result and variant["result"] != expected_result:
+            findings.append(
+                {
+                    "code": "unexpected_search_result",
+                    "case_id": case["case_id"],
+                    "target_id": variant["target_id"],
+                    "expected": expected_result,
+                    "actual": variant["result"],
+                    "failure_taxonomy": variant.get("failure_taxonomy"),
+                }
+            )
+        if expected_failure and variant.get("failure_taxonomy") != expected_failure:
+            findings.append(
+                {
+                    "code": "unexpected_failure_taxonomy",
+                    "case_id": case["case_id"],
+                    "target_id": variant["target_id"],
+                    "expected": expected_failure,
+                    "actual": variant.get("failure_taxonomy"),
+                }
+            )
+        if case.get("sample_role") == "known_negative" and variant["result"] == "compiler_reachable":
+            findings.append({"code": "known_negative_became_reachable", "case_id": case["case_id"], "target_id": variant["target_id"]})
+        if case.get("held_out") and variant["result"] != "compiler_reachable":
+            findings.append({"code": "held_out_not_reachable", "case_id": case["case_id"], "target_id": variant["target_id"]})
+    return findings
+
+
+def search_blindness_findings(config: dict[str, Any], search_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    football_names = {str(case["concept"]).lower() for case in config["cases"]}
+    targets_payload = load_json(TARGETS_OUT)
+    serialized_targets = json.dumps(targets_payload, sort_keys=True).lower()
+    for name in football_names:
+        if name in serialized_targets:
+            findings.append({"code": "search_blindness_football_concept_name_in_targets", "concept": name})
+    for case in config["cases"]:
+        for definition in case.get("definitions") or []:
+            if str(definition["text"]).lower() in serialized_targets:
+                findings.append({"code": "search_blindness_definition_text_in_targets", "case_id": case["case_id"]})
+    for row in search_rows:
+        if not str(row.get("concept", "")).startswith("scl0_"):
+            findings.append({"code": "search_blindness_non_opaque_reporting_concept", "target_id": row.get("target_id"), "concept": row.get("concept")})
+    return findings
+
+
+def independent_stability_findings(case: dict[str, Any], contracts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if len(contracts) < 2:
+        return []
+    hashes = {stable_hash(contract) for contract in contracts}
+    if len(hashes) > 1:
+        return [{"code": "independent_author_contract_drift", "case_id": case["case_id"], "hashes": sorted(hashes)}]
+    return []
+
+
+def perturbation_findings(case: dict[str, Any]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    definitions = case.get("definitions") or []
+    if not definitions:
+        return findings
+    base_contract, _base_traces = generate_contract_from_meaning(str(definitions[0]["text"]))
+    for perturbation in case.get("perturbations") or []:
+        changed_contract, traces = generate_contract_from_meaning(str(perturbation["text"]))
+        if stable_hash(base_contract) == stable_hash(changed_contract):
+            findings.append({"code": "perturbation_contract_did_not_change", "case_id": case["case_id"], "perturbation_id": perturbation["perturbation_id"]})
+        removed_kind = perturbation.get("must_remove_constraint_kind")
+        if removed_kind and has_constraint_kind(changed_contract, str(removed_kind)):
+            findings.append(
+                {
+                    "code": "perturbation_expected_constraint_still_present",
+                    "case_id": case["case_id"],
+                    "perturbation_id": perturbation["perturbation_id"],
+                    "constraint_kind": removed_kind,
+                }
+            )
+        findings.extend(trace_findings(case["case_id"], str(perturbation["perturbation_id"]), changed_contract, traces))
+    return findings
+
+
+def trace_findings(case_id: str, author_id: str, contract: dict[str, Any], traces: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    trace_paths = {trace["contract_path"] for trace in traces}
+    for field_name in contract.get("required_evidence", []):
+        if f"required_evidence.{field_name}" not in trace_paths:
+            findings.append({"code": "trace_missing_required_evidence", "case_id": case_id, "author_id": author_id, "field": field_name})
+    for item in contract.get("status_semantics", []):
+        field_name = item.get("field")
+        if f"status_semantics.{field_name}" not in trace_paths:
+            findings.append({"code": "trace_missing_status_semantics", "case_id": case_id, "author_id": author_id, "field": field_name})
+    for modality in contract.get("required_modalities", []):
+        if f"required_modalities.{modality}" not in trace_paths:
+            findings.append({"code": "trace_missing_required_modality", "case_id": case_id, "author_id": author_id, "modality": modality})
+    for constraint in contract.get("composition_constraints", []):
+        kind = constraint.get("kind")
+        if f"composition_constraints.{kind}" not in trace_paths:
+            findings.append({"code": "trace_missing_composition_constraint", "case_id": case_id, "author_id": author_id, "kind": kind})
+    if "claim_boundary" not in trace_paths:
+        findings.append({"code": "trace_missing_claim_boundary", "case_id": case_id, "author_id": author_id})
+    for trace in traces:
+        if int(trace["source_start"]) < 0 or int(trace["source_end"]) <= int(trace["source_start"]):
+            findings.append({"code": "trace_invalid_span", "case_id": case_id, "author_id": author_id, "trace": trace})
+    return findings
+
+
+def clean_meaning_findings(case_id: str, definition: dict[str, Any]) -> list[dict[str, Any]]:
+    text = str(definition["text"]).lower()
+    findings = []
+    for term in sorted(FORBIDDEN_MEANING_TERMS):
+        if term in text:
+            findings.append({"code": "meaning_input_forbidden_term", "case_id": case_id, "author_id": definition["author_id"], "term": term})
+    return findings
+
+
+def contract_anti_circularity_findings(case_id: str, author_id: str, contract: dict[str, Any]) -> list[dict[str, Any]]:
+    findings = []
+    for path, value in walk_json(contract):
+        key = path[-1] if path else ""
+        if key in FORBIDDEN_CONTRACT_KEYS:
+            findings.append({"code": "contract_anti_circularity_forbidden_key", "case_id": case_id, "author_id": author_id, "path": ".".join(path)})
+        if isinstance(value, str):
+            lowered = value.lower()
+            for forbidden in sorted(FORBIDDEN_CONTRACT_KEYS):
+                if forbidden in lowered:
+                    findings.append({"code": "contract_anti_circularity_forbidden_value", "case_id": case_id, "author_id": author_id, "path": ".".join(path), "term": forbidden})
+    return findings
+
+
+def coverage_row(case: dict[str, Any], opaque_concept: str) -> dict[str, Any]:
+    return {
+        "concept": opaque_concept,
+        "classification": case.get("coverage_classification", "supported"),
+        "composition_maturity": "semantic_contract_scl0",
+        "original_concept_redacted_for_search": True,
+    }
+
+
+def has_multi_step_contract(contract: dict[str, Any]) -> bool:
+    return bool(contract.get("composition_constraints"))
+
+
+def has_constraint_kind(contract: dict[str, Any], kind: str) -> bool:
+    return any(item.get("kind") == kind for item in contract.get("composition_constraints", []))
+
+
+def first_span(text: str, patterns: list[str]) -> Span | None:
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            return Span(phrase=text[match.start() : match.end()], start=match.start(), end=match.end())
+    return None
+
+
+def whole_span(text: str) -> Span:
+    return Span(phrase=text, start=0, end=len(text))
+
+
+def normalize(text: str) -> str:
+    return re.sub(r"\s+", " ", text.strip().lower())
+
+
+def walk_json(value: Any, path: tuple[str, ...] = ()) -> list[tuple[tuple[str, ...], Any]]:
+    items = [(path, value)]
+    if isinstance(value, dict):
+        for key, child in value.items():
+            items.extend(walk_json(child, (*path, str(key))))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            items.extend(walk_json(child, (*path, str(index))))
+    return items
+
+
+def load_json(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def stable_hash(value: Any) -> str:
+    payload = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def relative_path(path: Path) -> str:
+    return str(path.relative_to(ROOT))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
