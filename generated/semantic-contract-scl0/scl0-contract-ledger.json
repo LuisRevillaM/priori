@@ -4436,34 +4436,151 @@
     "case_id": "scl1_020",
     "concept": "acceleration_burst",
     "contract": {
-      "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+      "claim_boundary": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_acceleration_status"
+        "acceleration_entity_id",
+        "acceleration_frame_id",
+        "acceleration_model",
+        "acceleration_mps2",
+        "acceleration_reason",
+        "acceleration_status",
+        "acceleration_verdict_bias",
+        "coverage_status",
+        "current_speed_mps",
+        "delta_speed_mps",
+        "noise_policy",
+        "previous_speed_mps",
+        "smoothing_policy",
+        "tracking_quality_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_acceleration_status",
+          "field": "acceleration_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "contract_hash": "5c9834d76e91189e2e958680746738b8d7707e60d9b4d97bae7181ccb7e4905a",
     "definition_text": "Acceleration burst means a player accelerates sharply over a short observed interval.",
     "opaque_search_concept": "scl1_020",
     "target_id": "scl1_020_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_acceleration_status",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "contract_path": "required_evidence.acceleration_status",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 12,
         "source_phrase": "Acceleration",
         "source_start": 0,
-        "value": "scl1_acceleration_status"
+        "value": "acceleration_status"
       },
       {
-        "contract_path": "status_semantics.scl1_acceleration_status",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "contract_path": "required_evidence.acceleration_reason",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "acceleration_reason"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_frame_id",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "acceleration_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_entity_id",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "acceleration_entity_id"
+      },
+      {
+        "contract_path": "required_evidence.previous_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "previous_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.current_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "current_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.delta_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "delta_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_mps2",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "acceleration_mps2"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_model",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "acceleration_model"
+      },
+      {
+        "contract_path": "required_evidence.smoothing_policy",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "smoothing_policy"
+      },
+      {
+        "contract_path": "required_evidence.noise_policy",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "noise_policy"
+      },
+      {
+        "contract_path": "required_evidence.tracking_quality_status",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "tracking_quality_status"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_verdict_bias",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Acceleration",
+        "source_start": 0,
+        "value": "acceleration_verdict_bias"
+      },
+      {
+        "contract_path": "status_semantics.acceleration_status",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 12,
         "source_phrase": "Acceleration",
         "source_start": 0,
@@ -4471,11 +4588,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 12,
         "source_phrase": "Acceleration",
         "source_start": 0,
-        "value": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted."
+        "value": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim."
       }
     ]
   },
@@ -4484,34 +4601,151 @@
     "case_id": "scl1_020",
     "concept": "acceleration_burst",
     "contract": {
-      "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+      "claim_boundary": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_acceleration_status"
+        "acceleration_entity_id",
+        "acceleration_frame_id",
+        "acceleration_model",
+        "acceleration_mps2",
+        "acceleration_reason",
+        "acceleration_status",
+        "acceleration_verdict_bias",
+        "coverage_status",
+        "current_speed_mps",
+        "delta_speed_mps",
+        "noise_policy",
+        "previous_speed_mps",
+        "smoothing_policy",
+        "tracking_quality_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_acceleration_status",
+          "field": "acceleration_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "contract_hash": "5c9834d76e91189e2e958680746738b8d7707e60d9b4d97bae7181ccb7e4905a",
     "definition_text": "A burst of acceleration is rapid speeding up across consecutive frames.",
     "opaque_search_concept": "scl1_020",
     "target_id": "scl1_020_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_acceleration_status",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "contract_path": "required_evidence.acceleration_status",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 23,
         "source_phrase": "acceleration",
         "source_start": 11,
-        "value": "scl1_acceleration_status"
+        "value": "acceleration_status"
       },
       {
-        "contract_path": "status_semantics.scl1_acceleration_status",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "contract_path": "required_evidence.acceleration_reason",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "acceleration_reason"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_frame_id",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "acceleration_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_entity_id",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "acceleration_entity_id"
+      },
+      {
+        "contract_path": "required_evidence.previous_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "previous_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.current_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "current_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.delta_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "delta_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_mps2",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "acceleration_mps2"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_model",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "acceleration_model"
+      },
+      {
+        "contract_path": "required_evidence.smoothing_policy",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "smoothing_policy"
+      },
+      {
+        "contract_path": "required_evidence.noise_policy",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "noise_policy"
+      },
+      {
+        "contract_path": "required_evidence.tracking_quality_status",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "tracking_quality_status"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_verdict_bias",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 23,
+        "source_phrase": "acceleration",
+        "source_start": 11,
+        "value": "acceleration_verdict_bias"
+      },
+      {
+        "contract_path": "status_semantics.acceleration_status",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 23,
         "source_phrase": "acceleration",
         "source_start": 11,
@@ -4519,11 +4753,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 23,
         "source_phrase": "acceleration",
         "source_start": 11,
-        "value": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted."
+        "value": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim."
       }
     ]
   },
@@ -4532,34 +4766,151 @@
     "case_id": "scl1_021",
     "concept": "deceleration_after_receive",
     "contract": {
-      "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+      "claim_boundary": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_acceleration_status"
+        "acceleration_entity_id",
+        "acceleration_frame_id",
+        "acceleration_model",
+        "acceleration_mps2",
+        "acceleration_reason",
+        "acceleration_verdict_bias",
+        "coverage_status",
+        "current_speed_mps",
+        "deceleration_status",
+        "delta_speed_mps",
+        "noise_policy",
+        "previous_speed_mps",
+        "smoothing_policy",
+        "tracking_quality_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_acceleration_status",
+          "field": "deceleration_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "contract_hash": "7e620fea32355a941977612ed3be923825f88ada1934fb083e833b7fe199f1cc",
     "definition_text": "Deceleration after receiving means the receiver slows down after the first touch.",
     "opaque_search_concept": "scl1_021",
     "target_id": "scl1_021_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_acceleration_status",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "contract_path": "required_evidence.deceleration_status",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 12,
         "source_phrase": "Deceleration",
         "source_start": 0,
-        "value": "scl1_acceleration_status"
+        "value": "deceleration_status"
       },
       {
-        "contract_path": "status_semantics.scl1_acceleration_status",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "contract_path": "required_evidence.acceleration_reason",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "acceleration_reason"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_frame_id",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "acceleration_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_entity_id",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "acceleration_entity_id"
+      },
+      {
+        "contract_path": "required_evidence.previous_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "previous_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.current_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "current_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.delta_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "delta_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_mps2",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "acceleration_mps2"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_model",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "acceleration_model"
+      },
+      {
+        "contract_path": "required_evidence.smoothing_policy",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "smoothing_policy"
+      },
+      {
+        "contract_path": "required_evidence.noise_policy",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "noise_policy"
+      },
+      {
+        "contract_path": "required_evidence.tracking_quality_status",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "tracking_quality_status"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_verdict_bias",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 12,
+        "source_phrase": "Deceleration",
+        "source_start": 0,
+        "value": "acceleration_verdict_bias"
+      },
+      {
+        "contract_path": "status_semantics.deceleration_status",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 12,
         "source_phrase": "Deceleration",
         "source_start": 0,
@@ -4567,11 +4918,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 12,
         "source_phrase": "Deceleration",
         "source_start": 0,
-        "value": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted."
+        "value": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim."
       }
     ]
   },
@@ -4580,34 +4931,151 @@
     "case_id": "scl1_021",
     "concept": "deceleration_after_receive",
     "contract": {
-      "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+      "claim_boundary": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_acceleration_status"
+        "acceleration_entity_id",
+        "acceleration_frame_id",
+        "acceleration_model",
+        "acceleration_mps2",
+        "acceleration_reason",
+        "acceleration_verdict_bias",
+        "coverage_status",
+        "current_speed_mps",
+        "deceleration_status",
+        "delta_speed_mps",
+        "noise_policy",
+        "previous_speed_mps",
+        "smoothing_policy",
+        "tracking_quality_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_acceleration_status",
+          "field": "deceleration_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "ba81a7b9a5b913a713c8914badeeec34ee1f4953c4999c3474d93552b247e35e",
+    "contract_hash": "7e620fea32355a941977612ed3be923825f88ada1934fb083e833b7fe199f1cc",
     "definition_text": "A receiving deceleration occurs when the player is slowing down after the reception moment.",
     "opaque_search_concept": "scl1_021",
     "target_id": "scl1_021_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_acceleration_status",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "contract_path": "required_evidence.deceleration_status",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 24,
         "source_phrase": "deceleration",
         "source_start": 12,
-        "value": "scl1_acceleration_status"
+        "value": "deceleration_status"
       },
       {
-        "contract_path": "status_semantics.scl1_acceleration_status",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "contract_path": "required_evidence.acceleration_reason",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "acceleration_reason"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_frame_id",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "acceleration_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_entity_id",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "acceleration_entity_id"
+      },
+      {
+        "contract_path": "required_evidence.previous_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "previous_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.current_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "current_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.delta_speed_mps",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "delta_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_mps2",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "acceleration_mps2"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_model",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "acceleration_model"
+      },
+      {
+        "contract_path": "required_evidence.smoothing_policy",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "smoothing_policy"
+      },
+      {
+        "contract_path": "required_evidence.noise_policy",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "noise_policy"
+      },
+      {
+        "contract_path": "required_evidence.tracking_quality_status",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "tracking_quality_status"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.acceleration_verdict_bias",
+        "rule_id": "meaning.kinematics.acceleration",
+        "source_end": 24,
+        "source_phrase": "deceleration",
+        "source_start": 12,
+        "value": "acceleration_verdict_bias"
+      },
+      {
+        "contract_path": "status_semantics.deceleration_status",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 24,
         "source_phrase": "deceleration",
         "source_start": 12,
@@ -4615,11 +5083,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.acceleration",
+        "rule_id": "meaning.kinematics.acceleration",
         "source_end": 24,
         "source_phrase": "deceleration",
         "source_start": 12,
-        "value": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted."
+        "value": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim."
       }
     ]
   },

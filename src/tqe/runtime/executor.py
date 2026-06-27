@@ -257,6 +257,7 @@ class TacticalQueryExecutor:
             "tracking_quality": primitive_tracking_quality,
             "pairwise_distance": primitive_pairwise_distance,
             "velocity": primitive_velocity,
+            "acceleration": primitive_acceleration,
             "time_to_arrival": primitive_time_to_arrival,
             "carry_episode": primitive_carry_episode,
             "join_episode_sets": primitive_join_episode_sets,
@@ -3358,6 +3359,70 @@ def primitive_velocity(state: PeriodState, node: BoundCatalogNode) -> None:
     }
 
 
+def primitive_acceleration(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    entity_id_field = node_parameter_text(node, "entity_id_field", "receiver_id")
+    lookback_seconds = node_parameter_number(node, "lookback_seconds", 0.4)
+    minimum_abs_delta_speed_mps = node_parameter_number(node, "minimum_abs_delta_speed_mps", 0.4)
+    minimum_abs_acceleration_mps2 = node_parameter_number(node, "minimum_abs_acceleration_mps2", 0.75)
+    maximum_player_speed_mps = node_parameter_number(node, "maximum_player_speed_mps", 10.0)
+    maximum_abs_acceleration_mps2 = node_parameter_number(node, "maximum_abs_acceleration_mps2", 12.0)
+    records = [
+        acceleration_anchor_record(
+            state=state,
+            anchor=record,
+            frame_field=frame_field,
+            entity_id_field=entity_id_field,
+            lookback_seconds=lookback_seconds,
+            minimum_abs_delta_speed_mps=minimum_abs_delta_speed_mps,
+            minimum_abs_acceleration_mps2=minimum_abs_acceleration_mps2,
+            maximum_player_speed_mps=maximum_player_speed_mps,
+            maximum_abs_acceleration_mps2=maximum_abs_acceleration_mps2,
+        )
+        for record in runtime_records(anchor_value)
+        if isinstance(record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    acceleration_status_values = [
+        None if str(record["acceleration_status"]) == "UNKNOWN" else str(record["acceleration_status"])
+        for record in records
+    ]
+    deceleration_status_values = [
+        None if str(record["deceleration_status"]) == "UNKNOWN" else str(record["deceleration_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "acceleration_mps2": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record.get("acceleration_mps2") for record in records],
+            unknown_mask=[record.get("acceleration_mps2") is None for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "acceleration_mps2").entity_scope,
+        ),
+        "acceleration_mps2_records": records,
+        "acceleration_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=acceleration_status_values,
+            unknown_mask=[value is None for value in acceleration_status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "acceleration_status").entity_scope,
+        ),
+        "acceleration_status_records": records,
+        "deceleration_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=deceleration_status_values,
+            unknown_mask=[value is None for value in deceleration_status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "deceleration_status").entity_scope,
+        ),
+        "deceleration_status_records": records,
+    }
+
+
 def primitive_time_to_arrival(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
     frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
@@ -3708,6 +3773,152 @@ def velocity_sample(
         "speed_mps": round(float(speed), 3),
         "current_point": point_from_xy(current[0], current[1]),
         "previous_point": point_from_xy(previous[0], previous[1]),
+    }
+
+
+def acceleration_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    entity_id_field: str,
+    lookback_seconds: float,
+    minimum_abs_delta_speed_mps: float,
+    minimum_abs_acceleration_mps2: float,
+    maximum_player_speed_mps: float,
+    maximum_abs_acceleration_mps2: float,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or frame_id is None:
+        return None
+    entity_id = str(anchor.get(entity_id_field) or "")
+    sample = acceleration_sample(
+        state=state,
+        frame_id=frame_id,
+        entity_id=entity_id,
+        lookback_seconds=lookback_seconds,
+        minimum_abs_delta_speed_mps=minimum_abs_delta_speed_mps,
+        minimum_abs_acceleration_mps2=minimum_abs_acceleration_mps2,
+        maximum_player_speed_mps=maximum_player_speed_mps,
+        maximum_abs_acceleration_mps2=maximum_abs_acceleration_mps2,
+    )
+    common_status = str(sample.get("acceleration_observation_status") or "UNKNOWN")
+    reason = str(sample.get("acceleration_reason") or "acceleration_evidence_missing")
+    delta_speed = sample.get("delta_speed_mps")
+    acceleration_status = "UNKNOWN"
+    deceleration_status = "UNKNOWN"
+    if common_status == "PASS" and delta_speed is not None:
+        acceleration_status = "PASS" if float(delta_speed) > 0 else "FAIL"
+        deceleration_status = "PASS" if float(delta_speed) < 0 else "FAIL"
+    elif common_status == "FAIL":
+        acceleration_status = "FAIL"
+        deceleration_status = "FAIL"
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "acceleration_status": acceleration_status,
+        "deceleration_status": deceleration_status,
+        "acceleration_reason": reason,
+        "acceleration_frame_id": frame_id,
+        "acceleration_entity_id": entity_id,
+        **sample,
+    }
+
+
+def acceleration_sample(
+    *,
+    state: PeriodState,
+    frame_id: int,
+    entity_id: str,
+    lookback_seconds: float,
+    minimum_abs_delta_speed_mps: float,
+    minimum_abs_acceleration_mps2: float,
+    maximum_player_speed_mps: float,
+    maximum_abs_acceleration_mps2: float,
+) -> dict[str, Any]:
+    lookback_frames = max(1, int(math.ceil(max(lookback_seconds, 0.04) * FRAME_RATE_HZ - 1e-9)))
+    previous_velocity_frame_id = int(frame_id) - lookback_frames
+    previous_sample = velocity_sample(
+        state=state,
+        frame_id=previous_velocity_frame_id,
+        entity_id=entity_id,
+        lookback_seconds=lookback_seconds,
+    )
+    current_sample = velocity_sample(
+        state=state,
+        frame_id=int(frame_id),
+        entity_id=entity_id,
+        lookback_seconds=lookback_seconds,
+    )
+    dt_seconds = lookback_frames / FRAME_RATE_HZ
+    model = "speed_delta_between_two_non_overlapping_displacement_velocity_windows"
+    smoothing_policy = "two_window_mean_displacement_velocity_no_additional_smoothing"
+    noise_policy = (
+        "UNKNOWN if either velocity window lacks tracking endpoints or if observed speed/acceleration "
+        "exceeds frozen plausibility limits; second derivatives amplify tracking noise."
+    )
+    base = {
+        "acceleration_observation_status": "UNKNOWN",
+        "acceleration_reason": "acceleration_evidence_missing",
+        "acceleration_dt_seconds": round(float(dt_seconds), 3),
+        "acceleration_lookback_frames": lookback_frames,
+        "previous_velocity_frame_id": previous_velocity_frame_id,
+        "current_velocity_frame_id": int(frame_id),
+        "previous_speed_mps": previous_sample.get("speed_mps"),
+        "current_speed_mps": current_sample.get("speed_mps"),
+        "delta_speed_mps": None,
+        "acceleration_mps2": None,
+        "minimum_abs_delta_speed_mps": round(float(minimum_abs_delta_speed_mps), 3),
+        "minimum_abs_acceleration_mps2": round(float(minimum_abs_acceleration_mps2), 3),
+        "maximum_player_speed_mps": round(float(maximum_player_speed_mps), 3),
+        "maximum_abs_acceleration_mps2": round(float(maximum_abs_acceleration_mps2), 3),
+        "acceleration_model": model,
+        "smoothing_policy": smoothing_policy,
+        "noise_policy": noise_policy,
+        "tracking_quality_status": "UNKNOWN",
+        "coverage_status": "UNKNOWN",
+        "acceleration_verdict_bias": "conservative_for_acceleration_and_deceleration_under_tracking_noise",
+    }
+    if not entity_id:
+        return {**base, "acceleration_reason": "entity_id_missing"}
+    previous_speed = previous_sample.get("speed_mps")
+    current_speed = current_sample.get("speed_mps")
+    if previous_speed is None or current_speed is None:
+        return {**base, "acceleration_reason": "tracking_endpoint_missing"}
+    if max(float(previous_speed), float(current_speed)) > maximum_player_speed_mps:
+        return {**base, "acceleration_reason": "implausible_velocity_endpoint"}
+    delta_speed = float(current_speed) - float(previous_speed)
+    acceleration = delta_speed / dt_seconds
+    if abs(acceleration) > maximum_abs_acceleration_mps2:
+        return {
+            **base,
+            "delta_speed_mps": round(float(delta_speed), 3),
+            "acceleration_mps2": round(float(acceleration), 3),
+            "acceleration_reason": "acceleration_noise_exceeds_plausibility_limit",
+        }
+    if abs(delta_speed) < minimum_abs_delta_speed_mps or abs(acceleration) < minimum_abs_acceleration_mps2:
+        status = "FAIL"
+        reason = "speed_change_below_threshold"
+    else:
+        status = "PASS"
+        reason = "speed_change_observed"
+    return {
+        **base,
+        "acceleration_observation_status": status,
+        "acceleration_reason": reason,
+        "tracking_quality_status": "PASS",
+        "coverage_status": "PASS",
+        "delta_speed_mps": round(float(delta_speed), 3),
+        "acceleration_mps2": round(float(acceleration), 3),
+        "previous_velocity_sample": previous_sample,
+        "current_velocity_sample": current_sample,
     }
 
 

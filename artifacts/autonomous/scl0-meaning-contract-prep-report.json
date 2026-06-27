@@ -115,13 +115,13 @@
         ],
         "definition_count": 12
       },
-      "meaning.missing_primitive.acceleration": {
+      "meaning.kinematics.acceleration": {
         "case_count": 2,
         "cases": [
           "scl1_020",
           "scl1_021"
         ],
-        "definition_count": 12
+        "definition_count": 64
       },
       "meaning.missing_primitive.cover_shadow": {
         "case_count": 2,

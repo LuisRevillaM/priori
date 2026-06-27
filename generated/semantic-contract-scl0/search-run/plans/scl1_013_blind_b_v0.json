@@ -41,7 +41,7 @@
       {
         "catalog_ref": "action_event_anchor",
         "kind": "primitive",
-        "node_id": "action_event_anchor_3",
+        "node_id": "action_event_anchor_4",
         "version": "0.1.0"
       },
       {
@@ -49,7 +49,7 @@
         "inputs": {
           "anchors": {
             "output_name": "anchor_evaluations",
-            "source_node_id": "action_event_anchor_3"
+            "source_node_id": "action_event_anchor_4"
           }
         },
         "kind": "primitive",
@@ -59,7 +59,7 @@
       {
         "catalog_ref": "action_event_anchor",
         "kind": "primitive",
-        "node_id": "action_event_anchor_4",
+        "node_id": "action_event_anchor_5",
         "version": "0.1.0"
       },
       {
@@ -67,7 +67,7 @@
         "inputs": {
           "anchors": {
             "output_name": "anchor_evaluations",
-            "source_node_id": "action_event_anchor_4"
+            "source_node_id": "action_event_anchor_5"
           }
         },
         "kind": "primitive",

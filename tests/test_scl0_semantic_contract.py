@@ -98,13 +98,42 @@ class Scl0SemanticContractTests(unittest.TestCase):
             ("A cover shadow is a defended passing lane region hidden behind the pressing defender.", "scl1_cover_shadow_status"),
             ("A marker relation identifies which defender is marking a particular attacker.", "scl1_marking_status"),
             ("Off ball run typing identifies a player's run while they are away from the ball.", "scl1_off_ball_run_status"),
-            ("A burst of acceleration is rapid speeding up across consecutive frames.", "scl1_acceleration_status"),
             ("A corner variant is a set piece routine pattern used from the corner restart.", "scl1_set_piece_structure_status"),
             ("A team press is a collective defensive pressing structure rather than one nearest defender.", "scl1_team_press_status"),
             ("A free space region is an open space area produced by the current player positions.", "scl1_space_region_generation_status"),
         ]:
             contract, _ = generate_contract_from_meaning(text)
             self.assertEqual(contract["required_evidence"], [evidence])
+
+    def test_acceleration_element_maps_speed_up_and_slow_down_to_directional_status(self) -> None:
+        acceleration_contract, acceleration_traces = generate_contract_from_meaning(
+            "A burst of acceleration is rapid speeding up across consecutive frames."
+        )
+        deceleration_contract, deceleration_traces = generate_contract_from_meaning(
+            "Deceleration after receiving means the receiver slows down after the first touch."
+        )
+
+        self.assertIn("acceleration_status", acceleration_contract["required_evidence"])
+        self.assertIn("deceleration_status", deceleration_contract["required_evidence"])
+        self.assertIn("acceleration_model", acceleration_contract["required_evidence"])
+        self.assertIn("noise_policy", acceleration_contract["required_evidence"])
+        self.assertIn("tracking_quality_status", acceleration_contract["required_evidence"])
+        self.assertEqual(
+            {item["field"]: item["required_value"] for item in acceleration_contract["status_semantics"]}["acceleration_status"],
+            "PASS",
+        )
+        self.assertEqual(
+            {item["field"]: item["required_value"] for item in deceleration_contract["status_semantics"]}["deceleration_status"],
+            "PASS",
+        )
+        self.assertEqual(
+            {trace["rule_id"] for trace in acceleration_traces if trace["contract_path"] == "required_evidence.acceleration_status"},
+            {"meaning.kinematics.acceleration"},
+        )
+        self.assertEqual(
+            {trace["rule_id"] for trace in deceleration_traces if trace["contract_path"] == "required_evidence.deceleration_status"},
+            {"meaning.kinematics.acceleration"},
+        )
 
 
 if __name__ == "__main__":

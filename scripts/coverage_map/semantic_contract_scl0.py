@@ -56,7 +56,7 @@ FORBIDDEN_MEANING_TERMS = {
 
 CROSS_CONCEPT_REUSE_REQUIRED_RULES = {
     "meaning.element.lane_occupancy",
-    "meaning.missing_primitive.acceleration",
+    "meaning.kinematics.acceleration",
     "meaning.missing_primitive.cover_shadow",
     "meaning.missing_primitive.marking",
     "meaning.missing_primitive.off_ball_run",
@@ -520,14 +520,11 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         matched = True
 
     if is_acceleration_meaning(lower):
-        span = first_span(text, [r"acceleration", r"accelerates?", r"deceleration", r"decelerates?", r"slowing down"]) or whole_span(text)
-        add_missing_primitive_element(
-            builder,
-            "scl1_acceleration_status",
-            span,
-            "meaning.missing_primitive.acceleration",
-            "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
-        )
+        span = first_span(
+            text,
+            [r"acceleration", r"accelerates?", r"deceleration", r"decelerates?", r"slowing down", r"slows down", r"speeding up"],
+        ) or whole_span(text)
+        add_acceleration_element(builder, span, direction="deceleration" if is_deceleration_meaning(lower) else "acceleration")
         matched = True
 
     if is_set_piece_structure_meaning(lower):
@@ -704,6 +701,34 @@ def add_lane_occupancy_element(builder: ContractBuilder, span: Span) -> None:
     builder.add_status("lane_occupancy_status", "PASS", span, rule_id)
     builder.add_claim_part(
         "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+        span,
+        rule_id,
+    )
+
+
+def add_acceleration_element(builder: ContractBuilder, span: Span, *, direction: str) -> None:
+    rule_id = "meaning.kinematics.acceleration"
+    status_field = "deceleration_status" if direction == "deceleration" else "acceleration_status"
+    for field_name in [
+        status_field,
+        "acceleration_reason",
+        "acceleration_frame_id",
+        "acceleration_entity_id",
+        "previous_speed_mps",
+        "current_speed_mps",
+        "delta_speed_mps",
+        "acceleration_mps2",
+        "acceleration_model",
+        "smoothing_policy",
+        "noise_policy",
+        "tracking_quality_status",
+        "coverage_status",
+        "acceleration_verdict_bias",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status(status_field, "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim.",
         span,
         rule_id,
     )
@@ -899,6 +924,10 @@ def is_off_ball_run_meaning(lower: str) -> bool:
 
 def is_acceleration_meaning(lower: str) -> bool:
     return any(phrase in lower for phrase in ("acceleration", "accelerates", "accelerate", "deceleration", "decelerates", "slowing down", "slows down", "speeding up"))
+
+
+def is_deceleration_meaning(lower: str) -> bool:
+    return any(phrase in lower for phrase in ("deceleration", "decelerates", "decelerate", "slowing down", "slows down"))
 
 
 def is_set_piece_structure_meaning(lower: str) -> bool:

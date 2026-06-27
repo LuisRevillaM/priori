@@ -362,10 +362,9 @@
     {
       "case_id": "scl1_020",
       "concept": "acceleration_burst",
-      "sample_role": "scl1_missing_substrate_probe",
-      "expected_result": "not_compiler_reachable",
-      "expected_failure_taxonomy": "missing_primitive",
-      "coverage_classification": "missing_primitive",
+      "sample_role": "scl1_gap_closure_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
       "definitions": [
         {
           "author_id": "blind_a",
@@ -380,10 +379,9 @@
     {
       "case_id": "scl1_021",
       "concept": "deceleration_after_receive",
-      "sample_role": "scl1_missing_substrate_probe",
-      "expected_result": "not_compiler_reachable",
-      "expected_failure_taxonomy": "missing_primitive",
-      "coverage_classification": "missing_primitive",
+      "sample_role": "scl1_gap_closure_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
       "definitions": [
         {
           "author_id": "blind_a",

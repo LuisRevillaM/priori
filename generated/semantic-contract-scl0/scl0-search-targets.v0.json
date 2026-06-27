@@ -1131,14 +1131,27 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+        "claim_boundary": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_acceleration_status"
+          "acceleration_entity_id",
+          "acceleration_frame_id",
+          "acceleration_model",
+          "acceleration_mps2",
+          "acceleration_reason",
+          "acceleration_status",
+          "acceleration_verdict_bias",
+          "coverage_status",
+          "current_speed_mps",
+          "delta_speed_mps",
+          "noise_policy",
+          "previous_speed_mps",
+          "smoothing_policy",
+          "tracking_quality_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_acceleration_status",
+            "field": "acceleration_status",
             "required_value": "PASS"
           }
         ]
@@ -1150,14 +1163,27 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+        "claim_boundary": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_acceleration_status"
+          "acceleration_entity_id",
+          "acceleration_frame_id",
+          "acceleration_model",
+          "acceleration_mps2",
+          "acceleration_reason",
+          "acceleration_status",
+          "acceleration_verdict_bias",
+          "coverage_status",
+          "current_speed_mps",
+          "delta_speed_mps",
+          "noise_policy",
+          "previous_speed_mps",
+          "smoothing_policy",
+          "tracking_quality_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_acceleration_status",
+            "field": "acceleration_status",
             "required_value": "PASS"
           }
         ]
@@ -1169,14 +1195,27 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+        "claim_boundary": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_acceleration_status"
+          "acceleration_entity_id",
+          "acceleration_frame_id",
+          "acceleration_model",
+          "acceleration_mps2",
+          "acceleration_reason",
+          "acceleration_verdict_bias",
+          "coverage_status",
+          "current_speed_mps",
+          "deceleration_status",
+          "delta_speed_mps",
+          "noise_policy",
+          "previous_speed_mps",
+          "smoothing_policy",
+          "tracking_quality_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_acceleration_status",
+            "field": "deceleration_status",
             "required_value": "PASS"
           }
         ]
@@ -1188,14 +1227,27 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires an acceleration/deceleration primitive over velocity changes; instantaneous speed is not substituted.",
+        "claim_boundary": "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_acceleration_status"
+          "acceleration_entity_id",
+          "acceleration_frame_id",
+          "acceleration_model",
+          "acceleration_mps2",
+          "acceleration_reason",
+          "acceleration_verdict_bias",
+          "coverage_status",
+          "current_speed_mps",
+          "deceleration_status",
+          "delta_speed_mps",
+          "noise_policy",
+          "previous_speed_mps",
+          "smoothing_policy",
+          "tracking_quality_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_acceleration_status",
+            "field": "deceleration_status",
             "required_value": "PASS"
           }
         ]

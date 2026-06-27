@@ -1,0 +1,129 @@
+{
+  "claim_boundary": {
+    "allowed_claim": "Observed speed-up or slow-down exceeded frozen two-window speed-change thresholds.",
+    "prohibited_claims": [
+      "effort_inferred",
+      "optimality_inferred",
+      "physical_capacity_inferred",
+      "player_intent_inferred",
+      "pressure_breaking_quality_inferred",
+      "sprint_quality_inferred",
+      "tactical_causation_inferred"
+    ],
+    "unknown_policy": "Missing endpoints or implausible speed/acceleration spikes produce UNKNOWN, not phantom bursts."
+  },
+  "findings": [],
+  "milestone": "AFL-08 acceleration primitive / SCL named-gap closure",
+  "plans": {
+    "acceleration": {
+      "document_hash": "d3b3f9a1047e6dd8f81a1b819ad452dbf1789760051b31b6127ad61b54c8ceb7",
+      "execution_status": "pass",
+      "path": "generated/semantic-contract-scl0/search-run/plans/scl1_020_blind_a_v0.json",
+      "requested_evidence_failure_count": 0,
+      "result_count": 20
+    },
+    "deceleration": {
+      "document_hash": "de3a97e1958b012fe3071825ab7f478e424afd100f8372b730856ef2a7d3c924",
+      "execution_status": "pass",
+      "path": "generated/semantic-contract-scl0/search-run/plans/scl1_021_blind_a_v0.json",
+      "requested_evidence_failure_count": 0,
+      "result_count": 20
+    }
+  },
+  "primitive_probe": {
+    "acceleration_status_counts": {
+      "FAIL": 7382,
+      "PASS": 1910,
+      "UNKNOWN": 8
+    },
+    "deceleration_status_counts": {
+      "FAIL": 7764,
+      "PASS": 1528,
+      "UNKNOWN": 8
+    },
+    "evidence_presence_sample": {
+      "acceleration_entity_id": true,
+      "acceleration_frame_id": true,
+      "acceleration_model": true,
+      "acceleration_mps2": true,
+      "acceleration_reason": true,
+      "acceleration_verdict_bias": true,
+      "coverage_status": true,
+      "current_speed_mps": true,
+      "delta_speed_mps": true,
+      "noise_policy": true,
+      "previous_speed_mps": true,
+      "smoothing_policy": true,
+      "tracking_quality_status": true
+    },
+    "model": "speed_delta_between_two_non_overlapping_displacement_velocity_windows",
+    "noise_policy": "UNKNOWN if either velocity window lacks tracking endpoints or if observed speed/acceleration exceeds frozen plausibility limits; second derivatives amplify tracking noise.",
+    "reason_counts": {
+      "acceleration_noise_exceeds_plausibility_limit": 2,
+      "speed_change_below_threshold": 5854,
+      "speed_change_observed": 3438,
+      "tracking_endpoint_missing": 6
+    },
+    "record_count": 9300,
+    "smoothing_policy": "two_window_mean_displacement_velocity_no_additional_smoothing"
+  },
+  "schema_version": "afl.acceleration.v1",
+  "scl_gap_closure": {
+    "closure_claim": "scl1_020 and scl1_021 flipped from missing_primitive to compiler_reachable through generic provider search.",
+    "targets": {
+      "scl1_020_blind_a_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "acceleration"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_020_blind_b_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "acceleration"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_021_blind_a_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "acceleration"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_021_blind_b_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "acceleration"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      }
+    }
+  },
+  "status": "PASS"
+}

@@ -33,6 +33,7 @@ ROADMAP_IMPLICATIONS = [
     "time_to_arrival landed as a static-point reachability primitive; the prior reachability backlog has redistributed into supported rows or narrower next blockers.",
     "carry_episode landed as a conservative movement-under-control primitive; the prior carry backlog has redistributed into supported rows or precise next blockers.",
     "Q2 now composes through generic binary episode joins; carry_out_of_pressure is generically_composable, not yet compiler_reachable.",
+    "acceleration landed as a conservative two-window speed-change primitive; speed-up/deceleration rows are supported while turn-rate, curvature, and jerk remain precise next blockers.",
     "set_piece_structure and off_ball_run are now the top missing primitives by atlas unlock count.",
     "Remaining reachability gaps are mostly not this primitive: moving-target interception, pass-line interception, cover shadow, reachability-field/region generation, graph construction, or margin/rate operators.",
     "Remaining carry-family gaps are mostly not base carrying: defender-bypass-by-carry, space generation, profile aggregation, contact/touch, body orientation, or learned value.",
