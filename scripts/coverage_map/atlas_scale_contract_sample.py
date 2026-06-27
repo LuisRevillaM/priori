@@ -42,11 +42,13 @@ MAX_POSITIVE_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_POSITIVE_CONCEPTS", 
 MAX_BLIND_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_BLIND_CONCEPTS", str(MAX_POSITIVE_CONCEPTS)))
 MAX_NEGATIVE_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_NEGATIVE_CONCEPTS", "8"))
 MAX_POSITIVES_PER_TEMPLATE = int(os.environ.get("TQE_ATLAS_SCALE_POSITIVES_PER_TEMPLATE", "3"))
+MAX_FRONTIER_CONCEPTS = int(os.environ.get("TQE_ATLAS_SCALE_FRONTIER_CONCEPTS", "48"))
 BLIND_SAMPLE_SEED = os.environ.get("TQE_ATLAS_SCALE_BLIND_SAMPLE_SEED", "supported_blind_draw_v0")
 SAMPLE_POLICY = os.environ.get("TQE_ATLAS_SCALE_SAMPLE_POLICY", "atlas_scale_stratified_contract_sample_v0")
 INCLUDE_KNOWN_GOOD_CONTROLS = os.environ.get("TQE_ATLAS_SCALE_INCLUDE_KNOWN_GOOD_CONTROLS", "0") == "1"
 BLIND_SUPPORTED_DRAW = os.environ.get("TQE_ATLAS_SCALE_BLIND_SUPPORTED_DRAW", "0") == "1"
-MEASURED_SAMPLE_ROLES = {"blind_probe", "positive_probe"}
+FRONTIER_PARTIAL_DRAW = os.environ.get("TQE_ATLAS_SCALE_FRONTIER_PARTIAL_DRAW", "0") == "1"
+MEASURED_SAMPLE_ROLES = {"blind_probe", "frontier_probe", "positive_probe"}
 
 SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
 FORBIDDEN_CONTRACT_KEYS = {
@@ -223,12 +225,23 @@ def prepare() -> int:
         measured_configs, skipped_measured_rows = select_blind_supported_rows(rows)
         positive_configs: list[dict[str, Any]] = []
         blind_configs = measured_configs
+        frontier_configs: list[dict[str, Any]] = []
+    elif FRONTIER_PARTIAL_DRAW:
+        measured_configs, skipped_measured_rows = select_frontier_partial_rows(rows)
+        positive_configs = []
+        blind_configs = []
+        frontier_configs = measured_configs
     else:
         positive_configs, skipped_measured_rows = select_positive_rows(rows)
         blind_configs = []
+        frontier_configs = []
     negative_configs = select_known_negative_rows(rows)
-    known_good_configs = select_known_good_control_rows(rows, skipped_measured_rows) if INCLUDE_KNOWN_GOOD_CONTROLS else []
-    concept_configs = [*blind_configs, *positive_configs, *negative_configs, *known_good_configs]
+    control_source_rows = skipped_measured_rows
+    if FRONTIER_PARTIAL_DRAW:
+        control_source_rows = [*skipped_measured_rows, *divergence_control_refusals(rows)]
+    known_good_configs = select_known_good_control_rows(rows, control_source_rows) if INCLUDE_KNOWN_GOOD_CONTROLS else []
+    reported_skipped_rows = control_source_rows if FRONTIER_PARTIAL_DRAW else skipped_measured_rows
+    concept_configs = [*frontier_configs, *blind_configs, *positive_configs, *negative_configs, *known_good_configs]
 
     targets: list[dict[str, Any]] = []
     ledger_rows: list[dict[str, Any]] = []
@@ -275,6 +288,7 @@ def prepare() -> int:
             "atlas_wide": False,
             "large_stratified_sample": True,
             "blind_supported_draw": BLIND_SUPPORTED_DRAW,
+            "frontier_partial_draw": FRONTIER_PARTIAL_DRAW,
             "natural_language": False,
             "coverage_map_gold_chain_used": False,
             "pattern_labels_used": False,
@@ -283,28 +297,32 @@ def prepare() -> int:
             "known_negative_controls_required": True,
             "known_good_controls_included": INCLUDE_KNOWN_GOOD_CONTROLS,
             "blind_rows_have_expected_result": False,
+            "frontier_rows_have_expected_result": False,
         },
         "summary": {
+            "frontier_partial_concept_count": len(frontier_configs),
             "blind_supported_concept_count": len(blind_configs),
             "positive_concept_count": len(positive_configs),
             "known_negative_concept_count": len(negative_configs),
             "known_good_control_concept_count": len(known_good_configs),
             "concept_count": len(concept_configs),
             "target_count": len(targets),
-            "measured_template_distribution": dict(sorted(collections.Counter(item["contract_template_id"] for item in [*blind_configs, *positive_configs]).items())),
+            "measured_template_distribution": dict(sorted(collections.Counter(item["contract_template_id"] for item in [*frontier_configs, *blind_configs, *positive_configs]).items())),
+            "frontier_gap_distribution": dict(sorted(collections.Counter(item.get("frontier_gap_taxonomy") for item in frontier_configs).items())),
             "negative_distribution": dict(sorted(collections.Counter(item.get("expected_failure_taxonomy") for item in negative_configs).items())),
             "known_good_control_distribution": dict(sorted(collections.Counter(item.get("known_good_control_family") for item in known_good_configs).items())),
-            "skipped_measured_row_count": len(skipped_measured_rows),
-            "skipped_measured_row_distribution": dict(sorted(collections.Counter(item.get("reason") for item in skipped_measured_rows).items())),
+            "skipped_measured_row_count": len(reported_skipped_rows),
+            "skipped_measured_row_distribution": dict(sorted(collections.Counter(item.get("reason") for item in reported_skipped_rows).items())),
         },
         "selection": {
             "max_positive_concepts": MAX_POSITIVE_CONCEPTS,
             "max_blind_concepts": MAX_BLIND_CONCEPTS,
+            "max_frontier_concepts": MAX_FRONTIER_CONCEPTS,
             "max_negative_concepts": MAX_NEGATIVE_CONCEPTS,
             "max_positives_per_template": MAX_POSITIVES_PER_TEMPLATE,
             "blind_sample_seed": BLIND_SAMPLE_SEED,
-            "skipped_measured_rows": skipped_measured_rows,
-            "skipped_positive_rows": skipped_measured_rows,
+            "skipped_measured_rows": reported_skipped_rows,
+            "skipped_positive_rows": reported_skipped_rows,
         },
         "anti_circularity": {
             "forbidden_contract_keys": sorted(FORBIDDEN_CONTRACT_KEYS),
@@ -372,6 +390,7 @@ def assess() -> int:
     failure_counts = collections.Counter(row["failure_taxonomy"] for row in rows if row.get("failure_taxonomy"))
     measured_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] in MEASURED_SAMPLE_ROLES]
     blind_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "blind_probe"]
+    frontier_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "frontier_probe"]
     positive_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "positive_probe"]
     known_negative_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "known_negative"]
     known_good_rows = [row for row in rows if target_by_id[row["target_id"]]["sample_role"] == "known_good_control"]
@@ -406,6 +425,12 @@ def assess() -> int:
             "blind_compiler_reachable_pct": pct(sum(1 for item in blind_rows if item["result"] == "compiler_reachable"), len(blind_rows)),
             "blind_failure_distribution": dict(
                 sorted(collections.Counter(row.get("failure_taxonomy") for row in blind_rows if row.get("failure_taxonomy")).items())
+            ),
+            "frontier_target_count": len(frontier_rows),
+            "frontier_compiler_reachable_count": sum(1 for item in frontier_rows if item["result"] == "compiler_reachable"),
+            "frontier_compiler_reachable_pct": pct(sum(1 for item in frontier_rows if item["result"] == "compiler_reachable"), len(frontier_rows)),
+            "frontier_failure_distribution": dict(
+                sorted(collections.Counter(row.get("failure_taxonomy") for row in frontier_rows if row.get("failure_taxonomy")).items())
             ),
             "positive_target_count": len(positive_rows),
             "positive_compiler_reachable_count": sum(1 for item in positive_rows if item["result"] == "compiler_reachable"),
@@ -458,10 +483,14 @@ def contract_fidelity_refusals_from_prep_report() -> list[dict[str, Any]]:
 def select_known_good_control_rows(rows: list[dict[str, Any]], skipped_positive_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     by_concept = {row["concept"]: row for row in rows}
     configs: list[dict[str, Any]] = []
+    seen: set[str] = set()
     for skipped in skipped_positive_rows:
         concept = skipped.get("concept")
         if skipped.get("reason") != "contract_fidelity_insufficient" or concept not in KNOWN_GOOD_CONTROL_REASONS:
             continue
+        if str(concept) in seen:
+            continue
+        seen.add(str(concept))
         row = by_concept.get(str(concept))
         if row is None:
             continue
@@ -476,6 +505,23 @@ def select_known_good_control_rows(rows: list[dict[str, Any]], skipped_positive_
             }
         )
     return configs
+
+
+def divergence_control_refusals(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_concept = {str(row["concept"]): row for row in rows}
+    refusals: list[dict[str, Any]] = []
+    for concept, detail in CONTRACT_FIDELITY_INSUFFICIENT.items():
+        if concept not in by_concept:
+            continue
+        refusals.append(
+            {
+                "reason": "contract_fidelity_insufficient",
+                "concept": concept,
+                "detail": detail,
+                "selected_by_frontier_divergence_controls": True,
+            }
+        )
+    return refusals
 
 
 def select_blind_supported_rows(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -555,6 +601,41 @@ def select_blind_supported_rows(rows: list[dict[str, Any]]) -> tuple[list[dict[s
     return selected, skipped
 
 
+def select_frontier_partial_rows(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    candidates = [
+        row
+        for row in rows
+        if row.get("classification") == "partial_with_typed_gap"
+    ]
+    candidates.sort(key=lambda row: stable_sample_key(str(row["concept"]), "frontier_partial"))
+    selected: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for row in candidates:
+        if len(selected) >= MAX_FRONTIER_CONCEPTS:
+            break
+        concept = str(row["concept"])
+        variants = frontier_partial_variants(row)
+        if any(contract_has_concept_hint(concept, variant["target_contract"]) for variant in variants):
+            skipped.append(
+                {
+                    "reason": "concept_hint_risk",
+                    "concept": concept,
+                    "selected_by_frontier_draw": True,
+                }
+            )
+            continue
+        selected.append(
+            {
+                **row,
+                "sample_role": "frontier_probe",
+                "contract_template_id": "frontier_partial_gap",
+                "frontier_gap_taxonomy": frontier_gap_taxonomy(row),
+                "variants": variants,
+            }
+        )
+    return selected, skipped
+
+
 def stratified_blind_selection(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
     buckets: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
     for candidate in candidates:
@@ -583,6 +664,51 @@ def stratified_blind_selection(candidates: list[dict[str, Any]]) -> list[dict[st
 
 def stable_sample_key(concept: str, template_id: str) -> str:
     return hashlib.sha256(f"{BLIND_SAMPLE_SEED}:{template_id}:{concept}".encode("utf-8")).hexdigest()
+
+
+def frontier_gap_taxonomy(row: dict[str, Any]) -> str:
+    if bool(row.get("composition_constraint_needed")) or str(row.get("composition_constraint_note") or "").strip():
+        return "missing_constraint"
+    return "missing_primitive"
+
+
+def frontier_partial_variants(row: dict[str, Any]) -> list[dict[str, Any]]:
+    taxonomy = frontier_gap_taxonomy(row)
+    missing = str(row.get("required_missing_capability") or "typed_gap")
+    if taxonomy == "missing_constraint":
+        contract = {
+            "desired_output": "classification",
+            "required_evidence": ["frontier_constraint_status"],
+            "status_semantics": [{"field": "frontier_constraint_status", "required_value": "PASS"}],
+            "composition_constraints": [
+                {
+                    "kind": "frontier_missing_composition_constraint",
+                    "gap_hash": stable_hash_text(missing)[:12],
+                }
+            ],
+            "claim_boundary": (
+                "Frontier partial-row probe requiring a declared semantic composition constraint. "
+                "This target is expected to expose whether the current search can enforce that constraint; "
+                "no tactical quality, intent, causation, or optimality claim."
+            ),
+        }
+    else:
+        missing_field = f"frontier_missing_{stable_hash_text(missing)[:12]}_status"
+        contract = {
+            "desired_output": "classification",
+            "required_evidence": [missing_field],
+            "status_semantics": [{"field": missing_field, "required_value": "PASS"}],
+            "claim_boundary": (
+                "Frontier partial-row probe requiring a declared missing operational capability. "
+                "This target is expected to expose whether the current catalog has an executable provider; "
+                "no substitute, tactical quality, intent, causation, or optimality claim."
+            ),
+        }
+    return [{"variant_id": "frontier_gap", "target_contract": contract}]
+
+
+def stable_hash_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
 def select_positive_rows(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -723,6 +849,10 @@ def target_from_variant(concept_config: dict[str, Any], variant: dict[str, Any])
         target["known_good_control_expected_failure"] = concept_config["known_good_control_expected_failure"]
     if concept_config.get("known_good_control_family"):
         target["known_good_control_family"] = concept_config["known_good_control_family"]
+    if concept_config.get("frontier_gap_taxonomy"):
+        target["frontier_gap_taxonomy"] = concept_config["frontier_gap_taxonomy"]
+    if concept_config.get("required_missing_capability"):
+        target["required_missing_capability"] = concept_config["required_missing_capability"]
     if concept_config["contract_template_id"] in {"action_chain", "carry_pressure_change", "compactness_change", "pass_chain"}:
         target["multi_step"] = True
     return target
@@ -884,12 +1014,17 @@ def bucket_for_positive_row(
             "auto_result": "degenerate_reach",
             "providers_used": row.get("providers_used", []),
         }
-    if row.get("failure_taxonomy") in {"unsupported_modality", "missing_primitive", "search_budget_exceeded", "runtime_gap"}:
+    direct_failure_buckets = {"unsupported_modality", "missing_primitive", "search_budget_exceeded", "runtime_gap"}
+    if target.get("sample_role") == "frontier_probe":
+        direct_failure_buckets = {*direct_failure_buckets, "missing_constraint"}
+    if row.get("failure_taxonomy") in direct_failure_buckets:
         return {
             "concept": row["concept"],
             "target_id": target_id,
             "bucket": str(row.get("failure_taxonomy")),
             "auto_result": row["result"],
+            "frontier_gap_taxonomy": target.get("frontier_gap_taxonomy"),
+            "required_missing_capability": target.get("required_missing_capability"),
         }
     control_bucket = bucket_from_known_good_controls(controls, clean_subtype="too_strict")
     return {

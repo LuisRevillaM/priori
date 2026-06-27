@@ -1,0 +1,1904 @@
+{
+  "note": "Large deterministic atlas sample. Contract variants are generated from intrinsic evidence/status requirements, not gold chains. Template ids are audit metadata outside target_contract and are not consumed by synthesis.",
+  "sample_policy": "frontier_partial_gap_draw_with_controls_v0",
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.atlas_scale_stratified_contract_sample",
+  "targets": [
+    {
+      "atlas_scale_sample": true,
+      "concept": "separation_from_marker",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "marking (marker identity)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_4026eea58986_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_4026eea58986_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_separation_from_marker_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "player_control_state",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "contact/touch primitive",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "a29d23cb9dfa",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_player_control_state_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "organized_unorganized_state",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "structure-integrity / settled-shape metric (line_integrity)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "9c6044ef21ca",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_organized_unorganized_state_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "line_break_mode",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "gap_model (for around-vs-through-gap distinction)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_15518073f242_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_15518073f242_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_line_break_mode_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "transition_open_space",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "space_region_generation",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_0977e633487d_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_0977e633487d_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_transition_open_space_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "rest_defense_shape",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "role_or_reference set for rest-defense players",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_18141ee074ee_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_18141ee074ee_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_rest_defense_shape_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "stoppage_time_state",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "awarded stoppage-time reference",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_f8c99d891f6d_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_f8c99d891f6d_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_stoppage_time_state_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "set_piece_run_onset",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "set_piece_structure (run context)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "be396cf21476",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_set_piece_run_onset_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "carry_pressure_profile",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "pressure_over_interval_aggregation",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "0581bcb95447",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_carry_pressure_profile_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "outlet_denial",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "cover_shadow / option_graph construction",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_9b1f24de2120_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_9b1f24de2120_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_outlet_denial_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "receive_and_turn_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "body orientation modality (turn feasibility)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_901626e15120_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_901626e15120_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_receive_and_turn_candidate_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "final_third_phase_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "structured_zones (final third)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_90b038f3e739_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_90b038f3e739_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_final_third_phase_candidate_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "foul_won_within",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "foul/law adjudication primitive (or event mark)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_a203a188d899_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_a203a188d899_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_foul_won_within_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "weak_side_balance",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "weak_side region reference + balance metric definition",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "c5ba4e7a39c3",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_weak_side_balance_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "inter_unit_gap",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "gap_model (for gap semantics beyond line spacing)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "9e47cb13e21e",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_inter_unit_gap_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "in_contest_phase_distribution",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "contest/neutral possession state definition",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "d52a1e74feb5",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_in_contest_phase_distribution_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "high_press_phase_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "press-height phase typing (thresholds)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "22a6220191ad",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_high_press_phase_candidate_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "progression_phase_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "structured_zones (thirds)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_bf3a8f78be04_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_bf3a8f78be04_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_progression_phase_candidate_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "graph_edge_closing",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "time_to_arrival (+ graph construction)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_33663f90fb8a_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_33663f90fb8a_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_graph_edge_closing_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shot_speed_profile",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "shot_geometry (shot anchor)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_941f5a2707ae_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_941f5a2707ae_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shot_speed_profile_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "team_shape_skew",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "shape skew / asymmetry metric",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "906ccf1b583c",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_team_shape_skew_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "set_piece_clearance",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "clearance action type within set_piece_structure",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "a51951dbb0f0",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_set_piece_clearance_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "delivery_target_region",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "structured_zones (set-piece target regions)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "dda6d91bd1a5",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_delivery_target_region_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "path_length",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "trajectory_arc_length_operator",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_a61d812c4f90_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_a61d812c4f90_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_path_length_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "player_ball_reachability",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "moving_target_interception",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "cdb8e5b7b34f",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_player_ball_reachability_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "region_exit",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "structured_zones (for dynamic-region targets)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_56292e769df9_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_56292e769df9_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_region_exit_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "movement_synchrony",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "declared multi-entity velocity-correlation composition",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "1879d257b201",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_movement_synchrony_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "direction_change_under_pressure",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "direction_change_or_acceleration_operator",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "85bf8ac3eb27",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_direction_change_under_pressure_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "interception_episode",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "contact/contest primitive",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "ff9e74733af4",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_interception_episode_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defender_displacement",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "marking (assignment causality)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_de850badfecf_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_de850badfecf_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defender_displacement_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "offering_to_receive_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "time_to_arrival (lane availability)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_ca1682f5b25f_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_ca1682f5b25f_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_offering_to_receive_candidate_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "far_post_run_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "off_ball_run + structured_zones (goalmouth)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_8b2ae9731ba0_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_8b2ae9731ba0_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_far_post_run_candidate_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shot_trajectory",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "shot_geometry (shot anchor)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_941f5a2707ae_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_941f5a2707ae_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shot_trajectory_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "receive_outside_shape",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "declared composition rule (compactness/line envelope as the shape boundary)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "334e902f2280",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_receive_outside_shape_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "movement_to_receive_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "time_to_arrival (lane availability)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_ca1682f5b25f_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_ca1682f5b25f_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_movement_to_receive_candidate_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_lane",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "time_to_arrival (lane safety/interception) for the non-corridor case",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_b69aabc80dae_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_b69aabc80dae_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_lane_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "argmax",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "aggregation/extremum operator (argmax/integral/median/quantile)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_eb9dfce3c5e0_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_eb9dfce3c5e0_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_argmax_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "option_count_change_after",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "time_to_arrival/reachability (passing option)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_66aa15037a92_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_66aa15037a92_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_option_count_change_after_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "region_crossing",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "structured_zones (for arbitrary regions)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_589da41f3fef_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_589da41f3fef_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_region_crossing_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "line_integrity",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "line_integrity metric (fit residual / staggering measure)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "eb882a6f3909",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_line_integrity_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shot_within",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "shot action primitive (or event mark)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_450c2f948009_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_450c2f948009_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shot_within_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "convex_hull",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "convex_hull polygon geometry",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_741d2a4c36b5_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_741d2a4c36b5_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_convex_hull_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defensive_recovery_phase_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "defensive_recovery_phase_definition",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "ee6d2110afbf",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defensive_recovery_phase_candidate_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "vertical_channel_region",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "structured_zones (half-space variant)",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_bbb082a124d7_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_bbb082a124d7_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_vertical_channel_region_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "ball_recovery_episode",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "duel/contest primitive",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "f302763a492e",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_ball_recovery_episode_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "game_state_window",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "score/scoreline reference",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_c9cb98b97a81_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_c9cb98b97a81_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_game_state_window_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "ball_recovery_time",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_constraint",
+      "held_out": true,
+      "required_missing_capability": "transition_pair_duration",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared semantic composition constraint. This target is expected to expose whether the current search can enforce that constraint; no tactical quality, intent, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "gap_hash": "299c0389398b",
+            "kind": "frontier_missing_composition_constraint"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_constraint_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_constraint_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_ball_recovery_time_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "free_player_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "contract_variant": "frontier_gap",
+      "frontier_gap_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "marking",
+      "sample_role": "frontier_probe",
+      "target_contract": {
+        "claim_boundary": "Frontier partial-row probe requiring a declared missing operational capability. This target is expected to expose whether the current catalog has an executable provider; no substitute, tactical quality, intent, causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "frontier_missing_60e0497120e0_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "frontier_missing_60e0497120e0_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_free_player_candidate_frontier_gap_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_completion_probability",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "required_missing_capability": "learned-models modality (completion probability)",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_completion_probability_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "pass_completion_probability",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "required_missing_capability": "learned-models modality (completion probability)",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_pass_completion_probability_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goalkeeper_set_position_proxy",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "required_missing_capability": "body orientation/biomechanics modality (stance/set posture)",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "body_orientation"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goalkeeper_set_position_proxy",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "required_missing_capability": "body orientation/biomechanics modality (stance/set posture)",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "body_orientation"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "expected_pass_completion",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "required_missing_capability": "learned completion-probability model",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_expected_pass_completion_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "expected_pass_completion",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "required_missing_capability": "learned completion-probability model",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_expected_pass_completion_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shot_expected_goal",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "required_missing_capability": "learned-models modality (xG)",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring an unavailable modality; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_model_score"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_model_score",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shot_expected_goal_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "shot_expected_goal",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "held_out": true,
+      "required_missing_capability": "learned-models modality (xG)",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring unavailable model or body data; should fail as unsupported modality.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_probability"
+        ],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_probability",
+            "operator": "gte",
+            "threshold": 0.5,
+            "unit": "none"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_shot_expected_goal_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goal_kick_build_structure",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "set_piece_structure",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goal_kick_build_structure_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "goal_kick_build_structure",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "set_piece_structure",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_goal_kick_build_structure_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "marking_assignment_candidate",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "marking",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_marking_assignment_candidate_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "marking_assignment_candidate",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "marking",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_marking_assignment_candidate_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "cover_shadow_region",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "cover_shadow",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_cover_shadow_region_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "cover_shadow_region",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "cover_shadow",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_cover_shadow_region_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defender_bypassed_by_carry",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_a",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "defender_bypassed_by_carry",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring a missing primitive; should not become compiler-reachable.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defender_bypassed_by_carry_negative_a_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "defender_bypassed_by_carry",
+      "contract_template_id": "known_negative_missing_primitive",
+      "contract_variant": "negative_b",
+      "expected_failure_taxonomy": "missing_primitive",
+      "held_out": true,
+      "required_missing_capability": "defender_bypassed_by_carry",
+      "sample_role": "known_negative",
+      "target_contract": {
+        "claim_boundary": "Known-negative control requiring missing runtime evidence; should fail as missing primitive.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "unavailable_primitive_status",
+          "unavailable_primitive_reason"
+        ],
+        "status_semantics": [
+          {
+            "field": "unavailable_primitive_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_defender_bypassed_by_carry_negative_b_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "bounce_pass_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "contract_variant": "known_good_identity_return",
+      "held_out": true,
+      "known_good_control_expected_failure": "missing_constraint",
+      "known_good_control_family": "identity_constrained_combination",
+      "sample_role": "known_good_control",
+      "target_contract": {
+        "claim_boundary": "Known-good identity-constrained combination contract: observed pass-chain where the terminal receiver is the original input passer. No planned combination, wall-pass intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "pass_chain_status",
+          "input_pass_episode_id",
+          "relay_pass_episode_id",
+          "input_passer_id",
+          "relay_player_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_bounce_pass_sequence_known_good_identity_return_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "give_and_go_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "contract_variant": "known_good_identity_return",
+      "held_out": true,
+      "known_good_control_expected_failure": "missing_constraint",
+      "known_good_control_family": "identity_constrained_combination",
+      "sample_role": "known_good_control",
+      "target_contract": {
+        "claim_boundary": "Known-good identity-constrained combination contract: observed pass-chain where the terminal receiver is the original input passer. No planned combination, wall-pass intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "pass_chain_status",
+          "input_pass_episode_id",
+          "relay_pass_episode_id",
+          "input_passer_id",
+          "relay_player_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_give_and_go_sequence_known_good_identity_return_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "up_back_through_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "contract_variant": "known_good_identity_return",
+      "held_out": true,
+      "known_good_control_expected_failure": "missing_constraint",
+      "known_good_control_family": "identity_constrained_combination",
+      "sample_role": "known_good_control",
+      "target_contract": {
+        "claim_boundary": "Known-good identity-constrained combination contract: observed pass-chain where the terminal receiver is the original input passer. No planned combination, wall-pass intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "pass_chain_status",
+          "input_pass_episode_id",
+          "relay_pass_episode_id",
+          "input_passer_id",
+          "relay_player_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_up_back_through_sequence_known_good_identity_return_v0"
+    },
+    {
+      "atlas_scale_sample": true,
+      "concept": "wall_pass_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "contract_variant": "known_good_identity_return",
+      "held_out": true,
+      "known_good_control_expected_failure": "missing_constraint",
+      "known_good_control_family": "identity_constrained_combination",
+      "sample_role": "known_good_control",
+      "target_contract": {
+        "claim_boundary": "Known-good identity-constrained combination contract: observed pass-chain where the terminal receiver is the original input passer. No planned combination, wall-pass intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "pass_chain_status",
+          "input_pass_episode_id",
+          "relay_pass_episode_id",
+          "input_passer_id",
+          "relay_player_id",
+          "terminal_receiver_id",
+          "terminal_controlled_reception_frame_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "atlas_scale_wall_pass_sequence_known_good_identity_return_v0"
+    }
+  ]
+}

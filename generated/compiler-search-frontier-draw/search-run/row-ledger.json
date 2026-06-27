@@ -1,0 +1,2866 @@
+[
+  {
+    "compatibility_profile": null,
+    "concept": "separation_from_marker",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_4026eea58986_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "9f96b1aa2946fd531f315b567d43a43a6fb3ea15256e94058d2c0adc5df3bfa7",
+    "target_id": "atlas_scale_separation_from_marker_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "player_control_state",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "ee78c43b8a6749177fd2507e0a010f1f19aa905cbeb25692f857154fd46df6e2",
+    "target_id": "atlas_scale_player_control_state_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "organized_unorganized_state",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "3f9e37795d01dac49170facb5544c6b673f8be5057dd6ffa8c0fee802c608d1a",
+    "target_id": "atlas_scale_organized_unorganized_state_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "line_break_mode",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_15518073f242_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "165df0b1263d8472c398d347a0e9fcf34230ae414bf51e5e48420c709d03ca01",
+    "target_id": "atlas_scale_line_break_mode_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "transition_open_space",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_0977e633487d_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "ed86fa5c2022d53cd48dd422a2d7626cb137fe7d650b85c76309963583c67d70",
+    "target_id": "atlas_scale_transition_open_space_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "rest_defense_shape",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_18141ee074ee_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "acd6f45c5366a924785484d45d9bc9c1df59db49d751d98e1f484d2872e6a9db",
+    "target_id": "atlas_scale_rest_defense_shape_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "stoppage_time_state",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_f8c99d891f6d_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "a7f374ff070ca580272ecc26bdbea4e52acd3ba48d18250a113d17fdb652d0e1",
+    "target_id": "atlas_scale_stoppage_time_state_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "set_piece_run_onset",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "07fc9de69f9d033697590db80dfcc41c8c64d7673424b1a65abdaead745e0955",
+    "target_id": "atlas_scale_set_piece_run_onset_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "carry_pressure_profile",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "6c6015f407bd4daa3671f2ee5127fd924e8d1a1a99d84254772e4a7e8fa8d02b",
+    "target_id": "atlas_scale_carry_pressure_profile_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "outlet_denial",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_9b1f24de2120_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "cf24f26981e78629f08e025e57ff758da163b3dd8f1c017f9526cf93012ab851",
+    "target_id": "atlas_scale_outlet_denial_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "receive_and_turn_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_901626e15120_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "fb5072fa4912d6292a692d8be4643c8eb243b444dfe2f84dcd403babbd5dc0fb",
+    "target_id": "atlas_scale_receive_and_turn_candidate_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "final_third_phase_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_90b038f3e739_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "20d30cf7b7b8e50b750a51b528ab65185469d1273bf6152b973343c89631be25",
+    "target_id": "atlas_scale_final_third_phase_candidate_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "foul_won_within",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_a203a188d899_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "cbeecfa514ad209141a838584bedc22ceb637760badda04dce45e986068e6175",
+    "target_id": "atlas_scale_foul_won_within_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "weak_side_balance",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "c8cb87abf026e20c7873cab7fc257caefd84967f79ddc819e34a8e5914ff49af",
+    "target_id": "atlas_scale_weak_side_balance_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "inter_unit_gap",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "94ba6294d6537d6acef08f8a4cd34fbad3a3ea7cee4ae74ec814a395f9792d9c",
+    "target_id": "atlas_scale_inter_unit_gap_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "in_contest_phase_distribution",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "750429257742e3fa0473453cdc4677ad4a32c947116f8c76d8f94e36ec9fea2f",
+    "target_id": "atlas_scale_in_contest_phase_distribution_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "high_press_phase_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "083b61bb8d429d6d7dadc8af759800e117406f8333d23e0cbb2af0ba2c1de946",
+    "target_id": "atlas_scale_high_press_phase_candidate_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "progression_phase_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_bf3a8f78be04_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "4a217fe6871cfa76acfc27cc8cbe90e8dead6da957be746eb57e9ce5b8d6beaa",
+    "target_id": "atlas_scale_progression_phase_candidate_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "graph_edge_closing",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_33663f90fb8a_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "60342cc568c21a83cd1da5e0c1e5339f20e933982cd95e540f1dcc9b1eb46424",
+    "target_id": "atlas_scale_graph_edge_closing_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "shot_speed_profile",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_941f5a2707ae_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "2a2c89088d43e4431d81daf5de29e81c60025707ec567a4589daf286bf299bf8",
+    "target_id": "atlas_scale_shot_speed_profile_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "team_shape_skew",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "ecce5593e26adaf7cbe435b6206c9346850a7e0de430e0959ebfd5d7c6d5d2c6",
+    "target_id": "atlas_scale_team_shape_skew_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "set_piece_clearance",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "a48f6a857adca8193394dc3e888f157c1fac18b1d75ae4a4d0a475e060c637d0",
+    "target_id": "atlas_scale_set_piece_clearance_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "delivery_target_region",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "1eb04cf34717d9b2c630e5ec027c008c4988cb5fd952957abbfd96cbbf4961c9",
+    "target_id": "atlas_scale_delivery_target_region_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "path_length",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_a61d812c4f90_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "b1e76996f38e60ec8ade4d0d1dfc741c7ea59f619cf244faf3a448d9ddfaeb3a",
+    "target_id": "atlas_scale_path_length_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "player_ball_reachability",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "57231edd8de9d79daaf0d5d73b7de6f1720f1e4dc98f6a4180f0397f69ed73a2",
+    "target_id": "atlas_scale_player_ball_reachability_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "region_exit",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_56292e769df9_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "35fe4425324c3473be02c032727e16751dce7a26e99dbe029ed646999fefcff9",
+    "target_id": "atlas_scale_region_exit_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "movement_synchrony",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "975ccc9eb688df6816d8af8c0bffa505d2d5717a16a4e66809bc0f5ac3f0a906",
+    "target_id": "atlas_scale_movement_synchrony_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "direction_change_under_pressure",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "65db6095d6c5a63014e9b36555b243cb21bba5c20ba76fea05730969c67be4dc",
+    "target_id": "atlas_scale_direction_change_under_pressure_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "interception_episode",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "1d1da2109b6dd0fcbb97eca2f0443e80f70d5d7e34e38d5c7c6b8b6e7ad01f7b",
+    "target_id": "atlas_scale_interception_episode_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "defender_displacement",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_de850badfecf_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "022de47074668150d3add6ba2146b4bc1450953e2be19a2271a6a081cc6c092d",
+    "target_id": "atlas_scale_defender_displacement_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "offering_to_receive_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_ca1682f5b25f_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "0e208c4915853e1ccfcc4af9e9880b53e0408f7e338f25f03962f94d86a1efd7",
+    "target_id": "atlas_scale_offering_to_receive_candidate_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "far_post_run_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_8b2ae9731ba0_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "322d9a7d005f4d6c724320364e5f38a54a5e584345b3a1363222e1517721fd01",
+    "target_id": "atlas_scale_far_post_run_candidate_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "shot_trajectory",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_941f5a2707ae_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "2a2c89088d43e4431d81daf5de29e81c60025707ec567a4589daf286bf299bf8",
+    "target_id": "atlas_scale_shot_trajectory_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "receive_outside_shape",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "5cc2b077771659ea8b916b204176ec880fc41b9a7fb94006d0c5f7919ddc55c7",
+    "target_id": "atlas_scale_receive_outside_shape_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "movement_to_receive_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_ca1682f5b25f_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "0e208c4915853e1ccfcc4af9e9880b53e0408f7e338f25f03962f94d86a1efd7",
+    "target_id": "atlas_scale_movement_to_receive_candidate_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "pass_lane",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_b69aabc80dae_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "a4a6aa2ddbddf07a8418a3e385690dee34bdaafb2e8c214a5fadc3a53080eafb",
+    "target_id": "atlas_scale_pass_lane_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "argmax",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_eb9dfce3c5e0_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "c1661b9c35ff3d03c16fc283bd86392cecbfcf491339e7495d7639895a020643",
+    "target_id": "atlas_scale_argmax_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "option_count_change_after",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_66aa15037a92_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "c561d4ad10f93b93e56f2520398832c4e0addc8a9d6507cf884a45675230ea8e",
+    "target_id": "atlas_scale_option_count_change_after_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "region_crossing",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_589da41f3fef_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "6e7e3343dcc5087e94e4ad3e2bb65b36a110894473e61e139c3e1f9133d7cdd2",
+    "target_id": "atlas_scale_region_crossing_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "line_integrity",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "eff6cc11c68b05dd9b30903d360dbcb046ed9b01d2d5d883bfa70ed46cc6bad0",
+    "target_id": "atlas_scale_line_integrity_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "shot_within",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_450c2f948009_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "5d66060524c9d6636403b7baa4c068a0a1fba52e85ce764fb5466d5efb42a348",
+    "target_id": "atlas_scale_shot_within_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "convex_hull",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_741d2a4c36b5_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "867b07f7cdc93f9fb749ae360b5904430e3e9927b6fb592ed8daeecc2ea46647",
+    "target_id": "atlas_scale_convex_hull_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "defensive_recovery_phase_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "bf7df8003acef7b1c41c1c4e9c4e0af4467cd15b525a0883fd9576bd0698eed7",
+    "target_id": "atlas_scale_defensive_recovery_phase_candidate_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "vertical_channel_region",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_bbb082a124d7_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "091108a7b5b8d36360d988999c4aca60f7e245444a7e3b4f5cf14442894cbf14",
+    "target_id": "atlas_scale_vertical_channel_region_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "ball_recovery_episode",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "12801028aad0cfeea5d0f29ee0316f95c21a08b753bb8a3cce6f1ceb59127524",
+    "target_id": "atlas_scale_ball_recovery_episode_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "game_state_window",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_c9cb98b97a81_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "2b43e65076d4f4e15f99c4a071bf8e3f6e5e1729e337c53e74c0a68d37126081",
+    "target_id": "atlas_scale_game_state_window_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "ball_recovery_time",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "frontier_missing_composition_constraint"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "9e9fbefe30c2e2fd9920b247ccdfc971426795937be85ae3dee4ceb53e145321",
+    "target_id": "atlas_scale_ball_recovery_time_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "free_player_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "frontier_missing_60e0497120e0_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "f9dc69253d5132dccf1fb670f44a8b3a4ea413952c0a59a495524ad46ab89991",
+    "target_id": "atlas_scale_free_player_candidate_frontier_gap_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "pass_completion_probability",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_modality",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_modalities": [
+        "learned_model"
+      ]
+    },
+    "failure_taxonomy": "unsupported_modality",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires unavailable data/model modalities.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "d06ccd0509c7018cd2771be437ac6254666d2678a9bf10307e5590f1743577b2",
+    "target_id": "atlas_scale_pass_completion_probability_negative_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "pass_completion_probability",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_modality",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_modalities": [
+        "learned_model"
+      ]
+    },
+    "failure_taxonomy": "unsupported_modality",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires unavailable data/model modalities.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "3ca05792c54bbd52d749aa9439ff37dfa22bd6a875e992ecf9453162884d0352",
+    "target_id": "atlas_scale_pass_completion_probability_negative_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "goalkeeper_set_position_proxy",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_modality",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_modalities": [
+        "body_orientation"
+      ]
+    },
+    "failure_taxonomy": "unsupported_modality",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires unavailable data/model modalities.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "1f75483b95ba2acfcde3312b9daaabcc11a71fa65cd7f14084b3483f18828c8d",
+    "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "goalkeeper_set_position_proxy",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_modality",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_modalities": [
+        "body_orientation"
+      ]
+    },
+    "failure_taxonomy": "unsupported_modality",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires unavailable data/model modalities.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "a947b51d1b4a31253c55203f5a6a85f26a8e62dcceb9d8adfd01209eed3a5794",
+    "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "expected_pass_completion",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_modality",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_modalities": [
+        "learned_model"
+      ]
+    },
+    "failure_taxonomy": "unsupported_modality",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires unavailable data/model modalities.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "d06ccd0509c7018cd2771be437ac6254666d2678a9bf10307e5590f1743577b2",
+    "target_id": "atlas_scale_expected_pass_completion_negative_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "expected_pass_completion",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_modality",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_modalities": [
+        "learned_model"
+      ]
+    },
+    "failure_taxonomy": "unsupported_modality",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires unavailable data/model modalities.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "3ca05792c54bbd52d749aa9439ff37dfa22bd6a875e992ecf9453162884d0352",
+    "target_id": "atlas_scale_expected_pass_completion_negative_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "shot_expected_goal",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_modality",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_modalities": [
+        "learned_model"
+      ]
+    },
+    "failure_taxonomy": "unsupported_modality",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires unavailable data/model modalities.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "d06ccd0509c7018cd2771be437ac6254666d2678a9bf10307e5590f1743577b2",
+    "target_id": "atlas_scale_shot_expected_goal_negative_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "shot_expected_goal",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_modality",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_modalities": [
+        "learned_model"
+      ]
+    },
+    "failure_taxonomy": "unsupported_modality",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires unavailable data/model modalities.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "3ca05792c54bbd52d749aa9439ff37dfa22bd6a875e992ecf9453162884d0352",
+    "target_id": "atlas_scale_shot_expected_goal_negative_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "goal_kick_build_structure",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "unavailable_primitive_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "0c2267b29a1f27282b4e062065d75ac2c407387a4dfdfdfa372897a09c135f1e",
+    "target_id": "atlas_scale_goal_kick_build_structure_negative_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "goal_kick_build_structure",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "unavailable_primitive_reason",
+        "unavailable_primitive_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "d9e941218b95a97ac9a8ee4ae3c3d0730ea8fc2610b1fb6323c83b3d4a2d4dd1",
+    "target_id": "atlas_scale_goal_kick_build_structure_negative_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "marking_assignment_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "unavailable_primitive_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "0c2267b29a1f27282b4e062065d75ac2c407387a4dfdfdfa372897a09c135f1e",
+    "target_id": "atlas_scale_marking_assignment_candidate_negative_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "marking_assignment_candidate",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "unavailable_primitive_reason",
+        "unavailable_primitive_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "d9e941218b95a97ac9a8ee4ae3c3d0730ea8fc2610b1fb6323c83b3d4a2d4dd1",
+    "target_id": "atlas_scale_marking_assignment_candidate_negative_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "cover_shadow_region",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "unavailable_primitive_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "0c2267b29a1f27282b4e062065d75ac2c407387a4dfdfdfa372897a09c135f1e",
+    "target_id": "atlas_scale_cover_shadow_region_negative_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "cover_shadow_region",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "unavailable_primitive_reason",
+        "unavailable_primitive_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "d9e941218b95a97ac9a8ee4ae3c3d0730ea8fc2610b1fb6323c83b3d4a2d4dd1",
+    "target_id": "atlas_scale_cover_shadow_region_negative_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "defender_bypassed_by_carry",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "unavailable_primitive_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "0c2267b29a1f27282b4e062065d75ac2c407387a4dfdfdfa372897a09c135f1e",
+    "target_id": "atlas_scale_defender_bypassed_by_carry_negative_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "defender_bypassed_by_carry",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "missing_primitive",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "required_fields": [
+        "unavailable_primitive_reason",
+        "unavailable_primitive_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "No allowed catalog provider exposes any required target field.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "d9e941218b95a97ac9a8ee4ae3c3d0730ea8fc2610b1fb6323c83b3d4a2d4dd1",
+    "target_id": "atlas_scale_defender_bypassed_by_carry_negative_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "bounce_pass_sequence",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "same_player_return"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "c4f35147826d07061348971d9f124ae3433da17b72c89f9fda1875c365960b5b",
+    "target_id": "atlas_scale_bounce_pass_sequence_known_good_identity_return_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "give_and_go_sequence",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "same_player_return"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "c4f35147826d07061348971d9f124ae3433da17b72c89f9fda1875c365960b5b",
+    "target_id": "atlas_scale_give_and_go_sequence_known_good_identity_return_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "up_back_through_sequence",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "same_player_return"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "c4f35147826d07061348971d9f124ae3433da17b72c89f9fda1875c365960b5b",
+    "target_id": "atlas_scale_up_back_through_sequence_known_good_identity_return_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "wall_pass_sequence",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "supported",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "unsupported_composition_constraints": [
+        {
+          "index": 0,
+          "kind": "same_player_return"
+        }
+      ]
+    },
+    "failure_taxonomy": "missing_constraint",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": true,
+    "honest_zero": false,
+    "input_composition_maturity": "handwired",
+    "message": "Target requires composition constraints the search cannot yet enforce.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "c4f35147826d07061348971d9f124ae3433da17b72c89f9fda1875c365960b5b",
+    "target_id": "atlas_scale_wall_pass_sequence_known_good_identity_return_v0",
+    "terminal_provider": null
+  }
+]

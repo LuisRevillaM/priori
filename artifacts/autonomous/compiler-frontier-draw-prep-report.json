@@ -1,0 +1,128 @@
+{
+  "anti_circularity": {
+    "findings": [],
+    "forbidden_contract_keys": [
+      "catalog_ref",
+      "catalog_refs",
+      "closest_supported_substitute",
+      "composition_pattern",
+      "gold_chain",
+      "gold_chain_path",
+      "pattern",
+      "provider_chain",
+      "runtime_capability",
+      "runtime_capability_ref",
+      "runtime_ref",
+      "runtime_refs",
+      "source_runtime_capability"
+    ]
+  },
+  "outputs": {
+    "ledger_path": "generated/compiler-search-frontier-draw/frontier-draw-coverage-ledger.json",
+    "targets_path": "generated/compiler-search-frontier-draw/frontier-draw-targets.v0.json"
+  },
+  "schema_version": "atlas_scale_contract_sample_prepare.v0",
+  "scope": {
+    "atlas_wide": false,
+    "blind_rows_have_expected_result": false,
+    "blind_supported_draw": false,
+    "coverage_map_gold_chain_used": false,
+    "frontier_partial_draw": true,
+    "frontier_rows_have_expected_result": false,
+    "known_good_controls_included": true,
+    "known_negative_controls_required": true,
+    "large_stratified_sample": true,
+    "natural_language": false,
+    "pattern_labels_used": false,
+    "runtime_or_catalog_refs_used_inside_target_contract": false,
+    "template_variants_not_true_independent_authors": true
+  },
+  "selection": {
+    "blind_sample_seed": "supported_blind_draw_v0",
+    "max_blind_concepts": 16,
+    "max_frontier_concepts": 48,
+    "max_negative_concepts": 8,
+    "max_positive_concepts": 16,
+    "max_positives_per_template": 3,
+    "skipped_measured_rows": [
+      {
+        "concept": "bounce_pass_sequence",
+        "detail": "Named return/relay combinations need explicit player-linkage semantics; a generic action anchor or chain would be a weak proxy.",
+        "reason": "contract_fidelity_insufficient",
+        "selected_by_frontier_divergence_controls": true
+      },
+      {
+        "concept": "give_and_go_sequence",
+        "detail": "Give-and-go requires a two-pass player-return structure; the current generated contracts cannot faithfully express that identity constraint.",
+        "reason": "contract_fidelity_insufficient",
+        "selected_by_frontier_divergence_controls": true
+      },
+      {
+        "concept": "up_back_through_sequence",
+        "detail": "Up-back-through requires ordered leg roles and directional constraints beyond the current generated contract templates.",
+        "reason": "contract_fidelity_insufficient",
+        "selected_by_frontier_divergence_controls": true
+      },
+      {
+        "concept": "wall_pass_sequence",
+        "detail": "Wall-pass semantics require return-pass/player-linkage constraints that cannot be represented by a generic action-anchor contract.",
+        "reason": "contract_fidelity_insufficient",
+        "selected_by_frontier_divergence_controls": true
+      }
+    ],
+    "skipped_positive_rows": [
+      {
+        "concept": "bounce_pass_sequence",
+        "detail": "Named return/relay combinations need explicit player-linkage semantics; a generic action anchor or chain would be a weak proxy.",
+        "reason": "contract_fidelity_insufficient",
+        "selected_by_frontier_divergence_controls": true
+      },
+      {
+        "concept": "give_and_go_sequence",
+        "detail": "Give-and-go requires a two-pass player-return structure; the current generated contracts cannot faithfully express that identity constraint.",
+        "reason": "contract_fidelity_insufficient",
+        "selected_by_frontier_divergence_controls": true
+      },
+      {
+        "concept": "up_back_through_sequence",
+        "detail": "Up-back-through requires ordered leg roles and directional constraints beyond the current generated contract templates.",
+        "reason": "contract_fidelity_insufficient",
+        "selected_by_frontier_divergence_controls": true
+      },
+      {
+        "concept": "wall_pass_sequence",
+        "detail": "Wall-pass semantics require return-pass/player-linkage constraints that cannot be represented by a generic action-anchor contract.",
+        "reason": "contract_fidelity_insufficient",
+        "selected_by_frontier_divergence_controls": true
+      }
+    ]
+  },
+  "status": "PASS",
+  "summary": {
+    "blind_supported_concept_count": 0,
+    "concept_count": 60,
+    "frontier_gap_distribution": {
+      "missing_constraint": 20,
+      "missing_primitive": 28
+    },
+    "frontier_partial_concept_count": 48,
+    "known_good_control_concept_count": 4,
+    "known_good_control_distribution": {
+      "identity_constrained_combination": 4
+    },
+    "known_negative_concept_count": 8,
+    "measured_template_distribution": {
+      "frontier_partial_gap": 48
+    },
+    "negative_distribution": {
+      "missing_primitive": 4,
+      "unsupported_modality": 4
+    },
+    "positive_concept_count": 0,
+    "skipped_measured_row_count": 4,
+    "skipped_measured_row_distribution": {
+      "contract_fidelity_insufficient": 4
+    },
+    "target_count": 68
+  }
+}

@@ -1,0 +1,2150 @@
+{
+  "concepts": [
+    {
+      "concept": "argmax",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_argmax_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "ball_recovery_episode",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_ball_recovery_episode_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "ball_recovery_time",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_ball_recovery_time_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "bounce_pass_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "findings": [],
+      "sample_role": "known_good_control",
+      "variants": [
+        {
+          "contract_template_id": "known_good_identity_constrained_combination",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": "missing_constraint",
+          "known_good_control_family": "identity_constrained_combination",
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_good_control",
+          "target_id": "atlas_scale_bounce_pass_sequence_known_good_identity_return_v0",
+          "terminal_provider": null,
+          "variant_id": "known_good_identity_return"
+        }
+      ]
+    },
+    {
+      "concept": "carry_pressure_profile",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_carry_pressure_profile_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "convex_hull",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_convex_hull_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "cover_shadow_region",
+      "contract_template_id": "known_negative_missing_primitive",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_cover_shadow_region_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_cover_shadow_region_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "defender_bypassed_by_carry",
+      "contract_template_id": "known_negative_missing_primitive",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_defender_bypassed_by_carry_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_defender_bypassed_by_carry_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "defender_displacement",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_defender_displacement_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "defensive_recovery_phase_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_defensive_recovery_phase_candidate_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "delivery_target_region",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_delivery_target_region_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "direction_change_under_pressure",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_direction_change_under_pressure_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "expected_pass_completion",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_expected_pass_completion_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_expected_pass_completion_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "far_post_run_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_far_post_run_candidate_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "final_third_phase_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_final_third_phase_candidate_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "foul_won_within",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_foul_won_within_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "free_player_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_free_player_candidate_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "game_state_window",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_game_state_window_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "give_and_go_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "findings": [],
+      "sample_role": "known_good_control",
+      "variants": [
+        {
+          "contract_template_id": "known_good_identity_constrained_combination",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": "missing_constraint",
+          "known_good_control_family": "identity_constrained_combination",
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_good_control",
+          "target_id": "atlas_scale_give_and_go_sequence_known_good_identity_return_v0",
+          "terminal_provider": null,
+          "variant_id": "known_good_identity_return"
+        }
+      ]
+    },
+    {
+      "concept": "goal_kick_build_structure",
+      "contract_template_id": "known_negative_missing_primitive",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_goal_kick_build_structure_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_goal_kick_build_structure_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "goalkeeper_set_position_proxy",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_goalkeeper_set_position_proxy_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "graph_edge_closing",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_graph_edge_closing_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "high_press_phase_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_high_press_phase_candidate_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "in_contest_phase_distribution",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_in_contest_phase_distribution_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "inter_unit_gap",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_inter_unit_gap_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "interception_episode",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_interception_episode_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "line_break_mode",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_line_break_mode_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "line_integrity",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_line_integrity_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "marking_assignment_candidate",
+      "contract_template_id": "known_negative_missing_primitive",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_marking_assignment_candidate_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_missing_primitive",
+          "expected_failure_taxonomy": "missing_primitive",
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_marking_assignment_candidate_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "movement_synchrony",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_movement_synchrony_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "movement_to_receive_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_movement_to_receive_candidate_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "offering_to_receive_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_offering_to_receive_candidate_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "option_count_change_after",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_option_count_change_after_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "organized_unorganized_state",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_organized_unorganized_state_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "outlet_denial",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_outlet_denial_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "pass_completion_probability",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_pass_completion_probability_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_pass_completion_probability_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "pass_lane",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_pass_lane_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "path_length",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_path_length_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "player_ball_reachability",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_player_ball_reachability_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "player_control_state",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_player_control_state_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "progression_phase_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_progression_phase_candidate_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "receive_and_turn_candidate",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_receive_and_turn_candidate_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "receive_outside_shape",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_receive_outside_shape_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "region_crossing",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_region_crossing_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "region_exit",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_region_exit_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "rest_defense_shape",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_rest_defense_shape_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "separation_from_marker",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_separation_from_marker_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "set_piece_clearance",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_set_piece_clearance_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "set_piece_run_onset",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_set_piece_run_onset_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "shot_expected_goal",
+      "contract_template_id": "known_negative_unsupported_modality",
+      "findings": [],
+      "sample_role": "known_negative",
+      "variants": [
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_shot_expected_goal_negative_a_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_a"
+        },
+        {
+          "contract_template_id": "known_negative_unsupported_modality",
+          "expected_failure_taxonomy": "unsupported_modality",
+          "failure_taxonomy": "unsupported_modality",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_negative",
+          "target_id": "atlas_scale_shot_expected_goal_negative_b_v0",
+          "terminal_provider": null,
+          "variant_id": "negative_b"
+        }
+      ]
+    },
+    {
+      "concept": "shot_speed_profile",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_shot_speed_profile_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "shot_trajectory",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_shot_trajectory_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "shot_within",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_shot_within_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "stoppage_time_state",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_stoppage_time_state_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "team_shape_skew",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_team_shape_skew_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "transition_open_space",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_transition_open_space_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "up_back_through_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "findings": [],
+      "sample_role": "known_good_control",
+      "variants": [
+        {
+          "contract_template_id": "known_good_identity_constrained_combination",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": "missing_constraint",
+          "known_good_control_family": "identity_constrained_combination",
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_good_control",
+          "target_id": "atlas_scale_up_back_through_sequence_known_good_identity_return_v0",
+          "terminal_provider": null,
+          "variant_id": "known_good_identity_return"
+        }
+      ]
+    },
+    {
+      "concept": "vertical_channel_region",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_primitive",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_vertical_channel_region_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    },
+    {
+      "concept": "wall_pass_sequence",
+      "contract_template_id": "known_good_identity_constrained_combination",
+      "findings": [],
+      "sample_role": "known_good_control",
+      "variants": [
+        {
+          "contract_template_id": "known_good_identity_constrained_combination",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": "missing_constraint",
+          "known_good_control_family": "identity_constrained_combination",
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "known_good_control",
+          "target_id": "atlas_scale_wall_pass_sequence_known_good_identity_return_v0",
+          "terminal_provider": null,
+          "variant_id": "known_good_identity_return"
+        }
+      ]
+    },
+    {
+      "concept": "weak_side_balance",
+      "contract_template_id": "frontier_partial_gap",
+      "findings": [],
+      "sample_role": "frontier_probe",
+      "variants": [
+        {
+          "contract_template_id": "frontier_partial_gap",
+          "expected_failure_taxonomy": null,
+          "failure_taxonomy": "missing_constraint",
+          "fidelity_expectation": null,
+          "honest_zero": false,
+          "known_good_control_expected_failure": null,
+          "known_good_control_family": null,
+          "providers_used": [],
+          "result": "not_compiler_reachable",
+          "result_count": 0,
+          "rules_used": [],
+          "sample_role": "frontier_probe",
+          "target_id": "atlas_scale_weak_side_balance_frontier_gap_v0",
+          "terminal_provider": null,
+          "variant_id": "frontier_gap"
+        }
+      ]
+    }
+  ],
+  "contract_fidelity_refusals": [
+    {
+      "concept": "bounce_pass_sequence",
+      "detail": "Named return/relay combinations need explicit player-linkage semantics; a generic action anchor or chain would be a weak proxy.",
+      "reason": "contract_fidelity_insufficient"
+    },
+    {
+      "concept": "give_and_go_sequence",
+      "detail": "Give-and-go requires a two-pass player-return structure; the current generated contracts cannot faithfully express that identity constraint.",
+      "reason": "contract_fidelity_insufficient"
+    },
+    {
+      "concept": "up_back_through_sequence",
+      "detail": "Up-back-through requires ordered leg roles and directional constraints beyond the current generated contract templates.",
+      "reason": "contract_fidelity_insufficient"
+    },
+    {
+      "concept": "wall_pass_sequence",
+      "detail": "Wall-pass semantics require return-pass/player-linkage constraints that cannot be represented by a generic action-anchor contract.",
+      "reason": "contract_fidelity_insufficient"
+    }
+  ],
+  "findings": [],
+  "inputs": {
+    "search_row_ledger": "generated/compiler-search-frontier-draw/search-run/row-ledger.json",
+    "targets_path": "generated/compiler-search-frontier-draw/frontier-draw-targets.v0.json"
+  },
+  "measurement_buckets": {
+    "bucket_distribution": {
+      "genuine_gap": 4,
+      "missing_constraint": 20,
+      "missing_primitive": 28
+    },
+    "contract_generation_bug_distribution": {},
+    "entries": [
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "separation_from_marker",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "marking (marker identity)",
+        "target_id": "atlas_scale_separation_from_marker_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "player_control_state",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "contact/touch primitive",
+        "target_id": "atlas_scale_player_control_state_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "organized_unorganized_state",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "structure-integrity / settled-shape metric (line_integrity)",
+        "target_id": "atlas_scale_organized_unorganized_state_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "line_break_mode",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "gap_model (for around-vs-through-gap distinction)",
+        "target_id": "atlas_scale_line_break_mode_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "transition_open_space",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "space_region_generation",
+        "target_id": "atlas_scale_transition_open_space_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "rest_defense_shape",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "role_or_reference set for rest-defense players",
+        "target_id": "atlas_scale_rest_defense_shape_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "stoppage_time_state",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "awarded stoppage-time reference",
+        "target_id": "atlas_scale_stoppage_time_state_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "set_piece_run_onset",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "set_piece_structure (run context)",
+        "target_id": "atlas_scale_set_piece_run_onset_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "carry_pressure_profile",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "pressure_over_interval_aggregation",
+        "target_id": "atlas_scale_carry_pressure_profile_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "outlet_denial",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "cover_shadow / option_graph construction",
+        "target_id": "atlas_scale_outlet_denial_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "receive_and_turn_candidate",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "body orientation modality (turn feasibility)",
+        "target_id": "atlas_scale_receive_and_turn_candidate_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "final_third_phase_candidate",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "structured_zones (final third)",
+        "target_id": "atlas_scale_final_third_phase_candidate_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "foul_won_within",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "foul/law adjudication primitive (or event mark)",
+        "target_id": "atlas_scale_foul_won_within_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "weak_side_balance",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "weak_side region reference + balance metric definition",
+        "target_id": "atlas_scale_weak_side_balance_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "inter_unit_gap",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "gap_model (for gap semantics beyond line spacing)",
+        "target_id": "atlas_scale_inter_unit_gap_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "in_contest_phase_distribution",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "contest/neutral possession state definition",
+        "target_id": "atlas_scale_in_contest_phase_distribution_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "high_press_phase_candidate",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "press-height phase typing (thresholds)",
+        "target_id": "atlas_scale_high_press_phase_candidate_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "progression_phase_candidate",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "structured_zones (thirds)",
+        "target_id": "atlas_scale_progression_phase_candidate_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "graph_edge_closing",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "time_to_arrival (+ graph construction)",
+        "target_id": "atlas_scale_graph_edge_closing_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "shot_speed_profile",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "shot_geometry (shot anchor)",
+        "target_id": "atlas_scale_shot_speed_profile_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "team_shape_skew",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "shape skew / asymmetry metric",
+        "target_id": "atlas_scale_team_shape_skew_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "set_piece_clearance",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "clearance action type within set_piece_structure",
+        "target_id": "atlas_scale_set_piece_clearance_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "delivery_target_region",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "structured_zones (set-piece target regions)",
+        "target_id": "atlas_scale_delivery_target_region_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "path_length",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "trajectory_arc_length_operator",
+        "target_id": "atlas_scale_path_length_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "player_ball_reachability",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "moving_target_interception",
+        "target_id": "atlas_scale_player_ball_reachability_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "region_exit",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "structured_zones (for dynamic-region targets)",
+        "target_id": "atlas_scale_region_exit_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "movement_synchrony",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "declared multi-entity velocity-correlation composition",
+        "target_id": "atlas_scale_movement_synchrony_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "direction_change_under_pressure",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "direction_change_or_acceleration_operator",
+        "target_id": "atlas_scale_direction_change_under_pressure_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "interception_episode",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "contact/contest primitive",
+        "target_id": "atlas_scale_interception_episode_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "defender_displacement",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "marking (assignment causality)",
+        "target_id": "atlas_scale_defender_displacement_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "offering_to_receive_candidate",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "time_to_arrival (lane availability)",
+        "target_id": "atlas_scale_offering_to_receive_candidate_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "far_post_run_candidate",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "off_ball_run + structured_zones (goalmouth)",
+        "target_id": "atlas_scale_far_post_run_candidate_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "shot_trajectory",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "shot_geometry (shot anchor)",
+        "target_id": "atlas_scale_shot_trajectory_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "receive_outside_shape",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "declared composition rule (compactness/line envelope as the shape boundary)",
+        "target_id": "atlas_scale_receive_outside_shape_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "movement_to_receive_candidate",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "time_to_arrival (lane availability)",
+        "target_id": "atlas_scale_movement_to_receive_candidate_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "pass_lane",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "time_to_arrival (lane safety/interception) for the non-corridor case",
+        "target_id": "atlas_scale_pass_lane_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "argmax",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "aggregation/extremum operator (argmax/integral/median/quantile)",
+        "target_id": "atlas_scale_argmax_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "option_count_change_after",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "time_to_arrival/reachability (passing option)",
+        "target_id": "atlas_scale_option_count_change_after_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "region_crossing",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "structured_zones (for arbitrary regions)",
+        "target_id": "atlas_scale_region_crossing_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "line_integrity",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "line_integrity metric (fit residual / staggering measure)",
+        "target_id": "atlas_scale_line_integrity_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "shot_within",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "shot action primitive (or event mark)",
+        "target_id": "atlas_scale_shot_within_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "convex_hull",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "convex_hull polygon geometry",
+        "target_id": "atlas_scale_convex_hull_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "defensive_recovery_phase_candidate",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "defensive_recovery_phase_definition",
+        "target_id": "atlas_scale_defensive_recovery_phase_candidate_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "vertical_channel_region",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "structured_zones (half-space variant)",
+        "target_id": "atlas_scale_vertical_channel_region_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "ball_recovery_episode",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "duel/contest primitive",
+        "target_id": "atlas_scale_ball_recovery_episode_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "game_state_window",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "score/scoreline reference",
+        "target_id": "atlas_scale_game_state_window_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_constraint",
+        "concept": "ball_recovery_time",
+        "frontier_gap_taxonomy": "missing_constraint",
+        "required_missing_capability": "transition_pair_duration",
+        "target_id": "atlas_scale_ball_recovery_time_frontier_gap_v0"
+      },
+      {
+        "auto_result": "not_compiler_reachable",
+        "bucket": "missing_primitive",
+        "concept": "free_player_candidate",
+        "frontier_gap_taxonomy": "missing_primitive",
+        "required_missing_capability": "marking",
+        "target_id": "atlas_scale_free_player_candidate_frontier_gap_v0"
+      },
+      {
+        "auto_result": "contract_fidelity_refused",
+        "bucket": "genuine_gap",
+        "concept": "bounce_pass_sequence",
+        "detail": "Named return/relay combinations need explicit player-linkage semantics; a generic action anchor or chain would be a weak proxy.",
+        "family": "identity_constrained_combination",
+        "known_good_failure_taxonomy": "missing_constraint",
+        "refusal_reason": "contract_fidelity_insufficient"
+      },
+      {
+        "auto_result": "contract_fidelity_refused",
+        "bucket": "genuine_gap",
+        "concept": "give_and_go_sequence",
+        "detail": "Give-and-go requires a two-pass player-return structure; the current generated contracts cannot faithfully express that identity constraint.",
+        "family": "identity_constrained_combination",
+        "known_good_failure_taxonomy": "missing_constraint",
+        "refusal_reason": "contract_fidelity_insufficient"
+      },
+      {
+        "auto_result": "contract_fidelity_refused",
+        "bucket": "genuine_gap",
+        "concept": "up_back_through_sequence",
+        "detail": "Up-back-through requires ordered leg roles and directional constraints beyond the current generated contract templates.",
+        "family": "identity_constrained_combination",
+        "known_good_failure_taxonomy": "missing_constraint",
+        "refusal_reason": "contract_fidelity_insufficient"
+      },
+      {
+        "auto_result": "contract_fidelity_refused",
+        "bucket": "genuine_gap",
+        "concept": "wall_pass_sequence",
+        "detail": "Wall-pass semantics require return-pass/player-linkage constraints that cannot be represented by a generic action-anchor contract.",
+        "family": "identity_constrained_combination",
+        "known_good_failure_taxonomy": "missing_constraint",
+        "refusal_reason": "contract_fidelity_insufficient"
+      }
+    ],
+    "gap_family_distribution": {
+      "identity_constrained_combination": 4
+    }
+  },
+  "schema_version": "atlas_scale_contract_sample_assessment.v0",
+  "scope": {
+    "atlas_wide": false,
+    "claim": "Large stratified atlas target-contract sample. In blind mode, measured rows carry no expected result; seeded known-character rows remain calibration controls. This is not a 741-row compiler-reachable percentage.",
+    "large_stratified_sample": true,
+    "natural_language": false
+  },
+  "status": "PASS",
+  "summary": {
+    "blind_compiler_reachable_count": 0,
+    "blind_compiler_reachable_pct": 0.0,
+    "blind_failure_distribution": {},
+    "blind_target_count": 0,
+    "concept_count": 60,
+    "contract_fidelity_refusal_count": 4,
+    "execution_node_cache": {},
+    "failure_distribution": {
+      "missing_constraint": 24,
+      "missing_primitive": 36,
+      "unsupported_modality": 8
+    },
+    "fidelity_checked_reachable_count": 0,
+    "fidelity_violation_count": 0,
+    "frontier_compiler_reachable_count": 0,
+    "frontier_compiler_reachable_pct": 0.0,
+    "frontier_failure_distribution": {
+      "missing_constraint": 20,
+      "missing_primitive": 28
+    },
+    "frontier_target_count": 48,
+    "known_good_control_target_count": 4,
+    "known_negative_honest_failure_count": 16,
+    "known_negative_honest_failure_pct": 100.0,
+    "known_negative_target_count": 16,
+    "measured_compiler_reachable_count": 0,
+    "measured_compiler_reachable_pct": 0.0,
+    "measured_target_count": 48,
+    "measurement_bucket_distribution": {
+      "genuine_gap": 4,
+      "missing_constraint": 20,
+      "missing_primitive": 28
+    },
+    "positive_compiler_reachable_count": 0,
+    "positive_compiler_reachable_pct": 0.0,
+    "positive_target_count": 0,
+    "result_distribution": {
+      "not_compiler_reachable": 68
+    },
+    "target_count": 68
+  }
+}
