@@ -13,10 +13,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 15,
+      "hits": 34,
       "local_hits": 14,
-      "misses": 55,
-      "shared_hits": 1
+      "misses": 36,
+      "shared_hits": 20
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -422,10 +422,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 45,
+      "hits": 25,
       "local_hits": 14,
-      "misses": 25,
-      "shared_hits": 31
+      "misses": 45,
+      "shared_hits": 11
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1253,10 +1253,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 57,
+      "hits": 65,
       "local_hits": 14,
-      "misses": 55,
-      "shared_hits": 43
+      "misses": 47,
+      "shared_hits": 51
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1802,10 +1802,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 61,
+      "hits": 55,
       "local_hits": 14,
-      "misses": 51,
-      "shared_hits": 47
+      "misses": 57,
+      "shared_hits": 41
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2875,10 +2875,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 34,
+      "hits": 36,
       "local_hits": 14,
-      "misses": 36,
-      "shared_hits": 20
+      "misses": 34,
+      "shared_hits": 22
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -3399,10 +3399,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 19,
+      "hits": 17,
       "local_hits": 0,
-      "misses": 37,
-      "shared_hits": 19
+      "misses": 39,
+      "shared_hits": 17
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -3640,10 +3640,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 16,
+      "hits": 19,
       "local_hits": 0,
-      "misses": 40,
-      "shared_hits": 16
+      "misses": 37,
+      "shared_hits": 19
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -4044,7 +4044,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl0_restart_structure_status"
       ]
     },
@@ -4054,7 +4054,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -4085,7 +4085,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl0_restart_structure_status"
       ]
     },
@@ -4095,7 +4095,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -4461,10 +4461,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 0,
+      "hits": 1,
       "local_hits": 0,
-      "misses": 28,
-      "shared_hits": 0
+      "misses": 27,
+      "shared_hits": 1
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -4628,10 +4628,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 1,
+      "hits": 0,
       "local_hits": 0,
-      "misses": 27,
-      "shared_hits": 1
+      "misses": 28,
+      "shared_hits": 0
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5383,10 +5383,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 28,
+      "hits": 32,
       "local_hits": 14,
-      "misses": 42,
-      "shared_hits": 14
+      "misses": 38,
+      "shared_hits": 18
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5799,10 +5799,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 28,
+      "hits": 31,
       "local_hits": 14,
-      "misses": 42,
-      "shared_hits": 14
+      "misses": 39,
+      "shared_hits": 17
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -6214,7 +6214,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_cover_shadow_status"
       ]
     },
@@ -6224,7 +6224,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6255,7 +6255,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_cover_shadow_status"
       ]
     },
@@ -6265,7 +6265,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6296,7 +6296,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_cover_shadow_status"
       ]
     },
@@ -6306,7 +6306,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6337,7 +6337,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_cover_shadow_status"
       ]
     },
@@ -6347,7 +6347,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6378,7 +6378,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_marking_status"
       ]
     },
@@ -6388,7 +6388,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6419,7 +6419,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_marking_status"
       ]
     },
@@ -6429,7 +6429,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6460,7 +6460,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_marking_status"
       ]
     },
@@ -6470,7 +6470,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6501,7 +6501,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_marking_status"
       ]
     },
@@ -6511,7 +6511,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6542,7 +6542,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_off_ball_run_status"
       ]
     },
@@ -6552,7 +6552,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6583,7 +6583,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_off_ball_run_status"
       ]
     },
@@ -6593,7 +6593,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6624,7 +6624,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_off_ball_run_status"
       ]
     },
@@ -6634,7 +6634,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -6665,7 +6665,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_off_ball_run_status"
       ]
     },
@@ -6675,7 +6675,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -7470,8 +7470,8 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
-        "scl1_set_piece_structure_status"
+      "fields": [
+        "scl1_set_piece_routine_status"
       ]
     },
     "failure_taxonomy": "missing_primitive",
@@ -7480,7 +7480,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -7494,7 +7494,7 @@
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "target_contract_hash": "0b99d51042d49d7c99d5617fe574e39314f71d1e85236368652f4aeed38518ce",
     "target_id": "scl1_022_blind_a_v0",
     "terminal_provider": null
   },
@@ -7511,8 +7511,8 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
-        "scl1_set_piece_structure_status"
+      "fields": [
+        "scl1_set_piece_routine_status"
       ]
     },
     "failure_taxonomy": "missing_primitive",
@@ -7521,7 +7521,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -7535,173 +7535,641 @@
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "target_contract_hash": "0b99d51042d49d7c99d5617fe574e39314f71d1e85236368652f4aeed38518ce",
     "target_id": "scl1_022_blind_b_v0",
     "terminal_provider": null
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_023",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "missing_primitive",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "required_fields": [
-        "scl1_set_piece_structure_status"
-      ]
+    "document_hash": "af93eb3308d479aa2fc1e4e9c0ed760ca7aa56ac5b23ee030ac37b51a06e036a",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 14,
+      "local_hits": 0,
+      "misses": 0,
+      "shared_hits": 14
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_observed_player_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_centroid_x_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_centroid_y_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_depth_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_width_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "coordinate_system": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "coverage_status": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_observed_player_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_centroid_x_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_centroid_y_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_depth_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_width_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "minimum_observed_outfield_players": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_attacking_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_defending_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_restart_type": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_reason": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_status": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "structure_model": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_023_blind_a_v0.json",
+    "providers_used": [
+      "set_piece_structure"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "5f2ce5daf39f733c7dc07339baf4122b4b1bc880aef419f3d9a8c213d250f33b",
+    "runtime_value_count": 42,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "target_contract_hash": "a0c0ef696580df7362a57b880a4ae36b0a4f7eb7c95d7b0f26dad4d6c79e87ce",
     "target_id": "scl1_023_blind_a_v0",
-    "terminal_provider": null
+    "terminal_provider": "set_piece_structure"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_023",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "missing_primitive",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "required_fields": [
-        "scl1_set_piece_structure_status"
-      ]
+    "document_hash": "db2be1f8efddac5381f9ce6a563b626567d724dba251e2eb8d86c4722bac8b51",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 14,
+      "local_hits": 0,
+      "misses": 0,
+      "shared_hits": 14
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_observed_player_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_centroid_x_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_centroid_y_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_depth_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_width_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "coordinate_system": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "coverage_status": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_observed_player_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_centroid_x_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_centroid_y_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_depth_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_width_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "minimum_observed_outfield_players": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_attacking_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_defending_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_restart_type": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_reason": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_status": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "structure_model": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_023_blind_b_v0.json",
+    "providers_used": [
+      "set_piece_structure"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "f016c3b07de49b6e08c5dcd4f138030b431fd65a82d747417c2667d172c20d71",
+    "runtime_value_count": 42,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "target_contract_hash": "a0c0ef696580df7362a57b880a4ae36b0a4f7eb7c95d7b0f26dad4d6c79e87ce",
     "target_id": "scl1_023_blind_b_v0",
-    "terminal_provider": null
+    "terminal_provider": "set_piece_structure"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_024",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "missing_primitive",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "required_fields": [
-        "scl1_team_press_status"
-      ]
+    "document_hash": "d461a9adc1cfea5aee9b62c78a5a5a7e6fa31bf6fdbb27ec565e6f8215dca12e",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 0,
+      "local_hits": 0,
+      "misses": 14,
+      "shared_hits": 0
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_observed_player_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_centroid_x_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_centroid_y_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_depth_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_width_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "coordinate_system": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "coverage_status": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_observed_player_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_centroid_x_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_centroid_y_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_depth_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_width_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "minimum_observed_outfield_players": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_attacking_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_defending_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_restart_type": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_reason": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_status": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "structure_model": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_024_blind_a_v0.json",
+    "providers_used": [
+      "set_piece_structure"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "e5843c741451d8d2c1e9d498a58c3adc6f21bd295486acd0c68018ee7ed574f1",
+    "runtime_value_count": 42,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "target_contract_hash": "a0c0ef696580df7362a57b880a4ae36b0a4f7eb7c95d7b0f26dad4d6c79e87ce",
     "target_id": "scl1_024_blind_a_v0",
-    "terminal_provider": null
+    "terminal_provider": "set_piece_structure"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_024",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "missing_primitive",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "required_fields": [
-        "scl1_team_press_status"
-      ]
+    "document_hash": "b7453b905401fa6b00c7f27521e1bca3fe9549a583efc34ea9502c97c72abfb7",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 0,
+      "local_hits": 0,
+      "misses": 14,
+      "shared_hits": 0
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_observed_player_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_centroid_x_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_centroid_y_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_depth_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "attacking_shape_width_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "coordinate_system": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "coverage_status": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_observed_player_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_centroid_x_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_centroid_y_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_depth_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "defending_shape_width_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "minimum_observed_outfield_players": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_attacking_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_defending_team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_restart_type": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_reason": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "set_piece_structure_status": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      },
+      "structure_model": {
+        "output_name": "set_piece_structure_status",
+        "source_node_id": "set_piece_structure"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_024_blind_b_v0.json",
+    "providers_used": [
+      "set_piece_structure"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "f08e7a568f63dda1fd451f663a8f02f4b830e89cdbc998aba12c1dfca7c19c5a",
+    "runtime_value_count": 42,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "target_contract_hash": "a0c0ef696580df7362a57b880a4ae36b0a4f7eb7c95d7b0f26dad4d6c79e87ce",
     "target_id": "scl1_024_blind_b_v0",
-    "terminal_provider": null
+    "terminal_provider": "set_piece_structure"
   },
   {
     "compatibility_profile": null,
@@ -7716,7 +8184,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_team_press_status"
       ]
     },
@@ -7726,7 +8194,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -7757,7 +8225,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_team_press_status"
       ]
     },
@@ -7767,7 +8235,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -7789,7 +8257,7 @@
     "compatibility_profile": null,
     "concept": "scl1_026",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "partial_with_typed_gap",
+    "coverage_classification": "missing_primitive",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
@@ -7798,8 +8266,8 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
-        "scl1_space_region_generation_status"
+      "fields": [
+        "scl1_team_press_status"
       ]
     },
     "failure_taxonomy": "missing_primitive",
@@ -7808,7 +8276,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -7822,7 +8290,7 @@
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "target_contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
     "target_id": "scl1_026_blind_a_v0",
     "terminal_provider": null
   },
@@ -7830,7 +8298,7 @@
     "compatibility_profile": null,
     "concept": "scl1_026",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "partial_with_typed_gap",
+    "coverage_classification": "missing_primitive",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
@@ -7839,8 +8307,8 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
-        "scl1_space_region_generation_status"
+      "fields": [
+        "scl1_team_press_status"
       ]
     },
     "failure_taxonomy": "missing_primitive",
@@ -7849,7 +8317,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -7863,7 +8331,7 @@
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "target_contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
     "target_id": "scl1_026_blind_b_v0",
     "terminal_provider": null
   },
@@ -7880,7 +8348,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_space_region_generation_status"
       ]
     },
@@ -7890,7 +8358,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -7921,7 +8389,7 @@
     "execution_node_cache": null,
     "execution_status": null,
     "failure_details": {
-      "required_fields": [
+      "fields": [
         "scl1_space_region_generation_status"
       ]
     },
@@ -7931,7 +8399,7 @@
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No allowed catalog provider exposes any required target field.",
+    "message": "No catalog provider exposes one or more required target fields.",
     "multi_step": false,
     "pattern_dispatch_used": false,
     "plan_path": null,
@@ -7947,6 +8415,88 @@
     "synthesizer_version": "search_synthesizer.v0.1",
     "target_contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
     "target_id": "scl1_027_blind_b_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_028",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "fields": [
+        "scl1_space_region_generation_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No catalog provider exposes one or more required target fields.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "target_id": "scl1_028_blind_a_v0",
+    "terminal_provider": null
+  },
+  {
+    "compatibility_profile": null,
+    "concept": "scl1_028",
+    "concept_name_used_as_hint": false,
+    "coverage_classification": "partial_with_typed_gap",
+    "coverage_gold_chain_audit": {
+      "note": "coverage row has no closest_supported_substitute",
+      "status": "not_available"
+    },
+    "document_hash": null,
+    "execution_node_cache": null,
+    "execution_status": null,
+    "failure_details": {
+      "fields": [
+        "scl1_space_region_generation_status"
+      ]
+    },
+    "failure_taxonomy": "missing_primitive",
+    "field_sources": {},
+    "gold_chain_used_as_input": false,
+    "held_out": false,
+    "honest_zero": false,
+    "input_composition_maturity": "semantic_contract_layer_sample",
+    "message": "No catalog provider exposes one or more required target fields.",
+    "multi_step": false,
+    "pattern_dispatch_used": false,
+    "plan_path": null,
+    "providers_used": [],
+    "requested_evidence_failure_count": null,
+    "result": "not_compiler_reachable",
+    "result_count": 0,
+    "rules_used": [],
+    "runtime_trace_hash": null,
+    "runtime_value_count": null,
+    "search_budget_label": "max_depth=4.max_branching=6",
+    "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
+    "synthesizer_version": "search_synthesizer.v0.1",
+    "target_contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "target_id": "scl1_028_blind_b_v0",
     "terminal_provider": null
   }
 ]

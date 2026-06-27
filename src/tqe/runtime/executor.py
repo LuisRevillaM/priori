@@ -258,6 +258,7 @@ class TacticalQueryExecutor:
             "pairwise_distance": primitive_pairwise_distance,
             "velocity": primitive_velocity,
             "acceleration": primitive_acceleration,
+            "set_piece_structure": primitive_set_piece_structure,
             "time_to_arrival": primitive_time_to_arrival,
             "carry_episode": primitive_carry_episode,
             "join_episode_sets": primitive_join_episode_sets,
@@ -2786,6 +2787,227 @@ def primitive_action_event_anchor(state: PeriodState, node: BoundCatalogNode) ->
             entity_scope=catalog_output(node, "action_event_status").entity_scope,
         ),
         "action_event_status_records": records,
+    }
+
+
+def primitive_set_piece_structure(state: PeriodState, node: BoundCatalogNode) -> None:
+    minimum_observed = node_parameter_integer(node, "minimum_observed_outfield_players", 6)
+    events = parquet_rows(
+        state.canonical_root / "events" / f"match_id={state.match_id}.parquet",
+        EVENT_COLUMNS,
+    )
+    events = events[events["period"].astype(str) == state.period].sort_values("row_index").reset_index(drop=True)
+    frames = parquet_rows(
+        state.canonical_root / "frames" / f"match_id={state.match_id}" / f"period={state.period}.parquet",
+        ["frame_id", "timestamp_utc"],
+    ).sort_values("frame_id").reset_index(drop=True)
+    frames["_frame_ts_utc"] = pd.to_datetime(frames["timestamp_utc"], utc=True, errors="coerce")
+    records: list[dict[str, Any]] = []
+    for _, row in events.iterrows():
+        event_type = str(row.get("event_type") or "")
+        restart_type = set_piece_restart_type(event_type)
+        parsed_event = {
+            "event_timestamp": str(row.get("timestamp") or ""),
+        }
+        anchor_frame_id, offset_ms = align_event_to_frame(parsed_event, frames)
+        if anchor_frame_id is None:
+            if restart_type is None:
+                continue
+            anchor_frame_id = 0
+        record = set_piece_structure_event_record(
+            state=state,
+            row=row,
+            anchor_frame_id=anchor_frame_id,
+            offset_ms=offset_ms,
+            restart_type=restart_type,
+            minimum_observed_outfield_players=minimum_observed,
+        )
+        if record is not None:
+            records.append(record)
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["set_piece_structure_status"]) == "UNKNOWN" else str(record["set_piece_structure_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "set_piece_structure_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "set_piece_structure_status").entity_scope,
+        ),
+        "set_piece_structure_status_records": records,
+    }
+
+
+def set_piece_restart_type(event_type: str) -> str | None:
+    normalized = str(event_type or "")
+    if normalized.startswith("CornerKick"):
+        return "corner_kick"
+    if normalized.startswith("FreeKick"):
+        return "free_kick"
+    if normalized.startswith("GoalKick"):
+        return "goal_kick"
+    if normalized.startswith("ThrowIn"):
+        return "throw_in"
+    if normalized.startswith("KickOff"):
+        return "kick_off"
+    if normalized.startswith("Penalty_"):
+        return "penalty"
+    return None
+
+
+def set_piece_structure_event_record(
+    *,
+    state: PeriodState,
+    row: pd.Series,
+    anchor_frame_id: int,
+    offset_ms: float | None,
+    restart_type: str | None,
+    minimum_observed_outfield_players: int,
+) -> dict[str, Any] | None:
+    event_type = str(row.get("event_type") or "")
+    team_role = str(row.get("team_role") or "")
+    if team_role not in {"home", "away"}:
+        team_role = state.perspective_team_role
+    opponent_role = "away" if team_role == "home" else "home"
+    row_index = int(row.get("row_index"))
+    entity_refs = [
+        f"event_row:{row_index}",
+        f"event_type:{event_type}",
+        f"team_role:{team_role}",
+    ]
+    if pd.notna(row.get("player_id")):
+        entity_refs.append(f"player:{row.get('player_id')}")
+    anchor_id = anchor_record_id(
+        match_id=state.match_id,
+        period=state.period,
+        anchor_frame_id=anchor_frame_id,
+        start_frame_id=anchor_frame_id,
+        end_frame_id=anchor_frame_id,
+        entity_refs=entity_refs,
+    )
+    base = {
+        "anchor_id": anchor_id,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": anchor_frame_id,
+        "end_frame_id": anchor_frame_id,
+        "entity_refs": entity_refs,
+        "event_type": event_type,
+        "event_row_index": row_index,
+        "event_timestamp": str(row.get("timestamp") or ""),
+        "event_gameclock_seconds": optional_float(row.get("gameclock_seconds")),
+        "event_anchor_frame_id": None if anchor_frame_id == 0 else anchor_frame_id,
+        "event_frame_offset_ms": None if offset_ms is None else round(float(offset_ms), 3),
+        "set_piece_attacking_team_role": team_role,
+        "set_piece_defending_team_role": opponent_role,
+        "minimum_observed_outfield_players": minimum_observed_outfield_players,
+        "structure_model": "provider_restart_event_plus_anchor_frame_outfield_width_depth_centroid",
+        "coordinate_system": "canonical_tracking_pitch_meters_unoriented",
+        "set_piece_structure_claim_boundary": (
+            "Observed provider restart/set-piece event and at-frame outfield arrangement only; "
+            "no routine, role, marking scheme, planned play, intent, quality, or causation claim."
+        ),
+    }
+    if restart_type is None:
+        return {
+            **base,
+            "set_piece_structure_status": "FAIL",
+            "set_piece_structure_reason": "event_type_not_recognized_restart",
+            "set_piece_restart_type": "non_set_piece",
+            "coverage_status": "NOT_EVALUATED",
+            **empty_set_piece_shape_fields(),
+        }
+    attacking_shape = set_piece_team_shape_summary(
+        state=state,
+        frame_id=anchor_frame_id,
+        team_role=team_role,
+        prefix="attacking",
+        minimum_observed_outfield_players=minimum_observed_outfield_players,
+    )
+    defending_shape = set_piece_team_shape_summary(
+        state=state,
+        frame_id=anchor_frame_id,
+        team_role=opponent_role,
+        prefix="defending",
+        minimum_observed_outfield_players=minimum_observed_outfield_players,
+    )
+    shape_ok = bool(attacking_shape["attacking_shape_coverage_ok"] and defending_shape["defending_shape_coverage_ok"])
+    if shape_ok:
+        status = "PASS"
+        reason = "recognized_restart_with_observed_outfield_arrangement"
+        coverage_status = "PASS"
+    else:
+        status = "UNKNOWN"
+        reason = "insufficient_observed_outfield_players_for_structure"
+        coverage_status = "UNKNOWN"
+    return {
+        **base,
+        "set_piece_structure_status": status,
+        "set_piece_structure_reason": reason,
+        "set_piece_restart_type": restart_type,
+        "coverage_status": coverage_status,
+        **{key: value for key, value in attacking_shape.items() if not key.endswith("_coverage_ok")},
+        **{key: value for key, value in defending_shape.items() if not key.endswith("_coverage_ok")},
+    }
+
+
+def empty_set_piece_shape_fields() -> dict[str, Any]:
+    return {
+        "attacking_shape_width_m": None,
+        "attacking_shape_depth_m": None,
+        "attacking_shape_centroid_x_m": None,
+        "attacking_shape_centroid_y_m": None,
+        "attacking_observed_player_count": 0,
+        "attacking_observed_player_ids": [],
+        "defending_shape_width_m": None,
+        "defending_shape_depth_m": None,
+        "defending_shape_centroid_x_m": None,
+        "defending_shape_centroid_y_m": None,
+        "defending_observed_player_count": 0,
+        "defending_observed_player_ids": [],
+    }
+
+
+def set_piece_team_shape_summary(
+    *,
+    state: PeriodState,
+    frame_id: int,
+    team_role: str,
+    prefix: str,
+    minimum_observed_outfield_players: int,
+) -> dict[str, Any]:
+    outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, team_role)
+    observed = [
+        item
+        for item in cached_observed_outfield_positions_at_frame(state, frame_id, team_role, outfield_ids)
+        if item.get("x_m") is not None and item.get("y_m") is not None
+    ]
+    if len(observed) < minimum_observed_outfield_players:
+        return {
+            f"{prefix}_shape_width_m": None,
+            f"{prefix}_shape_depth_m": None,
+            f"{prefix}_shape_centroid_x_m": None,
+            f"{prefix}_shape_centroid_y_m": None,
+            f"{prefix}_observed_player_count": len(observed),
+            f"{prefix}_observed_player_ids": sorted(str(item["player_id"]) for item in observed),
+            f"{prefix}_shape_coverage_ok": False,
+        }
+    xs = [float(item["x_m"]) for item in observed]
+    ys = [float(item["y_m"]) for item in observed]
+    return {
+        f"{prefix}_shape_width_m": round(float(max(ys) - min(ys)), 3),
+        f"{prefix}_shape_depth_m": round(float(max(xs) - min(xs)), 3),
+        f"{prefix}_shape_centroid_x_m": round(float(sum(xs) / len(xs)), 3),
+        f"{prefix}_shape_centroid_y_m": round(float(sum(ys) / len(ys)), 3),
+        f"{prefix}_observed_player_count": len(observed),
+        f"{prefix}_observed_player_ids": sorted(str(item["player_id"]) for item in observed),
+        f"{prefix}_shape_coverage_ok": True,
     }
 
 

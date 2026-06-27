@@ -272,6 +272,10 @@ afl-carry-episode-verify:
 afl-acceleration-verify:
 	$(PYTHON) -m tqe.verification.afl_acceleration
 
+.PHONY: afl-set-piece-structure-verify
+afl-set-piece-structure-verify:
+	$(PYTHON) -m tqe.verification.afl_set_piece_structure
+
 .PHONY: afl-substrate-q2-verify
 afl-substrate-q2-verify:
 	$(PYTHON) -m tqe.verification.afl_substrate_q2

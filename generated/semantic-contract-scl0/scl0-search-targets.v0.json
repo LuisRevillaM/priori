@@ -1259,14 +1259,33 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+        "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim. Requires routine, variant, or planned set-piece design typing; observed at-frame arrangement is not treated as a routine claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_set_piece_structure_status"
+          "attacking_shape_depth_m",
+          "attacking_shape_width_m",
+          "coordinate_system",
+          "coverage_status",
+          "defending_shape_depth_m",
+          "defending_shape_width_m",
+          "event_anchor_frame_id",
+          "event_type",
+          "scl1_set_piece_routine_status",
+          "set_piece_attacking_team_role",
+          "set_piece_defending_team_role",
+          "set_piece_restart_type",
+          "set_piece_structure_claim_boundary",
+          "set_piece_structure_reason",
+          "set_piece_structure_status",
+          "structure_model"
         ],
         "status_semantics": [
           {
-            "field": "scl1_set_piece_structure_status",
+            "field": "scl1_set_piece_routine_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "set_piece_structure_status",
             "required_value": "PASS"
           }
         ]
@@ -1278,14 +1297,33 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+        "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim. Requires routine, variant, or planned set-piece design typing; observed at-frame arrangement is not treated as a routine claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_set_piece_structure_status"
+          "attacking_shape_depth_m",
+          "attacking_shape_width_m",
+          "coordinate_system",
+          "coverage_status",
+          "defending_shape_depth_m",
+          "defending_shape_width_m",
+          "event_anchor_frame_id",
+          "event_type",
+          "scl1_set_piece_routine_status",
+          "set_piece_attacking_team_role",
+          "set_piece_defending_team_role",
+          "set_piece_restart_type",
+          "set_piece_structure_claim_boundary",
+          "set_piece_structure_reason",
+          "set_piece_structure_status",
+          "structure_model"
         ],
         "status_semantics": [
           {
-            "field": "scl1_set_piece_structure_status",
+            "field": "scl1_set_piece_routine_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "set_piece_structure_status",
             "required_value": "PASS"
           }
         ]
@@ -1297,14 +1335,28 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+        "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_set_piece_structure_status"
+          "attacking_shape_depth_m",
+          "attacking_shape_width_m",
+          "coordinate_system",
+          "coverage_status",
+          "defending_shape_depth_m",
+          "defending_shape_width_m",
+          "event_anchor_frame_id",
+          "event_type",
+          "set_piece_attacking_team_role",
+          "set_piece_defending_team_role",
+          "set_piece_restart_type",
+          "set_piece_structure_claim_boundary",
+          "set_piece_structure_reason",
+          "set_piece_structure_status",
+          "structure_model"
         ],
         "status_semantics": [
           {
-            "field": "scl1_set_piece_structure_status",
+            "field": "set_piece_structure_status",
             "required_value": "PASS"
           }
         ]
@@ -1316,14 +1368,28 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+        "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_set_piece_structure_status"
+          "attacking_shape_depth_m",
+          "attacking_shape_width_m",
+          "coordinate_system",
+          "coverage_status",
+          "defending_shape_depth_m",
+          "defending_shape_width_m",
+          "event_anchor_frame_id",
+          "event_type",
+          "set_piece_attacking_team_role",
+          "set_piece_defending_team_role",
+          "set_piece_restart_type",
+          "set_piece_structure_claim_boundary",
+          "set_piece_structure_reason",
+          "set_piece_structure_status",
+          "structure_model"
         ],
         "status_semantics": [
           {
-            "field": "scl1_set_piece_structure_status",
+            "field": "set_piece_structure_status",
             "required_value": "PASS"
           }
         ]
@@ -1335,14 +1401,28 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_team_press_status"
+          "attacking_shape_depth_m",
+          "attacking_shape_width_m",
+          "coordinate_system",
+          "coverage_status",
+          "defending_shape_depth_m",
+          "defending_shape_width_m",
+          "event_anchor_frame_id",
+          "event_type",
+          "set_piece_attacking_team_role",
+          "set_piece_defending_team_role",
+          "set_piece_restart_type",
+          "set_piece_structure_claim_boundary",
+          "set_piece_structure_reason",
+          "set_piece_structure_status",
+          "structure_model"
         ],
         "status_semantics": [
           {
-            "field": "scl1_team_press_status",
+            "field": "set_piece_structure_status",
             "required_value": "PASS"
           }
         ]
@@ -1354,14 +1434,28 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_team_press_status"
+          "attacking_shape_depth_m",
+          "attacking_shape_width_m",
+          "coordinate_system",
+          "coverage_status",
+          "defending_shape_depth_m",
+          "defending_shape_width_m",
+          "event_anchor_frame_id",
+          "event_type",
+          "set_piece_attacking_team_role",
+          "set_piece_defending_team_role",
+          "set_piece_restart_type",
+          "set_piece_structure_claim_boundary",
+          "set_piece_structure_reason",
+          "set_piece_structure_status",
+          "structure_model"
         ],
         "status_semantics": [
           {
-            "field": "scl1_team_press_status",
+            "field": "set_piece_structure_status",
             "required_value": "PASS"
           }
         ]
@@ -1411,14 +1505,14 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_space_region_generation_status"
+          "scl1_team_press_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_space_region_generation_status",
+            "field": "scl1_team_press_status",
             "required_value": "PASS"
           }
         ]
@@ -1430,14 +1524,14 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_space_region_generation_status"
+          "scl1_team_press_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_space_region_generation_status",
+            "field": "scl1_team_press_status",
             "required_value": "PASS"
           }
         ]
@@ -1481,6 +1575,44 @@
         ]
       },
       "target_id": "scl1_027_blind_b_v0"
+    },
+    {
+      "concept": "scl1_028",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_space_region_generation_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_space_region_generation_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_028_blind_a_v0"
+    },
+    {
+      "concept": "scl1_028",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl1_space_region_generation_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl1_space_region_generation_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_028_blind_b_v0"
     }
   ]
 }

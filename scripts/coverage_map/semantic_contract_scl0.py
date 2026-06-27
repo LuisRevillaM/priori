@@ -60,10 +60,10 @@ CROSS_CONCEPT_REUSE_REQUIRED_RULES = {
     "meaning.missing_primitive.cover_shadow",
     "meaning.missing_primitive.marking",
     "meaning.missing_primitive.off_ball_run",
-    "meaning.missing_primitive.set_piece_structure",
     "meaning.missing_primitive.space_region_generation",
     "meaning.missing_primitive.team_press",
     "meaning.reachability.time_to_arrival",
+    "meaning.restart.set_piece_structure",
 }
 
 
@@ -529,13 +529,16 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
 
     if is_set_piece_structure_meaning(lower):
         span = first_span(text, [r"set[- ]piece", r"corner routine", r"free[- ]kick routine", r"corner variant", r"restart routine"]) or whole_span(text)
-        add_missing_primitive_element(
-            builder,
-            "scl1_set_piece_structure_status",
-            span,
-            "meaning.missing_primitive.set_piece_structure",
-            "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
-        )
+        add_set_piece_structure_element(builder, span)
+        if is_set_piece_routine_meaning(lower):
+            routine_span = first_span(text, [r"routine pattern", r"routine", r"variant", r"worked", r"near[- ]post", r"far[- ]post"]) or span
+            add_missing_primitive_element(
+                builder,
+                "scl1_set_piece_routine_status",
+                routine_span,
+                "meaning.missing_primitive.set_piece_routine",
+                "Requires routine, variant, or planned set-piece design typing; observed at-frame arrangement is not treated as a routine claim.",
+            )
         matched = True
 
     if is_team_press_meaning(lower):
@@ -729,6 +732,34 @@ def add_acceleration_element(builder: ContractBuilder, span: Span, *, direction:
     builder.add_status(status_field, "PASS", span, rule_id)
     builder.add_claim_part(
         "Observed two-window speed-change evidence only; no effort, sprint quality, physical capacity, intent, pressure-breaking quality, or tactical causation claim.",
+        span,
+        rule_id,
+    )
+
+
+def add_set_piece_structure_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.restart.set_piece_structure"
+    for field_name in [
+        "set_piece_structure_status",
+        "set_piece_structure_reason",
+        "set_piece_restart_type",
+        "event_type",
+        "event_anchor_frame_id",
+        "set_piece_attacking_team_role",
+        "set_piece_defending_team_role",
+        "attacking_shape_width_m",
+        "attacking_shape_depth_m",
+        "defending_shape_width_m",
+        "defending_shape_depth_m",
+        "coverage_status",
+        "structure_model",
+        "coordinate_system",
+        "set_piece_structure_claim_boundary",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("set_piece_structure_status", "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim.",
         span,
         rule_id,
     )
@@ -941,6 +972,22 @@ def is_set_piece_structure_meaning(lower: str) -> bool:
             "free-kick routine",
             "free kick routine",
             "restart routine",
+        )
+    )
+
+
+def is_set_piece_routine_meaning(lower: str) -> bool:
+    return any(
+        phrase in lower
+        for phrase in (
+            "routine",
+            "variant",
+            "pattern",
+            "worked",
+            "near-post",
+            "near post",
+            "far-post",
+            "far post",
         )
     )
 

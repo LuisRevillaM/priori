@@ -414,23 +414,39 @@
     {
       "case_id": "scl1_023",
       "concept": "set_piece_attacking_shape",
-      "sample_role": "scl1_missing_substrate_probe",
-      "expected_result": "not_compiler_reachable",
-      "expected_failure_taxonomy": "missing_primitive",
-      "coverage_classification": "missing_primitive",
+      "sample_role": "scl1_set_piece_structure_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
       "definitions": [
         {
           "author_id": "blind_a",
-          "text": "Set-piece attacking shape means the attackers form a structured set-piece arrangement before delivery."
+          "text": "Set-piece attacking shape means the attackers have an observed set-piece arrangement at the restart frame."
         },
         {
           "author_id": "blind_b",
-          "text": "Attacking shape at a set piece describes the routine structure of the attacking players."
+          "text": "Attacking shape at a set piece describes the observed arrangement of the attacking players at the set-piece anchor."
         }
       ]
     },
     {
       "case_id": "scl1_024",
+      "concept": "set_piece_defensive_shape",
+      "sample_role": "scl1_set_piece_structure_probe",
+      "expected_result": "compiler_reachable",
+      "coverage_classification": "supported",
+      "definitions": [
+        {
+          "author_id": "blind_a",
+          "text": "Set-piece defensive shape means the defenders have an observed set-piece arrangement at the restart frame."
+        },
+        {
+          "author_id": "blind_b",
+          "text": "Defensive shape at a set piece describes the observed arrangement of the defending players at the set-piece anchor."
+        }
+      ]
+    },
+    {
+      "case_id": "scl1_025",
       "concept": "team_press_candidate",
       "sample_role": "scl1_missing_substrate_probe",
       "expected_result": "not_compiler_reachable",
@@ -448,7 +464,7 @@
       ]
     },
     {
-      "case_id": "scl1_025",
+      "case_id": "scl1_026",
       "concept": "pressing_trap_candidate",
       "sample_role": "scl1_missing_substrate_probe",
       "expected_result": "not_compiler_reachable",
@@ -466,7 +482,7 @@
       ]
     },
     {
-      "case_id": "scl1_026",
+      "case_id": "scl1_027",
       "concept": "open_space_region",
       "sample_role": "scl1_missing_substrate_probe",
       "expected_result": "not_compiler_reachable",
@@ -484,7 +500,7 @@
       ]
     },
     {
-      "case_id": "scl1_027",
+      "case_id": "scl1_028",
       "concept": "space_creation_candidate",
       "sample_role": "scl1_missing_substrate_probe",
       "expected_result": "not_compiler_reachable",

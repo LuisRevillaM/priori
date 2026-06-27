@@ -1,7 +1,7 @@
 {
  "schema_version": "coverage-map.v0",
  "claim_status": "internal_steering_only_v0_estimated_not_external_claim",
- "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, and Q2 generic binary episode joins",
+ "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, Q2 generic binary episode joins, acceleration, and set_piece_structure observed restart arrangement",
  "denominator_note": "Coverage of Priori's authored 741-concept atlas inventory \u2014 NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
  "audit_note": "30-row stratified audit corrected aggregation/extremum operator inflation; additional audits are required before external coverage claims.",
  "roadmap_implications": [
@@ -10,7 +10,7 @@
   "carry_episode landed as a conservative movement-under-control primitive; the prior carry backlog has redistributed into supported rows or precise next blockers.",
   "Q2 now composes through generic binary episode joins; carry_out_of_pressure is generically_composable, not yet compiler_reachable.",
   "acceleration landed as a conservative two-window speed-change primitive; speed-up/deceleration rows are supported while turn-rate, curvature, and jerk remain precise next blockers.",
-  "set_piece_structure and off_ball_run are now the top missing primitives by atlas unlock count.",
+  "set_piece_structure landed as observed restart/set-piece event plus at-frame outfield arrangement; routine typing, delivery trajectory, setup windows, and role/marking claims remain precise next blockers.",
   "Remaining reachability gaps are mostly not this primitive: moving-target interception, pass-line interception, cover shadow, reachability-field/region generation, graph construction, or margin/rate operators.",
   "Remaining carry-family gaps are mostly not base carrying: defender-bypass-by-carry, space generation, profile aggregation, contact/touch, body orientation, or learned value.",
   "Regenerate the coverage map after every substrate package so supported/partial/gap counts remain a living metric.",
@@ -18,20 +18,20 @@
  ],
  "total_concepts": 741,
  "coverage_counts": {
-  "supported": 353,
+  "supported": 355,
   "partial_with_typed_gap": 172,
   "missing_modality": 43,
   "ambiguous_or_needs_definition": 9,
   "role_or_reference_gap": 13,
-  "missing_primitive": 151
+  "missing_primitive": 149
  },
  "coverage_pct": {
-  "supported": 47.6,
+  "supported": 47.9,
   "partial_with_typed_gap": 23.2,
   "missing_modality": 5.8,
   "ambiguous_or_needs_definition": 1.2,
   "role_or_reference_gap": 1.8,
-  "missing_primitive": 20.4
+  "missing_primitive": 20.1
  },
  "composition_maturity_values": [
   "compiler_reachable",
@@ -42,12 +42,8 @@
   "handwired": 734,
   "compiler_reachable": 7
  },
- "reachable_now_or_one_gap_pct": 70.9,
+ "reachable_now_or_one_gap_pct": 71.1,
  "top_missing_primitives_by_unlock": [
-  [
-   "set_piece_structure",
-   12
-  ],
   [
    "off_ball_run",
    11
@@ -85,6 +81,10 @@
    4
   ],
   [
+   "set_piece_routine_typing",
+   4
+  ],
+  [
    "contact/touch primitive",
    4
   ],
@@ -101,7 +101,7 @@
    3
   ],
   [
-   "structured_zones",
+   "duel/contest primitive",
    3
   ]
  ],
@@ -205,9 +205,9 @@
    "partial_with_typed_gap": 10
   },
   "Restarts and set-piece behavior": {
-   "missing_primitive": 13,
+   "missing_primitive": 11,
    "partial_with_typed_gap": 8,
-   "supported": 6,
+   "supported": 8,
    "role_or_reference_gap": 1
   },
   "Shooting, chance structure, goalmouth defense, and goalkeeper behavior": {
@@ -358,7 +358,7 @@
   "systematic_correction": "aggregation/extremum operator rows were downgraded from supported to partial_with_typed_gap because no generic argmax/argmin/local extremum operator exists.",
   "initial_supported_pct_after_correction": 43.9,
   "initial_reachable_now_or_one_gap_pct_after_correction": 64.8,
-  "current_supported_pct_after_q2_redistribution": 47.6,
-  "current_reachable_now_or_one_gap_pct_after_q2_redistribution": 70.9
+  "current_supported_pct_after_q2_redistribution": 47.9,
+  "current_reachable_now_or_one_gap_pct_after_q2_redistribution": 71.1
  }
 }

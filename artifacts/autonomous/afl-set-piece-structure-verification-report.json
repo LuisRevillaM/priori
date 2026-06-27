@@ -1,0 +1,144 @@
+{
+  "claim_boundary": {
+    "allowed_claim": "Observed provider restart/set-piece event with at-frame attacking and defending outfield arrangement evidence.",
+    "prohibited_claims": [
+      "delivery_pattern_inferred",
+      "marking_assignment_inferred",
+      "optimality_inferred",
+      "planned_play_inferred",
+      "player_intent_inferred",
+      "player_role_inferred",
+      "routine_variant_inferred",
+      "set_piece_quality_inferred",
+      "tactical_causation_inferred"
+    ],
+    "unknown_policy": "Recognized restarts with insufficient observed outfield players produce UNKNOWN, not a structure claim."
+  },
+  "findings": [],
+  "milestone": "AFL-08 set_piece_structure primitive / SCL named-gap closure",
+  "plans": {
+    "attacking_shape": {
+      "document_hash": "af93eb3308d479aa2fc1e4e9c0ed760ca7aa56ac5b23ee030ac37b51a06e036a",
+      "execution_status": "pass",
+      "path": "generated/semantic-contract-scl0/search-run/plans/scl1_023_blind_a_v0.json",
+      "requested_evidence_failure_count": 0,
+      "result_count": 20
+    },
+    "defending_shape": {
+      "document_hash": "d461a9adc1cfea5aee9b62c78a5a5a7e6fa31bf6fdbb27ec565e6f8215dca12e",
+      "execution_status": "pass",
+      "path": "generated/semantic-contract-scl0/search-run/plans/scl1_024_blind_a_v0.json",
+      "requested_evidence_failure_count": 0,
+      "result_count": 20
+    }
+  },
+  "primitive_probe": {
+    "coverage_policy": "PASS only when recognized restart event has at least six observed outfield players for both event team and opponent.",
+    "evidence_presence_sample": {
+      "attacking_shape_depth_m": true,
+      "attacking_shape_width_m": true,
+      "coordinate_system": true,
+      "coverage_status": true,
+      "defending_shape_depth_m": true,
+      "defending_shape_width_m": true,
+      "event_anchor_frame_id": true,
+      "event_type": true,
+      "set_piece_attacking_team_role": true,
+      "set_piece_defending_team_role": true,
+      "set_piece_restart_type": true,
+      "set_piece_structure_claim_boundary": true,
+      "set_piece_structure_reason": true,
+      "set_piece_structure_status": true,
+      "structure_model": true
+    },
+    "model": "provider_restart_event_plus_anchor_frame_outfield_width_depth_centroid",
+    "reason_counts": {
+      "event_type_not_recognized_restart": 10431,
+      "insufficient_observed_outfield_players_for_structure": 10,
+      "recognized_restart_with_observed_outfield_arrangement": 681
+    },
+    "record_count": 11122,
+    "restart_counts": {
+      "corner_kick": 57,
+      "free_kick": 172,
+      "goal_kick": 119,
+      "kick_off": 32,
+      "non_set_piece": 10431,
+      "penalty": 3,
+      "throw_in": 308
+    },
+    "status_counts": {
+      "FAIL": 10431,
+      "PASS": 681,
+      "UNKNOWN": 10
+    }
+  },
+  "schema_version": "afl.set_piece_structure.v1",
+  "scl_gap_closure": {
+    "closure_claim": "scl1_023 and scl1_024 flipped from missing_primitive to compiler_reachable through generic provider search; scl1_022 routine/variant typing remains an honest missing primitive.",
+    "targets": {
+      "scl1_022_blind_a_v0": {
+        "failure_taxonomy": "missing_primitive",
+        "providers_used": [],
+        "result": "not_compiler_reachable",
+        "rules_used": []
+      },
+      "scl1_022_blind_b_v0": {
+        "failure_taxonomy": "missing_primitive",
+        "providers_used": [],
+        "result": "not_compiler_reachable",
+        "rules_used": []
+      },
+      "scl1_023_blind_a_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "set_piece_structure"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_023_blind_b_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "set_piece_structure"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_024_blind_a_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "set_piece_structure"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_024_blind_b_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "set_piece_structure"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      }
+    }
+  },
+  "status": "PASS",
+  "threshold_version": "set_piece_structure.v0.1.0:recognized_prefixes=CornerKick,FreeKick,GoalKick,ThrowIn,KickOff,Penalty_:min_observed_outfield=6:shape_model=width_depth_centroid_at_event_anchor"
+}

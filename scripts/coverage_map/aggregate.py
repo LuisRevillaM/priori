@@ -34,7 +34,7 @@ ROADMAP_IMPLICATIONS = [
     "carry_episode landed as a conservative movement-under-control primitive; the prior carry backlog has redistributed into supported rows or precise next blockers.",
     "Q2 now composes through generic binary episode joins; carry_out_of_pressure is generically_composable, not yet compiler_reachable.",
     "acceleration landed as a conservative two-window speed-change primitive; speed-up/deceleration rows are supported while turn-rate, curvature, and jerk remain precise next blockers.",
-    "set_piece_structure and off_ball_run are now the top missing primitives by atlas unlock count.",
+    "set_piece_structure landed as observed restart/set-piece event plus at-frame outfield arrangement; routine typing, delivery trajectory, setup windows, and role/marking claims remain precise next blockers.",
     "Remaining reachability gaps are mostly not this primitive: moving-target interception, pass-line interception, cover shadow, reachability-field/region generation, graph construction, or margin/rate operators.",
     "Remaining carry-family gaps are mostly not base carrying: defender-bypass-by-carry, space generation, profile aggregation, contact/touch, body orientation, or learned value.",
     "Regenerate the coverage map after every substrate package so supported/partial/gap counts remain a living metric.",
@@ -116,7 +116,7 @@ def main() -> None:
     report = {
         "schema_version": "coverage-map.v0",
         "claim_status": CLAIM_STATUS,
-        "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, and Q2 generic binary episode joins",
+        "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, Q2 generic binary episode joins, acceleration, and set_piece_structure observed restart arrangement",
         "denominator_note": "Coverage of Priori's authored 741-concept atlas inventory — NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
         "audit_note": AUDIT_NOTE,
         "roadmap_implications": ROADMAP_IMPLICATIONS,

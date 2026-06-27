@@ -590,6 +590,15 @@ def evaluate_target(
 def synthesize_by_search(*, target: dict[str, Any], row: dict[str, Any], context: SearchContext) -> dict[str, Any]:
     contract = target["target_contract"]
     required_fields = required_target_fields(contract)
+    uncovered_fields = sorted(
+        field for field in required_fields if not context.catalog.providers_covering_any({field})
+    )
+    if uncovered_fields:
+        raise SynthesisError(
+            "missing_primitive",
+            "No catalog provider exposes one or more required target fields.",
+            {"fields": uncovered_fields},
+        )
     providers = context.catalog.providers_covering_any(required_fields)
     if target_constraints(context, "same_player_return"):
         providers = [entry for entry in providers if entry.name == "join_episode_sets"]

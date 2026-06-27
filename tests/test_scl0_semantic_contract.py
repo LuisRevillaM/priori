@@ -98,12 +98,42 @@ class Scl0SemanticContractTests(unittest.TestCase):
             ("A cover shadow is a defended passing lane region hidden behind the pressing defender.", "scl1_cover_shadow_status"),
             ("A marker relation identifies which defender is marking a particular attacker.", "scl1_marking_status"),
             ("Off ball run typing identifies a player's run while they are away from the ball.", "scl1_off_ball_run_status"),
-            ("A corner variant is a set piece routine pattern used from the corner restart.", "scl1_set_piece_structure_status"),
+            ("A corner variant is a set piece routine pattern used from the corner restart.", "scl1_set_piece_routine_status"),
             ("A team press is a collective defensive pressing structure rather than one nearest defender.", "scl1_team_press_status"),
             ("A free space region is an open space area produced by the current player positions.", "scl1_space_region_generation_status"),
         ]:
             contract, _ = generate_contract_from_meaning(text)
-            self.assertEqual(contract["required_evidence"], [evidence])
+            self.assertIn(evidence, contract["required_evidence"])
+
+    def test_set_piece_structure_element_maps_to_observed_restart_shape_not_routine(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "Set-piece attacking shape means attackers have an observed set-piece arrangement at the restart frame."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("set_piece_structure_status", contract["required_evidence"])
+        self.assertIn("set_piece_restart_type", contract["required_evidence"])
+        self.assertIn("attacking_shape_width_m", contract["required_evidence"])
+        self.assertIn("defending_shape_width_m", contract["required_evidence"])
+        self.assertIn("structure_model", contract["required_evidence"])
+        self.assertIn("coverage_status", contract["required_evidence"])
+        self.assertEqual(
+            {item["field"]: item["required_value"] for item in contract["status_semantics"]}["set_piece_structure_status"],
+            "PASS",
+        )
+        self.assertIn("meaning.restart.set_piece_structure", trace_rules)
+        self.assertNotIn("scl1_set_piece_routine_status", contract["required_evidence"])
+
+    def test_set_piece_routine_language_keeps_missing_routine_gap(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "A corner variant is a set piece routine pattern used from the corner restart."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("set_piece_structure_status", contract["required_evidence"])
+        self.assertIn("scl1_set_piece_routine_status", contract["required_evidence"])
+        self.assertIn("meaning.restart.set_piece_structure", trace_rules)
+        self.assertIn("meaning.missing_primitive.set_piece_routine", trace_rules)
 
     def test_acceleration_element_maps_speed_up_and_slow_down_to_directional_status(self) -> None:
         acceleration_contract, acceleration_traces = generate_contract_from_meaning(

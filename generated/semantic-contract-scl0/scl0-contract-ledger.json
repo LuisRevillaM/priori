@@ -5096,34 +5096,165 @@
     "case_id": "scl1_022",
     "concept": "corner_variant_candidate",
     "contract": {
-      "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+      "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim. Requires routine, variant, or planned set-piece design typing; observed at-frame arrangement is not treated as a routine claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_set_piece_structure_status"
+        "attacking_shape_depth_m",
+        "attacking_shape_width_m",
+        "coordinate_system",
+        "coverage_status",
+        "defending_shape_depth_m",
+        "defending_shape_width_m",
+        "event_anchor_frame_id",
+        "event_type",
+        "scl1_set_piece_routine_status",
+        "set_piece_attacking_team_role",
+        "set_piece_defending_team_role",
+        "set_piece_restart_type",
+        "set_piece_structure_claim_boundary",
+        "set_piece_structure_reason",
+        "set_piece_structure_status",
+        "structure_model"
       ],
       "status_semantics": [
         {
-          "field": "scl1_set_piece_structure_status",
+          "field": "scl1_set_piece_routine_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "set_piece_structure_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "contract_hash": "0b99d51042d49d7c99d5617fe574e39314f71d1e85236368652f4aeed38518ce",
     "definition_text": "Corner variant candidate means a corner routine has a recognizable set-piece structure.",
     "opaque_search_concept": "scl1_022",
     "target_id": "scl1_022_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_set_piece_structure_status",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "contract_path": "required_evidence.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 76,
         "source_phrase": "set-piece",
         "source_start": 67,
-        "value": "scl1_set_piece_structure_status"
+        "value": "set_piece_structure_status"
       },
       {
-        "contract_path": "status_semantics.scl1_set_piece_structure_status",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "contract_path": "required_evidence.set_piece_structure_reason",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "set_piece_structure_reason"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_restart_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "set_piece_restart_type"
+      },
+      {
+        "contract_path": "required_evidence.event_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "event_type"
+      },
+      {
+        "contract_path": "required_evidence.event_anchor_frame_id",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "event_anchor_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_attacking_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "set_piece_attacking_team_role"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_defending_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "set_piece_defending_team_role"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "attacking_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "attacking_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "defending_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "defending_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.structure_model",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "structure_model"
+      },
+      {
+        "contract_path": "required_evidence.coordinate_system",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "coordinate_system"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_structure_claim_boundary",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 76,
+        "source_phrase": "set-piece",
+        "source_start": 67,
+        "value": "set_piece_structure_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 76,
         "source_phrase": "set-piece",
         "source_start": 67,
@@ -5131,11 +5262,35 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 76,
         "source_phrase": "set-piece",
         "source_start": 67,
-        "value": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure."
+        "value": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim."
+      },
+      {
+        "contract_path": "required_evidence.scl1_set_piece_routine_status",
+        "rule_id": "meaning.missing_primitive.set_piece_routine",
+        "source_end": 47,
+        "source_phrase": "routine",
+        "source_start": 40,
+        "value": "scl1_set_piece_routine_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_set_piece_routine_status",
+        "rule_id": "meaning.missing_primitive.set_piece_routine",
+        "source_end": 47,
+        "source_phrase": "routine",
+        "source_start": 40,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.set_piece_routine",
+        "source_end": 47,
+        "source_phrase": "routine",
+        "source_start": 40,
+        "value": "Requires routine, variant, or planned set-piece design typing; observed at-frame arrangement is not treated as a routine claim."
       }
     ]
   },
@@ -5144,34 +5299,165 @@
     "case_id": "scl1_022",
     "concept": "corner_variant_candidate",
     "contract": {
-      "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+      "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim. Requires routine, variant, or planned set-piece design typing; observed at-frame arrangement is not treated as a routine claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_set_piece_structure_status"
+        "attacking_shape_depth_m",
+        "attacking_shape_width_m",
+        "coordinate_system",
+        "coverage_status",
+        "defending_shape_depth_m",
+        "defending_shape_width_m",
+        "event_anchor_frame_id",
+        "event_type",
+        "scl1_set_piece_routine_status",
+        "set_piece_attacking_team_role",
+        "set_piece_defending_team_role",
+        "set_piece_restart_type",
+        "set_piece_structure_claim_boundary",
+        "set_piece_structure_reason",
+        "set_piece_structure_status",
+        "structure_model"
       ],
       "status_semantics": [
         {
-          "field": "scl1_set_piece_structure_status",
+          "field": "scl1_set_piece_routine_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "set_piece_structure_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
+    "contract_hash": "0b99d51042d49d7c99d5617fe574e39314f71d1e85236368652f4aeed38518ce",
     "definition_text": "A corner variant is a set piece routine pattern used from the corner restart.",
     "opaque_search_concept": "scl1_022",
     "target_id": "scl1_022_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_set_piece_structure_status",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "contract_path": "required_evidence.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 31,
         "source_phrase": "set piece",
         "source_start": 22,
-        "value": "scl1_set_piece_structure_status"
+        "value": "set_piece_structure_status"
       },
       {
-        "contract_path": "status_semantics.scl1_set_piece_structure_status",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "contract_path": "required_evidence.set_piece_structure_reason",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "set_piece_structure_reason"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_restart_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "set_piece_restart_type"
+      },
+      {
+        "contract_path": "required_evidence.event_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "event_type"
+      },
+      {
+        "contract_path": "required_evidence.event_anchor_frame_id",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "event_anchor_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_attacking_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "set_piece_attacking_team_role"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_defending_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "set_piece_defending_team_role"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "attacking_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "attacking_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "defending_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "defending_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.structure_model",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "structure_model"
+      },
+      {
+        "contract_path": "required_evidence.coordinate_system",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "coordinate_system"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_structure_claim_boundary",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 31,
+        "source_phrase": "set piece",
+        "source_start": 22,
+        "value": "set_piece_structure_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 31,
         "source_phrase": "set piece",
         "source_start": 22,
@@ -5179,11 +5465,35 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 31,
         "source_phrase": "set piece",
         "source_start": 22,
-        "value": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure."
+        "value": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim."
+      },
+      {
+        "contract_path": "required_evidence.scl1_set_piece_routine_status",
+        "rule_id": "meaning.missing_primitive.set_piece_routine",
+        "source_end": 47,
+        "source_phrase": "routine pattern",
+        "source_start": 32,
+        "value": "scl1_set_piece_routine_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_set_piece_routine_status",
+        "rule_id": "meaning.missing_primitive.set_piece_routine",
+        "source_end": 47,
+        "source_phrase": "routine pattern",
+        "source_start": 32,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.set_piece_routine",
+        "source_end": 47,
+        "source_phrase": "routine pattern",
+        "source_start": 32,
+        "value": "Requires routine, variant, or planned set-piece design typing; observed at-frame arrangement is not treated as a routine claim."
       }
     ]
   },
@@ -5192,34 +5502,160 @@
     "case_id": "scl1_023",
     "concept": "set_piece_attacking_shape",
     "contract": {
-      "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+      "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_set_piece_structure_status"
+        "attacking_shape_depth_m",
+        "attacking_shape_width_m",
+        "coordinate_system",
+        "coverage_status",
+        "defending_shape_depth_m",
+        "defending_shape_width_m",
+        "event_anchor_frame_id",
+        "event_type",
+        "set_piece_attacking_team_role",
+        "set_piece_defending_team_role",
+        "set_piece_restart_type",
+        "set_piece_structure_claim_boundary",
+        "set_piece_structure_reason",
+        "set_piece_structure_status",
+        "structure_model"
       ],
       "status_semantics": [
         {
-          "field": "scl1_set_piece_structure_status",
+          "field": "set_piece_structure_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
-    "definition_text": "Set-piece attacking shape means the attackers form a structured set-piece arrangement before delivery.",
+    "contract_hash": "a0c0ef696580df7362a57b880a4ae36b0a4f7eb7c95d7b0f26dad4d6c79e87ce",
+    "definition_text": "Set-piece attacking shape means the attackers have an observed set-piece arrangement at the restart frame.",
     "opaque_search_concept": "scl1_023",
     "target_id": "scl1_023_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_set_piece_structure_status",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "contract_path": "required_evidence.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 9,
         "source_phrase": "Set-piece",
         "source_start": 0,
-        "value": "scl1_set_piece_structure_status"
+        "value": "set_piece_structure_status"
       },
       {
-        "contract_path": "status_semantics.scl1_set_piece_structure_status",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "contract_path": "required_evidence.set_piece_structure_reason",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_structure_reason"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_restart_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_restart_type"
+      },
+      {
+        "contract_path": "required_evidence.event_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "event_type"
+      },
+      {
+        "contract_path": "required_evidence.event_anchor_frame_id",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "event_anchor_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_attacking_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_attacking_team_role"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_defending_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_defending_team_role"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "attacking_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "attacking_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "defending_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "defending_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.structure_model",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "structure_model"
+      },
+      {
+        "contract_path": "required_evidence.coordinate_system",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "coordinate_system"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_structure_claim_boundary",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_structure_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 9,
         "source_phrase": "Set-piece",
         "source_start": 0,
@@ -5227,11 +5663,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 9,
         "source_phrase": "Set-piece",
         "source_start": 0,
-        "value": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure."
+        "value": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim."
       }
     ]
   },
@@ -5240,34 +5676,160 @@
     "case_id": "scl1_023",
     "concept": "set_piece_attacking_shape",
     "contract": {
-      "claim_boundary": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure.",
+      "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_set_piece_structure_status"
+        "attacking_shape_depth_m",
+        "attacking_shape_width_m",
+        "coordinate_system",
+        "coverage_status",
+        "defending_shape_depth_m",
+        "defending_shape_width_m",
+        "event_anchor_frame_id",
+        "event_type",
+        "set_piece_attacking_team_role",
+        "set_piece_defending_team_role",
+        "set_piece_restart_type",
+        "set_piece_structure_claim_boundary",
+        "set_piece_structure_reason",
+        "set_piece_structure_status",
+        "structure_model"
       ],
       "status_semantics": [
         {
-          "field": "scl1_set_piece_structure_status",
+          "field": "set_piece_structure_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "54bd15e10404cbbd03cc398774473821e7815738b6e7b2c0aff045db875114b6",
-    "definition_text": "Attacking shape at a set piece describes the routine structure of the attacking players.",
+    "contract_hash": "a0c0ef696580df7362a57b880a4ae36b0a4f7eb7c95d7b0f26dad4d6c79e87ce",
+    "definition_text": "Attacking shape at a set piece describes the observed arrangement of the attacking players at the set-piece anchor.",
     "opaque_search_concept": "scl1_023",
     "target_id": "scl1_023_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_set_piece_structure_status",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "contract_path": "required_evidence.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 30,
         "source_phrase": "set piece",
         "source_start": 21,
-        "value": "scl1_set_piece_structure_status"
+        "value": "set_piece_structure_status"
       },
       {
-        "contract_path": "status_semantics.scl1_set_piece_structure_status",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "contract_path": "required_evidence.set_piece_structure_reason",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_structure_reason"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_restart_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_restart_type"
+      },
+      {
+        "contract_path": "required_evidence.event_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "event_type"
+      },
+      {
+        "contract_path": "required_evidence.event_anchor_frame_id",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "event_anchor_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_attacking_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_attacking_team_role"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_defending_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_defending_team_role"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "attacking_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "attacking_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "defending_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "defending_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.structure_model",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "structure_model"
+      },
+      {
+        "contract_path": "required_evidence.coordinate_system",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "coordinate_system"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_structure_claim_boundary",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_structure_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 30,
         "source_phrase": "set piece",
         "source_start": 21,
@@ -5275,17 +5837,365 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.set_piece_structure",
+        "rule_id": "meaning.restart.set_piece_structure",
         "source_end": 30,
         "source_phrase": "set piece",
         "source_start": 21,
-        "value": "Requires set-piece structure or routine typing; a provider event anchor is not treated as a routine structure."
+        "value": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim."
       }
     ]
   },
   {
     "author_id": "blind_a",
     "case_id": "scl1_024",
+    "concept": "set_piece_defensive_shape",
+    "contract": {
+      "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "attacking_shape_depth_m",
+        "attacking_shape_width_m",
+        "coordinate_system",
+        "coverage_status",
+        "defending_shape_depth_m",
+        "defending_shape_width_m",
+        "event_anchor_frame_id",
+        "event_type",
+        "set_piece_attacking_team_role",
+        "set_piece_defending_team_role",
+        "set_piece_restart_type",
+        "set_piece_structure_claim_boundary",
+        "set_piece_structure_reason",
+        "set_piece_structure_status",
+        "structure_model"
+      ],
+      "status_semantics": [
+        {
+          "field": "set_piece_structure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "a0c0ef696580df7362a57b880a4ae36b0a4f7eb7c95d7b0f26dad4d6c79e87ce",
+    "definition_text": "Set-piece defensive shape means the defenders have an observed set-piece arrangement at the restart frame.",
+    "opaque_search_concept": "scl1_024",
+    "target_id": "scl1_024_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_structure_status"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_structure_reason",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_structure_reason"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_restart_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_restart_type"
+      },
+      {
+        "contract_path": "required_evidence.event_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "event_type"
+      },
+      {
+        "contract_path": "required_evidence.event_anchor_frame_id",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "event_anchor_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_attacking_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_attacking_team_role"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_defending_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_defending_team_role"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "attacking_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "attacking_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "defending_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "defending_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.structure_model",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "structure_model"
+      },
+      {
+        "contract_path": "required_evidence.coordinate_system",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "coordinate_system"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_structure_claim_boundary",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "set_piece_structure_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 9,
+        "source_phrase": "Set-piece",
+        "source_start": 0,
+        "value": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_024",
+    "concept": "set_piece_defensive_shape",
+    "contract": {
+      "claim_boundary": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "attacking_shape_depth_m",
+        "attacking_shape_width_m",
+        "coordinate_system",
+        "coverage_status",
+        "defending_shape_depth_m",
+        "defending_shape_width_m",
+        "event_anchor_frame_id",
+        "event_type",
+        "set_piece_attacking_team_role",
+        "set_piece_defending_team_role",
+        "set_piece_restart_type",
+        "set_piece_structure_claim_boundary",
+        "set_piece_structure_reason",
+        "set_piece_structure_status",
+        "structure_model"
+      ],
+      "status_semantics": [
+        {
+          "field": "set_piece_structure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "a0c0ef696580df7362a57b880a4ae36b0a4f7eb7c95d7b0f26dad4d6c79e87ce",
+    "definition_text": "Defensive shape at a set piece describes the observed arrangement of the defending players at the set-piece anchor.",
+    "opaque_search_concept": "scl1_024",
+    "target_id": "scl1_024_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_structure_status"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_structure_reason",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_structure_reason"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_restart_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_restart_type"
+      },
+      {
+        "contract_path": "required_evidence.event_type",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "event_type"
+      },
+      {
+        "contract_path": "required_evidence.event_anchor_frame_id",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "event_anchor_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_attacking_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_attacking_team_role"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_defending_team_role",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_defending_team_role"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "attacking_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.attacking_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "attacking_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_width_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "defending_shape_width_m"
+      },
+      {
+        "contract_path": "required_evidence.defending_shape_depth_m",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "defending_shape_depth_m"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.structure_model",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "structure_model"
+      },
+      {
+        "contract_path": "required_evidence.coordinate_system",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "coordinate_system"
+      },
+      {
+        "contract_path": "required_evidence.set_piece_structure_claim_boundary",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "set_piece_structure_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.set_piece_structure_status",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.restart.set_piece_structure",
+        "source_end": 30,
+        "source_phrase": "set piece",
+        "source_start": 21,
+        "value": "Observed provider restart/set-piece event and at-frame outfield arrangement only; no routine variant, planned play, delivery design, marking assignment, role, intent, quality, or tactical causation claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_025",
     "concept": "team_press_candidate",
     "contract": {
       "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
@@ -5302,8 +6212,8 @@
     },
     "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
     "definition_text": "Team press candidate means several defenders act as a collective press around the ball.",
-    "opaque_search_concept": "scl1_024",
-    "target_id": "scl1_024_blind_a_v0",
+    "opaque_search_concept": "scl1_025",
+    "target_id": "scl1_025_blind_a_v0",
     "trace": [
       {
         "contract_path": "required_evidence.scl1_team_press_status",
@@ -5333,7 +6243,7 @@
   },
   {
     "author_id": "blind_b",
-    "case_id": "scl1_024",
+    "case_id": "scl1_025",
     "concept": "team_press_candidate",
     "contract": {
       "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
@@ -5350,8 +6260,8 @@
     },
     "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
     "definition_text": "A team press is a collective defensive pressing structure rather than one nearest defender.",
-    "opaque_search_concept": "scl1_024",
-    "target_id": "scl1_024_blind_b_v0",
+    "opaque_search_concept": "scl1_025",
+    "target_id": "scl1_025_blind_b_v0",
     "trace": [
       {
         "contract_path": "required_evidence.scl1_team_press_status",
@@ -5381,7 +6291,7 @@
   },
   {
     "author_id": "blind_a",
-    "case_id": "scl1_025",
+    "case_id": "scl1_026",
     "concept": "pressing_trap_candidate",
     "contract": {
       "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
@@ -5398,8 +6308,8 @@
     },
     "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
     "definition_text": "Pressing trap candidate means the defending team forms a pressing trap around a target area.",
-    "opaque_search_concept": "scl1_025",
-    "target_id": "scl1_025_blind_a_v0",
+    "opaque_search_concept": "scl1_026",
+    "target_id": "scl1_026_blind_a_v0",
     "trace": [
       {
         "contract_path": "required_evidence.scl1_team_press_status",
@@ -5429,7 +6339,7 @@
   },
   {
     "author_id": "blind_b",
-    "case_id": "scl1_025",
+    "case_id": "scl1_026",
     "concept": "pressing_trap_candidate",
     "contract": {
       "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
@@ -5446,8 +6356,8 @@
     },
     "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
     "definition_text": "A pressing trap is a team press structure intended to constrain the ball carrier.",
-    "opaque_search_concept": "scl1_025",
-    "target_id": "scl1_025_blind_b_v0",
+    "opaque_search_concept": "scl1_026",
+    "target_id": "scl1_026_blind_b_v0",
     "trace": [
       {
         "contract_path": "required_evidence.scl1_team_press_status",
@@ -5477,7 +6387,7 @@
   },
   {
     "author_id": "blind_a",
-    "case_id": "scl1_026",
+    "case_id": "scl1_027",
     "concept": "open_space_region",
     "contract": {
       "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
@@ -5494,8 +6404,8 @@
     },
     "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
     "definition_text": "Open space region means a generated area of free space available to attack.",
-    "opaque_search_concept": "scl1_026",
-    "target_id": "scl1_026_blind_a_v0",
+    "opaque_search_concept": "scl1_027",
+    "target_id": "scl1_027_blind_a_v0",
     "trace": [
       {
         "contract_path": "required_evidence.scl1_space_region_generation_status",
@@ -5525,7 +6435,7 @@
   },
   {
     "author_id": "blind_b",
-    "case_id": "scl1_026",
+    "case_id": "scl1_027",
     "concept": "open_space_region",
     "contract": {
       "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
@@ -5542,8 +6452,8 @@
     },
     "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
     "definition_text": "A free space region is an open space area produced by the current player positions.",
-    "opaque_search_concept": "scl1_026",
-    "target_id": "scl1_026_blind_b_v0",
+    "opaque_search_concept": "scl1_027",
+    "target_id": "scl1_027_blind_b_v0",
     "trace": [
       {
         "contract_path": "required_evidence.scl1_space_region_generation_status",
@@ -5573,7 +6483,7 @@
   },
   {
     "author_id": "blind_a",
-    "case_id": "scl1_027",
+    "case_id": "scl1_028",
     "concept": "space_creation_candidate",
     "contract": {
       "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
@@ -5590,8 +6500,8 @@
     },
     "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
     "definition_text": "Space creation candidate means an action creates generated space for a teammate.",
-    "opaque_search_concept": "scl1_027",
-    "target_id": "scl1_027_blind_a_v0",
+    "opaque_search_concept": "scl1_028",
+    "target_id": "scl1_028_blind_a_v0",
     "trace": [
       {
         "contract_path": "required_evidence.scl1_space_region_generation_status",
@@ -5621,7 +6531,7 @@
   },
   {
     "author_id": "blind_b",
-    "case_id": "scl1_027",
+    "case_id": "scl1_028",
     "concept": "space_creation_candidate",
     "contract": {
       "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
@@ -5638,8 +6548,8 @@
     },
     "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
     "definition_text": "Generated space creation asks whether a new free space region appears after the action.",
-    "opaque_search_concept": "scl1_027",
-    "target_id": "scl1_027_blind_b_v0",
+    "opaque_search_concept": "scl1_028",
+    "target_id": "scl1_028_blind_b_v0",
     "trace": [
       {
         "contract_path": "required_evidence.scl1_space_region_generation_status",
