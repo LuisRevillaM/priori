@@ -119,12 +119,27 @@ function renderMoment(
 }
 
 function frameForProgress(replay: ReplayPayload, moment: MomentZeroMoment, progress: number) {
-  const visualEndFrameId = moment.reception_frame_id + POST_RECEPTION_HOLD_FRAMES;
+  const visualEndFrameId = momentZeroVisualEndFrameId(moment);
   const visibleFrames = replay.frames.filter((frame) => frame.frame_id <= visualEndFrameId);
   const frames = visibleFrames.length > 0 ? visibleFrames : replay.frames;
   const eased = easeInOutCubic(Math.min(1, progress / 0.72));
   const index = Math.min(frames.length - 1, Math.max(0, Math.round(eased * (frames.length - 1))));
   return frames[index];
+}
+
+export function momentZeroVisualEndFrameId(moment: MomentZeroMoment) {
+  return moment.reception_frame_id + POST_RECEPTION_HOLD_FRAMES;
+}
+
+export function momentZeroLineEvidenceFrameId(moment: MomentZeroMoment) {
+  const lineId = targetObservedLine(moment)?.line_id;
+  const match = typeof lineId === "string" ? lineId.match(/:(\d+):\d+$/) : null;
+  return match ? Number(match[1]) : moment.release_frame_id;
+}
+
+function targetObservedLine(moment: MomentZeroMoment) {
+  const targetRank = moment.requested_evidence.target_line_rank;
+  return moment.observed_lines.find((line) => line.line_rank === targetRank) ?? null;
 }
 
 function revealPhase(progress: number) {
@@ -247,12 +262,17 @@ function drawDefensiveLine(
   ctx: CanvasRenderingContext2D,
   replay: ReplayPayload,
   moment: MomentZeroMoment,
-  frame: ReplayPayload["frames"][number],
+  _frame: ReplayPayload["frames"][number],
   phase: ReturnType<typeof revealPhase>
 ) {
   const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
-  const witnesses = moment.defensive_line_player_ids
-    .map((id) => frame.entities.find((item) => item.entity_id === id))
+  // The broken line is the observed line at the evidence frame, not the defenders' later positions.
+  const lineFrameId = momentZeroLineEvidenceFrameId(moment);
+  const lineFrame = replay.frames.find((item) => item.frame_id === lineFrameId) ?? replay.frames[0];
+  const targetLine = targetObservedLine(moment);
+  const witnessIds = targetLine?.defender_ids ?? moment.defensive_line_player_ids;
+  const witnesses = witnessIds
+    .map((id) => lineFrame.entities.find((item) => item.entity_id === id))
     .filter((entity): entity is ReplayEntity => Boolean(entity))
     .sort((left, right) => left.y_m - right.y_m);
   ctx.save();
@@ -262,23 +282,13 @@ function drawDefensiveLine(
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   if (witnesses.length >= 2) {
-    const points = witnesses.map((entity) => pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout));
-    const start = points[0];
-    const end = points[points.length - 1];
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const length = Math.max(1, Math.hypot(dx, dy));
-    const extend = 16 + 5 * phase.break;
-    const startPoint = { x: start.x - (dx / length) * extend, y: start.y - (dy / length) * extend };
-    const endPoint = { x: end.x + (dx / length) * extend, y: end.y + (dy / length) * extend };
+    const lineX = targetLine?.line_x_m ?? moment.line_x_m;
+    const start = pitchPointToPixel(lineX, witnesses[0].y_m, replay.pitch, layout);
+    const end = pitchPointToPixel(lineX, witnesses[witnesses.length - 1].y_m, replay.pitch, layout);
+    const extend = (4 + 1.5 * phase.break) * layout.scalePxPerM;
     ctx.beginPath();
-    ctx.moveTo(startPoint.x, startPoint.y);
-    if (points.length === 2) {
-      ctx.lineTo(endPoint.x, endPoint.y);
-    } else {
-      for (const point of points.slice(1, -1)) ctx.lineTo(point.x, point.y);
-      ctx.lineTo(endPoint.x, endPoint.y);
-    }
+    ctx.moveTo(start.x, start.y - extend);
+    ctx.lineTo(end.x, end.y + extend);
     ctx.stroke();
   } else {
     const center = pitchPointToPixel(moment.line_x_m, 0, replay.pitch, layout);
@@ -287,9 +297,7 @@ function drawDefensiveLine(
     ctx.lineTo(center.x, center.y + 44);
     ctx.stroke();
   }
-  for (const id of moment.defensive_line_player_ids) {
-    const entity = frame.entities.find((item) => item.entity_id === id);
-    if (!entity) continue;
+  for (const entity of witnesses) {
     const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
     const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, 20 + 7 * phase.break);
     halo.addColorStop(0, "rgba(228, 207, 130, 0.22)");
