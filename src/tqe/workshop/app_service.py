@@ -460,12 +460,17 @@ COACH_MATCH_SCOPE = {
 }
 COACH_SUGGESTIONS = [
     "Show line breaks with no underneath outlet",
+    "Show progressive carries under pressure",
     "Show expected pass completion",
     "Show dangerous attacks",
 ]
 COACH_DISPLAY_TEMPLATES = {
     "moment_found.line_break_no_underneath_support": "Line broken. The outlet space stays empty.",
-    "no_moments_found.line_break_no_underneath_support": "Across these matches, that moment did not appear.",
+    "no_moments_found.line_break_no_underneath_support": "In this match, that line-break moment did not appear.",
+    "no_moments_found.progressive_carry_under_pressure": "In this match, no carry progressed forward under defender pressure.",
+    "no_moments_found.give_and_go_sequence": "In this match, no give-and-go sequence appeared.",
+    "no_moments_found.onward_two_pass_sequence": "In this match, no onward two-pass sequence appeared.",
+    "no_moments_found.default": "In this match, that observed moment did not appear.",
     "clarification_required.tactical_meaning_underspecified": "Pick the observable part of the attack you want to see.",
     "clarification_required.request_not_recognized": "Name the action, players, and moment you want to see.",
     "understood_but_not_expressible.unsupported_modality": "This view stays with observed moments.",
@@ -835,11 +840,12 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
         plan_hash = clean_optional_string(result.get("document_hash"))
         visual_kind = coach_visual_moment_kind(contract)
         if result_count <= 0:
+            no_moments_kind = coach_no_moments_kind(contract)
             response = ok(
                 {
                     "status": "no_moments_found",
                     "query": query,
-                    "display_answer": coach_template("no_moments_found.line_break_no_underneath_support"),
+                    "display_answer": coach_template(f"no_moments_found.{no_moments_kind}"),
                     "suggestions": COACH_SUGGESTIONS,
                     "match_scope": COACH_MATCH_SCOPE,
                     "meaning_definition": meaning.meaning_definition,
@@ -982,19 +988,46 @@ def coach_cant_yet_response(
 
 
 def coach_visual_moment_kind(contract: dict[str, Any]) -> str | None:
+    if coach_contract_matches_line_break_no_underneath_support(contract):
+        return "line_break_no_underneath_support"
+    return None
+
+
+def coach_no_moments_kind(contract: dict[str, Any]) -> str:
     required = set(str(field) for field in contract.get("required_evidence", []))
-    status_values = {
+    status_values = coach_status_values(contract)
+    constraints = [item for item in contract.get("composition_constraints", []) if isinstance(item, dict)]
+    if coach_contract_matches_line_break_no_underneath_support(contract):
+        return "line_break_no_underneath_support"
+    if (
+        {"carry_status", "pressure_status", "carry_forward_progression_m"}.issubset(required)
+        and status_values.get("carry_status") == "PASS"
+        and status_values.get("pressure_status") == "PASS"
+    ):
+        return "progressive_carry_under_pressure"
+    if "pass_chain_status" in required and status_values.get("pass_chain_status") == "PASS":
+        if any(item.get("kind") == "same_player_return" for item in constraints):
+            return "give_and_go_sequence"
+        return "onward_two_pass_sequence"
+    return "default"
+
+
+def coach_contract_matches_line_break_no_underneath_support(contract: dict[str, Any]) -> bool:
+    required = set(str(field) for field in contract.get("required_evidence", []))
+    status_values = coach_status_values(contract)
+    return (
+        {"line_break_status", "support_arrival_status", "support_region_mode", "supporting_player_ids"}.issubset(required)
+        and status_values.get("line_break_status") == "PASS"
+        and status_values.get("support_arrival_status") == "FAIL"
+    )
+
+
+def coach_status_values(contract: dict[str, Any]) -> dict[str, str]:
+    return {
         str(item.get("field")): str(item.get("required_value"))
         for item in contract.get("status_semantics", [])
         if isinstance(item, dict) and "required_value" in item
     }
-    if (
-        {"line_break_status", "support_arrival_status", "support_region_mode", "supporting_player_ids"}.issubset(required)
-        and status_values.get("line_break_status") == "PASS"
-        and status_values.get("support_arrival_status") == "FAIL"
-    ):
-        return "line_break_no_underneath_support"
-    return None
 
 
 def coach_moment_zero_payload() -> dict[str, Any]:

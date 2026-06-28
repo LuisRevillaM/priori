@@ -6,6 +6,7 @@ import type { CoachInterpretResponse } from "./types";
 const DEFAULT_QUERY = "Show line breaks with no underneath outlet";
 const EXAMPLES = [
   "Show line breaks with no underneath outlet",
+  "Show progressive carries under pressure",
   "Show expected pass completion",
   "Show dangerous attacks"
 ];
@@ -100,7 +101,7 @@ export function CoachSurface() {
 
 function responseCopy(result: CoachInterpretResponse | null, isLooking: boolean, error: string | null) {
   if (error) return error;
-  if (isLooking) return "Looking across the matches.";
+  if (isLooking) return "Looking through this match.";
   if (result) return result.display_answer;
   return "Try an observable football idea.";
 }
