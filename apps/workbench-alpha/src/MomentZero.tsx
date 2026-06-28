@@ -26,6 +26,7 @@ const PITCH_PALETTE = {
 } as const;
 
 const TOTAL_MS = 10000;
+const POST_RECEPTION_HOLD_FRAMES = 8;
 
 export const momentZeroEvidence = momentZeroPayload;
 
@@ -104,7 +105,7 @@ function renderMoment(
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx.clearRect(0, 0, width, height);
 
-  const frame = frameForProgress(replay, progress);
+  const frame = frameForProgress(replay, moment, progress);
   const phase = revealPhase(progress);
   drawPitch(ctx, layout);
   drawAttackingEndCue(ctx, replay, moment, layout, phase);
@@ -113,15 +114,17 @@ function renderMoment(
   drawDefensiveLine(ctx, replay, moment, frame, phase);
   drawPassPath(ctx, replay, moment, phase);
   drawSupportRegion(ctx, replay, moment, phase);
-  drawNearestSupportDistance(ctx, replay, moment, frame, phase);
   drawReceiverFocus(ctx, replay, moment, frame, phase);
   drawBall(ctx, replay, frame, phase);
 }
 
-function frameForProgress(replay: ReplayPayload, progress: number) {
+function frameForProgress(replay: ReplayPayload, moment: MomentZeroMoment, progress: number) {
+  const visualEndFrameId = moment.reception_frame_id + POST_RECEPTION_HOLD_FRAMES;
+  const visibleFrames = replay.frames.filter((frame) => frame.frame_id <= visualEndFrameId);
+  const frames = visibleFrames.length > 0 ? visibleFrames : replay.frames;
   const eased = easeInOutCubic(Math.min(1, progress / 0.72));
-  const index = Math.min(replay.frames.length - 1, Math.max(0, Math.round(eased * (replay.frames.length - 1))));
-  return replay.frames[index];
+  const index = Math.min(frames.length - 1, Math.max(0, Math.round(eased * (frames.length - 1))));
+  return frames[index];
 }
 
 function revealPhase(progress: number) {
@@ -248,18 +251,42 @@ function drawDefensiveLine(
   phase: ReturnType<typeof revealPhase>
 ) {
   const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
-  const top = pitchPointToPixel(moment.line_x_m, replay.pitch.width_m / 2, replay.pitch, layout);
-  const bottom = pitchPointToPixel(moment.line_x_m, -replay.pitch.width_m / 2, replay.pitch, layout);
+  const witnesses = moment.defensive_line_player_ids
+    .map((id) => frame.entities.find((item) => item.entity_id === id))
+    .filter((entity): entity is ReplayEntity => Boolean(entity))
+    .sort((left, right) => left.y_m - right.y_m);
   ctx.save();
   ctx.globalAlpha = (0.28 + 0.62 * phase.line) * phase.resetFade;
   ctx.strokeStyle = PITCH_PALETTE.lineBreak;
   ctx.lineWidth = 2.2 + 1.6 * phase.break;
-  ctx.setLineDash([12, 10]);
-  ctx.beginPath();
-  ctx.moveTo(top.x, top.y);
-  ctx.quadraticCurveTo(top.x + 6 * phase.break, (top.y + bottom.y) / 2, bottom.x, bottom.y);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  if (witnesses.length >= 2) {
+    const points = witnesses.map((entity) => pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout));
+    const start = points[0];
+    const end = points[points.length - 1];
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const length = Math.max(1, Math.hypot(dx, dy));
+    const extend = 16 + 5 * phase.break;
+    const startPoint = { x: start.x - (dx / length) * extend, y: start.y - (dy / length) * extend };
+    const endPoint = { x: end.x + (dx / length) * extend, y: end.y + (dy / length) * extend };
+    ctx.beginPath();
+    ctx.moveTo(startPoint.x, startPoint.y);
+    if (points.length === 2) {
+      ctx.lineTo(endPoint.x, endPoint.y);
+    } else {
+      for (const point of points.slice(1, -1)) ctx.lineTo(point.x, point.y);
+      ctx.lineTo(endPoint.x, endPoint.y);
+    }
+    ctx.stroke();
+  } else {
+    const center = pitchPointToPixel(moment.line_x_m, 0, replay.pitch, layout);
+    ctx.beginPath();
+    ctx.moveTo(center.x, center.y - 44);
+    ctx.lineTo(center.x, center.y + 44);
+    ctx.stroke();
+  }
   for (const id of moment.defensive_line_player_ids) {
     const entity = frame.entities.find((item) => item.entity_id === id);
     if (!entity) continue;
@@ -363,62 +390,6 @@ function drawSupportRegion(
   ctx.fillStyle = voidGradient;
   ctx.fill();
   ctx.restore();
-}
-
-function drawNearestSupportDistance(
-  ctx: CanvasRenderingContext2D,
-  replay: ReplayPayload,
-  moment: MomentZeroMoment,
-  frame: ReplayPayload["frames"][number],
-  phase: ReturnType<typeof revealPhase>
-) {
-  const alpha = phase.lonely * phase.resetFade;
-  if (alpha <= 0) return;
-  const receiver = frame.entities.find((entity) => entity.entity_id === moment.receiver_id);
-  if (!receiver) return;
-  const nearest = nearestCandidate(frame.entities, moment, receiver);
-  if (!nearest) return;
-  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
-  const receiverPoint = pitchPointToPixel(receiver.x_m, receiver.y_m, replay.pitch, layout);
-  const nearestPoint = pitchPointToPixel(nearest.x_m, nearest.y_m, replay.pitch, layout);
-  ctx.save();
-  ctx.globalAlpha = alpha * 0.36;
-  ctx.strokeStyle = "rgba(245, 241, 222, 0.42)";
-  ctx.lineWidth = 1.1;
-  ctx.setLineDash([2, 9]);
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(receiverPoint.x, receiverPoint.y);
-  ctx.lineTo(nearestPoint.x, nearestPoint.y);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.globalAlpha = alpha * 0.55;
-  ctx.fillStyle = PITCH_PALETTE.home;
-  ctx.beginPath();
-  ctx.arc(nearestPoint.x, nearestPoint.y, 3.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-function nearestCandidate(
-  entities: ReplayPayload["frames"][number]["entities"],
-  moment: MomentZeroMoment,
-  receiver: ReplayEntity
-) {
-  const candidateIds = new Set(moment.support_region.candidate_player_ids);
-  let nearest: ReplayEntity | null = null;
-  let nearestDistance = Number.POSITIVE_INFINITY;
-  for (const entity of entities) {
-    if (entity.entity_type === "ball" || entity.entity_id === receiver.entity_id || !candidateIds.has(entity.entity_id)) {
-      continue;
-    }
-    const distance = Math.hypot(entity.x_m - receiver.x_m, entity.y_m - receiver.y_m);
-    if (distance < nearestDistance) {
-      nearest = entity;
-      nearestDistance = distance;
-    }
-  }
-  return nearest;
 }
 
 function drawReceiverFocus(
