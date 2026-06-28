@@ -24,8 +24,8 @@
           "left": 199
         },
         "nonTransparent": 184090,
-        "bright": 358,
-        "colorBuckets": 42,
+        "bright": 301,
+        "colorBuckets": 41,
         "heading": "Line broken. The outlet space stays empty."
       }
     },
@@ -52,8 +52,8 @@
           "left": 28
         },
         "nonTransparent": 22173,
-        "bright": 180,
-        "colorBuckets": 42,
+        "bright": 148,
+        "colorBuckets": 39,
         "heading": "Line broken. The outlet space stays empty."
       }
     }

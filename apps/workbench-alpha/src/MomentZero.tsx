@@ -13,14 +13,16 @@ const PITCH_PALETTE = {
   lineSoft: "rgba(240, 239, 225, 0.20)",
   home: "#d8efe3",
   homeEdge: "#163327",
+  homeFaint: "rgba(216, 239, 227, 0.42)",
   away: "#8d534c",
   awayEdge: "#f4ece0",
+  awayFaint: "rgba(141, 83, 76, 0.34)",
   receiver: "#fff5cb",
   passer: "#d8efe3",
   ball: "#f4efe0",
   support: "#d6c17a",
-  supportFill: "rgba(214, 193, 122, 0.20)",
-  supportVoid: "rgba(249, 246, 220, 0.08)",
+  supportFill: "rgba(214, 193, 122, 0.38)",
+  supportVoid: "rgba(249, 246, 220, 0.18)",
   pass: "#f2e5bd",
   lineBreak: "#e4cf82"
 } as const;
@@ -105,6 +107,7 @@ function renderMoment(
   const frame = frameForProgress(replay, progress);
   const phase = revealPhase(progress);
   drawPitch(ctx, layout);
+  drawMomentVignette(ctx, layout, phase);
   drawPlayers(ctx, replay, moment, frame, phase);
   drawDefensiveLine(ctx, replay, moment, frame, phase);
   drawPassPath(ctx, replay, moment, phase);
@@ -127,7 +130,8 @@ function revealPhase(progress: number) {
     break: fadeWindow(progress, 0.42, 0.66),
     support: fadeWindow(progress, 0.58, 0.78),
     lonely: fadeWindow(progress, 0.76, 0.95),
-    resetFade: 1 - fadeWindow(progress, 0.94, 1)
+    resetFade: 1 - fadeWindow(progress, 0.94, 1),
+    pulse: 0.5 + 0.5 * Math.sin(progress * Math.PI * 2)
   };
 }
 
@@ -154,6 +158,23 @@ function drawPitch(ctx: CanvasRenderingContext2D, layout: ReturnType<typeof layo
   ctx.restore();
 }
 
+function drawMomentVignette(
+  ctx: CanvasRenderingContext2D,
+  layout: ReturnType<typeof layoutPitch>,
+  phase: ReturnType<typeof revealPhase>
+) {
+  const { canvasWidth: width, canvasHeight: height } = layout;
+  ctx.save();
+  ctx.globalAlpha = (0.10 + 0.16 * phase.lonely) * phase.resetFade;
+  const gradient = ctx.createRadialGradient(width * 0.47, height * 0.35, height * 0.20, width * 0.47, height * 0.35, height * 0.76);
+  gradient.addColorStop(0, "rgba(255, 255, 255, 0)");
+  gradient.addColorStop(0.58, "rgba(3, 13, 10, 0.04)");
+  gradient.addColorStop(1, "rgba(3, 13, 10, 0.78)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+  ctx.restore();
+}
+
 function drawPlayers(
   ctx: CanvasRenderingContext2D,
   replay: ReplayPayload,
@@ -161,20 +182,34 @@ function drawPlayers(
   frame: ReplayPayload["frames"][number],
   phase: ReturnType<typeof revealPhase>
 ) {
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const candidateIds = new Set(moment.support_region.candidate_player_ids);
   for (const entity of frame.entities) {
     if (entity.entity_type === "ball") continue;
-    const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layoutPitch(replay.pitch, ctx.canvas.clientWidth));
+    const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
     const isReceiver = entity.entity_id === moment.receiver_id;
     const isPasser = entity.entity_id === moment.passer_id;
     const isDefender = moment.defensive_line_player_ids.includes(entity.entity_id);
-    const radius = isReceiver ? 7.8 : isPasser ? 6.8 : isDefender ? 6.6 : 5.2;
+    const isCandidate = candidateIds.has(entity.entity_id);
+    const isStory = isReceiver || isPasser || isDefender;
+    const fadeIrrelevant = Math.max(phase.break, phase.support, phase.lonely);
+    const radius = isReceiver ? 7.9 : isPasser ? 6.6 : isDefender ? 6.2 : isCandidate ? 4.8 : 4.2;
+    const alpha = isStory
+      ? 0.96
+      : isCandidate
+        ? 0.24 - 0.12 * fadeIrrelevant
+        : 0.17 - 0.11 * fadeIrrelevant;
     ctx.save();
-    ctx.globalAlpha = (isReceiver || isPasser || isDefender ? 0.95 : 0.46) * phase.resetFade;
+    ctx.globalAlpha = Math.max(0.08, alpha) * phase.resetFade;
     ctx.beginPath();
     ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = entity.team_role === moment.perspective_team_role ? PITCH_PALETTE.home : PITCH_PALETTE.away;
-    ctx.strokeStyle = entity.team_role === moment.perspective_team_role ? PITCH_PALETTE.homeEdge : PITCH_PALETTE.awayEdge;
-    ctx.lineWidth = isReceiver || isDefender ? 1.8 : 1.1;
+    ctx.fillStyle = isStory
+      ? entity.team_role === moment.perspective_team_role ? PITCH_PALETTE.home : PITCH_PALETTE.away
+      : entity.team_role === moment.perspective_team_role ? PITCH_PALETTE.homeFaint : PITCH_PALETTE.awayFaint;
+    ctx.strokeStyle = isStory
+      ? entity.team_role === moment.perspective_team_role ? PITCH_PALETTE.homeEdge : PITCH_PALETTE.awayEdge
+      : "rgba(245, 241, 222, 0.18)";
+    ctx.lineWidth = isStory ? 1.5 : 0.8;
     ctx.fill();
     ctx.stroke();
     ctx.restore();
@@ -205,11 +240,13 @@ function drawDefensiveLine(
     const entity = frame.entities.find((item) => item.entity_id === id);
     if (!entity) continue;
     const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
+    const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, 20 + 7 * phase.break);
+    halo.addColorStop(0, "rgba(228, 207, 130, 0.22)");
+    halo.addColorStop(1, "rgba(228, 207, 130, 0)");
+    ctx.fillStyle = halo;
     ctx.beginPath();
-    ctx.arc(point.x, point.y, 11 + 2 * phase.break, 0, Math.PI * 2);
-    ctx.strokeStyle = PITCH_PALETTE.lineBreak;
-    ctx.lineWidth = 1.8;
-    ctx.stroke();
+    ctx.arc(point.x, point.y, 20 + 7 * phase.break, 0, Math.PI * 2);
+    ctx.fill();
   }
   ctx.restore();
 }
@@ -255,26 +292,34 @@ function drawSupportRegion(
   const behindToLeft = support.attacking_direction === 1;
   const alpha = phase.support * phase.resetFade;
   if (alpha <= 0) return;
+  const left = behindToLeft ? reference.x - radius : reference.x;
+  const right = behindToLeft ? reference.x : reference.x + radius;
+  const top = reference.y - radius;
+  const height = radius * 2;
+  const pulse = 0.82 + 0.18 * phase.pulse;
 
   ctx.save();
-  ctx.globalAlpha = alpha;
+  ctx.globalAlpha = alpha * (0.64 + 0.34 * phase.lonely);
   ctx.beginPath();
   ctx.arc(reference.x, reference.y, radius, 0, Math.PI * 2);
   ctx.clip();
-  ctx.fillStyle = PITCH_PALETTE.supportFill;
-  ctx.fillRect(
-    behindToLeft ? reference.x - radius : reference.x,
-    reference.y - radius,
-    radius,
-    radius * 2
-  );
+  ctx.shadowColor = "rgba(214, 193, 122, 0.46)";
+  ctx.shadowBlur = 18 + 18 * phase.lonely;
+  const glow = ctx.createRadialGradient(reference.x, reference.y, radius * 0.08, reference.x, reference.y, radius * (1.18 + 0.08 * phase.lonely));
+  glow.addColorStop(0, PITCH_PALETTE.supportVoid);
+  glow.addColorStop(0.48, PITCH_PALETTE.supportFill);
+  glow.addColorStop(1, "rgba(214, 193, 122, 0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(left, top, radius, height);
   ctx.restore();
 
   ctx.save();
-  ctx.globalAlpha = alpha * (0.7 + 0.3 * phase.lonely);
+  ctx.globalAlpha = alpha * (0.62 + 0.38 * phase.lonely) * pulse;
   ctx.strokeStyle = PITCH_PALETTE.support;
-  ctx.lineWidth = 1.8;
-  ctx.setLineDash([7, 7]);
+  ctx.shadowColor = "rgba(214, 193, 122, 0.40)";
+  ctx.shadowBlur = 10 + 10 * phase.lonely;
+  ctx.lineWidth = 2.2 + 0.7 * phase.lonely;
+  ctx.lineCap = "round";
   ctx.beginPath();
   if (behindToLeft) {
     ctx.arc(reference.x, reference.y, radius, Math.PI / 2, Math.PI * 1.5);
@@ -282,10 +327,16 @@ function drawSupportRegion(
     ctx.arc(reference.x, reference.y, radius, -Math.PI / 2, Math.PI / 2);
   }
   ctx.stroke();
-  ctx.setLineDash([]);
+
+  ctx.globalAlpha = alpha * phase.lonely * 0.95;
+  const voidGradient = ctx.createRadialGradient(reference.x, reference.y, radius * 0.08, reference.x, reference.y, radius * 0.62);
+  voidGradient.addColorStop(0, "rgba(249, 246, 220, 0.16)");
+  voidGradient.addColorStop(0.42, "rgba(249, 246, 220, 0.08)");
+  voidGradient.addColorStop(1, "rgba(249, 246, 220, 0)");
   ctx.fillStyle = PITCH_PALETTE.supportVoid;
   ctx.beginPath();
-  ctx.arc(reference.x, reference.y, radius * 0.48, 0, Math.PI * 2);
+  ctx.arc((left + right) / 2, reference.y, radius * 0.58, 0, Math.PI * 2);
+  ctx.fillStyle = voidGradient;
   ctx.fill();
   ctx.restore();
 }
@@ -302,12 +353,20 @@ function drawReceiverFocus(
   const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
   const point = pitchPointToPixel(receiver.x_m, receiver.y_m, replay.pitch, layout);
   ctx.save();
-  ctx.globalAlpha = Math.max(phase.break, phase.lonely) * phase.resetFade;
-  ctx.strokeStyle = PITCH_PALETTE.receiver;
-  ctx.lineWidth = 2.6;
+  ctx.globalAlpha = Math.max(phase.break, phase.lonely) * phase.resetFade * 0.92;
+  const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, 34 + 10 * phase.lonely);
+  halo.addColorStop(0, "rgba(255, 245, 203, 0.32)");
+  halo.addColorStop(0.45, "rgba(255, 245, 203, 0.12)");
+  halo.addColorStop(1, "rgba(255, 245, 203, 0)");
+  ctx.fillStyle = halo;
   ctx.beginPath();
-  ctx.arc(point.x, point.y, 15 + 8 * phase.lonely, 0, Math.PI * 2);
-  ctx.stroke();
+  ctx.arc(point.x, point.y, 34 + 10 * phase.lonely, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = Math.max(phase.break, phase.lonely) * phase.resetFade;
+  ctx.fillStyle = PITCH_PALETTE.receiver;
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, 4.2 + 1.2 * phase.lonely, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 
