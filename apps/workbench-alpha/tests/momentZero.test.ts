@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import supportedMoment from "../src/generated/moment-line-break-supported.json";
 import momentZero from "../src/generated/moment-zero.json";
-import { momentZeroLineEvidenceFrameId, momentZeroVisualEndFrameId } from "../src/MomentZero";
+import { momentZeroBallEvidenceFrameId, momentZeroLineEvidenceFrameId, momentZeroVisualEndFrameId } from "../src/MomentZero";
 
 assert.equal(momentZero.schema_version, "moment_zero.line_break_no_underneath_support.v0");
 assert.equal(momentZero.moment.classification, "Q3_RECEIVER_SECOND_LINE_NO_UNDERNEATH_SUPPORT");
@@ -24,6 +24,7 @@ assert.ok(targetLine.line_id.includes(`:${momentZero.moment.release_frame_id}:`)
 assert.deepEqual(targetLine.defender_ids, momentZero.moment.defensive_line_player_ids);
 assert.equal(momentZeroVisualEndFrameId(momentZero.moment), momentZero.moment.reception_frame_id + 8);
 assert.ok(momentZeroLineEvidenceFrameId(momentZero.moment) < momentZeroVisualEndFrameId(momentZero.moment));
+assert.equal(momentZeroBallEvidenceFrameId(momentZero.moment, momentZeroVisualEndFrameId(momentZero.moment)), momentZero.moment.reception_frame_id);
 
 assert.equal(supportedMoment.schema_version, "moment_zero.line_break_with_underneath_support.v0");
 assert.equal(supportedMoment.moment.requested_evidence.line_break_status, "PASS");
@@ -39,5 +40,9 @@ assert.equal(momentZeroLineEvidenceFrameId(supportedMoment.moment), supportedMom
 assert.ok(supportedTargetLine.line_id.includes(`:${supportedMoment.moment.release_frame_id}:`));
 assert.deepEqual(supportedTargetLine.defender_ids, supportedMoment.moment.defensive_line_player_ids);
 assert.equal(momentZeroVisualEndFrameId(supportedMoment.moment), supportedMoment.moment.support_window_end_frame_id);
+assert.equal(
+  momentZeroBallEvidenceFrameId(supportedMoment.moment, supportedMoment.moment.support_window_end_frame_id),
+  supportedMoment.moment.reception_frame_id
+);
 
 console.log("moment zero tests passed");

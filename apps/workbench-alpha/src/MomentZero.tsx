@@ -118,7 +118,7 @@ function renderMoment(
   drawSupportRegion(ctx, replay, moment, phase);
   drawSupportArrivals(ctx, replay, moment, frame, phase);
   drawReceiverFocus(ctx, replay, moment, frame, phase);
-  drawBall(ctx, replay, frame, phase);
+  drawBall(ctx, replay, moment, frame, phase);
 }
 
 function frameForProgress(replay: ReplayPayload, moment: MomentZeroMoment, progress: number) {
@@ -141,6 +141,10 @@ export function momentZeroLineEvidenceFrameId(moment: MomentZeroMoment) {
   const lineId = targetObservedLine(moment)?.line_id;
   const match = typeof lineId === "string" ? lineId.match(/:(\d+):\d+$/) : null;
   return match ? Number(match[1]) : moment.release_frame_id;
+}
+
+export function momentZeroBallEvidenceFrameId(moment: MomentZeroMoment, frameId: number) {
+  return frameId > moment.reception_frame_id ? moment.reception_frame_id : frameId;
 }
 
 function targetObservedLine(moment: MomentZeroMoment) {
@@ -485,17 +489,30 @@ function drawReceiverFocus(
 function drawBall(
   ctx: CanvasRenderingContext2D,
   replay: ReplayPayload,
+  moment: MomentZeroMoment,
   frame: ReplayPayload["frames"][number],
   phase: ReturnType<typeof revealPhase>
 ) {
-  const ball = frame.entities.find((entity) => entity.entity_type === "ball");
+  const ballFrameId = momentZeroBallEvidenceFrameId(moment, frame.frame_id);
+  const ballFrame = replay.frames.find((item) => item.frame_id === ballFrameId) ?? frame;
+  const ball = ballFrame.entities.find((entity) => entity.entity_type === "ball");
   if (!ball) return;
   const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
   const point = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
   ctx.save();
   ctx.globalAlpha = phase.resetFade;
+  const receptionSettled = frame.frame_id >= moment.reception_frame_id;
+  if (receptionSettled) {
+    const dock = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, 16 + 4 * phase.support);
+    dock.addColorStop(0, "rgba(244, 239, 224, 0.22)");
+    dock.addColorStop(1, "rgba(244, 239, 224, 0)");
+    ctx.fillStyle = dock;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 16 + 4 * phase.support, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.beginPath();
-  ctx.arc(point.x, point.y, 4.6, 0, Math.PI * 2);
+  ctx.arc(point.x, point.y, receptionSettled ? 5.2 : 4.6, 0, Math.PI * 2);
   ctx.fillStyle = PITCH_PALETTE.ball;
   ctx.fill();
   ctx.restore();
