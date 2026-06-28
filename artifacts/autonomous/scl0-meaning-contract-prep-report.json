@@ -152,6 +152,13 @@
         ],
         "definition_count": 6
       },
+      "meaning.missing_primitive.pressing_trap_or_coordination": {
+        "case_count": 1,
+        "cases": [
+          "scl1_026"
+        ],
+        "definition_count": 6
+      },
       "meaning.missing_primitive.restart_structure": {
         "case_count": 1,
         "cases": [
@@ -172,14 +179,6 @@
           "scl1_028"
         ],
         "definition_count": 6
-      },
-      "meaning.missing_primitive.team_press": {
-        "case_count": 2,
-        "cases": [
-          "scl1_025",
-          "scl1_026"
-        ],
-        "definition_count": 12
       },
       "meaning.modality.body_orientation": {
         "case_count": 1,
@@ -271,6 +270,14 @@
           "scl1_031"
         ],
         "definition_count": 102
+      },
+      "meaning.team_press.observed_multi_defender_pressure": {
+        "case_count": 2,
+        "cases": [
+          "scl1_025",
+          "scl1_026"
+        ],
+        "definition_count": 84
       }
     },
     "findings_count": 0,

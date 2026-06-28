@@ -1199,38 +1199,48 @@
     {
       "case_id": "scl1_025",
       "concept": "team_press_candidate",
-      "expected_failure_taxonomy": "missing_primitive",
-      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
       "findings": [],
       "held_out": false,
-      "sample_role": "scl1_missing_substrate_probe",
+      "sample_role": "scl1_team_press_gap_closure_probe",
       "variants": [
         {
           "author_id": "blind_a",
           "concept_name_used_as_hint": false,
-          "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
-          "failure_taxonomy": "missing_primitive",
+          "contract_hash": "367e7690dcff30602e25a3055876d8810f3607be5a02a2b6a3b98e42f82ab007",
+          "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
-          "providers_used": [],
-          "requested_evidence_failure_count": null,
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "action_event_anchor",
+            "team_press"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
           "target_id": "scl1_025_blind_a_v0"
         },
         {
           "author_id": "blind_b",
           "concept_name_used_as_hint": false,
-          "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
-          "failure_taxonomy": "missing_primitive",
+          "contract_hash": "367e7690dcff30602e25a3055876d8810f3607be5a02a2b6a3b98e42f82ab007",
+          "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
-          "providers_used": [],
-          "requested_evidence_failure_count": null,
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "action_event_anchor",
+            "team_press"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
           "target_id": "scl1_025_blind_b_v0"
         }
       ]
@@ -1242,12 +1252,12 @@
       "expected_result": "not_compiler_reachable",
       "findings": [],
       "held_out": false,
-      "sample_role": "scl1_missing_substrate_probe",
+      "sample_role": "scl1_team_press_intent_gap_probe",
       "variants": [
         {
           "author_id": "blind_a",
           "concept_name_used_as_hint": false,
-          "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+          "contract_hash": "afa83ff77db0f65eab1032b3cca32710943872163c032ba7c08937da25850f1c",
           "failure_taxonomy": "missing_primitive",
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
@@ -1261,7 +1271,7 @@
         {
           "author_id": "blind_b",
           "concept_name_used_as_hint": false,
-          "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+          "contract_hash": "afa83ff77db0f65eab1032b3cca32710943872163c032ba7c08937da25850f1c",
           "failure_taxonomy": "missing_primitive",
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
@@ -1527,7 +1537,7 @@
   "summary": {
     "case_count": 31,
     "failure_distribution": {
-      "missing_primitive": 14,
+      "missing_primitive": 12,
       "unsupported_modality": 4
     },
     "findings_count": 0,
@@ -1536,8 +1546,8 @@
     "known_negative_honest_failure_count": 6,
     "known_negative_target_count": 6,
     "result_distribution": {
-      "compiler_reachable": 44,
-      "not_compiler_reachable": 18
+      "compiler_reachable": 46,
+      "not_compiler_reachable": 16
     },
     "target_count": 62
   }

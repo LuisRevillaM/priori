@@ -296,6 +296,7 @@ class TacticalQueryExecutor:
             "opponents_bypassed_by_action": relation_opponents_bypassed_by_action,
             "support_arrival_relation": relation_support_arrival,
             "pressure_on_carrier": relation_pressure_on_carrier,
+            "team_press": relation_team_press,
             "local_number_relation": relation_local_number,
         }
         self.predicates: dict[str, PredicateImplementation] = {
@@ -8049,6 +8050,78 @@ def relation_pressure_on_carrier(state: PeriodState, node: BoundCatalogNode) -> 
     }
 
 
+def relation_team_press(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchor_records = anchor_value.value
+    if not isinstance(anchor_records, list):
+        raise RuntimeError(f"{node.node_id} requires anchor records")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    carrier_id_field = node_parameter_text(node, "carrier_id_field", "receiver_id")
+    maximum_press_distance_m = node_parameter_number(node, "maximum_press_distance_m", 7.0)
+    minimum_closing_speed_mps = node_parameter_number(node, "minimum_closing_speed_mps", 0.0)
+    maximum_approach_angle_degrees = node_parameter_number(node, "maximum_approach_angle_degrees", 135.0)
+    minimum_pressing_defenders = node_parameter_integer(node, "minimum_pressing_defenders", 2)
+    minimum_angle_spread_degrees = node_parameter_number(node, "minimum_angle_spread_degrees", 30.0)
+    minimum_observed_defenders = node_parameter_integer(node, "minimum_observed_defenders", 6)
+    lookback_seconds = node_parameter_number(node, "lookback_seconds", 0.4)
+    candidate_scope = node_parameter_text(node, "candidate_scope", "defending_outfield")
+    if candidate_scope != "defending_outfield":
+        raise RuntimeError("team_press v0.1 supports candidate_scope=defending_outfield")
+    known_outfield_ids = outfield_player_ids(state.canonical_root, state.match_id, state.defending_team_role)
+    records = [
+        team_press_anchor_record(
+            state=state,
+            anchor=anchor,
+            frame_field=frame_field,
+            carrier_id_field=carrier_id_field,
+            maximum_press_distance_m=maximum_press_distance_m,
+            minimum_closing_speed_mps=minimum_closing_speed_mps,
+            maximum_approach_angle_degrees=maximum_approach_angle_degrees,
+            minimum_pressing_defenders=minimum_pressing_defenders,
+            minimum_angle_spread_degrees=minimum_angle_spread_degrees,
+            minimum_observed_defenders=minimum_observed_defenders,
+            lookback_seconds=lookback_seconds,
+            known_outfield_ids=known_outfield_ids,
+        )
+        for anchor in anchor_records
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    status_values = [
+        None if str(record["team_press_status"]) == "UNKNOWN" else str(record["team_press_status"])
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "team_press_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=status_values,
+            unknown_mask=[value is None for value in status_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "team_press_status").entity_scope,
+        ),
+        "team_press_status_records": records,
+        "pressure_actor_count": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record.get("pressure_actor_count") for record in records],
+            unknown_mask=[record.get("pressure_actor_count") is None for record in records],
+            unit=Unit.COUNT,
+            entity_scope=catalog_output(node, "pressure_actor_count").entity_scope,
+        ),
+        "pressure_actor_count_records": records,
+        "pressure_angle_spread_degrees": FrameSignal(
+            frame_ids=frame_ids,
+            values=[record.get("pressure_angle_spread_degrees") for record in records],
+            unknown_mask=[record.get("pressure_angle_spread_degrees") is None for record in records],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "pressure_angle_spread_degrees").entity_scope,
+        ),
+        "pressure_angle_spread_degrees_records": records,
+    }
+
+
 def pressure_on_carrier_anchor_record(
     *,
     state: PeriodState,
@@ -8116,6 +8189,238 @@ def pressure_on_carrier_anchor_record(
         "lookback_seconds": lookback_seconds,
         **evidence,
     }
+
+
+def team_press_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    carrier_id_field: str,
+    maximum_press_distance_m: float,
+    minimum_closing_speed_mps: float,
+    maximum_approach_angle_degrees: float,
+    minimum_pressing_defenders: int,
+    minimum_angle_spread_degrees: float,
+    minimum_observed_defenders: int,
+    lookback_seconds: float,
+    known_outfield_ids: set[str],
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    press_frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or press_frame_id is None:
+        return None
+    carrier_id = str(anchor.get(carrier_id_field) or "")
+    evidence = team_press_evidence_at_frame(
+        state=state,
+        frame_id=press_frame_id,
+        carrier_id=carrier_id,
+        known_outfield_ids=known_outfield_ids,
+        maximum_press_distance_m=maximum_press_distance_m,
+        minimum_closing_speed_mps=minimum_closing_speed_mps,
+        maximum_approach_angle_degrees=maximum_approach_angle_degrees,
+        minimum_pressing_defenders=minimum_pressing_defenders,
+        minimum_angle_spread_degrees=minimum_angle_spread_degrees,
+        minimum_observed_defenders=minimum_observed_defenders,
+        lookback_seconds=lookback_seconds,
+    )
+    return {
+        **anchor,
+        "match_id": state.match_id,
+        "period": state.period,
+        "anchor_id": str(anchor.get("anchor_id")),
+        "anchor_frame_id": anchor_frame_id,
+        "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+        "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+        "entity_refs": list(anchor.get("entity_refs") or []),
+        "team_press_frame_field": frame_field,
+        "team_press_frame_id": press_frame_id,
+        "carrier_id_field": carrier_id_field,
+        "carrier_id": carrier_id or None,
+        "maximum_press_distance_m": round(float(maximum_press_distance_m), 3),
+        "minimum_closing_speed_mps": round(float(minimum_closing_speed_mps), 3),
+        "maximum_approach_angle_degrees": round(float(maximum_approach_angle_degrees), 3),
+        "minimum_pressing_defenders": int(minimum_pressing_defenders),
+        "minimum_angle_spread_degrees": round(float(minimum_angle_spread_degrees), 3),
+        "minimum_observed_defenders": int(minimum_observed_defenders),
+        "lookback_seconds": round(float(lookback_seconds), 3),
+        **evidence,
+    }
+
+
+def team_press_evidence_at_frame(
+    *,
+    state: PeriodState,
+    frame_id: int,
+    carrier_id: str,
+    known_outfield_ids: set[str],
+    maximum_press_distance_m: float,
+    minimum_closing_speed_mps: float,
+    maximum_approach_angle_degrees: float,
+    minimum_pressing_defenders: int,
+    minimum_angle_spread_degrees: float,
+    minimum_observed_defenders: int,
+    lookback_seconds: float,
+) -> dict[str, Any]:
+    model = "multi_defender_pressure_geometry_v0_1"
+    claim_boundary = (
+        "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordination intent, "
+        "defensive scheme, causation, pressure quality, or optimality claim."
+    )
+    base = {
+        "team_press_status": "UNKNOWN",
+        "team_press_reason": "team_press_evidence_missing",
+        "pressure_actor_ids": [],
+        "pressure_actor_count": None,
+        "nearby_defender_ids": [],
+        "nearby_defender_count": None,
+        "observed_defender_count": 0,
+        "candidate_defender_ids": sorted(str(item) for item in known_outfield_ids),
+        "missing_defender_ids": [],
+        "pressure_angle_spread_degrees": None,
+        "pressure_actor_evidence": [],
+        "carrier_point": None,
+        "coverage_status": "UNKNOWN",
+        "team_press_model": model,
+        "team_press_claim_boundary": claim_boundary,
+    }
+    carrier_point = tracked_point_at_frame(state, frame_id, carrier_id)
+    if not carrier_id or carrier_point is None:
+        return {**base, "team_press_reason": "carrier_tracking_missing"}
+    defenders = [
+        record
+        for record in player_records_at_frame_for_team(state, frame_id, state.defending_team_role)
+        if record["player_id"] in known_outfield_ids
+        and record.get("x_m") is not None
+        and record.get("y_m") is not None
+    ]
+    observed_ids = {str(record["player_id"]) for record in defenders}
+    missing_ids = sorted(str(player_id) for player_id in known_outfield_ids if str(player_id) not in observed_ids)
+    if len(defenders) < max(1, int(minimum_observed_defenders)):
+        return {
+            **base,
+            "team_press_reason": "defender_tracking_missing",
+            "observed_defender_count": len(defenders),
+            "missing_defender_ids": missing_ids,
+            "carrier_point": point_from_xy(carrier_point[0], carrier_point[1]),
+        }
+
+    lookback_frames = max(1, int(math.ceil(max(lookback_seconds, 0.04) * FRAME_RATE_HZ - 1e-9)))
+    previous_frame_id = int(frame_id) - lookback_frames
+    carrier_previous = tracked_point_at_frame(state, previous_frame_id, carrier_id)
+    if carrier_previous is None:
+        return {
+            **base,
+            "team_press_reason": "carrier_lookback_tracking_missing",
+            "observed_defender_count": len(defenders),
+            "missing_defender_ids": missing_ids,
+            "carrier_point": point_from_xy(carrier_point[0], carrier_point[1]),
+        }
+
+    dt_seconds = lookback_frames / FRAME_RATE_HZ
+    all_actor_evidence: list[dict[str, Any]] = []
+    nearby: list[dict[str, Any]] = []
+    pressing: list[dict[str, Any]] = []
+    for defender in defenders:
+        defender_id = str(defender["player_id"])
+        defender_point = (float(defender["x_m"]), float(defender["y_m"]))
+        current_distance = math.dist(carrier_point, defender_point)
+        bearing = math.degrees(math.atan2(defender_point[1] - carrier_point[1], defender_point[0] - carrier_point[0]))
+        bearing = (bearing + 360.0) % 360.0
+        defender_previous = tracked_point_at_frame(state, previous_frame_id, defender_id)
+        candidate = {
+            "player_id": defender_id,
+            "distance_m": round(float(current_distance), 3),
+            "bearing_degrees": round(float(bearing), 3),
+            "closing_speed_mps": None,
+            "approach_angle_degrees": None,
+            "defender_point": point_from_xy(defender_point[0], defender_point[1]),
+            "kinematic_status": "UNKNOWN",
+        }
+        if defender_previous is not None:
+            previous_distance = math.dist(carrier_previous, defender_previous)
+            closing_speed = (previous_distance - current_distance) / dt_seconds
+            defender_vx = (defender_point[0] - defender_previous[0]) / dt_seconds
+            defender_vy = (defender_point[1] - defender_previous[1]) / dt_seconds
+            to_carrier_x = carrier_point[0] - defender_point[0]
+            to_carrier_y = carrier_point[1] - defender_point[1]
+            approach_angle = vector_angle_degrees((defender_vx, defender_vy), (to_carrier_x, to_carrier_y))
+            candidate = {
+                **candidate,
+                "previous_distance_m": round(float(previous_distance), 3),
+                "closing_speed_mps": round(float(closing_speed), 3),
+                "approach_angle_degrees": None if approach_angle is None else round(float(approach_angle), 3),
+                "previous_defender_point": point_from_xy(defender_previous[0], defender_previous[1]),
+                "kinematic_status": "PASS" if approach_angle is not None else "UNKNOWN",
+            }
+        all_actor_evidence.append(candidate)
+        if current_distance <= float(maximum_press_distance_m):
+            nearby.append(candidate)
+            if (
+                candidate["kinematic_status"] == "PASS"
+                and float(candidate["closing_speed_mps"]) >= float(minimum_closing_speed_mps)
+                and float(candidate["approach_angle_degrees"]) <= float(maximum_approach_angle_degrees)
+            ):
+                pressing.append(candidate)
+
+    nearby.sort(key=lambda item: (float(item["distance_m"]), str(item["player_id"])))
+    pressing.sort(key=lambda item: (float(item["distance_m"]), str(item["player_id"])))
+    minimum_pressers = max(1, int(minimum_pressing_defenders))
+    if len(nearby) < minimum_pressers:
+        reason = "nearby_defender_count_below_threshold"
+        status = "FAIL"
+        angle_spread = None
+    elif len([item for item in nearby if item["kinematic_status"] == "PASS"]) < minimum_pressers:
+        return {
+            **base,
+            "team_press_reason": "pressing_kinematic_tracking_missing",
+            "nearby_defender_ids": [str(item["player_id"]) for item in nearby],
+            "nearby_defender_count": len(nearby),
+            "observed_defender_count": len(defenders),
+            "missing_defender_ids": missing_ids,
+            "pressure_actor_evidence": nearby[:8],
+            "carrier_point": point_from_xy(carrier_point[0], carrier_point[1]),
+        }
+    else:
+        angle_spread = pressure_angle_spread([float(item["bearing_degrees"]) for item in pressing])
+        count_ok = len(pressing) >= minimum_pressers
+        spread_ok = angle_spread is not None and angle_spread >= float(minimum_angle_spread_degrees)
+        status = "PASS" if count_ok and spread_ok else "FAIL"
+        failed = []
+        if not count_ok:
+            failed.append("pressure_actor_count")
+        if not spread_ok:
+            failed.append("angle_spread")
+        reason = "multi_defender_pressure_observed" if status == "PASS" else "team_press_threshold_not_met:" + ",".join(failed)
+
+    return {
+        **base,
+        "team_press_status": status,
+        "team_press_reason": reason,
+        "pressure_actor_ids": [str(item["player_id"]) for item in pressing],
+        "pressure_actor_count": len(pressing),
+        "nearby_defender_ids": [str(item["player_id"]) for item in nearby],
+        "nearby_defender_count": len(nearby),
+        "observed_defender_count": len(defenders),
+        "missing_defender_ids": missing_ids,
+        "pressure_angle_spread_degrees": None if angle_spread is None else round(float(angle_spread), 3),
+        "pressure_actor_evidence": pressing[:8],
+        "nearby_defender_evidence": nearby[:8],
+        "carrier_point": point_from_xy(carrier_point[0], carrier_point[1]),
+        "coverage_status": "OBSERVED_ONLY" if missing_ids else "PASS",
+    }
+
+
+def pressure_angle_spread(bearings: list[float]) -> float | None:
+    if len(bearings) < 2:
+        return None
+    max_gap = 0.0
+    values = [float(value) % 360.0 for value in bearings]
+    for index, left in enumerate(values):
+        for right in values[index + 1 :]:
+            delta = abs(left - right) % 360.0
+            max_gap = max(max_gap, min(delta, 360.0 - delta))
+    return float(max_gap)
 
 
 def pressure_evidence_at_frame(

@@ -59,7 +59,7 @@ CROSS_CONCEPT_REUSE_REQUIRED_RULES = {
     "meaning.kinematics.acceleration",
     "meaning.cover_shadow.observed_lane_geometry",
     "meaning.space.open_region",
-    "meaning.missing_primitive.team_press",
+    "meaning.team_press.observed_multi_defender_pressure",
     "meaning.relation.marking_proximity",
     "meaning.movement.off_ball_run",
     "meaning.run_type.observed_path",
@@ -572,13 +572,16 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
 
     if is_team_press_meaning(lower):
         span = first_span(text, [r"team press", r"pressing trap", r"pressing structure", r"collective press", r"counterpress(?:ing)?"]) or whole_span(text)
-        add_missing_primitive_element(
-            builder,
-            "scl1_team_press_status",
-            span,
-            "meaning.missing_primitive.team_press",
-            "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
-        )
+        add_team_press_element(builder, span)
+        if is_pressing_trap_or_coordination_meaning(lower):
+            trap_span = first_span(text, [r"pressing trap", r"trap", r"trigger", r"intended", r"constrain", r"coordination", r"coordinated"]) or span
+            add_missing_primitive_element(
+                builder,
+                "scl1_pressing_trap_status",
+                trap_span,
+                "meaning.missing_primitive.pressing_trap_or_coordination",
+                "Requires press trap, trigger-plan, coordination, or intent evidence; observed multi-defender pressure geometry is not treated as a trap or coordinated scheme.",
+            )
         matched = True
 
     if is_open_space_region_meaning(lower) or is_space_creation_or_value_meaning(lower):
@@ -904,6 +907,38 @@ def add_cover_shadow_element(builder: ContractBuilder, span: Span) -> None:
     builder.add_status("passing_lane_denial_status", "PASS", span, rule_id)
     builder.add_claim_part(
         "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim.",
+        span,
+        rule_id,
+    )
+
+
+def add_team_press_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.team_press.observed_multi_defender_pressure"
+    for field_name in [
+        "team_press_status",
+        "team_press_reason",
+        "team_press_frame_id",
+        "carrier_id",
+        "pressure_actor_ids",
+        "pressure_actor_count",
+        "nearby_defender_ids",
+        "nearby_defender_count",
+        "observed_defender_count",
+        "pressure_angle_spread_degrees",
+        "pressure_actor_evidence",
+        "maximum_press_distance_m",
+        "minimum_closing_speed_mps",
+        "maximum_approach_angle_degrees",
+        "minimum_pressing_defenders",
+        "minimum_angle_spread_degrees",
+        "coverage_status",
+        "team_press_model",
+        "team_press_claim_boundary",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("team_press_status", "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim.",
         span,
         rule_id,
     )
@@ -1235,6 +1270,22 @@ def is_team_press_meaning(lower: str) -> bool:
             "collective press",
             "counterpress",
             "counterpressing",
+        )
+    )
+
+
+def is_pressing_trap_or_coordination_meaning(lower: str) -> bool:
+    return any(
+        phrase in lower
+        for phrase in (
+            "pressing trap",
+            "trap",
+            "trigger",
+            "intended",
+            "constrain",
+            "coordination",
+            "coordinated",
+            "scheme",
         )
     )
 

@@ -1737,14 +1737,32 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        "claim_boundary": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_team_press_status"
+          "carrier_id",
+          "coverage_status",
+          "maximum_approach_angle_degrees",
+          "maximum_press_distance_m",
+          "minimum_angle_spread_degrees",
+          "minimum_closing_speed_mps",
+          "minimum_pressing_defenders",
+          "nearby_defender_count",
+          "nearby_defender_ids",
+          "observed_defender_count",
+          "pressure_actor_count",
+          "pressure_actor_evidence",
+          "pressure_actor_ids",
+          "pressure_angle_spread_degrees",
+          "team_press_claim_boundary",
+          "team_press_frame_id",
+          "team_press_model",
+          "team_press_reason",
+          "team_press_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_team_press_status",
+            "field": "team_press_status",
             "required_value": "PASS"
           }
         ]
@@ -1756,14 +1774,32 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        "claim_boundary": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_team_press_status"
+          "carrier_id",
+          "coverage_status",
+          "maximum_approach_angle_degrees",
+          "maximum_press_distance_m",
+          "minimum_angle_spread_degrees",
+          "minimum_closing_speed_mps",
+          "minimum_pressing_defenders",
+          "nearby_defender_count",
+          "nearby_defender_ids",
+          "observed_defender_count",
+          "pressure_actor_count",
+          "pressure_actor_evidence",
+          "pressure_actor_ids",
+          "pressure_angle_spread_degrees",
+          "team_press_claim_boundary",
+          "team_press_frame_id",
+          "team_press_model",
+          "team_press_reason",
+          "team_press_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_team_press_status",
+            "field": "team_press_status",
             "required_value": "PASS"
           }
         ]
@@ -1775,14 +1811,37 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        "claim_boundary": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim. Requires press trap, trigger-plan, coordination, or intent evidence; observed multi-defender pressure geometry is not treated as a trap or coordinated scheme.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_team_press_status"
+          "carrier_id",
+          "coverage_status",
+          "maximum_approach_angle_degrees",
+          "maximum_press_distance_m",
+          "minimum_angle_spread_degrees",
+          "minimum_closing_speed_mps",
+          "minimum_pressing_defenders",
+          "nearby_defender_count",
+          "nearby_defender_ids",
+          "observed_defender_count",
+          "pressure_actor_count",
+          "pressure_actor_evidence",
+          "pressure_actor_ids",
+          "pressure_angle_spread_degrees",
+          "scl1_pressing_trap_status",
+          "team_press_claim_boundary",
+          "team_press_frame_id",
+          "team_press_model",
+          "team_press_reason",
+          "team_press_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_team_press_status",
+            "field": "scl1_pressing_trap_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "team_press_status",
             "required_value": "PASS"
           }
         ]
@@ -1794,14 +1853,37 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+        "claim_boundary": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim. Requires press trap, trigger-plan, coordination, or intent evidence; observed multi-defender pressure geometry is not treated as a trap or coordinated scheme.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_team_press_status"
+          "carrier_id",
+          "coverage_status",
+          "maximum_approach_angle_degrees",
+          "maximum_press_distance_m",
+          "minimum_angle_spread_degrees",
+          "minimum_closing_speed_mps",
+          "minimum_pressing_defenders",
+          "nearby_defender_count",
+          "nearby_defender_ids",
+          "observed_defender_count",
+          "pressure_actor_count",
+          "pressure_actor_evidence",
+          "pressure_actor_ids",
+          "pressure_angle_spread_degrees",
+          "scl1_pressing_trap_status",
+          "team_press_claim_boundary",
+          "team_press_frame_id",
+          "team_press_model",
+          "team_press_reason",
+          "team_press_status"
         ],
         "status_semantics": [
           {
-            "field": "scl1_team_press_status",
+            "field": "scl1_pressing_trap_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "team_press_status",
             "required_value": "PASS"
           }
         ]

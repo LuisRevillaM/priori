@@ -4516,15 +4516,15 @@
  {
   "concept": "multi_angle_pressure_candidate",
   "family": "Pressure, marking, cover, denial, and collective defending",
-  "classification": "missing_primitive",
-  "justification": "Pressure from multiple defenders at multiple angles is a team/multi-actor press primitive; pressure_on_carrier is single-carrier (single nearest defender) only.",
-  "required_missing_capability": "team-press",
-  "closest_supported_substitute": "pressure_on_carrier (single defender only)",
+  "classification": "supported",
+  "justification": "team_press emits observed multi-defender pressure geometry around a carrier, including pressure actor count and angular spread under frozen distance/closing/approach thresholds. This supports observed multi-angle pressure, not trap intent, coordination, trigger plans, or pressure quality.",
+  "required_missing_capability": "",
+  "closest_supported_substitute": "team_press.team_press_status + pressure_angle_spread_degrees",
   "composition_constraint_needed": false,
   "priority_unlock": "MED",
   "composition_constraint_note": "",
   "composition_maturity": "handwired",
-  "composition_maturity_applicable": false
+  "composition_maturity_applicable": true
  },
  {
   "concept": "nearest_defender_relation",
@@ -4581,10 +4581,10 @@
  {
   "concept": "press_trap_candidate",
   "family": "Pressure, marking, cover, denial, and collective defending",
-  "classification": "missing_primitive",
-  "justification": "Per calibration, press trap / pressing trigger = missing_primitive (team-level press primitive); pressure_on_carrier is single-carrier only and cannot express a collective trap.",
-  "required_missing_capability": "team-press",
-  "closest_supported_substitute": "pressure_on_carrier (single carrier only)",
+  "classification": "partial_with_typed_gap",
+  "justification": "team_press supports observed multi-defender pressure geometry, but a pressing trap/trigger claims coordinated design or intent around a target area. That requires a trap/trigger definition and evidence beyond observed pressure actors.",
+  "required_missing_capability": "pressing_trap_or_trigger_definition",
+  "closest_supported_substitute": "team_press observed multi-defender pressure geometry",
   "composition_constraint_needed": false,
   "priority_unlock": "HIGH",
   "composition_constraint_note": "",
@@ -4607,15 +4607,15 @@
  {
   "concept": "pressure_actor_set",
   "family": "Pressure, marking, cover, denial, and collective defending",
-  "classification": "missing_primitive",
-  "justification": "The set of defenders applying pressure is a multi-actor/team press construct; pressure_on_carrier resolves only the single nearest defender, not a pressure actor set.",
-  "required_missing_capability": "team-press",
-  "closest_supported_substitute": "pressure_on_carrier (single actor)",
+  "classification": "supported",
+  "justification": "team_press emits pressure_actor_ids and pressure_actor_count for observed defenders satisfying frozen multi-defender pressure criteria around the carrier.",
+  "required_missing_capability": "",
+  "closest_supported_substitute": "team_press.pressure_actor_ids",
   "composition_constraint_needed": false,
   "priority_unlock": "MED",
   "composition_constraint_note": "",
   "composition_maturity": "handwired",
-  "composition_maturity_applicable": false
+  "composition_maturity_applicable": true
  },
  {
   "concept": "pressure_direction",
@@ -4633,15 +4633,15 @@
  {
   "concept": "pressure_diversity",
   "family": "Pressure, marking, cover, denial, and collective defending",
-  "classification": "missing_primitive",
-  "justification": "Diversity of pressure (multiple defenders from multiple angles) is a team/multi-actor press property; pressure_on_carrier is single-carrier only.",
-  "required_missing_capability": "team-press",
-  "closest_supported_substitute": "pressure_on_carrier (single actor)",
+  "classification": "supported",
+  "justification": "team_press emits observed pressure_actor_count and pressure_angle_spread_degrees, which supports geometric pressure diversity across multiple defenders without inferring coordination or intent.",
+  "required_missing_capability": "",
+  "closest_supported_substitute": "team_press.pressure_actor_count + pressure_angle_spread_degrees",
   "composition_constraint_needed": false,
   "priority_unlock": "LOW",
   "composition_constraint_note": "",
   "composition_maturity": "handwired",
-  "composition_maturity_applicable": false
+  "composition_maturity_applicable": true
  },
  {
   "concept": "pressure_intensity",
@@ -4698,10 +4698,10 @@
  {
   "concept": "team_press_synchrony",
   "family": "Pressure, marking, cover, denial, and collective defending",
-  "classification": "missing_primitive",
-  "justification": "Per calibration, collective press synchrony / team press shape = missing_primitive (team-level press primitive); pressure_on_carrier is single-carrier only.",
-  "required_missing_capability": "team-press",
-  "closest_supported_substitute": "pressure_on_carrier (single carrier) + team_compactness",
+  "classification": "partial_with_typed_gap",
+  "justification": "team_press supports observed multi-defender pressure geometry at an anchor frame, but synchrony requires temporal coordination over a window, not just same-frame pressure actors.",
+  "required_missing_capability": "team_press_synchrony_window",
+  "closest_supported_substitute": "team_press + team_compactness",
   "composition_constraint_needed": false,
   "priority_unlock": "HIGH",
   "composition_constraint_note": "",

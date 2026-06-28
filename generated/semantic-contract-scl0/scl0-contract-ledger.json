@@ -8564,34 +8564,196 @@
     "case_id": "scl1_025",
     "concept": "team_press_candidate",
     "contract": {
-      "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+      "claim_boundary": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_team_press_status"
+        "carrier_id",
+        "coverage_status",
+        "maximum_approach_angle_degrees",
+        "maximum_press_distance_m",
+        "minimum_angle_spread_degrees",
+        "minimum_closing_speed_mps",
+        "minimum_pressing_defenders",
+        "nearby_defender_count",
+        "nearby_defender_ids",
+        "observed_defender_count",
+        "pressure_actor_count",
+        "pressure_actor_evidence",
+        "pressure_actor_ids",
+        "pressure_angle_spread_degrees",
+        "team_press_claim_boundary",
+        "team_press_frame_id",
+        "team_press_model",
+        "team_press_reason",
+        "team_press_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_team_press_status",
+          "field": "team_press_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "contract_hash": "367e7690dcff30602e25a3055876d8810f3607be5a02a2b6a3b98e42f82ab007",
     "definition_text": "Team press candidate means several defenders act as a collective press around the ball.",
     "opaque_search_concept": "scl1_025",
     "target_id": "scl1_025_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_team_press_status",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "contract_path": "required_evidence.team_press_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 10,
         "source_phrase": "Team press",
         "source_start": 0,
-        "value": "scl1_team_press_status"
+        "value": "team_press_status"
       },
       {
-        "contract_path": "status_semantics.scl1_team_press_status",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "contract_path": "required_evidence.team_press_reason",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "team_press_reason"
+      },
+      {
+        "contract_path": "required_evidence.team_press_frame_id",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "team_press_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_ids",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "pressure_actor_ids"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "pressure_actor_count"
+      },
+      {
+        "contract_path": "required_evidence.nearby_defender_ids",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "nearby_defender_ids"
+      },
+      {
+        "contract_path": "required_evidence.nearby_defender_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "nearby_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.observed_defender_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "observed_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.pressure_angle_spread_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "pressure_angle_spread_degrees"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_evidence",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "pressure_actor_evidence"
+      },
+      {
+        "contract_path": "required_evidence.maximum_press_distance_m",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "maximum_press_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_closing_speed_mps",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "minimum_closing_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.maximum_approach_angle_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "maximum_approach_angle_degrees"
+      },
+      {
+        "contract_path": "required_evidence.minimum_pressing_defenders",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "minimum_pressing_defenders"
+      },
+      {
+        "contract_path": "required_evidence.minimum_angle_spread_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "minimum_angle_spread_degrees"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.team_press_model",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "team_press_model"
+      },
+      {
+        "contract_path": "required_evidence.team_press_claim_boundary",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 10,
+        "source_phrase": "Team press",
+        "source_start": 0,
+        "value": "team_press_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.team_press_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 10,
         "source_phrase": "Team press",
         "source_start": 0,
@@ -8599,11 +8761,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 10,
         "source_phrase": "Team press",
         "source_start": 0,
-        "value": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press."
+        "value": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim."
       }
     ]
   },
@@ -8612,34 +8774,196 @@
     "case_id": "scl1_025",
     "concept": "team_press_candidate",
     "contract": {
-      "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+      "claim_boundary": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_team_press_status"
+        "carrier_id",
+        "coverage_status",
+        "maximum_approach_angle_degrees",
+        "maximum_press_distance_m",
+        "minimum_angle_spread_degrees",
+        "minimum_closing_speed_mps",
+        "minimum_pressing_defenders",
+        "nearby_defender_count",
+        "nearby_defender_ids",
+        "observed_defender_count",
+        "pressure_actor_count",
+        "pressure_actor_evidence",
+        "pressure_actor_ids",
+        "pressure_angle_spread_degrees",
+        "team_press_claim_boundary",
+        "team_press_frame_id",
+        "team_press_model",
+        "team_press_reason",
+        "team_press_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_team_press_status",
+          "field": "team_press_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "contract_hash": "367e7690dcff30602e25a3055876d8810f3607be5a02a2b6a3b98e42f82ab007",
     "definition_text": "A team press is a collective defensive pressing structure rather than one nearest defender.",
     "opaque_search_concept": "scl1_025",
     "target_id": "scl1_025_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_team_press_status",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "contract_path": "required_evidence.team_press_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 12,
         "source_phrase": "team press",
         "source_start": 2,
-        "value": "scl1_team_press_status"
+        "value": "team_press_status"
       },
       {
-        "contract_path": "status_semantics.scl1_team_press_status",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "contract_path": "required_evidence.team_press_reason",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "team_press_reason"
+      },
+      {
+        "contract_path": "required_evidence.team_press_frame_id",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "team_press_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_ids",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "pressure_actor_ids"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "pressure_actor_count"
+      },
+      {
+        "contract_path": "required_evidence.nearby_defender_ids",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "nearby_defender_ids"
+      },
+      {
+        "contract_path": "required_evidence.nearby_defender_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "nearby_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.observed_defender_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "observed_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.pressure_angle_spread_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "pressure_angle_spread_degrees"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_evidence",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "pressure_actor_evidence"
+      },
+      {
+        "contract_path": "required_evidence.maximum_press_distance_m",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "maximum_press_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_closing_speed_mps",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "minimum_closing_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.maximum_approach_angle_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "maximum_approach_angle_degrees"
+      },
+      {
+        "contract_path": "required_evidence.minimum_pressing_defenders",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "minimum_pressing_defenders"
+      },
+      {
+        "contract_path": "required_evidence.minimum_angle_spread_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "minimum_angle_spread_degrees"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.team_press_model",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "team_press_model"
+      },
+      {
+        "contract_path": "required_evidence.team_press_claim_boundary",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 12,
+        "source_phrase": "team press",
+        "source_start": 2,
+        "value": "team_press_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.team_press_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 12,
         "source_phrase": "team press",
         "source_start": 2,
@@ -8647,11 +8971,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 12,
         "source_phrase": "team press",
         "source_start": 2,
-        "value": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press."
+        "value": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim."
       }
     ]
   },
@@ -8660,34 +8984,201 @@
     "case_id": "scl1_026",
     "concept": "pressing_trap_candidate",
     "contract": {
-      "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+      "claim_boundary": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim. Requires press trap, trigger-plan, coordination, or intent evidence; observed multi-defender pressure geometry is not treated as a trap or coordinated scheme.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_team_press_status"
+        "carrier_id",
+        "coverage_status",
+        "maximum_approach_angle_degrees",
+        "maximum_press_distance_m",
+        "minimum_angle_spread_degrees",
+        "minimum_closing_speed_mps",
+        "minimum_pressing_defenders",
+        "nearby_defender_count",
+        "nearby_defender_ids",
+        "observed_defender_count",
+        "pressure_actor_count",
+        "pressure_actor_evidence",
+        "pressure_actor_ids",
+        "pressure_angle_spread_degrees",
+        "scl1_pressing_trap_status",
+        "team_press_claim_boundary",
+        "team_press_frame_id",
+        "team_press_model",
+        "team_press_reason",
+        "team_press_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_team_press_status",
+          "field": "scl1_pressing_trap_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "team_press_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "contract_hash": "afa83ff77db0f65eab1032b3cca32710943872163c032ba7c08937da25850f1c",
     "definition_text": "Pressing trap candidate means the defending team forms a pressing trap around a target area.",
     "opaque_search_concept": "scl1_026",
     "target_id": "scl1_026_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_team_press_status",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "contract_path": "required_evidence.team_press_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 13,
         "source_phrase": "Pressing trap",
         "source_start": 0,
-        "value": "scl1_team_press_status"
+        "value": "team_press_status"
       },
       {
-        "contract_path": "status_semantics.scl1_team_press_status",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "contract_path": "required_evidence.team_press_reason",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "team_press_reason"
+      },
+      {
+        "contract_path": "required_evidence.team_press_frame_id",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "team_press_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_ids",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "pressure_actor_ids"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "pressure_actor_count"
+      },
+      {
+        "contract_path": "required_evidence.nearby_defender_ids",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "nearby_defender_ids"
+      },
+      {
+        "contract_path": "required_evidence.nearby_defender_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "nearby_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.observed_defender_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "observed_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.pressure_angle_spread_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "pressure_angle_spread_degrees"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_evidence",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "pressure_actor_evidence"
+      },
+      {
+        "contract_path": "required_evidence.maximum_press_distance_m",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "maximum_press_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_closing_speed_mps",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "minimum_closing_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.maximum_approach_angle_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "maximum_approach_angle_degrees"
+      },
+      {
+        "contract_path": "required_evidence.minimum_pressing_defenders",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "minimum_pressing_defenders"
+      },
+      {
+        "contract_path": "required_evidence.minimum_angle_spread_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "minimum_angle_spread_degrees"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.team_press_model",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "team_press_model"
+      },
+      {
+        "contract_path": "required_evidence.team_press_claim_boundary",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "team_press_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.team_press_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 13,
         "source_phrase": "Pressing trap",
         "source_start": 0,
@@ -8695,11 +9186,35 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 13,
         "source_phrase": "Pressing trap",
         "source_start": 0,
-        "value": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press."
+        "value": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.scl1_pressing_trap_status",
+        "rule_id": "meaning.missing_primitive.pressing_trap_or_coordination",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "scl1_pressing_trap_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_pressing_trap_status",
+        "rule_id": "meaning.missing_primitive.pressing_trap_or_coordination",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.pressing_trap_or_coordination",
+        "source_end": 13,
+        "source_phrase": "Pressing trap",
+        "source_start": 0,
+        "value": "Requires press trap, trigger-plan, coordination, or intent evidence; observed multi-defender pressure geometry is not treated as a trap or coordinated scheme."
       }
     ]
   },
@@ -8708,34 +9223,201 @@
     "case_id": "scl1_026",
     "concept": "pressing_trap_candidate",
     "contract": {
-      "claim_boundary": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press.",
+      "claim_boundary": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim. Requires press trap, trigger-plan, coordination, or intent evidence; observed multi-defender pressure geometry is not treated as a trap or coordinated scheme.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_team_press_status"
+        "carrier_id",
+        "coverage_status",
+        "maximum_approach_angle_degrees",
+        "maximum_press_distance_m",
+        "minimum_angle_spread_degrees",
+        "minimum_closing_speed_mps",
+        "minimum_pressing_defenders",
+        "nearby_defender_count",
+        "nearby_defender_ids",
+        "observed_defender_count",
+        "pressure_actor_count",
+        "pressure_actor_evidence",
+        "pressure_actor_ids",
+        "pressure_angle_spread_degrees",
+        "scl1_pressing_trap_status",
+        "team_press_claim_boundary",
+        "team_press_frame_id",
+        "team_press_model",
+        "team_press_reason",
+        "team_press_status"
       ],
       "status_semantics": [
         {
-          "field": "scl1_team_press_status",
+          "field": "scl1_pressing_trap_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "team_press_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "e01b387410e057d123a4397a843e3a3d644b9604735186df3baaed540eb20d37",
+    "contract_hash": "afa83ff77db0f65eab1032b3cca32710943872163c032ba7c08937da25850f1c",
     "definition_text": "A pressing trap is a team press structure intended to constrain the ball carrier.",
     "opaque_search_concept": "scl1_026",
     "target_id": "scl1_026_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_team_press_status",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "contract_path": "required_evidence.team_press_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 31,
         "source_phrase": "team press",
         "source_start": 21,
-        "value": "scl1_team_press_status"
+        "value": "team_press_status"
       },
       {
-        "contract_path": "status_semantics.scl1_team_press_status",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "contract_path": "required_evidence.team_press_reason",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "team_press_reason"
+      },
+      {
+        "contract_path": "required_evidence.team_press_frame_id",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "team_press_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_ids",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "pressure_actor_ids"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "pressure_actor_count"
+      },
+      {
+        "contract_path": "required_evidence.nearby_defender_ids",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "nearby_defender_ids"
+      },
+      {
+        "contract_path": "required_evidence.nearby_defender_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "nearby_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.observed_defender_count",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "observed_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.pressure_angle_spread_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "pressure_angle_spread_degrees"
+      },
+      {
+        "contract_path": "required_evidence.pressure_actor_evidence",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "pressure_actor_evidence"
+      },
+      {
+        "contract_path": "required_evidence.maximum_press_distance_m",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "maximum_press_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_closing_speed_mps",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "minimum_closing_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.maximum_approach_angle_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "maximum_approach_angle_degrees"
+      },
+      {
+        "contract_path": "required_evidence.minimum_pressing_defenders",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "minimum_pressing_defenders"
+      },
+      {
+        "contract_path": "required_evidence.minimum_angle_spread_degrees",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "minimum_angle_spread_degrees"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.team_press_model",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "team_press_model"
+      },
+      {
+        "contract_path": "required_evidence.team_press_claim_boundary",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
+        "source_end": 31,
+        "source_phrase": "team press",
+        "source_start": 21,
+        "value": "team_press_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.team_press_status",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 31,
         "source_phrase": "team press",
         "source_start": 21,
@@ -8743,11 +9425,35 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.team_press",
+        "rule_id": "meaning.team_press.observed_multi_defender_pressure",
         "source_end": 31,
         "source_phrase": "team press",
         "source_start": 21,
-        "value": "Requires collective team-press structure; nearest-defender pressure is not treated as a team press."
+        "value": "Observed multi-defender pressure geometry only; no press trap, trigger plan, coordinated scheme, defensive communication, intent, causation, pressure quality, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.scl1_pressing_trap_status",
+        "rule_id": "meaning.missing_primitive.pressing_trap_or_coordination",
+        "source_end": 15,
+        "source_phrase": "pressing trap",
+        "source_start": 2,
+        "value": "scl1_pressing_trap_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_pressing_trap_status",
+        "rule_id": "meaning.missing_primitive.pressing_trap_or_coordination",
+        "source_end": 15,
+        "source_phrase": "pressing trap",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.pressing_trap_or_coordination",
+        "source_end": 15,
+        "source_phrase": "pressing trap",
+        "source_start": 2,
+        "value": "Requires press trap, trigger-plan, coordination, or intent evidence; observed multi-defender pressure geometry is not treated as a trap or coordinated scheme."
       }
     ]
   },

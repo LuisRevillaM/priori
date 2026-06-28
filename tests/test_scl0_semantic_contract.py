@@ -96,7 +96,6 @@ class Scl0SemanticContractTests(unittest.TestCase):
     def test_missing_substrate_elements_gap_without_substitutes(self) -> None:
         for text, evidence in [
             ("A corner variant is a set piece routine pattern used from the corner restart.", "scl1_set_piece_routine_status"),
-            ("A team press is a collective defensive pressing structure rather than one nearest defender.", "scl1_team_press_status"),
         ]:
             contract, _ = generate_contract_from_meaning(text)
             self.assertIn(evidence, contract["required_evidence"])
@@ -133,6 +132,35 @@ class Scl0SemanticContractTests(unittest.TestCase):
             "PASS",
         )
         self.assertIn("meaning.cover_shadow.observed_lane_geometry", trace_rules)
+
+    def test_team_press_maps_to_observed_multi_defender_pressure(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "Team press candidate means several defenders act as a collective press around the ball."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("team_press_status", contract["required_evidence"])
+        self.assertIn("pressure_actor_ids", contract["required_evidence"])
+        self.assertIn("pressure_actor_count", contract["required_evidence"])
+        self.assertIn("pressure_angle_spread_degrees", contract["required_evidence"])
+        self.assertIn("team_press_claim_boundary", contract["required_evidence"])
+        self.assertEqual(
+            {item["field"]: item["required_value"] for item in contract["status_semantics"]}["team_press_status"],
+            "PASS",
+        )
+        self.assertNotIn("scl1_team_press_status", contract["required_evidence"])
+        self.assertIn("meaning.team_press.observed_multi_defender_pressure", trace_rules)
+
+    def test_pressing_trap_keeps_coordination_gap_on_top_of_team_press(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "A pressing trap is a team press structure intended to constrain the ball carrier."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("team_press_status", contract["required_evidence"])
+        self.assertIn("scl1_pressing_trap_status", contract["required_evidence"])
+        self.assertIn("meaning.team_press.observed_multi_defender_pressure", trace_rules)
+        self.assertIn("meaning.missing_primitive.pressing_trap_or_coordination", trace_rules)
 
     def test_open_space_region_maps_to_observed_geometry_not_value(self) -> None:
         contract, traces = generate_contract_from_meaning(

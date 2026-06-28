@@ -296,6 +296,10 @@ afl-space-region-generation-verify:
 afl-cover-shadow-verify:
 	$(PYTHON) -m tqe.verification.afl_cover_shadow
 
+.PHONY: afl-team-press-verify
+afl-team-press-verify:
+	$(PYTHON) -m tqe.verification.afl_team_press
+
 .PHONY: afl-substrate-q2-verify
 afl-substrate-q2-verify:
 	$(PYTHON) -m tqe.verification.afl_substrate_q2

@@ -1348,6 +1348,8 @@ def required_fields_for_input(entry: CatalogEntry, input_def: CatalogInput, targ
         return {"anchor_id", "anchor_frame_id"}
     if entry.name == "cover_shadow" and input_def.name == "anchors":
         return {"anchor_id", "anchor_frame_id", "receiver_id", "team_role"}
+    if entry.name == "team_press" and input_def.name == "anchors":
+        return {"anchor_id", "anchor_frame_id", "receiver_id", "team_role"}
     return field_dependencies_for_consumer(entry) or target_fields
 
 
@@ -1425,6 +1427,19 @@ def infer_parameters(
             "minimum_lane_length_m": number(5.0, "metre"),
             "minimum_observed_defenders": number(6.0, "count"),
         }
+    if entry.name == "team_press":
+        return {
+            "frame_field": enum("anchor_frame_id"),
+            "carrier_id_field": enum("receiver_id"),
+            "candidate_scope": enum("defending_outfield"),
+            "maximum_press_distance_m": number(7.0, "metre"),
+            "minimum_closing_speed_mps": number(0.0, "none"),
+            "maximum_approach_angle_degrees": number(135.0, "none"),
+            "minimum_pressing_defenders": number(2.0, "count"),
+            "minimum_angle_spread_degrees": number(30.0, "none"),
+            "minimum_observed_defenders": number(6.0, "count"),
+            "lookback_seconds": number(0.4, "second"),
+        }
     return {}
 
 
@@ -1442,6 +1457,8 @@ def field_dependencies_for_consumer(entry: CatalogEntry) -> set[str]:
     if entry.name == "space_region_generation":
         return {"anchor_id", "anchor_frame_id"}
     if entry.name == "cover_shadow":
+        return {"anchor_id", "anchor_frame_id", "receiver_id", "team_role"}
+    if entry.name == "team_press":
         return {"anchor_id", "anchor_frame_id", "receiver_id", "team_role"}
     dependencies: set[str] = set()
     for parameter in entry.parameters:
