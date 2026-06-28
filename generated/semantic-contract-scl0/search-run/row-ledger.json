@@ -13,10 +13,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 40,
+      "hits": 25,
       "local_hits": 14,
-      "misses": 30,
-      "shared_hits": 26
+      "misses": 45,
+      "shared_hits": 11
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -422,10 +422,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 20,
+      "hits": 32,
       "local_hits": 14,
-      "misses": 50,
-      "shared_hits": 6
+      "misses": 38,
+      "shared_hits": 18
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1253,10 +1253,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 47,
+      "hits": 44,
       "local_hits": 14,
-      "misses": 65,
-      "shared_hits": 33
+      "misses": 68,
+      "shared_hits": 30
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -1802,10 +1802,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 56,
+      "hits": 59,
       "local_hits": 14,
-      "misses": 56,
-      "shared_hits": 42
+      "misses": 53,
+      "shared_hits": 45
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2351,10 +2351,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 36,
+      "hits": 33,
       "local_hits": 14,
-      "misses": 34,
-      "shared_hits": 22
+      "misses": 37,
+      "shared_hits": 19
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -2875,10 +2875,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 31,
+      "hits": 32,
       "local_hits": 14,
-      "misses": 39,
-      "shared_hits": 17
+      "misses": 38,
+      "shared_hits": 18
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -3640,10 +3640,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 18,
+      "hits": 19,
       "local_hits": 0,
-      "misses": 38,
-      "shared_hits": 18
+      "misses": 37,
+      "shared_hits": 19
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -4461,10 +4461,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 0,
+      "hits": 1,
       "local_hits": 0,
-      "misses": 28,
-      "shared_hits": 0
+      "misses": 27,
+      "shared_hits": 1
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5383,10 +5383,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 42,
+      "hits": 43,
       "local_hits": 14,
-      "misses": 28,
-      "shared_hits": 28
+      "misses": 27,
+      "shared_hits": 29
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -5799,10 +5799,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 43,
+      "hits": 46,
       "local_hits": 14,
-      "misses": 27,
-      "shared_hits": 29
+      "misses": 24,
+      "shared_hits": 32
     },
     "execution_status": "pass",
     "failure_details": {},
@@ -6202,168 +6202,768 @@
     "terminal_provider": "join_episode_sets"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_014",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "missing_primitive",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "fields": [
-        "scl1_cover_shadow_status"
-      ]
+    "document_hash": "1a2849f8f90a0ca585871ba3317ffcfbca969fa8d17fb346c73c22d573c711ec",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 14,
+      "local_hits": 0,
+      "misses": 14,
+      "shared_hits": 14
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "action_event_reason": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_event_status": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "ball_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "candidate_scope": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_reason": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_status": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "coverage_status": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "lane_length_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "maximum_lane_distance_m": {
+        "output_name": "screening_defender_distance_to_lane_m",
+        "source_node_id": "cover_shadow"
+      },
+      "minimum_observed_defenders": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "minimum_projection_fraction": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "observed_defender_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "passing_lane_denial_status": {
+        "output_name": "passing_lane_denial_status",
+        "source_node_id": "cover_shadow"
+      },
+      "receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "screening_defender_distance_to_lane_m": {
+        "output_name": "screening_defender_distance_to_lane_m",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_evidence": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_id": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_projection_fraction": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_projection_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "target_entity_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "target_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No catalog provider exposes one or more required target fields.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_014_blind_a_v0.json",
+    "providers_used": [
+      "action_event_anchor",
+      "cover_shadow"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "74ddf202fbf89e2191c3d684826d522370f7c520ae6b18e865aae03699389532",
+    "runtime_value_count": 112,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "target_contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
     "target_id": "scl1_014_blind_a_v0",
-    "terminal_provider": null
+    "terminal_provider": "cover_shadow"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_014",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "missing_primitive",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "fields": [
-        "scl1_cover_shadow_status"
-      ]
+    "document_hash": "8b1b3b1c51d5ff80ffe9b90927b0c571d7096ffab134f0bdbff9c9ea879a8dfe",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 14,
+      "local_hits": 0,
+      "misses": 14,
+      "shared_hits": 14
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "action_event_reason": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_event_status": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "ball_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "candidate_scope": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_reason": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_status": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "coverage_status": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "lane_length_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "maximum_lane_distance_m": {
+        "output_name": "screening_defender_distance_to_lane_m",
+        "source_node_id": "cover_shadow"
+      },
+      "minimum_observed_defenders": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "minimum_projection_fraction": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "observed_defender_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "passing_lane_denial_status": {
+        "output_name": "passing_lane_denial_status",
+        "source_node_id": "cover_shadow"
+      },
+      "receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "screening_defender_distance_to_lane_m": {
+        "output_name": "screening_defender_distance_to_lane_m",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_evidence": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_id": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_projection_fraction": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_projection_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "target_entity_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "target_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No catalog provider exposes one or more required target fields.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_014_blind_b_v0.json",
+    "providers_used": [
+      "action_event_anchor",
+      "cover_shadow"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "8605d923361055fe657cea44010f0f37d2bb6110c42a02b12a738a5ff4c11610",
+    "runtime_value_count": 112,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "target_contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
     "target_id": "scl1_014_blind_b_v0",
-    "terminal_provider": null
+    "terminal_provider": "cover_shadow"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_015",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "missing_primitive",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "fields": [
-        "scl1_cover_shadow_status"
-      ]
+    "document_hash": "ef8816ef38c853862ddfb293470ca87b349b6457fc6450e36ecae17c98b40fa7",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 28,
+      "local_hits": 0,
+      "misses": 0,
+      "shared_hits": 28
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "action_event_reason": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_event_status": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "ball_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "candidate_scope": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_reason": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_status": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "coverage_status": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "lane_length_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "maximum_lane_distance_m": {
+        "output_name": "screening_defender_distance_to_lane_m",
+        "source_node_id": "cover_shadow"
+      },
+      "minimum_observed_defenders": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "minimum_projection_fraction": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "observed_defender_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "passing_lane_denial_status": {
+        "output_name": "passing_lane_denial_status",
+        "source_node_id": "cover_shadow"
+      },
+      "receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "screening_defender_distance_to_lane_m": {
+        "output_name": "screening_defender_distance_to_lane_m",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_evidence": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_id": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_projection_fraction": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_projection_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "target_entity_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "target_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No catalog provider exposes one or more required target fields.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_015_blind_a_v0.json",
+    "providers_used": [
+      "action_event_anchor",
+      "cover_shadow"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "9e321e3ed4c74b28eb31cac72515f8ae1a6cb40a3e2502c78b5aa9a01b9407a0",
+    "runtime_value_count": 112,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "target_contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
     "target_id": "scl1_015_blind_a_v0",
-    "terminal_provider": null
+    "terminal_provider": "cover_shadow"
   },
   {
-    "compatibility_profile": null,
+    "compatibility_profile": "generic",
     "concept": "scl1_015",
     "concept_name_used_as_hint": false,
-    "coverage_classification": "missing_primitive",
+    "coverage_classification": "supported",
     "coverage_gold_chain_audit": {
       "note": "coverage row has no closest_supported_substitute",
       "status": "not_available"
     },
-    "document_hash": null,
-    "execution_node_cache": null,
-    "execution_status": null,
-    "failure_details": {
-      "fields": [
-        "scl1_cover_shadow_status"
-      ]
+    "document_hash": "fb929a1fc3073200ac43abc3c9ea71844700e64804021b593dc7c56daa058b4a",
+    "execution_node_cache": {
+      "bypassed": 0,
+      "disabled": 0,
+      "enabled": true,
+      "hits": 28,
+      "local_hits": 0,
+      "misses": 0,
+      "shared_hits": 28
     },
-    "failure_taxonomy": "missing_primitive",
-    "field_sources": {},
+    "execution_status": "pass",
+    "failure_details": {},
+    "failure_taxonomy": null,
+    "field_sources": {
+      "action_event_reason": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_event_status": {
+        "output_name": "action_event_status",
+        "source_node_id": "action_event_anchor"
+      },
+      "action_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_evaluations": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "anchor_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "ball_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "candidate_scope": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_claim_boundary": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_model": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_reason": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "cover_shadow_status": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "coverage_status": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "event_anchor_frame_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_frame_offset_ms": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_row_index": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "event_type": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "lane_length_m": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "maximum_lane_distance_m": {
+        "output_name": "screening_defender_distance_to_lane_m",
+        "source_node_id": "cover_shadow"
+      },
+      "minimum_observed_defenders": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "minimum_projection_fraction": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "observed_defender_count": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "passer_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "passing_lane_denial_status": {
+        "output_name": "passing_lane_denial_status",
+        "source_node_id": "cover_shadow"
+      },
+      "receiver_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      },
+      "screening_defender_distance_to_lane_m": {
+        "output_name": "screening_defender_distance_to_lane_m",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_evidence": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_id": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_defender_projection_fraction": {
+        "output_name": "cover_shadow_status",
+        "source_node_id": "cover_shadow"
+      },
+      "screening_projection_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "target_entity_id": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "target_point": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "cover_shadow"
+      },
+      "team_role": {
+        "output_name": "anchor_evaluations",
+        "source_node_id": "action_event_anchor"
+      }
+    },
     "gold_chain_used_as_input": false,
     "held_out": false,
     "honest_zero": false,
     "input_composition_maturity": "semantic_contract_layer_sample",
-    "message": "No catalog provider exposes one or more required target fields.",
+    "message": "Bounded backward search discovered a reusable executable plan from the typed target contract.",
     "multi_step": false,
     "pattern_dispatch_used": false,
-    "plan_path": null,
-    "providers_used": [],
-    "requested_evidence_failure_count": null,
-    "result": "not_compiler_reachable",
-    "result_count": 0,
-    "rules_used": [],
-    "runtime_trace_hash": null,
-    "runtime_value_count": null,
+    "plan_path": "generated/semantic-contract-scl0/search-run/plans/scl1_015_blind_b_v0.json",
+    "providers_used": [
+      "action_event_anchor",
+      "cover_shadow"
+    ],
+    "requested_evidence_failure_count": 0,
+    "result": "compiler_reachable",
+    "result_count": 20,
+    "rules_used": [
+      "provider_field_backward_search"
+    ],
+    "runtime_trace_hash": "337be8b906d7f1e4514966062d4e645579a12b178f572041e4fe25ff471fc54d",
+    "runtime_value_count": 112,
     "search_budget_label": "max_depth=4.max_branching=6",
     "synthesizer_strategy": "bounded_backward_search.v0.1.max_depth=4.max_branching=6",
     "synthesizer_version": "search_synthesizer.v0.1",
-    "target_contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "target_contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
     "target_id": "scl1_015_blind_b_v0",
-    "terminal_provider": null
+    "terminal_provider": "cover_shadow"
   },
   {
     "compatibility_profile": null,
@@ -6632,10 +7232,10 @@
       "bypassed": 0,
       "disabled": 0,
       "enabled": true,
-      "hits": 14,
+      "hits": 17,
       "local_hits": 0,
-      "misses": 14,
-      "shared_hits": 14
+      "misses": 11,
+      "shared_hits": 17
     },
     "execution_status": "pass",
     "failure_details": {},

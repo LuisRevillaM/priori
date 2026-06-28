@@ -292,6 +292,10 @@ afl-marking-verify:
 afl-space-region-generation-verify:
 	$(PYTHON) -m tqe.verification.afl_space_region_generation
 
+.PHONY: afl-cover-shadow-verify
+afl-cover-shadow-verify:
+	$(PYTHON) -m tqe.verification.afl_cover_shadow
+
 .PHONY: afl-substrate-q2-verify
 afl-substrate-q2-verify:
 	$(PYTHON) -m tqe.verification.afl_substrate_q2

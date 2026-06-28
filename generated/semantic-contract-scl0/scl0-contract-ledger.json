@@ -3860,34 +3860,226 @@
     "case_id": "scl1_014",
     "concept": "cover_shadow_region",
     "contract": {
-      "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+      "claim_boundary": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_cover_shadow_status"
+        "ball_point",
+        "candidate_scope",
+        "cover_shadow_claim_boundary",
+        "cover_shadow_frame_id",
+        "cover_shadow_model",
+        "cover_shadow_reason",
+        "cover_shadow_status",
+        "coverage_status",
+        "lane_length_m",
+        "maximum_lane_distance_m",
+        "minimum_projection_fraction",
+        "observed_defender_count",
+        "passing_lane_denial_status",
+        "screening_defender_distance_to_lane_m",
+        "screening_defender_evidence",
+        "screening_defender_id",
+        "screening_defender_point",
+        "screening_defender_projection_fraction",
+        "screening_projection_point",
+        "target_entity_id",
+        "target_point"
       ],
       "status_semantics": [
         {
-          "field": "scl1_cover_shadow_status",
+          "field": "cover_shadow_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "passing_lane_denial_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
     "definition_text": "Cover shadow region means the area behind a defender that the defender blocks or screens from the ball.",
     "opaque_search_concept": "scl1_014",
     "target_id": "scl1_014_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_cover_shadow_status",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "contract_path": "required_evidence.cover_shadow_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 12,
         "source_phrase": "Cover shadow",
         "source_start": 0,
-        "value": "scl1_cover_shadow_status"
+        "value": "cover_shadow_status"
       },
       {
-        "contract_path": "status_semantics.scl1_cover_shadow_status",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "contract_path": "required_evidence.passing_lane_denial_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "passing_lane_denial_status"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_reason",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "cover_shadow_reason"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_frame_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "cover_shadow_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_entity_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "target_entity_id"
+      },
+      {
+        "contract_path": "required_evidence.ball_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "ball_point"
+      },
+      {
+        "contract_path": "required_evidence.target_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "target_point"
+      },
+      {
+        "contract_path": "required_evidence.lane_length_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "lane_length_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.observed_defender_count",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "observed_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.maximum_lane_distance_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "maximum_lane_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_projection_fraction",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "minimum_projection_fraction"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "screening_defender_id"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_distance_to_lane_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "screening_defender_distance_to_lane_m"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_projection_fraction",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "screening_defender_projection_fraction"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "screening_defender_point"
+      },
+      {
+        "contract_path": "required_evidence.screening_projection_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "screening_projection_point"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_evidence",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "screening_defender_evidence"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_model",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "cover_shadow_model"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_claim_boundary",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "cover_shadow_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.cover_shadow_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 12,
+        "source_phrase": "Cover shadow",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "status_semantics.passing_lane_denial_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 12,
         "source_phrase": "Cover shadow",
         "source_start": 0,
@@ -3895,11 +4087,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 12,
         "source_phrase": "Cover shadow",
         "source_start": 0,
-        "value": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted."
+        "value": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim."
       }
     ]
   },
@@ -3908,34 +4100,226 @@
     "case_id": "scl1_014",
     "concept": "cover_shadow_region",
     "contract": {
-      "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+      "claim_boundary": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_cover_shadow_status"
+        "ball_point",
+        "candidate_scope",
+        "cover_shadow_claim_boundary",
+        "cover_shadow_frame_id",
+        "cover_shadow_model",
+        "cover_shadow_reason",
+        "cover_shadow_status",
+        "coverage_status",
+        "lane_length_m",
+        "maximum_lane_distance_m",
+        "minimum_projection_fraction",
+        "observed_defender_count",
+        "passing_lane_denial_status",
+        "screening_defender_distance_to_lane_m",
+        "screening_defender_evidence",
+        "screening_defender_id",
+        "screening_defender_point",
+        "screening_defender_projection_fraction",
+        "screening_projection_point",
+        "target_entity_id",
+        "target_point"
       ],
       "status_semantics": [
         {
-          "field": "scl1_cover_shadow_status",
+          "field": "cover_shadow_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "passing_lane_denial_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
     "definition_text": "A cover shadow is a defended passing lane region hidden behind the pressing defender.",
     "opaque_search_concept": "scl1_014",
     "target_id": "scl1_014_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_cover_shadow_status",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "contract_path": "required_evidence.cover_shadow_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 14,
         "source_phrase": "cover shadow",
         "source_start": 2,
-        "value": "scl1_cover_shadow_status"
+        "value": "cover_shadow_status"
       },
       {
-        "contract_path": "status_semantics.scl1_cover_shadow_status",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "contract_path": "required_evidence.passing_lane_denial_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "passing_lane_denial_status"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_reason",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "cover_shadow_reason"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_frame_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "cover_shadow_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_entity_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "target_entity_id"
+      },
+      {
+        "contract_path": "required_evidence.ball_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "ball_point"
+      },
+      {
+        "contract_path": "required_evidence.target_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "target_point"
+      },
+      {
+        "contract_path": "required_evidence.lane_length_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "lane_length_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.observed_defender_count",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "observed_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.maximum_lane_distance_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "maximum_lane_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_projection_fraction",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "minimum_projection_fraction"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "screening_defender_id"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_distance_to_lane_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "screening_defender_distance_to_lane_m"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_projection_fraction",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "screening_defender_projection_fraction"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "screening_defender_point"
+      },
+      {
+        "contract_path": "required_evidence.screening_projection_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "screening_projection_point"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_evidence",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "screening_defender_evidence"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_model",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "cover_shadow_model"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_claim_boundary",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "cover_shadow_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.cover_shadow_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 14,
+        "source_phrase": "cover shadow",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "status_semantics.passing_lane_denial_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 14,
         "source_phrase": "cover shadow",
         "source_start": 2,
@@ -3943,11 +4327,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 14,
         "source_phrase": "cover shadow",
         "source_start": 2,
-        "value": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted."
+        "value": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim."
       }
     ]
   },
@@ -3956,34 +4340,226 @@
     "case_id": "scl1_015",
     "concept": "passing_lane_denial",
     "contract": {
-      "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+      "claim_boundary": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_cover_shadow_status"
+        "ball_point",
+        "candidate_scope",
+        "cover_shadow_claim_boundary",
+        "cover_shadow_frame_id",
+        "cover_shadow_model",
+        "cover_shadow_reason",
+        "cover_shadow_status",
+        "coverage_status",
+        "lane_length_m",
+        "maximum_lane_distance_m",
+        "minimum_projection_fraction",
+        "observed_defender_count",
+        "passing_lane_denial_status",
+        "screening_defender_distance_to_lane_m",
+        "screening_defender_evidence",
+        "screening_defender_id",
+        "screening_defender_point",
+        "screening_defender_projection_fraction",
+        "screening_projection_point",
+        "target_entity_id",
+        "target_point"
       ],
       "status_semantics": [
         {
-          "field": "scl1_cover_shadow_status",
+          "field": "cover_shadow_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "passing_lane_denial_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
     "definition_text": "Passing-lane denial means a defender denies the passing lane between the ball and a potential receiver.",
     "opaque_search_concept": "scl1_015",
     "target_id": "scl1_015_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_cover_shadow_status",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "contract_path": "required_evidence.cover_shadow_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 19,
         "source_phrase": "Passing-lane denial",
         "source_start": 0,
-        "value": "scl1_cover_shadow_status"
+        "value": "cover_shadow_status"
       },
       {
-        "contract_path": "status_semantics.scl1_cover_shadow_status",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "contract_path": "required_evidence.passing_lane_denial_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "passing_lane_denial_status"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_reason",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "cover_shadow_reason"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_frame_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "cover_shadow_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_entity_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "target_entity_id"
+      },
+      {
+        "contract_path": "required_evidence.ball_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "ball_point"
+      },
+      {
+        "contract_path": "required_evidence.target_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "target_point"
+      },
+      {
+        "contract_path": "required_evidence.lane_length_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "lane_length_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.observed_defender_count",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "observed_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.maximum_lane_distance_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "maximum_lane_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_projection_fraction",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "minimum_projection_fraction"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "screening_defender_id"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_distance_to_lane_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "screening_defender_distance_to_lane_m"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_projection_fraction",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "screening_defender_projection_fraction"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "screening_defender_point"
+      },
+      {
+        "contract_path": "required_evidence.screening_projection_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "screening_projection_point"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_evidence",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "screening_defender_evidence"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_model",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "cover_shadow_model"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_claim_boundary",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "cover_shadow_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.cover_shadow_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 19,
+        "source_phrase": "Passing-lane denial",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "status_semantics.passing_lane_denial_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 19,
         "source_phrase": "Passing-lane denial",
         "source_start": 0,
@@ -3991,11 +4567,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 19,
         "source_phrase": "Passing-lane denial",
         "source_start": 0,
-        "value": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted."
+        "value": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim."
       }
     ]
   },
@@ -4004,34 +4580,226 @@
     "case_id": "scl1_015",
     "concept": "passing_lane_denial",
     "contract": {
-      "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+      "claim_boundary": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_cover_shadow_status"
+        "ball_point",
+        "candidate_scope",
+        "cover_shadow_claim_boundary",
+        "cover_shadow_frame_id",
+        "cover_shadow_model",
+        "cover_shadow_reason",
+        "cover_shadow_status",
+        "coverage_status",
+        "lane_length_m",
+        "maximum_lane_distance_m",
+        "minimum_projection_fraction",
+        "observed_defender_count",
+        "passing_lane_denial_status",
+        "screening_defender_distance_to_lane_m",
+        "screening_defender_evidence",
+        "screening_defender_id",
+        "screening_defender_point",
+        "screening_defender_projection_fraction",
+        "screening_projection_point",
+        "target_entity_id",
+        "target_point"
       ],
       "status_semantics": [
         {
-          "field": "scl1_cover_shadow_status",
+          "field": "cover_shadow_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "passing_lane_denial_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
+    "contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
     "definition_text": "Lane denial occurs when a defender blocks the passing lane or cover shadow toward a target teammate.",
     "opaque_search_concept": "scl1_015",
     "target_id": "scl1_015_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_cover_shadow_status",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "contract_path": "required_evidence.cover_shadow_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 74,
         "source_phrase": "cover shadow",
         "source_start": 62,
-        "value": "scl1_cover_shadow_status"
+        "value": "cover_shadow_status"
       },
       {
-        "contract_path": "status_semantics.scl1_cover_shadow_status",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "contract_path": "required_evidence.passing_lane_denial_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "passing_lane_denial_status"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_reason",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "cover_shadow_reason"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_frame_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "cover_shadow_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.target_entity_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "target_entity_id"
+      },
+      {
+        "contract_path": "required_evidence.ball_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "ball_point"
+      },
+      {
+        "contract_path": "required_evidence.target_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "target_point"
+      },
+      {
+        "contract_path": "required_evidence.lane_length_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "lane_length_m"
+      },
+      {
+        "contract_path": "required_evidence.candidate_scope",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "candidate_scope"
+      },
+      {
+        "contract_path": "required_evidence.observed_defender_count",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "observed_defender_count"
+      },
+      {
+        "contract_path": "required_evidence.maximum_lane_distance_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "maximum_lane_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_projection_fraction",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "minimum_projection_fraction"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_id",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "screening_defender_id"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_distance_to_lane_m",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "screening_defender_distance_to_lane_m"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_projection_fraction",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "screening_defender_projection_fraction"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "screening_defender_point"
+      },
+      {
+        "contract_path": "required_evidence.screening_projection_point",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "screening_projection_point"
+      },
+      {
+        "contract_path": "required_evidence.screening_defender_evidence",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "screening_defender_evidence"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_model",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "cover_shadow_model"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "required_evidence.cover_shadow_claim_boundary",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "cover_shadow_claim_boundary"
+      },
+      {
+        "contract_path": "status_semantics.cover_shadow_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
+        "source_end": 74,
+        "source_phrase": "cover shadow",
+        "source_start": 62,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "status_semantics.passing_lane_denial_status",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 74,
         "source_phrase": "cover shadow",
         "source_start": 62,
@@ -4039,11 +4807,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.cover_shadow",
+        "rule_id": "meaning.cover_shadow.observed_lane_geometry",
         "source_end": 74,
         "source_phrase": "cover shadow",
         "source_start": 62,
-        "value": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted."
+        "value": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim."
       }
     ]
   },

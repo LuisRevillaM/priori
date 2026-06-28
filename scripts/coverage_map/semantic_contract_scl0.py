@@ -57,7 +57,7 @@ FORBIDDEN_MEANING_TERMS = {
 CROSS_CONCEPT_REUSE_REQUIRED_RULES = {
     "meaning.element.lane_occupancy",
     "meaning.kinematics.acceleration",
-    "meaning.missing_primitive.cover_shadow",
+    "meaning.cover_shadow.observed_lane_geometry",
     "meaning.space.open_region",
     "meaning.missing_primitive.team_press",
     "meaning.relation.marking_proximity",
@@ -488,14 +488,18 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         matched = True
 
     if is_cover_shadow_meaning(lower):
-        span = first_span(text, [r"cover shadow", r"passing[- ]lane denial", r"denies? the passing lane", r"lane denial"]) or whole_span(text)
-        add_missing_primitive_element(
-            builder,
-            "scl1_cover_shadow_status",
-            span,
-            "meaning.missing_primitive.cover_shadow",
-            "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
-        )
+        span = first_span(
+            text,
+            [
+                r"cover shadow",
+                r"passing[- ]lane denial",
+                r"passing lane",
+                r"lane denial",
+                r"screens? from the ball",
+                r"blocks?",
+            ],
+        ) or whole_span(text)
+        add_cover_shadow_element(builder, span)
         matched = True
 
     if is_marking_meaning(lower):
@@ -865,6 +869,41 @@ def add_marking_proximity_element(builder: ContractBuilder, span: Span, *, requi
     builder.add_status("unmarked_status" if require_unmarked else "marking_status", "PASS", span, rule_id)
     builder.add_claim_part(
         "Observed nearest-opposition proximity only; no marking assignment, defensive scheme, man-or-zone responsibility, role, intent, causation, quality, or optimality claim.",
+        span,
+        rule_id,
+    )
+
+
+def add_cover_shadow_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.cover_shadow.observed_lane_geometry"
+    for field_name in [
+        "cover_shadow_status",
+        "passing_lane_denial_status",
+        "cover_shadow_reason",
+        "cover_shadow_frame_id",
+        "target_entity_id",
+        "ball_point",
+        "target_point",
+        "lane_length_m",
+        "candidate_scope",
+        "observed_defender_count",
+        "maximum_lane_distance_m",
+        "minimum_projection_fraction",
+        "screening_defender_id",
+        "screening_defender_distance_to_lane_m",
+        "screening_defender_projection_fraction",
+        "screening_defender_point",
+        "screening_projection_point",
+        "screening_defender_evidence",
+        "cover_shadow_model",
+        "coverage_status",
+        "cover_shadow_claim_boundary",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("cover_shadow_status", "PASS", span, rule_id)
+    builder.add_status("passing_lane_denial_status", "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim.",
         span,
         rule_id,
     )

@@ -95,12 +95,44 @@ class Scl0SemanticContractTests(unittest.TestCase):
 
     def test_missing_substrate_elements_gap_without_substitutes(self) -> None:
         for text, evidence in [
-            ("A cover shadow is a defended passing lane region hidden behind the pressing defender.", "scl1_cover_shadow_status"),
             ("A corner variant is a set piece routine pattern used from the corner restart.", "scl1_set_piece_routine_status"),
             ("A team press is a collective defensive pressing structure rather than one nearest defender.", "scl1_team_press_status"),
         ]:
             contract, _ = generate_contract_from_meaning(text)
             self.assertIn(evidence, contract["required_evidence"])
+
+    def test_cover_shadow_maps_to_observed_lane_geometry_not_intent(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "A cover shadow is a defended passing lane region hidden behind the pressing defender."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("cover_shadow_status", contract["required_evidence"])
+        self.assertIn("passing_lane_denial_status", contract["required_evidence"])
+        self.assertIn("screening_defender_id", contract["required_evidence"])
+        self.assertIn("screening_defender_distance_to_lane_m", contract["required_evidence"])
+        self.assertIn("cover_shadow_claim_boundary", contract["required_evidence"])
+        self.assertEqual(
+            {item["field"]: item["required_value"] for item in contract["status_semantics"]}["cover_shadow_status"],
+            "PASS",
+        )
+        self.assertNotIn("scl1_cover_shadow_status", contract["required_evidence"])
+        self.assertIn("meaning.cover_shadow.observed_lane_geometry", trace_rules)
+
+    def test_passing_lane_denial_maps_to_cover_shadow_element(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "Passing-lane denial means a defender blocks the passing lane between the ball and a potential receiver."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("cover_shadow_status", contract["required_evidence"])
+        self.assertIn("passing_lane_denial_status", contract["required_evidence"])
+        self.assertIn("screening_defender_projection_fraction", contract["required_evidence"])
+        self.assertEqual(
+            {item["field"]: item["required_value"] for item in contract["status_semantics"]}["passing_lane_denial_status"],
+            "PASS",
+        )
+        self.assertIn("meaning.cover_shadow.observed_lane_geometry", trace_rules)
 
     def test_open_space_region_maps_to_observed_geometry_not_value(self) -> None:
         contract, traces = generate_contract_from_meaning(

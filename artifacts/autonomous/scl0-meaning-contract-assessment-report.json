@@ -682,38 +682,48 @@
     {
       "case_id": "scl1_014",
       "concept": "cover_shadow_region",
-      "expected_failure_taxonomy": "missing_primitive",
-      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
       "findings": [],
       "held_out": false,
-      "sample_role": "scl1_missing_substrate_probe",
+      "sample_role": "scl1_cover_shadow_gap_closure_probe",
       "variants": [
         {
           "author_id": "blind_a",
           "concept_name_used_as_hint": false,
-          "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
-          "failure_taxonomy": "missing_primitive",
+          "contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
+          "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
-          "providers_used": [],
-          "requested_evidence_failure_count": null,
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "action_event_anchor",
+            "cover_shadow"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
           "target_id": "scl1_014_blind_a_v0"
         },
         {
           "author_id": "blind_b",
           "concept_name_used_as_hint": false,
-          "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
-          "failure_taxonomy": "missing_primitive",
+          "contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
+          "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
-          "providers_used": [],
-          "requested_evidence_failure_count": null,
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "action_event_anchor",
+            "cover_shadow"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
           "target_id": "scl1_014_blind_b_v0"
         }
       ]
@@ -721,38 +731,48 @@
     {
       "case_id": "scl1_015",
       "concept": "passing_lane_denial",
-      "expected_failure_taxonomy": "missing_primitive",
-      "expected_result": "not_compiler_reachable",
+      "expected_failure_taxonomy": null,
+      "expected_result": "compiler_reachable",
       "findings": [],
       "held_out": false,
-      "sample_role": "scl1_missing_substrate_probe",
+      "sample_role": "scl1_cover_shadow_gap_closure_probe",
       "variants": [
         {
           "author_id": "blind_a",
           "concept_name_used_as_hint": false,
-          "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
-          "failure_taxonomy": "missing_primitive",
+          "contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
+          "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
-          "providers_used": [],
-          "requested_evidence_failure_count": null,
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "action_event_anchor",
+            "cover_shadow"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
           "target_id": "scl1_015_blind_a_v0"
         },
         {
           "author_id": "blind_b",
           "concept_name_used_as_hint": false,
-          "contract_hash": "fa0240d2a1ba95ecf30afe9032ec2a2fdfddfe700827e955dfe01c2a5147c624",
-          "failure_taxonomy": "missing_primitive",
+          "contract_hash": "2a0520baf83d6a4a8f42841f4bd6fa5c860cfdf7a5db3d1b191ca87b01e3b0c0",
+          "failure_taxonomy": null,
           "gold_chain_used_as_input": false,
           "pattern_dispatch_used": false,
-          "providers_used": [],
-          "requested_evidence_failure_count": null,
-          "result": "not_compiler_reachable",
-          "result_count": 0,
-          "rules_used": [],
+          "providers_used": [
+            "action_event_anchor",
+            "cover_shadow"
+          ],
+          "requested_evidence_failure_count": 0,
+          "result": "compiler_reachable",
+          "result_count": 20,
+          "rules_used": [
+            "provider_field_backward_search"
+          ],
           "target_id": "scl1_015_blind_b_v0"
         }
       ]
@@ -1507,7 +1527,7 @@
   "summary": {
     "case_count": 31,
     "failure_distribution": {
-      "missing_primitive": 18,
+      "missing_primitive": 14,
       "unsupported_modality": 4
     },
     "findings_count": 0,
@@ -1516,8 +1536,8 @@
     "known_negative_honest_failure_count": 6,
     "known_negative_target_count": 6,
     "result_distribution": {
-      "compiler_reachable": 40,
-      "not_compiler_reachable": 22
+      "compiler_reachable": 44,
+      "not_compiler_reachable": 18
     },
     "target_count": 62
   }

@@ -903,14 +903,38 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+        "claim_boundary": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_cover_shadow_status"
+          "ball_point",
+          "candidate_scope",
+          "cover_shadow_claim_boundary",
+          "cover_shadow_frame_id",
+          "cover_shadow_model",
+          "cover_shadow_reason",
+          "cover_shadow_status",
+          "coverage_status",
+          "lane_length_m",
+          "maximum_lane_distance_m",
+          "minimum_projection_fraction",
+          "observed_defender_count",
+          "passing_lane_denial_status",
+          "screening_defender_distance_to_lane_m",
+          "screening_defender_evidence",
+          "screening_defender_id",
+          "screening_defender_point",
+          "screening_defender_projection_fraction",
+          "screening_projection_point",
+          "target_entity_id",
+          "target_point"
         ],
         "status_semantics": [
           {
-            "field": "scl1_cover_shadow_status",
+            "field": "cover_shadow_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "passing_lane_denial_status",
             "required_value": "PASS"
           }
         ]
@@ -922,14 +946,38 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+        "claim_boundary": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_cover_shadow_status"
+          "ball_point",
+          "candidate_scope",
+          "cover_shadow_claim_boundary",
+          "cover_shadow_frame_id",
+          "cover_shadow_model",
+          "cover_shadow_reason",
+          "cover_shadow_status",
+          "coverage_status",
+          "lane_length_m",
+          "maximum_lane_distance_m",
+          "minimum_projection_fraction",
+          "observed_defender_count",
+          "passing_lane_denial_status",
+          "screening_defender_distance_to_lane_m",
+          "screening_defender_evidence",
+          "screening_defender_id",
+          "screening_defender_point",
+          "screening_defender_projection_fraction",
+          "screening_projection_point",
+          "target_entity_id",
+          "target_point"
         ],
         "status_semantics": [
           {
-            "field": "scl1_cover_shadow_status",
+            "field": "cover_shadow_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "passing_lane_denial_status",
             "required_value": "PASS"
           }
         ]
@@ -941,14 +989,38 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+        "claim_boundary": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_cover_shadow_status"
+          "ball_point",
+          "candidate_scope",
+          "cover_shadow_claim_boundary",
+          "cover_shadow_frame_id",
+          "cover_shadow_model",
+          "cover_shadow_reason",
+          "cover_shadow_status",
+          "coverage_status",
+          "lane_length_m",
+          "maximum_lane_distance_m",
+          "minimum_projection_fraction",
+          "observed_defender_count",
+          "passing_lane_denial_status",
+          "screening_defender_distance_to_lane_m",
+          "screening_defender_evidence",
+          "screening_defender_id",
+          "screening_defender_point",
+          "screening_defender_projection_fraction",
+          "screening_projection_point",
+          "target_entity_id",
+          "target_point"
         ],
         "status_semantics": [
           {
-            "field": "scl1_cover_shadow_status",
+            "field": "cover_shadow_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "passing_lane_denial_status",
             "required_value": "PASS"
           }
         ]
@@ -960,14 +1032,38 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires cover-shadow or passing-lane denial geometry; fixed-point reachability and lane occupancy are not substituted.",
+        "claim_boundary": "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, pass probability, pitch-control value, scheme, causation, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_cover_shadow_status"
+          "ball_point",
+          "candidate_scope",
+          "cover_shadow_claim_boundary",
+          "cover_shadow_frame_id",
+          "cover_shadow_model",
+          "cover_shadow_reason",
+          "cover_shadow_status",
+          "coverage_status",
+          "lane_length_m",
+          "maximum_lane_distance_m",
+          "minimum_projection_fraction",
+          "observed_defender_count",
+          "passing_lane_denial_status",
+          "screening_defender_distance_to_lane_m",
+          "screening_defender_evidence",
+          "screening_defender_id",
+          "screening_defender_point",
+          "screening_defender_projection_fraction",
+          "screening_projection_point",
+          "target_entity_id",
+          "target_point"
         ],
         "status_semantics": [
           {
-            "field": "scl1_cover_shadow_status",
+            "field": "cover_shadow_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "passing_lane_denial_status",
             "required_value": "PASS"
           }
         ]

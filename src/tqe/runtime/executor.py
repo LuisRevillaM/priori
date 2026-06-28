@@ -258,6 +258,7 @@ class TacticalQueryExecutor:
             "tracking_quality": primitive_tracking_quality,
             "pairwise_distance": primitive_pairwise_distance,
             "marking": primitive_marking,
+            "cover_shadow": primitive_cover_shadow,
             "velocity": primitive_velocity,
             "acceleration": primitive_acceleration,
             "off_ball_run": primitive_off_ball_run,
@@ -3846,6 +3847,76 @@ def primitive_marking(state: PeriodState, node: BoundCatalogNode) -> None:
     }
 
 
+def primitive_cover_shadow(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    target_entity_field = node_parameter_text(node, "target_entity_field", "receiver_id")
+    candidate_scope = node_parameter_text(node, "candidate_scope", "opposition_outfield_to_anchor_team")
+    maximum_lane_distance_m = node_parameter_number(node, "maximum_lane_distance_m", 2.0)
+    minimum_projection_fraction = node_parameter_number(node, "minimum_projection_fraction", 0.05)
+    minimum_lane_length_m = node_parameter_number(node, "minimum_lane_length_m", 5.0)
+    minimum_observed_defenders = node_parameter_integer(node, "minimum_observed_defenders", 6)
+    records = [
+        cover_shadow_anchor_record(
+            state=state,
+            anchor=record,
+            frame_field=frame_field,
+            target_entity_field=target_entity_field,
+            candidate_scope=candidate_scope,
+            maximum_lane_distance_m=maximum_lane_distance_m,
+            minimum_projection_fraction=minimum_projection_fraction,
+            minimum_lane_length_m=minimum_lane_length_m,
+            minimum_observed_defenders=minimum_observed_defenders,
+        )
+        for record in runtime_records(anchor_value)
+        if isinstance(record, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    cover_values = [
+        None if str(record["cover_shadow_status"]) == "UNKNOWN" else str(record["cover_shadow_status"])
+        for record in records
+    ]
+    lane_values = [
+        None if str(record["passing_lane_denial_status"]) == "UNKNOWN" else str(record["passing_lane_denial_status"])
+        for record in records
+    ]
+    distance_values = [
+        record.get("screening_defender_distance_to_lane_m")
+        if str(record["cover_shadow_status"]) == "PASS"
+        else None
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "cover_shadow_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=cover_values,
+            unknown_mask=[value is None for value in cover_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "cover_shadow_status").entity_scope,
+        ),
+        "cover_shadow_status_records": records,
+        "passing_lane_denial_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=lane_values,
+            unknown_mask=[value is None for value in lane_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "passing_lane_denial_status").entity_scope,
+        ),
+        "passing_lane_denial_status_records": records,
+        "screening_defender_distance_to_lane_m": FrameSignal(
+            frame_ids=frame_ids,
+            values=distance_values,
+            unknown_mask=[value is None for value in distance_values],
+            unit=Unit.METRE,
+            entity_scope=catalog_output(node, "screening_defender_distance_to_lane_m").entity_scope,
+        ),
+        "screening_defender_distance_to_lane_m_records": records,
+    }
+
+
 def primitive_velocity(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
     frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
@@ -4442,6 +4513,167 @@ def marking_anchor_record(
         target_player_point=point_from_xy(target_point[0], target_point[1]),
         nearest_marker_point=point_from_xy(nearest_point[0], nearest_point[1]),
     )
+
+
+def cover_shadow_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    target_entity_field: str,
+    candidate_scope: str,
+    maximum_lane_distance_m: float,
+    minimum_projection_fraction: float,
+    minimum_lane_length_m: float,
+    minimum_observed_defenders: int,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or frame_id is None:
+        return None
+    target_entity_id = str(anchor.get(target_entity_field) or "")
+    ball_point = ball_point_at_frame(state, frame_id)
+    target_point = tracked_point_at_frame(state, frame_id, target_entity_id)
+    candidate_records, known_candidate_ids = time_to_arrival_candidates(
+        state=state,
+        anchor=anchor,
+        frame_id=frame_id,
+        candidate_scope=candidate_scope,
+    )
+    observed_candidates = [
+        record
+        for record in candidate_records
+        if record.get("x_m") is not None and record.get("y_m") is not None
+    ]
+    missing_candidate_ids = sorted(
+        str(player_id)
+        for player_id in known_candidate_ids
+        if player_id not in {str(record.get("player_id")) for record in observed_candidates}
+    )
+    model = "ball_target_lane_defender_projection_v0_1"
+    claim_boundary = (
+        "Observed ball-target lane screening geometry only; no defender intent, tactical denial quality, "
+        "pass probability, pitch-control value, scheme, causation, or optimality claim."
+    )
+    max_lane_distance = float(maximum_lane_distance_m)
+    projection_floor = max(0.0, min(0.49, float(minimum_projection_fraction)))
+    lane_length = None if ball_point is None or target_point is None else math.dist(ball_point, target_point)
+
+    def base(
+        status: str,
+        reason: str,
+        *,
+        screen: dict[str, Any] | None = None,
+        all_screens: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        screens = all_screens or []
+        return {
+            **anchor,
+            "match_id": state.match_id,
+            "period": state.period,
+            "anchor_id": str(anchor.get("anchor_id")),
+            "anchor_frame_id": anchor_frame_id,
+            "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+            "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+            "entity_refs": list(anchor.get("entity_refs") or []),
+            "cover_shadow_status": status,
+            "passing_lane_denial_status": status,
+            "cover_shadow_reason": reason,
+            "cover_shadow_frame_id": frame_id,
+            "frame_field": frame_field,
+            "target_entity_field": target_entity_field,
+            "target_entity_id": target_entity_id or None,
+            "ball_point": None if ball_point is None else point_from_xy(ball_point[0], ball_point[1]),
+            "target_point": None if target_point is None else point_from_xy(target_point[0], target_point[1]),
+            "lane_length_m": None if lane_length is None else round(float(lane_length), 3),
+            "candidate_scope": candidate_scope,
+            "candidate_player_ids": sorted(str(player_id) for player_id in known_candidate_ids),
+            "observed_defender_ids": sorted(str(record["player_id"]) for record in observed_candidates),
+            "missing_defender_ids": missing_candidate_ids,
+            "observed_defender_count": len(observed_candidates),
+            "minimum_observed_defenders": int(minimum_observed_defenders),
+            "maximum_lane_distance_m": round(float(max_lane_distance), 3),
+            "minimum_projection_fraction": round(float(projection_floor), 3),
+            "minimum_lane_length_m": round(float(minimum_lane_length_m), 3),
+            "screening_defender_id": None if screen is None else str(screen["player_id"]),
+            "screening_defender_distance_to_lane_m": None if screen is None else screen["distance_to_lane_m"],
+            "screening_defender_projection_fraction": None if screen is None else screen["projection_fraction"],
+            "screening_defender_point": None if screen is None else screen["defender_point"],
+            "screening_projection_point": None if screen is None else screen["projection_point"],
+            "screening_defender_evidence": screens,
+            "cover_shadow_model": model,
+            "coverage_status": "UNKNOWN" if status == "UNKNOWN" else ("OBSERVED_ONLY" if missing_candidate_ids else "PASS"),
+            "cover_shadow_claim_boundary": claim_boundary,
+        }
+
+    if max_lane_distance <= 0:
+        return base("UNKNOWN", "invalid_lane_distance_threshold")
+    if not target_entity_id:
+        return base("UNKNOWN", "target_entity_id_missing")
+    if ball_point is None:
+        return base("UNKNOWN", "ball_tracking_missing")
+    if target_point is None:
+        return base("UNKNOWN", "target_tracking_missing")
+    if lane_length is None or lane_length < float(minimum_lane_length_m):
+        return base("UNKNOWN", "lane_too_short")
+    if len(observed_candidates) < max(1, int(minimum_observed_defenders)):
+        return base("UNKNOWN", "defender_tracking_missing")
+
+    screens: list[dict[str, Any]] = []
+    for record in observed_candidates:
+        defender_point = (float(record["x_m"]), float(record["y_m"]))
+        projection = lane_projection(
+            start=ball_point,
+            end=target_point,
+            point=defender_point,
+        )
+        if projection is None:
+            continue
+        if projection["projection_fraction"] < projection_floor:
+            continue
+        if projection["projection_fraction"] > 1.0 - projection_floor:
+            continue
+        if projection["distance_to_lane_m"] > max_lane_distance:
+            continue
+        screens.append(
+            {
+                "player_id": str(record["player_id"]),
+                "distance_to_lane_m": round(float(projection["distance_to_lane_m"]), 3),
+                "projection_fraction": round(float(projection["projection_fraction"]), 3),
+                "defender_point": point_from_xy(defender_point[0], defender_point[1]),
+                "projection_point": point_from_xy(
+                    projection["projection_point"][0],
+                    projection["projection_point"][1],
+                ),
+            }
+        )
+    screens.sort(key=lambda item: (float(item["distance_to_lane_m"]), float(item["projection_fraction"]), str(item["player_id"])))
+    if screens:
+        return base("PASS", "screening_defender_on_ball_target_lane", screen=screens[0], all_screens=screens)
+    return base("FAIL", "no_screening_defender_on_ball_target_lane", all_screens=[])
+
+
+def lane_projection(
+    *,
+    start: tuple[float, float],
+    end: tuple[float, float],
+    point: tuple[float, float],
+) -> dict[str, Any] | None:
+    vx = float(end[0]) - float(start[0])
+    vy = float(end[1]) - float(start[1])
+    length_sq = vx * vx + vy * vy
+    if length_sq <= 1e-9:
+        return None
+    wx = float(point[0]) - float(start[0])
+    wy = float(point[1]) - float(start[1])
+    fraction = (wx * vx + wy * vy) / length_sq
+    projection = (float(start[0]) + fraction * vx, float(start[1]) + fraction * vy)
+    distance = math.dist(point, projection)
+    return {
+        "projection_fraction": float(fraction),
+        "projection_point": projection,
+        "distance_to_lane_m": float(distance),
+    }
 
 
 def marking_target_team_role(state: PeriodState, anchor: dict[str, Any], frame_id: int, target_player_id: str) -> str | None:

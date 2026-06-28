@@ -70,6 +70,14 @@
         ],
         "definition_count": 4
       },
+      "meaning.cover_shadow.observed_lane_geometry": {
+        "case_count": 2,
+        "cases": [
+          "scl1_014",
+          "scl1_015"
+        ],
+        "definition_count": 96
+      },
       "meaning.element.carry": {
         "case_count": 2,
         "cases": [
@@ -122,14 +130,6 @@
           "scl1_021"
         ],
         "definition_count": 64
-      },
-      "meaning.missing_primitive.cover_shadow": {
-        "case_count": 2,
-        "cases": [
-          "scl1_014",
-          "scl1_015"
-        ],
-        "definition_count": 12
       },
       "meaning.missing_primitive.goal_kick_build_structure": {
         "case_count": 1,

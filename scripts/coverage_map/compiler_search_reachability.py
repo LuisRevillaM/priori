@@ -1346,6 +1346,8 @@ def required_fields_for_input(entry: CatalogEntry, input_def: CatalogInput, targ
         }
     if entry.name == "space_region_generation" and input_def.name == "anchors":
         return {"anchor_id", "anchor_frame_id"}
+    if entry.name == "cover_shadow" and input_def.name == "anchors":
+        return {"anchor_id", "anchor_frame_id", "receiver_id", "team_role"}
     return field_dependencies_for_consumer(entry) or target_fields
 
 
@@ -1413,6 +1415,16 @@ def infer_parameters(
             "maximum_candidate_points": number(5.0, "count"),
             "minimum_observed_players_per_team": number(6.0, "count"),
         }
+    if entry.name == "cover_shadow":
+        return {
+            "frame_field": enum("anchor_frame_id"),
+            "target_entity_field": enum("receiver_id"),
+            "candidate_scope": enum("opposition_outfield_to_anchor_team"),
+            "maximum_lane_distance_m": number(2.0, "metre"),
+            "minimum_projection_fraction": number(0.05, "fraction"),
+            "minimum_lane_length_m": number(5.0, "metre"),
+            "minimum_observed_defenders": number(6.0, "count"),
+        }
     return {}
 
 
@@ -1429,6 +1441,8 @@ def field_dependencies_for_consumer(entry: CatalogEntry) -> set[str]:
         }
     if entry.name == "space_region_generation":
         return {"anchor_id", "anchor_frame_id"}
+    if entry.name == "cover_shadow":
+        return {"anchor_id", "anchor_frame_id", "receiver_id", "team_role"}
     dependencies: set[str] = set()
     for parameter in entry.parameters:
         if "_field" not in parameter.name:

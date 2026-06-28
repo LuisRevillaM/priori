@@ -79,13 +79,13 @@
  },
  {
   "concept": "scl1_014",
-  "classification": "missing_primitive",
+  "classification": "supported",
   "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },
  {
   "concept": "scl1_015",
-  "classification": "missing_primitive",
+  "classification": "supported",
   "composition_maturity": "semantic_contract_layer_sample",
   "original_concept_redacted_for_search": true
  },

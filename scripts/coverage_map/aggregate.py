@@ -39,7 +39,8 @@ ROADMAP_IMPLICATIONS = [
     "marking landed as observed nearest-opposition proximity; marker assignment, man-or-zone responsibility, scheme, role, and intent remain precise next blockers.",
     "off_ball_run_type landed for observed run-in-behind and diagonal path geometry over observed off-ball runs; decoy, marker-dragging, overlap/underlap role, third-player purpose, coordination, and tactical-purpose labels remain precise next blockers.",
     "space_region_generation landed as sampled open-space candidate geometry at an anchor; space creation, exploitation, value, pitch-control fields, and persistence-over-time remain precise next blockers.",
-    "Remaining reachability gaps are mostly not this primitive: moving-target interception, pass-line interception, cover shadow, reachability-field/region generation, graph construction, or margin/rate operators.",
+    "cover_shadow landed as observed ball-target lane screening geometry; shot/goal-lane coverage, forced-direction, outlet denial, moving-ball interception, and tactical denial quality remain precise next blockers.",
+    "Remaining reachability gaps are mostly not these primitives: moving-target interception, reachability-field/region generation, graph construction, or margin/rate operators.",
     "Remaining carry-family gaps are mostly not base carrying: defender-bypass-by-carry, space generation, profile aggregation, contact/touch, body orientation, or learned value.",
     "Regenerate the coverage map after every substrate package so supported/partial/gap counts remain a living metric.",
     "Treat composition constraints as compiler-alignment backlog, not hidden plan-wiring knowledge.",
@@ -128,7 +129,7 @@ def main() -> None:
     report = {
         "schema_version": "coverage-map.v0",
         "claim_status": CLAIM_STATUS,
-        "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, Q2 generic binary episode joins, acceleration, set_piece_structure observed restart arrangement, off_ball_run observed movement, marking observed proximity, and off_ball_run_type observed path geometry",
+        "catalog_basis": "codex/afl08-passport-loop substrate after Q5, time_to_arrival static-point reachability, carry_episode movement-under-control, Q2 generic binary episode joins, acceleration, set_piece_structure observed restart arrangement, off_ball_run observed movement, marking observed proximity, off_ball_run_type observed path geometry, space_region_generation sampled open-space geometry, and cover_shadow observed ball-target lane screening geometry",
         "denominator_note": "Coverage of Priori's authored 741-concept atlas inventory — NOT coverage of all questions users may ask. True denominator is the held-out NL eval.",
         "audit_note": AUDIT_NOTE,
         "roadmap_implications": ROADMAP_IMPLICATIONS,

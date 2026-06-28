@@ -1,0 +1,147 @@
+{
+  "claim_boundary": {
+    "allowed_claim": "Observed defender screening geometry on the ball-target lane under frozen distance and projection thresholds.",
+    "prohibited_claims": [
+      "defender_intent_inferred",
+      "defensive_scheme_inferred",
+      "marking_assignment_inferred",
+      "moving_ball_interception_inferred",
+      "optimality_inferred",
+      "pass_probability_inferred",
+      "pitch_control_value_inferred",
+      "tactical_causation_inferred",
+      "tactical_denial_quality_inferred"
+    ],
+    "unknown_policy": "Missing ball/target tracking, too-short lanes, invalid thresholds, or insufficient observed defender tracking produces UNKNOWN, not lane-denial evidence."
+  },
+  "findings": [],
+  "milestone": "AFL-08 cover_shadow observed lane geometry / SCL named-gap closure",
+  "plans": {
+    "cover_shadow_region": {
+      "document_hash": "1a2849f8f90a0ca585871ba3317ffcfbca969fa8d17fb346c73c22d573c711ec",
+      "execution_status": "pass",
+      "path": "generated/semantic-contract-scl0/search-run/plans/scl1_014_blind_a_v0.json",
+      "requested_evidence_failure_count": 0,
+      "result_count": 20
+    },
+    "passing_lane_denial": {
+      "document_hash": "ef8816ef38c853862ddfb293470ca87b349b6457fc6450e36ecae17c98b40fa7",
+      "execution_status": "pass",
+      "path": "generated/semantic-contract-scl0/search-run/plans/scl1_015_blind_a_v0.json",
+      "requested_evidence_failure_count": 0,
+      "result_count": 20
+    }
+  },
+  "primitive_probe": {
+    "branch_status_counts_with_fixtures": {
+      "FAIL": 2865,
+      "PASS": 754,
+      "UNKNOWN": 1033
+    },
+    "coverage_policy": "PASS/FAIL only when ball, target, lane length, and enough observed candidate defenders are present.",
+    "default_status_counts": {
+      "FAIL": 2864,
+      "PASS": 754,
+      "UNKNOWN": 1032
+    },
+    "evidence_presence_sample": {
+      "ball_point": true,
+      "candidate_scope": true,
+      "cover_shadow_claim_boundary": true,
+      "cover_shadow_frame_id": true,
+      "cover_shadow_model": true,
+      "cover_shadow_reason": true,
+      "cover_shadow_status": true,
+      "coverage_status": true,
+      "lane_length_m": true,
+      "maximum_lane_distance_m": true,
+      "minimum_projection_fraction": true,
+      "observed_defender_count": true,
+      "passing_lane_denial_status": true,
+      "screening_defender_distance_to_lane_m": true,
+      "screening_defender_evidence": true,
+      "screening_defender_id": true,
+      "screening_defender_point": true,
+      "screening_defender_projection_fraction": true,
+      "screening_projection_point": true,
+      "target_entity_id": true,
+      "target_point": true
+    },
+    "fixture_reasons": {
+      "fail": "no_screening_defender_on_ball_target_lane",
+      "unknown": "target_tracking_missing"
+    },
+    "model": "ball_target_lane_defender_projection_v0_1",
+    "passing_lane_status_counts": {
+      "FAIL": 2864,
+      "PASS": 754,
+      "UNKNOWN": 1032
+    },
+    "reason_counts": {
+      "lane_too_short": 1032,
+      "no_screening_defender_on_ball_target_lane": 2864,
+      "screening_defender_on_ball_target_lane": 754
+    },
+    "record_count": 4650
+  },
+  "schema_version": "afl.cover_shadow.v1",
+  "scl_gap_closure": {
+    "closure_claim": "scl1_014 and scl1_015 compile to observed ball-target lane screening geometry through generic provider search. This closes cover-shadow/passing-lane geometry only, not denial intent, pass probability, pitch-control value, or moving-ball interception.",
+    "targets": {
+      "scl1_014_blind_a_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "cover_shadow"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_014_blind_b_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "cover_shadow"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_015_blind_a_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "cover_shadow"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_015_blind_b_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "cover_shadow"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      }
+    }
+  },
+  "status": "PASS",
+  "threshold_version": "cover_shadow.v0.1.0:frame=anchor_frame_id:target=receiver_id:candidate_scope=opposition_outfield_to_anchor_team:max_lane_distance=2.0:min_projection=0.05:min_lane_length=5.0:min_observed_defenders=6:model=ball_target_lane_defender_projection"
+}
