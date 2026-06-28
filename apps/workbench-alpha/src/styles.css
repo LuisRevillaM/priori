@@ -238,6 +238,10 @@ body {
   line-height: 1;
 }
 
+.coachInputRow input:disabled {
+  opacity: 0.68;
+}
+
 .coachInputRow input::selection {
   background: rgba(218, 195, 124, 0.34);
 }
@@ -257,6 +261,12 @@ body {
   background: #e5d18d;
 }
 
+.coachInputRow button:disabled,
+.coachPromptRail button:disabled {
+  cursor: default;
+  opacity: 0.62;
+}
+
 .coachResponse {
   min-height: 24px;
   margin: 0;
@@ -264,6 +274,10 @@ body {
   font-size: clamp(15px, 1.4vw, 18px);
   font-weight: 520;
   line-height: 1.35;
+}
+
+.coachResponse.isLoading {
+  color: rgba(218, 195, 124, 0.88);
 }
 
 .coachPromptRail {

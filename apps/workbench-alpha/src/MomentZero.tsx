@@ -3,7 +3,7 @@ import momentZeroPayload from "./generated/moment-zero.json";
 import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
 import type { ReplayEntity, ReplayPayload } from "./types";
 
-type MomentZeroPayload = typeof momentZeroPayload;
+export type MomentZeroPayload = typeof momentZeroPayload;
 type MomentZeroMoment = MomentZeroPayload["moment"];
 
 const PITCH_PALETTE = {

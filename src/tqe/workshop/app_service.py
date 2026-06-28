@@ -69,6 +69,7 @@ APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
 HIGH_BYPASS_PLAN_PATH = Path("config/query-plans/high_bypass_completed_pass.experimental.v1.json")
 LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH = Path("config/query-plans/line_break_support_response.experimental.v1.json")
+MOMENT_ZERO_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-zero.json")
 DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", "/Users/luisrevilla/.hermes-priori"))
 HERMES_DB = HERMES_HOME / "state.db"
@@ -271,6 +272,38 @@ class InterpretResponse(WorkbenchResponseModel):
     fallback_reason: str | None = None
 
 
+CoachInterpretStatus = Literal[
+    "moment_found",
+    "no_moments_found",
+    "clarification_required",
+    "understood_but_not_expressible",
+]
+
+
+class CoachMomentResponse(WorkbenchResponseModel):
+    moment_id: str
+    result_count: int
+    replay_payload: dict[str, Any] | None = None
+    evidence_fields: list[str]
+
+
+class CoachInterpretResponse(WorkbenchResponseModel):
+    ok: Literal[True]
+    status: CoachInterpretStatus
+    query: str
+    display_answer: str
+    suggestions: list[str] = Field(default_factory=list)
+    match_scope: dict[str, Any] = Field(default_factory=dict)
+    meaning_definition: str | None = None
+    interpretation_rules: list[str] = Field(default_factory=list)
+    contract_hash: str | None = None
+    plan_hash: str | None = None
+    result_count: int = 0
+    moments: list[CoachMomentResponse] = Field(default_factory=list)
+    gap: dict[str, Any] | None = None
+    audit: dict[str, Any] = Field(default_factory=dict)
+
+
 class ExecutionProgressResponse(WorkbenchResponseModel):
     ok: Literal[True]
     cache_key: str
@@ -353,6 +386,7 @@ WORKBENCH_RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     "HealthResponse": HealthResponse,
     "BootstrapResponse": BootstrapResponse,
     "MatchLibraryResponse": MatchLibraryResponse,
+    "CoachInterpretResponse": CoachInterpretResponse,
     "PlanResponse": PlanResponse,
     "InterpretResponse": InterpretResponse,
     "SubmitValidateResponse": SubmitValidateResponseEnvelope,
@@ -408,6 +442,46 @@ PLANNED_GAPS = {
         "local_numerical_difference",
         "Local numerical difference is planned or may be folded into support arrival.",
     ),
+}
+
+COACH_COMPILER_LOCK = threading.Lock()
+COACH_SEARCH_EXECUTOR: Any = None
+COACH_RESPONSE_CACHE: dict[str, dict[str, Any]] = {}
+COACH_ALLOWED_EXCLUDED_REFS = {"relation_destination_entry_classification", "outcome_classification"}
+COACH_MATCH_SCOPE = {
+    "match_ids": ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"],
+    "periods": ["firstHalf", "secondHalf"],
+    "perspective_team_role": "home",
+}
+COACH_SUGGESTIONS = [
+    "Show line breaks with no underneath outlet",
+    "Show expected pass completion",
+    "Show dangerous attacks",
+]
+COACH_DISPLAY_TEMPLATES = {
+    "moment_found.line_break_no_underneath_support": "Line broken. The outlet space stays empty.",
+    "no_moments_found.line_break_no_underneath_support": "Across these matches, that moment did not appear.",
+    "clarification_required.tactical_meaning_underspecified": "Pick the observable part of the attack you want to see.",
+    "clarification_required.request_not_recognized": "Name the action, players, and moment you want to see.",
+    "understood_but_not_expressible.unsupported_modality": "This view stays with observed moments.",
+    "understood_but_not_expressible.no_replay_surface": "I can show the line-break moment now.",
+    "understood_but_not_expressible.default": "I can show observed moments from the current vocabulary.",
+}
+COACH_TEMPLATE_PROHIBITED_TERMS = {
+    "best",
+    "better",
+    "caused",
+    "caught out",
+    "dangerous",
+    "decided",
+    "effective",
+    "good",
+    "intent",
+    "optimal",
+    "planned",
+    "should",
+    "smart",
+    "worked",
 }
 
 
@@ -644,6 +718,282 @@ def unsupported_gaps(text: str) -> list[dict[str, str]]:
             gaps.append({"concept": code, "reason": reason})
             seen_codes.add(code)
     return gaps
+
+
+def coach_template(key: str) -> str:
+    value = COACH_DISPLAY_TEMPLATES[key]
+    lowered = value.casefold()
+    forbidden = sorted(term for term in COACH_TEMPLATE_PROHIBITED_TERMS if re.search(rf"\b{re.escape(term)}\b", lowered))
+    if forbidden:
+        raise ValueError(f"Coach display template {key!r} contains prohibited terms: {forbidden}")
+    return value
+
+
+def coach_search_executor() -> Any:
+    global COACH_SEARCH_EXECUTOR
+    if COACH_SEARCH_EXECUTOR is None:
+        from scripts.coverage_map.compiler_search_reachability import TacticalQueryExecutor
+
+        COACH_SEARCH_EXECUTOR = TacticalQueryExecutor(canonical_root=DEFAULT_CANONICAL_ROOT, raw_root=DEFAULT_RAW_ROOT)
+    return COACH_SEARCH_EXECUTOR
+
+
+def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> dict[str, Any]:
+    query = str(payload.get("query") or "").strip()
+    if not query:
+        return coach_clarification_response(
+            query=query,
+            display_answer=coach_template("clarification_required.request_not_recognized"),
+            clarification_codes=["REQUEST_EMPTY"],
+            clarification_questions=["Ask for an observable football moment."],
+        )
+
+    from scripts.coverage_map.semantic_contract_scl0 import generate_contract_from_meaning
+    from scripts.coverage_map.semantic_nl_interpreter_scl0 import CLARIFICATION_REQUIRED, MEANING_DEFINITION, interpret_request as scl_nl_interpret
+    from scripts.coverage_map import compiler_search_reachability as search
+
+    meaning = scl_nl_interpret(query)
+    meaning_payload = meaning.as_dict()
+    if meaning.status == CLARIFICATION_REQUIRED:
+        code = (meaning.clarification_codes or ("REQUEST_NOT_RECOGNIZED",))[0]
+        template_key = (
+            "clarification_required.tactical_meaning_underspecified"
+            if code == "TACTICAL_MEANING_UNDERSPECIFIED"
+            else "clarification_required.request_not_recognized"
+        )
+        return coach_clarification_response(
+            query=query,
+            display_answer=coach_template(template_key),
+            clarification_codes=list(meaning.clarification_codes),
+            clarification_questions=list(meaning.clarification_questions),
+            audit={"pipeline": "scl_nl_to_search.v0", "meaning": meaning_payload},
+        )
+    if meaning.status != MEANING_DEFINITION or not meaning.meaning_definition:
+        return coach_cant_yet_response(
+            query=query,
+            display_answer=coach_template("understood_but_not_expressible.default"),
+            meaning_definition=meaning.meaning_definition,
+            interpretation_rules=list(meaning.interpretation_rules),
+            gap={"kind": "nl_understood_but_not_expressible", "message": "The request did not produce an executable meaning definition."},
+            audit={"pipeline": "scl_nl_to_search.v0", "meaning": meaning_payload},
+        )
+
+    contract, traces = generate_contract_from_meaning(meaning.meaning_definition)
+    contract_hash = stable_hash(contract)
+    cached_response = COACH_RESPONSE_CACHE.get(contract_hash)
+    if cached_response is not None:
+        response = deepcopy(cached_response)
+        response["query"] = query
+        response.setdefault("audit", {})["cache_status"] = "HIT"
+        return response
+    target_id = f"coach_{contract_hash[:12]}"
+    target = {
+        "target_id": target_id,
+        "concept": target_id,
+        "target_contract": contract,
+    }
+    row = {"concept": target_id, "classification": "coach_prompt"}
+
+    with COACH_COMPILER_LOCK:
+        old_plan_dir = search.PLAN_DIR
+        search.PLAN_DIR = output_root / "coach-compiler" / "plans"
+        search.PLAN_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            catalog = search.CatalogIndex(excluded_refs=COACH_ALLOWED_EXCLUDED_REFS)
+            result = search.evaluate_target(
+                target=target,
+                row=row,
+                catalog=catalog,
+                executor=coach_search_executor(),
+            )
+        finally:
+            search.PLAN_DIR = old_plan_dir
+
+    audit = {
+        "pipeline": "scl_nl_to_scl_contract_to_search.v0",
+        "meaning": meaning_payload,
+        "trace_count": len(traces),
+        "evidence_fields": contract.get("required_evidence", []),
+        "providers_used": result.get("providers_used", []),
+        "rules_used": result.get("rules_used", []),
+        "failure_taxonomy": result.get("failure_taxonomy"),
+        "search_budget_label": result.get("search_budget_label"),
+        "requested_evidence_failure_count": result.get("requested_evidence_failure_count"),
+        "cache_status": "MISS",
+    }
+
+    if result.get("result") == "compiler_reachable":
+        result_count = int(result.get("result_count") or 0)
+        plan_hash = clean_optional_string(result.get("document_hash"))
+        visual_kind = coach_visual_moment_kind(contract)
+        if result_count <= 0:
+            response = ok(
+                {
+                    "status": "no_moments_found",
+                    "query": query,
+                    "display_answer": coach_template("no_moments_found.line_break_no_underneath_support"),
+                    "suggestions": COACH_SUGGESTIONS,
+                    "match_scope": COACH_MATCH_SCOPE,
+                    "meaning_definition": meaning.meaning_definition,
+                    "interpretation_rules": list(meaning.interpretation_rules),
+                    "contract_hash": contract_hash,
+                    "plan_hash": plan_hash,
+                    "result_count": 0,
+                    "moments": [],
+                    "gap": None,
+                    "audit": audit,
+                }
+            )
+            COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
+            return response
+        if visual_kind is None:
+            response = coach_cant_yet_response(
+                query=query,
+                display_answer=coach_template("understood_but_not_expressible.no_replay_surface"),
+                meaning_definition=meaning.meaning_definition,
+                interpretation_rules=list(meaning.interpretation_rules),
+                contract_hash=contract_hash,
+                gap={
+                    "kind": "replay_surface_missing",
+                    "message": "The compiler found observed moments, but this coach preview has no claim-bounded replay renderer for that contract yet.",
+                    "result_count": result_count,
+                    "plan_hash": plan_hash,
+                },
+                audit=audit,
+            )
+            COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
+            return response
+        response = ok(
+            {
+                "status": "moment_found",
+                "query": query,
+                "display_answer": coach_template("moment_found.line_break_no_underneath_support"),
+                "suggestions": COACH_SUGGESTIONS,
+                "match_scope": COACH_MATCH_SCOPE,
+                "meaning_definition": meaning.meaning_definition,
+                "interpretation_rules": list(meaning.interpretation_rules),
+                "contract_hash": contract_hash,
+                "plan_hash": plan_hash,
+                "result_count": result_count,
+                "moments": [
+                    {
+                        "moment_id": visual_kind,
+                        "result_count": result_count,
+                        "replay_payload": coach_moment_zero_payload(),
+                        "evidence_fields": list(contract.get("required_evidence", [])),
+                    }
+                ],
+                "gap": None,
+                "audit": audit,
+            }
+        )
+        COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
+        return response
+
+    failure_taxonomy = str(result.get("failure_taxonomy") or "not_compiler_reachable")
+    template_key = (
+        "understood_but_not_expressible.unsupported_modality"
+        if failure_taxonomy == "unsupported_modality"
+        else "understood_but_not_expressible.default"
+    )
+    response = coach_cant_yet_response(
+        query=query,
+        display_answer=coach_template(template_key),
+        meaning_definition=meaning.meaning_definition,
+        interpretation_rules=list(meaning.interpretation_rules),
+        contract_hash=contract_hash,
+        gap={
+            "kind": failure_taxonomy,
+            "message": str(result.get("message") or "The current compiler could not produce an executable observed moment."),
+            "details": result.get("failure_details") or {},
+        },
+        audit=audit,
+    )
+    COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
+    return response
+
+
+def coach_clarification_response(
+    *,
+    query: str,
+    display_answer: str,
+    clarification_codes: list[str],
+    clarification_questions: list[str],
+    audit: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return ok(
+        {
+            "status": "clarification_required",
+            "query": query,
+            "display_answer": display_answer,
+            "suggestions": COACH_SUGGESTIONS,
+            "match_scope": COACH_MATCH_SCOPE,
+            "meaning_definition": None,
+            "interpretation_rules": [],
+            "contract_hash": None,
+            "plan_hash": None,
+            "result_count": 0,
+            "moments": [],
+            "gap": {
+                "kind": "clarification_required",
+                "codes": clarification_codes,
+                "questions": clarification_questions,
+            },
+            "audit": audit or {},
+        }
+    )
+
+
+def coach_cant_yet_response(
+    *,
+    query: str,
+    display_answer: str,
+    meaning_definition: str | None,
+    interpretation_rules: list[str],
+    gap: dict[str, Any],
+    audit: dict[str, Any] | None = None,
+    contract_hash: str | None = None,
+) -> dict[str, Any]:
+    return ok(
+        {
+            "status": "understood_but_not_expressible",
+            "query": query,
+            "display_answer": display_answer,
+            "suggestions": COACH_SUGGESTIONS,
+            "match_scope": COACH_MATCH_SCOPE,
+            "meaning_definition": meaning_definition,
+            "interpretation_rules": interpretation_rules,
+            "contract_hash": contract_hash,
+            "plan_hash": None,
+            "result_count": 0,
+            "moments": [],
+            "gap": gap,
+            "audit": audit or {},
+        }
+    )
+
+
+def coach_visual_moment_kind(contract: dict[str, Any]) -> str | None:
+    required = set(str(field) for field in contract.get("required_evidence", []))
+    status_values = {
+        str(item.get("field")): str(item.get("required_value"))
+        for item in contract.get("status_semantics", [])
+        if isinstance(item, dict) and "required_value" in item
+    }
+    if (
+        {"line_break_status", "support_arrival_status", "support_region_mode", "supporting_player_ids"}.issubset(required)
+        and status_values.get("line_break_status") == "PASS"
+        and status_values.get("support_arrival_status") == "FAIL"
+    ):
+        return "line_break_no_underneath_support"
+    return None
+
+
+def coach_moment_zero_payload() -> dict[str, Any]:
+    path = REPO_ROOT / MOMENT_ZERO_PAYLOAD_PATH
+    if not path.exists():
+        return {}
+    return read_json(path)
 
 
 def needs_support_clarification(text: str, clarifications: list[str]) -> bool:
@@ -3088,7 +3438,14 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             return
         try:
             payload = self.read_body()
-            if parsed.path == "/api/interpret":
+            if parsed.path == "/api/coach/interpret":
+                self.send_json(
+                    validate_public_response(
+                        "CoachInterpretResponse",
+                        coach_interpret_request(payload, output_root=self.server.output_root),
+                    )
+                )
+            elif parsed.path == "/api/interpret":
                 self.send_json(
                     validate_public_response(
                         "InterpretResponse",

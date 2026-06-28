@@ -75,6 +75,7 @@ SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {
     "before_after_same_anchor",
     "distinct_entity_fields",
     "frame_alignment",
+    "relation_on_anchor",
     "same_anchor_identity",
     "same_player_return",
     "temporal_order",
@@ -195,12 +196,13 @@ class SynthesisError(Exception):
 
 
 class CatalogIndex:
-    def __init__(self) -> None:
+    def __init__(self, *, excluded_refs: set[str] | None = None) -> None:
         catalog = default_catalog()
+        excluded = EXCLUDED_CATALOG_REFS if excluded_refs is None else excluded_refs
         self.entries: dict[str, CatalogEntry] = {
             entry.name: entry
             for entry in [*catalog.primitives, *catalog.relations]
-            if entry.name not in EXCLUDED_CATALOG_REFS
+            if entry.name not in excluded
         }
         self.outputs: dict[tuple[str, str], CatalogOutput] = {
             (entry.name, output.name): output
@@ -677,6 +679,10 @@ def build_entry(
         return build_join_episode_sets(context, entry, required_fields, depth=depth)
     if entry.name == "change_across_anchor":
         return build_change_across_anchor(context, entry, required_fields, depth=depth, input_context=input_context)
+    if entry.name == "controlled_line_break_episode":
+        return build_controlled_line_break_episode(context, entry, required_fields, depth=depth)
+    if should_build_relation_on_anchor(context, entry, required_fields, input_context):
+        return build_relation_on_anchor(context, entry, required_fields, depth=depth)
 
     nodes: list[dict[str, Any]] = []
     field_sources: dict[str, tuple[str, str]] = {}
@@ -693,7 +699,7 @@ def build_entry(
                 provider,
                 required_fields_for_input(entry, input_def, required_fields),
                 depth=depth + 1,
-                input_context={},
+                input_context=child_input_context(entry, input_def),
             )
             output_name = output.name if output.name in {out.name for out in provider.outputs} else child.terminal_output
         else:
@@ -722,6 +728,243 @@ def build_entry(
         rules_used=rules_used,
         providers_used=providers_used,
     )
+
+
+def build_controlled_line_break_episode(
+    context: SearchContext,
+    entry: CatalogEntry,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    rules = ["provider_input_coherence"]
+    controlled_pass = build_entry(
+        context,
+        require_entry(context, "controlled_pass_episode"),
+        {"anchor_id", "controlled_reception_frame_id", "pass_episode_id", "physical_release_frame_id", "receiver_id"},
+        depth=depth + 1,
+        input_context={},
+    )
+    line_model = build_entry(
+        context,
+        require_entry(context, "multi_line_model"),
+        {"anchor_id", "line_x_m", "multi_line_status", "observed_line_count", "target_line_rank", "defensive_line_player_ids"},
+        depth=depth + 1,
+        input_context={"anchors": controlled_pass, "anchor_frame_field": "physical_release_frame_id"},
+    )
+    release_position = build_entry(
+        context,
+        require_entry(context, "relative_position_to_line"),
+        {"anchor_id", "relative_position_status", "signed_distance_to_line_m"},
+        depth=depth + 1,
+        input_context={
+            "entity_anchors": controlled_pass,
+            "line_evaluations": line_model,
+            "entity_frame_field": "physical_release_frame_id",
+        },
+    )
+    reception_position = build_entry(
+        context,
+        require_entry(context, "relative_position_to_line"),
+        {"anchor_id", "relative_position_status", "signed_distance_to_line_m"},
+        depth=depth + 1,
+        input_context={
+            "entity_anchors": controlled_pass,
+            "line_evaluations": line_model,
+            "entity_frame_field": "controlled_reception_frame_id",
+        },
+    )
+    node_id = context.node_id(entry.name)
+    nodes = [
+        *controlled_pass.nodes,
+        *line_model.nodes,
+        *release_position.nodes,
+        *reception_position.nodes,
+    ]
+    nodes.append(
+        catalog_node(
+            node_id,
+            entry,
+            inputs={
+                "controlled_pass_anchors": ref(controlled_pass.terminal_node_id, controlled_pass.terminal_output),
+                "line_evaluations": ref(line_model.terminal_node_id, line_model.terminal_output),
+                "release_relative_positions": ref(release_position.terminal_node_id, release_position.terminal_output),
+                "reception_relative_positions": ref(reception_position.terminal_node_id, reception_position.terminal_output),
+            },
+            parameters=infer_parameters(entry, input_builds=[controlled_pass, line_model, release_position, reception_position], input_context={}),
+        )
+    )
+    field_sources = {
+        **controlled_pass.field_sources,
+        **line_model.field_sources,
+        **release_position.field_sources,
+        **reception_position.field_sources,
+    }
+    for field in context.catalog.field_set(entry):
+        field_sources.setdefault(field, (node_id, output_name_for_field(context.catalog, entry, field) or "anchor_evaluations"))
+    return BuildResult(
+        nodes=dedupe_nodes(nodes),
+        terminal_node_id=node_id,
+        terminal_entry=entry.name,
+        terminal_output="anchor_evaluations",
+        field_sources=field_sources,
+        rules_used=[
+            *controlled_pass.rules_used,
+            *line_model.rules_used,
+            *release_position.rules_used,
+            *reception_position.rules_used,
+            *rules,
+        ],
+        providers_used=[
+            *controlled_pass.providers_used,
+            *line_model.providers_used,
+            *release_position.providers_used,
+            *reception_position.providers_used,
+            entry.name,
+        ],
+    )
+
+
+def should_build_relation_on_anchor(
+    context: SearchContext,
+    entry: CatalogEntry,
+    required_fields: set[str],
+    input_context: dict[str, Any],
+) -> bool:
+    if input_context:
+        return False
+    if not has_single_anchor_input(entry):
+        return False
+    constraints = target_constraints(context, "relation_on_anchor")
+    if not constraints:
+        return False
+    entry_fields = context.catalog.field_set(entry)
+    for constraint in constraints:
+        relation_status_field = str(constraint.get("relation_status_field", ""))
+        if relation_status_field and relation_status_field in entry_fields:
+            return True
+    return bool(required_fields & entry_fields and required_fields - entry_fields)
+
+
+def build_relation_on_anchor(
+    context: SearchContext,
+    entry: CatalogEntry,
+    required_fields: set[str],
+    *,
+    depth: int,
+) -> BuildResult:
+    rules = ["generic_relation_on_anchor", "typed_anchor_provider_discovery"]
+    constraint = first_target_constraint(context, "relation_on_anchor")
+    input_def = entry.inputs[0]
+    entry_fields = context.catalog.field_set(entry)
+    anchor_required_fields = set(required_fields - entry_fields)
+    for field_name in (
+        constraint.get("anchor_status_field"),
+        constraint.get("anchor_frame_field"),
+        constraint.get("anchor_identity_field"),
+    ):
+        if field_name:
+            anchor_required_fields.add(str(field_name))
+    attempts: list[dict[str, Any]] = []
+    candidates = context.catalog.compatible_outputs(input_def)
+    scored_candidates: list[tuple[int, str, str, CatalogEntry, CatalogOutput]] = []
+    for provider, output in candidates:
+        if provider.name == entry.name:
+            continue
+        provider_fields = context.catalog.field_set(provider)
+        anchor_status_field = str(constraint.get("anchor_status_field", ""))
+        if anchor_status_field and anchor_status_field not in provider_fields:
+            continue
+        covered = provider_fields & anchor_required_fields
+        if not covered:
+            continue
+        score = 20 * len(covered)
+        if str(constraint.get("anchor_status_field", "")) in provider_fields:
+            score += 12
+        if str(constraint.get("anchor_frame_field", "")) in provider_fields:
+            score += 6
+        scored_candidates.append((-score, provider.name, output.name, provider, output))
+
+    for _score, _provider_name, _output_name, provider, output in sorted(scored_candidates)[: context.max_branching]:
+        try:
+            anchor = build_entry(
+                context,
+                provider,
+                anchor_required_fields,
+                depth=depth + 1,
+                input_context={},
+            )
+            missing_anchor_fields = sorted(field for field in anchor_required_fields if field not in anchor.field_sources)
+            if missing_anchor_fields:
+                raise SynthesisError(
+                    "missing_constraint",
+                    "Candidate anchor provider did not expose required anchor fields.",
+                    {
+                        "anchor_provider": provider.name,
+                        "missing_anchor_fields": missing_anchor_fields,
+                    },
+                )
+            node_id = context.node_id(entry.name)
+            nodes = [*anchor.nodes]
+            node_input_context = relation_on_anchor_input_context(constraint)
+            nodes.append(
+                catalog_node(
+                    node_id,
+                    entry,
+                    inputs={"anchors": ref(anchor.terminal_node_id, output.name if output.name in {out.name for out in provider.outputs} else anchor.terminal_output)},
+                    parameters=infer_parameters(entry, input_builds=[anchor], input_context=node_input_context),
+                )
+            )
+            field_sources = {**anchor.field_sources}
+            for field in entry_fields:
+                field_sources.setdefault(field, (node_id, output_name_for_field(context.catalog, entry, field) or "anchor_evaluations"))
+            return BuildResult(
+                nodes=dedupe_nodes(nodes),
+                terminal_node_id=node_id,
+                terminal_entry=entry.name,
+                terminal_output="anchor_evaluations",
+                field_sources=field_sources,
+                rules_used=[*anchor.rules_used, *rules],
+                providers_used=[*anchor.providers_used, entry.name],
+            )
+        except SynthesisError as error:
+            attempts.append(
+                {
+                    "anchor_provider": provider.name,
+                    "taxonomy": error.taxonomy,
+                    "message": error.message,
+                    **error.details,
+                }
+            )
+    raise SynthesisError(
+        "missing_constraint",
+        "No typed anchor-relation composition satisfied the requested evidence fields.",
+        {"attempted": attempts[: context.max_branching], "required_fields": sorted(required_fields)},
+    )
+
+
+def relation_on_anchor_input_context(constraint: dict[str, Any]) -> dict[str, Any]:
+    payload: dict[str, Any] = {}
+    for key in (
+        "anchor_frame_field",
+        "candidate_scope",
+        "support_region_mode",
+        "maximum_arrival_seconds",
+        "minimum_duration_seconds",
+        "maximum_support_distance_m",
+        "minimum_supporting_players",
+        "required_anchor_status_field",
+        "required_anchor_status_value",
+    ):
+        if key in constraint:
+            payload[key] = constraint[key]
+    anchor_status_field = constraint.get("anchor_status_field")
+    if anchor_status_field and "required_anchor_status_field" not in payload:
+        payload["required_anchor_status_field"] = anchor_status_field
+    anchor_status_value = constraint.get("anchor_status_value")
+    if anchor_status_value and "required_anchor_status_value" not in payload:
+        payload["required_anchor_status_value"] = anchor_status_value
+    return payload
 
 
 def build_change_across_anchor(
@@ -906,6 +1149,17 @@ def evaluator_input_context(
     if carrier_id_field is not None:
         payload["carrier_id_field"] = carrier_id_field
     return payload
+
+
+def child_input_context(consumer: CatalogEntry, input_def: CatalogInput) -> dict[str, Any]:
+    if consumer.name == "controlled_line_break_episode":
+        if input_def.name == "line_evaluations":
+            return {"anchor_frame_field": "physical_release_frame_id"}
+        if input_def.name == "release_relative_positions":
+            return {"entity_frame_field": "physical_release_frame_id"}
+        if input_def.name == "reception_relative_positions":
+            return {"entity_frame_field": "controlled_reception_frame_id"}
+    return {}
 
 
 def target_constraints(context: SearchContext, kind: str | None = None) -> list[dict[str, Any]]:
@@ -1306,12 +1560,14 @@ def choose_input_provider(
             {"consumer": consumer.name, "input": input_def.name},
         )
     dependencies = field_dependencies_for_consumer(consumer)
+    input_dependencies = field_dependencies_for_input(consumer, input_def)
     scored: list[tuple[int, int, str, str, CatalogEntry, CatalogOutput]] = []
     for provider, output in candidates:
         if provider.name == consumer.name:
             continue
         fields = set(output.evidence_fields)
         score = 0
+        score += 20 * len(input_dependencies & fields)
         score += 10 * len(dependencies & fields)
         if input_def.name in provider.name or provider.name in input_def.name:
             score += 8
@@ -1331,7 +1587,27 @@ def choose_input_provider(
     return provider, output
 
 
+def field_dependencies_for_input(consumer: CatalogEntry, input_def: CatalogInput) -> set[str]:
+    if consumer.name == "controlled_line_break_episode" and input_def.name == "line_evaluations":
+        return {"line_x_m", "multi_line_status", "target_line_rank"}
+    if consumer.name == "controlled_line_break_episode" and input_def.name == "controlled_pass_anchors":
+        return {"anchor_id", "controlled_reception_frame_id", "physical_release_frame_id", "receiver_id"}
+    if consumer.name == "controlled_line_break_episode" and input_def.name in {"release_relative_positions", "reception_relative_positions"}:
+        return {"relative_position_status", "signed_distance_to_line_m"}
+    if consumer.name == "relative_position_to_line" and input_def.name == "line_evaluations":
+        return {"line_x_m", "multi_line_status", "target_line_rank"}
+    if consumer.name == "relative_position_to_line" and input_def.name == "entity_anchors":
+        return {"receiver_id", "controlled_reception_frame_id", "physical_release_frame_id"}
+    return set()
+
+
 def required_fields_for_input(entry: CatalogEntry, input_def: CatalogInput, target_fields: set[str]) -> set[str]:
+    if entry.name == "controlled_line_break_episode" and input_def.name == "controlled_pass_anchors":
+        return {"anchor_id", "controlled_reception_frame_id", "pass_episode_id", "physical_release_frame_id", "receiver_id"}
+    if entry.name == "controlled_line_break_episode" and input_def.name == "line_evaluations":
+        return {"anchor_id", "line_x_m", "multi_line_status", "observed_line_count", "target_line_rank"}
+    if entry.name == "controlled_line_break_episode" and input_def.name in {"release_relative_positions", "reception_relative_positions"}:
+        return {"anchor_id", "relative_position_status", "signed_distance_to_line_m"}
     if entry.name == "carry_episode" and input_def.name == "controlled_pass_anchors":
         return {"controlled_pass_status", "receiver_id", "controlled_reception_frame_id"}
     if entry.name == "off_ball_run_type" and input_def.name == "runs":
@@ -1373,6 +1649,36 @@ def infer_parameters(
     input_builds: list[BuildResult],
     input_context: dict[str, Any],
 ) -> dict[str, Any]:
+    if entry.name == "multi_line_model":
+        return {
+            "anchor_frame_field": enum(str(input_context.get("anchor_frame_field", "physical_release_frame_id"))),
+            "goal_side_buffer_m": number(1.0, "metre"),
+            "line_band_width_m": number(2.5, "metre"),
+            "minimum_line_defenders": number(2.0, "count"),
+            "target_line_rank": number(2.0, "count"),
+        }
+    if entry.name == "controlled_line_break_episode":
+        return {
+            "line_buffer_m": number(0.5, "metre"),
+        }
+    if entry.name == "relative_position_to_line":
+        return {
+            "entity_id_field": enum(str(input_context.get("entity_id_field", "receiver_id"))),
+            "entity_frame_field": enum(str(input_context.get("entity_frame_field", "controlled_reception_frame_id"))),
+            "line_buffer_m": number(0.5, "metre"),
+        }
+    if entry.name == "support_arrival_relation":
+        return {
+            "anchor_frame_field": enum(str(input_context.get("anchor_frame_field", "controlled_reception_frame_id"))),
+            "candidate_scope": enum(str(input_context.get("candidate_scope", "perspective_outfield"))),
+            "support_region_mode": enum(str(input_context.get("support_region_mode", "WITHIN_DISTANCE_OF_REFERENCE_POINT"))),
+            "maximum_arrival_seconds": number(float(input_context.get("maximum_arrival_seconds", 3.0)), "second"),
+            "minimum_duration_seconds": number(float(input_context.get("minimum_duration_seconds", 0.0)), "second"),
+            "maximum_support_distance_m": number(float(input_context.get("maximum_support_distance_m", 8.0)), "metre"),
+            "minimum_supporting_players": number(float(input_context.get("minimum_supporting_players", 1.0)), "count"),
+            "required_anchor_status_field": enum(str(input_context.get("required_anchor_status_field", "none"))),
+            "required_anchor_status_value": enum(str(input_context.get("required_anchor_status_value", "PASS"))),
+        }
     if entry.name == "pressure_on_carrier":
         return {
             "frame_field": enum(str(input_context.get("frame_field", "controlled_reception_frame_id"))),

@@ -1,6 +1,7 @@
 import type {
   BootstrapResponse as GeneratedBootstrapResponse,
   ConfirmationResponse as GeneratedConfirmationResponse,
+  CoachInterpretResponse as GeneratedCoachInterpretResponse,
   ErrorResponse as GeneratedErrorResponse,
   ExecutionProgressResponse as GeneratedExecutionProgressResponse,
   ExecutionResponse as GeneratedExecutionResponse,
@@ -118,6 +119,28 @@ export type InterpretResponse = Omit<GeneratedInterpretResponse, "recipe" | "pla
   manual_available?: boolean | null;
   repair_applied?: boolean;
   fallback_reason?: string | null;
+};
+
+export type CoachInterpretResponse = Omit<GeneratedCoachInterpretResponse, "moments" | "gap" | "audit" | "match_scope"> & {
+  ok: true;
+  status: "moment_found" | "no_moments_found" | "clarification_required" | "understood_but_not_expressible";
+  query: string;
+  display_answer: string;
+  suggestions: string[];
+  match_scope: JsonObject;
+  meaning_definition?: string | null;
+  interpretation_rules: string[];
+  contract_hash?: string | null;
+  plan_hash?: string | null;
+  result_count: number;
+  moments: Array<{
+    moment_id: string;
+    result_count: number;
+    replay_payload?: JsonObject | null;
+    evidence_fields: string[];
+  }>;
+  gap?: JsonObject | null;
+  audit: JsonObject;
 };
 
 export type SubmitValidateResponse = Omit<GeneratedSubmitValidateResponse, "submit" | "validation"> & {

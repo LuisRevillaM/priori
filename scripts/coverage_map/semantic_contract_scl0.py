@@ -463,6 +463,16 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         add_lane_occupancy_element(builder, span)
         matched = True
 
+    if is_line_break_meaning(lower):
+        span = first_span(text, [r"line[- ]break", r"breaks? (?:the )?line", r"broke (?:the )?line", r"beyond the observed second defending line"]) or whole_span(text)
+        add_observed_line_break_element(builder, span)
+        matched = True
+
+    if is_underneath_support_absence_meaning(lower):
+        span = first_span(text, [r"no underneath support", r"without underneath support", r"no .*outlet", r"behind-ball support region", r"support outlet"]) or whole_span(text)
+        add_underneath_support_absence_element(builder, span)
+        matched = True
+
     if not has_pressure_change_phrase and (
         "under pressure" in lower or "defender pressure" in lower or "nearest-defender pressure" in lower
     ):
@@ -741,6 +751,75 @@ def add_lane_occupancy_element(builder: ContractBuilder, span: Span) -> None:
     builder.add_status("lane_occupancy_status", "PASS", span, rule_id)
     builder.add_claim_part(
         "Observed fixed lateral-lane classification and occupancy evidence only; no lane-count threshold, tactical role, complete coverage, intent, or support-quality claim is inferred.",
+        span,
+        rule_id,
+    )
+
+
+def add_observed_line_break_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.line_break.observed_second_line_transition"
+    for field_name in [
+        "line_break_status",
+        "line_break_reason",
+        "pass_episode_id",
+        "physical_release_frame_id",
+        "controlled_reception_frame_id",
+        "line_x_m",
+        "release_relative_position_status",
+        "reception_relative_position_status",
+        "receiver_id",
+        "multi_line_status",
+        "target_line_rank",
+        "observed_line_count",
+        "defensive_line_player_ids",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("line_break_status", "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed receiver movement beyond geometric line rank 2 only; no tactical line taxonomy, intent, pass quality, causation, or optimality claim.",
+        span,
+        rule_id,
+    )
+
+
+def add_underneath_support_absence_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.support_absence.underneath_outlet"
+    for field_name in [
+        "support_arrival_status",
+        "support_arrival_reason",
+        "support_anchor_frame_id",
+        "support_region_mode",
+        "maximum_arrival_seconds",
+        "minimum_duration_seconds",
+        "maximum_support_distance_m",
+        "minimum_supporting_players",
+        "supporting_player_ids",
+        "candidate_player_ids",
+        "coverage_status",
+        "required_anchor_status_field",
+        "required_anchor_status_value",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("support_arrival_status", "FAIL", span, rule_id)
+    builder.add_constraint(
+        {
+            "kind": "relation_on_anchor",
+            "relation_status_field": "support_arrival_status",
+            "anchor_status_field": "line_break_status",
+            "anchor_status_value": "PASS",
+            "anchor_frame_field": "controlled_reception_frame_id",
+            "candidate_scope": "perspective_outfield",
+            "support_region_mode": "BEHIND_BALL_OUTLET",
+            "maximum_arrival_seconds": 3.0,
+            "minimum_duration_seconds": 0.0,
+            "maximum_support_distance_m": 8.0,
+            "minimum_supporting_players": 1,
+        },
+        span,
+        rule_id,
+    )
+    builder.add_claim_part(
+        "No underneath support means the declared behind-ball outlet region was evaluated and no supporting player arrived inside the frozen distance/time window; no support quality, intent, or tactical judgement claim.",
         span,
         rule_id,
     )
@@ -1174,6 +1253,27 @@ def is_lane_occupancy_meaning(lower: str) -> bool:
             "channels",
         )
     )
+
+
+def is_line_break_meaning(lower: str) -> bool:
+    return any(
+        phrase in lower
+        for phrase in (
+            "line break",
+            "line-break",
+            "break the line",
+            "breaks the line",
+            "broke the line",
+            "beyond the observed second defending line",
+            "second defending line",
+        )
+    )
+
+
+def is_underneath_support_absence_meaning(lower: str) -> bool:
+    has_absence = any(phrase in lower for phrase in ("no ", "without", "empty", "absent", "stays empty"))
+    has_support = any(phrase in lower for phrase in ("underneath support", "support outlet", "outlet", "behind-ball support region"))
+    return has_absence and has_support
 
 
 def is_cover_shadow_meaning(lower: str) -> bool:

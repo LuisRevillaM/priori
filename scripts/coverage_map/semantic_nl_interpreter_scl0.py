@@ -87,6 +87,13 @@ def interpret_request(
             "nl.meaning.carry_forward_under_pressure",
         )
 
+    if is_line_break_without_underneath_support_request(lower):
+        return meaning(
+            request,
+            "A controlled pass where the receiver moves beyond the observed second defending line and no underneath support outlet arrives in the behind-ball support region after reception.",
+            "nl.meaning.line_break_without_underneath_support",
+        )
+
     if is_receive_under_pressure_request(lower):
         return meaning(
             request,
@@ -180,6 +187,26 @@ def is_progressive_carry_under_pressure_request(lower: str) -> bool:
     has_pressure = "pressure" in lower
     has_forward = any(token in lower for token in ("forward", "progress", "progressive"))
     return has_carry and has_pressure and has_forward
+
+
+def is_line_break_without_underneath_support_request(lower: str) -> bool:
+    has_line_break = any(
+        phrase in lower
+        for phrase in (
+            "line break",
+            "line-break",
+            "line-breaking",
+            "break the line",
+            "broke the line",
+            "breaks the line",
+            "breaks second line",
+            "break the second line",
+            "second line",
+        )
+    )
+    has_absence = any(phrase in lower for phrase in ("no ", "without", "empty", "absent", "stays empty"))
+    has_support = any(phrase in lower for phrase in ("underneath", "support", "outlet"))
+    return has_line_break and has_absence and has_support
 
 
 def is_receive_under_pressure_request(lower: str) -> bool:

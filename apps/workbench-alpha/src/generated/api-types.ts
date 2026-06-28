@@ -226,6 +226,169 @@ export const apiSchemas = {
     "title": "BootstrapResponse",
     "type": "object"
   },
+  "CoachInterpretResponse": {
+    "$defs": {
+      "CoachMomentResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Fields",
+            "type": "array"
+          },
+          "moment_id": {
+            "title": "Moment Id",
+            "type": "string"
+          },
+          "replay_payload": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Replay Payload"
+          },
+          "result_count": {
+            "title": "Result Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "moment_id",
+          "result_count",
+          "evidence_fields"
+        ],
+        "title": "CoachMomentResponse",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "audit": {
+        "additionalProperties": true,
+        "title": "Audit",
+        "type": "object"
+      },
+      "contract_hash": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Contract Hash"
+      },
+      "display_answer": {
+        "title": "Display Answer",
+        "type": "string"
+      },
+      "gap": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Gap"
+      },
+      "interpretation_rules": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Interpretation Rules",
+        "type": "array"
+      },
+      "match_scope": {
+        "additionalProperties": true,
+        "title": "Match Scope",
+        "type": "object"
+      },
+      "meaning_definition": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Meaning Definition"
+      },
+      "moments": {
+        "items": {
+          "$ref": "#/$defs/CoachMomentResponse"
+        },
+        "title": "Moments",
+        "type": "array"
+      },
+      "ok": {
+        "const": true,
+        "title": "Ok",
+        "type": "boolean"
+      },
+      "plan_hash": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Plan Hash"
+      },
+      "query": {
+        "title": "Query",
+        "type": "string"
+      },
+      "result_count": {
+        "default": 0,
+        "title": "Result Count",
+        "type": "integer"
+      },
+      "status": {
+        "enum": [
+          "moment_found",
+          "no_moments_found",
+          "clarification_required",
+          "understood_but_not_expressible"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "suggestions": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Suggestions",
+        "type": "array"
+      }
+    },
+    "required": [
+      "ok",
+      "status",
+      "query",
+      "display_answer"
+    ],
+    "title": "CoachInterpretResponse",
+    "type": "object"
+  },
   "ConfirmationResponse": {
     "additionalProperties": false,
     "properties": {
@@ -1546,6 +1709,7 @@ export const apiSchemas = {
 } as const;
 
 export type BootstrapResponse = FromSchema<typeof apiSchemas["BootstrapResponse"]>;
+export type CoachInterpretResponse = FromSchema<typeof apiSchemas["CoachInterpretResponse"]>;
 export type ConfirmationResponse = FromSchema<typeof apiSchemas["ConfirmationResponse"]>;
 export type ErrorResponse = FromSchema<typeof apiSchemas["ErrorResponse"]>;
 export type ExecutionProgressResponse = FromSchema<typeof apiSchemas["ExecutionProgressResponse"]>;

@@ -1,34 +1,63 @@
 import { FormEvent, useMemo, useState } from "react";
-import { coachExamplePrompts, interpretCoachQuery, type CoachInterpretation } from "./coachCompiler";
-import { MomentZeroPitch, momentZeroEvidence } from "./MomentZero";
+import { coachInterpret } from "./api";
+import { MomentZeroPitch, momentZeroEvidence, type MomentZeroPayload } from "./MomentZero";
+import type { CoachInterpretResponse } from "./types";
 
 const DEFAULT_QUERY = "Show line breaks with no underneath outlet";
+const EXAMPLES = [
+  "Show line breaks with no underneath outlet",
+  "Show expected pass completion",
+  "Show dangerous attacks"
+];
 
 export function CoachSurface() {
-  const examples = useMemo(() => coachExamplePrompts(), []);
+  const examples = useMemo(() => EXAMPLES, []);
   const [query, setQuery] = useState(DEFAULT_QUERY);
-  const [result, setResult] = useState<CoachInterpretation>(() => interpretCoachQuery(DEFAULT_QUERY));
+  const [result, setResult] = useState<CoachInterpretResponse | null>(null);
+  const [activePayload, setActivePayload] = useState<MomentZeroPayload>(momentZeroEvidence);
   const [runId, setRunId] = useState(0);
+  const [isLooking, setIsLooking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const submit = (event?: FormEvent<HTMLFormElement>) => {
+  const submit = async (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    const next = interpretCoachQuery(query);
-    setResult(next);
-    if (next.kind === "moment") {
-      setRunId((value) => value + 1);
+    setIsLooking(true);
+    setError(null);
+    try {
+      const next = await coachInterpret({ query });
+      setResult(next);
+      const payload = next.moments[0]?.replay_payload;
+      if (next.status === "moment_found" && payload) {
+        setActivePayload(payload as unknown as MomentZeroPayload);
+        setRunId((value) => value + 1);
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The moment could not be loaded.");
+    } finally {
+      setIsLooking(false);
     }
   };
 
-  const chooseExample = (example: string) => {
+  const chooseExample = async (example: string) => {
     setQuery(example);
-    const next = interpretCoachQuery(example);
-    setResult(next);
-    if (next.kind === "moment") {
-      setRunId((value) => value + 1);
+    setIsLooking(true);
+    setError(null);
+    try {
+      const next = await coachInterpret({ query: example });
+      setResult(next);
+      const payload = next.moments[0]?.replay_payload;
+      if (next.status === "moment_found" && payload) {
+        setActivePayload(payload as unknown as MomentZeroPayload);
+        setRunId((value) => value + 1);
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The moment could not be loaded.");
+    } finally {
+      setIsLooking(false);
     }
   };
 
-  const isMoment = result.kind === "moment";
+  const isMoment = !result || result.status === "moment_found";
 
   return (
     <main className="coachShell">
@@ -39,7 +68,7 @@ export function CoachSurface() {
         </div>
 
         <div className="coachTheater" aria-label="Observed football moment preview">
-          <MomentZeroPitch key={runId} payload={momentZeroEvidence} />
+          <MomentZeroPitch key={runId} payload={activePayload} />
         </div>
 
         <form className="coachCommand" onSubmit={submit}>
@@ -51,13 +80,14 @@ export function CoachSurface() {
               onChange={(event) => setQuery(event.target.value)}
               autoComplete="off"
               spellCheck={false}
+              disabled={isLooking}
             />
-            <button type="submit">Show</button>
+            <button type="submit" disabled={isLooking}>{isLooking ? "Looking" : "Show"}</button>
           </div>
-          <p className="coachResponse">{responseCopy(result)}</p>
+          <p className={isLooking ? "coachResponse isLoading" : "coachResponse"}>{responseCopy(result, isLooking, error)}</p>
           <div className="coachPromptRail" aria-label="Example requests">
             {examples.map((example) => (
-              <button type="button" key={example} onClick={() => chooseExample(example)}>
+              <button type="button" key={example} onClick={() => void chooseExample(example)} disabled={isLooking}>
                 {example}
               </button>
             ))}
@@ -68,7 +98,9 @@ export function CoachSurface() {
   );
 }
 
-function responseCopy(result: CoachInterpretation) {
-  if (result.kind === "moment") return result.display_answer;
-  return result.prompt;
+function responseCopy(result: CoachInterpretResponse | null, isLooking: boolean, error: string | null) {
+  if (error) return error;
+  if (isLooking) return "Looking across the matches.";
+  if (result) return result.display_answer;
+  return "Try an observable football idea.";
 }

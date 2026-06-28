@@ -41,6 +41,16 @@ class SclNl0Tests(unittest.TestCase):
         self.assertTrue(has_constraint_kind(base_contract, "same_player_return"))
         self.assertFalse(has_constraint_kind(changed_contract, "same_player_return"))
 
+    def test_line_break_without_support_cross_phrasing_is_stable(self) -> None:
+        first = interpret_request("show line breaks with no underneath outlet")
+        second = interpret_request("find moments where the receiver breaks the second line without support")
+
+        self.assertEqual(MEANING_DEFINITION, first.status)
+        self.assertEqual(MEANING_DEFINITION, second.status)
+        self.assertEqual(first.as_dict()["meaning_hash"], second.as_dict()["meaning_hash"])
+        contract, _ = generate_contract_from_meaning(first.meaning_definition or "")
+        self.assertTrue(has_constraint_kind(contract, "relation_on_anchor"))
+
     def test_ambiguous_request_requires_clarification(self) -> None:
         output = interpret_request("show me dangerous attacks")
 

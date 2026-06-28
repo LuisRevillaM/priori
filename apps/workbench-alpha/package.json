@@ -10,7 +10,7 @@
     "preview": "vite preview --host 127.0.0.1 --port 4174",
     "test:contracts": "npm run generate:contracts && git diff --exit-code -- src/generated/api-schemas.json src/generated/api-types.ts",
     "test:fixtures": "node tests/check-no-tactical-fixtures.mjs",
-    "test:unit": "tsx tests/api.test.ts && tsx tests/geometry.test.ts && tsx tests/playback.test.ts && tsx tests/presentation.test.ts && tsx tests/workbenchState.test.ts && tsx tests/overlay.test.ts && tsx tests/momentZero.test.ts && tsx tests/coachCompiler.test.ts",
+    "test:unit": "tsx tests/api.test.ts && tsx tests/geometry.test.ts && tsx tests/playback.test.ts && tsx tests/presentation.test.ts && tsx tests/workbenchState.test.ts && tsx tests/overlay.test.ts && tsx tests/momentZero.test.ts",
     "test:e2e": "npm run build && playwright test",
     "test:acceptance": "npm run test:contracts && npm run test:fixtures && npm run test:unit && npm run test:e2e"
   },

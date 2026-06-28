@@ -3,6 +3,7 @@ import { apiSchemas } from "./generated/api-types";
 import type {
   BootstrapResponse,
   ConfirmationResponse,
+  CoachInterpretResponse,
   ErrorResponse,
   ExecutionProgressResponse,
   ExecutionResponse,
@@ -96,6 +97,13 @@ export function interpret(input: {
   clarifications?: string[];
 }): Promise<InterpretResponse> {
   return request<InterpretResponse>("InterpretResponse", "/api/interpret", {
+    method: "POST",
+    body: JSON.stringify(input)
+  });
+}
+
+export function coachInterpret(input: { query: string }): Promise<CoachInterpretResponse> {
+  return request<CoachInterpretResponse>("CoachInterpretResponse", "/api/coach/interpret", {
     method: "POST",
     body: JSON.stringify(input)
   });
