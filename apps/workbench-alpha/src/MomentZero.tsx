@@ -111,6 +111,7 @@ function renderMoment(
   drawDefensiveLine(ctx, replay, moment, frame, phase);
   drawPassPath(ctx, replay, moment, phase);
   drawSupportRegion(ctx, replay, moment, phase);
+  drawNearestSupportDistance(ctx, replay, moment, frame, phase);
   drawReceiverFocus(ctx, replay, moment, frame, phase);
   drawBall(ctx, replay, frame, phase);
 }
@@ -360,6 +361,62 @@ function drawSupportRegion(
   ctx.fillStyle = voidGradient;
   ctx.fill();
   ctx.restore();
+}
+
+function drawNearestSupportDistance(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: MomentZeroMoment,
+  frame: ReplayPayload["frames"][number],
+  phase: ReturnType<typeof revealPhase>
+) {
+  const alpha = phase.lonely * phase.resetFade;
+  if (alpha <= 0) return;
+  const receiver = frame.entities.find((entity) => entity.entity_id === moment.receiver_id);
+  if (!receiver) return;
+  const nearest = nearestCandidate(frame.entities, moment, receiver);
+  if (!nearest) return;
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const receiverPoint = pitchPointToPixel(receiver.x_m, receiver.y_m, replay.pitch, layout);
+  const nearestPoint = pitchPointToPixel(nearest.x_m, nearest.y_m, replay.pitch, layout);
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.36;
+  ctx.strokeStyle = "rgba(245, 241, 222, 0.42)";
+  ctx.lineWidth = 1.1;
+  ctx.setLineDash([2, 9]);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(receiverPoint.x, receiverPoint.y);
+  ctx.lineTo(nearestPoint.x, nearestPoint.y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.globalAlpha = alpha * 0.55;
+  ctx.fillStyle = PITCH_PALETTE.home;
+  ctx.beginPath();
+  ctx.arc(nearestPoint.x, nearestPoint.y, 3.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function nearestCandidate(
+  entities: ReplayPayload["frames"][number]["entities"],
+  moment: MomentZeroMoment,
+  receiver: ReplayEntity
+) {
+  const candidateIds = new Set(moment.support_region.candidate_player_ids);
+  let nearest: ReplayEntity | null = null;
+  let nearestDistance = Number.POSITIVE_INFINITY;
+  for (const entity of entities) {
+    if (entity.entity_type === "ball" || entity.entity_id === receiver.entity_id || !candidateIds.has(entity.entity_id)) {
+      continue;
+    }
+    const distance = Math.hypot(entity.x_m - receiver.x_m, entity.y_m - receiver.y_m);
+    if (distance < nearestDistance) {
+      nearest = entity;
+      nearestDistance = distance;
+    }
+  }
+  return nearest;
 }
 
 function drawReceiverFocus(
