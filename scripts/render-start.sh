@@ -18,9 +18,18 @@ export WORKBENCH_HERMES_PYTHON="${WORKBENCH_HERMES_PYTHON:-/opt/hermes-agent/ven
 
 mkdir -p "$TQE_DATA_ROOT" "$TQE_RAW_ROOT" "$TQE_RUNTIME_ROOT" "$TQE_CACHE_ROOT"
 
-python /app/scripts/provision-demo-data.py \
-  --dataset-root /var/data/dataset \
-  --manifest "$TQE_DATA_MANIFEST_PATH"
+provision_demo_data() {
+  python /app/scripts/provision-demo-data.py \
+    --dataset-root /var/data/dataset \
+    --manifest "$TQE_DATA_MANIFEST_PATH"
+}
+
+if [[ "${TQE_PROVISION_DATA_BACKGROUND:-1}" == "1" ]]; then
+  echo "Provisioning demo data in background."
+  provision_demo_data &
+else
+  provision_demo_data
+fi
 
 if [[ "$WORKBENCH_HERMES_ENABLED" == "1" ]]; then
   /app/scripts/bootstrap-hermes.sh
