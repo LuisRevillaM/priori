@@ -1,0 +1,95 @@
+{
+  "schema_version": "scl_nl0_sample.v0",
+  "sample_policy": "small_vocabulary_blind_nl_to_meaning_proof_v0",
+  "cases": [
+    {
+      "case_id": "sclnl0_001",
+      "concept": "give_and_go_sequence",
+      "sample_role": "held_out_positive",
+      "held_out": true,
+      "coverage_classification": "supported",
+      "expected_nl_status": "MEANING_DEFINITION",
+      "expected_pipeline_outcome": "compiler_reachable",
+      "same_meaning_expected": true,
+      "vocabulary_invariance_disable": ["meaning.constraint.same_player_return"],
+      "requests": [
+        {
+          "request_id": "a",
+          "text": "show me give-and-gos"
+        },
+        {
+          "request_id": "b",
+          "text": "find wall passes"
+        }
+      ],
+      "changed_meaning_request": {
+        "request_id": "changed",
+        "text": "show two-pass combinations where the second player sends it onward to a different receiver",
+        "must_remove_constraint_kind": "same_player_return"
+      }
+    },
+    {
+      "case_id": "sclnl0_002",
+      "concept": "progressive_carry_under_pressure",
+      "sample_role": "novel_element_combination",
+      "held_out": true,
+      "coverage_classification": "supported",
+      "expected_nl_status": "MEANING_DEFINITION",
+      "expected_pipeline_outcome": "compiler_reachable",
+      "same_meaning_expected": true,
+      "requests": [
+        {
+          "request_id": "a",
+          "text": "show carries under pressure that progress forward"
+        },
+        {
+          "request_id": "b",
+          "text": "find progressive carries under defender pressure"
+        }
+      ]
+    },
+    {
+      "case_id": "sclnl0_003",
+      "concept": "expected_pass_completion",
+      "sample_role": "known_negative",
+      "coverage_classification": "missing_modality",
+      "expected_nl_status": "MEANING_DEFINITION",
+      "expected_pipeline_outcome": "unsupported_modality",
+      "expected_failure_taxonomy": "unsupported_modality",
+      "requests": [
+        {
+          "request_id": "a",
+          "text": "show expected pass completion"
+        }
+      ]
+    },
+    {
+      "case_id": "sclnl0_004",
+      "concept": "dangerous_attack",
+      "sample_role": "ambiguous_request",
+      "coverage_classification": "needs_definition",
+      "expected_nl_status": "CLARIFICATION_REQUIRED",
+      "expected_pipeline_outcome": "clarification_required",
+      "requests": [
+        {
+          "request_id": "a",
+          "text": "show me dangerous attacks"
+        }
+      ]
+    },
+    {
+      "case_id": "sclnl0_005",
+      "concept": "blindside_rotation",
+      "sample_role": "understood_not_expressible",
+      "coverage_classification": "partial_with_typed_gap",
+      "expected_nl_status": "MEANING_DEFINITION",
+      "expected_pipeline_outcome": "nl_understood_but_not_expressible",
+      "requests": [
+        {
+          "request_id": "a",
+          "text": "show blindside rotations"
+        }
+      ]
+    }
+  ]
+}

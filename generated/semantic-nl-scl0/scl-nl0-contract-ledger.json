@@ -1,0 +1,968 @@
+[
+  {
+    "case_id": "sclnl0_001",
+    "concept": "give_and_go_sequence",
+    "contract": {
+      "claim_boundary": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim. Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim.",
+      "composition_constraints": [
+        {
+          "description": "The terminal receiver must be the original input passer.",
+          "kind": "same_player_return",
+          "left_field": "input_passer_id",
+          "right_field": "terminal_receiver_id"
+        },
+        {
+          "kind": "distinct_entity_fields",
+          "value": "input_passer_id,relay_player_id"
+        },
+        {
+          "kind": "temporal_order",
+          "left_time_field": "relay_touch_frame_id",
+          "maximum_gap_seconds": 6.0,
+          "right_time_field": "terminal_controlled_reception_frame_id",
+          "temporal_relation": "left_before_right"
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "input_pass_episode_id",
+        "input_passer_id",
+        "pass_chain_status",
+        "relay_pass_episode_id",
+        "relay_player_id",
+        "terminal_controlled_reception_frame_id",
+        "terminal_receiver_id"
+      ],
+      "status_semantics": [
+        {
+          "field": "pass_chain_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "3aeb20da43030115bf4d7a17ba59c751891e2127dddea6f5fe04c0693afa5bf4",
+    "meaning_definition": "A give-and-go is a two-pass combination where the original passer plays to a teammate and then receives the return pass back as the terminal receiver.",
+    "meaning_hash": "68d6911b5082626714316720de697c682710b158040925459fca4f14ae4167a1",
+    "opaque_search_concept": "sclnl0_001",
+    "request_id": "a",
+    "target_id": "sclnl0_001_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.pass_chain_status",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "pass_chain_status"
+      },
+      {
+        "contract_path": "required_evidence.input_pass_episode_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "input_pass_episode_id"
+      },
+      {
+        "contract_path": "required_evidence.relay_pass_episode_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "relay_pass_episode_id"
+      },
+      {
+        "contract_path": "required_evidence.input_passer_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "input_passer_id"
+      },
+      {
+        "contract_path": "required_evidence.relay_player_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "relay_player_id"
+      },
+      {
+        "contract_path": "required_evidence.terminal_receiver_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "terminal_receiver_id"
+      },
+      {
+        "contract_path": "required_evidence.terminal_controlled_reception_frame_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "terminal_controlled_reception_frame_id"
+      },
+      {
+        "contract_path": "status_semantics.pass_chain_status",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.distinct_entity_fields",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": {
+          "kind": "distinct_entity_fields",
+          "value": "input_passer_id,relay_player_id"
+        }
+      },
+      {
+        "contract_path": "composition_constraints.temporal_order",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": {
+          "kind": "temporal_order",
+          "left_time_field": "relay_touch_frame_id",
+          "maximum_gap_seconds": 6.0,
+          "right_time_field": "terminal_controlled_reception_frame_id",
+          "temporal_relation": "left_before_right"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim."
+      },
+      {
+        "contract_path": "composition_constraints.same_player_return",
+        "rule_id": "meaning.constraint.same_player_return",
+        "source_end": 124,
+        "source_phrase": "return pass back",
+        "source_start": 108,
+        "value": {
+          "description": "The terminal receiver must be the original input passer.",
+          "kind": "same_player_return",
+          "left_field": "input_passer_id",
+          "right_field": "terminal_receiver_id"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.constraint.same_player_return",
+        "source_end": 124,
+        "source_phrase": "return pass back",
+        "source_start": 108,
+        "value": "Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim."
+      }
+    ]
+  },
+  {
+    "case_id": "sclnl0_001",
+    "concept": "give_and_go_sequence",
+    "contract": {
+      "claim_boundary": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim. Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim.",
+      "composition_constraints": [
+        {
+          "description": "The terminal receiver must be the original input passer.",
+          "kind": "same_player_return",
+          "left_field": "input_passer_id",
+          "right_field": "terminal_receiver_id"
+        },
+        {
+          "kind": "distinct_entity_fields",
+          "value": "input_passer_id,relay_player_id"
+        },
+        {
+          "kind": "temporal_order",
+          "left_time_field": "relay_touch_frame_id",
+          "maximum_gap_seconds": 6.0,
+          "right_time_field": "terminal_controlled_reception_frame_id",
+          "temporal_relation": "left_before_right"
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "input_pass_episode_id",
+        "input_passer_id",
+        "pass_chain_status",
+        "relay_pass_episode_id",
+        "relay_player_id",
+        "terminal_controlled_reception_frame_id",
+        "terminal_receiver_id"
+      ],
+      "status_semantics": [
+        {
+          "field": "pass_chain_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "3aeb20da43030115bf4d7a17ba59c751891e2127dddea6f5fe04c0693afa5bf4",
+    "meaning_definition": "A give-and-go is a two-pass combination where the original passer plays to a teammate and then receives the return pass back as the terminal receiver.",
+    "meaning_hash": "68d6911b5082626714316720de697c682710b158040925459fca4f14ae4167a1",
+    "opaque_search_concept": "sclnl0_001",
+    "request_id": "b",
+    "target_id": "sclnl0_001_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.pass_chain_status",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "pass_chain_status"
+      },
+      {
+        "contract_path": "required_evidence.input_pass_episode_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "input_pass_episode_id"
+      },
+      {
+        "contract_path": "required_evidence.relay_pass_episode_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "relay_pass_episode_id"
+      },
+      {
+        "contract_path": "required_evidence.input_passer_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "input_passer_id"
+      },
+      {
+        "contract_path": "required_evidence.relay_player_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "relay_player_id"
+      },
+      {
+        "contract_path": "required_evidence.terminal_receiver_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "terminal_receiver_id"
+      },
+      {
+        "contract_path": "required_evidence.terminal_controlled_reception_frame_id",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "terminal_controlled_reception_frame_id"
+      },
+      {
+        "contract_path": "status_semantics.pass_chain_status",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.distinct_entity_fields",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": {
+          "kind": "distinct_entity_fields",
+          "value": "input_passer_id,relay_player_id"
+        }
+      },
+      {
+        "contract_path": "composition_constraints.temporal_order",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": {
+          "kind": "temporal_order",
+          "left_time_field": "relay_touch_frame_id",
+          "maximum_gap_seconds": 6.0,
+          "right_time_field": "terminal_controlled_reception_frame_id",
+          "temporal_relation": "left_before_right"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.pass_chain.connected_sequence",
+        "source_end": 27,
+        "source_phrase": "two-pass",
+        "source_start": 19,
+        "value": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim."
+      },
+      {
+        "contract_path": "composition_constraints.same_player_return",
+        "rule_id": "meaning.constraint.same_player_return",
+        "source_end": 124,
+        "source_phrase": "return pass back",
+        "source_start": 108,
+        "value": {
+          "description": "The terminal receiver must be the original input passer.",
+          "kind": "same_player_return",
+          "left_field": "input_passer_id",
+          "right_field": "terminal_receiver_id"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.constraint.same_player_return",
+        "source_end": 124,
+        "source_phrase": "return pass back",
+        "source_start": 108,
+        "value": "Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim."
+      }
+    ]
+  },
+  {
+    "case_id": "sclnl0_002",
+    "concept": "progressive_carry_under_pressure",
+    "contract": {
+      "claim_boundary": "Observed movement-under-control only; no defender bypass, skill, intent, or pressure-break quality claim. Observed forward component only; no tactical quality, intent, or optimality claim. Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim. Observed same-anchor composition only; no tactical causation, quality, intent, or optimality claim. Pressure is observed on the carrier at the joined carry anchor; no pressure-quality claim.",
+      "composition_constraints": [
+        {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "approach_angle_degrees",
+        "carrier_id",
+        "carry_end_frame_id",
+        "carry_forward_progression_m",
+        "carry_start_frame_id",
+        "carry_status",
+        "closing_speed_mps",
+        "coverage_status",
+        "join_reason",
+        "join_status",
+        "nearest_defender_distance_m",
+        "nearest_defender_id",
+        "pressure_frame_id",
+        "pressure_reason",
+        "pressure_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "carry_forward_progression_m",
+          "operator": "gte",
+          "threshold": 3.0,
+          "unit": "metre"
+        },
+        {
+          "field": "carry_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "join_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "pressure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "8a1e0813b0836af5622cd1869cc4e1c14ead58496a2d9785e30de0c53d2318a4",
+    "meaning_definition": "A carry under defender pressure that also progresses forward.",
+    "meaning_hash": "1081f35c2a7d955e014bb49d011e965deebb2f3097a28accd4c2ecfd6515320d",
+    "opaque_search_concept": "sclnl0_002",
+    "request_id": "a",
+    "target_id": "sclnl0_002_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.carry_status",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "carry_status"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.carry_start_frame_id",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "carry_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.carry_end_frame_id",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "carry_end_frame_id"
+      },
+      {
+        "contract_path": "status_semantics.carry_status",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "Observed movement-under-control only; no defender bypass, skill, intent, or pressure-break quality claim."
+      },
+      {
+        "contract_path": "required_evidence.carry_forward_progression_m",
+        "rule_id": "meaning.element.forward_progression",
+        "source_end": 60,
+        "source_phrase": "forward",
+        "source_start": 53,
+        "value": "carry_forward_progression_m"
+      },
+      {
+        "contract_path": "status_semantics.carry_forward_progression_m",
+        "rule_id": "meaning.element.forward_progression",
+        "source_end": 60,
+        "source_phrase": "forward",
+        "source_start": 53,
+        "value": "gte:3.0:metre"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.element.forward_progression",
+        "source_end": 60,
+        "source_phrase": "forward",
+        "source_start": 53,
+        "value": "Observed forward component only; no tactical quality, intent, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.pressure_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "pressure_status"
+      },
+      {
+        "contract_path": "required_evidence.pressure_reason",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "pressure_reason"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.pressure_frame_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "pressure_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_defender_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "nearest_defender_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_defender_distance_m",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "nearest_defender_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.closing_speed_mps",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "closing_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.approach_angle_degrees",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "approach_angle_degrees"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.pressure_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.pressure.receive_under_pressure",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim."
+      },
+      {
+        "contract_path": "required_evidence.join_status",
+        "rule_id": "meaning.composition.same_anchor_episode_join",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": "join_status"
+      },
+      {
+        "contract_path": "required_evidence.join_reason",
+        "rule_id": "meaning.composition.same_anchor_episode_join",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": "join_reason"
+      },
+      {
+        "contract_path": "status_semantics.join_status",
+        "rule_id": "meaning.composition.same_anchor_episode_join",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.same_anchor_identity",
+        "rule_id": "meaning.composition.same_anchor_episode_join",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.composition.same_anchor_episode_join",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": "Observed same-anchor composition only; no tactical causation, quality, intent, or optimality claim."
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.composition.carry_pressure_anchor_alignment",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": "Pressure is observed on the carrier at the joined carry anchor; no pressure-quality claim."
+      }
+    ]
+  },
+  {
+    "case_id": "sclnl0_002",
+    "concept": "progressive_carry_under_pressure",
+    "contract": {
+      "claim_boundary": "Observed movement-under-control only; no defender bypass, skill, intent, or pressure-break quality claim. Observed forward component only; no tactical quality, intent, or optimality claim. Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim. Observed same-anchor composition only; no tactical causation, quality, intent, or optimality claim. Pressure is observed on the carrier at the joined carry anchor; no pressure-quality claim.",
+      "composition_constraints": [
+        {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      ],
+      "desired_output": "classification",
+      "required_evidence": [
+        "approach_angle_degrees",
+        "carrier_id",
+        "carry_end_frame_id",
+        "carry_forward_progression_m",
+        "carry_start_frame_id",
+        "carry_status",
+        "closing_speed_mps",
+        "coverage_status",
+        "join_reason",
+        "join_status",
+        "nearest_defender_distance_m",
+        "nearest_defender_id",
+        "pressure_frame_id",
+        "pressure_reason",
+        "pressure_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "carry_forward_progression_m",
+          "operator": "gte",
+          "threshold": 3.0,
+          "unit": "metre"
+        },
+        {
+          "field": "carry_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "join_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "pressure_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "8a1e0813b0836af5622cd1869cc4e1c14ead58496a2d9785e30de0c53d2318a4",
+    "meaning_definition": "A carry under defender pressure that also progresses forward.",
+    "meaning_hash": "1081f35c2a7d955e014bb49d011e965deebb2f3097a28accd4c2ecfd6515320d",
+    "opaque_search_concept": "sclnl0_002",
+    "request_id": "b",
+    "target_id": "sclnl0_002_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.carry_status",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "carry_status"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.carry_start_frame_id",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "carry_start_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.carry_end_frame_id",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "carry_end_frame_id"
+      },
+      {
+        "contract_path": "status_semantics.carry_status",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.element.carry",
+        "source_end": 7,
+        "source_phrase": "carry",
+        "source_start": 2,
+        "value": "Observed movement-under-control only; no defender bypass, skill, intent, or pressure-break quality claim."
+      },
+      {
+        "contract_path": "required_evidence.carry_forward_progression_m",
+        "rule_id": "meaning.element.forward_progression",
+        "source_end": 60,
+        "source_phrase": "forward",
+        "source_start": 53,
+        "value": "carry_forward_progression_m"
+      },
+      {
+        "contract_path": "status_semantics.carry_forward_progression_m",
+        "rule_id": "meaning.element.forward_progression",
+        "source_end": 60,
+        "source_phrase": "forward",
+        "source_start": 53,
+        "value": "gte:3.0:metre"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.element.forward_progression",
+        "source_end": 60,
+        "source_phrase": "forward",
+        "source_start": 53,
+        "value": "Observed forward component only; no tactical quality, intent, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.pressure_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "pressure_status"
+      },
+      {
+        "contract_path": "required_evidence.pressure_reason",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "pressure_reason"
+      },
+      {
+        "contract_path": "required_evidence.carrier_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "carrier_id"
+      },
+      {
+        "contract_path": "required_evidence.pressure_frame_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "pressure_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_defender_id",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "nearest_defender_id"
+      },
+      {
+        "contract_path": "required_evidence.nearest_defender_distance_m",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "nearest_defender_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.closing_speed_mps",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "closing_speed_mps"
+      },
+      {
+        "contract_path": "required_evidence.approach_angle_degrees",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "approach_angle_degrees"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.pressure_status",
+        "rule_id": "meaning.pressure.observed_components",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.pressure.receive_under_pressure",
+        "source_end": 31,
+        "source_phrase": "under defender pressure",
+        "source_start": 8,
+        "value": "Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim."
+      },
+      {
+        "contract_path": "required_evidence.join_status",
+        "rule_id": "meaning.composition.same_anchor_episode_join",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": "join_status"
+      },
+      {
+        "contract_path": "required_evidence.join_reason",
+        "rule_id": "meaning.composition.same_anchor_episode_join",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": "join_reason"
+      },
+      {
+        "contract_path": "status_semantics.join_status",
+        "rule_id": "meaning.composition.same_anchor_episode_join",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "composition_constraints.same_anchor_identity",
+        "rule_id": "meaning.composition.same_anchor_episode_join",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": {
+          "kind": "same_anchor_identity",
+          "left_key_field": "anchor_id",
+          "right_key_field": "anchor_id"
+        }
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.composition.same_anchor_episode_join",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": "Observed same-anchor composition only; no tactical causation, quality, intent, or optimality claim."
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.composition.carry_pressure_anchor_alignment",
+        "source_end": 61,
+        "source_phrase": "A carry under defender pressure that also progresses forward.",
+        "source_start": 0,
+        "value": "Pressure is observed on the carrier at the joined carry anchor; no pressure-quality claim."
+      }
+    ]
+  },
+  {
+    "case_id": "sclnl0_003",
+    "concept": "expected_pass_completion",
+    "contract": {
+      "claim_boundary": "Requires a learned probability/expectation model; tracking/events alone do not support this claim.",
+      "desired_output": "classification",
+      "required_evidence": [],
+      "required_modalities": [
+        "learned_model"
+      ],
+      "status_semantics": []
+    },
+    "contract_hash": "da0fe0015c96912e4df62c82df8b060aa9eaa9b7835662be427034103d7ae901",
+    "meaning_definition": "Expected pass completion means a learned probability or likelihood that a pass will be completed.",
+    "meaning_hash": "49aff7f78f116747b808774a4ee4b636027652760251854ccbbea58b66b962eb",
+    "opaque_search_concept": "sclnl0_003",
+    "request_id": "a",
+    "target_id": "sclnl0_003_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_modalities.learned_model",
+        "rule_id": "meaning.modality.learned_probability",
+        "source_end": 52,
+        "source_phrase": "probability",
+        "source_start": 41,
+        "value": "learned_model"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.modality.learned_probability",
+        "source_end": 52,
+        "source_phrase": "probability",
+        "source_start": 41,
+        "value": "Requires a learned probability/expectation model; tracking/events alone do not support this claim."
+      }
+    ]
+  },
+  {
+    "case_id": "sclnl0_005",
+    "concept": "blindside_rotation",
+    "contract": {
+      "claim_boundary": "The meaning is underspecified for SCL-0 and must return a precise typed gap.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "scl0_unresolved_meaning_status"
+      ],
+      "status_semantics": [
+        {
+          "field": "scl0_unresolved_meaning_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "f47dc95ca3e9b3ed3ef874d30247cf502470388e280449e26e24c0422cd0db72",
+    "meaning_definition": "A blindside rotation is a coordinated supporting movement around the opponent blind side that changes teammate positioning away from the ball.",
+    "meaning_hash": "347f43226f0c68fe9f543f00702f1769964a5fc4620186092ffd4e02e9178078",
+    "opaque_search_concept": "sclnl0_005",
+    "request_id": "a",
+    "target_id": "sclnl0_005_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.scl0_unresolved_meaning_status",
+        "rule_id": "meaning.unresolved",
+        "source_end": 142,
+        "source_phrase": "A blindside rotation is a coordinated supporting movement around the opponent blind side that changes teammate positioning away from the ball.",
+        "source_start": 0,
+        "value": "scl0_unresolved_meaning_status"
+      },
+      {
+        "contract_path": "status_semantics.scl0_unresolved_meaning_status",
+        "rule_id": "meaning.unresolved",
+        "source_end": 142,
+        "source_phrase": "A blindside rotation is a coordinated supporting movement around the opponent blind side that changes teammate positioning away from the ball.",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.unresolved",
+        "source_end": 142,
+        "source_phrase": "A blindside rotation is a coordinated supporting movement around the opponent blind side that changes teammate positioning away from the ball.",
+        "source_start": 0,
+        "value": "The meaning is underspecified for SCL-0 and must return a precise typed gap."
+      }
+    ]
+  }
+]

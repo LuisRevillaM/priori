@@ -1,0 +1,238 @@
+{
+  "note": "Targets are opaque typed contracts generated from NL-produced meaning definitions. Search receives no user request, meaning definition, football concept name, gold chain, provider path, or pattern label.",
+  "sample_policy": "small_vocabulary_blind_nl_to_meaning_proof_v0",
+  "schema_version": "compiler_search_targets.v0",
+  "strategy": "bounded_backward_search.v0.1.scl_nl0_meaning_contracts",
+  "targets": [
+    {
+      "concept": "sclnl0_001",
+      "held_out": true,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim. Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "input_pass_episode_id",
+          "input_passer_id",
+          "pass_chain_status",
+          "relay_pass_episode_id",
+          "relay_player_id",
+          "terminal_controlled_reception_frame_id",
+          "terminal_receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "sclnl0_001_a_v0"
+    },
+    {
+      "concept": "sclnl0_001",
+      "held_out": true,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed connected pass-chain sequence only; no planned combination, tactical quality, causation, or optimality claim. Observed identity-return pass chain only; no planned combination, third-man intent, quality, causation, or optimality claim.",
+        "composition_constraints": [
+          {
+            "description": "The terminal receiver must be the original input passer.",
+            "kind": "same_player_return",
+            "left_field": "input_passer_id",
+            "right_field": "terminal_receiver_id"
+          },
+          {
+            "kind": "distinct_entity_fields",
+            "value": "input_passer_id,relay_player_id"
+          },
+          {
+            "kind": "temporal_order",
+            "left_time_field": "relay_touch_frame_id",
+            "maximum_gap_seconds": 6.0,
+            "right_time_field": "terminal_controlled_reception_frame_id",
+            "temporal_relation": "left_before_right"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "input_pass_episode_id",
+          "input_passer_id",
+          "pass_chain_status",
+          "relay_pass_episode_id",
+          "relay_player_id",
+          "terminal_controlled_reception_frame_id",
+          "terminal_receiver_id"
+        ],
+        "status_semantics": [
+          {
+            "field": "pass_chain_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "sclnl0_001_b_v0"
+    },
+    {
+      "concept": "sclnl0_002",
+      "held_out": true,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed movement-under-control only; no defender bypass, skill, intent, or pressure-break quality claim. Observed forward component only; no tactical quality, intent, or optimality claim. Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim. Observed same-anchor composition only; no tactical causation, quality, intent, or optimality claim. Pressure is observed on the carrier at the joined carry anchor; no pressure-quality claim.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "approach_angle_degrees",
+          "carrier_id",
+          "carry_end_frame_id",
+          "carry_forward_progression_m",
+          "carry_start_frame_id",
+          "carry_status",
+          "closing_speed_mps",
+          "coverage_status",
+          "join_reason",
+          "join_status",
+          "nearest_defender_distance_m",
+          "nearest_defender_id",
+          "pressure_frame_id",
+          "pressure_reason",
+          "pressure_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          },
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "sclnl0_002_a_v0"
+    },
+    {
+      "concept": "sclnl0_002",
+      "held_out": true,
+      "multi_step": true,
+      "target_contract": {
+        "claim_boundary": "Observed movement-under-control only; no defender bypass, skill, intent, or pressure-break quality claim. Observed forward component only; no tactical quality, intent, or optimality claim. Observed pressure components only; no defender intent, pressure quality, causation, or decision-value claim. Observed same-anchor composition only; no tactical causation, quality, intent, or optimality claim. Pressure is observed on the carrier at the joined carry anchor; no pressure-quality claim.",
+        "composition_constraints": [
+          {
+            "kind": "same_anchor_identity",
+            "left_key_field": "anchor_id",
+            "right_key_field": "anchor_id"
+          }
+        ],
+        "desired_output": "classification",
+        "required_evidence": [
+          "approach_angle_degrees",
+          "carrier_id",
+          "carry_end_frame_id",
+          "carry_forward_progression_m",
+          "carry_start_frame_id",
+          "carry_status",
+          "closing_speed_mps",
+          "coverage_status",
+          "join_reason",
+          "join_status",
+          "nearest_defender_distance_m",
+          "nearest_defender_id",
+          "pressure_frame_id",
+          "pressure_reason",
+          "pressure_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "carry_forward_progression_m",
+            "operator": "gte",
+            "threshold": 3.0,
+            "unit": "metre"
+          },
+          {
+            "field": "carry_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "join_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "pressure_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "sclnl0_002_b_v0"
+    },
+    {
+      "concept": "sclnl0_003",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Requires a learned probability/expectation model; tracking/events alone do not support this claim.",
+        "desired_output": "classification",
+        "required_evidence": [],
+        "required_modalities": [
+          "learned_model"
+        ],
+        "status_semantics": []
+      },
+      "target_id": "sclnl0_003_a_v0"
+    },
+    {
+      "concept": "sclnl0_005",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "The meaning is underspecified for SCL-0 and must return a precise typed gap.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "scl0_unresolved_meaning_status"
+        ],
+        "status_semantics": [
+          {
+            "field": "scl0_unresolved_meaning_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "sclnl0_005_a_v0"
+    }
+  ]
+}

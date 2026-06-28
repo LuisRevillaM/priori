@@ -542,7 +542,7 @@ compiler-search-frontier-draw:
 	TQE_ATLAS_SCALE_ASSESS_REPORT=artifacts/autonomous/compiler-frontier-draw-assessment-report.json \
 	$(PYTHON) scripts/coverage_map/atlas_scale_contract_sample.py assess
 
-.PHONY: scl0-verify scl1-verify
+.PHONY: scl0-verify scl1-verify scl-nl0-verify
 scl0-verify:
 	$(PYTHON) scripts/coverage_map/semantic_contract_scl0.py prepare
 	TQE_SEARCH_WORKERS=4 \
@@ -557,3 +557,17 @@ scl0-verify:
 	$(PYTHON) scripts/coverage_map/semantic_contract_scl0.py assess
 
 scl1-verify: scl0-verify
+
+scl-nl0-verify:
+	$(PYTHON) -m unittest tests.test_scl_nl0
+	$(PYTHON) scripts/coverage_map/semantic_nl_scl0.py prepare
+	TQE_SEARCH_WORKERS=4 \
+	TQE_SEARCH_SHARED_NODE_CACHE=1 \
+	TQE_SEARCH_PERSISTENT_NODE_CACHE=1 \
+	TQE_SEARCH_TARGETS=generated/semantic-nl-scl0/scl-nl0-search-targets.v0.json \
+	TQE_SEARCH_LEDGER=generated/semantic-nl-scl0/scl-nl0-coverage-ledger.json \
+	TQE_SEARCH_OUT_DIR=generated/semantic-nl-scl0/search-run \
+	TQE_SEARCH_REPORT=artifacts/autonomous/scl-nl0-search-report.json \
+	TQE_SEARCH_UPDATE_LEDGER=0 \
+	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
+	$(PYTHON) scripts/coverage_map/semantic_nl_scl0.py assess

@@ -1,0 +1,37 @@
+{
+  "findings": [],
+  "gates": {
+    "ambiguity_requires_clarification": true,
+    "changed_meaning_changes_output": true,
+    "cross_phrasing_stability": true,
+    "held_out_configured": true,
+    "known_negatives_honest": true,
+    "nl_source_blind_to_scl_vocabulary": true,
+    "scl_traceability": true,
+    "search_receives_only_typed_contract": true,
+    "vocabulary_invariance": true
+  },
+  "outputs": {
+    "contract_ledger": "generated/semantic-nl-scl0/scl-nl0-contract-ledger.json",
+    "coverage_ledger": "generated/semantic-nl-scl0/scl-nl0-coverage-ledger.json",
+    "nl_ledger": "generated/semantic-nl-scl0/scl-nl0-meaning-ledger.json",
+    "targets": "generated/semantic-nl-scl0/scl-nl0-search-targets.v0.json"
+  },
+  "schema_version": "scl_nl0_prepare.v0",
+  "scope": {
+    "atlas_wide": false,
+    "nl_layer_reads_catalog": false,
+    "nl_layer_reads_scl_vocabulary": false,
+    "nl_layer_reads_search_schema": false,
+    "search_receives_only_typed_contract": true
+  },
+  "status": "PASS",
+  "summary": {
+    "case_count": 5,
+    "clarification_count": 1,
+    "findings_count": 0,
+    "meaning_definition_count": 6,
+    "request_count": 7,
+    "search_target_count": 6
+  }
+}

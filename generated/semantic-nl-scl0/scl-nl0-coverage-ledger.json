@@ -1,0 +1,32 @@
+[
+ {
+  "concept": "sclnl0_001",
+  "classification": "supported",
+  "composition_maturity": "scl_nl0_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "sclnl0_002",
+  "classification": "supported",
+  "composition_maturity": "scl_nl0_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "sclnl0_003",
+  "classification": "missing_modality",
+  "composition_maturity": "scl_nl0_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "sclnl0_004",
+  "classification": "needs_definition",
+  "composition_maturity": "scl_nl0_sample",
+  "original_concept_redacted_for_search": true
+ },
+ {
+  "concept": "sclnl0_005",
+  "classification": "partial_with_typed_gap",
+  "composition_maturity": "scl_nl0_sample",
+  "original_concept_redacted_for_search": true
+ }
+]

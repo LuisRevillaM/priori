@@ -1,0 +1,125 @@
+[
+  {
+    "case_id": "sclnl0_001",
+    "concept": "give_and_go_sequence",
+    "expected_nl_status": "MEANING_DEFINITION",
+    "nl_output": {
+      "clarification_codes": [],
+      "clarification_questions": [],
+      "interpretation_rules": [
+        "nl.meaning.two_pass_return_combination"
+      ],
+      "meaning_definition": "A give-and-go is a two-pass combination where the original passer plays to a teammate and then receives the return pass back as the terminal receiver.",
+      "meaning_hash": "68d6911b5082626714316720de697c682710b158040925459fca4f14ae4167a1",
+      "status": "MEANING_DEFINITION"
+    },
+    "request_id": "a",
+    "request_text": "show me give-and-gos"
+  },
+  {
+    "case_id": "sclnl0_001",
+    "concept": "give_and_go_sequence",
+    "expected_nl_status": "MEANING_DEFINITION",
+    "nl_output": {
+      "clarification_codes": [],
+      "clarification_questions": [],
+      "interpretation_rules": [
+        "nl.meaning.two_pass_return_combination"
+      ],
+      "meaning_definition": "A give-and-go is a two-pass combination where the original passer plays to a teammate and then receives the return pass back as the terminal receiver.",
+      "meaning_hash": "68d6911b5082626714316720de697c682710b158040925459fca4f14ae4167a1",
+      "status": "MEANING_DEFINITION"
+    },
+    "request_id": "b",
+    "request_text": "find wall passes"
+  },
+  {
+    "case_id": "sclnl0_002",
+    "concept": "progressive_carry_under_pressure",
+    "expected_nl_status": "MEANING_DEFINITION",
+    "nl_output": {
+      "clarification_codes": [],
+      "clarification_questions": [],
+      "interpretation_rules": [
+        "nl.meaning.carry_forward_under_pressure"
+      ],
+      "meaning_definition": "A carry under defender pressure that also progresses forward.",
+      "meaning_hash": "1081f35c2a7d955e014bb49d011e965deebb2f3097a28accd4c2ecfd6515320d",
+      "status": "MEANING_DEFINITION"
+    },
+    "request_id": "a",
+    "request_text": "show carries under pressure that progress forward"
+  },
+  {
+    "case_id": "sclnl0_002",
+    "concept": "progressive_carry_under_pressure",
+    "expected_nl_status": "MEANING_DEFINITION",
+    "nl_output": {
+      "clarification_codes": [],
+      "clarification_questions": [],
+      "interpretation_rules": [
+        "nl.meaning.carry_forward_under_pressure"
+      ],
+      "meaning_definition": "A carry under defender pressure that also progresses forward.",
+      "meaning_hash": "1081f35c2a7d955e014bb49d011e965deebb2f3097a28accd4c2ecfd6515320d",
+      "status": "MEANING_DEFINITION"
+    },
+    "request_id": "b",
+    "request_text": "find progressive carries under defender pressure"
+  },
+  {
+    "case_id": "sclnl0_003",
+    "concept": "expected_pass_completion",
+    "expected_nl_status": "MEANING_DEFINITION",
+    "nl_output": {
+      "clarification_codes": [],
+      "clarification_questions": [],
+      "interpretation_rules": [
+        "nl.meaning.learned_pass_expectation"
+      ],
+      "meaning_definition": "Expected pass completion means a learned probability or likelihood that a pass will be completed.",
+      "meaning_hash": "49aff7f78f116747b808774a4ee4b636027652760251854ccbbea58b66b962eb",
+      "status": "MEANING_DEFINITION"
+    },
+    "request_id": "a",
+    "request_text": "show expected pass completion"
+  },
+  {
+    "case_id": "sclnl0_004",
+    "concept": "dangerous_attack",
+    "expected_nl_status": "CLARIFICATION_REQUIRED",
+    "nl_output": {
+      "clarification_codes": [
+        "TACTICAL_MEANING_UNDERSPECIFIED"
+      ],
+      "clarification_questions": [
+        "Specify what should make the attack dangerous, such as shot outcome, box entry, pressure, or expected-value model."
+      ],
+      "interpretation_rules": [
+        "nl.ambiguity.dangerous_attack"
+      ],
+      "meaning_definition": null,
+      "meaning_hash": "f521cfd7a075988c8cda217cf6cbdaae6b709a8b019d75f06b12edbc6544404e",
+      "status": "CLARIFICATION_REQUIRED"
+    },
+    "request_id": "a",
+    "request_text": "show me dangerous attacks"
+  },
+  {
+    "case_id": "sclnl0_005",
+    "concept": "blindside_rotation",
+    "expected_nl_status": "MEANING_DEFINITION",
+    "nl_output": {
+      "clarification_codes": [],
+      "clarification_questions": [],
+      "interpretation_rules": [
+        "nl.meaning.blindside_rotation"
+      ],
+      "meaning_definition": "A blindside rotation is a coordinated supporting movement around the opponent blind side that changes teammate positioning away from the ball.",
+      "meaning_hash": "347f43226f0c68fe9f543f00702f1769964a5fc4620186092ffd4e02e9178078",
+      "status": "MEANING_DEFINITION"
+    },
+    "request_id": "a",
+    "request_text": "show blindside rotations"
+  }
+]
