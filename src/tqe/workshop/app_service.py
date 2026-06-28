@@ -3031,12 +3031,17 @@ def dataset_readiness_checks() -> list[dict[str, Any]]:
         ]
         missing = [path for path in required if not (DEFAULT_CANONICAL_ROOT / path).exists()]
         checks.append(readiness_check("dataset.core_tables.present", not missing, {"missing": missing}))
-    required_raw = [
-        "J03WOY/tracking.xml",
-        "J03WPY/tracking.xml",
-        "J03WQQ/tracking.xml",
-        "J03WR9/tracking.xml",
-    ]
+    manifest_raw_paths = manifest.get("required_raw_paths") if isinstance(manifest, dict) else None
+    required_raw = (
+        [str(path) for path in manifest_raw_paths]
+        if isinstance(manifest_raw_paths, list)
+        else [
+            "J03WOY/tracking.xml",
+            "J03WPY/tracking.xml",
+            "J03WQQ/tracking.xml",
+            "J03WR9/tracking.xml",
+        ]
+    )
     missing_raw = [path for path in required_raw if not (DEFAULT_RAW_ROOT / path).exists()]
     checks.append(
         readiness_check(

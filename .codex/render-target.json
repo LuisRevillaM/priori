@@ -37,7 +37,7 @@
     "TQE_DATA_MANIFEST_PATH": "/app/config/deploy/demo-data-manifest.json",
     "TQE_KNOWLEDGE_PACK_PATH": "/app/generated/tactical-knowledge-pack.json",
     "TQE_EXPECTED_KNOWLEDGE_PACK_SHA256": "ebb45c66041f244e34d0f0aa9fef9ee0f970dfdd4cd32032899f3bd99389cdb1",
-    "TQE_DATA_BUNDLE_SHA256": "d41fec5859b0aa448427a22bac306bc90abaf4785c5d7589d00b263c177e568d",
+    "TQE_DATA_BUNDLE_SHA256": "9e680b8b41670eece292e736ccd62184470b87e7e719eb578135b5be462f64a0",
     "DEMO_ACCESS_QUERY_TOKEN_ENABLED": "0"
   }
 }
