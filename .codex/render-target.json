@@ -27,7 +27,7 @@
     "WORKBENCH_HERMES_MODEL": "gpt-5.5",
     "WORKBENCH_HERMES_TOOLSET": "mcp-priori_tactical",
     "WORKBENCH_HERMES_PYTHON": "/opt/hermes-agent/venv/bin/python",
-    "WORKBENCH_PREWARM_EXECUTION_CACHE": "1",
+    "WORKBENCH_PREWARM_EXECUTION_CACHE": "0",
     "WORKBENCH_PREWARM_RESULT_LIMIT": "3",
     "WORKBENCH_PREWARM_RECIPE_IDS": "ball_side_block_shift_v1,possession_corridor_availability_v1",
     "TQE_DATA_ROOT": "/var/data/dataset/canonical/v1",
