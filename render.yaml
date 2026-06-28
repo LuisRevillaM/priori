@@ -45,7 +45,11 @@ services:
       - key: TQE_KNOWLEDGE_PACK_PATH
         value: /app/generated/tactical-knowledge-pack.json
       - key: TQE_EXPECTED_KNOWLEDGE_PACK_SHA256
-        value: 85d59dcb8afaf7c9e0b383d9fb8c76eb44f73ee898b947a2105912ad1b4b3c1a
+        value: 7541c0470d2765132448c08bfeee1b44df785085ddea6d6de63bacd276f4b80b
+      - key: TQE_COACH_MATCH_IDS
+        value: J03WOH
+      - key: TQE_PREWARM_COACH_COMPILER
+        value: "1"
       - key: TQE_DATA_BUNDLE_URL
         sync: false
       - key: TQE_DATA_BUNDLE_SHA256

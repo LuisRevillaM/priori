@@ -448,8 +448,13 @@ COACH_COMPILER_LOCK = threading.Lock()
 COACH_SEARCH_EXECUTOR: Any = None
 COACH_RESPONSE_CACHE: dict[str, dict[str, Any]] = {}
 COACH_ALLOWED_EXCLUDED_REFS = {"relation_destination_entry_classification", "outcome_classification"}
+COACH_MATCH_IDS = tuple(
+    match_id.strip()
+    for match_id in os.environ.get("TQE_COACH_MATCH_IDS", "J03WOH").split(",")
+    if match_id.strip()
+)
 COACH_MATCH_SCOPE = {
-    "match_ids": ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"],
+    "match_ids": list(COACH_MATCH_IDS),
     "periods": ["firstHalf", "secondHalf"],
     "perspective_team_role": "home",
 }
@@ -796,7 +801,9 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
 
     with COACH_COMPILER_LOCK:
         old_plan_dir = search.PLAN_DIR
+        old_match_ids = search.MATCH_IDS
         search.PLAN_DIR = output_root / "coach-compiler" / "plans"
+        search.MATCH_IDS = list(COACH_MATCH_IDS)
         search.PLAN_DIR.mkdir(parents=True, exist_ok=True)
         try:
             catalog = search.CatalogIndex(excluded_refs=COACH_ALLOWED_EXCLUDED_REFS)
@@ -808,6 +815,7 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
             )
         finally:
             search.PLAN_DIR = old_plan_dir
+            search.MATCH_IDS = old_match_ids
 
     audit = {
         "pipeline": "scl_nl_to_scl_contract_to_search.v0",

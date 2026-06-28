@@ -68,7 +68,12 @@ MAX_BRANCHING = int(os.environ.get("TQE_SEARCH_MAX_BRANCHING", "6"))
 WORKERS = max(1, int(os.environ.get("TQE_SEARCH_WORKERS", "1")))
 SEARCH_BUDGET_LABEL = f"max_depth={MAX_DEPTH}.max_branching={MAX_BRANCHING}"
 SYNTHESIZER_STRATEGY = f"bounded_backward_search.v0.1.{SEARCH_BUDGET_LABEL}"
-MATCH_IDS = ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"]
+DEFAULT_MATCH_IDS = ["J03WOH", "J03WOY", "J03WPY", "J03WQQ", "J03WR9", "J03WMX", "J03WN1"]
+MATCH_IDS = [
+    match_id.strip()
+    for match_id in os.environ.get("TQE_SEARCH_MATCH_IDS", ",".join(DEFAULT_MATCH_IDS)).split(",")
+    if match_id.strip()
+]
 
 SUPPORTED_MODALITIES = {"tracking", "events", "tracking_event_synchronized"}
 SUPPORTED_COMPOSITION_CONSTRAINT_KINDS = {

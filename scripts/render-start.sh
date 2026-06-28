@@ -24,11 +24,38 @@ provision_demo_data() {
     --manifest "$TQE_DATA_MANIFEST_PATH"
 }
 
+prewarm_coach_compiler() {
+  if [[ "${TQE_PREWARM_COACH_COMPILER:-1}" != "1" ]]; then
+    return 0
+  fi
+  for _ in $(seq 1 90); do
+    if curl -fsS "http://127.0.0.1:${PORT}/healthz" >/dev/null 2>&1; then
+      break
+    fi
+    sleep 2
+  done
+  echo "Prewarming coach compiler for line-break preview..."
+  if curl -fsS --max-time 300 \
+    -X POST "http://127.0.0.1:${PORT}/api/coach/interpret" \
+    -H "Content-Type: application/json" \
+    --data '{"query":"Show line breaks with no underneath outlet"}' \
+    >/tmp/priori-coach-prewarm.json; then
+    echo "Prewarmed coach compiler for line-break preview."
+  else
+    echo "Coach compiler prewarm did not complete; endpoint remains available for on-demand execution." >&2
+  fi
+}
+
+provision_and_prewarm_demo_data() {
+  provision_demo_data
+  prewarm_coach_compiler
+}
+
 if [[ "${TQE_PROVISION_DATA_BACKGROUND:-1}" == "1" ]]; then
   echo "Provisioning demo data in background."
-  provision_demo_data &
+  provision_and_prewarm_demo_data &
 else
-  provision_demo_data
+  provision_and_prewarm_demo_data
 fi
 
 if [[ "$WORKBENCH_HERMES_ENABLED" == "1" ]]; then
