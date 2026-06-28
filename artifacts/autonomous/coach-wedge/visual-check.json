@@ -1,0 +1,32 @@
+{
+  "ok": true,
+  "scope": "coach_preview_not_live_compiler",
+  "results": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 980
+      },
+      "header": "Speak football. See the moment.",
+      "response": "Line broken. The outlet space stays empty.",
+      "theaterLabel": "Observed football moment preview"
+    },
+    {
+      "name": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "header": "Speak football. See the moment.",
+      "response": "Line broken. The outlet space stays empty.",
+      "theaterLabel": "Observed football moment preview"
+    },
+    {
+      "name": "interaction",
+      "unsupported": "This preview stays with observed moments.",
+      "clarification": "Pick the observable part of the attack you want to see.",
+      "moment": "Line broken. The outlet space stays empty."
+    }
+  ]
+}

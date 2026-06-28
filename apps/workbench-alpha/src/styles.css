@@ -144,6 +144,194 @@ body {
   }
 }
 
+.coachShell {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background:
+    linear-gradient(135deg, rgba(8, 20, 16, 0.96) 0%, rgba(14, 35, 27, 0.98) 54%, rgba(6, 14, 12, 1) 100%),
+    #081410;
+  color: #f5f1de;
+}
+
+.coachExperience {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: clamp(12px, 2vw, 20px);
+  min-height: 100dvh;
+  padding: clamp(18px, 3vw, 44px);
+}
+
+.coachHeader {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: clamp(14px, 3vw, 34px);
+  width: min(96vw, 1440px);
+  justify-self: center;
+}
+
+.coachBrand {
+  color: rgba(245, 241, 222, 0.62);
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.coachHeader h1 {
+  margin: 0;
+  color: #f5f1de;
+  font-size: clamp(22px, 3vw, 46px);
+  font-weight: 620;
+  letter-spacing: 0;
+  line-height: 0.98;
+}
+
+.coachTheater {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  min-height: 0;
+}
+
+.coachTheater .momentCanvasShell {
+  width: min(96vw, 1480px, calc(68dvh * 1.478));
+  filter: drop-shadow(0 34px 94px rgba(0, 0, 0, 0.26));
+}
+
+.coachCommand {
+  display: grid;
+  gap: 10px;
+  width: min(96vw, 980px);
+  justify-self: center;
+  padding: 14px;
+  border: 1px solid rgba(245, 241, 222, 0.16);
+  border-radius: 8px;
+  background: rgba(6, 16, 13, 0.62);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(16px);
+}
+
+.coachCommand label {
+  color: rgba(245, 241, 222, 0.64);
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.coachInputRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.coachInputRow input {
+  min-width: 0;
+  height: 48px;
+  border: 1px solid rgba(245, 241, 222, 0.20);
+  border-radius: 6px;
+  background: rgba(245, 241, 222, 0.08);
+  color: #f5f1de;
+  padding: 0 15px;
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1;
+}
+
+.coachInputRow input::selection {
+  background: rgba(218, 195, 124, 0.34);
+}
+
+.coachInputRow button {
+  min-width: 84px;
+  height: 48px;
+  border-color: rgba(218, 195, 124, 0.44);
+  border-radius: 6px;
+  background: #d9c075;
+  color: #122318;
+  font-weight: 760;
+}
+
+.coachInputRow button:hover:not(:disabled) {
+  border-color: rgba(245, 241, 222, 0.76);
+  background: #e5d18d;
+}
+
+.coachResponse {
+  min-height: 24px;
+  margin: 0;
+  color: rgba(245, 241, 222, 0.88);
+  font-size: clamp(15px, 1.4vw, 18px);
+  font-weight: 520;
+  line-height: 1.35;
+}
+
+.coachPromptRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.coachPromptRail button {
+  max-width: 100%;
+  border-color: rgba(245, 241, 222, 0.14);
+  border-radius: 8px;
+  background: rgba(245, 241, 222, 0.07);
+  color: rgba(245, 241, 222, 0.78);
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.coachPromptRail button:hover:not(:disabled) {
+  border-color: rgba(218, 195, 124, 0.36);
+  background: rgba(218, 195, 124, 0.13);
+  color: #f5f1de;
+}
+
+@media (max-width: 820px) {
+  .coachShell {
+    overflow-y: auto;
+  }
+
+  .coachExperience {
+    grid-template-rows: auto auto auto;
+    align-content: start;
+    padding: 14px;
+  }
+
+  .coachHeader {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .coachHeader h1 {
+    max-width: 12ch;
+    font-size: clamp(38px, 12vw, 58px);
+  }
+
+  .coachTheater .momentCanvasShell {
+    width: 100%;
+  }
+
+  .coachCommand {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .coachInputRow {
+    grid-template-columns: 1fr;
+  }
+
+  .coachInputRow input,
+  .coachInputRow button {
+    width: 100%;
+  }
+}
+
 button,
 input,
 textarea,

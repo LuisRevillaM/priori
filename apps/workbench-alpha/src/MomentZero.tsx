@@ -27,6 +27,8 @@ const PITCH_PALETTE = {
 
 const TOTAL_MS = 10000;
 
+export const momentZeroEvidence = momentZeroPayload;
+
 export function MomentZero() {
   return (
     <main className="momentZeroShell">
@@ -41,7 +43,7 @@ export function MomentZero() {
   );
 }
 
-function MomentZeroPitch({ payload }: { payload: MomentZeroPayload }) {
+export function MomentZeroPitch({ payload }: { payload: MomentZeroPayload }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const shellRef = useRef<HTMLDivElement | null>(null);
 
