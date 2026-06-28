@@ -6,7 +6,7 @@ import type { CoachInterpretResponse } from "./types";
 const DEFAULT_QUERY = "Show line breaks with no underneath outlet";
 const EXAMPLES = [
   "Show line breaks with no underneath outlet",
-  "Show progressive carries under pressure",
+  "Show line breaks with two underneath outlets",
   "Show expected pass completion",
   "Show dangerous attacks"
 ];

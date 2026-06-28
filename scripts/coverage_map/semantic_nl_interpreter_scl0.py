@@ -94,6 +94,13 @@ def interpret_request(
             "nl.meaning.line_break_without_underneath_support",
         )
 
+    if is_line_break_with_two_underneath_support_request(lower):
+        return meaning(
+            request,
+            "A controlled pass where the receiver moves beyond the observed second defending line and at least two underneath support outlets arrive in the behind-ball support region after reception.",
+            "nl.meaning.line_break_with_two_underneath_support_outlets",
+        )
+
     if is_receive_under_pressure_request(lower):
         return meaning(
             request,
@@ -207,6 +214,26 @@ def is_line_break_without_underneath_support_request(lower: str) -> bool:
     has_absence = any(phrase in lower for phrase in ("no ", "without", "empty", "absent", "stays empty"))
     has_support = any(phrase in lower for phrase in ("underneath", "support", "outlet"))
     return has_line_break and has_absence and has_support
+
+
+def is_line_break_with_two_underneath_support_request(lower: str) -> bool:
+    has_line_break = any(
+        phrase in lower
+        for phrase in (
+            "line break",
+            "line-break",
+            "line-breaking",
+            "break the line",
+            "broke the line",
+            "breaks the line",
+            "breaks second line",
+            "break the second line",
+            "second line",
+        )
+    )
+    has_two = any(phrase in lower for phrase in ("two", "2", "at least two"))
+    has_support = any(phrase in lower for phrase in ("underneath", "support", "outlet"))
+    return has_line_break and has_two and has_support
 
 
 def is_receive_under_pressure_request(lower: str) -> bool:

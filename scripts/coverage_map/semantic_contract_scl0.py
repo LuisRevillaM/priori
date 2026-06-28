@@ -473,6 +473,15 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         add_underneath_support_absence_element(builder, span)
         matched = True
 
+    if is_underneath_support_presence_meaning(lower):
+        span = first_span(text, [r"at least two underneath support outlets", r"two underneath support outlets", r"underneath support outlets", r"support outlets"]) or whole_span(text)
+        add_underneath_support_presence_element(
+            builder,
+            span,
+            minimum_supporting_players=underneath_support_minimum_players(lower),
+        )
+        matched = True
+
     if not has_pressure_change_phrase and (
         "under pressure" in lower or "defender pressure" in lower or "nearest-defender pressure" in lower
     ):
@@ -820,6 +829,54 @@ def add_underneath_support_absence_element(builder: ContractBuilder, span: Span)
     )
     builder.add_claim_part(
         "No underneath support means the declared behind-ball outlet region was evaluated and no supporting player arrived inside the frozen distance/time window; no support quality, intent, or tactical judgement claim.",
+        span,
+        rule_id,
+    )
+
+
+def add_underneath_support_presence_element(
+    builder: ContractBuilder,
+    span: Span,
+    *,
+    minimum_supporting_players: int,
+) -> None:
+    rule_id = "meaning.support_presence.underneath_outlet"
+    for field_name in [
+        "support_arrival_status",
+        "support_arrival_reason",
+        "support_anchor_frame_id",
+        "support_region_mode",
+        "maximum_arrival_seconds",
+        "minimum_duration_seconds",
+        "maximum_support_distance_m",
+        "minimum_supporting_players",
+        "supporting_player_ids",
+        "candidate_player_ids",
+        "coverage_status",
+        "required_anchor_status_field",
+        "required_anchor_status_value",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("support_arrival_status", "PASS", span, rule_id)
+    builder.add_constraint(
+        {
+            "kind": "relation_on_anchor",
+            "relation_status_field": "support_arrival_status",
+            "anchor_status_field": "line_break_status",
+            "anchor_status_value": "PASS",
+            "anchor_frame_field": "controlled_reception_frame_id",
+            "candidate_scope": "perspective_outfield",
+            "support_region_mode": "BEHIND_BALL_OUTLET",
+            "maximum_arrival_seconds": 3.0,
+            "minimum_duration_seconds": 0.0,
+            "maximum_support_distance_m": 8.0,
+            "minimum_supporting_players": minimum_supporting_players,
+        },
+        span,
+        rule_id,
+    )
+    builder.add_claim_part(
+        "Observed underneath behind-ball support arrival only; no support quality, decision value, intent, or tactical causation is inferred.",
         span,
         rule_id,
     )
@@ -1274,6 +1331,30 @@ def is_underneath_support_absence_meaning(lower: str) -> bool:
     has_absence = any(phrase in lower for phrase in ("no ", "without", "empty", "absent", "stays empty"))
     has_support = any(phrase in lower for phrase in ("underneath support", "support outlet", "outlet", "behind-ball support region"))
     return has_absence and has_support
+
+
+def is_underneath_support_presence_meaning(lower: str) -> bool:
+    if is_underneath_support_absence_meaning(lower):
+        return False
+    has_support = any(
+        phrase in lower
+        for phrase in (
+            "underneath support",
+            "support outlet",
+            "support outlets",
+            "outlet arrives",
+            "outlets arrive",
+            "behind-ball support region",
+        )
+    )
+    has_presence = any(phrase in lower for phrase in ("with", "arrive", "arrives", "at least", "two", "2"))
+    return has_support and has_presence
+
+
+def underneath_support_minimum_players(lower: str) -> int:
+    if any(phrase in lower for phrase in ("at least two", "two", "2")):
+        return 2
+    return 1
 
 
 def is_cover_shadow_meaning(lower: str) -> bool:

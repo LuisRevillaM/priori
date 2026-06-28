@@ -460,13 +460,15 @@ COACH_MATCH_SCOPE = {
 }
 COACH_SUGGESTIONS = [
     "Show line breaks with no underneath outlet",
-    "Show progressive carries under pressure",
+    "Show line breaks with two underneath outlets",
     "Show expected pass completion",
     "Show dangerous attacks",
 ]
 COACH_DISPLAY_TEMPLATES = {
     "moment_found.line_break_no_underneath_support": "Line broken. The outlet space stays empty.",
     "no_moments_found.line_break_no_underneath_support": "In this match, that line-break moment did not appear.",
+    "no_moments_found.line_break_with_two_underneath_outlets": "In this match, no line break had two underneath outlets.",
+    "no_moments_found.line_break_with_underneath_outlet": "In this match, that supported line-break moment did not appear.",
     "no_moments_found.progressive_carry_under_pressure": "In this match, no carry progressed forward under defender pressure.",
     "no_moments_found.give_and_go_sequence": "In this match, no give-and-go sequence appeared.",
     "no_moments_found.onward_two_pass_sequence": "In this match, no onward two-pass sequence appeared.",
@@ -474,7 +476,7 @@ COACH_DISPLAY_TEMPLATES = {
     "clarification_required.tactical_meaning_underspecified": "Pick the observable part of the attack you want to see.",
     "clarification_required.request_not_recognized": "Name the action, players, and moment you want to see.",
     "understood_but_not_expressible.unsupported_modality": "This view stays with observed moments.",
-    "understood_but_not_expressible.no_replay_surface": "I can show the line-break moment now.",
+    "understood_but_not_expressible.no_replay_surface": "I can show line-break moments in this preview.",
     "understood_but_not_expressible.default": "I can show observed moments from the current vocabulary.",
 }
 COACH_TEMPLATE_PROHIBITED_TERMS = {
@@ -790,6 +792,25 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
 
     contract, traces = generate_contract_from_meaning(meaning.meaning_definition)
     contract_hash = stable_hash(contract)
+    if coach_preview_runtime_family_without_surface(contract):
+        return coach_cant_yet_response(
+            query=query,
+            display_answer=coach_template("understood_but_not_expressible.no_replay_surface"),
+            meaning_definition=meaning.meaning_definition,
+            interpretation_rules=list(meaning.interpretation_rules),
+            contract_hash=contract_hash,
+            gap={
+                "kind": "preview_surface_missing",
+                "message": "The request is understood, but this public coach preview only executes the line-break support family.",
+            },
+            audit={
+                "pipeline": "scl_nl_to_scl_contract_to_search.v0",
+                "meaning": meaning_payload,
+                "trace_count": len(traces),
+                "evidence_fields": contract.get("required_evidence", []),
+                "cache_status": "SKIPPED_PREVIEW_SURFACE",
+            },
+        )
     cached_response = COACH_RESPONSE_CACHE.get(contract_hash)
     if cached_response is not None:
         response = deepcopy(cached_response)
@@ -999,6 +1020,10 @@ def coach_no_moments_kind(contract: dict[str, Any]) -> str:
     constraints = [item for item in contract.get("composition_constraints", []) if isinstance(item, dict)]
     if coach_contract_matches_line_break_no_underneath_support(contract):
         return "line_break_no_underneath_support"
+    if coach_contract_matches_line_break_with_underneath_support(contract):
+        if coach_support_minimum_players(contract) >= 2:
+            return "line_break_with_two_underneath_outlets"
+        return "line_break_with_underneath_outlet"
     if (
         {"carry_status", "pressure_status", "carry_forward_progression_m"}.issubset(required)
         and status_values.get("carry_status") == "PASS"
@@ -1020,6 +1045,49 @@ def coach_contract_matches_line_break_no_underneath_support(contract: dict[str, 
         and status_values.get("line_break_status") == "PASS"
         and status_values.get("support_arrival_status") == "FAIL"
     )
+
+
+def coach_contract_matches_line_break_with_underneath_support(contract: dict[str, Any]) -> bool:
+    required = set(str(field) for field in contract.get("required_evidence", []))
+    status_values = coach_status_values(contract)
+    return (
+        {"line_break_status", "support_arrival_status", "support_region_mode", "supporting_player_ids"}.issubset(required)
+        and status_values.get("line_break_status") == "PASS"
+        and status_values.get("support_arrival_status") == "PASS"
+    )
+
+
+def coach_contract_matches_line_break_support_family(contract: dict[str, Any]) -> bool:
+    return coach_contract_matches_line_break_no_underneath_support(contract) or coach_contract_matches_line_break_with_underneath_support(contract)
+
+
+def coach_preview_runtime_family_without_surface(contract: dict[str, Any]) -> bool:
+    if coach_contract_matches_line_break_support_family(contract):
+        return False
+    required = set(str(field) for field in contract.get("required_evidence", []))
+    public_preview_deferred_fields = {
+        "carry_status",
+        "pressure_status",
+        "pass_chain_status",
+        "team_press_status",
+        "cover_shadow_status",
+        "marking_status",
+        "off_ball_run_status",
+        "space_region_status",
+        "acceleration_status",
+        "deceleration_status",
+    }
+    return bool(required & public_preview_deferred_fields)
+
+
+def coach_support_minimum_players(contract: dict[str, Any]) -> int:
+    for item in contract.get("composition_constraints", []):
+        if isinstance(item, dict) and item.get("kind") == "relation_on_anchor" and "minimum_supporting_players" in item:
+            try:
+                return int(item["minimum_supporting_players"])
+            except (TypeError, ValueError):
+                return 1
+    return 1
 
 
 def coach_status_values(contract: dict[str, Any]) -> dict[str, str]:
