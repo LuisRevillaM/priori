@@ -4,6 +4,7 @@ from src.tqe.workshop.app_service import (
     coach_no_moments_kind,
     coach_preview_runtime_family_without_surface,
     coach_template,
+    coach_visual_moment_kind,
 )
 
 
@@ -63,6 +64,29 @@ class CoachInterpretSurfaceTests(unittest.TestCase):
         self.assertEqual(
             "In this match, no line break had two underneath outlets.",
             coach_template("no_moments_found.line_break_with_two_underneath_outlets"),
+        )
+
+    def test_line_break_with_support_has_positive_visual_kind(self) -> None:
+        contract = {
+            "required_evidence": [
+                "line_break_status",
+                "support_arrival_status",
+                "support_region_mode",
+                "supporting_player_ids",
+            ],
+            "status_semantics": [
+                {"field": "line_break_status", "required_value": "PASS"},
+                {"field": "support_arrival_status", "required_value": "PASS"},
+            ],
+            "composition_constraints": [{"kind": "relation_on_anchor", "minimum_supporting_players": 1}],
+        }
+
+        self.assertEqual("line_break_with_underneath_outlet", coach_visual_moment_kind(contract))
+        self.assertEqual("line_break_with_underneath_outlet", coach_no_moments_kind(contract))
+        self.assertFalse(coach_preview_runtime_family_without_surface(contract))
+        self.assertEqual(
+            "Line broken. Support arrives underneath.",
+            coach_template("moment_found.line_break_with_underneath_outlet"),
         )
 
     def test_public_preview_skips_runtime_families_without_surface(self) -> None:

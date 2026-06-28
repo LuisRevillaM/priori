@@ -63,6 +63,19 @@ class SclNl0Tests(unittest.TestCase):
             contract.get("status_semantics", []),
         )
 
+    def test_line_break_with_one_support_outlet_is_meaning_definition(self) -> None:
+        output = interpret_request("show line breaks with underneath support")
+        contract, _ = generate_contract_from_meaning(output.meaning_definition or "")
+
+        self.assertEqual(MEANING_DEFINITION, output.status)
+        self.assertIn("an underneath support outlet arrives", output.meaning_definition or "")
+        self.assertTrue(has_constraint_kind(contract, "relation_on_anchor"))
+        self.assertIn(
+            {"field": "support_arrival_status", "required_value": "PASS"},
+            contract.get("status_semantics", []),
+        )
+        self.assertEqual(1, contract["composition_constraints"][0]["minimum_supporting_players"])
+
     def test_ambiguous_request_requires_clarification(self) -> None:
         output = interpret_request("show me dangerous attacks")
 

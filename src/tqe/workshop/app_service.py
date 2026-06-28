@@ -70,6 +70,7 @@ CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.e
 HIGH_BYPASS_PLAN_PATH = Path("config/query-plans/high_bypass_completed_pass.experimental.v1.json")
 LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH = Path("config/query-plans/line_break_support_response.experimental.v1.json")
 MOMENT_ZERO_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-zero.json")
+MOMENT_LINE_BREAK_SUPPORTED_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-line-break-supported.json")
 DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", "/Users/luisrevilla/.hermes-priori"))
 HERMES_DB = HERMES_HOME / "state.db"
@@ -459,6 +460,7 @@ COACH_MATCH_SCOPE = {
     "perspective_team_role": "home",
 }
 COACH_SUGGESTIONS = [
+    "Show line breaks with underneath support",
     "Show line breaks with no underneath outlet",
     "Show line breaks with two underneath outlets",
     "Show expected pass completion",
@@ -466,6 +468,7 @@ COACH_SUGGESTIONS = [
 ]
 COACH_DISPLAY_TEMPLATES = {
     "moment_found.line_break_no_underneath_support": "Line broken. The outlet space stays empty.",
+    "moment_found.line_break_with_underneath_outlet": "Line broken. Support arrives underneath.",
     "no_moments_found.line_break_no_underneath_support": "In this match, that line-break moment did not appear.",
     "no_moments_found.line_break_with_two_underneath_outlets": "In this match, no line break had two underneath outlets.",
     "no_moments_found.line_break_with_underneath_outlet": "In this match, that supported line-break moment did not appear.",
@@ -902,7 +905,7 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
             {
                 "status": "moment_found",
                 "query": query,
-                "display_answer": coach_template("moment_found.line_break_no_underneath_support"),
+                "display_answer": coach_template(f"moment_found.{visual_kind}"),
                 "suggestions": COACH_SUGGESTIONS,
                 "match_scope": COACH_MATCH_SCOPE,
                 "meaning_definition": meaning.meaning_definition,
@@ -914,7 +917,7 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
                     {
                         "moment_id": visual_kind,
                         "result_count": result_count,
-                        "replay_payload": coach_moment_zero_payload(),
+                        "replay_payload": coach_moment_payload(visual_kind),
                         "evidence_fields": list(contract.get("required_evidence", [])),
                     }
                 ],
@@ -1011,6 +1014,8 @@ def coach_cant_yet_response(
 def coach_visual_moment_kind(contract: dict[str, Any]) -> str | None:
     if coach_contract_matches_line_break_no_underneath_support(contract):
         return "line_break_no_underneath_support"
+    if coach_contract_matches_line_break_with_underneath_support(contract):
+        return "line_break_with_underneath_outlet"
     return None
 
 
@@ -1099,7 +1104,15 @@ def coach_status_values(contract: dict[str, Any]) -> dict[str, str]:
 
 
 def coach_moment_zero_payload() -> dict[str, Any]:
-    path = REPO_ROOT / MOMENT_ZERO_PAYLOAD_PATH
+    return coach_moment_payload("line_break_no_underneath_support")
+
+
+def coach_moment_payload(kind: str) -> dict[str, Any]:
+    path = REPO_ROOT / (
+        MOMENT_LINE_BREAK_SUPPORTED_PAYLOAD_PATH
+        if kind == "line_break_with_underneath_outlet"
+        else MOMENT_ZERO_PAYLOAD_PATH
+    )
     if not path.exists():
         return {}
     return read_json(path)

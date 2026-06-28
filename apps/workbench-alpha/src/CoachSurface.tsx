@@ -1,10 +1,11 @@
 import { FormEvent, useMemo, useState } from "react";
 import { coachInterpret } from "./api";
-import { MomentZeroPitch, momentZeroEvidence, type MomentZeroPayload } from "./MomentZero";
+import { MomentZeroPitch, momentLineBreakSupportedEvidence, type MomentZeroPayload } from "./MomentZero";
 import type { CoachInterpretResponse } from "./types";
 
-const DEFAULT_QUERY = "Show line breaks with no underneath outlet";
+const DEFAULT_QUERY = "Show line breaks with underneath support";
 const EXAMPLES = [
+  "Show line breaks with underneath support",
   "Show line breaks with no underneath outlet",
   "Show line breaks with two underneath outlets",
   "Show expected pass completion",
@@ -15,7 +16,7 @@ export function CoachSurface() {
   const examples = useMemo(() => EXAMPLES, []);
   const [query, setQuery] = useState(DEFAULT_QUERY);
   const [result, setResult] = useState<CoachInterpretResponse | null>(null);
-  const [activePayload, setActivePayload] = useState<MomentZeroPayload>(momentZeroEvidence);
+  const [activePayload, setActivePayload] = useState<MomentZeroPayload>(momentLineBreakSupportedEvidence);
   const [runId, setRunId] = useState(0);
   const [isLooking, setIsLooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,5 +104,5 @@ function responseCopy(result: CoachInterpretResponse | null, isLooking: boolean,
   if (error) return error;
   if (isLooking) return "Looking through this match.";
   if (result) return result.display_answer;
-  return "Try an observable football idea.";
+  return "Line broken. Support arrives underneath.";
 }

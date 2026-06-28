@@ -780,6 +780,7 @@ def add_observed_line_break_element(builder: ContractBuilder, span: Span) -> Non
         "multi_line_status",
         "target_line_rank",
         "observed_line_count",
+        "observed_lines",
         "defensive_line_player_ids",
     ]:
         builder.add_evidence(field_name, span, rule_id)

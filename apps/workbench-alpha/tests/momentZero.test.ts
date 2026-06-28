@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import supportedMoment from "../src/generated/moment-line-break-supported.json";
 import momentZero from "../src/generated/moment-zero.json";
 import { momentZeroLineEvidenceFrameId, momentZeroVisualEndFrameId } from "../src/MomentZero";
 
@@ -23,5 +24,20 @@ assert.ok(targetLine.line_id.includes(`:${momentZero.moment.release_frame_id}:`)
 assert.deepEqual(targetLine.defender_ids, momentZero.moment.defensive_line_player_ids);
 assert.equal(momentZeroVisualEndFrameId(momentZero.moment), momentZero.moment.reception_frame_id + 8);
 assert.ok(momentZeroLineEvidenceFrameId(momentZero.moment) < momentZeroVisualEndFrameId(momentZero.moment));
+
+assert.equal(supportedMoment.schema_version, "moment_zero.line_break_with_underneath_support.v0");
+assert.equal(supportedMoment.moment.requested_evidence.line_break_status, "PASS");
+assert.equal(supportedMoment.moment.requested_evidence.support_arrival_status, "PASS");
+assert.ok(supportedMoment.moment.support_region.supporting_player_ids.length > 0);
+assert.equal(supportedMoment.moment.support_region.mode, "BEHIND_BALL_OUTLET");
+assert.ok(supportedMoment.visual_contract.prohibited_visual_claims.includes("intent"));
+const supportedTargetLine = supportedMoment.moment.observed_lines.find(
+  (line) => line.line_rank === supportedMoment.moment.requested_evidence.target_line_rank
+);
+assert.ok(supportedTargetLine);
+assert.equal(momentZeroLineEvidenceFrameId(supportedMoment.moment), supportedMoment.moment.release_frame_id);
+assert.ok(supportedTargetLine.line_id.includes(`:${supportedMoment.moment.release_frame_id}:`));
+assert.deepEqual(supportedTargetLine.defender_ids, supportedMoment.moment.defensive_line_player_ids);
+assert.equal(momentZeroVisualEndFrameId(supportedMoment.moment), supportedMoment.moment.support_window_end_frame_id);
 
 console.log("moment zero tests passed");

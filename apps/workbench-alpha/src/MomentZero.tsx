@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import momentLineBreakSupportedPayload from "./generated/moment-line-break-supported.json";
 import momentZeroPayload from "./generated/moment-zero.json";
 import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
 import type { ReplayEntity, ReplayPayload } from "./types";
@@ -29,6 +30,7 @@ const TOTAL_MS = 10000;
 const POST_RECEPTION_HOLD_FRAMES = 8;
 
 export const momentZeroEvidence = momentZeroPayload;
+export const momentLineBreakSupportedEvidence = momentLineBreakSupportedPayload as unknown as MomentZeroPayload;
 
 export function MomentZero() {
   return (
@@ -114,6 +116,7 @@ function renderMoment(
   drawDefensiveLine(ctx, replay, moment, frame, phase);
   drawPassPath(ctx, replay, moment, phase);
   drawSupportRegion(ctx, replay, moment, phase);
+  drawSupportArrivals(ctx, replay, moment, frame, phase);
   drawReceiverFocus(ctx, replay, moment, frame, phase);
   drawBall(ctx, replay, frame, phase);
 }
@@ -128,6 +131,9 @@ function frameForProgress(replay: ReplayPayload, moment: MomentZeroMoment, progr
 }
 
 export function momentZeroVisualEndFrameId(moment: MomentZeroMoment) {
+  if (hasObservedSupport(moment)) {
+    return moment.support_window_end_frame_id;
+  }
   return moment.reception_frame_id + POST_RECEPTION_HOLD_FRAMES;
 }
 
@@ -140,6 +146,10 @@ export function momentZeroLineEvidenceFrameId(moment: MomentZeroMoment) {
 function targetObservedLine(moment: MomentZeroMoment) {
   const targetRank = moment.requested_evidence.target_line_rank;
   return moment.observed_lines.find((line) => line.line_rank === targetRank) ?? null;
+}
+
+function hasObservedSupport(moment: MomentZeroMoment) {
+  return moment.support_region.support_arrival_status === "PASS" && moment.support_region.supporting_player_ids.length > 0;
 }
 
 function revealPhase(progress: number) {
@@ -229,7 +239,8 @@ function drawPlayers(
   phase: ReturnType<typeof revealPhase>
 ) {
   const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
-  const candidateIds = new Set(moment.support_region.candidate_player_ids);
+  const candidateIds = new Set<string>(moment.support_region.candidate_player_ids);
+  const supportIds = new Set<string>(moment.support_region.supporting_player_ids);
   for (const entity of frame.entities) {
     if (entity.entity_type === "ball") continue;
     const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
@@ -237,9 +248,10 @@ function drawPlayers(
     const isPasser = entity.entity_id === moment.passer_id;
     const isDefender = moment.defensive_line_player_ids.includes(entity.entity_id);
     const isCandidate = candidateIds.has(entity.entity_id);
-    const isStory = isReceiver || isPasser || isDefender;
+    const isSupporter = supportIds.has(entity.entity_id);
+    const isStory = isReceiver || isPasser || isDefender || isSupporter;
     const fadeIrrelevant = Math.max(phase.break, phase.support, phase.lonely);
-    const radius = isReceiver ? 7.9 : isPasser ? 6.6 : isDefender ? 6.2 : isCandidate ? 4.8 : 4.2;
+    const radius = isReceiver ? 7.9 : isSupporter ? 6.9 : isPasser ? 6.6 : isDefender ? 6.2 : isCandidate ? 4.8 : 4.2;
     const alpha = isStory
       ? 0.96
       : isCandidate
@@ -356,17 +368,18 @@ function drawSupportRegion(
   const top = reference.y - radius;
   const height = radius * 2;
   const pulse = 0.82 + 0.18 * phase.pulse;
+  const observedSupport = hasObservedSupport(moment);
 
   ctx.save();
-  ctx.globalAlpha = alpha * (0.64 + 0.34 * phase.lonely);
+  ctx.globalAlpha = alpha * (observedSupport ? 0.42 + 0.24 * phase.lonely : 0.64 + 0.34 * phase.lonely);
   ctx.beginPath();
   ctx.arc(reference.x, reference.y, radius, 0, Math.PI * 2);
   ctx.clip();
-  ctx.shadowColor = "rgba(214, 193, 122, 0.46)";
+  ctx.shadowColor = observedSupport ? "rgba(216, 239, 227, 0.32)" : "rgba(214, 193, 122, 0.46)";
   ctx.shadowBlur = 18 + 18 * phase.lonely;
   const glow = ctx.createRadialGradient(reference.x, reference.y, radius * 0.08, reference.x, reference.y, radius * (1.18 + 0.08 * phase.lonely));
-  glow.addColorStop(0, PITCH_PALETTE.supportVoid);
-  glow.addColorStop(0.48, PITCH_PALETTE.supportFill);
+  glow.addColorStop(0, observedSupport ? "rgba(216, 239, 227, 0.16)" : PITCH_PALETTE.supportVoid);
+  glow.addColorStop(0.48, observedSupport ? "rgba(216, 239, 227, 0.30)" : PITCH_PALETTE.supportFill);
   glow.addColorStop(1, "rgba(214, 193, 122, 0)");
   ctx.fillStyle = glow;
   ctx.fillRect(left, top, radius, height);
@@ -387,16 +400,56 @@ function drawSupportRegion(
   }
   ctx.stroke();
 
-  ctx.globalAlpha = alpha * phase.lonely * 0.95;
-  const voidGradient = ctx.createRadialGradient(reference.x, reference.y, radius * 0.08, reference.x, reference.y, radius * 0.62);
-  voidGradient.addColorStop(0, "rgba(249, 246, 220, 0.16)");
-  voidGradient.addColorStop(0.42, "rgba(249, 246, 220, 0.08)");
-  voidGradient.addColorStop(1, "rgba(249, 246, 220, 0)");
-  ctx.fillStyle = PITCH_PALETTE.supportVoid;
-  ctx.beginPath();
-  ctx.arc((left + right) / 2, reference.y, radius * 0.58, 0, Math.PI * 2);
-  ctx.fillStyle = voidGradient;
-  ctx.fill();
+  if (!observedSupport) {
+    ctx.globalAlpha = alpha * phase.lonely * 0.95;
+    const voidGradient = ctx.createRadialGradient(reference.x, reference.y, radius * 0.08, reference.x, reference.y, radius * 0.62);
+    voidGradient.addColorStop(0, "rgba(249, 246, 220, 0.16)");
+    voidGradient.addColorStop(0.42, "rgba(249, 246, 220, 0.08)");
+    voidGradient.addColorStop(1, "rgba(249, 246, 220, 0)");
+    ctx.fillStyle = PITCH_PALETTE.supportVoid;
+    ctx.beginPath();
+    ctx.arc((left + right) / 2, reference.y, radius * 0.58, 0, Math.PI * 2);
+    ctx.fillStyle = voidGradient;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawSupportArrivals(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: MomentZeroMoment,
+  frame: ReplayPayload["frames"][number],
+  phase: ReturnType<typeof revealPhase>
+) {
+  if (!hasObservedSupport(moment)) return;
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const supportIds = new Set<string>(moment.support_region.supporting_player_ids);
+  const supportEntities = frame.entities.filter((entity) => supportIds.has(entity.entity_id));
+  if (supportEntities.length === 0) return;
+  const alpha = phase.support * phase.resetFade;
+  ctx.save();
+  for (const entity of supportEntities) {
+    const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
+    const haloRadius = 28 + 10 * phase.lonely;
+    const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, haloRadius);
+    halo.addColorStop(0, "rgba(216, 239, 227, 0.34)");
+    halo.addColorStop(0.48, "rgba(216, 239, 227, 0.14)");
+    halo.addColorStop(1, "rgba(216, 239, 227, 0)");
+    ctx.globalAlpha = alpha * (0.72 + 0.28 * phase.pulse);
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, haloRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = PITCH_PALETTE.home;
+    ctx.strokeStyle = "rgba(244, 239, 224, 0.80)";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 5.2 + 0.8 * phase.lonely, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
