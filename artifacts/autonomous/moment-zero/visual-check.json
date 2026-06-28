@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 980
+      },
+      "wait": 7800,
+      "screenshotPath": "/private/tmp/priori-afl08-loop/artifacts/autonomous/moment-zero/desktop.png",
+      "result": {
+        "hasCanvas": true,
+        "rect": {
+          "width": 1043,
+          "height": 706,
+          "top": 192,
+          "left": 199
+        },
+        "copy": {
+          "width": 1043,
+          "height": 91,
+          "top": 82,
+          "left": 199
+        },
+        "nonTransparent": 184090,
+        "bright": 358,
+        "colorBuckets": 42,
+        "heading": "Line broken. The outlet space stays empty."
+      }
+    },
+    {
+      "name": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "wait": 7800,
+      "screenshotPath": "/private/tmp/priori-afl08-loop/artifacts/autonomous/moment-zero/mobile.png",
+      "result": {
+        "hasCanvas": true,
+        "rect": {
+          "width": 362,
+          "height": 245,
+          "top": 171,
+          "left": 14
+        },
+        "copy": {
+          "width": 334,
+          "height": 217,
+          "top": 456,
+          "left": 28
+        },
+        "nonTransparent": 22173,
+        "bright": 180,
+        "colorBuckets": 42,
+        "heading": "Line broken. The outlet space stays empty."
+      }
+    }
+  ]
+}

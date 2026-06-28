@@ -50,6 +50,100 @@ body {
   min-height: 100dvh;
 }
 
+.momentZeroShell {
+  min-height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 72% 18%, rgba(214, 193, 122, 0.10), transparent 28%),
+    linear-gradient(135deg, #0c1f18 0%, #122b21 48%, #071410 100%);
+  color: #f5f1de;
+}
+
+.momentRouteLoading {
+  min-height: 100dvh;
+  background: #0c1f18;
+}
+
+.momentStage {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(12px, 2vw, 20px);
+  min-height: 100dvh;
+  padding: clamp(18px, 4vw, 54px);
+}
+
+.momentCanvasShell {
+  width: min(94vw, 1440px, calc(72dvh * 1.478));
+  filter: drop-shadow(0 34px 90px rgba(0, 0, 0, 0.24));
+}
+
+.momentCanvasShell canvas {
+  display: block;
+  width: 100%;
+  border: 1px solid rgba(245, 241, 222, 0.14);
+  border-radius: 18px;
+  background: #132f24;
+}
+
+.momentCopy {
+  order: -1;
+  width: min(94vw, 1440px, calc(72dvh * 1.478));
+  max-width: calc(100vw - 56px);
+  pointer-events: none;
+  text-shadow: 0 14px 38px rgba(0, 0, 0, 0.38);
+}
+
+.momentKicker {
+  display: block;
+  margin-bottom: 10px;
+  color: rgba(245, 241, 222, 0.62);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.momentCopy h1 {
+  max-width: 22ch;
+  margin: 0;
+  color: #f5f1de;
+  font-size: clamp(22px, 2.2vw, 34px);
+  font-weight: 620;
+  letter-spacing: 0;
+  line-height: 1.02;
+}
+
+@media (max-width: 720px) {
+  .momentStage {
+    align-content: center;
+    gap: 18px;
+    padding: 14px;
+  }
+
+  .momentCanvasShell {
+    width: 100%;
+  }
+
+  .momentCanvasShell canvas {
+    border-radius: 12px;
+  }
+
+  .momentCopy {
+    order: 1;
+    width: 100%;
+    margin-top: 22px;
+    text-shadow: none;
+  }
+
+  .momentCopy h1 {
+    max-width: 11ch;
+    font-size: clamp(38px, 12vw, 58px);
+  }
+}
+
 button,
 input,
 textarea,

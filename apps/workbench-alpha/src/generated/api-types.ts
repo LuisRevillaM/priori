@@ -81,7 +81,8 @@ export const apiSchemas = {
             "enum": [
               "approved_block_shift",
               "experimental_corridor",
-              "experimental_high_bypass"
+              "experimental_high_bypass",
+              "experimental_line_break_support_response"
             ],
             "title": "Preset Id",
             "type": "string"
