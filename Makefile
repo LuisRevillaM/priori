@@ -288,6 +288,10 @@ afl-off-ball-run-type-verify:
 afl-marking-verify:
 	$(PYTHON) -m tqe.verification.afl_marking
 
+.PHONY: afl-space-region-generation-verify
+afl-space-region-generation-verify:
+	$(PYTHON) -m tqe.verification.afl_space_region_generation
+
 .PHONY: afl-substrate-q2-verify
 afl-substrate-q2-verify:
 	$(PYTHON) -m tqe.verification.afl_substrate_q2

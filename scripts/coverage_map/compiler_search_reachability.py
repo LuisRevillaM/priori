@@ -1344,6 +1344,8 @@ def required_fields_for_input(entry: CatalogEntry, input_def: CatalogInput, targ
             "run_player_id",
             "run_start_frame_id",
         }
+    if entry.name == "space_region_generation" and input_def.name == "anchors":
+        return {"anchor_id", "anchor_frame_id"}
     return field_dependencies_for_consumer(entry) or target_fields
 
 
@@ -1400,6 +1402,17 @@ def infer_parameters(
             "required_anchor_status_field": enum("transition_status"),
             "required_anchor_status_value": enum("PASS"),
         }
+    if entry.name == "space_region_generation":
+        return {
+            "frame_field": enum("anchor_frame_id"),
+            "zone_scope": enum("any"),
+            "grid_step_m": number(8.0, "metre"),
+            "minimum_opponent_distance_m": number(8.0, "metre"),
+            "minimum_teammate_distance_m": number(4.0, "metre"),
+            "minimum_open_points": number(1.0, "count"),
+            "maximum_candidate_points": number(5.0, "count"),
+            "minimum_observed_players_per_team": number(6.0, "count"),
+        }
     return {}
 
 
@@ -1414,6 +1427,8 @@ def field_dependencies_for_consumer(entry: CatalogEntry) -> set[str]:
             "run_player_id",
             "run_start_frame_id",
         }
+    if entry.name == "space_region_generation":
+        return {"anchor_id", "anchor_frame_id"}
     dependencies: set[str] = set()
     for parameter in entry.parameters:
         if "_field" not in parameter.name:

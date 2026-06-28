@@ -58,7 +58,7 @@ CROSS_CONCEPT_REUSE_REQUIRED_RULES = {
     "meaning.element.lane_occupancy",
     "meaning.kinematics.acceleration",
     "meaning.missing_primitive.cover_shadow",
-    "meaning.missing_primitive.space_region_generation",
+    "meaning.space.open_region",
     "meaning.missing_primitive.team_press",
     "meaning.relation.marking_proximity",
     "meaning.movement.off_ball_run",
@@ -577,14 +577,19 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         )
         matched = True
 
-    if is_space_region_generation_meaning(lower):
-        span = first_span(text, [r"space region", r"open space", r"free space", r"generated space", r"space creation"]) or whole_span(text)
+    if is_open_space_region_meaning(lower) or is_space_creation_or_value_meaning(lower):
+        span = first_span(text, [r"space region", r"open space", r"free space", r"available space", r"free area", r"open area", r"generated space"]) or whole_span(text)
+        add_space_region_generation_element(builder, span)
+        matched = True
+
+    if is_space_creation_or_value_meaning(lower):
+        span = first_span(text, [r"space creation", r"creates? (?:generated )?space", r"generated space", r"space exploitation", r"exploit(?:s|ed|ing)? space"]) or whole_span(text)
         add_missing_primitive_element(
             builder,
-            "scl1_space_region_generation_status",
+            "scl1_space_creation_status",
             span,
-            "meaning.missing_primitive.space_region_generation",
-            "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+            "meaning.missing_primitive.space_creation",
+            "Requires before/after generated-space change, value, exploitation, or attribution evidence; base open-space geometry is not treated as creation, exploitation, purpose, or tactical value.",
         )
         matched = True
 
@@ -893,6 +898,34 @@ def add_set_piece_structure_element(builder: ContractBuilder, span: Span) -> Non
     )
 
 
+def add_space_region_generation_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.space.open_region"
+    for field_name in [
+        "open_space_status",
+        "open_space_reason",
+        "space_frame_id",
+        "zone_scope",
+        "grid_step_m",
+        "minimum_opponent_distance_m",
+        "minimum_teammate_distance_m",
+        "open_space_region_count",
+        "representative_open_space_point",
+        "representative_nearest_opponent_distance_m",
+        "representative_nearest_teammate_distance_m",
+        "open_space_candidate_points",
+        "space_region_model",
+        "space_region_claim_boundary",
+        "coverage_status",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("open_space_status", "PASS", span, rule_id)
+    builder.add_claim_part(
+        "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim.",
+        span,
+        rule_id,
+    )
+
+
 def add_pressure_change_element(builder: ContractBuilder, span: Span) -> None:
     rule_id = "meaning.element.pressure_change"
     for field_name in [
@@ -1167,15 +1200,34 @@ def is_team_press_meaning(lower: str) -> bool:
     )
 
 
-def is_space_region_generation_meaning(lower: str) -> bool:
+def is_open_space_region_meaning(lower: str) -> bool:
     return any(
         phrase in lower
         for phrase in (
             "space region",
             "open space",
             "free space",
+            "available space",
+            "free area",
+            "open area",
+        )
+    )
+
+
+def is_space_creation_or_value_meaning(lower: str) -> bool:
+    return any(
+        phrase in lower
+        for phrase in (
             "generated space",
             "space creation",
+            "creates space",
+            "create space",
+            "created space",
+            "creates generated space",
+            "space exploitation",
+            "exploit space",
+            "exploits space",
+            "space value",
         )
     )
 
@@ -1226,9 +1278,10 @@ def search_blindness_findings(config: dict[str, Any], search_rows: list[dict[str
     findings: list[dict[str, Any]] = []
     football_names = {str(case["concept"]).lower() for case in config["cases"]}
     targets_payload = load_json(TARGETS_OUT)
+    target_strings = {value.lower() for value in recursive_string_values(targets_payload)}
     serialized_targets = json.dumps(targets_payload, sort_keys=True).lower()
     for name in football_names:
-        if name in serialized_targets:
+        if name in target_strings or name.replace("_", " ") in target_strings:
             findings.append({"code": "search_blindness_football_concept_name_in_targets", "concept": name})
     for case in config["cases"]:
         for definition in case.get("definitions") or []:
@@ -1238,6 +1291,22 @@ def search_blindness_findings(config: dict[str, Any], search_rows: list[dict[str
         if not str(row.get("concept", "")).startswith("scl"):
             findings.append({"code": "search_blindness_non_opaque_reporting_concept", "target_id": row.get("target_id"), "concept": row.get("concept")})
     return findings
+
+
+def recursive_string_values(value: Any) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        result: list[str] = []
+        for item in value:
+            result.extend(recursive_string_values(item))
+        return result
+    if isinstance(value, dict):
+        result: list[str] = []
+        for item in value.values():
+            result.extend(recursive_string_values(item))
+        return result
+    return []
 
 
 def independent_stability_findings(case: dict[str, Any], contracts: list[dict[str, Any]]) -> list[dict[str, Any]]:

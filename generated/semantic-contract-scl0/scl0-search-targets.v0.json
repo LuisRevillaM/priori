@@ -1717,14 +1717,28 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_space_region_generation_status"
+          "coverage_status",
+          "grid_step_m",
+          "minimum_opponent_distance_m",
+          "minimum_teammate_distance_m",
+          "open_space_candidate_points",
+          "open_space_reason",
+          "open_space_region_count",
+          "open_space_status",
+          "representative_nearest_opponent_distance_m",
+          "representative_nearest_teammate_distance_m",
+          "representative_open_space_point",
+          "space_frame_id",
+          "space_region_claim_boundary",
+          "space_region_model",
+          "zone_scope"
         ],
         "status_semantics": [
           {
-            "field": "scl1_space_region_generation_status",
+            "field": "open_space_status",
             "required_value": "PASS"
           }
         ]
@@ -1736,14 +1750,28 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_space_region_generation_status"
+          "coverage_status",
+          "grid_step_m",
+          "minimum_opponent_distance_m",
+          "minimum_teammate_distance_m",
+          "open_space_candidate_points",
+          "open_space_reason",
+          "open_space_region_count",
+          "open_space_status",
+          "representative_nearest_opponent_distance_m",
+          "representative_nearest_teammate_distance_m",
+          "representative_open_space_point",
+          "space_frame_id",
+          "space_region_claim_boundary",
+          "space_region_model",
+          "zone_scope"
         ],
         "status_semantics": [
           {
-            "field": "scl1_space_region_generation_status",
+            "field": "open_space_status",
             "required_value": "PASS"
           }
         ]
@@ -1755,14 +1783,33 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim. Requires before/after generated-space change, value, exploitation, or attribution evidence; base open-space geometry is not treated as creation, exploitation, purpose, or tactical value.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_space_region_generation_status"
+          "coverage_status",
+          "grid_step_m",
+          "minimum_opponent_distance_m",
+          "minimum_teammate_distance_m",
+          "open_space_candidate_points",
+          "open_space_reason",
+          "open_space_region_count",
+          "open_space_status",
+          "representative_nearest_opponent_distance_m",
+          "representative_nearest_teammate_distance_m",
+          "representative_open_space_point",
+          "scl1_space_creation_status",
+          "space_frame_id",
+          "space_region_claim_boundary",
+          "space_region_model",
+          "zone_scope"
         ],
         "status_semantics": [
           {
-            "field": "scl1_space_region_generation_status",
+            "field": "open_space_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "scl1_space_creation_status",
             "required_value": "PASS"
           }
         ]
@@ -1774,14 +1821,33 @@
       "held_out": false,
       "multi_step": false,
       "target_contract": {
-        "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+        "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim. Requires before/after generated-space change, value, exploitation, or attribution evidence; base open-space geometry is not treated as creation, exploitation, purpose, or tactical value.",
         "desired_output": "classification",
         "required_evidence": [
-          "scl1_space_region_generation_status"
+          "coverage_status",
+          "grid_step_m",
+          "minimum_opponent_distance_m",
+          "minimum_teammate_distance_m",
+          "open_space_candidate_points",
+          "open_space_reason",
+          "open_space_region_count",
+          "open_space_status",
+          "representative_nearest_opponent_distance_m",
+          "representative_nearest_teammate_distance_m",
+          "representative_open_space_point",
+          "scl1_space_creation_status",
+          "space_frame_id",
+          "space_region_claim_boundary",
+          "space_region_model",
+          "zone_scope"
         ],
         "status_semantics": [
           {
-            "field": "scl1_space_region_generation_status",
+            "field": "open_space_status",
+            "required_value": "PASS"
+          },
+          {
+            "field": "scl1_space_creation_status",
             "required_value": "PASS"
           }
         ]
@@ -2011,6 +2077,72 @@
         ]
       },
       "target_id": "scl1_030_blind_b_v0"
+    },
+    {
+      "concept": "scl1_031",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "coverage_status",
+          "grid_step_m",
+          "minimum_opponent_distance_m",
+          "minimum_teammate_distance_m",
+          "open_space_candidate_points",
+          "open_space_reason",
+          "open_space_region_count",
+          "open_space_status",
+          "representative_nearest_opponent_distance_m",
+          "representative_nearest_teammate_distance_m",
+          "representative_open_space_point",
+          "space_frame_id",
+          "space_region_claim_boundary",
+          "space_region_model",
+          "zone_scope"
+        ],
+        "status_semantics": [
+          {
+            "field": "open_space_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_031_blind_a_v0"
+    },
+    {
+      "concept": "scl1_031",
+      "held_out": false,
+      "multi_step": false,
+      "target_contract": {
+        "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim.",
+        "desired_output": "classification",
+        "required_evidence": [
+          "coverage_status",
+          "grid_step_m",
+          "minimum_opponent_distance_m",
+          "minimum_teammate_distance_m",
+          "open_space_candidate_points",
+          "open_space_reason",
+          "open_space_region_count",
+          "open_space_status",
+          "representative_nearest_opponent_distance_m",
+          "representative_nearest_teammate_distance_m",
+          "representative_open_space_point",
+          "space_frame_id",
+          "space_region_claim_boundary",
+          "space_region_model",
+          "zone_scope"
+        ],
+        "status_semantics": [
+          {
+            "field": "open_space_status",
+            "required_value": "PASS"
+          }
+        ]
+      },
+      "target_id": "scl1_031_blind_b_v0"
     }
   ]
 }

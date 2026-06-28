@@ -7988,34 +7988,160 @@
     "case_id": "scl1_027",
     "concept": "open_space_region",
     "contract": {
-      "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+      "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_space_region_generation_status"
+        "coverage_status",
+        "grid_step_m",
+        "minimum_opponent_distance_m",
+        "minimum_teammate_distance_m",
+        "open_space_candidate_points",
+        "open_space_reason",
+        "open_space_region_count",
+        "open_space_status",
+        "representative_nearest_opponent_distance_m",
+        "representative_nearest_teammate_distance_m",
+        "representative_open_space_point",
+        "space_frame_id",
+        "space_region_claim_boundary",
+        "space_region_model",
+        "zone_scope"
       ],
       "status_semantics": [
         {
-          "field": "scl1_space_region_generation_status",
+          "field": "open_space_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
-    "definition_text": "Open space region means a generated area of free space available to attack.",
+    "contract_hash": "e5dfae7e1bd2507f5f2b8c964f6792eb2103fcbbe830a4b15566ec506c6a717a",
+    "definition_text": "Open space region means an observed pitch area with enough distance from nearby outfield players under frozen thresholds.",
     "opaque_search_concept": "scl1_027",
     "target_id": "scl1_027_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_space_region_generation_status",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "contract_path": "required_evidence.open_space_status",
+        "rule_id": "meaning.space.open_region",
         "source_end": 17,
         "source_phrase": "space region",
         "source_start": 5,
-        "value": "scl1_space_region_generation_status"
+        "value": "open_space_status"
       },
       {
-        "contract_path": "status_semantics.scl1_space_region_generation_status",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "contract_path": "required_evidence.open_space_reason",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "open_space_reason"
+      },
+      {
+        "contract_path": "required_evidence.space_frame_id",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "space_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.zone_scope",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "zone_scope"
+      },
+      {
+        "contract_path": "required_evidence.grid_step_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "grid_step_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "minimum_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "minimum_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_region_count",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "open_space_region_count"
+      },
+      {
+        "contract_path": "required_evidence.representative_open_space_point",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "representative_open_space_point"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "representative_nearest_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "representative_nearest_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_candidate_points",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "open_space_candidate_points"
+      },
+      {
+        "contract_path": "required_evidence.space_region_model",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "space_region_model"
+      },
+      {
+        "contract_path": "required_evidence.space_region_claim_boundary",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "space_region_claim_boundary"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 17,
+        "source_phrase": "space region",
+        "source_start": 5,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.open_space_status",
+        "rule_id": "meaning.space.open_region",
         "source_end": 17,
         "source_phrase": "space region",
         "source_start": 5,
@@ -8023,11 +8149,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "rule_id": "meaning.space.open_region",
         "source_end": 17,
         "source_phrase": "space region",
         "source_start": 5,
-        "value": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted."
+        "value": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim."
       }
     ]
   },
@@ -8036,34 +8162,160 @@
     "case_id": "scl1_027",
     "concept": "open_space_region",
     "contract": {
-      "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+      "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_space_region_generation_status"
+        "coverage_status",
+        "grid_step_m",
+        "minimum_opponent_distance_m",
+        "minimum_teammate_distance_m",
+        "open_space_candidate_points",
+        "open_space_reason",
+        "open_space_region_count",
+        "open_space_status",
+        "representative_nearest_opponent_distance_m",
+        "representative_nearest_teammate_distance_m",
+        "representative_open_space_point",
+        "space_frame_id",
+        "space_region_claim_boundary",
+        "space_region_model",
+        "zone_scope"
       ],
       "status_semantics": [
         {
-          "field": "scl1_space_region_generation_status",
+          "field": "open_space_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
-    "definition_text": "A free space region is an open space area produced by the current player positions.",
+    "contract_hash": "e5dfae7e1bd2507f5f2b8c964f6792eb2103fcbbe830a4b15566ec506c6a717a",
+    "definition_text": "A free space region is an observed pitch area separated from nearby teammates and opponents.",
     "opaque_search_concept": "scl1_027",
     "target_id": "scl1_027_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_space_region_generation_status",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "contract_path": "required_evidence.open_space_status",
+        "rule_id": "meaning.space.open_region",
         "source_end": 19,
         "source_phrase": "space region",
         "source_start": 7,
-        "value": "scl1_space_region_generation_status"
+        "value": "open_space_status"
       },
       {
-        "contract_path": "status_semantics.scl1_space_region_generation_status",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "contract_path": "required_evidence.open_space_reason",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "open_space_reason"
+      },
+      {
+        "contract_path": "required_evidence.space_frame_id",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "space_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.zone_scope",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "zone_scope"
+      },
+      {
+        "contract_path": "required_evidence.grid_step_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "grid_step_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "minimum_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "minimum_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_region_count",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "open_space_region_count"
+      },
+      {
+        "contract_path": "required_evidence.representative_open_space_point",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "representative_open_space_point"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "representative_nearest_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "representative_nearest_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_candidate_points",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "open_space_candidate_points"
+      },
+      {
+        "contract_path": "required_evidence.space_region_model",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "space_region_model"
+      },
+      {
+        "contract_path": "required_evidence.space_region_claim_boundary",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "space_region_claim_boundary"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 19,
+        "source_phrase": "space region",
+        "source_start": 7,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.open_space_status",
+        "rule_id": "meaning.space.open_region",
         "source_end": 19,
         "source_phrase": "space region",
         "source_start": 7,
@@ -8071,11 +8323,11 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "rule_id": "meaning.space.open_region",
         "source_end": 19,
         "source_phrase": "space region",
         "source_start": 7,
-        "value": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted."
+        "value": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim."
       }
     ]
   },
@@ -8084,46 +8336,201 @@
     "case_id": "scl1_028",
     "concept": "space_creation_candidate",
     "contract": {
-      "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+      "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim. Requires before/after generated-space change, value, exploitation, or attribution evidence; base open-space geometry is not treated as creation, exploitation, purpose, or tactical value.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_space_region_generation_status"
+        "coverage_status",
+        "grid_step_m",
+        "minimum_opponent_distance_m",
+        "minimum_teammate_distance_m",
+        "open_space_candidate_points",
+        "open_space_reason",
+        "open_space_region_count",
+        "open_space_status",
+        "representative_nearest_opponent_distance_m",
+        "representative_nearest_teammate_distance_m",
+        "representative_open_space_point",
+        "scl1_space_creation_status",
+        "space_frame_id",
+        "space_region_claim_boundary",
+        "space_region_model",
+        "zone_scope"
       ],
       "status_semantics": [
         {
-          "field": "scl1_space_region_generation_status",
+          "field": "open_space_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "scl1_space_creation_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
-    "definition_text": "Space creation candidate means an action creates generated space for a teammate.",
+    "contract_hash": "5de467db17846f2614c0f5f1de39382708ff8f5846efbe1b72b2514e61a4f077",
+    "definition_text": "Space creation candidate means an action creates a new open space region for a teammate.",
     "opaque_search_concept": "scl1_028",
     "target_id": "scl1_028_blind_a_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_space_region_generation_status",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
-        "source_end": 64,
-        "source_phrase": "generated space",
-        "source_start": 49,
-        "value": "scl1_space_region_generation_status"
+        "contract_path": "required_evidence.open_space_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "open_space_status"
       },
       {
-        "contract_path": "status_semantics.scl1_space_region_generation_status",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
-        "source_end": 64,
-        "source_phrase": "generated space",
-        "source_start": 49,
+        "contract_path": "required_evidence.open_space_reason",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "open_space_reason"
+      },
+      {
+        "contract_path": "required_evidence.space_frame_id",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "space_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.zone_scope",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "zone_scope"
+      },
+      {
+        "contract_path": "required_evidence.grid_step_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "grid_step_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "minimum_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "minimum_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_region_count",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "open_space_region_count"
+      },
+      {
+        "contract_path": "required_evidence.representative_open_space_point",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "representative_open_space_point"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "representative_nearest_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "representative_nearest_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_candidate_points",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "open_space_candidate_points"
+      },
+      {
+        "contract_path": "required_evidence.space_region_model",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "space_region_model"
+      },
+      {
+        "contract_path": "required_evidence.space_region_claim_boundary",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "space_region_claim_boundary"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.open_space_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
         "value": "PASS"
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
-        "source_end": 64,
-        "source_phrase": "generated space",
-        "source_start": 49,
-        "value": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted."
+        "rule_id": "meaning.space.open_region",
+        "source_end": 72,
+        "source_phrase": "space region",
+        "source_start": 60,
+        "value": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.scl1_space_creation_status",
+        "rule_id": "meaning.missing_primitive.space_creation",
+        "source_end": 14,
+        "source_phrase": "Space creation",
+        "source_start": 0,
+        "value": "scl1_space_creation_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_space_creation_status",
+        "rule_id": "meaning.missing_primitive.space_creation",
+        "source_end": 14,
+        "source_phrase": "Space creation",
+        "source_start": 0,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.space_creation",
+        "source_end": 14,
+        "source_phrase": "Space creation",
+        "source_start": 0,
+        "value": "Requires before/after generated-space change, value, exploitation, or attribution evidence; base open-space geometry is not treated as creation, exploitation, purpose, or tactical value."
       }
     ]
   },
@@ -8132,34 +8539,165 @@
     "case_id": "scl1_028",
     "concept": "space_creation_candidate",
     "contract": {
-      "claim_boundary": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted.",
+      "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim. Requires before/after generated-space change, value, exploitation, or attribution evidence; base open-space geometry is not treated as creation, exploitation, purpose, or tactical value.",
       "desired_output": "classification",
       "required_evidence": [
-        "scl1_space_region_generation_status"
+        "coverage_status",
+        "grid_step_m",
+        "minimum_opponent_distance_m",
+        "minimum_teammate_distance_m",
+        "open_space_candidate_points",
+        "open_space_reason",
+        "open_space_region_count",
+        "open_space_status",
+        "representative_nearest_opponent_distance_m",
+        "representative_nearest_teammate_distance_m",
+        "representative_open_space_point",
+        "scl1_space_creation_status",
+        "space_frame_id",
+        "space_region_claim_boundary",
+        "space_region_model",
+        "zone_scope"
       ],
       "status_semantics": [
         {
-          "field": "scl1_space_region_generation_status",
+          "field": "open_space_status",
+          "required_value": "PASS"
+        },
+        {
+          "field": "scl1_space_creation_status",
           "required_value": "PASS"
         }
       ]
     },
-    "contract_hash": "f0a11a7582095a2dc079df1e7fb3332a88b2c169e983eda05491ae5d33336f93",
+    "contract_hash": "5de467db17846f2614c0f5f1de39382708ff8f5846efbe1b72b2514e61a4f077",
     "definition_text": "Generated space creation asks whether a new free space region appears after the action.",
     "opaque_search_concept": "scl1_028",
     "target_id": "scl1_028_blind_b_v0",
     "trace": [
       {
-        "contract_path": "required_evidence.scl1_space_region_generation_status",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "contract_path": "required_evidence.open_space_status",
+        "rule_id": "meaning.space.open_region",
         "source_end": 61,
         "source_phrase": "space region",
         "source_start": 49,
-        "value": "scl1_space_region_generation_status"
+        "value": "open_space_status"
       },
       {
-        "contract_path": "status_semantics.scl1_space_region_generation_status",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "contract_path": "required_evidence.open_space_reason",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "open_space_reason"
+      },
+      {
+        "contract_path": "required_evidence.space_frame_id",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "space_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.zone_scope",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "zone_scope"
+      },
+      {
+        "contract_path": "required_evidence.grid_step_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "grid_step_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "minimum_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "minimum_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_region_count",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "open_space_region_count"
+      },
+      {
+        "contract_path": "required_evidence.representative_open_space_point",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "representative_open_space_point"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "representative_nearest_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "representative_nearest_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_candidate_points",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "open_space_candidate_points"
+      },
+      {
+        "contract_path": "required_evidence.space_region_model",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "space_region_model"
+      },
+      {
+        "contract_path": "required_evidence.space_region_claim_boundary",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "space_region_claim_boundary"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 61,
+        "source_phrase": "space region",
+        "source_start": 49,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.open_space_status",
+        "rule_id": "meaning.space.open_region",
         "source_end": 61,
         "source_phrase": "space region",
         "source_start": 49,
@@ -8167,11 +8705,35 @@
       },
       {
         "contract_path": "claim_boundary",
-        "rule_id": "meaning.missing_primitive.space_region_generation",
+        "rule_id": "meaning.space.open_region",
         "source_end": 61,
         "source_phrase": "space region",
         "source_start": 49,
-        "value": "Requires generated space-region geometry; fixed zones, lane occupancy, and point reachability are not substituted."
+        "value": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim."
+      },
+      {
+        "contract_path": "required_evidence.scl1_space_creation_status",
+        "rule_id": "meaning.missing_primitive.space_creation",
+        "source_end": 24,
+        "source_phrase": "space creation",
+        "source_start": 10,
+        "value": "scl1_space_creation_status"
+      },
+      {
+        "contract_path": "status_semantics.scl1_space_creation_status",
+        "rule_id": "meaning.missing_primitive.space_creation",
+        "source_end": 24,
+        "source_phrase": "space creation",
+        "source_start": 10,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.missing_primitive.space_creation",
+        "source_end": 24,
+        "source_phrase": "space creation",
+        "source_start": 10,
+        "value": "Requires before/after generated-space change, value, exploitation, or attribution evidence; base open-space geometry is not treated as creation, exploitation, purpose, or tactical value."
       }
     ]
   },
@@ -9744,6 +10306,354 @@
         "source_phrase": "dragging",
         "source_start": 9,
         "value": "Requires run purpose, role, coordination, or tactical typing evidence; observed off-ball path geometry is not treated as decoy, marker dragging, overlap/underlap role, or third-player purpose."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_a",
+    "case_id": "scl1_031",
+    "concept": "available_space_region",
+    "contract": {
+      "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "coverage_status",
+        "grid_step_m",
+        "minimum_opponent_distance_m",
+        "minimum_teammate_distance_m",
+        "open_space_candidate_points",
+        "open_space_reason",
+        "open_space_region_count",
+        "open_space_status",
+        "representative_nearest_opponent_distance_m",
+        "representative_nearest_teammate_distance_m",
+        "representative_open_space_point",
+        "space_frame_id",
+        "space_region_claim_boundary",
+        "space_region_model",
+        "zone_scope"
+      ],
+      "status_semantics": [
+        {
+          "field": "open_space_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "e5dfae7e1bd2507f5f2b8c964f6792eb2103fcbbe830a4b15566ec506c6a717a",
+    "definition_text": "Available space region means an observed free area of pitch available at the anchor under frozen distance thresholds.",
+    "opaque_search_concept": "scl1_031",
+    "target_id": "scl1_031_blind_a_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.open_space_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "open_space_status"
+      },
+      {
+        "contract_path": "required_evidence.open_space_reason",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "open_space_reason"
+      },
+      {
+        "contract_path": "required_evidence.space_frame_id",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "space_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.zone_scope",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "zone_scope"
+      },
+      {
+        "contract_path": "required_evidence.grid_step_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "grid_step_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "minimum_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "minimum_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_region_count",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "open_space_region_count"
+      },
+      {
+        "contract_path": "required_evidence.representative_open_space_point",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "representative_open_space_point"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "representative_nearest_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "representative_nearest_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_candidate_points",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "open_space_candidate_points"
+      },
+      {
+        "contract_path": "required_evidence.space_region_model",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "space_region_model"
+      },
+      {
+        "contract_path": "required_evidence.space_region_claim_boundary",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "space_region_claim_boundary"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.open_space_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 22,
+        "source_phrase": "space region",
+        "source_start": 10,
+        "value": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim."
+      }
+    ]
+  },
+  {
+    "author_id": "blind_b",
+    "case_id": "scl1_031",
+    "concept": "available_space_region",
+    "contract": {
+      "claim_boundary": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim.",
+      "desired_output": "classification",
+      "required_evidence": [
+        "coverage_status",
+        "grid_step_m",
+        "minimum_opponent_distance_m",
+        "minimum_teammate_distance_m",
+        "open_space_candidate_points",
+        "open_space_reason",
+        "open_space_region_count",
+        "open_space_status",
+        "representative_nearest_opponent_distance_m",
+        "representative_nearest_teammate_distance_m",
+        "representative_open_space_point",
+        "space_frame_id",
+        "space_region_claim_boundary",
+        "space_region_model",
+        "zone_scope"
+      ],
+      "status_semantics": [
+        {
+          "field": "open_space_status",
+          "required_value": "PASS"
+        }
+      ]
+    },
+    "contract_hash": "e5dfae7e1bd2507f5f2b8c964f6792eb2103fcbbe830a4b15566ec506c6a717a",
+    "definition_text": "Accessible open space is a region of the pitch with enough distance from nearby outfield players at the observed frame.",
+    "opaque_search_concept": "scl1_031",
+    "target_id": "scl1_031_blind_b_v0",
+    "trace": [
+      {
+        "contract_path": "required_evidence.open_space_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "open_space_status"
+      },
+      {
+        "contract_path": "required_evidence.open_space_reason",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "open_space_reason"
+      },
+      {
+        "contract_path": "required_evidence.space_frame_id",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "space_frame_id"
+      },
+      {
+        "contract_path": "required_evidence.zone_scope",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "zone_scope"
+      },
+      {
+        "contract_path": "required_evidence.grid_step_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "grid_step_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "minimum_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.minimum_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "minimum_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_region_count",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "open_space_region_count"
+      },
+      {
+        "contract_path": "required_evidence.representative_open_space_point",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "representative_open_space_point"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_opponent_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "representative_nearest_opponent_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.representative_nearest_teammate_distance_m",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "representative_nearest_teammate_distance_m"
+      },
+      {
+        "contract_path": "required_evidence.open_space_candidate_points",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "open_space_candidate_points"
+      },
+      {
+        "contract_path": "required_evidence.space_region_model",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "space_region_model"
+      },
+      {
+        "contract_path": "required_evidence.space_region_claim_boundary",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "space_region_claim_boundary"
+      },
+      {
+        "contract_path": "required_evidence.coverage_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "coverage_status"
+      },
+      {
+        "contract_path": "status_semantics.open_space_status",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "PASS"
+      },
+      {
+        "contract_path": "claim_boundary",
+        "rule_id": "meaning.space.open_region",
+        "source_end": 21,
+        "source_phrase": "open space",
+        "source_start": 11,
+        "value": "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, player intent, tactical causation, or optimality claim."
       }
     ]
   }

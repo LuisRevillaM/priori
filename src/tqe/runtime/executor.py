@@ -251,6 +251,7 @@ class TacticalQueryExecutor:
             "possession_segment": primitive_possession_segment,
             "transition_anchor": primitive_transition_anchor,
             "structured_zone": primitive_structured_zone,
+            "space_region_generation": primitive_space_region_generation,
             "outcome_window": primitive_outcome_window,
             "action_event_anchor": primitive_action_event_anchor,
             "action_chain": primitive_action_chain,
@@ -2412,6 +2413,79 @@ def primitive_structured_zone(state: PeriodState, node: BoundCatalogNode) -> Non
     }
 
 
+def primitive_space_region_generation(state: PeriodState, node: BoundCatalogNode) -> None:
+    anchor_value = catalog_input_value(state, node, "anchors")
+    anchors = runtime_records(anchor_value)
+    frame_field = node_parameter_text(node, "frame_field", "anchor_frame_id")
+    zone_scope = node_parameter_text(node, "zone_scope", "any")
+    grid_step_m = node_parameter_number(node, "grid_step_m", 8.0)
+    minimum_opponent_distance_m = node_parameter_number(node, "minimum_opponent_distance_m", 8.0)
+    minimum_teammate_distance_m = node_parameter_number(node, "minimum_teammate_distance_m", 4.0)
+    minimum_open_points = node_parameter_integer(node, "minimum_open_points", 1)
+    maximum_candidate_points = node_parameter_integer(node, "maximum_candidate_points", 5)
+    minimum_observed_players_per_team = node_parameter_integer(node, "minimum_observed_players_per_team", 6)
+    records = [
+        space_region_generation_anchor_record(
+            state=state,
+            anchor=anchor,
+            frame_field=frame_field,
+            zone_scope=zone_scope,
+            grid_step_m=grid_step_m,
+            minimum_opponent_distance_m=minimum_opponent_distance_m,
+            minimum_teammate_distance_m=minimum_teammate_distance_m,
+            minimum_open_points=minimum_open_points,
+            maximum_candidate_points=maximum_candidate_points,
+            minimum_observed_players_per_team=minimum_observed_players_per_team,
+        )
+        for anchor in anchors
+        if isinstance(anchor, dict)
+    ]
+    records = [record for record in records if record is not None]
+    frame_ids = [int(record["anchor_frame_id"]) for record in records]
+    values = [
+        None if record["open_space_status"] == "UNKNOWN" else record["open_space_status"]
+        for record in records
+    ]
+    count_values = [
+        None if record["open_space_status"] == "UNKNOWN" else int(record.get("open_space_region_count") or 0)
+        for record in records
+    ]
+    point_values = [
+        record.get("representative_open_space_point")
+        if record["open_space_status"] == "PASS"
+        else None
+        for record in records
+    ]
+    state.signals[node.node_id] = {
+        "anchor_evaluations": records,
+        "anchor_evaluations_records": records,
+        "open_space_status": FrameSignal(
+            frame_ids=frame_ids,
+            values=values,
+            unknown_mask=[value is None for value in values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "open_space_status").entity_scope,
+        ),
+        "open_space_status_records": records,
+        "open_space_region_count": FrameSignal(
+            frame_ids=frame_ids,
+            values=count_values,
+            unknown_mask=[value is None for value in count_values],
+            unit=Unit.COUNT,
+            entity_scope=catalog_output(node, "open_space_region_count").entity_scope,
+        ),
+        "open_space_region_count_records": records,
+        "representative_open_space_point": FrameSignal(
+            frame_ids=frame_ids,
+            values=point_values,
+            unknown_mask=[value is None for value in point_values],
+            unit=Unit.NONE,
+            entity_scope=catalog_output(node, "representative_open_space_point").entity_scope,
+        ),
+        "representative_open_space_point_records": records,
+    }
+
+
 def primitive_outcome_window(state: PeriodState, node: BoundCatalogNode) -> None:
     anchor_value = catalog_input_value(state, node, "anchors")
     anchors = runtime_records(anchor_value)
@@ -2549,6 +2623,177 @@ def zone_evaluation_at_frame(
         "zone_normalized_ball_x_m": round(float(normalized_x), 3),
         "zone_boundary_buffer_m": zone_boundary_buffer_m,
     }
+
+
+def space_region_generation_anchor_record(
+    *,
+    state: PeriodState,
+    anchor: dict[str, Any],
+    frame_field: str,
+    zone_scope: str,
+    grid_step_m: float,
+    minimum_opponent_distance_m: float,
+    minimum_teammate_distance_m: float,
+    minimum_open_points: int,
+    maximum_candidate_points: int,
+    minimum_observed_players_per_team: int,
+) -> dict[str, Any] | None:
+    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
+    frame_id = optional_int(anchor.get(frame_field)) or anchor_frame_id
+    if anchor_frame_id is None or frame_id is None:
+        return None
+    model = "sampled_grid_distance_from_observed_outfield_players_v0_1"
+    claim_boundary = (
+        "Observed sampled open-space candidate geometry only; no space value, pitch control, creation, exploitation, "
+        "player intent, tactical causation, or optimality claim."
+    )
+    perspective_team_role = str(anchor.get("team_role") or state.perspective_team_role)
+    if perspective_team_role not in {"home", "away"}:
+        perspective_team_role = state.perspective_team_role
+    opponent_team_role = "away" if perspective_team_role == "home" else "home"
+    perspective_ids = outfield_player_ids(state.canonical_root, state.match_id, perspective_team_role)
+    opponent_ids = outfield_player_ids(state.canonical_root, state.match_id, opponent_team_role)
+    perspective_positions = [
+        item
+        for item in cached_observed_outfield_positions_at_frame(state, frame_id, perspective_team_role, perspective_ids)
+        if item.get("x_m") is not None and item.get("y_m") is not None
+    ]
+    opponent_positions = [
+        item
+        for item in cached_observed_outfield_positions_at_frame(state, frame_id, opponent_team_role, opponent_ids)
+        if item.get("x_m") is not None and item.get("y_m") is not None
+    ]
+    orientation = parquet_rows(state.canonical_root / "orientation.parquet")
+    attack_x_sign = attack_x_sign_for(orientation, state.match_id, state.period, perspective_team_role)
+
+    def base(status: str, reason: str, *, candidates: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        candidates = candidates or []
+        representative = candidates[0] if candidates else None
+        return {
+            **anchor,
+            "match_id": state.match_id,
+            "period": state.period,
+            "anchor_id": str(anchor.get("anchor_id")),
+            "anchor_frame_id": anchor_frame_id,
+            "start_frame_id": optional_int(anchor.get("start_frame_id")) or anchor_frame_id,
+            "end_frame_id": optional_int(anchor.get("end_frame_id")) or anchor_frame_id,
+            "entity_refs": list(anchor.get("entity_refs") or []),
+            "open_space_status": status,
+            "open_space_reason": reason,
+            "space_frame_field": frame_field,
+            "space_frame_id": frame_id,
+            "zone_scope": zone_scope,
+            "grid_step_m": round(float(grid_step_m), 3),
+            "minimum_opponent_distance_m": round(float(minimum_opponent_distance_m), 3),
+            "minimum_teammate_distance_m": round(float(minimum_teammate_distance_m), 3),
+            "minimum_open_points": int(minimum_open_points),
+            "maximum_candidate_points": int(maximum_candidate_points),
+            "minimum_observed_players_per_team": int(minimum_observed_players_per_team),
+            "perspective_team_role": perspective_team_role,
+            "opponent_team_role": opponent_team_role,
+            "observed_teammate_count": len(perspective_positions),
+            "observed_opponent_count": len(opponent_positions),
+            "open_space_region_count": len(candidates),
+            "representative_open_space_point": None
+            if representative is None
+            else point_from_xy(representative["x_m"], representative["y_m"]),
+            "representative_nearest_opponent_distance_m": None
+            if representative is None
+            else representative["nearest_opponent_distance_m"],
+            "representative_nearest_teammate_distance_m": None
+            if representative is None
+            else representative["nearest_teammate_distance_m"],
+            "open_space_candidate_points": candidates[: max(0, int(maximum_candidate_points))],
+            "space_region_model": model,
+            "space_region_claim_boundary": claim_boundary,
+            "coverage_status": "UNKNOWN" if status == "UNKNOWN" else "PASS",
+        }
+
+    if grid_step_m <= 0:
+        return base("UNKNOWN", "invalid_grid_step")
+    if attack_x_sign not in {-1, 1}:
+        return base("UNKNOWN", "attacking_direction_missing")
+    if len(perspective_positions) < max(1, minimum_observed_players_per_team):
+        return base("UNKNOWN", "teammate_tracking_missing")
+    if len(opponent_positions) < max(1, minimum_observed_players_per_team):
+        return base("UNKNOWN", "opponent_tracking_missing")
+
+    candidates = open_space_candidate_points(
+        perspective_positions=perspective_positions,
+        opponent_positions=opponent_positions,
+        attack_x_sign=int(attack_x_sign),
+        zone_scope=zone_scope,
+        grid_step_m=grid_step_m,
+        minimum_opponent_distance_m=minimum_opponent_distance_m,
+        minimum_teammate_distance_m=minimum_teammate_distance_m,
+        maximum_candidate_points=maximum_candidate_points,
+    )
+    if len(candidates) >= max(1, minimum_open_points):
+        return base("PASS", "open_space_candidates_found", candidates=candidates)
+    return base("FAIL", "open_space_threshold_not_met", candidates=candidates)
+
+
+def open_space_candidate_points(
+    *,
+    perspective_positions: list[dict[str, Any]],
+    opponent_positions: list[dict[str, Any]],
+    attack_x_sign: int,
+    zone_scope: str,
+    grid_step_m: float,
+    minimum_opponent_distance_m: float,
+    minimum_teammate_distance_m: float,
+    maximum_candidate_points: int,
+) -> list[dict[str, Any]]:
+    teammate_points = [(float(item["x_m"]), float(item["y_m"])) for item in perspective_positions]
+    opponent_points = [(float(item["x_m"]), float(item["y_m"])) for item in opponent_positions]
+    scored: list[dict[str, Any]] = []
+    for x_m in sampled_axis_values(-PITCH_HALF_LENGTH_M, PITCH_HALF_LENGTH_M, grid_step_m):
+        for y_m in sampled_axis_values(-PITCH_HALF_WIDTH_M, PITCH_HALF_WIDTH_M, grid_step_m):
+            if not point_in_space_zone_scope(x_m, y_m, zone_scope, attack_x_sign):
+                continue
+            nearest_opponent = min(math.dist((x_m, y_m), point) for point in opponent_points)
+            nearest_teammate = min(math.dist((x_m, y_m), point) for point in teammate_points)
+            if nearest_opponent < minimum_opponent_distance_m or nearest_teammate < minimum_teammate_distance_m:
+                continue
+            scored.append(
+                {
+                    "x_m": round(float(x_m), 3),
+                    "y_m": round(float(y_m), 3),
+                    "nearest_opponent_distance_m": round(float(nearest_opponent), 3),
+                    "nearest_teammate_distance_m": round(float(nearest_teammate), 3),
+                    "space_score": round(float(nearest_opponent + 0.5 * nearest_teammate), 3),
+                }
+            )
+    scored.sort(key=lambda item: (-float(item["space_score"]), float(item["x_m"]) * -attack_x_sign, abs(float(item["y_m"]))))
+    return scored[: max(0, int(maximum_candidate_points))]
+
+
+def sampled_axis_values(start: float, stop: float, step: float) -> list[float]:
+    values: list[float] = []
+    value = float(start)
+    while value <= float(stop) + 1e-9:
+        values.append(round(value, 6))
+        value += float(step)
+    if values and values[-1] < stop:
+        values.append(float(stop))
+    return values
+
+
+def point_in_space_zone_scope(x_m: float, y_m: float, zone_scope: str, attack_x_sign: int) -> bool:
+    del y_m
+    normalized_x = float(x_m) * int(attack_x_sign)
+    if zone_scope == "any":
+        return True
+    if zone_scope == "attacking_half":
+        return normalized_x > 0
+    if zone_scope == "defensive_half":
+        return normalized_x < 0
+    if zone_scope == "final_third":
+        return normalized_x > PITCH_HALF_LENGTH_M / 3.0
+    if zone_scope == "middle_third":
+        threshold = PITCH_HALF_LENGTH_M / 3.0
+        return -threshold <= normalized_x <= threshold
+    return True
 
 
 def outcome_window_anchor_record(

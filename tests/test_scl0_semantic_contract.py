@@ -98,10 +98,37 @@ class Scl0SemanticContractTests(unittest.TestCase):
             ("A cover shadow is a defended passing lane region hidden behind the pressing defender.", "scl1_cover_shadow_status"),
             ("A corner variant is a set piece routine pattern used from the corner restart.", "scl1_set_piece_routine_status"),
             ("A team press is a collective defensive pressing structure rather than one nearest defender.", "scl1_team_press_status"),
-            ("A free space region is an open space area produced by the current player positions.", "scl1_space_region_generation_status"),
         ]:
             contract, _ = generate_contract_from_meaning(text)
             self.assertIn(evidence, contract["required_evidence"])
+
+    def test_open_space_region_maps_to_observed_geometry_not_value(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "Available space region means an observed free area of pitch available at the anchor under frozen distance thresholds."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("open_space_status", contract["required_evidence"])
+        self.assertIn("representative_open_space_point", contract["required_evidence"])
+        self.assertIn("space_region_model", contract["required_evidence"])
+        self.assertIn("space_region_claim_boundary", contract["required_evidence"])
+        self.assertEqual(
+            {item["field"]: item["required_value"] for item in contract["status_semantics"] if "required_value" in item}["open_space_status"],
+            "PASS",
+        )
+        self.assertNotIn("scl1_space_creation_status", contract["required_evidence"])
+        self.assertIn("meaning.space.open_region", trace_rules)
+
+    def test_space_creation_keeps_creation_gap_on_top_of_open_space(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "Space creation candidate means an action creates a new open space region for a teammate."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+
+        self.assertIn("open_space_status", contract["required_evidence"])
+        self.assertIn("scl1_space_creation_status", contract["required_evidence"])
+        self.assertIn("meaning.space.open_region", trace_rules)
+        self.assertIn("meaning.missing_primitive.space_creation", trace_rules)
 
     def test_marking_element_maps_to_observed_proximity_not_assignment(self) -> None:
         contract, traces = generate_contract_from_meaning(

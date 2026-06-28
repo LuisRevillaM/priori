@@ -24,8 +24,8 @@
   },
   "status": "PASS",
   "summary": {
-    "case_count": 30,
-    "definition_count": 60,
+    "case_count": 31,
+    "definition_count": 62,
     "element_rule_usage": {
       "meaning.composition.carry_pressure_anchor_alignment": {
         "case_count": 1,
@@ -166,13 +166,12 @@
         ],
         "definition_count": 6
       },
-      "meaning.missing_primitive.space_region_generation": {
-        "case_count": 2,
+      "meaning.missing_primitive.space_creation": {
+        "case_count": 1,
         "cases": [
-          "scl1_027",
           "scl1_028"
         ],
-        "definition_count": 12
+        "definition_count": 6
       },
       "meaning.missing_primitive.team_press": {
         "case_count": 2,
@@ -263,11 +262,20 @@
           "scl1_029"
         ],
         "definition_count": 80
+      },
+      "meaning.space.open_region": {
+        "case_count": 3,
+        "cases": [
+          "scl1_027",
+          "scl1_028",
+          "scl1_031"
+        ],
+        "definition_count": 102
       }
     },
     "findings_count": 0,
     "held_out_case_count": 3,
     "known_negative_case_count": 3,
-    "target_count": 60
+    "target_count": 62
   }
 }

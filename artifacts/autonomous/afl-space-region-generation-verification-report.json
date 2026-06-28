@@ -1,0 +1,142 @@
+{
+  "claim_boundary": {
+    "allowed_claim": "Observed sampled open-space candidate geometry under frozen grid and nearest-player thresholds.",
+    "prohibited_claims": [
+      "optimality_inferred",
+      "pitch_control_inferred",
+      "player_intent_inferred",
+      "space_creation_inferred",
+      "space_exploitation_inferred",
+      "space_value_inferred",
+      "tactical_causation_inferred"
+    ],
+    "unknown_policy": "Invalid direction, invalid grid, or insufficient observed player tracking produces UNKNOWN, not open/closed-space."
+  },
+  "findings": [],
+  "milestone": "AFL-08 space_region_generation primitive / SCL named-gap closure",
+  "plans": {
+    "available_space_region": {
+      "document_hash": "ee218d72fda847958eb55585a8ff0bbd808b38ccf56037e9bb94143026470320",
+      "execution_status": "pass",
+      "path": "generated/semantic-contract-scl0/search-run/plans/scl1_031_blind_a_v0.json",
+      "requested_evidence_failure_count": 0,
+      "result_count": 20
+    },
+    "open_space_region": {
+      "document_hash": "379fa7dd726f47b0d159a9dc2b652a586bc6881c3f00bcc80735be289514670d",
+      "execution_status": "pass",
+      "path": "generated/semantic-contract-scl0/search-run/plans/scl1_027_blind_a_v0.json",
+      "requested_evidence_failure_count": 0,
+      "result_count": 20
+    }
+  },
+  "primitive_probe": {
+    "branch_status_counts_with_fixtures": {
+      "FAIL": 1,
+      "PASS": 4650,
+      "UNKNOWN": 1
+    },
+    "coverage_policy": "PASS/FAIL only when both teams have enough observed outfield players and direction/grid inputs are valid.",
+    "default_status_counts": {
+      "PASS": 4650
+    },
+    "evidence_presence_sample": {
+      "coverage_status": true,
+      "grid_step_m": true,
+      "minimum_opponent_distance_m": true,
+      "minimum_teammate_distance_m": true,
+      "open_space_candidate_points": true,
+      "open_space_reason": true,
+      "open_space_region_count": true,
+      "open_space_status": true,
+      "representative_nearest_opponent_distance_m": true,
+      "representative_nearest_teammate_distance_m": true,
+      "representative_open_space_point": true,
+      "space_frame_id": true,
+      "space_region_claim_boundary": true,
+      "space_region_model": true,
+      "zone_scope": true
+    },
+    "fixture_reasons": {
+      "fail": "open_space_threshold_not_met",
+      "unknown": "invalid_grid_step"
+    },
+    "model": "sampled_grid_distance_from_observed_outfield_players_v0_1",
+    "reason_counts": {
+      "open_space_candidates_found": 4650
+    },
+    "record_count": 4650
+  },
+  "schema_version": "afl.space_region_generation.v1",
+  "scl_gap_closure": {
+    "closure_claim": "scl1_027 and scl1_031 compile to observed sampled open-space geometry through generic provider search; scl1_028 space creation remains an honest missing primitive/effect gap.",
+    "targets": {
+      "scl1_027_blind_a_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "space_region_generation"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_027_blind_b_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "space_region_generation"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_028_blind_a_v0": {
+        "failure_taxonomy": "missing_primitive",
+        "providers_used": [],
+        "result": "not_compiler_reachable",
+        "rules_used": []
+      },
+      "scl1_028_blind_b_v0": {
+        "failure_taxonomy": "missing_primitive",
+        "providers_used": [],
+        "result": "not_compiler_reachable",
+        "rules_used": []
+      },
+      "scl1_031_blind_a_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "space_region_generation"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      },
+      "scl1_031_blind_b_v0": {
+        "failure_taxonomy": null,
+        "providers_used": [
+          "action_event_anchor",
+          "space_region_generation"
+        ],
+        "requested_evidence_failure_count": 0,
+        "result": "compiler_reachable",
+        "result_count": 20,
+        "rules_used": [
+          "provider_field_backward_search"
+        ]
+      }
+    }
+  },
+  "status": "PASS",
+  "threshold_version": "space_region_generation.v0.1.0:frame=anchor_frame_id:zone=any:grid=8.0:min_opp=8.0:min_teammate=4.0:min_points=1:min_observed_per_team=6:model=sampled_grid_distance_from_observed_outfield_players"
+}
