@@ -93,6 +93,29 @@ class Scl0SemanticContractTests(unittest.TestCase):
         self.assertTrue(has_constraint_kind(contract, "same_anchor_identity"))
         self.assertIn("meaning.composition.lane_reachability_same_anchor", trace_rules)
 
+    def test_high_bypass_pass_maps_to_observed_bypass_measurement(self) -> None:
+        contract, traces = generate_contract_from_meaning(
+            "A high-bypass completed pass is a completed controlled pass that progresses the ball forward "
+            "and bypasses at least five opposition outfield players."
+        )
+        reworded, _ = generate_contract_from_meaning(
+            "A pass bypasses opponents when the completed pass travels forward and five defenders are bypassed."
+        )
+        trace_rules = {trace["rule_id"] for trace in traces}
+        thresholds = {
+            item["field"]: item
+            for item in contract["status_semantics"]
+            if item.get("operator") == "gte"
+        }
+
+        self.assertEqual(stable_hash(contract), stable_hash(reworded))
+        self.assertIn("pass_episode_id", contract["required_evidence"])
+        self.assertIn("opponents_bypassed_count", contract["required_evidence"])
+        self.assertIn("bypassed_player_ids", contract["required_evidence"])
+        self.assertEqual(thresholds["opponents_bypassed_count"]["threshold"], 5.0)
+        self.assertEqual(thresholds["forward_progression_m"]["threshold"], 8.0)
+        self.assertIn("meaning.pass_bypass.high_bypass_completed_pass", trace_rules)
+
     def test_missing_substrate_elements_gap_without_substitutes(self) -> None:
         for text, evidence in [
             ("A corner variant is a set piece routine pattern used from the corner restart.", "scl1_set_piece_routine_status"),

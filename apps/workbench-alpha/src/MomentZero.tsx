@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import momentHighBypassPayload from "./generated/moment-high-bypass.json";
 import momentLineBreakSupportedPayload from "./generated/moment-line-break-supported.json";
 import momentZeroPayload from "./generated/moment-zero.json";
 import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
@@ -6,6 +7,9 @@ import type { ReplayEntity, ReplayPayload } from "./types";
 
 export type MomentZeroPayload = typeof momentZeroPayload;
 type MomentZeroMoment = MomentZeroPayload["moment"];
+export type HighBypassPayload = typeof momentHighBypassPayload;
+type HighBypassMoment = HighBypassPayload["moment"];
+export type CoachMomentPayload = MomentZeroPayload | HighBypassPayload;
 
 const PITCH_PALETTE = {
   turf: "#132f24",
@@ -33,6 +37,7 @@ const POST_RECEPTION_HOLD_FRAMES = 8;
 
 export const momentZeroEvidence = momentZeroPayload;
 export const momentLineBreakSupportedEvidence = momentLineBreakSupportedPayload as unknown as MomentZeroPayload;
+export const momentHighBypassEvidence = momentHighBypassPayload;
 
 export function MomentZero() {
   return (
@@ -83,6 +88,57 @@ export function MomentZeroPitch({ payload }: { payload: MomentZeroPayload }) {
   );
 }
 
+export function CoachMomentPitch({ payload }: { payload: CoachMomentPayload }) {
+  if (isHighBypassPayload(payload)) {
+    return <HighBypassPitch payload={payload} />;
+  }
+  return <MomentZeroPitch payload={payload as MomentZeroPayload} />;
+}
+
+export function isHighBypassPayload(payload: CoachMomentPayload | unknown): payload is HighBypassPayload {
+  return Boolean(
+    payload &&
+      typeof payload === "object" &&
+      "schema_version" in payload &&
+      String((payload as { schema_version?: unknown }).schema_version) === "coach_moment.high_bypass_completed_pass.v0"
+  );
+}
+
+function HighBypassPitch({ payload }: { payload: HighBypassPayload }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const shellRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const shell = shellRef.current;
+    if (!canvas || !shell) return;
+
+    let animationFrame = 0;
+    let startedAt: number | null = null;
+    const resizeObserver = new ResizeObserver(() => drawAt(performance.now()));
+    resizeObserver.observe(shell);
+
+    const drawAt = (timestamp: number) => {
+      if (startedAt === null) startedAt = timestamp;
+      const progress = ((timestamp - startedAt) % TOTAL_MS) / TOTAL_MS;
+      renderHighBypassMoment(canvas, shell, payload, progress);
+      animationFrame = window.requestAnimationFrame(drawAt);
+    };
+
+    animationFrame = window.requestAnimationFrame(drawAt);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      resizeObserver.disconnect();
+    };
+  }, [payload]);
+
+  return (
+    <div className="momentCanvasShell" ref={shellRef}>
+      <canvas ref={canvasRef} aria-label="Animated high-bypass completed pass on a football pitch" />
+    </div>
+  );
+}
+
 function renderMoment(
   canvas: HTMLCanvasElement,
   shell: HTMLDivElement,
@@ -123,11 +179,57 @@ function renderMoment(
   drawBall(ctx, replay, moment, frame, phase);
 }
 
+function renderHighBypassMoment(
+  canvas: HTMLCanvasElement,
+  shell: HTMLDivElement,
+  payload: HighBypassPayload,
+  progress: number
+) {
+  const replay = payload.replay as ReplayPayload;
+  const moment = payload.moment;
+  const layout = layoutPitch(replay.pitch, Math.max(360, shell.clientWidth));
+  const width = layout.canvasWidth;
+  const height = layout.canvasHeight;
+  const ratio = window.devicePixelRatio || 1;
+  const physicalWidth = Math.round(width * ratio);
+  const physicalHeight = Math.round(height * ratio);
+  if (canvas.width !== physicalWidth || canvas.height !== physicalHeight) {
+    canvas.width = physicalWidth;
+    canvas.height = physicalHeight;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+
+  const frame = highBypassFrameForProgress(replay, moment, progress);
+  const phase = highBypassPhase(progress);
+  drawPitch(ctx, layout);
+  drawHighBypassAttackingEndCue(ctx, replay, moment, layout, phase);
+  drawHighBypassVignette(ctx, layout, moment, replay, phase);
+  drawHighBypassPlayers(ctx, replay, moment, frame, phase);
+  drawHighBypassPath(ctx, replay, moment, phase);
+  drawBypassedOpponents(ctx, replay, moment, phase);
+  drawHighBypassBall(ctx, replay, moment, frame, phase);
+}
+
 function frameForProgress(replay: ReplayPayload, moment: MomentZeroMoment, progress: number) {
   const visualEndFrameId = momentZeroVisualEndFrameId(moment);
   const visibleFrames = replay.frames.filter((frame) => frame.frame_id <= visualEndFrameId);
   const frames = visibleFrames.length > 0 ? visibleFrames : replay.frames;
   const eased = easeInOutCubic(Math.min(1, progress / 0.72));
+  const index = Math.min(frames.length - 1, Math.max(0, Math.round(eased * (frames.length - 1))));
+  return frames[index];
+}
+
+function highBypassFrameForProgress(replay: ReplayPayload, moment: HighBypassMoment, progress: number) {
+  const visualEndFrameId = moment.reception_frame_id + 12;
+  const visibleFrames = replay.frames.filter((frame) => frame.frame_id <= visualEndFrameId);
+  const frames = visibleFrames.length > 0 ? visibleFrames : replay.frames;
+  const eased = easeInOutCubic(Math.min(1, progress / 0.74));
   const index = Math.min(frames.length - 1, Math.max(0, Math.round(eased * (frames.length - 1))));
   return frames[index];
 }
@@ -521,6 +623,210 @@ function drawBall(
   }
   ctx.beginPath();
   ctx.arc(point.x, point.y, receptionSettled ? 5.2 : 4.6, 0, Math.PI * 2);
+  ctx.fillStyle = PITCH_PALETTE.ball;
+  ctx.fill();
+  ctx.restore();
+}
+
+function highBypassPhase(progress: number) {
+  return {
+    setup: fadeWindow(progress, 0.02, 0.18),
+    pass: fadeWindow(progress, 0.16, 0.55),
+    bypass: fadeWindow(progress, 0.48, 0.78),
+    settle: fadeWindow(progress, 0.70, 0.92),
+    resetFade: 1 - fadeWindow(progress, 0.94, 1),
+    pulse: 0.5 + 0.5 * Math.sin(progress * Math.PI * 2)
+  };
+}
+
+function drawHighBypassAttackingEndCue(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: HighBypassMoment,
+  layout: ReturnType<typeof layoutPitch>,
+  phase: ReturnType<typeof highBypassPhase>
+) {
+  const attackingLeft = moment.attacking_direction === -1;
+  const goalX = attackingLeft ? layout.marginX : layout.marginX + layout.fieldWidth;
+  const goalMouthWidthM = 7.32;
+  const goalHalf = (goalMouthWidthM / 2) * layout.scalePxPerM;
+  const center = pitchPointToPixel(attackingLeft ? -replay.pitch.length_m / 2 : replay.pitch.length_m / 2, 0, replay.pitch, layout);
+  const outside = attackingLeft ? -1 : 1;
+  ctx.save();
+  ctx.globalAlpha = (0.18 + 0.10 * phase.pass) * phase.resetFade;
+  ctx.strokeStyle = "rgba(240, 239, 225, 0.34)";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(goalX, center.y - goalHalf);
+  ctx.lineTo(goalX + outside * 12, center.y - goalHalf);
+  ctx.lineTo(goalX + outside * 12, center.y + goalHalf);
+  ctx.lineTo(goalX, center.y + goalHalf);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawHighBypassVignette(
+  ctx: CanvasRenderingContext2D,
+  layout: ReturnType<typeof layoutPitch>,
+  moment: HighBypassMoment,
+  replay: ReplayPayload,
+  phase: ReturnType<typeof highBypassPhase>
+) {
+  const start = pitchPointToPixel(moment.release_ball_point.x_m, moment.release_ball_point.y_m, replay.pitch, layout);
+  const end = pitchPointToPixel(moment.reception_ball_point.x_m, moment.reception_ball_point.y_m, replay.pitch, layout);
+  ctx.save();
+  ctx.globalAlpha = (0.05 + 0.12 * phase.bypass) * phase.resetFade;
+  const gradient = ctx.createRadialGradient(end.x, end.y, layout.fieldHeight * 0.08, start.x, start.y, layout.fieldHeight * 0.82);
+  gradient.addColorStop(0, "rgba(242, 229, 189, 0.12)");
+  gradient.addColorStop(0.52, "rgba(3, 13, 10, 0.04)");
+  gradient.addColorStop(1, "rgba(3, 13, 10, 0.70)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, layout.canvasWidth, layout.canvasHeight);
+  ctx.restore();
+}
+
+function drawHighBypassPlayers(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: HighBypassMoment,
+  frame: ReplayPayload["frames"][number],
+  phase: ReturnType<typeof highBypassPhase>
+) {
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const bypassedIds = new Set<string>(moment.bypassed_player_ids);
+  for (const entity of frame.entities) {
+    if (entity.entity_type === "ball") continue;
+    const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
+    const isAttack = entity.team_role === moment.perspective_team_role;
+    const isPasser = entity.entity_id === moment.passer_id;
+    const isReceiver = entity.entity_id === moment.receiver_id;
+    const isBypassed = bypassedIds.has(entity.entity_id);
+    const isStory = isPasser || isReceiver || isBypassed;
+    const radius = isReceiver ? 7.8 : isPasser ? 6.8 : isBypassed ? 5.9 : 4.2;
+    const alpha = isStory ? 0.98 : 0.54 - 0.06 * phase.bypass;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0.12, alpha) * phase.resetFade;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = isAttack ? PITCH_PALETTE.attack : PITCH_PALETTE.defense;
+    ctx.strokeStyle = isAttack ? PITCH_PALETTE.attackEdge : PITCH_PALETTE.defenseEdge;
+    ctx.lineWidth = isStory ? 1.8 : 1.05;
+    ctx.fill();
+    ctx.stroke();
+    ctx.globalAlpha = Math.max(0.10, alpha * (isAttack ? 0.44 : 0.58)) * phase.resetFade;
+    ctx.fillStyle = isAttack ? PITCH_PALETTE.attackCore : PITCH_PALETTE.defenseCore;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, Math.max(1.7, radius * 0.34), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawHighBypassPath(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: HighBypassMoment,
+  phase: ReturnType<typeof highBypassPhase>
+) {
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const observedPoints = replay.frames
+    .filter((frame) => frame.frame_id >= moment.release_frame_id && frame.frame_id <= moment.reception_frame_id)
+    .map((frame) => frame.entities.find((entity) => entity.entity_type === "ball"))
+    .filter((entity): entity is ReplayEntity => Boolean(entity))
+    .map((entity) => pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout));
+  const fallbackPoints = [
+    pitchPointToPixel(moment.release_ball_point.x_m, moment.release_ball_point.y_m, replay.pitch, layout),
+    pitchPointToPixel(moment.reception_ball_point.x_m, moment.reception_ball_point.y_m, replay.pitch, layout),
+  ];
+  const points = observedPoints.length >= 2 ? observedPoints : fallbackPoints;
+  const visibleCount = Math.max(2, Math.round(points.length * phase.pass));
+  ctx.save();
+  ctx.globalAlpha = phase.pass * phase.resetFade;
+  ctx.strokeStyle = PITCH_PALETTE.pass;
+  ctx.shadowColor = "rgba(242, 229, 189, 0.18)";
+  ctx.shadowBlur = 10 + 8 * phase.bypass;
+  ctx.lineWidth = 3.6;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  points.slice(0, visibleCount).forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point.x, point.y);
+    else ctx.lineTo(point.x, point.y);
+  });
+  ctx.stroke();
+  const end = pitchPointToPixel(moment.reception_ball_point.x_m, moment.reception_ball_point.y_m, replay.pitch, layout);
+  ctx.globalAlpha = phase.bypass * phase.resetFade;
+  const endHalo = ctx.createRadialGradient(end.x, end.y, 0, end.x, end.y, 35 + 10 * phase.pulse);
+  endHalo.addColorStop(0, "rgba(255, 245, 203, 0.30)");
+  endHalo.addColorStop(0.48, "rgba(255, 245, 203, 0.11)");
+  endHalo.addColorStop(1, "rgba(255, 245, 203, 0)");
+  ctx.fillStyle = endHalo;
+  ctx.beginPath();
+  ctx.arc(end.x, end.y, 35 + 10 * phase.pulse, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawBypassedOpponents(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: HighBypassMoment,
+  phase: ReturnType<typeof highBypassPhase>
+) {
+  const receptionFrame = replay.frames.find((frame) => frame.frame_id === moment.reception_frame_id);
+  if (!receptionFrame) return;
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const bypassedIds = new Set<string>(moment.bypassed_player_ids);
+  const entities = receptionFrame.entities.filter((entity) => bypassedIds.has(entity.entity_id));
+  if (entities.length === 0) return;
+  ctx.save();
+  ctx.globalAlpha = phase.bypass * phase.resetFade;
+  for (const entity of entities) {
+    const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
+    const haloRadius = 17 + 8 * phase.pulse;
+    const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, haloRadius);
+    halo.addColorStop(0, "rgba(228, 207, 130, 0.22)");
+    halo.addColorStop(1, "rgba(228, 207, 130, 0)");
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, haloRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(228, 207, 130, 0.74)";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 8.6, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawHighBypassBall(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: HighBypassMoment,
+  frame: ReplayPayload["frames"][number],
+  phase: ReturnType<typeof highBypassPhase>
+) {
+  const ballFrameId = frame.frame_id > moment.reception_frame_id ? moment.reception_frame_id : frame.frame_id;
+  const ballFrame = replay.frames.find((item) => item.frame_id === ballFrameId) ?? frame;
+  const ball = ballFrame.entities.find((entity) => entity.entity_type === "ball");
+  if (!ball) return;
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const point = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
+  ctx.save();
+  ctx.globalAlpha = phase.resetFade;
+  const receptionSettled = frame.frame_id >= moment.reception_frame_id;
+  if (receptionSettled) {
+    const dock = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, 18 + 5 * phase.bypass);
+    dock.addColorStop(0, "rgba(244, 239, 224, 0.24)");
+    dock.addColorStop(1, "rgba(244, 239, 224, 0)");
+    ctx.fillStyle = dock;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 18 + 5 * phase.bypass, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, receptionSettled ? 5.3 : 4.6, 0, Math.PI * 2);
   ctx.fillStyle = PITCH_PALETTE.ball;
   ctx.fill();
   ctx.restore();

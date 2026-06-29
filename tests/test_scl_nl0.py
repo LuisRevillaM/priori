@@ -76,6 +76,20 @@ class SclNl0Tests(unittest.TestCase):
         )
         self.assertEqual(1, contract["composition_constraints"][0]["minimum_supporting_players"])
 
+    def test_high_bypass_pass_request_is_meaning_definition(self) -> None:
+        first = interpret_request("show high-bypass passes")
+        second = interpret_request("find passes that bypass opponents")
+
+        self.assertEqual(MEANING_DEFINITION, first.status)
+        self.assertEqual(MEANING_DEFINITION, second.status)
+        self.assertEqual(first.as_dict()["meaning_hash"], second.as_dict()["meaning_hash"])
+        contract, _ = generate_contract_from_meaning(first.meaning_definition or "")
+        self.assertIn("opponents_bypassed_count", contract.get("required_evidence", []))
+        self.assertIn(
+            {"field": "evaluation_status", "required_value": "PASS"},
+            contract.get("status_semantics", []),
+        )
+
     def test_ambiguous_request_requires_clarification(self) -> None:
         output = interpret_request("show me dangerous attacks")
 

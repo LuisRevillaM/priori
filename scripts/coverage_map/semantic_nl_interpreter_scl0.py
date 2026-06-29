@@ -87,6 +87,13 @@ def interpret_request(
             "nl.meaning.carry_forward_under_pressure",
         )
 
+    if is_high_bypass_completed_pass_request(lower):
+        return meaning(
+            request,
+            "A high-bypass completed pass is a completed controlled pass that progresses the ball forward and bypasses at least five opposition outfield players.",
+            "nl.meaning.high_bypass_completed_pass",
+        )
+
     if is_line_break_without_underneath_support_request(lower):
         return meaning(
             request,
@@ -201,6 +208,15 @@ def is_progressive_carry_under_pressure_request(lower: str) -> bool:
     has_pressure = "pressure" in lower
     has_forward = any(token in lower for token in ("forward", "progress", "progressive"))
     return has_carry and has_pressure and has_forward
+
+
+def is_high_bypass_completed_pass_request(lower: str) -> bool:
+    has_pass = any(token in lower for token in ("pass", "passes", "completed pass"))
+    has_bypass = any(token in lower for token in ("high-bypass", "high bypass", "bypass", "bypassed", "takes out", "took out"))
+    has_opponents = "high-bypass" in lower or "high bypass" in lower or any(
+        token in lower for token in ("opponent", "opponents", "defender", "defenders", "players")
+    )
+    return has_pass and has_bypass and has_opponents
 
 
 def is_line_break_without_underneath_support_request(lower: str) -> bool:

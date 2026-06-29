@@ -1,10 +1,11 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { coachInterpret, fetchMatches } from "./api";
 import {
-  MomentZeroPitch,
+  CoachMomentPitch,
+  momentHighBypassEvidence,
   momentLineBreakSupportedEvidence,
   momentZeroEvidence,
-  type MomentZeroPayload
+  type CoachMomentPayload
 } from "./MomentZero";
 import type { CoachInterpretResponse, MatchSummary } from "./types";
 
@@ -12,6 +13,7 @@ const DEFAULT_QUERY = "Show line breaks with underneath support";
 const EXAMPLES = [
   "Show line breaks with underneath support",
   "Show line breaks with no underneath outlet",
+  "Show high-bypass passes",
   "Show line breaks with two underneath outlets",
   "Show expected pass completion",
   "Show dangerous attacks"
@@ -34,10 +36,19 @@ const CATALOG_MOMENTS = [
     count: 3,
     payload: momentZeroEvidence,
     mode: "isolated"
+  },
+  {
+    id: "high-bypass",
+    title: "High-bypass pass",
+    query: "Show high-bypass passes",
+    answer: "One pass bypassed 8 opponents.",
+    count: 5,
+    payload: momentHighBypassEvidence,
+    mode: "bypass"
   }
 ] as const;
 const MATCH_CONTEXT_FALLBACKS: Record<string, { title: string; home: string; away: string }> = {
-  J03WOH: { title: "Fortuna match J03WOH", home: "Fortuna", away: "J03WOH" }
+  J03WOH: { title: "Fortuna Düsseldorf:SSV Jahn Regensburg", home: "Fortuna", away: "Jahn Regensburg" }
 };
 
 export function CoachSurface() {
@@ -45,7 +56,7 @@ export function CoachSurface() {
   const catalogMoments = useMemo(() => CATALOG_MOMENTS, []);
   const [query, setQuery] = useState(DEFAULT_QUERY);
   const [result, setResult] = useState<CoachInterpretResponse | null>(null);
-  const [activePayload, setActivePayload] = useState<MomentZeroPayload>(momentLineBreakSupportedEvidence);
+  const [activePayload, setActivePayload] = useState<CoachMomentPayload>(momentLineBreakSupportedEvidence);
   const [activeCatalogId, setActiveCatalogId] = useState<string>(CATALOG_MOMENTS[0].id);
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [runId, setRunId] = useState(0);
@@ -75,7 +86,7 @@ export function CoachSurface() {
       setResult(next);
       const payload = next.moments[0]?.replay_payload;
       if (next.status === "moment_found" && payload) {
-        setActivePayload(payload as unknown as MomentZeroPayload);
+        setActivePayload(payload as unknown as CoachMomentPayload);
         setActiveCatalogId(catalogIdForMoment(next.moments[0]?.moment_id) ?? "");
         setRunId((value) => value + 1);
       }
@@ -95,7 +106,7 @@ export function CoachSurface() {
       setResult(next);
       const payload = next.moments[0]?.replay_payload;
       if (next.status === "moment_found" && payload) {
-        setActivePayload(payload as unknown as MomentZeroPayload);
+        setActivePayload(payload as unknown as CoachMomentPayload);
         setActiveCatalogId(catalogIdForMoment(next.moments[0]?.moment_id) ?? "");
         setRunId((value) => value + 1);
       }
@@ -128,7 +139,7 @@ export function CoachSurface() {
 
         <div className="coachTheater" aria-label="Observed football moment preview">
           <MomentContext payload={activePayload} matches={matches} />
-          <MomentZeroPitch key={runId} payload={activePayload} />
+          <CoachMomentPitch key={runId} payload={activePayload} />
         </div>
 
         <section className="coachCatalog" aria-label="Compiler-found moment catalog">
@@ -183,10 +194,11 @@ export function CoachSurface() {
 function catalogIdForMoment(momentId: string | undefined) {
   if (momentId === "line_break_with_underneath_outlet") return "line-break-supported";
   if (momentId === "line_break_no_underneath_support") return "line-break-isolated";
+  if (momentId === "high_bypass_completed_pass") return "high-bypass";
   return null;
 }
 
-function MomentContext({ payload, matches }: { payload: MomentZeroPayload; matches: MatchSummary[] }) {
+function MomentContext({ payload, matches }: { payload: CoachMomentPayload; matches: MatchSummary[] }) {
   const moment = payload.moment;
   const match = matches.find((item) => item.match_id === moment.match_id);
   const fallback = MATCH_CONTEXT_FALLBACKS[moment.match_id];

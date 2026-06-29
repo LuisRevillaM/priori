@@ -89,6 +89,40 @@ class CoachInterpretSurfaceTests(unittest.TestCase):
             coach_template("moment_found.line_break_with_underneath_outlet"),
         )
 
+    def test_high_bypass_pass_has_visual_and_zero_kind(self) -> None:
+        contract = {
+            "required_evidence": [
+                "pass_episode_id",
+                "passer_id",
+                "receiver_id",
+                "release_frame_id",
+                "reception_frame_id",
+                "release_ball_point",
+                "reception_ball_point",
+                "forward_progression_m",
+                "opponents_bypassed_count",
+                "bypassed_player_ids",
+                "evaluation_status",
+            ],
+            "status_semantics": [
+                {"field": "evaluation_status", "required_value": "PASS"},
+                {"field": "forward_progression_m", "operator": "gte", "threshold": 8.0, "unit": "metre"},
+                {"field": "opponents_bypassed_count", "operator": "gte", "threshold": 5.0, "unit": "count"},
+            ],
+        }
+
+        self.assertEqual("high_bypass_completed_pass", coach_visual_moment_kind(contract))
+        self.assertEqual("high_bypass_completed_pass", coach_no_moments_kind(contract))
+        self.assertFalse(coach_preview_runtime_family_without_surface(contract))
+        self.assertEqual(
+            "One completed pass bypassed multiple opponents.",
+            coach_template("moment_found.high_bypass_completed_pass"),
+        )
+        self.assertEqual(
+            "In this match, no completed pass bypassed five opponents.",
+            coach_template("no_moments_found.high_bypass_completed_pass"),
+        )
+
     def test_public_preview_skips_runtime_families_without_surface(self) -> None:
         contract = {
             "required_evidence": ["carry_status", "pressure_status", "carry_forward_progression_m"],

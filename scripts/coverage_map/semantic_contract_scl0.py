@@ -468,6 +468,20 @@ def generate_contract_from_meaning(text: str) -> tuple[dict[str, Any], list[dict
         add_observed_line_break_element(builder, span)
         matched = True
 
+    if is_high_bypass_completed_pass_meaning(lower):
+        span = first_span(
+            text,
+            [
+                r"high[- ]bypass completed pass",
+                r"completed controlled pass",
+                r"bypasses? at least five opposition outfield players",
+                r"bypasses? .*opposition",
+                r"bypasses? .*defenders?",
+            ],
+        ) or whole_span(text)
+        add_high_bypass_completed_pass_element(builder, span)
+        matched = True
+
     if is_underneath_support_absence_meaning(lower):
         span = first_span(text, [r"no underneath support", r"without underneath support", r"no .*outlet", r"behind-ball support region", r"support outlet"]) or whole_span(text)
         add_underneath_support_absence_element(builder, span)
@@ -787,6 +801,37 @@ def add_observed_line_break_element(builder: ContractBuilder, span: Span) -> Non
     builder.add_status("line_break_status", "PASS", span, rule_id)
     builder.add_claim_part(
         "Observed receiver movement beyond geometric line rank 2 only; no tactical line taxonomy, intent, pass quality, causation, or optimality claim.",
+        span,
+        rule_id,
+    )
+
+
+def add_high_bypass_completed_pass_element(builder: ContractBuilder, span: Span) -> None:
+    rule_id = "meaning.pass_bypass.high_bypass_completed_pass"
+    for field_name in [
+        "pass_episode_id",
+        "passer_id",
+        "receiver_id",
+        "release_frame_id",
+        "reception_frame_id",
+        "release_ball_point",
+        "reception_ball_point",
+        "release_passer_point",
+        "reception_receiver_point",
+        "forward_progression_m",
+        "opponents_bypassed_count",
+        "bypassed_player_ids",
+        "candidate_goal_side_player_ids",
+        "evaluated_opponent_ids",
+        "coverage_status",
+        "evaluation_status",
+    ]:
+        builder.add_evidence(field_name, span, rule_id)
+    builder.add_status("evaluation_status", "PASS", span, rule_id)
+    builder.add_threshold("forward_progression_m", operator="gte", threshold=8.0, unit="metre", span=span, rule_id=rule_id)
+    builder.add_threshold("opponents_bypassed_count", operator="gte", threshold=5.0, unit="count", span=span, rule_id=rule_id)
+    builder.add_claim_part(
+        "Observed completed-pass bypass measurement only; no defensive-line break, pass quality, pass probability, player intent, tactical causation, or optimality claim.",
         span,
         rule_id,
     )
@@ -1326,6 +1371,13 @@ def is_line_break_meaning(lower: str) -> bool:
             "second defending line",
         )
     )
+
+
+def is_high_bypass_completed_pass_meaning(lower: str) -> bool:
+    has_pass = any(phrase in lower for phrase in ("completed pass", "controlled pass", "pass "))
+    has_bypass = any(phrase in lower for phrase in ("high-bypass", "high bypass", "bypass", "bypasses", "bypassed"))
+    has_opponents = any(phrase in lower for phrase in ("opposition", "opponent", "opponents", "defender", "defenders", "outfield players"))
+    return has_pass and has_bypass and has_opponents
 
 
 def is_underneath_support_absence_meaning(lower: str) -> bool:

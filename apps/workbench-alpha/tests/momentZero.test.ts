@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
+import highBypassMoment from "../src/generated/moment-high-bypass.json";
 import supportedMoment from "../src/generated/moment-line-break-supported.json";
 import momentZero from "../src/generated/moment-zero.json";
-import { momentZeroBallEvidenceFrameId, momentZeroLineEvidenceFrameId, momentZeroVisualEndFrameId } from "../src/MomentZero";
+import {
+  isHighBypassPayload,
+  momentZeroBallEvidenceFrameId,
+  momentZeroLineEvidenceFrameId,
+  momentZeroVisualEndFrameId
+} from "../src/MomentZero";
 
 assert.equal(momentZero.schema_version, "moment_zero.line_break_no_underneath_support.v0");
 assert.equal(momentZero.moment.classification, "Q3_RECEIVER_SECOND_LINE_NO_UNDERNEATH_SUPPORT");
@@ -44,5 +50,16 @@ assert.equal(
   momentZeroBallEvidenceFrameId(supportedMoment.moment, supportedMoment.moment.support_window_end_frame_id),
   supportedMoment.moment.reception_frame_id
 );
+
+assert.equal(highBypassMoment.schema_version, "coach_moment.high_bypass_completed_pass.v0");
+assert.ok(isHighBypassPayload(highBypassMoment));
+assert.equal(highBypassMoment.moment.classification, "HIGH_BYPASS_COMPLETED_PASS");
+assert.equal(highBypassMoment.moment.requested_evidence.evaluation_status, "PASS");
+assert.ok(highBypassMoment.moment.opponents_bypassed_count >= 5);
+assert.equal(highBypassMoment.moment.opponents_bypassed_count, highBypassMoment.moment.bypassed_player_ids.length);
+assert.ok(highBypassMoment.moment.forward_progression_m >= 8);
+assert.ok(highBypassMoment.replay.frames.length > 0);
+assert.ok(highBypassMoment.visual_contract.prohibited_visual_claims.includes("intent"));
+assert.ok(highBypassMoment.visual_contract.prohibited_visual_claims.includes("defensive line broken"));
 
 console.log("moment zero tests passed");

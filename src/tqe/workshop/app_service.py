@@ -71,6 +71,7 @@ HIGH_BYPASS_PLAN_PATH = Path("config/query-plans/high_bypass_completed_pass.expe
 LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH = Path("config/query-plans/line_break_support_response.experimental.v1.json")
 MOMENT_ZERO_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-zero.json")
 MOMENT_LINE_BREAK_SUPPORTED_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-line-break-supported.json")
+MOMENT_HIGH_BYPASS_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-high-bypass.json")
 DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", "/Users/luisrevilla/.hermes-priori"))
 HERMES_DB = HERMES_HOME / "state.db"
@@ -462,6 +463,7 @@ COACH_MATCH_SCOPE = {
 COACH_SUGGESTIONS = [
     "Show line breaks with underneath support",
     "Show line breaks with no underneath outlet",
+    "Show high-bypass passes",
     "Show line breaks with two underneath outlets",
     "Show expected pass completion",
     "Show dangerous attacks",
@@ -469,9 +471,11 @@ COACH_SUGGESTIONS = [
 COACH_DISPLAY_TEMPLATES = {
     "moment_found.line_break_no_underneath_support": "Line broken. The outlet space stays empty.",
     "moment_found.line_break_with_underneath_outlet": "Line broken. Support arrives underneath.",
+    "moment_found.high_bypass_completed_pass": "One completed pass bypassed multiple opponents.",
     "no_moments_found.line_break_no_underneath_support": "In this match, that line-break moment did not appear.",
     "no_moments_found.line_break_with_two_underneath_outlets": "In this match, no line break had two underneath outlets.",
     "no_moments_found.line_break_with_underneath_outlet": "In this match, that supported line-break moment did not appear.",
+    "no_moments_found.high_bypass_completed_pass": "In this match, no completed pass bypassed five opponents.",
     "no_moments_found.progressive_carry_under_pressure": "In this match, no carry progressed forward under defender pressure.",
     "no_moments_found.give_and_go_sequence": "In this match, no give-and-go sequence appeared.",
     "no_moments_found.onward_two_pass_sequence": "In this match, no onward two-pass sequence appeared.",
@@ -1016,6 +1020,8 @@ def coach_visual_moment_kind(contract: dict[str, Any]) -> str | None:
         return "line_break_no_underneath_support"
     if coach_contract_matches_line_break_with_underneath_support(contract):
         return "line_break_with_underneath_outlet"
+    if coach_contract_matches_high_bypass_completed_pass(contract):
+        return "high_bypass_completed_pass"
     return None
 
 
@@ -1029,6 +1035,8 @@ def coach_no_moments_kind(contract: dict[str, Any]) -> str:
         if coach_support_minimum_players(contract) >= 2:
             return "line_break_with_two_underneath_outlets"
         return "line_break_with_underneath_outlet"
+    if coach_contract_matches_high_bypass_completed_pass(contract):
+        return "high_bypass_completed_pass"
     if (
         {"carry_status", "pressure_status", "carry_forward_progression_m"}.issubset(required)
         and status_values.get("carry_status") == "PASS"
@@ -1059,6 +1067,29 @@ def coach_contract_matches_line_break_with_underneath_support(contract: dict[str
         {"line_break_status", "support_arrival_status", "support_region_mode", "supporting_player_ids"}.issubset(required)
         and status_values.get("line_break_status") == "PASS"
         and status_values.get("support_arrival_status") == "PASS"
+    )
+
+
+def coach_contract_matches_high_bypass_completed_pass(contract: dict[str, Any]) -> bool:
+    required = set(str(field) for field in contract.get("required_evidence", []))
+    status_values = coach_status_values(contract)
+    return (
+        {
+            "pass_episode_id",
+            "passer_id",
+            "receiver_id",
+            "release_frame_id",
+            "reception_frame_id",
+            "release_ball_point",
+            "reception_ball_point",
+            "forward_progression_m",
+            "opponents_bypassed_count",
+            "bypassed_player_ids",
+            "evaluation_status",
+        }.issubset(required)
+        and status_values.get("evaluation_status") == "PASS"
+        and coach_threshold_at_least(contract, "forward_progression_m", 8.0)
+        and coach_threshold_at_least(contract, "opponents_bypassed_count", 5.0)
     )
 
 
@@ -1103,16 +1134,31 @@ def coach_status_values(contract: dict[str, Any]) -> dict[str, str]:
     }
 
 
+def coach_threshold_at_least(contract: dict[str, Any], field_name: str, threshold: float) -> bool:
+    for item in contract.get("status_semantics", []):
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("field")) != field_name or str(item.get("operator")) != "gte":
+            continue
+        try:
+            return float(item.get("threshold")) >= threshold
+        except (TypeError, ValueError):
+            return False
+    return False
+
+
 def coach_moment_zero_payload() -> dict[str, Any]:
     return coach_moment_payload("line_break_no_underneath_support")
 
 
 def coach_moment_payload(kind: str) -> dict[str, Any]:
-    path = REPO_ROOT / (
-        MOMENT_LINE_BREAK_SUPPORTED_PAYLOAD_PATH
-        if kind == "line_break_with_underneath_outlet"
-        else MOMENT_ZERO_PAYLOAD_PATH
-    )
+    if kind == "line_break_with_underneath_outlet":
+        payload_path = MOMENT_LINE_BREAK_SUPPORTED_PAYLOAD_PATH
+    elif kind == "high_bypass_completed_pass":
+        payload_path = MOMENT_HIGH_BYPASS_PAYLOAD_PATH
+    else:
+        payload_path = MOMENT_ZERO_PAYLOAD_PATH
+    path = REPO_ROOT / payload_path
     if not path.exists():
         return {}
     return read_json(path)
