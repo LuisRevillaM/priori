@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { coachInterpret, fetchMatches } from "./api";
+import { coachInterpret, fetchCoachCatalog, fetchMatches } from "./api";
 import { coachProductClaimGate } from "./coachProductClaims";
 import {
   CoachMomentPitch,
@@ -23,9 +23,9 @@ const EXAMPLES = [
 const CATALOG_MOMENTS = [
   {
     id: "high-bypass",
-    title: "High-bypass pass",
+    title: "High-bypass, controlled",
     query: "Show high-bypass passes",
-    answer: "Completed passes bypassed multiple opponents.",
+    answer: "Passes bypassed multiple opponents with control after reception.",
     claimKind: "high_bypass_completed_pass",
     count: 5,
     payload: momentHighBypassEvidence,
@@ -35,9 +35,9 @@ const CATALOG_MOMENTS = [
     id: "line-break-supported",
     title: "Line break, outlet arrives",
     query: "Show line breaks with underneath support",
-    answer: "Line broken. Support arrives underneath.",
+    answer: "Line broken. Support arrives underneath, with control held.",
     claimKind: "line_break_with_underneath_outlet",
-    count: 2,
+    count: 6,
     payload: momentLineBreakSupportedEvidence,
     mode: "supported"
   },
@@ -45,9 +45,9 @@ const CATALOG_MOMENTS = [
     id: "line-break-isolated",
     title: "Line break, outlet absent",
     query: "Show line breaks with no underneath outlet",
-    answer: "Line broken. The outlet space stays empty.",
+    answer: "Line broken. The outlet space stays empty, with control after reception.",
     claimKind: "line_break_no_underneath_support",
-    count: 3,
+    count: 5,
     payload: momentZeroEvidence,
     mode: "isolated"
   }
@@ -79,6 +79,28 @@ export function CoachSurface() {
       })
       .catch(() => {
         if (!cancelled) setMatches([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchCoachCatalog(CATALOG_MOMENTS[0].claimKind)
+      .then((next) => {
+        if (cancelled) return;
+        setResult(next);
+        const payloads = payloadsFromResponse(next);
+        if (next.status === "moment_found" && payloads.length > 0) {
+          setActiveInstances(payloads);
+          setActiveInstanceIndex(0);
+          setActiveCatalogId(CATALOG_MOMENTS[0].id);
+          setRunId((value) => value + 1);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setError("The clean-control catalog could not be loaded.");
       });
     return () => {
       cancelled = true;
@@ -127,7 +149,7 @@ export function CoachSurface() {
     }
   };
 
-  const chooseCatalogMoment = (moment: (typeof CATALOG_MOMENTS)[number]) => {
+  const chooseCatalogMoment = async (moment: (typeof CATALOG_MOMENTS)[number]) => {
     if (!coachProductClaimGate(moment.claimKind, moment.payload).passed) return;
     setQuery(moment.query);
     setResult(null);
@@ -136,7 +158,21 @@ export function CoachSurface() {
     setActiveInstanceIndex(0);
     setActiveCatalogId(moment.id);
     setRunId((value) => value + 1);
-    void chooseExample(moment.query);
+    setIsLooking(true);
+    try {
+      const next = await fetchCoachCatalog(moment.claimKind);
+      setResult(next);
+      const payloads = payloadsFromResponse(next);
+      if (next.status === "moment_found" && payloads.length > 0) {
+        setActiveInstances(payloads);
+        setActiveInstanceIndex(0);
+        setRunId((value) => value + 1);
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The clean-control catalog could not be loaded.");
+    } finally {
+      setIsLooking(false);
+    }
   };
 
   const chooseInstance = (nextIndex: number) => {
@@ -235,7 +271,7 @@ function CatalogMomentTile({
       disabled={isLooking || !claimGate.passed}
       aria-disabled={isLooking || !claimGate.passed}
     >
-      <span>{claimGate.passed ? `${moment.count} found · click to browse` : "Claim not backed"}</span>
+      <span>{claimGate.passed ? `${moment.count} clean found · click to browse` : "Claim not backed"}</span>
       <strong>{moment.title}</strong>
       <small>{claimGate.passed ? moment.answer : "This replay is hidden until the full product claim is backed."}</small>
     </button>
@@ -294,8 +330,13 @@ function MomentTrustControls({
   onOverlayModeChange: (mode: MomentOverlayMode) => void;
 }) {
   const retention = possessionRetention(payload);
+  const cleanControl = cleanControlRetention(payload);
   return (
     <div className="coachTrustControls" aria-label="Replay inspection controls">
+      <div>
+        <span>Clean control</span>
+        <strong>{cleanControlCopy(cleanControl)}</strong>
+      </div>
       <div>
         <span>Possession feed</span>
         <strong>{retentionCopy(retention)}</strong>
@@ -343,8 +384,27 @@ function possessionRetention(payload: CoachMomentPayload) {
   return (payload.moment as { possession_retention?: Record<string, unknown> }).possession_retention ?? null;
 }
 
+function cleanControlRetention(payload: CoachMomentPayload) {
+  return (payload.moment as { clean_control_retention?: Record<string, unknown> }).clean_control_retention ?? null;
+}
+
+function cleanControlCopy(cleanControl: Record<string, unknown> | null) {
+  if (!cleanControl) return "Clean-control check unavailable.";
+  const receiverSeconds = Number(cleanControl.receiver_clean_control_max_seconds ?? 0);
+  const teamSeconds = Number(cleanControl.team_clean_control_max_seconds ?? 0);
+  const movementSeconds = Number(cleanControl.receiver_ball_comovement_max_seconds ?? 0);
+  if (cleanControl.status === "PASS") {
+    return `Receiver ${receiverSeconds.toFixed(1)}s · movement ${movementSeconds.toFixed(1)}s · team ${teamSeconds.toFixed(1)}s.`;
+  }
+  const reason = String(cleanControl.reason ?? "not backed").replaceAll("_", " ");
+  return `Not a clean-control replay: ${reason}.`;
+}
+
 function retentionCopy(retention: Record<string, unknown> | null) {
   if (!retention) return "Eight-second replay after reception.";
+  if (retention.mode === "raw_ball_possession_retention_not_used_for_clean_control") {
+    return "Provider feed is not used for control.";
+  }
   const seconds = Number(retention.observed_seconds_after_reception ?? retention.required_retention_seconds ?? 0);
   const rounded = Number.isFinite(seconds) && seconds > 0 ? `${seconds.toFixed(seconds % 1 === 0 ? 0 : 1)}s` : "the follow-through";
   if (retention.status === "PASS") return `Provider possession stays with the same team for ${rounded}.`;

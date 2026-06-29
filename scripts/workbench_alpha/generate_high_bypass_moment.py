@@ -21,8 +21,9 @@ from scripts.coverage_map import compiler_search_reachability as search  # noqa:
 from scripts.coverage_map.semantic_contract_scl0 import generate_contract_from_meaning  # noqa: E402
 from scripts.workbench_alpha.generate_moment_zero import (  # noqa: E402
     FRAME_RATE_HZ,
+    clean_control_retention_sequence,
     observed_ball_outcome_sequence,
-    possession_retention_sequence,
+    raw_possession_retention_not_evaluated,
     replay_window,
 )
 from tqe.runtime.binder import bind_document  # noqa: E402
@@ -62,14 +63,11 @@ def main() -> None:
         "document_hash": stable_hash(plan_payload),
         "plan_id": bound_plan.plan_id,
     }
-    sorted_candidates = sorted(
-        candidates,
-        key=lambda row: high_bypass_candidate_sort_key(row, raw_root=raw_root),
-    )
     payloads = [
         payload_from_moment(moment, canonical_root=canonical_root, raw_root=raw_root, source_plan=source_plan)
-        for moment in sorted_candidates
+        for moment in candidates
     ]
+    payloads.sort(key=high_bypass_payload_sort_key)
     payload = payloads[0]
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -96,6 +94,11 @@ def main() -> None:
                 "frame_count": len(payload["replay"]["frames"]),
                 "opponents_bypassed_count": payload["moment"]["opponents_bypassed_count"],
                 "catalog_count": len(payloads),
+                "clean_control_pass_count": sum(
+                    1
+                    for item in payloads
+                    if item["moment"]["clean_control_retention"]["status"] == "PASS"
+                ),
             },
             sort_keys=True,
         )
@@ -107,7 +110,7 @@ def synthesize_plan(contract: dict[str, Any], *, canonical_root: Path, raw_root:
     old_match_ids = search.MATCH_IDS
     PLAN_DIR.mkdir(parents=True, exist_ok=True)
     search.PLAN_DIR = PLAN_DIR
-    search.MATCH_IDS = ["J03WOH"]
+    search.MATCH_IDS = catalog_match_ids()
     try:
         result = search.evaluate_target(
             target={"target_id": TARGET_ID, "concept": TARGET_ID, "target_contract": contract},
@@ -123,23 +126,15 @@ def synthesize_plan(contract: dict[str, Any], *, canonical_root: Path, raw_root:
         search.MATCH_IDS = old_match_ids
 
 
-def high_bypass_candidate_sort_key(row: dict[str, Any], *, raw_root: Path) -> tuple[int, int, float, int]:
-    evidence = row["requested_evidence"]
-    reception_frame_id = int(evidence["reception_frame_id"])
-    retention = possession_retention_sequence(
-        raw_root=raw_root,
-        match_id=str(row["match_id"]),
-        period=str(row["period"]),
-        perspective_team_role=str(row["perspective_team_role"]),
-        start_frame_id=reception_frame_id,
-        end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
-    )
-    retained_rank = 0 if retention["status"] == "PASS" else 1
+def high_bypass_payload_sort_key(payload: dict[str, Any]) -> tuple[int, int, float, int]:
+    moment = payload["moment"]
+    clean = moment["clean_control_retention"]
+    clean_rank = 0 if clean["status"] == "PASS" else 1
     return (
-        retained_rank,
-        -int(evidence.get("opponents_bypassed_count") or 0),
-        -float(evidence.get("forward_progression_m") or 0),
-        int(row["anchor_frame_id"]),
+        clean_rank,
+        -int(moment.get("opponents_bypassed_count") or 0),
+        -float(moment.get("forward_progression_m") or 0),
+        int(moment["anchor_frame_id"]),
     )
 
 
@@ -155,7 +150,7 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_roo
         period=str(moment["period"]),
         start_frame_id=start_frame_id,
         end_frame_id=end_frame_id,
-        raw_root=raw_root,
+        raw_root=None,
     )
     orientation_rows = pd.read_parquet(canonical_root / "orientation.parquet")
     attacking_direction = attack_x_sign_for(
@@ -170,13 +165,18 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_roo
         end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
         attacking_direction=attacking_direction,
     )
-    possession_retention = possession_retention_sequence(
-        raw_root=raw_root,
-        match_id=str(moment["match_id"]),
-        period=str(moment["period"]),
-        perspective_team_role=str(moment["perspective_team_role"]),
+    possession_retention = raw_possession_retention_not_evaluated(
         start_frame_id=reception_frame_id,
         end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
+        perspective_team_role=str(moment["perspective_team_role"]),
+    )
+    clean_control_retention = clean_control_retention_sequence(
+        replay=replay,
+        start_frame_id=reception_frame_id,
+        end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
+        perspective_team_role=str(moment["perspective_team_role"]),
+        defending_team_role=str(moment["defending_team_role"]),
+        receiver_id=str(evidence["receiver_id"]),
     )
     return {
         "schema_version": "coach_moment.high_bypass_completed_pass.v0",
@@ -205,6 +205,7 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_roo
             "attacking_direction": attacking_direction,
             "outcome_sequence": outcome_sequence,
             "possession_retention": possession_retention,
+            "clean_control_retention": clean_control_retention,
             "requested_evidence": evidence,
         },
         "replay": {
@@ -234,6 +235,14 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_roo
                 "possession_retention.perspective_team_role",
                 "possession_retention.possession_team_role_at_end",
             ],
+            "observed_clean_control_retention": [
+                "clean_control_retention.status",
+                "clean_control_retention.start_frame_id",
+                "clean_control_retention.end_frame_id",
+                "clean_control_retention.receiver_clean_control_max_seconds",
+                "clean_control_retention.team_clean_control_max_seconds",
+                "clean_control_retention.provider_loss_frame_count",
+            ],
             "prohibited_visual_claims": [
                 "intent",
                 "quality",
@@ -244,6 +253,14 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_roo
             ],
         },
     }
+
+
+def catalog_match_ids() -> list[str]:
+    raw_value = os.environ.get(
+        "TQE_WORKBENCH_MATCH_IDS",
+        "J03WOH,J03WOY,J03WPY,J03WQQ,J03WR9,J03WMX,J03WN1",
+    )
+    return [item.strip() for item in raw_value.split(",") if item.strip()]
 
 
 if __name__ == "__main__":

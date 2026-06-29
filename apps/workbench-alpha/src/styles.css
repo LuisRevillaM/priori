@@ -279,7 +279,7 @@ body {
   color: rgba(245, 241, 222, 0.72);
 }
 
-.coachTrustControls > div:first-child {
+.coachTrustControls > div:not(.coachInstanceControls):not(.coachOverlayToggle) {
   display: grid;
   gap: 3px;
   min-width: 0;

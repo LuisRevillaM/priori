@@ -22,10 +22,11 @@ from scripts.coverage_map import compiler_search_reachability as search  # noqa:
 from scripts.coverage_map.semantic_contract_scl0 import generate_contract_from_meaning  # noqa: E402
 from scripts.workbench_alpha.generate_moment_zero import (  # noqa: E402
     FRAME_RATE_HZ,
+    clean_control_retention_sequence,
     entity_point_at_frame,
     observed_ball_outcome_sequence,
     pass_actor_ids,
-    possession_retention_sequence,
+    raw_possession_retention_not_evaluated,
     replay_window,
 )
 from tqe.runtime.binder import bind_document  # noqa: E402
@@ -66,17 +67,11 @@ def main() -> None:
         "document_hash": stable_hash(plan_payload),
         "plan_id": bound_plan.plan_id,
     }
-    sorted_candidates = sorted(
-        candidates,
-        key=lambda row: (
-            pass_team_role(str(row["requested_evidence"].get("pass_episode_id", ""))) != row.get("perspective_team_role"),
-            int(row["anchor_frame_id"]),
-        ),
-    )
     payloads = [
         payload_from_moment(moment, canonical_root=canonical_root, raw_root=raw_root, source_plan=source_plan)
-        for moment in sorted_candidates
+        for moment in candidates
     ]
+    payloads.sort(key=line_break_supported_payload_sort_key)
     payload = payloads[0]
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -102,6 +97,11 @@ def main() -> None:
                 "result_id": payload["moment"]["result_id"],
                 "frame_count": len(payload["replay"]["frames"]),
                 "catalog_count": len(payloads),
+                "clean_control_pass_count": sum(
+                    1
+                    for item in payloads
+                    if item["moment"]["clean_control_retention"]["status"] == "PASS"
+                ),
             },
             sort_keys=True,
         )
@@ -113,7 +113,7 @@ def synthesize_plan(contract: dict[str, Any], *, canonical_root: Path, raw_root:
     old_match_ids = search.MATCH_IDS
     PLAN_DIR.mkdir(parents=True, exist_ok=True)
     search.PLAN_DIR = PLAN_DIR
-    search.MATCH_IDS = ["J03WOH"]
+    search.MATCH_IDS = catalog_match_ids()
     try:
         result = search.evaluate_target(
             target={"target_id": TARGET_ID, "concept": TARGET_ID, "target_contract": contract},
@@ -148,7 +148,7 @@ def payload_from_moment(
         period=str(moment["period"]),
         start_frame_id=start_frame_id,
         end_frame_id=end_frame_id,
-        raw_root=raw_root,
+        raw_root=None,
     )
     receiver_id = str(evidence["receiver_id"])
     passer_id = pass_actor_ids(str(evidence["pass_episode_id"]))[0]
@@ -166,13 +166,18 @@ def payload_from_moment(
         end_frame_id=min(support_window_end_frame_id + 18, reception_frame_id + FRAME_RATE_HZ * 4),
         attacking_direction=attacking_direction,
     )
-    possession_retention = possession_retention_sequence(
-        raw_root=raw_root,
-        match_id=str(moment["match_id"]),
-        period=str(moment["period"]),
-        perspective_team_role=str(moment["perspective_team_role"]),
+    possession_retention = raw_possession_retention_not_evaluated(
         start_frame_id=reception_frame_id,
         end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
+        perspective_team_role=str(moment["perspective_team_role"]),
+    )
+    clean_control_retention = clean_control_retention_sequence(
+        replay=replay,
+        start_frame_id=reception_frame_id,
+        end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
+        perspective_team_role=str(moment["perspective_team_role"]),
+        defending_team_role=str(moment["defending_team_role"]),
+        receiver_id=receiver_id,
     )
     return {
         "schema_version": "moment_zero.line_break_with_underneath_support.v0",
@@ -207,6 +212,7 @@ def payload_from_moment(
             },
             "outcome_sequence": outcome_sequence,
             "possession_retention": possession_retention,
+            "clean_control_retention": clean_control_retention,
             "requested_evidence": evidence,
         },
         "replay": {
@@ -243,6 +249,14 @@ def payload_from_moment(
                 "possession_retention.perspective_team_role",
                 "possession_retention.possession_team_role_at_end",
             ],
+            "observed_clean_control_retention": [
+                "clean_control_retention.status",
+                "clean_control_retention.start_frame_id",
+                "clean_control_retention.end_frame_id",
+                "clean_control_retention.receiver_clean_control_max_seconds",
+                "clean_control_retention.team_clean_control_max_seconds",
+                "clean_control_retention.provider_loss_frame_count",
+            ],
             "prohibited_visual_claims": [
                 "intent",
                 "quality",
@@ -257,6 +271,30 @@ def payload_from_moment(
 def pass_team_role(pass_episode_id: str) -> str | None:
     parts = pass_episode_id.split(":")
     return parts[2] if len(parts) >= 3 else None
+
+
+def line_break_supported_payload_sort_key(payload: dict[str, Any]) -> tuple[int, int, int, int]:
+    moment = payload["moment"]
+    clean_rank = 0 if moment["clean_control_retention"]["status"] == "PASS" else 1
+    retention_rank = 0 if moment["possession_retention"]["status"] == "PASS" else 1
+    same_team_rank = (
+        pass_team_role(str(moment["requested_evidence"].get("pass_episode_id", "")))
+        != moment.get("perspective_team_role")
+    )
+    return (
+        clean_rank,
+        retention_rank,
+        1 if same_team_rank else 0,
+        int(moment["anchor_frame_id"]),
+    )
+
+
+def catalog_match_ids() -> list[str]:
+    raw_value = os.environ.get(
+        "TQE_WORKBENCH_MATCH_IDS",
+        "J03WOH,J03WOY,J03WPY,J03WQQ,J03WR9,J03WMX,J03WN1",
+    )
+    return [item.strip() for item in raw_value.split(",") if item.strip()]
 
 
 if __name__ == "__main__":

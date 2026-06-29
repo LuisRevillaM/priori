@@ -455,7 +455,10 @@ COACH_RESPONSE_CACHE: dict[str, dict[str, Any]] = {}
 COACH_ALLOWED_EXCLUDED_REFS = {"relation_destination_entry_classification", "outcome_classification"}
 COACH_MATCH_IDS = tuple(
     match_id.strip()
-    for match_id in os.environ.get("TQE_COACH_MATCH_IDS", "J03WOH").split(",")
+    for match_id in os.environ.get(
+        "TQE_COACH_MATCH_IDS",
+        "J03WOH,J03WOY,J03WPY,J03WQQ,J03WR9,J03WMX,J03WN1",
+    ).split(",")
     if match_id.strip()
 )
 COACH_MATCH_SCOPE = {
@@ -474,15 +477,15 @@ COACH_SUGGESTIONS = [
 COACH_DISPLAY_TEMPLATES = {
     "moment_found.line_break_no_underneath_support": "Line broken. The outlet space stays empty.",
     "moment_found.line_break_with_underneath_outlet": "Line broken. Support arrives underneath.",
-    "moment_found.high_bypass_completed_pass": "Completed passes bypassed multiple opponents.",
-    "no_moments_found.line_break_no_underneath_support": "In this match, that line-break moment did not appear.",
-    "no_moments_found.line_break_with_two_underneath_outlets": "In this match, no line break had two underneath outlets.",
-    "no_moments_found.line_break_with_underneath_outlet": "In this match, that supported line-break moment did not appear.",
-    "no_moments_found.high_bypass_completed_pass": "In this match, no completed pass bypassed five opponents.",
-    "no_moments_found.progressive_carry_under_pressure": "In this match, no carry progressed forward under defender pressure.",
-    "no_moments_found.give_and_go_sequence": "In this match, no give-and-go sequence appeared.",
-    "no_moments_found.onward_two_pass_sequence": "In this match, no onward two-pass sequence appeared.",
-    "no_moments_found.default": "In this match, that observed moment did not appear.",
+    "moment_found.high_bypass_completed_pass": "Passes bypassed multiple opponents with control after reception.",
+    "no_moments_found.line_break_no_underneath_support": "Across these matches, that clean-control line-break moment did not appear.",
+    "no_moments_found.line_break_with_two_underneath_outlets": "Across these matches, no clean-control line break had two underneath outlets.",
+    "no_moments_found.line_break_with_underneath_outlet": "Across these matches, that clean-control supported line-break moment did not appear.",
+    "no_moments_found.high_bypass_completed_pass": "Across these matches, no clean-control pass bypassed five opponents.",
+    "no_moments_found.progressive_carry_under_pressure": "Across these matches, no carry progressed forward under defender pressure.",
+    "no_moments_found.give_and_go_sequence": "Across these matches, no give-and-go sequence appeared.",
+    "no_moments_found.onward_two_pass_sequence": "Across these matches, no onward two-pass sequence appeared.",
+    "no_moments_found.default": "Across these matches, that observed moment did not appear.",
     "clarification_required.tactical_meaning_underspecified": "Pick the observable part of the attack you want to see.",
     "clarification_required.request_not_recognized": "Name the action, players, and moment you want to see.",
     "understood_but_not_expressible.unsupported_modality": "This view stays with observed moments.",
@@ -508,27 +511,32 @@ COACH_TEMPLATE_PROHIBITED_TERMS = {
 }
 COACH_PRODUCT_CLAIM_REQUIREMENTS = {
     "line_break_no_underneath_support": {
-        "claim_id": "observed_line_break_without_underneath_outlet",
+        "claim_id": "observed_line_break_without_underneath_outlet_with_clean_control",
         "requirements": [
             {"path": "moment.requested_evidence.line_break_status", "equals": "PASS"},
             {"path": "moment.requested_evidence.support_arrival_status", "equals": "FAIL"},
             {"path": "moment.support_region.support_arrival_status", "equals": "FAIL"},
+            {"path": "moment.clean_control_retention.mode", "equals": "tracking_clean_team_control_after_reception_v0"},
+            {"path": "moment.clean_control_retention.status", "equals": "PASS"},
         ],
     },
     "line_break_with_underneath_outlet": {
-        "claim_id": "observed_line_break_with_underneath_outlet",
+        "claim_id": "observed_line_break_with_underneath_outlet_with_clean_control",
         "requirements": [
             {"path": "moment.requested_evidence.line_break_status", "equals": "PASS"},
             {"path": "moment.requested_evidence.support_arrival_status", "equals": "PASS"},
             {"path": "moment.support_region.support_arrival_status", "equals": "PASS"},
+            {"path": "moment.clean_control_retention.mode", "equals": "tracking_clean_team_control_after_reception_v0"},
+            {"path": "moment.clean_control_retention.status", "equals": "PASS"},
         ],
     },
     "high_bypass_completed_pass": {
-        "claim_id": "completed_high_bypass_pass_with_provider_possession_visible",
+        "claim_id": "observed_high_bypass_pass_with_clean_control_after_reception",
         "requirements": [
             {"path": "moment.requested_evidence.evaluation_status", "equals": "PASS"},
             {"path": "moment.opponents_bypassed_count", "gte": 5},
-            {"path": "moment.possession_retention.mode", "equals": "raw_ball_possession_retention_after_reception"},
+            {"path": "moment.clean_control_retention.mode", "equals": "tracking_clean_team_control_after_reception_v0"},
+            {"path": "moment.clean_control_retention.status", "equals": "PASS"},
         ],
     },
 }
@@ -977,7 +985,37 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
             COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
             return response
         catalog_replay_payloads = coach_moment_payloads(visual_kind)
-        replay_payloads = catalog_replay_payloads[:result_count]
+        surface_replay_payloads = coach_surface_moment_payloads(visual_kind, catalog_replay_payloads)
+        surface_result_count = len(surface_replay_payloads)
+        audit["compiler_result_count"] = result_count
+        audit["surface_filter"] = {
+            "kind": "clean_control_after_reception",
+            "mode": "tracking_clean_team_control_after_reception_v0",
+            "catalog_payload_count": len(catalog_replay_payloads),
+            "surface_result_count": surface_result_count,
+        }
+        if surface_result_count <= 0:
+            no_moments_kind = coach_no_moments_kind(contract)
+            response = ok(
+                {
+                    "status": "no_moments_found",
+                    "query": query,
+                    "display_answer": coach_template(f"no_moments_found.{no_moments_kind}"),
+                    "suggestions": COACH_SUGGESTIONS,
+                    "match_scope": COACH_MATCH_SCOPE,
+                    "meaning_definition": meaning.meaning_definition,
+                    "interpretation_rules": list(meaning.interpretation_rules),
+                    "contract_hash": contract_hash,
+                    "plan_hash": plan_hash,
+                    "result_count": 0,
+                    "moments": [],
+                    "gap": None,
+                    "audit": audit,
+                }
+            )
+            COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
+            return response
+        replay_payloads = surface_replay_payloads
         product_claim_gates = [
             coach_product_claim_gate(visual_kind, replay_payload)
             for replay_payload in replay_payloads
@@ -988,9 +1026,10 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
             "claim_id": product_claim_gates[0]["claim_id"] if product_claim_gates else None,
             "payload_count": len(replay_payloads),
             "catalog_payload_count": len(catalog_replay_payloads),
-            "expected_result_count": result_count,
-            "returned_count_matches_result_count": len(replay_payloads) == result_count,
-            "catalog_count_matches_result_count": len(catalog_replay_payloads) == result_count,
+            "expected_result_count": surface_result_count,
+            "compiler_result_count": result_count,
+            "returned_count_matches_result_count": len(replay_payloads) == surface_result_count,
+            "catalog_count_matches_result_count": len(surface_replay_payloads) == surface_result_count,
             "failures": [
                 {"payload_index": index, "failures": gate["failures"]}
                 for index, gate in enumerate(product_claim_gates)
@@ -1009,7 +1048,8 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
                     "kind": "product_claim_unbacked",
                     "message": "The compiler found observed moments, but the representative replay does not back the full coach-facing product claim.",
                     "claim_gate": product_claim_gate,
-                    "result_count": result_count,
+                    "result_count": surface_result_count,
+                    "compiler_result_count": result_count,
                     "plan_hash": plan_hash,
                 },
                 audit=audit,
@@ -1019,7 +1059,7 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
         response_moments = [
             {
                 "moment_id": visual_kind,
-                "result_count": result_count,
+                "result_count": surface_result_count,
                 "replay_payload": replay_payload,
                 "evidence_fields": list(contract.get("required_evidence", [])),
             }
@@ -1036,7 +1076,7 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
                 "interpretation_rules": list(meaning.interpretation_rules),
                 "contract_hash": contract_hash,
                 "plan_hash": plan_hash,
-                "result_count": result_count,
+                "result_count": surface_result_count,
                 "moments": response_moments,
                 "gap": None,
                 "audit": audit,
@@ -1066,6 +1106,103 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
     )
     COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
     return response
+
+
+def coach_catalog_response(kind: str) -> dict[str, Any]:
+    kind = str(kind or "").strip()
+    if kind not in {
+        "line_break_no_underneath_support",
+        "line_break_with_underneath_outlet",
+        "high_bypass_completed_pass",
+    }:
+        return error_response("UNKNOWN_COACH_CATALOG_KIND", f"Unknown coach catalog kind: {kind}", details={"kind": kind})
+
+    catalog_replay_payloads = coach_moment_payloads(kind)
+    surface_replay_payloads = coach_surface_moment_payloads(kind, catalog_replay_payloads)
+    surface_result_count = len(surface_replay_payloads)
+    if surface_result_count <= 0:
+        return ok(
+            {
+                "status": "no_moments_found",
+                "query": "",
+                "display_answer": coach_template(f"no_moments_found.{kind}"),
+                "suggestions": COACH_SUGGESTIONS,
+                "match_scope": COACH_MATCH_SCOPE,
+                "meaning_definition": None,
+                "interpretation_rules": [],
+                "contract_hash": None,
+                "plan_hash": None,
+                "result_count": 0,
+                "moments": [],
+                "gap": None,
+                "audit": {
+                    "pipeline": "precomputed_clean_control_catalog.v0",
+                    "catalog_payload_count": len(catalog_replay_payloads),
+                    "surface_filter": {
+                        "kind": "clean_control_after_reception",
+                        "mode": "tracking_clean_team_control_after_reception_v0",
+                        "surface_result_count": 0,
+                    },
+                },
+            }
+        )
+
+    product_claim_gates = [coach_product_claim_gate(kind, replay_payload) for replay_payload in surface_replay_payloads]
+    if not all(gate["passed"] for gate in product_claim_gates):
+        return coach_cant_yet_response(
+            query="",
+            display_answer=coach_template("understood_but_not_expressible.no_replay_surface"),
+            meaning_definition=None,
+            interpretation_rules=[],
+            gap={
+                "kind": "product_claim_unbacked",
+                "message": "The precomputed catalog contains a replay that does not back the full coach-facing product claim.",
+                "failures": [
+                    {"payload_index": index, "failures": gate["failures"]}
+                    for index, gate in enumerate(product_claim_gates)
+                    if not gate["passed"]
+                ],
+            },
+            audit={
+                "pipeline": "precomputed_clean_control_catalog.v0",
+                "catalog_payload_count": len(catalog_replay_payloads),
+                "surface_result_count": surface_result_count,
+            },
+        )
+
+    return ok(
+        {
+            "status": "moment_found",
+            "query": "",
+            "display_answer": coach_template(f"moment_found.{kind}"),
+            "suggestions": COACH_SUGGESTIONS,
+            "match_scope": COACH_MATCH_SCOPE,
+            "meaning_definition": None,
+            "interpretation_rules": [],
+            "contract_hash": None,
+            "plan_hash": None,
+            "result_count": surface_result_count,
+            "moments": [
+                {
+                    "moment_id": kind,
+                    "result_count": surface_result_count,
+                    "replay_payload": replay_payload,
+                    "evidence_fields": [],
+                }
+                for replay_payload in surface_replay_payloads
+            ],
+            "gap": None,
+            "audit": {
+                "pipeline": "precomputed_clean_control_catalog.v0",
+                "catalog_payload_count": len(catalog_replay_payloads),
+                "surface_filter": {
+                    "kind": "clean_control_after_reception",
+                    "mode": "tracking_clean_team_control_after_reception_v0",
+                    "surface_result_count": surface_result_count,
+                },
+            },
+        }
+    )
 
 
 def coach_clarification_response(
@@ -1292,6 +1429,21 @@ def coach_moment_payloads(kind: str) -> list[dict[str, Any]]:
             return [moment for moment in moments if isinstance(moment, dict)]
     fallback = coach_moment_payload(kind)
     return [fallback] if fallback else []
+
+
+def coach_surface_moment_payloads(kind: str, payloads: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if kind not in {
+        "line_break_no_underneath_support",
+        "line_break_with_underneath_outlet",
+        "high_bypass_completed_pass",
+    }:
+        return payloads
+    return [
+        payload
+        for payload in payloads
+        if dotted_get(payload, "moment.clean_control_retention.mode") == "tracking_clean_team_control_after_reception_v0"
+        and dotted_get(payload, "moment.clean_control_retention.status") == "PASS"
+    ]
 
 
 def needs_support_clarification(text: str, clarifications: list[str]) -> bool:
@@ -3712,6 +3864,15 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/matches":
             self.send_json(validate_public_response("MatchLibraryResponse", match_library()))
+            return
+        if parsed.path == "/api/coach/catalog":
+            query = parse_qs(parsed.query)
+            kind = (query.get("kind") or [""])[0]
+            response = coach_catalog_response(kind)
+            if response.get("ok") is False:
+                self.send_json(response, HTTPStatus.NOT_FOUND)
+            else:
+                self.send_json(validate_public_response("CoachInterpretResponse", response))
             return
         if parsed.path == "/api/plan":
             query = parse_qs(parsed.query)

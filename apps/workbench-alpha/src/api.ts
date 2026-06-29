@@ -109,6 +109,10 @@ export function coachInterpret(input: { query: string }): Promise<CoachInterpret
   });
 }
 
+export function fetchCoachCatalog(kind: string): Promise<CoachInterpretResponse> {
+  return request<CoachInterpretResponse>("CoachInterpretResponse", `/api/coach/catalog?kind=${encodeURIComponent(kind)}`);
+}
+
 export function submitValidate(planDocument: JsonObject): Promise<SubmitValidateResponse> {
   return request<SubmitValidateResponse>("SubmitValidateResponse", "/api/submit-validate", {
     method: "POST",

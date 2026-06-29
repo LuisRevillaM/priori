@@ -7,6 +7,7 @@ import json
 import math
 import os
 import sys
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -58,14 +59,8 @@ def main() -> None:
         payload_from_moment(moment, canonical_root=canonical_root, raw_root=raw_root, source_plan=source_plan)
         for moment in sorted(candidates, key=lambda row: int(row["anchor_frame_id"]))
     ]
-    payload = next(
-        (
-            candidate
-            for candidate in payloads
-            if candidate["moment"]["result_id"] == PREFERRED_REPRESENTATIVE_RESULT_ID
-        ),
-        payloads[0],
-    )
+    payloads.sort(key=line_break_no_support_payload_sort_key)
+    payload = payloads[0]
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     CATALOG_OUT_PATH.write_text(
@@ -90,6 +85,11 @@ def main() -> None:
                 "result_id": payload["moment"]["result_id"],
                 "frame_count": len(payload["replay"]["frames"]),
                 "catalog_count": len(payloads),
+                "clean_control_pass_count": sum(
+                    1
+                    for item in payloads
+                    if item["moment"]["clean_control_retention"]["status"] == "PASS"
+                ),
             },
             sort_keys=True,
         )
@@ -115,7 +115,7 @@ def payload_from_moment(
         period=str(moment["period"]),
         start_frame_id=start_frame_id,
         end_frame_id=end_frame_id,
-        raw_root=raw_root,
+        raw_root=None,
     )
     receiver_id = str(evidence["receiver_id"])
     passer_id = pass_actor_ids(str(evidence["pass_episode_id"]))[0]
@@ -133,13 +133,18 @@ def payload_from_moment(
         end_frame_id=min(support_window_end_frame_id + 18, reception_frame_id + FRAME_RATE_HZ * 4),
         attacking_direction=attacking_direction,
     )
-    possession_retention = possession_retention_sequence(
-        raw_root=raw_root,
-        match_id=str(moment["match_id"]),
-        period=str(moment["period"]),
-        perspective_team_role=str(moment["perspective_team_role"]),
+    possession_retention = raw_possession_retention_not_evaluated(
         start_frame_id=reception_frame_id,
         end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
+        perspective_team_role=str(moment["perspective_team_role"]),
+    )
+    clean_control_retention = clean_control_retention_sequence(
+        replay=replay,
+        start_frame_id=reception_frame_id,
+        end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
+        perspective_team_role=str(moment["perspective_team_role"]),
+        defending_team_role=str(moment["defending_team_role"]),
+        receiver_id=receiver_id,
     )
     payload = {
         "schema_version": "moment_zero.line_break_no_underneath_support.v0",
@@ -174,6 +179,7 @@ def payload_from_moment(
             },
             "outcome_sequence": outcome_sequence,
             "possession_retention": possession_retention,
+            "clean_control_retention": clean_control_retention,
             "requested_evidence": evidence,
         },
         "replay": replay,
@@ -205,6 +211,14 @@ def payload_from_moment(
                 "possession_retention.observed_seconds_after_reception",
                 "possession_retention.perspective_team_role",
                 "possession_retention.possession_team_role_at_end",
+            ],
+            "observed_clean_control_retention": [
+                "clean_control_retention.status",
+                "clean_control_retention.start_frame_id",
+                "clean_control_retention.end_frame_id",
+                "clean_control_retention.receiver_clean_control_max_seconds",
+                "clean_control_retention.team_clean_control_max_seconds",
+                "clean_control_retention.provider_loss_frame_count",
             ],
             "prohibited_visual_claims": [
                 "intent",
@@ -294,7 +308,7 @@ def replay_ball_state_by_frame(
     raw_tracking = raw_root / match_id / "tracking.xml"
     if not raw_tracking.exists():
         return {}
-    ball_state = stream_ball_state(raw_tracking, period)
+    ball_state = cached_ball_state(str(raw_tracking), period)
     window = ball_state[(ball_state.frame_id >= start_frame_id) & (ball_state.frame_id <= end_frame_id)]
     states: dict[int, dict[str, Any]] = {}
     for row in window.itertuples(index=False):
@@ -316,6 +330,11 @@ def raw_tracking_source(raw_root: Path | None, match_id: str) -> dict[str, str]:
         "raw_tracking": str(Path("data/raw/idsse/figshare-28196177-v1") / match_id / "tracking.xml"),
         "raw_tracking_sha256": sha256_file(raw_tracking),
     }
+
+
+@lru_cache(maxsize=32)
+def cached_ball_state(raw_tracking_path: str, period: str) -> pd.DataFrame:
+    return stream_ball_state(Path(raw_tracking_path), period)
 
 
 def filter_frame_window(table: Any, start_frame_id: int, end_frame_id: int) -> Any:
@@ -456,7 +475,7 @@ def possession_retention_sequence(
             "retained_frame_count": 0,
             "claim_boundary": "Observed raw ball-possession team role after reception only; no control quality, tactical quality, intent, or causal claim.",
         }
-    ball_state = stream_ball_state(raw_tracking, period)
+    ball_state = cached_ball_state(str(raw_tracking), period)
     window = ball_state[(ball_state.frame_id >= start_frame_id) & (ball_state.frame_id <= end_frame_id)].copy()
     if window.empty:
         return {
@@ -494,6 +513,426 @@ def possession_retention_sequence(
         "retained_frame_count": int(len(retained)),
         "claim_boundary": "Observed raw ball-possession team role after reception only; no control quality, tactical quality, intent, or causal claim.",
     }
+
+
+def raw_possession_retention_not_evaluated(
+    *,
+    start_frame_id: int,
+    end_frame_id: int,
+    perspective_team_role: str,
+) -> dict[str, Any]:
+    return {
+        "mode": "raw_ball_possession_retention_not_used_for_clean_control",
+        "status": "UNKNOWN",
+        "reason": "provider_possession_not_used_for_product_control_claim",
+        "start_frame_id": start_frame_id,
+        "end_frame_id": end_frame_id,
+        "observed_seconds_after_reception": round((end_frame_id - start_frame_id) / FRAME_RATE_HZ, 2),
+        "required_retention_seconds": round((end_frame_id - start_frame_id) / FRAME_RATE_HZ, 2),
+        "perspective_team_role": perspective_team_role,
+        "possession_team_role_at_start": None,
+        "possession_team_role_at_end": None,
+        "ball_alive_frame_count": 0,
+        "retained_frame_count": 0,
+        "claim_boundary": (
+            "Raw provider possession is not used to back the product control claim; "
+            "clean control is evaluated from observed tracking proximity and receiver-ball co-movement."
+        ),
+    }
+
+
+def clean_control_retention_sequence(
+    *,
+    replay: dict[str, Any],
+    start_frame_id: int,
+    end_frame_id: int,
+    perspective_team_role: str,
+    defending_team_role: str,
+    receiver_id: str,
+) -> dict[str, Any]:
+    max_team_control_distance_m = 1.8
+    max_receiver_control_distance_m = 1.8
+    minimum_distance_margin_m = 0.5
+    minimum_receiver_control_seconds = 1.0
+    minimum_team_control_seconds = 1.0
+    maximum_opponent_clean_control_seconds = 0.2
+    minimum_receiver_comovement_seconds = 0.6
+    maximum_relative_drift_m_per_frame = 0.25
+    minimum_moving_alignment_cosine = 0.25
+    frames = [
+        frame
+        for frame in replay.get("frames", [])
+        if start_frame_id <= int(frame.get("frame_id", -1)) <= end_frame_id
+    ]
+    required_seconds = round((end_frame_id - start_frame_id) / FRAME_RATE_HZ, 2)
+    if not frames:
+        return clean_control_retention_payload(
+            status="UNKNOWN",
+            reason="control_window_missing",
+            start_frame_id=start_frame_id,
+            end_frame_id=start_frame_id,
+            observed_seconds=0.0,
+            required_seconds=required_seconds,
+            perspective_team_role=perspective_team_role,
+            defending_team_role=defending_team_role,
+            receiver_id=receiver_id,
+            max_team_control_distance_m=max_team_control_distance_m,
+            max_receiver_control_distance_m=max_receiver_control_distance_m,
+            minimum_distance_margin_m=minimum_distance_margin_m,
+            minimum_receiver_control_seconds=minimum_receiver_control_seconds,
+            minimum_team_control_seconds=minimum_team_control_seconds,
+            maximum_opponent_clean_control_seconds=maximum_opponent_clean_control_seconds,
+            minimum_receiver_comovement_seconds=minimum_receiver_comovement_seconds,
+            maximum_relative_drift_m_per_frame=maximum_relative_drift_m_per_frame,
+            minimum_moving_alignment_cosine=minimum_moving_alignment_cosine,
+        )
+
+    ball_alive_frame_ids: list[int] = []
+    provider_loss_frame_ids: list[int] = []
+    team_clean_frame_ids: list[int] = []
+    receiver_clean_frame_ids: list[int] = []
+    receiver_comovement_frame_ids: list[int] = []
+    opponent_clean_frame_ids: list[int] = []
+    contested_frame_ids: list[int] = []
+    missing_state_frame_ids: list[int] = []
+    missing_tracking_frame_ids: list[int] = []
+    team_clean_player_ids: set[str] = set()
+    terminal_team_player_id: str | None = None
+    terminal_team_distance_m: float | None = None
+    terminal_opponent_distance_m: float | None = None
+
+    for frame in frames:
+        frame_id = int(frame["frame_id"])
+        ball_state = frame.get("ball_state")
+        if isinstance(ball_state, dict) and not bool(ball_state.get("ball_alive", True)):
+            continue
+        if not isinstance(ball_state, dict):
+            missing_state_frame_ids.append(frame_id)
+        ball_alive_frame_ids.append(frame_id)
+        ball = ball_point_from_frame(frame)
+        nearest_team = nearest_player_to_ball_in_frame(frame, perspective_team_role)
+        nearest_opponent = nearest_player_to_ball_in_frame(frame, defending_team_role)
+        if ball is None or nearest_team is None or nearest_opponent is None:
+            missing_tracking_frame_ids.append(frame_id)
+            continue
+
+        possession_team_role = ball_state.get("possession_team_role") if isinstance(ball_state, dict) else None
+        if possession_team_role is not None and possession_team_role != perspective_team_role:
+            provider_loss_frame_ids.append(frame_id)
+
+        team_distance = float(nearest_team["distance_m"])
+        opponent_distance = float(nearest_opponent["distance_m"])
+        terminal_team_player_id = str(nearest_team["entity_id"])
+        terminal_team_distance_m = team_distance
+        terminal_opponent_distance_m = opponent_distance
+
+        if (
+            team_distance <= max_team_control_distance_m
+            and opponent_distance >= team_distance + minimum_distance_margin_m
+        ):
+            team_clean_frame_ids.append(frame_id)
+            team_clean_player_ids.add(str(nearest_team["entity_id"]))
+
+        receiver_distance = entity_distance_to_ball_in_frame(frame, receiver_id)
+        if (
+            receiver_distance is not None
+            and receiver_distance <= max_receiver_control_distance_m
+            and opponent_distance >= float(receiver_distance) + minimum_distance_margin_m
+        ):
+            receiver_clean_frame_ids.append(frame_id)
+
+        if (
+            possession_team_role is not None
+            and possession_team_role != perspective_team_role
+            and opponent_distance <= max_team_control_distance_m
+            and team_distance >= opponent_distance + minimum_distance_margin_m
+        ):
+            opponent_clean_frame_ids.append(frame_id)
+
+        if (
+            team_distance <= max_team_control_distance_m + minimum_distance_margin_m
+            and opponent_distance <= max_team_control_distance_m + minimum_distance_margin_m
+            and abs(team_distance - opponent_distance) < minimum_distance_margin_m
+        ):
+            contested_frame_ids.append(frame_id)
+
+    frames_by_id = {int(frame["frame_id"]): frame for frame in frames}
+    for frame_id in receiver_clean_frame_ids:
+        current = frames_by_id.get(frame_id)
+        next_frame = frames_by_id.get(frame_id + 1)
+        if current is None or next_frame is None:
+            continue
+        if receiver_ball_comovement_status(
+            current,
+            next_frame,
+            receiver_id=receiver_id,
+            maximum_receiver_control_distance_m=max_receiver_control_distance_m,
+            maximum_relative_drift_m_per_frame=maximum_relative_drift_m_per_frame,
+            minimum_moving_alignment_cosine=minimum_moving_alignment_cosine,
+        ):
+            receiver_comovement_frame_ids.append(frame_id)
+
+    actual_end_frame_id = int(frames[-1]["frame_id"])
+    observed_seconds = round((actual_end_frame_id - start_frame_id) / FRAME_RATE_HZ, 2)
+    team_clean_seconds = round(max_contiguous_frame_seconds(team_clean_frame_ids), 2)
+    receiver_clean_seconds = round(max_contiguous_frame_seconds(receiver_clean_frame_ids), 2)
+    receiver_comovement_seconds = round(max_contiguous_frame_seconds(receiver_comovement_frame_ids), 2)
+    opponent_clean_seconds = round(max_contiguous_frame_seconds(opponent_clean_frame_ids), 2)
+
+    if not ball_alive_frame_ids:
+        status = "UNKNOWN"
+        reason = "no_ball_alive_frames_in_window"
+    elif provider_loss_frame_ids:
+        status = "FAIL"
+        reason = "provider_possession_changed"
+    elif receiver_clean_seconds < minimum_receiver_control_seconds:
+        status = "FAIL"
+        reason = "receiver_clean_control_too_short"
+    elif receiver_comovement_seconds < minimum_receiver_comovement_seconds:
+        status = "FAIL"
+        reason = "receiver_ball_comovement_too_short"
+    elif team_clean_seconds < minimum_team_control_seconds:
+        status = "FAIL"
+        reason = "team_clean_control_too_short"
+    elif opponent_clean_seconds > maximum_opponent_clean_control_seconds:
+        status = "FAIL"
+        reason = "opponent_clean_control_observed"
+    else:
+        status = "PASS"
+        reason = "clean_team_control_observed"
+
+    return clean_control_retention_payload(
+        status=status,
+        reason=reason,
+        start_frame_id=start_frame_id,
+        end_frame_id=actual_end_frame_id,
+        observed_seconds=observed_seconds,
+        required_seconds=required_seconds,
+        perspective_team_role=perspective_team_role,
+        defending_team_role=defending_team_role,
+        receiver_id=receiver_id,
+        max_team_control_distance_m=max_team_control_distance_m,
+        max_receiver_control_distance_m=max_receiver_control_distance_m,
+        minimum_distance_margin_m=minimum_distance_margin_m,
+        minimum_receiver_control_seconds=minimum_receiver_control_seconds,
+        minimum_team_control_seconds=minimum_team_control_seconds,
+        maximum_opponent_clean_control_seconds=maximum_opponent_clean_control_seconds,
+        minimum_receiver_comovement_seconds=minimum_receiver_comovement_seconds,
+        maximum_relative_drift_m_per_frame=maximum_relative_drift_m_per_frame,
+        minimum_moving_alignment_cosine=minimum_moving_alignment_cosine,
+        ball_alive_frame_count=len(ball_alive_frame_ids),
+        provider_loss_frame_count=len(provider_loss_frame_ids),
+        receiver_clean_control_frame_count=len(receiver_clean_frame_ids),
+        receiver_clean_control_max_seconds=receiver_clean_seconds,
+        receiver_ball_comovement_frame_count=len(receiver_comovement_frame_ids),
+        receiver_ball_comovement_max_seconds=receiver_comovement_seconds,
+        team_clean_control_frame_count=len(team_clean_frame_ids),
+        team_clean_control_max_seconds=team_clean_seconds,
+        opponent_clean_control_frame_count=len(opponent_clean_frame_ids),
+        opponent_clean_control_max_seconds=opponent_clean_seconds,
+        contested_frame_count=len(contested_frame_ids),
+        missing_ball_state_frame_count=len(missing_state_frame_ids),
+        missing_tracking_frame_count=len(missing_tracking_frame_ids),
+        team_clean_control_player_ids=sorted(team_clean_player_ids),
+        terminal_team_control_player_id=terminal_team_player_id,
+        terminal_team_distance_m=None if terminal_team_distance_m is None else round(terminal_team_distance_m, 2),
+        terminal_opponent_distance_m=None
+        if terminal_opponent_distance_m is None
+        else round(terminal_opponent_distance_m, 2),
+        sample_provider_loss_frame_ids=provider_loss_frame_ids[:5],
+        sample_contested_frame_ids=contested_frame_ids[:5],
+    )
+
+
+def clean_control_retention_payload(
+    *,
+    status: str,
+    reason: str,
+    start_frame_id: int,
+    end_frame_id: int,
+    observed_seconds: float,
+    required_seconds: float,
+    perspective_team_role: str,
+    defending_team_role: str,
+    receiver_id: str,
+    max_team_control_distance_m: float,
+    max_receiver_control_distance_m: float,
+    minimum_distance_margin_m: float,
+    minimum_receiver_control_seconds: float,
+    minimum_team_control_seconds: float,
+    maximum_opponent_clean_control_seconds: float,
+    minimum_receiver_comovement_seconds: float,
+    maximum_relative_drift_m_per_frame: float,
+    minimum_moving_alignment_cosine: float,
+    ball_alive_frame_count: int = 0,
+    provider_loss_frame_count: int = 0,
+    receiver_clean_control_frame_count: int = 0,
+    receiver_clean_control_max_seconds: float = 0.0,
+    receiver_ball_comovement_frame_count: int = 0,
+    receiver_ball_comovement_max_seconds: float = 0.0,
+    team_clean_control_frame_count: int = 0,
+    team_clean_control_max_seconds: float = 0.0,
+    opponent_clean_control_frame_count: int = 0,
+    opponent_clean_control_max_seconds: float = 0.0,
+    contested_frame_count: int = 0,
+    missing_ball_state_frame_count: int = 0,
+    missing_tracking_frame_count: int = 0,
+    team_clean_control_player_ids: list[str] | None = None,
+    terminal_team_control_player_id: str | None = None,
+    terminal_team_distance_m: float | None = None,
+    terminal_opponent_distance_m: float | None = None,
+    sample_provider_loss_frame_ids: list[int] | None = None,
+    sample_contested_frame_ids: list[int] | None = None,
+) -> dict[str, Any]:
+    return {
+        "mode": "tracking_clean_team_control_after_reception_v0",
+        "status": status,
+        "reason": reason,
+        "start_frame_id": start_frame_id,
+        "end_frame_id": end_frame_id,
+        "observed_seconds_after_reception": observed_seconds,
+        "required_retention_seconds": required_seconds,
+        "perspective_team_role": perspective_team_role,
+        "defending_team_role": defending_team_role,
+        "receiver_id": receiver_id,
+        "provider_possession_required": False,
+        "maximum_team_control_distance_m": max_team_control_distance_m,
+        "maximum_receiver_control_distance_m": max_receiver_control_distance_m,
+        "minimum_distance_margin_m": minimum_distance_margin_m,
+        "minimum_receiver_control_seconds": minimum_receiver_control_seconds,
+        "minimum_team_control_seconds": minimum_team_control_seconds,
+        "maximum_opponent_clean_control_seconds": maximum_opponent_clean_control_seconds,
+        "minimum_receiver_comovement_seconds": minimum_receiver_comovement_seconds,
+        "maximum_relative_drift_m_per_frame": maximum_relative_drift_m_per_frame,
+        "minimum_moving_alignment_cosine": minimum_moving_alignment_cosine,
+        "ball_alive_frame_count": ball_alive_frame_count,
+        "provider_loss_frame_count": provider_loss_frame_count,
+        "receiver_clean_control_frame_count": receiver_clean_control_frame_count,
+        "receiver_clean_control_max_seconds": receiver_clean_control_max_seconds,
+        "receiver_ball_comovement_frame_count": receiver_ball_comovement_frame_count,
+        "receiver_ball_comovement_max_seconds": receiver_ball_comovement_max_seconds,
+        "team_clean_control_frame_count": team_clean_control_frame_count,
+        "team_clean_control_max_seconds": team_clean_control_max_seconds,
+        "opponent_clean_control_frame_count": opponent_clean_control_frame_count,
+        "opponent_clean_control_max_seconds": opponent_clean_control_max_seconds,
+        "contested_frame_count": contested_frame_count,
+        "missing_ball_state_frame_count": missing_ball_state_frame_count,
+        "missing_tracking_frame_count": missing_tracking_frame_count,
+        "team_clean_control_player_ids": team_clean_control_player_ids or [],
+        "terminal_team_control_player_id": terminal_team_control_player_id,
+        "terminal_team_distance_m": terminal_team_distance_m,
+        "terminal_opponent_distance_m": terminal_opponent_distance_m,
+        "sample_provider_loss_frame_ids": sample_provider_loss_frame_ids or [],
+        "sample_contested_frame_ids": sample_contested_frame_ids or [],
+        "claim_boundary": (
+            "Observed tracking proximity and receiver-ball co-movement after reception only; "
+            "no pass quality, individual technique grade, decision value, intent, causation, or tactical optimality claim."
+        ),
+    }
+
+
+def max_contiguous_frame_seconds(frame_ids: list[int]) -> float:
+    if not frame_ids:
+        return 0.0
+    best = 0
+    current = 0
+    previous: int | None = None
+    for frame_id in sorted(frame_ids):
+        if previous is None or frame_id == previous + 1:
+            current += 1
+        else:
+            best = max(best, current)
+            current = 1
+        previous = frame_id
+    return max(best, current) / FRAME_RATE_HZ
+
+
+def nearest_player_to_ball_in_frame(frame: dict[str, Any], team_role: str) -> dict[str, Any] | None:
+    ball = ball_point_from_frame(frame)
+    if ball is None:
+        return None
+    best: dict[str, Any] | None = None
+    for entity in frame.get("entities", []):
+        if entity.get("entity_type") != "player" or entity.get("team_role") != team_role:
+            continue
+        distance = math.hypot(float(entity["x_m"]) - ball["x_m"], float(entity["y_m"]) - ball["y_m"])
+        if best is None or distance < float(best["distance_m"]):
+            best = {"entity_id": str(entity["entity_id"]), "distance_m": distance}
+    return best
+
+
+def entity_distance_to_ball_in_frame(frame: dict[str, Any], entity_id: str) -> float | None:
+    ball = ball_point_from_frame(frame)
+    if ball is None:
+        return None
+    for entity in frame.get("entities", []):
+        if str(entity.get("entity_id")) != entity_id:
+            continue
+        return math.hypot(float(entity["x_m"]) - ball["x_m"], float(entity["y_m"]) - ball["y_m"])
+    return None
+
+
+def receiver_ball_comovement_status(
+    current_frame: dict[str, Any],
+    next_frame: dict[str, Any],
+    *,
+    receiver_id: str,
+    maximum_receiver_control_distance_m: float,
+    maximum_relative_drift_m_per_frame: float,
+    minimum_moving_alignment_cosine: float,
+) -> bool:
+    current_ball = ball_point_from_frame(current_frame)
+    next_ball = ball_point_from_frame(next_frame)
+    current_receiver = entity_point_from_frame(current_frame, receiver_id)
+    next_receiver = entity_point_from_frame(next_frame, receiver_id)
+    if current_ball is None or next_ball is None or current_receiver is None or next_receiver is None:
+        return False
+    current_distance = math.hypot(
+        current_ball["x_m"] - current_receiver["x_m"],
+        current_ball["y_m"] - current_receiver["y_m"],
+    )
+    next_distance = math.hypot(
+        next_ball["x_m"] - next_receiver["x_m"],
+        next_ball["y_m"] - next_receiver["y_m"],
+    )
+    if current_distance > maximum_receiver_control_distance_m or next_distance > maximum_receiver_control_distance_m:
+        return False
+    current_offset = (
+        current_ball["x_m"] - current_receiver["x_m"],
+        current_ball["y_m"] - current_receiver["y_m"],
+    )
+    next_offset = (
+        next_ball["x_m"] - next_receiver["x_m"],
+        next_ball["y_m"] - next_receiver["y_m"],
+    )
+    relative_drift = math.hypot(next_offset[0] - current_offset[0], next_offset[1] - current_offset[1])
+    if relative_drift > maximum_relative_drift_m_per_frame:
+        return False
+    ball_delta = (next_ball["x_m"] - current_ball["x_m"], next_ball["y_m"] - current_ball["y_m"])
+    receiver_delta = (
+        next_receiver["x_m"] - current_receiver["x_m"],
+        next_receiver["y_m"] - current_receiver["y_m"],
+    )
+    ball_speed = math.hypot(ball_delta[0], ball_delta[1])
+    receiver_speed = math.hypot(receiver_delta[0], receiver_delta[1])
+    if ball_speed < 0.04 or receiver_speed < 0.04:
+        return True
+    cosine = (ball_delta[0] * receiver_delta[0] + ball_delta[1] * receiver_delta[1]) / (ball_speed * receiver_speed)
+    return cosine >= minimum_moving_alignment_cosine
+
+
+def entity_point_from_frame(frame: dict[str, Any], entity_id: str) -> dict[str, float] | None:
+    for entity in frame.get("entities", []):
+        if str(entity.get("entity_id")) == entity_id:
+            return {"x_m": float(entity["x_m"]), "y_m": float(entity["y_m"])}
+    return None
+
+
+def line_break_no_support_payload_sort_key(payload: dict[str, Any]) -> tuple[int, int, int]:
+    moment = payload["moment"]
+    clean_rank = 0 if moment["clean_control_retention"]["status"] == "PASS" else 1
+    retention_rank = 0 if moment["possession_retention"]["status"] == "PASS" else 1
+    return (clean_rank, retention_rank, int(moment["anchor_frame_id"]))
 
 
 def ball_point_at_frame(frames: list[dict[str, Any]], frame_id: int) -> dict[str, float] | None:

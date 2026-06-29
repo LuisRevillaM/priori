@@ -16,27 +16,32 @@ type ClaimFailure = {
 
 const PRODUCT_CLAIM_REQUIREMENTS: Record<string, { claimId: string; requirements: ClaimRequirement[] }> = {
   line_break_no_underneath_support: {
-    claimId: "observed_line_break_without_underneath_outlet",
+    claimId: "observed_line_break_without_underneath_outlet_with_clean_control",
     requirements: [
       { path: "moment.requested_evidence.line_break_status", equals: "PASS" },
       { path: "moment.requested_evidence.support_arrival_status", equals: "FAIL" },
-      { path: "moment.support_region.support_arrival_status", equals: "FAIL" }
+      { path: "moment.support_region.support_arrival_status", equals: "FAIL" },
+      { path: "moment.clean_control_retention.mode", equals: "tracking_clean_team_control_after_reception_v0" },
+      { path: "moment.clean_control_retention.status", equals: "PASS" }
     ]
   },
   line_break_with_underneath_outlet: {
-    claimId: "observed_line_break_with_underneath_outlet",
+    claimId: "observed_line_break_with_underneath_outlet_with_clean_control",
     requirements: [
       { path: "moment.requested_evidence.line_break_status", equals: "PASS" },
       { path: "moment.requested_evidence.support_arrival_status", equals: "PASS" },
-      { path: "moment.support_region.support_arrival_status", equals: "PASS" }
+      { path: "moment.support_region.support_arrival_status", equals: "PASS" },
+      { path: "moment.clean_control_retention.mode", equals: "tracking_clean_team_control_after_reception_v0" },
+      { path: "moment.clean_control_retention.status", equals: "PASS" }
     ]
   },
   high_bypass_completed_pass: {
-    claimId: "completed_high_bypass_pass_with_provider_possession_visible",
+    claimId: "observed_high_bypass_pass_with_clean_control_after_reception",
     requirements: [
       { path: "moment.requested_evidence.evaluation_status", equals: "PASS" },
       { path: "moment.opponents_bypassed_count", gte: 5 },
-      { path: "moment.possession_retention.mode", equals: "raw_ball_possession_retention_after_reception" }
+      { path: "moment.clean_control_retention.mode", equals: "tracking_clean_team_control_after_reception_v0" },
+      { path: "moment.clean_control_retention.status", equals: "PASS" }
     ]
   }
 };
