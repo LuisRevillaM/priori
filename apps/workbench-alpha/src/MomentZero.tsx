@@ -12,10 +12,12 @@ const PITCH_PALETTE = {
   turf2: "#193d2e",
   line: "rgba(240, 239, 225, 0.50)",
   lineSoft: "rgba(240, 239, 225, 0.20)",
-  home: "#d8efe3",
-  homeEdge: "#163327",
-  away: "#8d534c",
-  awayEdge: "#f4ece0",
+  attack: "#edf7ee",
+  attackEdge: "rgba(250, 247, 226, 0.92)",
+  attackCore: "#bfe4d1",
+  defense: "#9d5a52",
+  defenseEdge: "rgba(249, 224, 214, 0.86)",
+  defenseCore: "#53312e",
   receiver: "#fff5cb",
   passer: "#d8efe3",
   ball: "#f4efe0",
@@ -254,22 +256,28 @@ function drawPlayers(
     const isCandidate = candidateIds.has(entity.entity_id);
     const isSupporter = supportIds.has(entity.entity_id);
     const isStory = isReceiver || isPasser || isDefender || isSupporter;
+    const isAttack = entity.team_role === moment.perspective_team_role;
     const fadeIrrelevant = Math.max(phase.break, phase.support, phase.lonely);
     const radius = isReceiver ? 7.9 : isSupporter ? 6.9 : isPasser ? 6.6 : isDefender ? 6.2 : isCandidate ? 4.8 : 4.2;
     const alpha = isStory
-      ? 0.96
+      ? 0.98
       : isCandidate
-        ? 0.46 - 0.06 * fadeIrrelevant
-        : 0.36 - 0.04 * fadeIrrelevant;
+        ? 0.62 - 0.04 * fadeIrrelevant
+        : 0.54 - 0.04 * fadeIrrelevant;
     ctx.save();
     ctx.globalAlpha = Math.max(0.08, alpha) * phase.resetFade;
     ctx.beginPath();
     ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = entity.team_role === moment.perspective_team_role ? PITCH_PALETTE.home : PITCH_PALETTE.away;
-    ctx.strokeStyle = entity.team_role === moment.perspective_team_role ? PITCH_PALETTE.homeEdge : PITCH_PALETTE.awayEdge;
-    ctx.lineWidth = isStory ? 1.5 : 0.8;
+    ctx.fillStyle = isAttack ? PITCH_PALETTE.attack : PITCH_PALETTE.defense;
+    ctx.strokeStyle = isAttack ? PITCH_PALETTE.attackEdge : PITCH_PALETTE.defenseEdge;
+    ctx.lineWidth = isStory ? 1.8 : 1.05;
     ctx.fill();
     ctx.stroke();
+    ctx.globalAlpha = Math.max(0.08, alpha * (isAttack ? 0.44 : 0.58)) * phase.resetFade;
+    ctx.fillStyle = isAttack ? PITCH_PALETTE.attackCore : PITCH_PALETTE.defenseCore;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, Math.max(1.7, radius * 0.34), 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 }
@@ -446,7 +454,7 @@ function drawSupportArrivals(
     ctx.arc(point.x, point.y, haloRadius, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = PITCH_PALETTE.home;
+    ctx.fillStyle = PITCH_PALETTE.attack;
     ctx.strokeStyle = "rgba(244, 239, 224, 0.80)";
     ctx.lineWidth = 1.6;
     ctx.beginPath();
