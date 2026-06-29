@@ -22,8 +22,8 @@ from scripts.coverage_map import compiler_search_reachability as search  # noqa:
 from scripts.coverage_map.semantic_contract_scl0 import generate_contract_from_meaning  # noqa: E402
 from scripts.workbench_alpha.generate_moment_zero import (  # noqa: E402
     FRAME_RATE_HZ,
-    PITCH,
     entity_point_at_frame,
+    observed_ball_outcome_sequence,
     pass_actor_ids,
     replay_window,
 )
@@ -124,6 +124,12 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
         str(moment["period"]),
         str(moment["perspective_team_role"]),
     )
+    outcome_sequence = observed_ball_outcome_sequence(
+        replay=replay,
+        start_frame_id=reception_frame_id,
+        end_frame_id=min(support_window_end_frame_id + 18, reception_frame_id + FRAME_RATE_HZ * 4),
+        attacking_direction=attacking_direction,
+    )
     return {
         "schema_version": "moment_zero.line_break_with_underneath_support.v0",
         "source_plan": source_plan,
@@ -155,6 +161,7 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
                 "support_arrival_reason": evidence["support_arrival_reason"],
                 "coverage_status": evidence["coverage_status"],
             },
+            "outcome_sequence": outcome_sequence,
             "requested_evidence": evidence,
         },
         "replay": {
@@ -172,6 +179,14 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
                 "supporting_player_ids",
                 "support_arrival_status",
                 "coverage_status",
+            ],
+            "observed_outcome_sequence": [
+                "outcome_sequence.start_frame_id",
+                "outcome_sequence.end_frame_id",
+                "outcome_sequence.ball_start_point",
+                "outcome_sequence.ball_end_point",
+                "outcome_sequence.forward_progression_m",
+                "outcome_sequence.final_third_status",
             ],
             "prohibited_visual_claims": [
                 "intent",

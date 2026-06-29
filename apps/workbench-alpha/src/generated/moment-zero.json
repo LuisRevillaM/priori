@@ -33,6 +33,27 @@
         "normalized_line_x_m": 5.26
       }
     ],
+    "outcome_sequence": {
+      "ball_end_point": {
+        "x_m": -36.01,
+        "y_m": 32.99
+      },
+      "ball_start_point": {
+        "x_m": -8.75,
+        "y_m": 20.53
+      },
+      "claim_boundary": "Observed ball location after reception only; no quality, intent, causation, possession-control, or decision-value claim.",
+      "distance_m": 29.97,
+      "end_frame_id": 41117,
+      "final_third_status": "PASS",
+      "final_third_threshold_normalized_x_m": 17.5,
+      "forward_progression_m": 27.26,
+      "mode": "observed_ball_position_after_reception",
+      "observed_seconds_after_reception": 3.72,
+      "reason": "ball_tracking_observed",
+      "start_frame_id": 41024,
+      "status": "PASS"
+    },
     "passer_id": "DFL-OBJ-0028FW",
     "period": "firstHalf",
     "perspective_team_role": "home",
@@ -31903,6 +31924,14 @@
       "supporting_player_ids",
       "support_arrival_status",
       "coverage_status"
+    ],
+    "observed_outcome_sequence": [
+      "outcome_sequence.start_frame_id",
+      "outcome_sequence.end_frame_id",
+      "outcome_sequence.ball_start_point",
+      "outcome_sequence.ball_end_point",
+      "outcome_sequence.forward_progression_m",
+      "outcome_sequence.final_third_status"
     ],
     "pass_path": [
       "physical_release_frame_id",

@@ -66,6 +66,12 @@ def main() -> None:
         str(moment["period"]),
         str(moment["perspective_team_role"]),
     )
+    outcome_sequence = observed_ball_outcome_sequence(
+        replay=replay,
+        start_frame_id=reception_frame_id,
+        end_frame_id=min(support_window_end_frame_id + 18, reception_frame_id + FRAME_RATE_HZ * 4),
+        attacking_direction=attacking_direction,
+    )
     payload = {
         "schema_version": "moment_zero.line_break_no_underneath_support.v0",
         "source_plan": {
@@ -101,6 +107,7 @@ def main() -> None:
                 "support_arrival_reason": evidence["support_arrival_reason"],
                 "coverage_status": evidence["coverage_status"],
             },
+            "outcome_sequence": outcome_sequence,
             "requested_evidence": evidence,
         },
         "replay": replay,
@@ -114,6 +121,14 @@ def main() -> None:
                 "supporting_player_ids",
                 "support_arrival_status",
                 "coverage_status",
+            ],
+            "observed_outcome_sequence": [
+                "outcome_sequence.start_frame_id",
+                "outcome_sequence.end_frame_id",
+                "outcome_sequence.ball_start_point",
+                "outcome_sequence.ball_end_point",
+                "outcome_sequence.forward_progression_m",
+                "outcome_sequence.final_third_status",
             ],
             "prohibited_visual_claims": [
                 "intent",
@@ -202,6 +217,75 @@ def entity_point_at_frame(frames: list[dict[str, Any]], frame_id: int, entity_id
             if entity["entity_id"] == entity_id:
                 return {"x_m": float(entity["x_m"]), "y_m": float(entity["y_m"])}
     raise RuntimeError(f"Missing {entity_id} at frame {frame_id}")
+
+
+def observed_ball_outcome_sequence(
+    *,
+    replay: dict[str, Any],
+    start_frame_id: int,
+    end_frame_id: int,
+    attacking_direction: int,
+) -> dict[str, Any]:
+    start_ball = ball_point_at_frame(replay["frames"], start_frame_id)
+    end_frame = max(
+        (
+            frame
+            for frame in replay["frames"]
+            if start_frame_id <= int(frame["frame_id"]) <= end_frame_id and ball_point_from_frame(frame) is not None
+        ),
+        key=lambda frame: int(frame["frame_id"]),
+        default=None,
+    )
+    end_ball = ball_point_from_frame(end_frame) if end_frame else None
+    if start_ball is None or end_ball is None:
+        return {
+            "mode": "observed_ball_position_after_reception",
+            "status": "UNKNOWN",
+            "reason": "ball_tracking_missing",
+            "start_frame_id": start_frame_id,
+            "end_frame_id": start_frame_id,
+            "observed_seconds_after_reception": 0.0,
+            "ball_start_point": start_ball,
+            "ball_end_point": end_ball,
+            "forward_progression_m": None,
+            "distance_m": None,
+            "final_third_status": "UNKNOWN",
+            "claim_boundary": "Observed ball location after reception only; no quality, intent, causation, possession-control, or decision-value claim.",
+        }
+    actual_end_frame_id = int(end_frame["frame_id"])
+    dx = float(end_ball["x_m"]) - float(start_ball["x_m"])
+    dy = float(end_ball["y_m"]) - float(start_ball["y_m"])
+    normalized_end_x = float(end_ball["x_m"]) * int(attacking_direction)
+    final_third_threshold = float(replay["pitch"]["length_m"]) / 6.0
+    return {
+        "mode": "observed_ball_position_after_reception",
+        "status": "PASS",
+        "reason": "ball_tracking_observed",
+        "start_frame_id": start_frame_id,
+        "end_frame_id": actual_end_frame_id,
+        "observed_seconds_after_reception": round((actual_end_frame_id - start_frame_id) / FRAME_RATE_HZ, 2),
+        "ball_start_point": start_ball,
+        "ball_end_point": end_ball,
+        "forward_progression_m": round(dx * int(attacking_direction), 2),
+        "distance_m": round(math.hypot(dx, dy), 2),
+        "final_third_status": "PASS" if normalized_end_x > final_third_threshold else "FAIL",
+        "final_third_threshold_normalized_x_m": round(final_third_threshold, 2),
+        "claim_boundary": "Observed ball location after reception only; no quality, intent, causation, possession-control, or decision-value claim.",
+    }
+
+
+def ball_point_at_frame(frames: list[dict[str, Any]], frame_id: int) -> dict[str, float] | None:
+    frame = next((item for item in frames if int(item["frame_id"]) == frame_id), None)
+    return ball_point_from_frame(frame)
+
+
+def ball_point_from_frame(frame: dict[str, Any] | None) -> dict[str, float] | None:
+    if frame is None:
+        return None
+    for entity in frame["entities"]:
+        if entity["entity_type"] == "ball":
+            return {"x_m": float(entity["x_m"]), "y_m": float(entity["y_m"])}
+    return None
 
 
 def sha256_file(path: Path) -> str:

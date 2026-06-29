@@ -21,6 +21,7 @@ from scripts.coverage_map import compiler_search_reachability as search  # noqa:
 from scripts.coverage_map.semantic_contract_scl0 import generate_contract_from_meaning  # noqa: E402
 from scripts.workbench_alpha.generate_moment_zero import (  # noqa: E402
     FRAME_RATE_HZ,
+    observed_ball_outcome_sequence,
     replay_window,
 )
 from tqe.runtime.binder import bind_document  # noqa: E402
@@ -112,7 +113,7 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
     release_frame_id = int(evidence["release_frame_id"])
     reception_frame_id = int(evidence["reception_frame_id"])
     start_frame_id = max(release_frame_id - 20, 0)
-    end_frame_id = reception_frame_id + 28
+    end_frame_id = reception_frame_id + FRAME_RATE_HZ * 4
     replay = replay_window(
         canonical_root=canonical_root,
         match_id=str(moment["match_id"]),
@@ -126,6 +127,12 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
         str(moment["match_id"]),
         str(moment["period"]),
         str(moment["perspective_team_role"]),
+    )
+    outcome_sequence = observed_ball_outcome_sequence(
+        replay=replay,
+        start_frame_id=reception_frame_id,
+        end_frame_id=end_frame_id,
+        attacking_direction=attacking_direction,
     )
     return {
         "schema_version": "coach_moment.high_bypass_completed_pass.v0",
@@ -152,6 +159,7 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
             "candidate_goal_side_player_ids": evidence["candidate_goal_side_player_ids"],
             "evaluated_opponent_ids": evidence["evaluated_opponent_ids"],
             "attacking_direction": attacking_direction,
+            "outcome_sequence": outcome_sequence,
             "requested_evidence": evidence,
         },
         "replay": {
@@ -163,6 +171,14 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
             "completed_pass_path": ["release_frame_id", "reception_frame_id", "release_ball_point", "reception_ball_point"],
             "actors": ["passer_id", "receiver_id"],
             "bypassed_opponents": ["opponents_bypassed_count", "bypassed_player_ids", "candidate_goal_side_player_ids"],
+            "observed_outcome_sequence": [
+                "outcome_sequence.start_frame_id",
+                "outcome_sequence.end_frame_id",
+                "outcome_sequence.ball_start_point",
+                "outcome_sequence.ball_end_point",
+                "outcome_sequence.forward_progression_m",
+                "outcome_sequence.final_third_status",
+            ],
             "prohibited_visual_claims": [
                 "intent",
                 "quality",

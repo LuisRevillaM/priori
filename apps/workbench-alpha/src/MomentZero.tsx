@@ -175,6 +175,8 @@ function renderMoment(
   drawPassPath(ctx, replay, moment, phase);
   drawSupportRegion(ctx, replay, moment, phase);
   drawSupportArrivals(ctx, replay, moment, frame, phase);
+  drawObservedOutcomePath(ctx, replay, moment, frame, phase);
+  drawReceptionDock(ctx, replay, moment, frame, phase);
   drawReceiverFocus(ctx, replay, moment, frame, phase);
   drawBall(ctx, replay, moment, frame, phase);
 }
@@ -213,6 +215,8 @@ function renderHighBypassMoment(
   drawHighBypassPlayers(ctx, replay, moment, frame, phase);
   drawHighBypassPath(ctx, replay, moment, phase);
   drawBypassedOpponents(ctx, replay, moment, phase);
+  drawObservedOutcomePath(ctx, replay, moment, frame, phase);
+  drawReceptionDock(ctx, replay, moment, frame, phase);
   drawHighBypassBall(ctx, replay, moment, frame, phase);
 }
 
@@ -220,21 +224,24 @@ function frameForProgress(replay: ReplayPayload, moment: MomentZeroMoment, progr
   const visualEndFrameId = momentZeroVisualEndFrameId(moment);
   const visibleFrames = replay.frames.filter((frame) => frame.frame_id <= visualEndFrameId);
   const frames = visibleFrames.length > 0 ? visibleFrames : replay.frames;
-  const eased = easeInOutCubic(Math.min(1, progress / 0.72));
+  const eased = easeInOutCubic(Math.min(1, progress / 0.84));
   const index = Math.min(frames.length - 1, Math.max(0, Math.round(eased * (frames.length - 1))));
   return frames[index];
 }
 
 function highBypassFrameForProgress(replay: ReplayPayload, moment: HighBypassMoment, progress: number) {
-  const visualEndFrameId = moment.reception_frame_id + 12;
+  const visualEndFrameId = moment.outcome_sequence.end_frame_id;
   const visibleFrames = replay.frames.filter((frame) => frame.frame_id <= visualEndFrameId);
   const frames = visibleFrames.length > 0 ? visibleFrames : replay.frames;
-  const eased = easeInOutCubic(Math.min(1, progress / 0.74));
+  const eased = easeInOutCubic(Math.min(1, progress / 0.84));
   const index = Math.min(frames.length - 1, Math.max(0, Math.round(eased * (frames.length - 1))));
   return frames[index];
 }
 
 export function momentZeroVisualEndFrameId(moment: MomentZeroMoment) {
+  if (moment.outcome_sequence.status === "PASS") {
+    return moment.outcome_sequence.end_frame_id;
+  }
   if (hasObservedSupport(moment)) {
     return moment.support_window_end_frame_id;
   }
@@ -248,6 +255,9 @@ export function momentZeroLineEvidenceFrameId(moment: MomentZeroMoment) {
 }
 
 export function momentZeroBallEvidenceFrameId(moment: MomentZeroMoment, frameId: number) {
+  if (moment.outcome_sequence.status === "PASS" && frameId <= moment.outcome_sequence.end_frame_id) {
+    return frameId;
+  }
   return frameId > moment.reception_frame_id ? moment.reception_frame_id : frameId;
 }
 
@@ -266,8 +276,10 @@ function revealPhase(progress: number) {
     line: fadeWindow(progress, 0.10, 0.28),
     pass: fadeWindow(progress, 0.18, 0.55),
     break: fadeWindow(progress, 0.42, 0.66),
+    reception: fadeWindow(progress, 0.50, 0.70),
     support: fadeWindow(progress, 0.58, 0.78),
     lonely: fadeWindow(progress, 0.76, 0.95),
+    outcome: fadeWindow(progress, 0.74, 0.94),
     resetFade: 1 - fadeWindow(progress, 0.94, 1),
     pulse: 0.5 + 0.5 * Math.sin(progress * Math.PI * 2)
   };
@@ -643,6 +655,103 @@ function drawReceiverFocus(
   ctx.restore();
 }
 
+function drawReceptionDock(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: Pick<MomentZeroMoment, "receiver_id" | "reception_frame_id">,
+  frame: ReplayPayload["frames"][number],
+  phase: { reception: number; outcome: number; resetFade: number; pulse: number }
+) {
+  if (frame.frame_id < moment.reception_frame_id) return;
+  const receptionFrame = replay.frames.find((item) => item.frame_id === moment.reception_frame_id);
+  const receiver = receptionFrame?.entities.find((entity) => entity.entity_id === moment.receiver_id);
+  const ball = receptionFrame?.entities.find((entity) => entity.entity_type === "ball");
+  if (!receiver || !ball) return;
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const receiverPoint = pitchPointToPixel(receiver.x_m, receiver.y_m, replay.pitch, layout);
+  const ballPoint = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
+  const alpha = Math.max(phase.reception, phase.outcome * 0.58) * phase.resetFade;
+  if (alpha <= 0) return;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const dockRadius = 25 + 7 * phase.pulse;
+  const dock = ctx.createRadialGradient(receiverPoint.x, receiverPoint.y, 0, receiverPoint.x, receiverPoint.y, dockRadius);
+  dock.addColorStop(0, "rgba(255, 245, 203, 0.30)");
+  dock.addColorStop(0.46, "rgba(255, 245, 203, 0.12)");
+  dock.addColorStop(1, "rgba(255, 245, 203, 0)");
+  ctx.fillStyle = dock;
+  ctx.beginPath();
+  ctx.arc(receiverPoint.x, receiverPoint.y, dockRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.globalAlpha = alpha * 0.72;
+  ctx.strokeStyle = "rgba(244, 239, 224, 0.54)";
+  ctx.lineWidth = 1.45;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(ballPoint.x, ballPoint.y);
+  ctx.lineTo(receiverPoint.x, receiverPoint.y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawObservedOutcomePath(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: Pick<MomentZeroMoment, "outcome_sequence" | "reception_frame_id">,
+  frame: ReplayPayload["frames"][number],
+  phase: { outcome: number; resetFade: number; pulse: number }
+) {
+  const sequence = moment.outcome_sequence;
+  if (sequence.status !== "PASS" || frame.frame_id <= moment.reception_frame_id) return;
+  const pathEndFrameId = Math.min(frame.frame_id, sequence.end_frame_id);
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const points = replay.frames
+    .filter((item) => item.frame_id >= sequence.start_frame_id && item.frame_id <= pathEndFrameId)
+    .map((item) => item.entities.find((entity) => entity.entity_type === "ball"))
+    .filter((entity): entity is ReplayEntity => Boolean(entity))
+    .map((entity) => pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout));
+  if (points.length < 2) return;
+  const progress = clamp01((pathEndFrameId - sequence.start_frame_id) / Math.max(1, sequence.end_frame_id - sequence.start_frame_id));
+  const alpha = Math.max(phase.outcome, progress * 0.38) * phase.resetFade;
+  const start = points[0];
+  const end = points[points.length - 1];
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const trail = ctx.createLinearGradient(start.x, start.y, end.x, end.y);
+  trail.addColorStop(0, "rgba(216, 239, 227, 0)");
+  trail.addColorStop(0.42, "rgba(216, 239, 227, 0.26)");
+  trail.addColorStop(1, sequence.final_third_status === "PASS" ? "rgba(255, 245, 203, 0.70)" : "rgba(216, 239, 227, 0.50)");
+  ctx.strokeStyle = trail;
+  ctx.shadowColor = "rgba(216, 239, 227, 0.10)";
+  ctx.shadowBlur = 8 + 5 * phase.pulse;
+  ctx.lineWidth = 2.45;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point.x, point.y);
+    else ctx.lineTo(point.x, point.y);
+  });
+  ctx.stroke();
+
+  if (sequence.final_third_status === "PASS" && progress > 0.72) {
+    const endpoint = points[points.length - 1];
+    const halo = ctx.createRadialGradient(endpoint.x, endpoint.y, 0, endpoint.x, endpoint.y, 24 + 7 * phase.pulse);
+    halo.addColorStop(0, "rgba(255, 245, 203, 0.24)");
+    halo.addColorStop(0.54, "rgba(255, 245, 203, 0.10)");
+    halo.addColorStop(1, "rgba(255, 245, 203, 0)");
+    ctx.globalAlpha = alpha * 0.86;
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(endpoint.x, endpoint.y, 24 + 7 * phase.pulse, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawBall(
   ctx: CanvasRenderingContext2D,
   replay: ReplayPayload,
@@ -681,6 +790,8 @@ function highBypassPhase(progress: number) {
     pass: fadeWindow(progress, 0.16, 0.55),
     bypass: fadeWindow(progress, 0.43, 0.82),
     settle: fadeWindow(progress, 0.72, 0.94),
+    reception: fadeWindow(progress, 0.50, 0.70),
+    outcome: fadeWindow(progress, 0.74, 0.94),
     resetFade: 1 - fadeWindow(progress, 0.94, 1),
     pulse: 0.5 + 0.5 * Math.sin(progress * Math.PI * 2)
   };
@@ -864,7 +975,7 @@ function drawHighBypassBall(
   frame: ReplayPayload["frames"][number],
   phase: ReturnType<typeof highBypassPhase>
 ) {
-  const ballFrameId = frame.frame_id > moment.reception_frame_id ? moment.reception_frame_id : frame.frame_id;
+  const ballFrameId = frame.frame_id > moment.outcome_sequence.end_frame_id ? moment.outcome_sequence.end_frame_id : frame.frame_id;
   const ballFrame = replay.frames.find((item) => item.frame_id === ballFrameId) ?? frame;
   const ball = ballFrame.entities.find((entity) => entity.entity_type === "ball");
   if (!ball) return;
