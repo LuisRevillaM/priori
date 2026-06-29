@@ -373,6 +373,49 @@ body {
   color: #f5f1de;
 }
 
+.coachMomentFilters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  width: min(96vw, 980px);
+  color: rgba(245, 241, 222, 0.70);
+}
+
+.coachMomentFilters label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.coachMomentFilters span {
+  color: rgba(245, 241, 222, 0.48);
+  font-size: 11px;
+  font-weight: 720;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.coachMomentFilters select {
+  min-width: 0;
+  height: 38px;
+  border: 1px solid rgba(245, 241, 222, 0.16);
+  border-radius: 7px;
+  background: rgba(245, 241, 222, 0.075);
+  color: rgba(245, 241, 222, 0.88);
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.coachMomentFilters strong {
+  align-self: center;
+  color: rgba(245, 241, 222, 0.62);
+  font-size: 12px;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
 .coachCatalog {
   display: grid;
   grid-template-columns: minmax(0, 0.36fr) minmax(0, 0.64fr);
@@ -607,6 +650,15 @@ body {
   }
 
   .coachTrustControls strong {
+    white-space: normal;
+  }
+
+  .coachMomentFilters {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .coachMomentFilters strong {
     white-space: normal;
   }
 

@@ -63,13 +63,24 @@ export function CoachSurface() {
   const [result, setResult] = useState<CoachInterpretResponse | null>(null);
   const [activeInstances, setActiveInstances] = useState<CoachMomentPayload[]>([momentHighBypassEvidence]);
   const [activeInstanceIndex, setActiveInstanceIndex] = useState(0);
+  const [matchFilter, setMatchFilter] = useState("all");
+  const [teamFilter, setTeamFilter] = useState("all");
   const [activeCatalogId, setActiveCatalogId] = useState<string>(CATALOG_MOMENTS[0].id);
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [runId, setRunId] = useState(0);
   const [overlayMode, setOverlayMode] = useState<MomentOverlayMode>("clean");
   const [isLooking, setIsLooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const activePayload = activeInstances[activeInstanceIndex] ?? CATALOG_MOMENTS[0].payload;
+  const visibleInstances = useMemo(
+    () => filteredCatalogInstances(activeInstances, matchFilter, teamFilter, matches),
+    [activeInstances, matchFilter, teamFilter, matches]
+  );
+  const activePayload = visibleInstances[activeInstanceIndex] ?? visibleInstances[0] ?? activeInstances[0] ?? CATALOG_MOMENTS[0].payload;
+  const matchOptions = useMemo(() => catalogMatchOptions(activeInstances, matches), [activeInstances, matches]);
+  const teamOptions = useMemo(
+    () => catalogTeamOptions(activeInstances, matchFilter, matches),
+    [activeInstances, matchFilter, matches]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -95,6 +106,8 @@ export function CoachSurface() {
         if (next.status === "moment_found" && payloads.length > 0) {
           setActiveInstances(payloads);
           setActiveInstanceIndex(0);
+          setMatchFilter("all");
+          setTeamFilter("all");
           setActiveCatalogId(CATALOG_MOMENTS[0].id);
           setRunId((value) => value + 1);
         }
@@ -118,6 +131,8 @@ export function CoachSurface() {
       if (next.status === "moment_found" && payloads.length > 0) {
         setActiveInstances(payloads);
         setActiveInstanceIndex(0);
+        setMatchFilter("all");
+        setTeamFilter("all");
         setActiveCatalogId(catalogIdForMoment(next.moments[0]?.moment_id) ?? "");
         setRunId((value) => value + 1);
       }
@@ -139,6 +154,8 @@ export function CoachSurface() {
       if (next.status === "moment_found" && payloads.length > 0) {
         setActiveInstances(payloads);
         setActiveInstanceIndex(0);
+        setMatchFilter("all");
+        setTeamFilter("all");
         setActiveCatalogId(catalogIdForMoment(next.moments[0]?.moment_id) ?? "");
         setRunId((value) => value + 1);
       }
@@ -156,6 +173,8 @@ export function CoachSurface() {
     setError(null);
     setActiveInstances([moment.payload]);
     setActiveInstanceIndex(0);
+    setMatchFilter("all");
+    setTeamFilter("all");
     setActiveCatalogId(moment.id);
     setRunId((value) => value + 1);
     setIsLooking(true);
@@ -166,6 +185,8 @@ export function CoachSurface() {
       if (next.status === "moment_found" && payloads.length > 0) {
         setActiveInstances(payloads);
         setActiveInstanceIndex(0);
+        setMatchFilter("all");
+        setTeamFilter("all");
         setRunId((value) => value + 1);
       }
     } catch (caught) {
@@ -176,9 +197,22 @@ export function CoachSurface() {
   };
 
   const chooseInstance = (nextIndex: number) => {
-    const bounded = Math.max(0, Math.min(activeInstances.length - 1, nextIndex));
+    const bounded = Math.max(0, Math.min(visibleInstances.length - 1, nextIndex));
     if (bounded === activeInstanceIndex) return;
     setActiveInstanceIndex(bounded);
+    setRunId((value) => value + 1);
+  };
+
+  const chooseMatchFilter = (nextMatch: string) => {
+    setMatchFilter(nextMatch);
+    setTeamFilter("all");
+    setActiveInstanceIndex(0);
+    setRunId((value) => value + 1);
+  };
+
+  const chooseTeamFilter = (nextTeam: string) => {
+    setTeamFilter(nextTeam);
+    setActiveInstanceIndex(0);
     setRunId((value) => value + 1);
   };
 
@@ -199,16 +233,26 @@ export function CoachSurface() {
           <MomentTrustControls
             payload={activePayload}
             overlayMode={overlayMode}
-            instanceCount={activeInstances.length}
+            instanceCount={visibleInstances.length}
             instanceIndex={activeInstanceIndex}
             onInstanceChange={chooseInstance}
             onOverlayModeChange={setOverlayMode}
+          />
+          <MomentFilterControls
+            matchFilter={matchFilter}
+            teamFilter={teamFilter}
+            matchOptions={matchOptions}
+            teamOptions={teamOptions}
+            visibleCount={visibleInstances.length}
+            totalCount={activeInstances.length}
+            onMatchChange={chooseMatchFilter}
+            onTeamChange={chooseTeamFilter}
           />
         </div>
 
         <section className="coachCatalog" aria-label="Compiler-found moment catalog">
           <div className="coachCatalogHeader">
-            <span>Real moments in this match</span>
+            <span>Clean moments across matches</span>
             <strong>Compiler-found catalog</strong>
           </div>
           <div className="coachCatalogGrid">
@@ -291,6 +335,72 @@ function payloadsFromResponse(response: CoachInterpretResponse) {
     .map((moment) => moment.replay_payload)
     .filter((payload): payload is NonNullable<typeof payload> => Boolean(payload))
     .map((payload) => payload as unknown as CoachMomentPayload);
+}
+
+type FilterOption = {
+  value: string;
+  label: string;
+  count: number;
+};
+
+function filteredCatalogInstances(
+  payloads: CoachMomentPayload[],
+  matchFilter: string,
+  teamFilter: string,
+  matches: MatchSummary[]
+) {
+  return payloads.filter((payload) => {
+    if (matchFilter !== "all" && payload.moment.match_id !== matchFilter) return false;
+    if (teamFilter !== "all" && attackingTeamKey(payload, matches) !== teamFilter) return false;
+    return true;
+  });
+}
+
+function catalogMatchOptions(payloads: CoachMomentPayload[], matches: MatchSummary[]): FilterOption[] {
+  const counts = new Map<string, number>();
+  for (const payload of payloads) {
+    counts.set(payload.moment.match_id, (counts.get(payload.moment.match_id) ?? 0) + 1);
+  }
+  const options = [...counts.entries()]
+    .map(([matchId, count]) => ({
+      value: matchId,
+      label: matchLabel(matchId, matches),
+      count
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  return [{ value: "all", label: "All matches", count: payloads.length }, ...options];
+}
+
+function catalogTeamOptions(payloads: CoachMomentPayload[], matchFilter: string, matches: MatchSummary[]): FilterOption[] {
+  const scopedPayloads = matchFilter === "all" ? payloads : payloads.filter((payload) => payload.moment.match_id === matchFilter);
+  const counts = new Map<string, { label: string; count: number }>();
+  for (const payload of scopedPayloads) {
+    const key = attackingTeamKey(payload, matches);
+    const current = counts.get(key);
+    counts.set(key, {
+      label: attackingTeamLabel(payload, matches),
+      count: (current?.count ?? 0) + 1
+    });
+  }
+  const options = [...counts.entries()]
+    .map(([value, item]) => ({ value, label: item.label, count: item.count }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  return [{ value: "all", label: "All teams", count: scopedPayloads.length }, ...options];
+}
+
+function attackingTeamKey(payload: CoachMomentPayload, matches: MatchSummary[]) {
+  return attackingTeamLabel(payload, matches).toLowerCase();
+}
+
+function attackingTeamLabel(payload: CoachMomentPayload, matches: MatchSummary[]) {
+  const match = matches.find((item) => item.match_id === payload.moment.match_id);
+  const fallback = MATCH_CONTEXT_FALLBACKS[payload.moment.match_id];
+  return teamName(match, payload.moment.perspective_team_role, fallback);
+}
+
+function matchLabel(matchId: string, matches: MatchSummary[]) {
+  const match = matches.find((item) => item.match_id === matchId);
+  return match?.match_title ?? MATCH_CONTEXT_FALLBACKS[matchId]?.title ?? matchId;
 }
 
 function MomentContext({ payload, matches }: { payload: CoachMomentPayload; matches: MatchSummary[] }) {
@@ -376,6 +486,52 @@ function MomentTrustControls({
           Evidence overlay
         </button>
       </div>
+    </div>
+  );
+}
+
+function MomentFilterControls({
+  matchFilter,
+  teamFilter,
+  matchOptions,
+  teamOptions,
+  visibleCount,
+  totalCount,
+  onMatchChange,
+  onTeamChange
+}: {
+  matchFilter: string;
+  teamFilter: string;
+  matchOptions: FilterOption[];
+  teamOptions: FilterOption[];
+  visibleCount: number;
+  totalCount: number;
+  onMatchChange: (matchId: string) => void;
+  onTeamChange: (teamKey: string) => void;
+}) {
+  return (
+    <div className="coachMomentFilters" aria-label="Moment filters">
+      <label>
+        <span>Match</span>
+        <select value={matchFilter} onChange={(event) => onMatchChange(event.target.value)}>
+          {matchOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label} ({option.count})
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span>Team</span>
+        <select value={teamFilter} onChange={(event) => onTeamChange(event.target.value)}>
+          {teamOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label} ({option.count})
+            </option>
+          ))}
+        </select>
+      </label>
+      <strong>{visibleCount} of {totalCount} clean replays</strong>
     </div>
   );
 }
