@@ -483,17 +483,19 @@ function drawSupportRegion(
   const height = radius * 2;
   const pulse = 0.82 + 0.18 * phase.pulse;
   const observedSupport = hasObservedSupport(moment);
+  const centerX = (left + right) / 2;
+  const centerY = reference.y;
 
   ctx.save();
-  ctx.globalAlpha = alpha * (observedSupport ? 0.42 + 0.24 * phase.lonely : 0.64 + 0.34 * phase.lonely);
+  ctx.globalAlpha = alpha * (observedSupport ? 0.34 + 0.28 * phase.lonely : 0.48 + 0.42 * phase.lonely);
   ctx.beginPath();
   ctx.arc(reference.x, reference.y, radius, 0, Math.PI * 2);
   ctx.clip();
   ctx.shadowColor = observedSupport ? "rgba(216, 239, 227, 0.32)" : "rgba(214, 193, 122, 0.46)";
   ctx.shadowBlur = 18 + 18 * phase.lonely;
-  const glow = ctx.createRadialGradient(reference.x, reference.y, radius * 0.08, reference.x, reference.y, radius * (1.18 + 0.08 * phase.lonely));
-  glow.addColorStop(0, observedSupport ? "rgba(216, 239, 227, 0.16)" : PITCH_PALETTE.supportVoid);
-  glow.addColorStop(0.48, observedSupport ? "rgba(216, 239, 227, 0.30)" : PITCH_PALETTE.supportFill);
+  const glow = ctx.createRadialGradient(centerX, centerY, radius * 0.06, centerX, centerY, radius * (0.96 + 0.12 * phase.lonely));
+  glow.addColorStop(0, observedSupport ? "rgba(216, 239, 227, 0.14)" : "rgba(249, 246, 220, 0.28)");
+  glow.addColorStop(0.50, observedSupport ? "rgba(216, 239, 227, 0.24)" : "rgba(214, 193, 122, 0.24)");
   glow.addColorStop(1, "rgba(214, 193, 122, 0)");
   ctx.fillStyle = glow;
   ctx.fillRect(left, top, radius, height);
@@ -515,14 +517,13 @@ function drawSupportRegion(
   ctx.stroke();
 
   if (!observedSupport) {
-    ctx.globalAlpha = alpha * phase.lonely * 0.95;
-    const voidGradient = ctx.createRadialGradient(reference.x, reference.y, radius * 0.08, reference.x, reference.y, radius * 0.62);
-    voidGradient.addColorStop(0, "rgba(249, 246, 220, 0.16)");
-    voidGradient.addColorStop(0.42, "rgba(249, 246, 220, 0.08)");
+    ctx.globalAlpha = alpha * phase.lonely * 0.98;
+    const voidGradient = ctx.createRadialGradient(centerX, centerY, radius * 0.04, centerX, centerY, radius * 0.72);
+    voidGradient.addColorStop(0, "rgba(249, 246, 220, 0.28)");
+    voidGradient.addColorStop(0.42, "rgba(249, 246, 220, 0.11)");
     voidGradient.addColorStop(1, "rgba(249, 246, 220, 0)");
-    ctx.fillStyle = PITCH_PALETTE.supportVoid;
     ctx.beginPath();
-    ctx.arc((left + right) / 2, reference.y, radius * 0.58, 0, Math.PI * 2);
+    ctx.ellipse(centerX, centerY, radius * 0.56, radius * 0.76, 0, 0, Math.PI * 2);
     ctx.fillStyle = voidGradient;
     ctx.fill();
   }
@@ -544,6 +545,36 @@ function drawSupportArrivals(
   const alpha = phase.support * phase.resetFade;
   ctx.save();
   for (const entity of supportEntities) {
+    const trail = trackedEntityTrail(
+      replay,
+      entity.entity_id,
+      moment.release_frame_id,
+      Math.min(frame.frame_id, moment.support_window_end_frame_id),
+      layout,
+      22
+    );
+    if (trail.length > 1) {
+      const start = trail[0];
+      const end = trail[trail.length - 1];
+      const trailGradient = ctx.createLinearGradient(start.x, start.y, end.x, end.y);
+      trailGradient.addColorStop(0, "rgba(216, 239, 227, 0)");
+      trailGradient.addColorStop(0.58, "rgba(216, 239, 227, 0.22)");
+      trailGradient.addColorStop(1, "rgba(255, 245, 203, 0.66)");
+      ctx.globalAlpha = alpha * (0.42 + 0.30 * phase.lonely);
+      ctx.strokeStyle = trailGradient;
+      ctx.shadowColor = "rgba(216, 239, 227, 0.16)";
+      ctx.shadowBlur = 8;
+      ctx.lineWidth = 2.15 + 0.75 * phase.lonely;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      trail.forEach((point, index) => {
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      });
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
     const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
     const haloRadius = 28 + 10 * phase.lonely;
     const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, haloRadius);
@@ -565,6 +596,22 @@ function drawSupportArrivals(
     ctx.stroke();
   }
   ctx.restore();
+}
+
+function trackedEntityTrail(
+  replay: ReplayPayload,
+  entityId: string,
+  startFrameId: number,
+  endFrameId: number,
+  layout: ReturnType<typeof layoutPitch>,
+  maxPoints: number
+) {
+  const points = replay.frames
+    .filter((item) => item.frame_id >= startFrameId && item.frame_id <= endFrameId)
+    .map((item) => item.entities.find((entity) => entity.entity_id === entityId))
+    .filter((entity): entity is ReplayEntity => Boolean(entity))
+    .map((entity) => pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout));
+  return points.slice(Math.max(0, points.length - maxPoints));
 }
 
 function drawReceiverFocus(
@@ -632,8 +679,8 @@ function highBypassPhase(progress: number) {
   return {
     setup: fadeWindow(progress, 0.02, 0.18),
     pass: fadeWindow(progress, 0.16, 0.55),
-    bypass: fadeWindow(progress, 0.48, 0.78),
-    settle: fadeWindow(progress, 0.70, 0.92),
+    bypass: fadeWindow(progress, 0.43, 0.82),
+    settle: fadeWindow(progress, 0.72, 0.94),
     resetFade: 1 - fadeWindow(progress, 0.94, 1),
     pulse: 0.5 + 0.5 * Math.sin(progress * Math.PI * 2)
   };
@@ -703,7 +750,7 @@ function drawHighBypassPlayers(
     const isBypassed = bypassedIds.has(entity.entity_id);
     const isStory = isPasser || isReceiver || isBypassed;
     const radius = isReceiver ? 7.8 : isPasser ? 6.8 : isBypassed ? 5.9 : 4.2;
-    const alpha = isStory ? 0.98 : 0.54 - 0.06 * phase.bypass;
+    const alpha = isBypassed ? 0.78 - 0.18 * phase.bypass : isStory ? 0.98 : 0.54 - 0.06 * phase.bypass;
     ctx.save();
     ctx.globalAlpha = Math.max(0.12, alpha) * phase.resetFade;
     ctx.beginPath();
@@ -777,24 +824,34 @@ function drawBypassedOpponents(
   if (!receptionFrame) return;
   const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
   const bypassedIds = new Set<string>(moment.bypassed_player_ids);
-  const entities = receptionFrame.entities.filter((entity) => bypassedIds.has(entity.entity_id));
+  const entities = receptionFrame.entities
+    .filter((entity) => bypassedIds.has(entity.entity_id))
+    .sort((left, right) => {
+      const xOrder = moment.attacking_direction === -1 ? right.x_m - left.x_m : left.x_m - right.x_m;
+      return xOrder || left.y_m - right.y_m;
+    });
   if (entities.length === 0) return;
   ctx.save();
-  ctx.globalAlpha = phase.bypass * phase.resetFade;
-  for (const entity of entities) {
+  const revealAmount = phase.bypass * (entities.length + 0.65);
+  for (const [index, entity] of entities.entries()) {
+    const localReveal = clamp01(revealAmount - index);
+    if (localReveal <= 0) continue;
     const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
-    const haloRadius = 17 + 8 * phase.pulse;
+    const isCurrent = localReveal < 1;
+    const impact = isCurrent ? 1 : 0.45;
+    const haloRadius = 15 + 9 * localReveal + 7 * impact * phase.pulse;
     const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, haloRadius);
-    halo.addColorStop(0, "rgba(228, 207, 130, 0.22)");
+    halo.addColorStop(0, `rgba(228, 207, 130, ${0.16 + 0.15 * localReveal})`);
     halo.addColorStop(1, "rgba(228, 207, 130, 0)");
+    ctx.globalAlpha = localReveal * phase.resetFade;
     ctx.fillStyle = halo;
     ctx.beginPath();
     ctx.arc(point.x, point.y, haloRadius, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "rgba(228, 207, 130, 0.74)";
-    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = `rgba(228, 207, 130, ${0.42 + 0.34 * localReveal})`;
+    ctx.lineWidth = 1.35 + 0.85 * localReveal + 0.55 * impact * phase.pulse;
     ctx.beginPath();
-    ctx.arc(point.x, point.y, 8.6, 0, Math.PI * 2);
+    ctx.arc(point.x, point.y, 7.4 + 2.4 * localReveal + 1.2 * impact * phase.pulse, 0, Math.PI * 2);
     ctx.stroke();
   }
   ctx.restore();
@@ -844,4 +901,8 @@ function easeOutCubic(value: number) {
 
 function easeInOutCubic(value: number) {
   return value < 0.5 ? 4 * value * value * value : 1 - Math.pow(-2 * value + 2, 3) / 2;
+}
+
+function clamp01(value: number) {
+  return Math.max(0, Math.min(1, value));
 }
