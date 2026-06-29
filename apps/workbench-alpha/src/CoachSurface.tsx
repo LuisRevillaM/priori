@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { coachInterpret, fetchMatches } from "./api";
+import { coachProductClaimGate } from "./coachProductClaims";
 import {
   CoachMomentPitch,
   momentHighBypassEvidence,
@@ -25,6 +26,7 @@ const CATALOG_MOMENTS = [
     title: "High-bypass pass",
     query: "Show high-bypass passes",
     answer: "One pass bypassed 6 opponents. The ball reaches the final third.",
+    claimKind: "high_bypass_completed_pass",
     count: 5,
     payload: momentHighBypassEvidence,
     mode: "bypass"
@@ -34,6 +36,7 @@ const CATALOG_MOMENTS = [
     title: "Line break, outlet arrives",
     query: "Show line breaks with underneath support",
     answer: "Line broken. Support arrives underneath.",
+    claimKind: "line_break_with_underneath_outlet",
     count: 2,
     payload: momentLineBreakSupportedEvidence,
     mode: "supported"
@@ -43,6 +46,7 @@ const CATALOG_MOMENTS = [
     title: "Line break, outlet absent",
     query: "Show line breaks with no underneath outlet",
     answer: "Line broken. The outlet space stays empty.",
+    claimKind: "line_break_no_underneath_support",
     count: 3,
     payload: momentZeroEvidence,
     mode: "isolated"
@@ -120,6 +124,7 @@ export function CoachSurface() {
   };
 
   const chooseCatalogMoment = (moment: (typeof CATALOG_MOMENTS)[number]) => {
+    if (!coachProductClaimGate(moment.claimKind, moment.payload).passed) return;
     setQuery(moment.query);
     setResult(null);
     setError(null);
@@ -152,17 +157,13 @@ export function CoachSurface() {
           </div>
           <div className="coachCatalogGrid">
             {catalogMoments.map((moment) => (
-              <button
-                type="button"
+              <CatalogMomentTile
                 key={moment.id}
-                className={moment.id === activeCatalogId ? `coachMomentTile isActive ${moment.mode}` : `coachMomentTile ${moment.mode}`}
-                onClick={() => chooseCatalogMoment(moment)}
-                disabled={isLooking}
-              >
-                <span>Representative replay · {moment.count} found</span>
-                <strong>{moment.title}</strong>
-                <small>{moment.answer}</small>
-              </button>
+                moment={moment}
+                isActive={moment.id === activeCatalogId}
+                isLooking={isLooking}
+                onChoose={chooseCatalogMoment}
+              />
             ))}
           </div>
         </section>
@@ -191,6 +192,33 @@ export function CoachSurface() {
         </form>
       </section>
     </main>
+  );
+}
+
+function CatalogMomentTile({
+  moment,
+  isActive,
+  isLooking,
+  onChoose
+}: {
+  moment: (typeof CATALOG_MOMENTS)[number];
+  isActive: boolean;
+  isLooking: boolean;
+  onChoose: (moment: (typeof CATALOG_MOMENTS)[number]) => void;
+}) {
+  const claimGate = coachProductClaimGate(moment.claimKind, moment.payload);
+  return (
+    <button
+      type="button"
+      className={isActive ? `coachMomentTile isActive ${moment.mode}` : `coachMomentTile ${moment.mode}`}
+      onClick={() => onChoose(moment)}
+      disabled={isLooking || !claimGate.passed}
+      aria-disabled={isLooking || !claimGate.passed}
+    >
+      <span>{claimGate.passed ? `Representative replay · ${moment.count} found` : "Claim not backed"}</span>
+      <strong>{moment.title}</strong>
+      <small>{claimGate.passed ? moment.answer : "This replay is hidden until the full product claim is backed."}</small>
+    </button>
   );
 }
 

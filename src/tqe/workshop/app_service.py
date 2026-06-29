@@ -502,6 +502,33 @@ COACH_TEMPLATE_PROHIBITED_TERMS = {
     "smart",
     "worked",
 }
+COACH_PRODUCT_CLAIM_REQUIREMENTS = {
+    "line_break_no_underneath_support": {
+        "claim_id": "observed_line_break_without_underneath_outlet",
+        "requirements": [
+            {"path": "moment.requested_evidence.line_break_status", "equals": "PASS"},
+            {"path": "moment.requested_evidence.support_arrival_status", "equals": "FAIL"},
+            {"path": "moment.support_region.support_arrival_status", "equals": "FAIL"},
+        ],
+    },
+    "line_break_with_underneath_outlet": {
+        "claim_id": "observed_line_break_with_underneath_outlet",
+        "requirements": [
+            {"path": "moment.requested_evidence.line_break_status", "equals": "PASS"},
+            {"path": "moment.requested_evidence.support_arrival_status", "equals": "PASS"},
+            {"path": "moment.support_region.support_arrival_status", "equals": "PASS"},
+        ],
+    },
+    "high_bypass_completed_pass": {
+        "claim_id": "completed_high_bypass_pass_reached_final_third_and_retained",
+        "requirements": [
+            {"path": "moment.requested_evidence.evaluation_status", "equals": "PASS"},
+            {"path": "moment.opponents_bypassed_count", "gte": 5},
+            {"path": "moment.outcome_sequence.final_third_status", "equals": "PASS"},
+            {"path": "moment.possession_retention.status", "equals": "PASS"},
+        ],
+    },
+}
 
 
 def json_response(payload: Any) -> bytes:
@@ -748,6 +775,47 @@ def coach_template(key: str) -> str:
     return value
 
 
+def coach_product_claim_gate(kind: str, replay_payload: dict[str, Any]) -> dict[str, Any]:
+    spec = COACH_PRODUCT_CLAIM_REQUIREMENTS.get(kind)
+    if spec is None:
+        return {
+            "passed": False,
+            "kind": kind,
+            "claim_id": None,
+            "failures": [{"path": "kind", "reason": "claim_requirements_missing"}],
+        }
+    failures = []
+    for requirement in spec["requirements"]:
+        path = str(requirement["path"])
+        value = dotted_get(replay_payload, path)
+        if "equals" in requirement and value != requirement["equals"]:
+            failures.append({"path": path, "expected": requirement["equals"], "actual": value})
+        if "gte" in requirement:
+            try:
+                numeric = float(value)
+            except (TypeError, ValueError):
+                failures.append({"path": path, "expected_gte": requirement["gte"], "actual": value})
+                continue
+            if numeric < float(requirement["gte"]):
+                failures.append({"path": path, "expected_gte": requirement["gte"], "actual": value})
+    return {
+        "passed": not failures,
+        "kind": kind,
+        "claim_id": spec["claim_id"],
+        "failures": failures,
+    }
+
+
+def dotted_get(payload: dict[str, Any], path: str) -> Any:
+    current: Any = payload
+    for part in path.split("."):
+        if isinstance(current, dict) and part in current:
+            current = current[part]
+            continue
+        return None
+    return current
+
+
 def coach_search_executor() -> Any:
     global COACH_SEARCH_EXECUTOR
     if COACH_SEARCH_EXECUTOR is None:
@@ -905,6 +973,27 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
             )
             COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
             return response
+        replay_payload = coach_moment_payload(visual_kind)
+        product_claim_gate = coach_product_claim_gate(visual_kind, replay_payload)
+        audit["product_claim_gate"] = product_claim_gate
+        if not product_claim_gate["passed"]:
+            response = coach_cant_yet_response(
+                query=query,
+                display_answer=coach_template("understood_but_not_expressible.no_replay_surface"),
+                meaning_definition=meaning.meaning_definition,
+                interpretation_rules=list(meaning.interpretation_rules),
+                contract_hash=contract_hash,
+                gap={
+                    "kind": "product_claim_unbacked",
+                    "message": "The compiler found observed moments, but the representative replay does not back the full coach-facing product claim.",
+                    "claim_gate": product_claim_gate,
+                    "result_count": result_count,
+                    "plan_hash": plan_hash,
+                },
+                audit=audit,
+            )
+            COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
+            return response
         response = ok(
             {
                 "status": "moment_found",
@@ -921,7 +1010,7 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
                     {
                         "moment_id": visual_kind,
                         "result_count": result_count,
-                        "replay_payload": coach_moment_payload(visual_kind),
+                        "replay_payload": replay_payload,
                         "evidence_fields": list(contract.get("required_evidence", [])),
                     }
                 ],

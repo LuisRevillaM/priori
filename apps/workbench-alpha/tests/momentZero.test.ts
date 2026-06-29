@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import highBypassMoment from "../src/generated/moment-high-bypass.json";
 import supportedMoment from "../src/generated/moment-line-break-supported.json";
 import momentZero from "../src/generated/moment-zero.json";
+import { coachProductClaimGate } from "../src/coachProductClaims";
 import {
   isHighBypassPayload,
   momentZeroBallEvidenceFrameId,
@@ -84,5 +85,19 @@ assert.ok(highBypassMoment.visual_contract.prohibited_visual_claims.includes("de
 assert.ok(highBypassMoment.visual_contract.observed_outcome_sequence.includes("outcome_sequence.final_third_status"));
 assert.ok(highBypassMoment.visual_contract.observed_outcome_sequence.includes("outcome_sequence.progression_status"));
 assert.ok(highBypassMoment.visual_contract.observed_possession_retention.includes("possession_retention.status"));
+
+assert.equal(coachProductClaimGate("high_bypass_completed_pass", highBypassMoment).passed, true);
+const unretainedHighBypass = structuredClone(highBypassMoment);
+unretainedHighBypass.moment.possession_retention.status = "FAIL";
+const unretainedHighBypassGate = coachProductClaimGate("high_bypass_completed_pass", unretainedHighBypass);
+assert.equal(unretainedHighBypassGate.passed, false);
+assert.deepEqual(unretainedHighBypassGate.failures[0], {
+  path: "moment.possession_retention.status",
+  expected: "PASS",
+  actual: "FAIL"
+});
+
+assert.equal(coachProductClaimGate("line_break_with_underneath_outlet", supportedMoment).passed, true);
+assert.equal(coachProductClaimGate("line_break_no_underneath_support", momentZero).passed, true);
 
 console.log("moment zero tests passed");
