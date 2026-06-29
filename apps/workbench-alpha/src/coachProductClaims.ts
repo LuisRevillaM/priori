@@ -32,12 +32,11 @@ const PRODUCT_CLAIM_REQUIREMENTS: Record<string, { claimId: string; requirements
     ]
   },
   high_bypass_completed_pass: {
-    claimId: "completed_high_bypass_pass_reached_final_third_and_retained",
+    claimId: "completed_high_bypass_pass_with_provider_possession_visible",
     requirements: [
       { path: "moment.requested_evidence.evaluation_status", equals: "PASS" },
       { path: "moment.opponents_bypassed_count", gte: 5 },
-      { path: "moment.outcome_sequence.final_third_status", equals: "PASS" },
-      { path: "moment.possession_retention.status", equals: "PASS" }
+      { path: "moment.possession_retention.mode", equals: "raw_ball_possession_retention_after_reception" }
     ]
   }
 };

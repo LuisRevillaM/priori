@@ -89,6 +89,9 @@ RUN mkdir -p ./apps/workbench-alpha/src/generated
 COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-zero.json ./apps/workbench-alpha/src/generated/moment-zero.json
 COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-line-break-supported.json ./apps/workbench-alpha/src/generated/moment-line-break-supported.json
 COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-high-bypass.json ./apps/workbench-alpha/src/generated/moment-high-bypass.json
+COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-zero-catalog.json ./apps/workbench-alpha/src/generated/moment-zero-catalog.json
+COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-line-break-supported-catalog.json ./apps/workbench-alpha/src/generated/moment-line-break-supported-catalog.json
+COPY --from=frontend /app/apps/workbench-alpha/src/generated/moment-high-bypass-catalog.json ./apps/workbench-alpha/src/generated/moment-high-bypass-catalog.json
 RUN python -m pip install --upgrade pip \
     && python -m pip install -e . \
     && chmod +x /app/scripts/render-start.sh /app/scripts/provision-demo-data.py /app/scripts/bootstrap-hermes.sh

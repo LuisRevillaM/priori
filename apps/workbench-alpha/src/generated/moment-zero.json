@@ -177,12 +177,18 @@
       "frames": "data/canonical/v1/frames/match_id=J03WOH/period=firstHalf.parquet",
       "frames_sha256": "b527387019a83a5bcdcc9fd6ea9d57be70f1553de801803ed384d9c264b2bf8d",
       "positions": "data/canonical/v1/positions/match_id=J03WOH/period=firstHalf.parquet",
-      "positions_sha256": "d3b48f1d905a88a003e3faf4d9f9d174caca851e1101579e24c95abe8ba87d08"
+      "positions_sha256": "d3b48f1d905a88a003e3faf4d9f9d174caca851e1101579e24c95abe8ba87d08",
+      "raw_tracking": "data/raw/idsse/figshare-28196177-v1/J03WOH/tracking.xml",
+      "raw_tracking_sha256": "ec4dcf30200aad694dea263d5289485fcd0ca42badddaeb7c81f5cd5a4229d4f"
     },
     "end_frame_id": 41224,
     "frame_rate_hz": 25,
     "frames": [
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -373,6 +379,10 @@
         "timestamp_utc": "2022-08-26T16:52:47.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -563,6 +573,10 @@
         "timestamp_utc": "2022-08-26T16:52:47.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -753,6 +767,10 @@
         "timestamp_utc": "2022-08-26T16:52:47.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -943,6 +961,10 @@
         "timestamp_utc": "2022-08-26T16:52:47.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -1133,6 +1155,10 @@
         "timestamp_utc": "2022-08-26T16:52:47.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -1323,6 +1349,10 @@
         "timestamp_utc": "2022-08-26T16:52:47.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -1513,6 +1543,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -1703,6 +1737,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -1893,6 +1931,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -2083,6 +2125,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -2273,6 +2319,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -2463,6 +2513,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -2653,6 +2707,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -2843,6 +2901,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -3033,6 +3095,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -3223,6 +3289,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -3413,6 +3483,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -3603,6 +3677,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -3793,6 +3871,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -3983,6 +4065,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -4173,6 +4259,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -4363,6 +4453,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -4553,6 +4647,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -4743,6 +4841,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.680+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -4933,6 +5035,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.720+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -5123,6 +5229,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -5313,6 +5423,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -5503,6 +5617,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -5693,6 +5811,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -5883,6 +6005,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -6073,6 +6199,10 @@
         "timestamp_utc": "2022-08-26T16:52:48.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -6263,6 +6393,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -6453,6 +6587,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -6643,6 +6781,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -6833,6 +6975,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -7023,6 +7169,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -7213,6 +7363,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -7403,6 +7557,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -7593,6 +7751,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -7783,6 +7945,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -7973,6 +8139,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -8163,6 +8333,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -8353,6 +8527,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -8543,6 +8721,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -8733,6 +8915,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -8923,6 +9109,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -9113,6 +9303,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -9303,6 +9497,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -9493,6 +9691,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.680+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -9683,6 +9885,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.720+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -9873,6 +10079,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -10063,6 +10273,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -10253,6 +10467,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -10443,6 +10661,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -10633,6 +10855,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -10823,6 +11049,10 @@
         "timestamp_utc": "2022-08-26T16:52:49.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -11013,6 +11243,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -11203,6 +11437,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -11393,6 +11631,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -11583,6 +11825,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -11773,6 +12019,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -11963,6 +12213,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -12153,6 +12407,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -12343,6 +12601,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -12533,6 +12795,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -12723,6 +12989,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -12913,6 +13183,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -13103,6 +13377,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -13293,6 +13571,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -13483,6 +13765,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -13673,6 +13959,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -13863,6 +14153,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -14053,6 +14347,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -14243,6 +14541,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.680+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -14433,6 +14735,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.720+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -14623,6 +14929,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -14813,6 +15123,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -15003,6 +15317,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -15193,6 +15511,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -15383,6 +15705,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -15573,6 +15899,10 @@
         "timestamp_utc": "2022-08-26T16:52:50.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -15763,6 +16093,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -15953,6 +16287,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -16143,6 +16481,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -16333,6 +16675,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -16523,6 +16869,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -16713,6 +17063,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -16903,6 +17257,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -17093,6 +17451,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -17283,6 +17645,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -17473,6 +17839,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -17663,6 +18033,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -17853,6 +18227,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -18043,6 +18421,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -18233,6 +18615,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -18423,6 +18809,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -18613,6 +19003,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -18803,6 +19197,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -18993,6 +19391,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.680+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -19183,6 +19585,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.720+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -19373,6 +19779,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -19563,6 +19973,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -19753,6 +20167,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -19943,6 +20361,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -20133,6 +20555,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -20323,6 +20749,10 @@
         "timestamp_utc": "2022-08-26T16:52:51.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -20513,6 +20943,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -20703,6 +21137,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -20893,6 +21331,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -21083,6 +21525,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -21273,6 +21719,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -21463,6 +21913,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -21653,6 +22107,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -21843,6 +22301,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -22033,6 +22495,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -22223,6 +22689,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -22413,6 +22883,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -22603,6 +23077,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -22793,6 +23271,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -22983,6 +23465,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -23173,6 +23659,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -23363,6 +23853,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -23553,6 +24047,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -23743,6 +24241,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.680+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -23933,6 +24435,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.720+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -24123,6 +24629,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -24313,6 +24823,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -24503,6 +25017,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -24693,6 +25211,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -24883,6 +25405,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -25073,6 +25599,10 @@
         "timestamp_utc": "2022-08-26T16:52:52.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -25263,6 +25793,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -25453,6 +25987,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -25643,6 +26181,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -25833,6 +26375,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -26023,6 +26569,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -26213,6 +26763,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -26403,6 +26957,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -26593,6 +27151,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -26783,6 +27345,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -26973,6 +27539,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -27163,6 +27733,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -27353,6 +27927,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -27543,6 +28121,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -27733,6 +28315,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -27923,6 +28509,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "home"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -28113,6 +28703,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -28303,6 +28897,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -28493,6 +29091,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.680+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -28683,6 +29285,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.720+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -28873,6 +29479,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -29063,6 +29673,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -29253,6 +29867,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -29443,6 +30061,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -29633,6 +30255,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -29823,6 +30449,10 @@
         "timestamp_utc": "2022-08-26T16:52:53.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -30013,6 +30643,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -30203,6 +30837,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -30393,6 +31031,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -30583,6 +31225,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -30773,6 +31419,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -30963,6 +31613,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -31153,6 +31807,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -31343,6 +32001,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -31533,6 +32195,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -31723,6 +32389,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -31913,6 +32583,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -32103,6 +32777,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -32293,6 +32971,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -32483,6 +33165,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -32673,6 +33359,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -32863,6 +33553,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -33053,6 +33747,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -33243,6 +33941,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.680+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -33433,6 +34135,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.720+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -33623,6 +34329,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -33813,6 +34523,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -34003,6 +34717,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -34193,6 +34911,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -34383,6 +35105,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -34573,6 +35299,10 @@
         "timestamp_utc": "2022-08-26T16:52:54.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -34763,6 +35493,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -34953,6 +35687,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -35143,6 +35881,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -35333,6 +36075,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -35523,6 +36269,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -35713,6 +36463,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -35903,6 +36657,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -36093,6 +36851,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -36283,6 +37045,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -36473,6 +37239,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -36663,6 +37433,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -36853,6 +37627,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -37043,6 +37821,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -37233,6 +38015,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -37423,6 +38209,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -37613,6 +38403,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -37803,6 +38597,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -37993,6 +38791,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.680+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -38183,6 +38985,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.720+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -38373,6 +39179,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -38563,6 +39373,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -38753,6 +39567,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -38943,6 +39761,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -39133,6 +39955,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -39323,6 +40149,10 @@
         "timestamp_utc": "2022-08-26T16:52:55.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -39513,6 +40343,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -39703,6 +40537,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -39893,6 +40731,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -40083,6 +40925,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -40273,6 +41119,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -40463,6 +41313,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -40653,6 +41507,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -40843,6 +41701,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -41033,6 +41895,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -41223,6 +42089,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -41413,6 +42283,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -41603,6 +42477,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -41793,6 +42671,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -41983,6 +42865,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -42173,6 +43059,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -42363,6 +43253,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -42553,6 +43447,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -42743,6 +43641,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.680+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -42933,6 +43835,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.720+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -43123,6 +44029,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -43313,6 +44223,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -43503,6 +44417,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -43693,6 +44611,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -43883,6 +44805,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -44073,6 +44999,10 @@
         "timestamp_utc": "2022-08-26T16:52:56.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -44263,6 +45193,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -44453,6 +45387,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -44643,6 +45581,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -44833,6 +45775,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -45023,6 +45969,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -45213,6 +46163,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -45403,6 +46357,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -45593,6 +46551,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": true,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -45783,6 +46745,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -45973,6 +46939,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -46163,6 +47133,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -46353,6 +47327,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -46543,6 +47521,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -46733,6 +47715,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -46923,6 +47909,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -47113,6 +48103,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -47303,6 +48297,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -47493,6 +48491,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.680+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -47683,6 +48685,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.720+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -47873,6 +48879,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.760+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -48063,6 +49073,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.800+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -48253,6 +49267,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.840+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -48443,6 +49461,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.880+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -48633,6 +49655,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.920+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -48823,6 +49849,10 @@
         "timestamp_utc": "2022-08-26T16:52:57.960+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -49013,6 +50043,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.000+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -49203,6 +50237,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.040+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -49393,6 +50431,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.080+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -49583,6 +50625,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.120+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -49773,6 +50819,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.160+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -49963,6 +51013,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.200+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -50153,6 +51207,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.240+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -50343,6 +51401,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.280+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -50533,6 +51595,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.320+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -50723,6 +51789,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.360+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -50913,6 +51983,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.400+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -51103,6 +52177,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.440+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -51293,6 +52371,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.480+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -51483,6 +52565,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.520+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -51673,6 +52759,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.560+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -51863,6 +52953,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.600+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",
@@ -52053,6 +53147,10 @@
         "timestamp_utc": "2022-08-26T16:52:58.640+00:00"
       },
       {
+        "ball_state": {
+          "ball_alive": false,
+          "possession_team_role": "away"
+        },
         "entities": [
           {
             "entity_id": "DFL-OBJ-00003X",

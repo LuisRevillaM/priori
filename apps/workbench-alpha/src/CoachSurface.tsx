@@ -25,7 +25,7 @@ const CATALOG_MOMENTS = [
     id: "high-bypass",
     title: "High-bypass pass",
     query: "Show high-bypass passes",
-    answer: "One pass bypassed 6 opponents. The ball reaches the final third.",
+    answer: "Completed passes bypassed multiple opponents.",
     claimKind: "high_bypass_completed_pass",
     count: 5,
     payload: momentHighBypassEvidence,
@@ -61,13 +61,15 @@ export function CoachSurface() {
   const catalogMoments = useMemo(() => CATALOG_MOMENTS, []);
   const [query, setQuery] = useState(DEFAULT_QUERY);
   const [result, setResult] = useState<CoachInterpretResponse | null>(null);
-  const [activePayload, setActivePayload] = useState<CoachMomentPayload>(momentHighBypassEvidence);
+  const [activeInstances, setActiveInstances] = useState<CoachMomentPayload[]>([momentHighBypassEvidence]);
+  const [activeInstanceIndex, setActiveInstanceIndex] = useState(0);
   const [activeCatalogId, setActiveCatalogId] = useState<string>(CATALOG_MOMENTS[0].id);
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [runId, setRunId] = useState(0);
   const [overlayMode, setOverlayMode] = useState<MomentOverlayMode>("clean");
   const [isLooking, setIsLooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const activePayload = activeInstances[activeInstanceIndex] ?? CATALOG_MOMENTS[0].payload;
 
   useEffect(() => {
     let cancelled = false;
@@ -90,9 +92,10 @@ export function CoachSurface() {
     try {
       const next = await coachInterpret({ query });
       setResult(next);
-      const payload = next.moments[0]?.replay_payload;
-      if (next.status === "moment_found" && payload) {
-        setActivePayload(payload as unknown as CoachMomentPayload);
+      const payloads = payloadsFromResponse(next);
+      if (next.status === "moment_found" && payloads.length > 0) {
+        setActiveInstances(payloads);
+        setActiveInstanceIndex(0);
         setActiveCatalogId(catalogIdForMoment(next.moments[0]?.moment_id) ?? "");
         setRunId((value) => value + 1);
       }
@@ -110,9 +113,10 @@ export function CoachSurface() {
     try {
       const next = await coachInterpret({ query: example });
       setResult(next);
-      const payload = next.moments[0]?.replay_payload;
-      if (next.status === "moment_found" && payload) {
-        setActivePayload(payload as unknown as CoachMomentPayload);
+      const payloads = payloadsFromResponse(next);
+      if (next.status === "moment_found" && payloads.length > 0) {
+        setActiveInstances(payloads);
+        setActiveInstanceIndex(0);
         setActiveCatalogId(catalogIdForMoment(next.moments[0]?.moment_id) ?? "");
         setRunId((value) => value + 1);
       }
@@ -128,8 +132,17 @@ export function CoachSurface() {
     setQuery(moment.query);
     setResult(null);
     setError(null);
-    setActivePayload(moment.payload);
+    setActiveInstances([moment.payload]);
+    setActiveInstanceIndex(0);
     setActiveCatalogId(moment.id);
+    setRunId((value) => value + 1);
+    void chooseExample(moment.query);
+  };
+
+  const chooseInstance = (nextIndex: number) => {
+    const bounded = Math.max(0, Math.min(activeInstances.length - 1, nextIndex));
+    if (bounded === activeInstanceIndex) return;
+    setActiveInstanceIndex(bounded);
     setRunId((value) => value + 1);
   };
 
@@ -147,7 +160,14 @@ export function CoachSurface() {
         <div className="coachTheater" aria-label="Observed football moment preview">
           <MomentContext payload={activePayload} matches={matches} />
           <CoachMomentPitch key={`${runId}-${overlayMode}`} payload={activePayload} overlayMode={overlayMode} />
-          <MomentTrustControls payload={activePayload} overlayMode={overlayMode} onOverlayModeChange={setOverlayMode} />
+          <MomentTrustControls
+            payload={activePayload}
+            overlayMode={overlayMode}
+            instanceCount={activeInstances.length}
+            instanceIndex={activeInstanceIndex}
+            onInstanceChange={chooseInstance}
+            onOverlayModeChange={setOverlayMode}
+          />
         </div>
 
         <section className="coachCatalog" aria-label="Compiler-found moment catalog">
@@ -215,7 +235,7 @@ function CatalogMomentTile({
       disabled={isLooking || !claimGate.passed}
       aria-disabled={isLooking || !claimGate.passed}
     >
-      <span>{claimGate.passed ? `Representative replay · ${moment.count} found` : "Claim not backed"}</span>
+      <span>{claimGate.passed ? `${moment.count} found · click to browse` : "Claim not backed"}</span>
       <strong>{moment.title}</strong>
       <small>{claimGate.passed ? moment.answer : "This replay is hidden until the full product claim is backed."}</small>
     </button>
@@ -227,6 +247,14 @@ function catalogIdForMoment(momentId: string | undefined) {
   if (momentId === "line_break_no_underneath_support") return "line-break-isolated";
   if (momentId === "high_bypass_completed_pass") return "high-bypass";
   return null;
+}
+
+function payloadsFromResponse(response: CoachInterpretResponse) {
+  if (response.status !== "moment_found") return [];
+  return response.moments
+    .map((moment) => moment.replay_payload)
+    .filter((payload): payload is NonNullable<typeof payload> => Boolean(payload))
+    .map((payload) => payload as unknown as CoachMomentPayload);
 }
 
 function MomentContext({ payload, matches }: { payload: CoachMomentPayload; matches: MatchSummary[] }) {
@@ -253,18 +281,43 @@ function MomentContext({ payload, matches }: { payload: CoachMomentPayload; matc
 function MomentTrustControls({
   payload,
   overlayMode,
+  instanceCount,
+  instanceIndex,
+  onInstanceChange,
   onOverlayModeChange
 }: {
   payload: CoachMomentPayload;
   overlayMode: MomentOverlayMode;
+  instanceCount: number;
+  instanceIndex: number;
+  onInstanceChange: (index: number) => void;
   onOverlayModeChange: (mode: MomentOverlayMode) => void;
 }) {
   const retention = possessionRetention(payload);
   return (
     <div className="coachTrustControls" aria-label="Replay inspection controls">
       <div>
-        <span>Follow-through</span>
+        <span>Possession feed</span>
         <strong>{retentionCopy(retention)}</strong>
+      </div>
+      <div className="coachInstanceControls" aria-label="Found moment browser">
+        <button
+          type="button"
+          onClick={() => onInstanceChange(instanceIndex - 1)}
+          disabled={instanceIndex <= 0}
+          aria-label="Previous found moment"
+        >
+          Previous
+        </button>
+        <span>{instanceCount > 0 ? `${instanceIndex + 1} of ${instanceCount}` : "No replay"}</span>
+        <button
+          type="button"
+          onClick={() => onInstanceChange(instanceIndex + 1)}
+          disabled={instanceIndex >= instanceCount - 1}
+          aria-label="Next found moment"
+        >
+          Next
+        </button>
       </div>
       <div className="coachOverlayToggle" role="group" aria-label="Replay overlay mode">
         <button
@@ -294,9 +347,9 @@ function retentionCopy(retention: Record<string, unknown> | null) {
   if (!retention) return "Eight-second replay after reception.";
   const seconds = Number(retention.observed_seconds_after_reception ?? retention.required_retention_seconds ?? 0);
   const rounded = Number.isFinite(seconds) && seconds > 0 ? `${seconds.toFixed(seconds % 1 === 0 ? 0 : 1)}s` : "the follow-through";
-  if (retention.status === "PASS") return `Same team retained possession for ${rounded} after reception.`;
-  if (retention.status === "FAIL") return `Possession changed during ${rounded} after reception.`;
-  return "Possession retention is unknown in this replay.";
+  if (retention.status === "PASS") return `Provider possession stays with the same team for ${rounded}.`;
+  if (retention.status === "FAIL") return `Provider possession changes during ${rounded}.`;
+  return "Provider possession is unknown in this replay.";
 }
 
 function teamName(match: MatchSummary | undefined, role: string, fallback: { home: string; away: string } | undefined) {

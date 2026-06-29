@@ -72,6 +72,9 @@ LINE_BREAK_SUPPORT_RESPONSE_PLAN_PATH = Path("config/query-plans/line_break_supp
 MOMENT_ZERO_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-zero.json")
 MOMENT_LINE_BREAK_SUPPORTED_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-line-break-supported.json")
 MOMENT_HIGH_BYPASS_PAYLOAD_PATH = Path("apps/workbench-alpha/src/generated/moment-high-bypass.json")
+MOMENT_ZERO_CATALOG_PATH = Path("apps/workbench-alpha/src/generated/moment-zero-catalog.json")
+MOMENT_LINE_BREAK_SUPPORTED_CATALOG_PATH = Path("apps/workbench-alpha/src/generated/moment-line-break-supported-catalog.json")
+MOMENT_HIGH_BYPASS_CATALOG_PATH = Path("apps/workbench-alpha/src/generated/moment-high-bypass-catalog.json")
 DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", "/Users/luisrevilla/.hermes-priori"))
 HERMES_DB = HERMES_HOME / "state.db"
@@ -471,7 +474,7 @@ COACH_SUGGESTIONS = [
 COACH_DISPLAY_TEMPLATES = {
     "moment_found.line_break_no_underneath_support": "Line broken. The outlet space stays empty.",
     "moment_found.line_break_with_underneath_outlet": "Line broken. Support arrives underneath.",
-    "moment_found.high_bypass_completed_pass": "One completed pass bypassed multiple opponents. The ball reaches the final third.",
+    "moment_found.high_bypass_completed_pass": "Completed passes bypassed multiple opponents.",
     "no_moments_found.line_break_no_underneath_support": "In this match, that line-break moment did not appear.",
     "no_moments_found.line_break_with_two_underneath_outlets": "In this match, no line break had two underneath outlets.",
     "no_moments_found.line_break_with_underneath_outlet": "In this match, that supported line-break moment did not appear.",
@@ -491,6 +494,7 @@ COACH_TEMPLATE_PROHIBITED_TERMS = {
     "better",
     "caused",
     "caught out",
+    "cleanly",
     "dangerous",
     "decided",
     "effective",
@@ -520,12 +524,11 @@ COACH_PRODUCT_CLAIM_REQUIREMENTS = {
         ],
     },
     "high_bypass_completed_pass": {
-        "claim_id": "completed_high_bypass_pass_reached_final_third_and_retained",
+        "claim_id": "completed_high_bypass_pass_with_provider_possession_visible",
         "requirements": [
             {"path": "moment.requested_evidence.evaluation_status", "equals": "PASS"},
             {"path": "moment.opponents_bypassed_count", "gte": 5},
-            {"path": "moment.outcome_sequence.final_third_status", "equals": "PASS"},
-            {"path": "moment.possession_retention.status", "equals": "PASS"},
+            {"path": "moment.possession_retention.mode", "equals": "raw_ball_possession_retention_after_reception"},
         ],
     },
 }
@@ -973,8 +976,27 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
             )
             COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
             return response
-        replay_payload = coach_moment_payload(visual_kind)
-        product_claim_gate = coach_product_claim_gate(visual_kind, replay_payload)
+        catalog_replay_payloads = coach_moment_payloads(visual_kind)
+        replay_payloads = catalog_replay_payloads[:result_count]
+        product_claim_gates = [
+            coach_product_claim_gate(visual_kind, replay_payload)
+            for replay_payload in replay_payloads
+        ]
+        product_claim_gate = {
+            "passed": bool(product_claim_gates) and all(gate["passed"] for gate in product_claim_gates),
+            "kind": visual_kind,
+            "claim_id": product_claim_gates[0]["claim_id"] if product_claim_gates else None,
+            "payload_count": len(replay_payloads),
+            "catalog_payload_count": len(catalog_replay_payloads),
+            "expected_result_count": result_count,
+            "returned_count_matches_result_count": len(replay_payloads) == result_count,
+            "catalog_count_matches_result_count": len(catalog_replay_payloads) == result_count,
+            "failures": [
+                {"payload_index": index, "failures": gate["failures"]}
+                for index, gate in enumerate(product_claim_gates)
+                if not gate["passed"]
+            ],
+        }
         audit["product_claim_gate"] = product_claim_gate
         if not product_claim_gate["passed"]:
             response = coach_cant_yet_response(
@@ -994,6 +1016,15 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
             )
             COACH_RESPONSE_CACHE[contract_hash] = deepcopy(response)
             return response
+        response_moments = [
+            {
+                "moment_id": visual_kind,
+                "result_count": result_count,
+                "replay_payload": replay_payload,
+                "evidence_fields": list(contract.get("required_evidence", [])),
+            }
+            for replay_payload in replay_payloads
+        ]
         response = ok(
             {
                 "status": "moment_found",
@@ -1006,14 +1037,7 @@ def coach_interpret_request(payload: dict[str, Any], *, output_root: Path = DEFA
                 "contract_hash": contract_hash,
                 "plan_hash": plan_hash,
                 "result_count": result_count,
-                "moments": [
-                    {
-                        "moment_id": visual_kind,
-                        "result_count": result_count,
-                        "replay_payload": replay_payload,
-                        "evidence_fields": list(contract.get("required_evidence", [])),
-                    }
-                ],
+                "moments": response_moments,
                 "gap": None,
                 "audit": audit,
             }
@@ -1251,6 +1275,23 @@ def coach_moment_payload(kind: str) -> dict[str, Any]:
     if not path.exists():
         return {}
     return read_json(path)
+
+
+def coach_moment_payloads(kind: str) -> list[dict[str, Any]]:
+    if kind == "line_break_with_underneath_outlet":
+        catalog_path = MOMENT_LINE_BREAK_SUPPORTED_CATALOG_PATH
+    elif kind == "high_bypass_completed_pass":
+        catalog_path = MOMENT_HIGH_BYPASS_CATALOG_PATH
+    else:
+        catalog_path = MOMENT_ZERO_CATALOG_PATH
+    path = REPO_ROOT / catalog_path
+    if path.exists():
+        payload = read_json(path)
+        moments = payload.get("moments") if isinstance(payload, dict) else None
+        if isinstance(moments, list):
+            return [moment for moment in moments if isinstance(moment, dict)]
+    fallback = coach_moment_payload(kind)
+    return [fallback] if fallback else []
 
 
 def needs_support_clarification(text: str, clarifications: list[str]) -> bool:

@@ -27,6 +27,8 @@ from tqe.query.ball_side_block_shift import stream_ball_state  # noqa: E402
 
 PLAN_PATH = REPO_ROOT / "config/query-plans/q3_receiver_second_line_no_underneath_support.experimental.v1.json"
 OUT_PATH = REPO_ROOT / "apps/workbench-alpha/src/generated/moment-zero.json"
+CATALOG_OUT_PATH = REPO_ROOT / "apps/workbench-alpha/src/generated/moment-zero-catalog.json"
+PREFERRED_REPRESENTATIVE_RESULT_ID = "99a17527b542b7a3"
 FRAME_RATE_HZ = 25
 PITCH = {"length_m": 105.0, "width_m": 68.0, "coordinate_contract": "centered_metres"}
 
@@ -36,15 +38,71 @@ def main() -> None:
     raw_root = Path(os.environ.get("TQE_RAW_ROOT", "data/raw/idsse/figshare-28196177-v1"))
     document_payload = json.loads(PLAN_PATH.read_text(encoding="utf-8"))
     bound_plan = bind_document(TacticalQueryDocument.model_validate(document_payload))
-    execution = TacticalQueryExecutor().execute(bound_plan)
+    execution = TacticalQueryExecutor(canonical_root=canonical_root, raw_root=raw_root).execute(bound_plan)
     rows = execution_result_rows(execution)
-    moment = next(
+    candidates = [
         row
         for row in rows
         if row["requested_evidence"].get("support_arrival_status") == "FAIL"
         and row["requested_evidence"].get("line_break_status") == "PASS"
         and row["requested_evidence"].get("coverage_status") == "COMPLETE"
+    ]
+    if not candidates:
+        raise RuntimeError("No line-break-without-underneath-outlet candidates found.")
+    source_plan = {
+        "path": str(PLAN_PATH.relative_to(REPO_ROOT)),
+        "document_hash": stable_hash(document_payload),
+        "plan_id": bound_plan.plan_id,
+    }
+    payloads = [
+        payload_from_moment(moment, canonical_root=canonical_root, raw_root=raw_root, source_plan=source_plan)
+        for moment in sorted(candidates, key=lambda row: int(row["anchor_frame_id"]))
+    ]
+    payload = next(
+        (
+            candidate
+            for candidate in payloads
+            if candidate["moment"]["result_id"] == PREFERRED_REPRESENTATIVE_RESULT_ID
+        ),
+        payloads[0],
     )
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OUT_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    CATALOG_OUT_PATH.write_text(
+        json.dumps(
+            {
+                "schema_version": "coach_moment_catalog.line_break_no_underneath_support.v0",
+                "moment_kind": "line_break_no_underneath_support",
+                "count": len(payloads),
+                "moments": payloads,
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    print(
+        json.dumps(
+            {
+                "path": str(OUT_PATH.relative_to(REPO_ROOT)),
+                "catalog_path": str(CATALOG_OUT_PATH.relative_to(REPO_ROOT)),
+                "result_id": payload["moment"]["result_id"],
+                "frame_count": len(payload["replay"]["frames"]),
+                "catalog_count": len(payloads),
+            },
+            sort_keys=True,
+        )
+    )
+
+
+def payload_from_moment(
+    moment: dict[str, Any],
+    *,
+    canonical_root: Path,
+    raw_root: Path,
+    source_plan: dict[str, Any],
+) -> dict[str, Any]:
     evidence = moment["requested_evidence"]
     release_frame_id = int(evidence["physical_release_frame_id"])
     reception_frame_id = int(evidence["controlled_reception_frame_id"])
@@ -57,6 +115,7 @@ def main() -> None:
         period=str(moment["period"]),
         start_frame_id=start_frame_id,
         end_frame_id=end_frame_id,
+        raw_root=raw_root,
     )
     receiver_id = str(evidence["receiver_id"])
     passer_id = pass_actor_ids(str(evidence["pass_episode_id"]))[0]
@@ -84,11 +143,7 @@ def main() -> None:
     )
     payload = {
         "schema_version": "moment_zero.line_break_no_underneath_support.v0",
-        "source_plan": {
-            "path": str(PLAN_PATH.relative_to(REPO_ROOT)),
-            "document_hash": stable_hash(document_payload),
-            "plan_id": bound_plan.plan_id,
-        },
+        "source_plan": source_plan,
         "moment": {
             "result_id": moment["result_id"],
             "classification": moment["classification"],
@@ -160,16 +215,27 @@ def main() -> None:
             ],
         },
     }
-    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUT_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({"path": str(OUT_PATH.relative_to(REPO_ROOT)), "result_id": moment["result_id"], "frame_count": len(replay["frames"])}, sort_keys=True))
+    return payload
 
 
-def replay_window(*, canonical_root: Path, match_id: str, period: str, start_frame_id: int, end_frame_id: int) -> dict[str, Any]:
+def replay_window(
+    *,
+    canonical_root: Path,
+    match_id: str,
+    period: str,
+    start_frame_id: int,
+    end_frame_id: int,
+    raw_root: Path | None = None,
+) -> dict[str, Any]:
     frame_path = period_parquet_path(canonical_root / "frames" / f"match_id={match_id}", period)
     position_path = period_parquet_path(canonical_root / "positions" / f"match_id={match_id}", period)
     frames = filter_frame_window(pq.ParquetFile(frame_path).read(), start_frame_id, end_frame_id)
     positions = filter_frame_window(pq.ParquetFile(position_path).read(), start_frame_id, end_frame_id)
+    ball_state_by_frame = (
+        replay_ball_state_by_frame(raw_root=raw_root, match_id=match_id, period=period, start_frame_id=start_frame_id, end_frame_id=end_frame_id)
+        if raw_root is not None
+        else {}
+    )
     positions_by_frame: dict[int, list[dict[str, Any]]] = {}
     for row in positions.to_pylist():
         positions_by_frame.setdefault(int(row["frame_id"]), []).append(
@@ -189,6 +255,7 @@ def replay_window(*, canonical_root: Path, match_id: str, period: str, start_fra
             {
                 "frame_id": frame_id,
                 "timestamp_utc": frame.get("timestamp_utc"),
+                "ball_state": ball_state_by_frame.get(frame_id),
                 "entities": positions_by_frame.get(frame_id, []),
             }
         )
@@ -210,8 +277,44 @@ def replay_window(*, canonical_root: Path, match_id: str, period: str, start_fra
             "positions": canonical_source_id(position_path, canonical_root),
             "frames_sha256": sha256_file(frame_path),
             "positions_sha256": sha256_file(position_path),
+            **(raw_tracking_source(raw_root, match_id) if raw_root is not None else {}),
         },
         "frames": replay_frames,
+    }
+
+
+def replay_ball_state_by_frame(
+    *,
+    raw_root: Path,
+    match_id: str,
+    period: str,
+    start_frame_id: int,
+    end_frame_id: int,
+) -> dict[int, dict[str, Any]]:
+    raw_tracking = raw_root / match_id / "tracking.xml"
+    if not raw_tracking.exists():
+        return {}
+    ball_state = stream_ball_state(raw_tracking, period)
+    window = ball_state[(ball_state.frame_id >= start_frame_id) & (ball_state.frame_id <= end_frame_id)]
+    states: dict[int, dict[str, Any]] = {}
+    for row in window.itertuples(index=False):
+        possession_team_role = getattr(row, "possession_team_role", None)
+        states[int(row.frame_id)] = {
+            "ball_alive": bool(getattr(row, "ball_alive", False)),
+            "possession_team_role": None if pd.isna(possession_team_role) else str(possession_team_role),
+        }
+    return states
+
+
+def raw_tracking_source(raw_root: Path | None, match_id: str) -> dict[str, str]:
+    if raw_root is None:
+        return {}
+    raw_tracking = raw_root / match_id / "tracking.xml"
+    if not raw_tracking.exists():
+        return {}
+    return {
+        "raw_tracking": str(Path("data/raw/idsse/figshare-28196177-v1") / match_id / "tracking.xml"),
+        "raw_tracking_sha256": sha256_file(raw_tracking),
     }
 
 

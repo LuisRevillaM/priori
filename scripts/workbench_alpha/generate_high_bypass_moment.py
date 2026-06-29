@@ -31,6 +31,7 @@ from tqe.runtime.ir import TacticalQueryDocument, stable_hash  # noqa: E402
 from tqe.runtime.pass_bypass import attack_x_sign_for  # noqa: E402
 
 OUT_PATH = REPO_ROOT / "apps/workbench-alpha/src/generated/moment-high-bypass.json"
+CATALOG_OUT_PATH = REPO_ROOT / "apps/workbench-alpha/src/generated/moment-high-bypass-catalog.json"
 PLAN_DIR = REPO_ROOT / "generated/workbench-alpha-moment-plans"
 TARGET_ID = "high_bypass_completed_pass"
 HIGH_BYPASS_DEFINITION = (
@@ -56,29 +57,45 @@ def main() -> None:
     ]
     if not candidates:
         raise RuntimeError("High-bypass contract compiled but returned no candidate rows.")
-    moment = sorted(
+    source_plan = {
+        "path": str((PLAN_DIR / f"{TARGET_ID}.json").relative_to(REPO_ROOT)),
+        "document_hash": stable_hash(plan_payload),
+        "plan_id": bound_plan.plan_id,
+    }
+    sorted_candidates = sorted(
         candidates,
         key=lambda row: high_bypass_candidate_sort_key(row, raw_root=raw_root),
-    )[0]
-    payload = payload_from_moment(
-        moment,
-        canonical_root=canonical_root,
-        raw_root=raw_root,
-        source_plan={
-            "path": str((PLAN_DIR / f"{TARGET_ID}.json").relative_to(REPO_ROOT)),
-            "document_hash": stable_hash(plan_payload),
-            "plan_id": bound_plan.plan_id,
-        },
     )
+    payloads = [
+        payload_from_moment(moment, canonical_root=canonical_root, raw_root=raw_root, source_plan=source_plan)
+        for moment in sorted_candidates
+    ]
+    payload = payloads[0]
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    CATALOG_OUT_PATH.write_text(
+        json.dumps(
+            {
+                "schema_version": "coach_moment_catalog.high_bypass_completed_pass.v0",
+                "moment_kind": "high_bypass_completed_pass",
+                "count": len(payloads),
+                "moments": payloads,
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(
         json.dumps(
             {
                 "path": str(OUT_PATH.relative_to(REPO_ROOT)),
-                "result_id": moment["result_id"],
+                "catalog_path": str(CATALOG_OUT_PATH.relative_to(REPO_ROOT)),
+                "result_id": payload["moment"]["result_id"],
                 "frame_count": len(payload["replay"]["frames"]),
                 "opponents_bypassed_count": payload["moment"]["opponents_bypassed_count"],
+                "catalog_count": len(payloads),
             },
             sort_keys=True,
         )
@@ -138,6 +155,7 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_roo
         period=str(moment["period"]),
         start_frame_id=start_frame_id,
         end_frame_id=end_frame_id,
+        raw_root=raw_root,
     )
     orientation_rows = pd.read_parquet(canonical_root / "orientation.parquet")
     attacking_direction = attack_x_sign_for(

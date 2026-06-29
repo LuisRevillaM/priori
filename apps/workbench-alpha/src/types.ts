@@ -222,6 +222,10 @@ export type ReplayEntity = {
 export type ReplayFrame = {
   frame_id: number;
   timestamp_utc?: string | null;
+  ball_state?: {
+    ball_alive: boolean;
+    possession_team_role?: string | null;
+  } | null;
   entities: ReplayEntity[];
 };
 

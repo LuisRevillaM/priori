@@ -32,7 +32,10 @@ const PITCH_PALETTE = {
   supportFill: "rgba(214, 193, 122, 0.38)",
   supportVoid: "rgba(249, 246, 220, 0.18)",
   pass: "#f2e5bd",
-  lineBreak: "#e4cf82"
+  lineBreak: "#e4cf82",
+  possessionAttack: "rgba(216, 239, 227, 0.78)",
+  possessionDefense: "rgba(238, 184, 170, 0.76)",
+  possessionUnknown: "rgba(245, 241, 222, 0.48)"
 } as const;
 
 const TOTAL_MS = 10000;
@@ -174,6 +177,7 @@ function renderMoment(
   const showEvidence = overlayMode === "evidence";
   drawPitch(ctx, layout);
   drawAttackingEndCue(ctx, replay, moment, layout, phase);
+  drawPossessionFeedBand(ctx, replay, moment, frame, phase.resetFade);
   if (showEvidence) drawMomentVignette(ctx, layout, phase);
   drawPlayers(ctx, replay, moment, frame, phase, overlayMode);
   if (showEvidence) drawDefensiveLine(ctx, replay, moment, frame, phase);
@@ -222,6 +226,7 @@ function renderHighBypassMoment(
   const showEvidence = overlayMode === "evidence";
   drawPitch(ctx, layout);
   drawHighBypassAttackingEndCue(ctx, replay, moment, layout, phase);
+  drawPossessionFeedBand(ctx, replay, moment, frame, phase.resetFade);
   if (showEvidence) drawHighBypassVignette(ctx, layout, moment, replay, phase);
   drawHighBypassPlayers(ctx, replay, moment, frame, phase, overlayMode);
   drawHighBypassPath(ctx, replay, moment, phase, overlayMode);
@@ -377,6 +382,7 @@ function drawPlayers(
   const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
   const candidateIds = new Set<string>(moment.support_region.candidate_player_ids);
   const supportIds = new Set<string>(moment.support_region.supporting_player_ids);
+  const possessionTeamRole = providerPossessionTeamRole(frame);
   for (const entity of frame.entities) {
     if (entity.entity_type === "ball") continue;
     const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
@@ -387,6 +393,7 @@ function drawPlayers(
     const isSupporter = supportIds.has(entity.entity_id);
     const isStory = isReceiver || isPasser || isDefender || isSupporter;
     const isAttack = entity.team_role === moment.perspective_team_role;
+    const isPossessingTeam = possessionTeamRole !== null && entity.team_role === possessionTeamRole;
     const fadeIrrelevant = overlayMode === "evidence" ? Math.max(phase.break, phase.support, phase.lonely) : 0;
     const radius =
       overlayMode === "clean"
@@ -427,6 +434,14 @@ function drawPlayers(
     ctx.lineWidth = isStory ? 1.8 : 1.05;
     ctx.fill();
     ctx.stroke();
+    if (isPossessingTeam) {
+      ctx.globalAlpha = Math.max(0.08, alpha * 0.30) * phase.resetFade;
+      ctx.strokeStyle = possessionStrokeForRole(possessionTeamRole, moment);
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, radius + 3.4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     ctx.globalAlpha = Math.max(0.08, alpha * (isAttack ? 0.44 : 0.58)) * phase.resetFade;
     ctx.fillStyle = isAttack ? PITCH_PALETTE.attackCore : PITCH_PALETTE.defenseCore;
     ctx.beginPath();
@@ -898,6 +913,7 @@ function drawBall(
   if (!ball) return;
   const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
   const point = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
+  const possessionTeamRole = providerPossessionTeamRole(ballFrame);
   ctx.save();
   ctx.globalAlpha = phase.resetFade;
   const receptionSettled = frame.frame_id >= moment.reception_frame_id;
@@ -914,9 +930,17 @@ function drawBall(
   ctx.arc(point.x, point.y, receptionSettled ? 5.9 : 5.1, 0, Math.PI * 2);
   ctx.fillStyle = PITCH_PALETTE.ball;
   ctx.fill();
-  ctx.lineWidth = 1.7;
-  ctx.strokeStyle = PITCH_PALETTE.ballEdge;
+  ctx.lineWidth = possessionTeamRole ? 3.2 : 1.7;
+  ctx.strokeStyle = possessionTeamRole ? possessionStrokeForRole(possessionTeamRole, moment) : PITCH_PALETTE.ballEdge;
   ctx.stroke();
+  if (possessionTeamRole) {
+    ctx.globalAlpha = 0.62 * phase.resetFade;
+    ctx.strokeStyle = "rgba(19, 47, 36, 0.86)";
+    ctx.lineWidth = 1.15;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, receptionSettled ? 8.5 : 7.4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   ctx.beginPath();
   ctx.arc(point.x - 1.2, point.y - 1.2, receptionSettled ? 1.7 : 1.4, 0, Math.PI * 2);
   ctx.fillStyle = PITCH_PALETTE.ballCore;
@@ -993,6 +1017,7 @@ function drawHighBypassPlayers(
 ) {
   const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
   const bypassedIds = new Set<string>(moment.bypassed_player_ids);
+  const possessionTeamRole = providerPossessionTeamRole(frame);
   for (const entity of frame.entities) {
     if (entity.entity_type === "ball") continue;
     const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
@@ -1001,6 +1026,7 @@ function drawHighBypassPlayers(
     const isReceiver = entity.entity_id === moment.receiver_id;
     const isBypassed = bypassedIds.has(entity.entity_id);
     const isStory = isPasser || isReceiver || isBypassed;
+    const isPossessingTeam = possessionTeamRole !== null && entity.team_role === possessionTeamRole;
     const radius =
       overlayMode === "clean"
         ? isReceiver
@@ -1034,6 +1060,14 @@ function drawHighBypassPlayers(
     ctx.lineWidth = isStory ? 1.8 : 1.05;
     ctx.fill();
     ctx.stroke();
+    if (isPossessingTeam) {
+      ctx.globalAlpha = Math.max(0.08, alpha * 0.30) * phase.resetFade;
+      ctx.strokeStyle = possessionStrokeForRole(possessionTeamRole, moment);
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, radius + 3.4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     ctx.globalAlpha = Math.max(0.10, alpha * (isAttack ? 0.44 : 0.58)) * phase.resetFade;
     ctx.fillStyle = isAttack ? PITCH_PALETTE.attackCore : PITCH_PALETTE.defenseCore;
     ctx.beginPath();
@@ -1153,6 +1187,7 @@ function drawHighBypassBall(
   if (!ball) return;
   const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
   const point = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
+  const possessionTeamRole = providerPossessionTeamRole(ballFrame);
   ctx.save();
   ctx.globalAlpha = phase.resetFade;
   const receptionSettled = frame.frame_id >= moment.reception_frame_id;
@@ -1169,14 +1204,67 @@ function drawHighBypassBall(
   ctx.arc(point.x, point.y, receptionSettled ? 6 : 5.1, 0, Math.PI * 2);
   ctx.fillStyle = PITCH_PALETTE.ball;
   ctx.fill();
-  ctx.lineWidth = 1.7;
-  ctx.strokeStyle = PITCH_PALETTE.ballEdge;
+  ctx.lineWidth = possessionTeamRole ? 3.2 : 1.7;
+  ctx.strokeStyle = possessionTeamRole ? possessionStrokeForRole(possessionTeamRole, moment) : PITCH_PALETTE.ballEdge;
   ctx.stroke();
+  if (possessionTeamRole) {
+    ctx.globalAlpha = 0.62 * phase.resetFade;
+    ctx.strokeStyle = "rgba(19, 47, 36, 0.86)";
+    ctx.lineWidth = 1.15;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, receptionSettled ? 8.6 : 7.4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   ctx.beginPath();
   ctx.arc(point.x - 1.2, point.y - 1.2, receptionSettled ? 1.8 : 1.4, 0, Math.PI * 2);
   ctx.fillStyle = PITCH_PALETTE.ballCore;
   ctx.fill();
   ctx.restore();
+}
+
+function drawPossessionFeedBand(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: MomentZeroMoment | HighBypassMoment,
+  frame: ReplayPayload["frames"][number],
+  resetFade: number
+) {
+  const role = providerPossessionTeamRole(frame);
+  if (!role) return;
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const color = possessionStrokeForRole(role, moment);
+  ctx.save();
+  ctx.globalAlpha = 0.78 * resetFade;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  const y = layout.marginY - 7;
+  const start = layout.marginX;
+  const end = layout.marginX + layout.fieldWidth;
+  ctx.beginPath();
+  ctx.moveTo(start, y);
+  ctx.lineTo(end, y);
+  ctx.stroke();
+  ctx.globalAlpha = 0.28 * resetFade;
+  ctx.strokeStyle = "rgba(245, 241, 222, 0.34)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(start, y + 5);
+  ctx.lineTo(end, y + 5);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function providerPossessionTeamRole(frame: ReplayPayload["frames"][number]) {
+  const state = frame.ball_state;
+  if (!state || !state.ball_alive || !state.possession_team_role) return null;
+  return state.possession_team_role;
+}
+
+function possessionStrokeForRole(role: string, moment: MomentZeroMoment | HighBypassMoment) {
+  if (role === moment.perspective_team_role) return PITCH_PALETTE.possessionAttack;
+  if (role === moment.defending_team_role) return PITCH_PALETTE.possessionDefense;
+  return PITCH_PALETTE.possessionUnknown;
 }
 
 function fadeWindow(value: number, start: number, end: number) {
