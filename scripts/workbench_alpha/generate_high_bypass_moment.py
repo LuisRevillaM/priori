@@ -22,6 +22,7 @@ from scripts.coverage_map.semantic_contract_scl0 import generate_contract_from_m
 from scripts.workbench_alpha.generate_moment_zero import (  # noqa: E402
     FRAME_RATE_HZ,
     observed_ball_outcome_sequence,
+    possession_retention_sequence,
     replay_window,
 )
 from tqe.runtime.binder import bind_document  # noqa: E402
@@ -57,15 +58,12 @@ def main() -> None:
         raise RuntimeError("High-bypass contract compiled but returned no candidate rows.")
     moment = sorted(
         candidates,
-        key=lambda row: (
-            -int(row["requested_evidence"].get("opponents_bypassed_count") or 0),
-            -float(row["requested_evidence"].get("forward_progression_m") or 0),
-            int(row["anchor_frame_id"]),
-        ),
+        key=lambda row: high_bypass_candidate_sort_key(row, raw_root=raw_root),
     )[0]
     payload = payload_from_moment(
         moment,
         canonical_root=canonical_root,
+        raw_root=raw_root,
         source_plan={
             "path": str((PLAN_DIR / f"{TARGET_ID}.json").relative_to(REPO_ROOT)),
             "document_hash": stable_hash(plan_payload),
@@ -108,12 +106,32 @@ def synthesize_plan(contract: dict[str, Any], *, canonical_root: Path, raw_root:
         search.MATCH_IDS = old_match_ids
 
 
-def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_plan: dict[str, Any]) -> dict[str, Any]:
+def high_bypass_candidate_sort_key(row: dict[str, Any], *, raw_root: Path) -> tuple[int, int, float, int]:
+    evidence = row["requested_evidence"]
+    reception_frame_id = int(evidence["reception_frame_id"])
+    retention = possession_retention_sequence(
+        raw_root=raw_root,
+        match_id=str(row["match_id"]),
+        period=str(row["period"]),
+        perspective_team_role=str(row["perspective_team_role"]),
+        start_frame_id=reception_frame_id,
+        end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
+    )
+    retained_rank = 0 if retention["status"] == "PASS" else 1
+    return (
+        retained_rank,
+        -int(evidence.get("opponents_bypassed_count") or 0),
+        -float(evidence.get("forward_progression_m") or 0),
+        int(row["anchor_frame_id"]),
+    )
+
+
+def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_root: Path, source_plan: dict[str, Any]) -> dict[str, Any]:
     evidence = moment["requested_evidence"]
     release_frame_id = int(evidence["release_frame_id"])
     reception_frame_id = int(evidence["reception_frame_id"])
     start_frame_id = max(release_frame_id - 20, 0)
-    end_frame_id = reception_frame_id + FRAME_RATE_HZ * 4
+    end_frame_id = reception_frame_id + FRAME_RATE_HZ * 8
     replay = replay_window(
         canonical_root=canonical_root,
         match_id=str(moment["match_id"]),
@@ -131,8 +149,16 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
     outcome_sequence = observed_ball_outcome_sequence(
         replay=replay,
         start_frame_id=reception_frame_id,
-        end_frame_id=end_frame_id,
+        end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
         attacking_direction=attacking_direction,
+    )
+    possession_retention = possession_retention_sequence(
+        raw_root=raw_root,
+        match_id=str(moment["match_id"]),
+        period=str(moment["period"]),
+        perspective_team_role=str(moment["perspective_team_role"]),
+        start_frame_id=reception_frame_id,
+        end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
     )
     return {
         "schema_version": "coach_moment.high_bypass_completed_pass.v0",
@@ -160,6 +186,7 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
             "evaluated_opponent_ids": evidence["evaluated_opponent_ids"],
             "attacking_direction": attacking_direction,
             "outcome_sequence": outcome_sequence,
+            "possession_retention": possession_retention,
             "requested_evidence": evidence,
         },
         "replay": {
@@ -180,6 +207,14 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
                 "outcome_sequence.progression_status",
                 "outcome_sequence.final_third_status",
                 "outcome_sequence.final_third_outcome",
+            ],
+            "observed_possession_retention": [
+                "possession_retention.status",
+                "possession_retention.start_frame_id",
+                "possession_retention.end_frame_id",
+                "possession_retention.observed_seconds_after_reception",
+                "possession_retention.perspective_team_role",
+                "possession_retention.possession_team_role_at_end",
             ],
             "prohibited_visual_claims": [
                 "intent",

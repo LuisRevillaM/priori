@@ -270,6 +270,67 @@ body {
   filter: drop-shadow(0 34px 94px rgba(0, 0, 0, 0.26));
 }
 
+.coachTrustControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: min(96vw, 1480px, calc(68dvh * 1.478));
+  color: rgba(245, 241, 222, 0.72);
+}
+
+.coachTrustControls > div:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.coachTrustControls span {
+  color: rgba(245, 241, 222, 0.48);
+  font-size: 11px;
+  font-weight: 720;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.coachTrustControls strong {
+  overflow: hidden;
+  color: rgba(245, 241, 222, 0.82);
+  font-size: 13px;
+  font-weight: 560;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coachOverlayToggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 5px;
+  padding: 3px;
+  border: 1px solid rgba(245, 241, 222, 0.14);
+  border-radius: 8px;
+  background: rgba(245, 241, 222, 0.06);
+}
+
+.coachOverlayToggle button {
+  border-color: transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(245, 241, 222, 0.68);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 680;
+  line-height: 1;
+}
+
+.coachOverlayToggle button:hover,
+.coachOverlayToggle button.isActive {
+  border-color: rgba(245, 241, 222, 0.18);
+  background: rgba(245, 241, 222, 0.12);
+  color: #f5f1de;
+}
+
 .coachCatalog {
   display: grid;
   grid-template-columns: minmax(0, 0.36fr) minmax(0, 0.64fr);
@@ -491,6 +552,15 @@ body {
 
   .coachTeamLegend {
     justify-content: flex-start;
+  }
+
+  .coachTrustControls {
+    display: grid;
+    width: 100%;
+  }
+
+  .coachTrustControls strong {
+    white-space: normal;
   }
 
   .coachCatalog {

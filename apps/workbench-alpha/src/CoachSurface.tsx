@@ -5,25 +5,35 @@ import {
   momentHighBypassEvidence,
   momentLineBreakSupportedEvidence,
   momentZeroEvidence,
-  type CoachMomentPayload
+  type CoachMomentPayload,
+  type MomentOverlayMode
 } from "./MomentZero";
 import type { CoachInterpretResponse, MatchSummary } from "./types";
 
-const DEFAULT_QUERY = "Show line breaks with underneath support";
+const DEFAULT_QUERY = "Show high-bypass passes";
 const EXAMPLES = [
+  "Show high-bypass passes",
   "Show line breaks with underneath support",
   "Show line breaks with no underneath outlet",
-  "Show high-bypass passes",
   "Show line breaks with two underneath outlets",
   "Show expected pass completion",
   "Show dangerous attacks"
 ];
 const CATALOG_MOMENTS = [
   {
+    id: "high-bypass",
+    title: "High-bypass pass",
+    query: "Show high-bypass passes",
+    answer: "One pass bypassed 6 opponents. The ball reaches the final third.",
+    count: 5,
+    payload: momentHighBypassEvidence,
+    mode: "bypass"
+  },
+  {
     id: "line-break-supported",
     title: "Line break, outlet arrives",
     query: "Show line breaks with underneath support",
-    answer: "Line broken. Support arrives underneath. The ball stays in the final third.",
+    answer: "Line broken. Support arrives underneath.",
     count: 2,
     payload: momentLineBreakSupportedEvidence,
     mode: "supported"
@@ -32,19 +42,10 @@ const CATALOG_MOMENTS = [
     id: "line-break-isolated",
     title: "Line break, outlet absent",
     query: "Show line breaks with no underneath outlet",
-    answer: "Line broken. The outlet space stays empty. The ball reaches the final third.",
+    answer: "Line broken. The outlet space stays empty.",
     count: 3,
     payload: momentZeroEvidence,
     mode: "isolated"
-  },
-  {
-    id: "high-bypass",
-    title: "High-bypass pass",
-    query: "Show high-bypass passes",
-    answer: "One pass bypassed 8 opponents. The ball reaches the final third.",
-    count: 5,
-    payload: momentHighBypassEvidence,
-    mode: "bypass"
   }
 ] as const;
 const MATCH_CONTEXT_FALLBACKS: Record<string, { title: string; home: string; away: string }> = {
@@ -56,10 +57,11 @@ export function CoachSurface() {
   const catalogMoments = useMemo(() => CATALOG_MOMENTS, []);
   const [query, setQuery] = useState(DEFAULT_QUERY);
   const [result, setResult] = useState<CoachInterpretResponse | null>(null);
-  const [activePayload, setActivePayload] = useState<CoachMomentPayload>(momentLineBreakSupportedEvidence);
+  const [activePayload, setActivePayload] = useState<CoachMomentPayload>(momentHighBypassEvidence);
   const [activeCatalogId, setActiveCatalogId] = useState<string>(CATALOG_MOMENTS[0].id);
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [runId, setRunId] = useState(0);
+  const [overlayMode, setOverlayMode] = useState<MomentOverlayMode>("clean");
   const [isLooking, setIsLooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -139,7 +141,8 @@ export function CoachSurface() {
 
         <div className="coachTheater" aria-label="Observed football moment preview">
           <MomentContext payload={activePayload} matches={matches} />
-          <CoachMomentPitch key={runId} payload={activePayload} />
+          <CoachMomentPitch key={`${runId}-${overlayMode}`} payload={activePayload} overlayMode={overlayMode} />
+          <MomentTrustControls payload={activePayload} overlayMode={overlayMode} onOverlayModeChange={setOverlayMode} />
         </div>
 
         <section className="coachCatalog" aria-label="Compiler-found moment catalog">
@@ -156,7 +159,7 @@ export function CoachSurface() {
                 onClick={() => chooseCatalogMoment(moment)}
                 disabled={isLooking}
               >
-                <span>{moment.count} found</span>
+                <span>Representative replay · {moment.count} found</span>
                 <strong>{moment.title}</strong>
                 <small>{moment.answer}</small>
               </button>
@@ -217,6 +220,55 @@ function MomentContext({ payload, matches }: { payload: CoachMomentPayload; matc
       </div>
     </div>
   );
+}
+
+function MomentTrustControls({
+  payload,
+  overlayMode,
+  onOverlayModeChange
+}: {
+  payload: CoachMomentPayload;
+  overlayMode: MomentOverlayMode;
+  onOverlayModeChange: (mode: MomentOverlayMode) => void;
+}) {
+  const retention = possessionRetention(payload);
+  return (
+    <div className="coachTrustControls" aria-label="Replay inspection controls">
+      <div>
+        <span>Follow-through</span>
+        <strong>{retentionCopy(retention)}</strong>
+      </div>
+      <div className="coachOverlayToggle" role="group" aria-label="Replay overlay mode">
+        <button
+          type="button"
+          className={overlayMode === "clean" ? "isActive" : ""}
+          onClick={() => onOverlayModeChange("clean")}
+        >
+          Clean replay
+        </button>
+        <button
+          type="button"
+          className={overlayMode === "evidence" ? "isActive" : ""}
+          onClick={() => onOverlayModeChange("evidence")}
+        >
+          Evidence overlay
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function possessionRetention(payload: CoachMomentPayload) {
+  return (payload.moment as { possession_retention?: Record<string, unknown> }).possession_retention ?? null;
+}
+
+function retentionCopy(retention: Record<string, unknown> | null) {
+  if (!retention) return "Eight-second replay after reception.";
+  const seconds = Number(retention.observed_seconds_after_reception ?? retention.required_retention_seconds ?? 0);
+  const rounded = Number.isFinite(seconds) && seconds > 0 ? `${seconds.toFixed(seconds % 1 === 0 ? 0 : 1)}s` : "the follow-through";
+  if (retention.status === "PASS") return `Same team retained possession for ${rounded} after reception.`;
+  if (retention.status === "FAIL") return `Possession changed during ${rounded} after reception.`;
+  return "Possession retention is unknown in this replay.";
 }
 
 function teamName(match: MatchSummary | undefined, role: string, fallback: { home: string; away: string } | undefined) {

@@ -23,6 +23,7 @@ from tqe.runtime.binder import bind_document  # noqa: E402
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows  # noqa: E402
 from tqe.runtime.ir import TacticalQueryDocument, stable_hash  # noqa: E402
 from tqe.runtime.pass_bypass import attack_x_sign_for  # noqa: E402
+from tqe.query.ball_side_block_shift import stream_ball_state  # noqa: E402
 
 PLAN_PATH = REPO_ROOT / "config/query-plans/q3_receiver_second_line_no_underneath_support.experimental.v1.json"
 OUT_PATH = REPO_ROOT / "apps/workbench-alpha/src/generated/moment-zero.json"
@@ -32,6 +33,7 @@ PITCH = {"length_m": 105.0, "width_m": 68.0, "coordinate_contract": "centered_me
 
 def main() -> None:
     canonical_root = Path(os.environ.get("TQE_DATA_ROOT", "data/canonical/v1"))
+    raw_root = Path(os.environ.get("TQE_RAW_ROOT", "data/raw/idsse/figshare-28196177-v1"))
     document_payload = json.loads(PLAN_PATH.read_text(encoding="utf-8"))
     bound_plan = bind_document(TacticalQueryDocument.model_validate(document_payload))
     execution = TacticalQueryExecutor().execute(bound_plan)
@@ -48,7 +50,7 @@ def main() -> None:
     reception_frame_id = int(evidence["controlled_reception_frame_id"])
     support_window_end_frame_id = reception_frame_id + math.ceil(float(evidence["maximum_arrival_seconds"]) * FRAME_RATE_HZ)
     start_frame_id = max(release_frame_id - 20, 0)
-    end_frame_id = support_window_end_frame_id + 18
+    end_frame_id = max(support_window_end_frame_id + 18, reception_frame_id + FRAME_RATE_HZ * 8)
     replay = replay_window(
         canonical_root=canonical_root,
         match_id=str(moment["match_id"]),
@@ -71,6 +73,14 @@ def main() -> None:
         start_frame_id=reception_frame_id,
         end_frame_id=min(support_window_end_frame_id + 18, reception_frame_id + FRAME_RATE_HZ * 4),
         attacking_direction=attacking_direction,
+    )
+    possession_retention = possession_retention_sequence(
+        raw_root=raw_root,
+        match_id=str(moment["match_id"]),
+        period=str(moment["period"]),
+        perspective_team_role=str(moment["perspective_team_role"]),
+        start_frame_id=reception_frame_id,
+        end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
     )
     payload = {
         "schema_version": "moment_zero.line_break_no_underneath_support.v0",
@@ -108,6 +118,7 @@ def main() -> None:
                 "coverage_status": evidence["coverage_status"],
             },
             "outcome_sequence": outcome_sequence,
+            "possession_retention": possession_retention,
             "requested_evidence": evidence,
         },
         "replay": replay,
@@ -132,6 +143,14 @@ def main() -> None:
                 "outcome_sequence.final_third_status",
                 "outcome_sequence.final_third_outcome",
             ],
+            "observed_possession_retention": [
+                "possession_retention.status",
+                "possession_retention.start_frame_id",
+                "possession_retention.end_frame_id",
+                "possession_retention.observed_seconds_after_reception",
+                "possession_retention.perspective_team_role",
+                "possession_retention.possession_team_role_at_end",
+            ],
             "prohibited_visual_claims": [
                 "intent",
                 "quality",
@@ -147,8 +166,8 @@ def main() -> None:
 
 
 def replay_window(*, canonical_root: Path, match_id: str, period: str, start_frame_id: int, end_frame_id: int) -> dict[str, Any]:
-    frame_path = canonical_root / "frames" / f"match_id={match_id}" / f"period={period}.parquet"
-    position_path = canonical_root / "positions" / f"match_id={match_id}" / f"period={period}.parquet"
+    frame_path = period_parquet_path(canonical_root / "frames" / f"match_id={match_id}", period)
+    position_path = period_parquet_path(canonical_root / "positions" / f"match_id={match_id}", period)
     frames = filter_frame_window(pq.ParquetFile(frame_path).read(), start_frame_id, end_frame_id)
     positions = filter_frame_window(pq.ParquetFile(position_path).read(), start_frame_id, end_frame_id)
     positions_by_frame: dict[int, list[dict[str, Any]]] = {}
@@ -202,6 +221,14 @@ def filter_frame_window(table: Any, start_frame_id: int, end_frame_id: int) -> A
         pc.less_equal(table["frame_id"], end_frame_id),
     )
     return table.filter(mask)
+
+
+def period_parquet_path(root: Path, period: str) -> Path:
+    candidates = [root / f"{period}.parquet", root / f"period={period}.parquet"]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
 
 
 def pass_actor_ids(pass_episode_id: str) -> tuple[str, str]:
@@ -296,6 +323,73 @@ def observed_ball_outcome_sequence(
         "final_third_outcome": final_third_outcome,
         "final_third_threshold_normalized_x_m": round(final_third_threshold, 2),
         "claim_boundary": "Measured observable ball outcome after reception only; no quality, intent, causation, possession-control, or decision-value claim.",
+    }
+
+
+def possession_retention_sequence(
+    *,
+    raw_root: Path,
+    match_id: str,
+    period: str,
+    perspective_team_role: str,
+    start_frame_id: int,
+    end_frame_id: int,
+) -> dict[str, Any]:
+    raw_tracking = raw_root / match_id / "tracking.xml"
+    required_retention_seconds = round((end_frame_id - start_frame_id) / FRAME_RATE_HZ, 2)
+    if not raw_tracking.exists():
+        return {
+            "mode": "raw_ball_possession_retention_after_reception",
+            "status": "UNKNOWN",
+            "reason": "raw_tracking_missing",
+            "start_frame_id": start_frame_id,
+            "end_frame_id": start_frame_id,
+            "observed_seconds_after_reception": 0.0,
+            "required_retention_seconds": required_retention_seconds,
+            "perspective_team_role": perspective_team_role,
+            "possession_team_role_at_start": None,
+            "possession_team_role_at_end": None,
+            "ball_alive_frame_count": 0,
+            "retained_frame_count": 0,
+            "claim_boundary": "Observed raw ball-possession team role after reception only; no control quality, tactical quality, intent, or causal claim.",
+        }
+    ball_state = stream_ball_state(raw_tracking, period)
+    window = ball_state[(ball_state.frame_id >= start_frame_id) & (ball_state.frame_id <= end_frame_id)].copy()
+    if window.empty:
+        return {
+            "mode": "raw_ball_possession_retention_after_reception",
+            "status": "UNKNOWN",
+            "reason": "possession_window_missing",
+            "start_frame_id": start_frame_id,
+            "end_frame_id": start_frame_id,
+            "observed_seconds_after_reception": 0.0,
+            "required_retention_seconds": required_retention_seconds,
+            "perspective_team_role": perspective_team_role,
+            "possession_team_role_at_start": None,
+            "possession_team_role_at_end": None,
+            "ball_alive_frame_count": 0,
+            "retained_frame_count": 0,
+            "claim_boundary": "Observed raw ball-possession team role after reception only; no control quality, tactical quality, intent, or causal claim.",
+        }
+    alive = window[window.ball_alive]
+    retained = alive[alive.possession_team_role == perspective_team_role]
+    actual_end_frame_id = int(window.frame_id.max())
+    status = "PASS" if len(alive) > 0 and len(retained) == len(alive) else "FAIL"
+    reason = "same_team_ball_alive_possession_retained" if status == "PASS" else "possession_role_changed_or_ball_not_alive"
+    return {
+        "mode": "raw_ball_possession_retention_after_reception",
+        "status": status,
+        "reason": reason,
+        "start_frame_id": start_frame_id,
+        "end_frame_id": actual_end_frame_id,
+        "observed_seconds_after_reception": round((actual_end_frame_id - start_frame_id) / FRAME_RATE_HZ, 2),
+        "required_retention_seconds": required_retention_seconds,
+        "perspective_team_role": perspective_team_role,
+        "possession_team_role_at_start": str(window.iloc[0].possession_team_role),
+        "possession_team_role_at_end": str(window.iloc[-1].possession_team_role),
+        "ball_alive_frame_count": int(len(alive)),
+        "retained_frame_count": int(len(retained)),
+        "claim_boundary": "Observed raw ball-possession team role after reception only; no control quality, tactical quality, intent, or causal claim.",
     }
 
 

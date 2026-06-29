@@ -25,6 +25,7 @@ from scripts.workbench_alpha.generate_moment_zero import (  # noqa: E402
     entity_point_at_frame,
     observed_ball_outcome_sequence,
     pass_actor_ids,
+    possession_retention_sequence,
     replay_window,
 )
 from tqe.runtime.binder import bind_document  # noqa: E402
@@ -106,7 +107,7 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
     reception_frame_id = int(evidence["controlled_reception_frame_id"])
     support_window_end_frame_id = reception_frame_id + math.ceil(float(evidence["maximum_arrival_seconds"]) * FRAME_RATE_HZ)
     start_frame_id = max(release_frame_id - 20, 0)
-    end_frame_id = support_window_end_frame_id + 18
+    end_frame_id = max(support_window_end_frame_id + 18, reception_frame_id + FRAME_RATE_HZ * 8)
     replay = replay_window(
         canonical_root=canonical_root,
         match_id=str(moment["match_id"]),
@@ -129,6 +130,14 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
         start_frame_id=reception_frame_id,
         end_frame_id=min(support_window_end_frame_id + 18, reception_frame_id + FRAME_RATE_HZ * 4),
         attacking_direction=attacking_direction,
+    )
+    possession_retention = possession_retention_sequence(
+        raw_root=Path(os.environ.get("TQE_RAW_ROOT", "data/raw/idsse/figshare-28196177-v1")),
+        match_id=str(moment["match_id"]),
+        period=str(moment["period"]),
+        perspective_team_role=str(moment["perspective_team_role"]),
+        start_frame_id=reception_frame_id,
+        end_frame_id=reception_frame_id + FRAME_RATE_HZ * 4,
     )
     return {
         "schema_version": "moment_zero.line_break_with_underneath_support.v0",
@@ -162,6 +171,7 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
                 "coverage_status": evidence["coverage_status"],
             },
             "outcome_sequence": outcome_sequence,
+            "possession_retention": possession_retention,
             "requested_evidence": evidence,
         },
         "replay": {
@@ -189,6 +199,14 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
                 "outcome_sequence.progression_status",
                 "outcome_sequence.final_third_status",
                 "outcome_sequence.final_third_outcome",
+            ],
+            "observed_possession_retention": [
+                "possession_retention.status",
+                "possession_retention.start_frame_id",
+                "possession_retention.end_frame_id",
+                "possession_retention.observed_seconds_after_reception",
+                "possession_retention.perspective_team_role",
+                "possession_retention.possession_team_role_at_end",
             ],
             "prohibited_visual_claims": [
                 "intent",

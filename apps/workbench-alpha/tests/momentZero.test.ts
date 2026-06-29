@@ -33,9 +33,13 @@ assert.equal(momentZero.moment.outcome_sequence.mode, "measured_ball_outcome_aft
 assert.equal(momentZero.moment.outcome_sequence.claim_boundary.includes("no quality"), true);
 assert.equal(momentZero.moment.outcome_sequence.final_third_outcome, "reached_final_third");
 assert.equal(momentZero.moment.outcome_sequence.progression_status, "PASS");
+assert.equal(momentZero.moment.possession_retention.mode, "raw_ball_possession_retention_after_reception");
+assert.equal(momentZero.moment.possession_retention.status, "FAIL");
+assert.equal(momentZero.moment.possession_retention.claim_boundary.includes("no control quality"), true);
 assert.equal(momentZeroVisualEndFrameId(momentZero.moment), momentZero.moment.outcome_sequence.end_frame_id);
 assert.ok(momentZeroLineEvidenceFrameId(momentZero.moment) < momentZeroVisualEndFrameId(momentZero.moment));
 assert.equal(momentZeroBallEvidenceFrameId(momentZero.moment, momentZeroVisualEndFrameId(momentZero.moment)), momentZero.moment.outcome_sequence.end_frame_id);
+assert.ok(momentZero.replay.end_frame_id > momentZero.moment.outcome_sequence.end_frame_id);
 
 assert.equal(supportedMoment.schema_version, "moment_zero.line_break_with_underneath_support.v0");
 assert.equal(supportedMoment.moment.requested_evidence.line_break_status, "PASS");
@@ -52,6 +56,7 @@ assert.ok(supportedTargetLine.line_id.includes(`:${supportedMoment.moment.releas
 assert.deepEqual(supportedTargetLine.defender_ids, supportedMoment.moment.defensive_line_player_ids);
 assert.equal(supportedMoment.moment.outcome_sequence.status, "PASS");
 assert.equal(supportedMoment.moment.outcome_sequence.final_third_outcome, "remained_in_final_third");
+assert.equal(supportedMoment.moment.possession_retention.status, "FAIL");
 assert.equal(momentZeroVisualEndFrameId(supportedMoment.moment), supportedMoment.moment.outcome_sequence.end_frame_id);
 assert.equal(
   momentZeroBallEvidenceFrameId(supportedMoment.moment, supportedMoment.moment.outcome_sequence.end_frame_id),
@@ -69,10 +74,15 @@ assert.equal(highBypassMoment.moment.outcome_sequence.status, "PASS");
 assert.equal(highBypassMoment.moment.outcome_sequence.final_third_status, "PASS");
 assert.equal(highBypassMoment.moment.outcome_sequence.final_third_outcome, "reached_final_third");
 assert.equal(highBypassMoment.moment.outcome_sequence.progression_status, "PASS");
+assert.equal(highBypassMoment.moment.possession_retention.status, "PASS");
+assert.equal(highBypassMoment.moment.possession_retention.possession_team_role_at_start, highBypassMoment.moment.perspective_team_role);
+assert.equal(highBypassMoment.moment.possession_retention.possession_team_role_at_end, highBypassMoment.moment.perspective_team_role);
+assert.ok(highBypassMoment.replay.end_frame_id > highBypassMoment.moment.outcome_sequence.end_frame_id);
 assert.ok(highBypassMoment.replay.frames.length > 0);
 assert.ok(highBypassMoment.visual_contract.prohibited_visual_claims.includes("intent"));
 assert.ok(highBypassMoment.visual_contract.prohibited_visual_claims.includes("defensive line broken"));
 assert.ok(highBypassMoment.visual_contract.observed_outcome_sequence.includes("outcome_sequence.final_third_status"));
 assert.ok(highBypassMoment.visual_contract.observed_outcome_sequence.includes("outcome_sequence.progression_status"));
+assert.ok(highBypassMoment.visual_contract.observed_possession_retention.includes("possession_retention.status"));
 
 console.log("moment zero tests passed");

@@ -115,7 +115,7 @@ class CoachInterpretSurfaceTests(unittest.TestCase):
         self.assertEqual("high_bypass_completed_pass", coach_no_moments_kind(contract))
         self.assertFalse(coach_preview_runtime_family_without_surface(contract))
         self.assertEqual(
-            "One completed pass bypassed multiple opponents.",
+            "One completed pass bypassed multiple opponents. The ball reaches the final third.",
             coach_template("moment_found.high_bypass_completed_pass"),
         )
         self.assertEqual(

@@ -469,8 +469,8 @@ COACH_SUGGESTIONS = [
     "Show dangerous attacks",
 ]
 COACH_DISPLAY_TEMPLATES = {
-    "moment_found.line_break_no_underneath_support": "Line broken. The outlet space stays empty. The ball reaches the final third.",
-    "moment_found.line_break_with_underneath_outlet": "Line broken. Support arrives underneath. The ball stays in the final third.",
+    "moment_found.line_break_no_underneath_support": "Line broken. The outlet space stays empty.",
+    "moment_found.line_break_with_underneath_outlet": "Line broken. Support arrives underneath.",
     "moment_found.high_bypass_completed_pass": "One completed pass bypassed multiple opponents. The ball reaches the final third.",
     "no_moments_found.line_break_no_underneath_support": "In this match, that line-break moment did not appear.",
     "no_moments_found.line_break_with_two_underneath_outlets": "In this match, no line break had two underneath outlets.",
