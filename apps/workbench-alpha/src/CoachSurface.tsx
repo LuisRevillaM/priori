@@ -23,7 +23,7 @@ const CATALOG_MOMENTS = [
     id: "line-break-supported",
     title: "Line break, outlet arrives",
     query: "Show line breaks with underneath support",
-    answer: "Line broken. Support arrives underneath.",
+    answer: "Line broken. Support arrives underneath. The ball stays in the final third.",
     count: 2,
     payload: momentLineBreakSupportedEvidence,
     mode: "supported"
@@ -32,7 +32,7 @@ const CATALOG_MOMENTS = [
     id: "line-break-isolated",
     title: "Line break, outlet absent",
     query: "Show line breaks with no underneath outlet",
-    answer: "Line broken. The outlet space stays empty.",
+    answer: "Line broken. The outlet space stays empty. The ball reaches the final third.",
     count: 3,
     payload: momentZeroEvidence,
     mode: "isolated"
@@ -41,7 +41,7 @@ const CATALOG_MOMENTS = [
     id: "high-bypass",
     title: "High-bypass pass",
     query: "Show high-bypass passes",
-    answer: "One pass bypassed 8 opponents.",
+    answer: "One pass bypassed 8 opponents. The ball reaches the final third.",
     count: 5,
     payload: momentHighBypassEvidence,
     mode: "bypass"

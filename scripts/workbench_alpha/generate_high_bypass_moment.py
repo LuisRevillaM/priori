@@ -177,7 +177,9 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, source_
                 "outcome_sequence.ball_start_point",
                 "outcome_sequence.ball_end_point",
                 "outcome_sequence.forward_progression_m",
+                "outcome_sequence.progression_status",
                 "outcome_sequence.final_third_status",
+                "outcome_sequence.final_third_outcome",
             ],
             "prohibited_visual_claims": [
                 "intent",

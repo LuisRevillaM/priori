@@ -55,16 +55,22 @@
         "x_m": 24.22,
         "y_m": -21.71
       },
-      "claim_boundary": "Observed ball location after reception only; no quality, intent, causation, possession-control, or decision-value claim.",
+      "claim_boundary": "Measured observable ball outcome after reception only; no quality, intent, causation, possession-control, or decision-value claim.",
       "distance_m": 6.03,
       "end_frame_id": 100295,
+      "end_normalized_x_m": 22.68,
+      "final_third_outcome": "remained_in_final_third",
+      "final_third_start_status": "PASS",
       "final_third_status": "PASS",
       "final_third_threshold_normalized_x_m": 17.5,
       "forward_progression_m": -1.54,
-      "mode": "observed_ball_position_after_reception",
+      "minimum_progression_m": 8.0,
+      "mode": "measured_ball_outcome_after_reception",
       "observed_seconds_after_reception": 3.72,
+      "progression_status": "FAIL",
       "reason": "ball_tracking_observed",
       "start_frame_id": 100202,
+      "start_normalized_x_m": 24.22,
       "status": "PASS"
     },
     "passer_id": "DFL-OBJ-0028FW",
@@ -36517,7 +36523,9 @@
       "outcome_sequence.ball_start_point",
       "outcome_sequence.ball_end_point",
       "outcome_sequence.forward_progression_m",
-      "outcome_sequence.final_third_status"
+      "outcome_sequence.progression_status",
+      "outcome_sequence.final_third_status",
+      "outcome_sequence.final_third_outcome"
     ],
     "pass_path": [
       "physical_release_frame_id",

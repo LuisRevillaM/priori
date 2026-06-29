@@ -29,7 +29,10 @@ assert.equal(momentZeroLineEvidenceFrameId(momentZero.moment), momentZero.moment
 assert.ok(targetLine.line_id.includes(`:${momentZero.moment.release_frame_id}:`));
 assert.deepEqual(targetLine.defender_ids, momentZero.moment.defensive_line_player_ids);
 assert.equal(momentZero.moment.outcome_sequence.status, "PASS");
+assert.equal(momentZero.moment.outcome_sequence.mode, "measured_ball_outcome_after_reception");
 assert.equal(momentZero.moment.outcome_sequence.claim_boundary.includes("no quality"), true);
+assert.equal(momentZero.moment.outcome_sequence.final_third_outcome, "reached_final_third");
+assert.equal(momentZero.moment.outcome_sequence.progression_status, "PASS");
 assert.equal(momentZeroVisualEndFrameId(momentZero.moment), momentZero.moment.outcome_sequence.end_frame_id);
 assert.ok(momentZeroLineEvidenceFrameId(momentZero.moment) < momentZeroVisualEndFrameId(momentZero.moment));
 assert.equal(momentZeroBallEvidenceFrameId(momentZero.moment, momentZeroVisualEndFrameId(momentZero.moment)), momentZero.moment.outcome_sequence.end_frame_id);
@@ -48,6 +51,7 @@ assert.equal(momentZeroLineEvidenceFrameId(supportedMoment.moment), supportedMom
 assert.ok(supportedTargetLine.line_id.includes(`:${supportedMoment.moment.release_frame_id}:`));
 assert.deepEqual(supportedTargetLine.defender_ids, supportedMoment.moment.defensive_line_player_ids);
 assert.equal(supportedMoment.moment.outcome_sequence.status, "PASS");
+assert.equal(supportedMoment.moment.outcome_sequence.final_third_outcome, "remained_in_final_third");
 assert.equal(momentZeroVisualEndFrameId(supportedMoment.moment), supportedMoment.moment.outcome_sequence.end_frame_id);
 assert.equal(
   momentZeroBallEvidenceFrameId(supportedMoment.moment, supportedMoment.moment.outcome_sequence.end_frame_id),
@@ -63,9 +67,12 @@ assert.equal(highBypassMoment.moment.opponents_bypassed_count, highBypassMoment.
 assert.ok(highBypassMoment.moment.forward_progression_m >= 8);
 assert.equal(highBypassMoment.moment.outcome_sequence.status, "PASS");
 assert.equal(highBypassMoment.moment.outcome_sequence.final_third_status, "PASS");
+assert.equal(highBypassMoment.moment.outcome_sequence.final_third_outcome, "reached_final_third");
+assert.equal(highBypassMoment.moment.outcome_sequence.progression_status, "PASS");
 assert.ok(highBypassMoment.replay.frames.length > 0);
 assert.ok(highBypassMoment.visual_contract.prohibited_visual_claims.includes("intent"));
 assert.ok(highBypassMoment.visual_contract.prohibited_visual_claims.includes("defensive line broken"));
 assert.ok(highBypassMoment.visual_contract.observed_outcome_sequence.includes("outcome_sequence.final_third_status"));
+assert.ok(highBypassMoment.visual_contract.observed_outcome_sequence.includes("outcome_sequence.progression_status"));
 
 console.log("moment zero tests passed");

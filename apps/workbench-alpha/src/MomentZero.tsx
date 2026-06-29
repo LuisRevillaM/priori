@@ -175,7 +175,7 @@ function renderMoment(
   drawPassPath(ctx, replay, moment, phase);
   drawSupportRegion(ctx, replay, moment, phase);
   drawSupportArrivals(ctx, replay, moment, frame, phase);
-  drawObservedOutcomePath(ctx, replay, moment, frame, phase);
+  drawMeasuredOutcomeBeat(ctx, replay, moment, frame, phase);
   drawReceptionDock(ctx, replay, moment, frame, phase);
   drawReceiverFocus(ctx, replay, moment, frame, phase);
   drawBall(ctx, replay, moment, frame, phase);
@@ -215,7 +215,7 @@ function renderHighBypassMoment(
   drawHighBypassPlayers(ctx, replay, moment, frame, phase);
   drawHighBypassPath(ctx, replay, moment, phase);
   drawBypassedOpponents(ctx, replay, moment, phase);
-  drawObservedOutcomePath(ctx, replay, moment, frame, phase);
+  drawMeasuredOutcomeBeat(ctx, replay, moment, frame, phase);
   drawReceptionDock(ctx, replay, moment, frame, phase);
   drawHighBypassBall(ctx, replay, moment, frame, phase);
 }
@@ -696,10 +696,10 @@ function drawReceptionDock(
   ctx.restore();
 }
 
-function drawObservedOutcomePath(
+function drawMeasuredOutcomeBeat(
   ctx: CanvasRenderingContext2D,
   replay: ReplayPayload,
-  moment: Pick<MomentZeroMoment, "outcome_sequence" | "reception_frame_id">,
+  moment: MomentZeroMoment | HighBypassMoment,
   frame: ReplayPayload["frames"][number],
   phase: { outcome: number; resetFade: number; pulse: number }
 ) {
@@ -719,15 +719,17 @@ function drawObservedOutcomePath(
   const end = points[points.length - 1];
 
   ctx.save();
-  ctx.globalAlpha = alpha;
+  drawFinalThirdOutcomeZone(ctx, replay, moment, sequence, phase, progress);
+
+  ctx.globalAlpha = alpha * 0.32;
   const trail = ctx.createLinearGradient(start.x, start.y, end.x, end.y);
   trail.addColorStop(0, "rgba(216, 239, 227, 0)");
-  trail.addColorStop(0.42, "rgba(216, 239, 227, 0.26)");
-  trail.addColorStop(1, sequence.final_third_status === "PASS" ? "rgba(255, 245, 203, 0.70)" : "rgba(216, 239, 227, 0.50)");
+  trail.addColorStop(0.42, "rgba(216, 239, 227, 0.18)");
+  trail.addColorStop(1, sequence.final_third_status === "PASS" ? "rgba(255, 245, 203, 0.42)" : "rgba(216, 239, 227, 0.34)");
   ctx.strokeStyle = trail;
-  ctx.shadowColor = "rgba(216, 239, 227, 0.10)";
-  ctx.shadowBlur = 8 + 5 * phase.pulse;
-  ctx.lineWidth = 2.45;
+  ctx.shadowColor = "rgba(216, 239, 227, 0.08)";
+  ctx.shadowBlur = 5 + 3 * phase.pulse;
+  ctx.lineWidth = 1.55;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.beginPath();
@@ -739,17 +741,70 @@ function drawObservedOutcomePath(
 
   if (sequence.final_third_status === "PASS" && progress > 0.72) {
     const endpoint = points[points.length - 1];
-    const halo = ctx.createRadialGradient(endpoint.x, endpoint.y, 0, endpoint.x, endpoint.y, 24 + 7 * phase.pulse);
-    halo.addColorStop(0, "rgba(255, 245, 203, 0.24)");
-    halo.addColorStop(0.54, "rgba(255, 245, 203, 0.10)");
+    const outcomeBoost = sequence.progression_status === "PASS" ? 1 : 0.72;
+    const haloRadius = 28 + 9 * phase.pulse * outcomeBoost;
+    const halo = ctx.createRadialGradient(endpoint.x, endpoint.y, 0, endpoint.x, endpoint.y, haloRadius);
+    halo.addColorStop(0, `rgba(255, 245, 203, ${0.26 * outcomeBoost})`);
+    halo.addColorStop(0.52, `rgba(255, 245, 203, ${0.12 * outcomeBoost})`);
     halo.addColorStop(1, "rgba(255, 245, 203, 0)");
-    ctx.globalAlpha = alpha * 0.86;
+    ctx.globalAlpha = alpha * 0.94;
     ctx.fillStyle = halo;
     ctx.beginPath();
-    ctx.arc(endpoint.x, endpoint.y, 24 + 7 * phase.pulse, 0, Math.PI * 2);
+    ctx.arc(endpoint.x, endpoint.y, haloRadius, 0, Math.PI * 2);
     ctx.fill();
+
+    ctx.globalAlpha = alpha * 0.76;
+    ctx.strokeStyle = "rgba(255, 245, 203, 0.62)";
+    ctx.lineWidth = 1.55 + 0.55 * phase.pulse;
+    ctx.beginPath();
+    ctx.arc(endpoint.x, endpoint.y, 7.2 + 1.6 * phase.pulse, 0, Math.PI * 2);
+    ctx.stroke();
   }
   ctx.restore();
+}
+
+function drawFinalThirdOutcomeZone(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: MomentZeroMoment | HighBypassMoment,
+  sequence: (MomentZeroMoment | HighBypassMoment)["outcome_sequence"],
+  phase: { outcome: number; resetFade: number; pulse: number },
+  progress: number
+) {
+  if (sequence.final_third_status !== "PASS") return;
+  const layout = layoutPitch(replay.pitch, ctx.canvas.clientWidth);
+  const direction = outcomeAttackingDirection(moment);
+  const threshold = sequence.final_third_threshold_normalized_x_m ?? replay.pitch.length_m / 6;
+  const boundaryX = direction === 1 ? threshold : -threshold;
+  const boundary = pitchPointToPixel(boundaryX, 0, replay.pitch, layout).x;
+  const left = direction === 1 ? boundary : layout.marginX;
+  const right = direction === 1 ? layout.marginX + layout.fieldWidth : boundary;
+  const width = Math.max(0, right - left);
+  if (width <= 0) return;
+  const outcomeAlpha = Math.max(phase.outcome, progress * 0.64) * phase.resetFade;
+  const goalSide = direction === 1 ? right : left;
+  const gradient = ctx.createLinearGradient(boundary, 0, goalSide, 0);
+  gradient.addColorStop(0, "rgba(255, 245, 203, 0)");
+  gradient.addColorStop(0.36, "rgba(255, 245, 203, 0.055)");
+  gradient.addColorStop(1, "rgba(255, 245, 203, 0.16)");
+
+  ctx.save();
+  ctx.globalAlpha = outcomeAlpha;
+  ctx.fillStyle = gradient;
+  ctx.fillRect(left, layout.marginY, width, layout.fieldHeight);
+  ctx.globalAlpha = outcomeAlpha * (0.36 + 0.18 * phase.pulse);
+  ctx.strokeStyle = "rgba(255, 245, 203, 0.46)";
+  ctx.lineWidth = 1.25;
+  ctx.beginPath();
+  ctx.moveTo(boundary, layout.marginY);
+  ctx.lineTo(boundary, layout.marginY + layout.fieldHeight);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function outcomeAttackingDirection(moment: MomentZeroMoment | HighBypassMoment) {
+  if ("attacking_direction" in moment) return moment.attacking_direction;
+  return moment.support_region.attacking_direction;
 }
 
 function drawBall(

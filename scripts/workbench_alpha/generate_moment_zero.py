@@ -128,7 +128,9 @@ def main() -> None:
                 "outcome_sequence.ball_start_point",
                 "outcome_sequence.ball_end_point",
                 "outcome_sequence.forward_progression_m",
+                "outcome_sequence.progression_status",
                 "outcome_sequence.final_third_status",
+                "outcome_sequence.final_third_outcome",
             ],
             "prohibited_visual_claims": [
                 "intent",
@@ -226,6 +228,7 @@ def observed_ball_outcome_sequence(
     end_frame_id: int,
     attacking_direction: int,
 ) -> dict[str, Any]:
+    minimum_progression_m = 8.0
     start_ball = ball_point_at_frame(replay["frames"], start_frame_id)
     end_frame = max(
         (
@@ -248,17 +251,33 @@ def observed_ball_outcome_sequence(
             "ball_start_point": start_ball,
             "ball_end_point": end_ball,
             "forward_progression_m": None,
+            "minimum_progression_m": minimum_progression_m,
+            "progression_status": "UNKNOWN",
             "distance_m": None,
+            "start_normalized_x_m": None,
+            "end_normalized_x_m": None,
             "final_third_status": "UNKNOWN",
-            "claim_boundary": "Observed ball location after reception only; no quality, intent, causation, possession-control, or decision-value claim.",
+            "final_third_start_status": "UNKNOWN",
+            "final_third_outcome": "UNKNOWN",
+            "claim_boundary": "Measured observable ball outcome after reception only; no quality, intent, causation, possession-control, or decision-value claim.",
         }
     actual_end_frame_id = int(end_frame["frame_id"])
     dx = float(end_ball["x_m"]) - float(start_ball["x_m"])
     dy = float(end_ball["y_m"]) - float(start_ball["y_m"])
+    normalized_start_x = float(start_ball["x_m"]) * int(attacking_direction)
     normalized_end_x = float(end_ball["x_m"]) * int(attacking_direction)
     final_third_threshold = float(replay["pitch"]["length_m"]) / 6.0
+    forward_progression_m = round(dx * int(attacking_direction), 2)
+    starts_in_final_third = normalized_start_x > final_third_threshold
+    ends_in_final_third = normalized_end_x > final_third_threshold
+    if starts_in_final_third and ends_in_final_third:
+        final_third_outcome = "remained_in_final_third"
+    elif ends_in_final_third:
+        final_third_outcome = "reached_final_third"
+    else:
+        final_third_outcome = "did_not_reach_final_third"
     return {
-        "mode": "observed_ball_position_after_reception",
+        "mode": "measured_ball_outcome_after_reception",
         "status": "PASS",
         "reason": "ball_tracking_observed",
         "start_frame_id": start_frame_id,
@@ -266,11 +285,17 @@ def observed_ball_outcome_sequence(
         "observed_seconds_after_reception": round((actual_end_frame_id - start_frame_id) / FRAME_RATE_HZ, 2),
         "ball_start_point": start_ball,
         "ball_end_point": end_ball,
-        "forward_progression_m": round(dx * int(attacking_direction), 2),
+        "forward_progression_m": forward_progression_m,
+        "minimum_progression_m": minimum_progression_m,
+        "progression_status": "PASS" if forward_progression_m >= minimum_progression_m else "FAIL",
         "distance_m": round(math.hypot(dx, dy), 2),
-        "final_third_status": "PASS" if normalized_end_x > final_third_threshold else "FAIL",
+        "start_normalized_x_m": round(normalized_start_x, 2),
+        "end_normalized_x_m": round(normalized_end_x, 2),
+        "final_third_start_status": "PASS" if starts_in_final_third else "FAIL",
+        "final_third_status": "PASS" if ends_in_final_third else "FAIL",
+        "final_third_outcome": final_third_outcome,
         "final_third_threshold_normalized_x_m": round(final_third_threshold, 2),
-        "claim_boundary": "Observed ball location after reception only; no quality, intent, causation, possession-control, or decision-value claim.",
+        "claim_boundary": "Measured observable ball outcome after reception only; no quality, intent, causation, possession-control, or decision-value claim.",
     }
 
 
