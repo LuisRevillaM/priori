@@ -683,11 +683,13 @@ function renderPrimitive(
   const evidenceAlpha = primitiveEvidenceAlpha(progress);
   drawCaseStudyPitch(ctx, layout);
   if (overlay === "team_press") {
+    drawPrimitiveContextPlayers(ctx, replay, frame, payload.moment.team_role ?? null, layout);
     drawTeamPressGeometry(ctx, replay, payload.moment as TeamPressPayload["moment"], anchorFrame, layout, evidenceAlpha);
-    drawTeamPressPlayers(ctx, replay, payload.moment as TeamPressPayload["moment"], frame, layout);
+    drawTeamPressEvidencePlayers(ctx, replay, payload.moment as TeamPressPayload["moment"], anchorFrame, layout, evidenceAlpha);
   } else {
+    drawPrimitiveContextPlayers(ctx, replay, frame, payload.moment.team_role ?? null, layout);
     drawCoverShadowGeometry(ctx, replay, payload.moment as CoverShadowPayload["moment"], layout, evidenceAlpha);
-    drawCoverShadowPlayers(ctx, replay, payload.moment as CoverShadowPayload["moment"], frame, layout);
+    drawCoverShadowEvidencePlayers(ctx, replay, payload.moment as CoverShadowPayload["moment"], layout, evidenceAlpha);
   }
   drawCaseStudyBall(ctx, replay, frame, layout);
 }
@@ -700,9 +702,10 @@ function drawCaseStudyPitch(ctx: CanvasRenderingContext2D, layout: ReturnType<ty
   const w = layout.fieldWidth;
   const h = layout.fieldHeight;
   ctx.save();
-  ctx.strokeStyle = "rgba(240,239,225,.34)";
+  ctx.strokeStyle = "rgba(240,239,225,.24)";
   ctx.lineWidth = 1;
   ctx.strokeRect(x, y, w, h);
+  ctx.strokeStyle = "rgba(240,239,225,.13)";
   ctx.beginPath();
   ctx.moveTo(x + w / 2, y);
   ctx.lineTo(x + w / 2, y + h);
@@ -713,34 +716,46 @@ function drawCaseStudyPitch(ctx: CanvasRenderingContext2D, layout: ReturnType<ty
   ctx.restore();
 }
 
-function drawTeamPressPlayers(
+function drawPrimitiveContextPlayers(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  frame: ReplayPayload["frames"][number],
+  focusTeamRole: string | null,
+  layout: ReturnType<typeof layoutPitch>
+) {
+  for (const entity of frame.entities) {
+    if (entity.entity_type === "ball") continue;
+    const point = pitchPointToPixel(Number(entity.x_m), Number(entity.y_m), replay.pitch, layout);
+    const isFocusTeam = focusTeamRole != null && entity.team_role === focusTeamRole;
+    ctx.beginPath();
+    ctx.fillStyle = isFocusTeam ? "rgba(247,242,218,.52)" : "rgba(215,101,76,.30)";
+    ctx.strokeStyle = isFocusTeam ? "rgba(255,251,226,.60)" : "rgba(255,185,160,.58)";
+    ctx.lineWidth = isFocusTeam ? 0.9 : 1.15;
+    ctx.arc(point.x, point.y, isFocusTeam ? 3.25 : 3.15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+}
+
+function drawTeamPressEvidencePlayers(
   ctx: CanvasRenderingContext2D,
   replay: ReplayPayload,
   moment: TeamPressPayload["moment"],
   frame: ReplayPayload["frames"][number],
-  layout: ReturnType<typeof layoutPitch>
+  layout: ReturnType<typeof layoutPitch>,
+  evidenceAlpha: number
 ) {
-  const pressureActors = new Set(moment.pressure_actor_ids);
-  const carrierTeam = moment.team_role;
-  for (const entity of frame.entities) {
-    if (entity.entity_type === "ball" || entity.entity_id === moment.carrier_id || pressureActors.has(entity.entity_id)) continue;
-    const point = pitchPointToPixel(Number(entity.x_m), Number(entity.y_m), replay.pitch, layout);
-    const isCarrierTeam = carrierTeam != null && entity.team_role === carrierTeam;
-    ctx.beginPath();
-    ctx.fillStyle = isCarrierTeam ? "rgba(247,242,218,.30)" : "rgba(238,148,124,.22)";
-    ctx.arc(point.x, point.y, isCarrierTeam ? 2.8 : 2.7, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
+  if (evidenceAlpha <= 0.01) return;
   const carrier = frame.entities.find((entity) => entity.entity_id === moment.carrier_id);
   if (carrier) {
     const point = pitchPointToPixel(Number(carrier.x_m), Number(carrier.y_m), replay.pitch, layout);
     ctx.save();
+    ctx.globalAlpha = evidenceAlpha;
     ctx.beginPath();
     ctx.fillStyle = "#fff1bd";
     ctx.strokeStyle = "rgba(20,27,19,.72)";
-    ctx.lineWidth = 1.6;
-    ctx.arc(point.x, point.y, 6.6, 0, Math.PI * 2);
+    ctx.lineWidth = 1.8;
+    ctx.arc(point.x, point.y, 7.0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.beginPath();
@@ -755,11 +770,12 @@ function drawTeamPressPlayers(
     if (!actor) continue;
     const point = pitchPointToPixel(Number(actor.x_m), Number(actor.y_m), replay.pitch, layout);
     ctx.save();
+    ctx.globalAlpha = evidenceAlpha;
     ctx.beginPath();
-    ctx.fillStyle = "rgba(215,101,76,.22)";
+    ctx.fillStyle = "rgba(215,101,76,.30)";
     ctx.strokeStyle = "rgba(255,185,160,.96)";
-    ctx.lineWidth = 2.1;
-    ctx.arc(point.x, point.y, 5.8, 0, Math.PI * 2);
+    ctx.lineWidth = 2.3;
+    ctx.arc(point.x, point.y, 6.2, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.beginPath();
@@ -783,64 +799,52 @@ function drawTeamPressGeometry(
   if (!carrier) return;
   const carrierPoint = pitchPointToPixel(Number(carrier.x_m), Number(carrier.y_m), replay.pitch, layout);
   ctx.save();
-  ctx.globalAlpha = 0.34 * evidenceAlpha;
-  ctx.strokeStyle = "rgba(255,241,189,.76)";
-  ctx.lineWidth = 1.2;
+  ctx.globalAlpha = 0.20 + 0.56 * evidenceAlpha;
+  ctx.strokeStyle = "rgba(255,241,189,.88)";
+  ctx.lineWidth = 2.0;
   ctx.beginPath();
   ctx.arc(carrierPoint.x, carrierPoint.y, moment.maximum_press_distance_m * layout.scalePxPerM, 0, Math.PI * 2);
   ctx.stroke();
   ctx.restore();
 }
 
-function drawCoverShadowPlayers(
+function drawCoverShadowEvidencePlayers(
   ctx: CanvasRenderingContext2D,
   replay: ReplayPayload,
   moment: CoverShadowPayload["moment"],
-  frame: ReplayPayload["frames"][number],
-  layout: ReturnType<typeof layoutPitch>
+  layout: ReturnType<typeof layoutPitch>,
+  evidenceAlpha: number
 ) {
-  const attackTeam = moment.team_role;
-  for (const entity of frame.entities) {
-    if (entity.entity_type === "ball" || entity.entity_id === moment.target_entity_id || entity.entity_id === moment.screening_defender_id) continue;
-    const point = pitchPointToPixel(Number(entity.x_m), Number(entity.y_m), replay.pitch, layout);
-    const isAttack = attackTeam != null && entity.team_role === attackTeam;
-    ctx.beginPath();
-    ctx.fillStyle = isAttack ? "rgba(247,242,218,.28)" : "rgba(238,148,124,.20)";
-    ctx.arc(point.x, point.y, isAttack ? 2.8 : 2.7, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  if (evidenceAlpha <= 0.01) return;
+  const target = pitchPointToPixel(Number(moment.target_point.x_m), Number(moment.target_point.y_m), replay.pitch, layout);
+  const defender = pitchPointToPixel(
+    Number(moment.screening_defender_point.x_m),
+    Number(moment.screening_defender_point.y_m),
+    replay.pitch,
+    layout
+  );
 
-  const target = frame.entities.find((entity) => entity.entity_id === moment.target_entity_id);
-  if (target) {
-    const point = pitchPointToPixel(Number(target.x_m), Number(target.y_m), replay.pitch, layout);
-    ctx.save();
-    ctx.beginPath();
-    ctx.fillStyle = "#fff1bd";
-    ctx.strokeStyle = "rgba(20,27,19,.72)";
-    ctx.lineWidth = 1.45;
-    ctx.arc(point.x, point.y, 6.1, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  const defender = frame.entities.find((entity) => entity.entity_id === moment.screening_defender_id);
-  if (defender) {
-    const point = pitchPointToPixel(Number(defender.x_m), Number(defender.y_m), replay.pitch, layout);
-    ctx.save();
-    ctx.beginPath();
-    ctx.fillStyle = "rgba(215,101,76,.35)";
-    ctx.strokeStyle = "rgba(255,185,160,.96)";
-    ctx.lineWidth = 2.0;
-    ctx.arc(point.x, point.y, 6.0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.fillStyle = "#ee947c";
-    ctx.arc(point.x, point.y, 1.9, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
+  ctx.save();
+  ctx.globalAlpha = evidenceAlpha;
+  ctx.beginPath();
+  ctx.fillStyle = "#fff1bd";
+  ctx.strokeStyle = "rgba(20,27,19,.72)";
+  ctx.lineWidth = 1.65;
+  ctx.arc(target.x, target.y, 6.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.fillStyle = "rgba(215,101,76,.34)";
+  ctx.strokeStyle = "rgba(255,185,160,.98)";
+  ctx.lineWidth = 2.25;
+  ctx.arc(defender.x, defender.y, 6.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.fillStyle = "#ee947c";
+  ctx.arc(defender.x, defender.y, 2.0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
 function drawCoverShadowGeometry(
@@ -850,7 +854,6 @@ function drawCoverShadowGeometry(
   layout: ReturnType<typeof layoutPitch>,
   evidenceAlpha: number
 ) {
-  if (evidenceAlpha <= 0.01) return;
   const ball = pitchPointToPixel(Number(moment.ball_point.x_m), Number(moment.ball_point.y_m), replay.pitch, layout);
   const target = pitchPointToPixel(Number(moment.target_point.x_m), Number(moment.target_point.y_m), replay.pitch, layout);
   const projection = pitchPointToPixel(
@@ -872,9 +875,10 @@ function drawCoverShadowGeometry(
   const nx = -dy / length;
   const ny = dx / length;
   const band = moment.maximum_lane_distance_m * layout.scalePxPerM;
+  const baseAlpha = 0.20 + 0.52 * evidenceAlpha;
 
   ctx.save();
-  ctx.globalAlpha = 0.16 * evidenceAlpha;
+  ctx.globalAlpha = 0.16 + 0.18 * evidenceAlpha;
   ctx.fillStyle = "#fff1bd";
   ctx.beginPath();
   ctx.moveTo(ball.x + nx * band, ball.y + ny * band);
@@ -886,15 +890,22 @@ function drawCoverShadowGeometry(
   ctx.restore();
 
   ctx.save();
-  ctx.globalAlpha = evidenceAlpha;
-  ctx.strokeStyle = "rgba(255,241,189,.78)";
-  ctx.lineWidth = 1.45;
+  ctx.globalAlpha = baseAlpha;
+  ctx.strokeStyle = "rgba(255,241,189,.94)";
+  ctx.lineWidth = 2.2;
   ctx.beginPath();
   ctx.moveTo(ball.x, ball.y);
   ctx.lineTo(target.x, target.y);
   ctx.stroke();
+  if (evidenceAlpha > 0.01) {
+    ctx.fillStyle = "#f2cf73";
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.strokeStyle = "rgba(255,185,160,.70)";
-  ctx.lineWidth = 1.1;
+  ctx.lineWidth = 1.25;
+  ctx.globalAlpha = evidenceAlpha;
   ctx.beginPath();
   ctx.moveTo(defender.x, defender.y);
   ctx.lineTo(projection.x, projection.y);
