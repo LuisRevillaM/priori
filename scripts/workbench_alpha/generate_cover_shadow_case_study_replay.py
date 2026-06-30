@@ -42,7 +42,7 @@ def main() -> None:
                 "source": {
                     "plan_path": str(COVER_SHADOW_PLAN_PATH),
                     "plan_hash": stable_hash(json.loads(COVER_SHADOW_PLAN_PATH.read_text(encoding="utf-8"))),
-                    "selection": "long ball-target lane, then screening defender closest to lane",
+                    "selection": "short local ball-target lane with screening defender clearly inside threshold band",
                 },
                 "replays": [{"index": 0, "payload": payload}],
             },
@@ -69,12 +69,22 @@ def main() -> None:
 
 
 def select_representative_record(records: list[dict[str, Any]]) -> dict[str, Any]:
+    readable = [
+        record
+        for record in records
+        if 8.0 <= float(record.get("lane_length_m") or 0.0) <= 18.0
+        and float(record.get("screening_defender_distance_to_lane_m") or 99.0) <= 1.2
+        and 0.25 <= float(record.get("screening_defender_projection_fraction") or 0.0) <= 0.78
+    ]
+    candidates = readable or records
+    ideal_lane_length_m = 12.0
     return max(
-        records,
+        candidates,
         key=lambda record: (
-            float(record.get("lane_length_m") or 0.0),
+            -abs(float(record.get("lane_length_m") or 0.0) - ideal_lane_length_m),
             -float(record.get("screening_defender_distance_to_lane_m") or 99.0),
             int(record.get("observed_defender_count") or 0),
+            -abs(float(record.get("screening_defender_projection_fraction") or 0.0) - 0.50),
             -int(record.get("anchor_frame_id") or 0),
         ),
     )

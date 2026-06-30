@@ -11,6 +11,9 @@ const REPO_BASE: string | null = null;
 const SOURCES = [
   { label: "Controlled-pass verification", path: "delivery/m2a-high-bypass-completed-pass/M2A_S1A_CONTROLLED_PASS.md" },
   { label: "High-bypass verification", path: "delivery/m2a-high-bypass-completed-pass/M2A_S1C_HIGH_BYPASS_RESULTS.md" },
+  { label: "Team-press primitive verification", path: "src/tqe/verification/afl_team_press.py" },
+  { label: "Cover-shadow primitive verification", path: "src/tqe/verification/afl_cover_shadow.py" },
+  { label: "Carry primitive verification", path: "src/tqe/verification/afl_carry_episode.py" },
   { label: "High-bypass typed plan", path: "config/query-plans/high_bypass_completed_pass.experimental.v1.json" },
   { label: "Typed query-plan library (the tactical language)", path: "config/query-plans/" }
 ];
@@ -29,6 +32,7 @@ const LAYERS = [
 const REPLAY_PACKET_PATH = "/case-study-high-bypass-replays.json";
 const TEAM_PRESS_PACKET_PATH = "/case-study-team-press-replays.json";
 const COVER_SHADOW_PACKET_PATH = "/case-study-cover-shadow-replays.json";
+const CARRY_PACKET_PATH = "/case-study-carry-replays.json";
 
 type ReplayPacket = {
   replays: Array<{
@@ -99,10 +103,45 @@ type CoverShadowPayload = {
   visual_contract: Record<string, unknown>;
 };
 
+type CarryPayload = {
+  schema_version: "coach_moment.carry_episode.v0";
+  moment: {
+    result_id: string;
+    match_id: string;
+    period: string;
+    team_role?: string | null;
+    anchor_frame_id: number;
+    carry_episode_id: string;
+    carrier_id: string;
+    carry_status: string;
+    carry_reason: string;
+    carry_start_frame_id: number;
+    carry_end_frame_id: number;
+    carry_duration_seconds: number;
+    start_point: { x_m: number; y_m: number };
+    end_point: { x_m: number; y_m: number };
+    displacement_m: number;
+    carry_forward_progression_m: number;
+    possession_continuity_status: string;
+    control_continuity_status: string;
+    controlled_frame_ratio: number;
+    comoving_frame_ratio: number;
+    control_distance_m: number;
+    nearest_teammate_margin_m: number;
+    maximum_ball_player_speed_delta_mps: number;
+    minimum_displacement_m: number;
+    maximum_carry_seconds: number;
+    claim_boundary: string;
+  };
+  replay: ReplayPayload;
+  visual_contract: Record<string, unknown>;
+};
+
 export function CaseStudy() {
   const [replays, setReplays] = React.useState<Record<number, CoachMomentPayload>>({});
   const [teamPressReplays, setTeamPressReplays] = React.useState<Record<number, TeamPressPayload>>({});
   const [coverShadowReplays, setCoverShadowReplays] = React.useState<Record<number, CoverShadowPayload>>({});
+  const [carryReplays, setCarryReplays] = React.useState<Record<number, CarryPayload>>({});
 
   React.useEffect(() => {
     let cancelled = false;
@@ -161,6 +200,27 @@ export function CaseStudy() {
       })
       .catch(() => {
         if (!cancelled) setCoverShadowReplays({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch(CARRY_PACKET_PATH)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Carry replay packet unavailable: ${response.status}`);
+        return response.json() as Promise<ReplayPacket>;
+      })
+      .then((packet) => {
+        if (cancelled) return;
+        setCarryReplays(
+          Object.fromEntries(packet.replays.map((item) => [item.index, item.payload as CarryPayload]))
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setCarryReplays({});
       });
     return () => {
       cancelled = true;
@@ -232,9 +292,9 @@ export function CaseStudy() {
           <li><strong>Set pieces:</strong> set-piece structure and restart type.</li>
         </ul>
         <p>
-          Many primitives sit close to raw geometry. They measure one spatial or kinematic condition:
-          defenders around a carrier, a defender on a ball-to-target lane, a player&apos;s distance to
-          the ball, or time to arrive at a point. Those are useful observations, but a primitive existing
+          Many primitives sit close to one observable condition. Some are spatial: defenders around a
+          carrier, or a defender on a ball-to-target lane. Some are kinematic: a player speeding up,
+          slowing down, or arriving at a point. Those observations are useful, but a primitive existing
           in the catalog is a building block, not a coach insight.
         </p>
         <p>
@@ -290,13 +350,37 @@ export function CaseStudy() {
           facts={(payload) => <CoverShadowFacts payload={payload} />}
           caption="Observed lane screening: one defender sits within the measured ball-target lane band. This is geometry only, not a claim that the pass was impossible or deliberately denied."
         />
+        <h3 className="cs-example-title">On-ball primitive: observed carry</h3>
+        <div className="cs-example-context" aria-label="Carry example context">
+          <div>
+            <span>Look for</span>
+            <strong>The highlighted carrier and the ball-control path from reception to release.</strong>
+          </div>
+          <div>
+            <span>Proves</span>
+            <strong>Same-player movement under control across a measured carry interval.</strong>
+          </div>
+          <div>
+            <span>Does not claim</span>
+            <strong>Dribbling skill, defender bypass, pressure breaking, intent, decision quality, or value.</strong>
+          </div>
+        </div>
+        <PrimitiveMiniReplay
+          className="cs-replay-carry"
+          payload={carryReplays[0]}
+          overlay="carry"
+          ariaLabel="Observed carry movement on a football pitch"
+          verdict="Carry PASS · substrate example"
+          facts={(payload) => <CarryFacts payload={payload} />}
+          caption="Observed carry: the same player moves with the ball under the declared control thresholds. This is movement-under-control only, not a claim that the carry beat defenders or was valuable."
+        />
 
         <h2>Putting it to test: high-bypass passes</h2>
         <p>
-          High-bypass is different. It is not a single geometric fact. It compounds a pass event,
-          opponent positions, forward progression, reception control, restart context, and the words
-          the surface is allowed to imply about outcome. The geometry can be true while the coach-facing
-          word is still too strong.
+          High-bypass is different. It is not a single primitive. It compounds a pass event, opponent
+          positions, forward progression, reception control, restart context, and the words the surface
+          is allowed to imply about outcome. The geometry can be true while the coach-facing word is
+          still too strong.
         </p>
         <h3 className="cs-example-title">Composed concept: high-bypass pass</h3>
         <div className="cs-example-context" aria-label="High-bypass example context">
@@ -461,8 +545,8 @@ function MiniReplay({
   );
 }
 
-type PrimitiveOverlayKind = "team_press" | "cover_shadow";
-type PrimitivePayload = TeamPressPayload | CoverShadowPayload;
+type PrimitiveOverlayKind = "team_press" | "cover_shadow" | "carry";
+type PrimitivePayload = TeamPressPayload | CoverShadowPayload | CarryPayload;
 
 function PrimitiveMiniReplay<T extends PrimitivePayload>({
   payload,
@@ -605,6 +689,46 @@ function CoverShadowFacts({ payload }: { payload: CoverShadowPayload }) {
   );
 }
 
+function CarryFacts({ payload }: { payload: CarryPayload }) {
+  const moment = payload.moment;
+  return (
+    <dl className="cs-replay-facts" aria-label="Carry evidence facts">
+      <div>
+        <dt>Match</dt>
+        <dd>{moment.match_id}</dd>
+      </div>
+      <div>
+        <dt>Half</dt>
+        <dd>{periodLabel(moment.period)}</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>{moment.carry_status}</dd>
+      </div>
+      <div>
+        <dt>Duration</dt>
+        <dd>{moment.carry_duration_seconds.toFixed(2)}s</dd>
+      </div>
+      <div>
+        <dt>Displace</dt>
+        <dd>{moment.displacement_m.toFixed(1)}m</dd>
+      </div>
+      <div>
+        <dt>Forward</dt>
+        <dd>{moment.carry_forward_progression_m.toFixed(1)}m</dd>
+      </div>
+      <div>
+        <dt>Control</dt>
+        <dd>{Math.round(moment.controlled_frame_ratio * 100)}%</dd>
+      </div>
+      <div>
+        <dt>Comoving</dt>
+        <dd>{Math.round(moment.comoving_frame_ratio * 100)}%</dd>
+      </div>
+    </dl>
+  );
+}
+
 function ReplayFacts({ payload }: { payload: CoachMomentPayload }) {
   const moment = asRecord(payload.moment);
   const clean = asRecord(moment.clean_control_retention);
@@ -686,10 +810,14 @@ function renderPrimitive(
     drawPrimitiveContextPlayers(ctx, replay, frame, payload.moment.team_role ?? null, layout);
     drawTeamPressGeometry(ctx, replay, payload.moment as TeamPressPayload["moment"], anchorFrame, layout, evidenceAlpha);
     drawTeamPressEvidencePlayers(ctx, replay, payload.moment as TeamPressPayload["moment"], anchorFrame, layout, evidenceAlpha);
-  } else {
+  } else if (overlay === "cover_shadow") {
     drawPrimitiveContextPlayers(ctx, replay, frame, payload.moment.team_role ?? null, layout);
     drawCoverShadowGeometry(ctx, replay, payload.moment as CoverShadowPayload["moment"], layout, evidenceAlpha);
     drawCoverShadowEvidencePlayers(ctx, replay, payload.moment as CoverShadowPayload["moment"], layout, evidenceAlpha);
+  } else {
+    drawPrimitiveContextPlayers(ctx, replay, frame, payload.moment.team_role ?? null, layout);
+    drawCarryGeometry(ctx, replay, payload.moment as CarryPayload["moment"], layout, evidenceAlpha);
+    drawCarryEvidencePlayer(ctx, replay, payload.moment as CarryPayload["moment"], anchorFrame, layout, evidenceAlpha);
   }
   drawCaseStudyBall(ctx, replay, frame, layout);
 }
@@ -794,12 +922,11 @@ function drawTeamPressGeometry(
   layout: ReturnType<typeof layoutPitch>,
   evidenceAlpha: number
 ) {
-  if (evidenceAlpha <= 0.01) return;
   const carrier = frame.entities.find((entity) => entity.entity_id === moment.carrier_id);
   if (!carrier) return;
   const carrierPoint = pitchPointToPixel(Number(carrier.x_m), Number(carrier.y_m), replay.pitch, layout);
   ctx.save();
-  ctx.globalAlpha = 0.20 + 0.56 * evidenceAlpha;
+  ctx.globalAlpha = 0.18 + 0.54 * evidenceAlpha;
   ctx.strokeStyle = "rgba(255,241,189,.88)";
   ctx.lineWidth = 2.0;
   ctx.beginPath();
@@ -913,6 +1040,92 @@ function drawCoverShadowGeometry(
   ctx.fillStyle = "rgba(255,185,160,.86)";
   ctx.beginPath();
   ctx.arc(projection.x, projection.y, 2.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCarryGeometry(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: CarryPayload["moment"],
+  layout: ReturnType<typeof layoutPitch>,
+  evidenceAlpha: number
+) {
+  const trailFrames = replay.frames.filter(
+    (frame) => frame.frame_id >= moment.carry_start_frame_id && frame.frame_id <= moment.carry_end_frame_id
+  );
+  const points = trailFrames
+    .map((frame) => frame.entities.find((entity) => entity.entity_id === moment.carrier_id))
+    .filter((entity): entity is ReplayPayload["frames"][number]["entities"][number] => Boolean(entity))
+    .map((entity) => pitchPointToPixel(Number(entity.x_m), Number(entity.y_m), replay.pitch, layout));
+  if (points.length < 2) return;
+
+  ctx.save();
+  ctx.globalAlpha = 0.24 + 0.56 * evidenceAlpha;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "rgba(255,241,189,.88)";
+  ctx.lineWidth = 3.0;
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (const point of points.slice(1)) {
+    ctx.lineTo(point.x, point.y);
+  }
+  ctx.stroke();
+
+  const start = points[Math.max(0, points.length - 9)];
+  const end = points[points.length - 1];
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const length = Math.hypot(dx, dy);
+  if (length > 1.5) {
+    const ux = dx / length;
+    const uy = dy / length;
+    const size = 7;
+    ctx.fillStyle = "rgba(255,241,189,.92)";
+    ctx.beginPath();
+    ctx.moveTo(end.x + ux * 3, end.y + uy * 3);
+    ctx.lineTo(end.x - ux * size - uy * size * 0.55, end.y - uy * size + ux * size * 0.55);
+    ctx.lineTo(end.x - ux * size + uy * size * 0.55, end.y - uy * size - ux * size * 0.55);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.fillStyle = "rgba(255,241,189,.28)";
+  ctx.beginPath();
+  ctx.arc(points[0].x, points[0].y, 4.6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,241,189,.82)";
+  ctx.beginPath();
+  ctx.arc(end.x, end.y, 4.8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCarryEvidencePlayer(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: CarryPayload["moment"],
+  frame: ReplayPayload["frames"][number],
+  layout: ReturnType<typeof layoutPitch>,
+  evidenceAlpha: number
+) {
+  if (evidenceAlpha <= 0.01) return;
+  const player = frame.entities.find((entity) => entity.entity_id === moment.carrier_id);
+  if (!player) return;
+  const point = pitchPointToPixel(Number(player.x_m), Number(player.y_m), replay.pitch, layout);
+  ctx.save();
+  ctx.globalAlpha = evidenceAlpha;
+  ctx.beginPath();
+  ctx.fillStyle = "#fff1bd";
+  ctx.strokeStyle = "rgba(20,27,19,.72)";
+  ctx.lineWidth = 1.8;
+  ctx.arc(point.x, point.y, 7.0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.fillStyle = "#1e3f31";
+  ctx.arc(point.x, point.y, 2.0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
