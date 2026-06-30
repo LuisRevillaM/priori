@@ -3,21 +3,6 @@ import { CoachMomentPitch, type CoachMomentPayload } from "./MomentZero";
 import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
 import type { ReplayPayload } from "./types";
 
-// Set to the GitHub blob base for the pushed branch IF the repo is public to the
-// reader (e.g. "https://github.com/<org>/<repo>/blob/codex/afl08-passport-loop").
-// Leave null to render plain file paths instead of links — never ship a dead link.
-const REPO_BASE: string | null = null;
-
-const SOURCES = [
-  { label: "Controlled-pass verification", path: "delivery/m2a-high-bypass-completed-pass/M2A_S1A_CONTROLLED_PASS.md" },
-  { label: "High-bypass verification", path: "delivery/m2a-high-bypass-completed-pass/M2A_S1C_HIGH_BYPASS_RESULTS.md" },
-  { label: "Team-press primitive verification", path: "src/tqe/verification/afl_team_press.py" },
-  { label: "Cover-shadow primitive verification", path: "src/tqe/verification/afl_cover_shadow.py" },
-  { label: "Carry primitive verification", path: "src/tqe/verification/afl_carry_episode.py" },
-  { label: "High-bypass typed plan", path: "config/query-plans/high_bypass_completed_pass.experimental.v1.json" },
-  { label: "Typed query-plan library (the tactical language)", path: "config/query-plans/" }
-];
-
 const LAYERS = [
   "Raw event + tracking data (IDSSE / DFL)",
   "Canonical match state",
@@ -508,15 +493,6 @@ export function CaseStudy() {
           top.
         </p>
 
-        <h2>Sources</h2>
-        <ul className="cs-sources">
-          {SOURCES.map((s) => (
-            <li key={s.path}>
-              {REPO_BASE ? <a href={`${REPO_BASE}/${s.path}`} target="_blank" rel="noreferrer">{s.label}</a> : s.label}
-              <code>{s.path}</code>
-            </li>
-          ))}
-        </ul>
       </article>
     </main>
   );
@@ -1226,10 +1202,6 @@ const CSS = `
 .cs-node{width:100%;max-width:420px;background:#fff;border:1px solid #d8ddd2;border-radius:8px;padding:11px 14px;font-size:14px;font-weight:550;color:#28332b;box-shadow:0 1px 2px rgba(40,51,43,.04)}
 .cs-arrow{color:#8fac9a;font-size:14px;line-height:1;margin:5px 0}
 .cs-invariant{margin-top:18px;font-size:13px;color:#5d7a68;max-width:460px}
-.cs-sources{list-style:none;padding:0}
-.cs-sources li{display:flex;flex-direction:column;gap:3px;margin:0 0 12px}
-.cs-sources a{color:#2f6b4f;text-decoration:none;font-weight:550}.cs-sources a:hover{text-decoration:underline}
-.cs-sources code{align-self:flex-start;font-size:12px;background:none;color:#6a716a;padding:0}
 .cs-replay{width:min(920px,calc(100vw - 40px));margin:28px 0 30px 50%;transform:translateX(-50%)}
 .cs-replay-frame{background:#102a20;border:1px solid rgba(31,41,35,.18);border-radius:12px;overflow:hidden;box-shadow:0 18px 48px rgba(31,41,35,.18)}
 .cs-replay .momentCanvasShell{width:100%;filter:none}
