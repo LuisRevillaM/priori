@@ -1,4 +1,5 @@
 import React from "react";
+import { CoachMomentPitch, type CoachMomentPayload } from "./MomentZero";
 
 // Set to the GitHub blob base for the pushed branch IF the repo is public to the
 // reader (e.g. "https://github.com/<org>/<repo>/blob/codex/afl08-passport-loop").
@@ -23,7 +24,39 @@ const LAYERS = [
   "Replay + coach-facing wording"
 ];
 
+const REPLAY_PACKET_PATH = "/case-study-high-bypass-replays.json";
+
+type ReplayPacket = {
+  replays: Array<{
+    index: number;
+    payload: unknown;
+  }>;
+};
+
 export function CaseStudy() {
+  const [replays, setReplays] = React.useState<Record<number, CoachMomentPayload>>({});
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch(REPLAY_PACKET_PATH)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Replay packet unavailable: ${response.status}`);
+        return response.json() as Promise<ReplayPacket>;
+      })
+      .then((packet) => {
+        if (cancelled) return;
+        setReplays(
+          Object.fromEntries(packet.replays.map((item) => [item.index, item.payload as CoachMomentPayload]))
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setReplays({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <main className="cs">
       <style>{CSS}</style>
@@ -102,6 +135,11 @@ export function CaseStudy() {
 + opponents_bypassed_by_action
 + forward_progression ≥ 8 m
 → high_bypass_completed_pass`}</pre>
+        <MiniReplay
+          payload={replays[0]}
+          verdict="Open-play clean-control PASS · catalog index 0"
+          caption="What the surface should keep: an open-play high-bypass where clean control is held after reception."
+        />
         <p>
           It was a useful test because it touches the whole stack: event feed, tracking, geometry,
           control, possession, and the wording a coach finally sees.
@@ -133,6 +171,11 @@ export function CaseStudy() {
           often lost the ball within a couple of seconds. The geometry was right; the word “successful”
           was not earned.
         </p>
+        <MiniReplay
+          payload={replays[5]}
+          verdict="Clean-control FAIL · catalog index 5"
+          caption="The first surface would have treated this as successful. The geometry is real; sustained control is not."
+        />
         <p>
           The first attempt to fix this used the provider’s possession flag to confirm the team kept the
           ball. It passed the same moments that still looked like losses on replay, because that flag
@@ -144,26 +187,45 @@ export function CaseStudy() {
           stricter control check, two came from restarts — a free kick and a throw-in. They were valid
           high-bypass passes and valid controlled receptions, but not open-play examples.
         </p>
+        <MiniReplay
+          payload={replays[1]}
+          verdict="Clean-control PASS · restart · catalog index 1"
+          caption="A valid high-bypass and a genuine controlled reception, but from a free kick rather than open play."
+        />
 
-        <h2>Changes made</h2>
-        <p>Two layers were added, each fencing a specific overclaim.</p>
+        <h2>What changed, and where</h2>
         <p>
-          First, a clean-control check. A coach-facing “controlled reception” now requires more than a
-          provider flag or a brief touch: the ball stays close to the receiver, the receiver is clearly
-          closer to it than any opponent, the ball moves with the receiver, control is sustained, and
-          the moment is dropped if an opponent gains clean control. Of twenty raw high-bypass passes,
-          five passed.
+          It is worth being exact about where these fixes live, because the location is the point. None
+          of them changed the core compiler. The primitives were already truthful. The overclaims
+          happened at the boundary between the substrate and the coach-facing product, and that is where
+          the fences were added.
         </p>
         <p>
-          Second, event-context filtering. Event type and restart status are now carried through to the
-          result, and the surface defaults to open play. The two restart cases stay available to inspect
-          rather than being hidden.
+          <strong>Clean-control check — generation layer.</strong> The check,{" "}
+          <code>clean_control_retention_sequence</code>, is not a core catalog primitive. It runs over
+          the compiler’s output, in the layer that prepares moments for the surface, and keeps only the
+          passes where control was genuinely held. Of twenty raw high-bypass passes, five passed.
+          Because it is currently a gate rather than a registered primitive, the natural next step is to
+          promote it into the catalog so other concepts can reuse it.
         </p>
         <p>
-          Both changes have the same shape. A primitive was true; a stronger claim was attached to it
-          that the evidence did not support; the fix was to supply the evidence that claim required, or
-          to stop making it. Each time one claim was tightened, the next mismatch became visible:
-          geometry, then control, then phase of play.
+          <strong>Event-context filter — runtime fields, surface default.</strong> The restart typing
+          already existed in the core runtime, <code>set_piece_restart_type</code>. The change carried{" "}
+          <code>event_type</code>, <code>restart_type</code>, and <code>open_play_status</code> through
+          to the moment payload and defaulted the surface to open play. This was mostly plumbing
+          knowledge the runtime already had out to where a coach sees it, plus a filter — not new
+          detection.
+        </p>
+        <p>
+          <strong>Claim-backing gate — coach API layer.</strong> The coach service,{" "}
+          <code>app_service.py</code>, now holds a map of which composition each coach-facing claim
+          requires, and refuses to emit a claim unless that composition is present and passing. It fails
+          closed. “Controlled reception” requires the clean-control check; “open-play example” requires
+          open-play status.
+        </p>
+        <p>
+          The shared property: the core compiler stayed the same, and the product layer stopped saying
+          more than the compiler had proven.
         </p>
 
         <h2>Where this leaves the approach</h2>
@@ -187,6 +249,28 @@ export function CaseStudy() {
         </ul>
       </article>
     </main>
+  );
+}
+
+function MiniReplay({
+  payload,
+  verdict,
+  caption
+}: {
+  payload: CoachMomentPayload | undefined;
+  verdict: string;
+  caption: string;
+}) {
+  return (
+    <figure className="cs-replay">
+      <div className="cs-replay-frame">
+        {payload ? <CoachMomentPitch payload={payload} overlayMode="clean" /> : <div className="cs-replay-loading">Loading replay</div>}
+      </div>
+      <figcaption>
+        <span>{verdict}</span>
+        {caption}
+      </figcaption>
+    </figure>
   );
 }
 
@@ -216,4 +300,12 @@ const CSS = `
 .cs-sources li{display:flex;flex-direction:column;gap:3px;margin:0 0 12px}
 .cs-sources a{color:#2f6b4f;text-decoration:none;font-weight:550}.cs-sources a:hover{text-decoration:underline}
 .cs-sources code{align-self:flex-start;font-size:12px;background:none;color:#6a716a;padding:0}
+.cs-replay{width:min(920px,calc(100vw - 40px));margin:28px 0 30px 50%;transform:translateX(-50%)}
+.cs-replay-frame{background:#102a20;border:1px solid rgba(31,41,35,.18);border-radius:12px;overflow:hidden;box-shadow:0 18px 48px rgba(31,41,35,.18)}
+.cs-replay .momentCanvasShell{width:100%;filter:none}
+.cs-replay .momentCanvasShell canvas{border:0;border-radius:0}
+.cs-replay-loading{display:grid;place-items:center;min-height:320px;color:rgba(250,249,245,.72);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.cs-replay figcaption{margin:10px 2px 0;color:#4f5b52;font-size:13px;line-height:1.45}
+.cs-replay figcaption span{display:block;margin:0 0 3px;color:#2f6b4f;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+@media(max-width:560px){.cs-replay{width:calc(100vw - 28px);margin-top:22px;margin-bottom:24px}}
 `;
