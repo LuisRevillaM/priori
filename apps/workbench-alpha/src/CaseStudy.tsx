@@ -28,6 +28,7 @@ const LAYERS = [
 
 const REPLAY_PACKET_PATH = "/case-study-high-bypass-replays.json";
 const TEAM_PRESS_PACKET_PATH = "/case-study-team-press-replays.json";
+const COVER_SHADOW_PACKET_PATH = "/case-study-cover-shadow-replays.json";
 
 type ReplayPacket = {
   replays: Array<{
@@ -70,9 +71,38 @@ type TeamPressPayload = {
   visual_contract: Record<string, unknown>;
 };
 
+type CoverShadowPayload = {
+  schema_version: "coach_moment.cover_shadow.v0";
+  moment: {
+    match_id: string;
+    period: string;
+    team_role?: string | null;
+    anchor_frame_id: number;
+    cover_shadow_status: string;
+    passing_lane_denial_status: string;
+    target_entity_id: string;
+    ball_point: { x_m: number; y_m: number };
+    target_point: { x_m: number; y_m: number };
+    lane_length_m: number;
+    observed_defender_count: number;
+    minimum_observed_defenders: number;
+    maximum_lane_distance_m: number;
+    minimum_projection_fraction: number;
+    screening_defender_id: string;
+    screening_defender_distance_to_lane_m: number;
+    screening_defender_projection_fraction: number;
+    screening_defender_point: { x_m: number; y_m: number };
+    screening_projection_point: { x_m: number; y_m: number };
+    claim_boundary: string;
+  };
+  replay: ReplayPayload;
+  visual_contract: Record<string, unknown>;
+};
+
 export function CaseStudy() {
   const [replays, setReplays] = React.useState<Record<number, CoachMomentPayload>>({});
   const [teamPressReplays, setTeamPressReplays] = React.useState<Record<number, TeamPressPayload>>({});
+  const [coverShadowReplays, setCoverShadowReplays] = React.useState<Record<number, CoverShadowPayload>>({});
 
   React.useEffect(() => {
     let cancelled = false;
@@ -110,6 +140,27 @@ export function CaseStudy() {
       })
       .catch(() => {
         if (!cancelled) setTeamPressReplays({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch(COVER_SHADOW_PACKET_PATH)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Cover-shadow replay packet unavailable: ${response.status}`);
+        return response.json() as Promise<ReplayPacket>;
+      })
+      .then((packet) => {
+        if (cancelled) return;
+        setCoverShadowReplays(
+          Object.fromEntries(packet.replays.map((item) => [item.index, item.payload as CoverShadowPayload]))
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setCoverShadowReplays({});
       });
     return () => {
       cancelled = true;
@@ -181,18 +232,21 @@ export function CaseStudy() {
           <li><strong>Set pieces:</strong> set-piece structure and restart type.</li>
         </ul>
         <p>
-          These compute geometric and kinematic facts. A primitive existing in the catalog is not the
-          same as its coach-facing meaning being proven; each one still has to be validated on its own.
+          Many primitives sit close to raw geometry. They measure one spatial or kinematic condition:
+          defenders around a carrier, a defender on a ball-to-target lane, a player&apos;s distance to
+          the ball, or time to arrive at a point. Those are useful observations, but a primitive existing
+          in the catalog is a building block, not a coach insight.
         </p>
         <p>
-          The useful contrast is high-bypass beside team press. One is an attacking action anchored on
-          a pass event. The other is defensive pressure geometry with no pass and no possession in it.
+          A coach-facing situation is compound. It can require geometry, relationships between players,
+          event context, control, and the words the surface is allowed to use. The difference between a
+          primitive and a claim is the spine of this test.
         </p>
-        <h3 className="cs-example-title">Defensive geometry: observed pressure on the carrier</h3>
+        <h3 className="cs-example-title">Geometric primitive: observed pressure on the carrier</h3>
         <div className="cs-example-context" aria-label="Team-press example context">
           <div>
             <span>Look for</span>
-            <strong>The cream carrier, rust defenders, and the seven-metre pressure radius at the measured frame.</strong>
+            <strong>The carrier, nearby defenders, and the seven-metre radius at one measured frame.</strong>
           </div>
           <div>
             <span>Proves</span>
@@ -208,9 +262,35 @@ export function CaseStudy() {
           verdict="Team-press geometry PASS · substrate example"
           caption="Observed pressure on the carrier: the highlighted defenders satisfy the distance, closing, and angle-spread gates. This is substrate-verified geometry, not a product-validated press interpretation."
         />
+        <h3 className="cs-example-title">Geometric primitive: cover shadow on a lane</h3>
+        <div className="cs-example-context" aria-label="Cover-shadow example context">
+          <div>
+            <span>Look for</span>
+            <strong>The ball-to-target lane and the defender sitting inside its threshold band.</strong>
+          </div>
+          <div>
+            <span>Proves</span>
+            <strong>A defender screens that lane under fixed distance and projection thresholds.</strong>
+          </div>
+          <div>
+            <span>Does not claim</span>
+            <strong>Defender intent, pass probability, pitch-control value, interception, or quality.</strong>
+          </div>
+        </div>
+        <CoverShadowMiniReplay
+          payload={coverShadowReplays[0]}
+          verdict="Cover-shadow geometry PASS · substrate example"
+          caption="Observed lane screening: one defender sits within the measured ball-target lane band. This is geometry only, not a claim that the pass was impossible or deliberately denied."
+        />
 
         <h2>Putting it to test: high-bypass passes</h2>
-        <h3 className="cs-example-title">Attacking action: high-bypass pass</h3>
+        <p>
+          High-bypass is different. It is not a single geometric fact. It compounds a pass event,
+          opponent positions, forward progression, reception control, restart context, and the words
+          the surface is allowed to imply about outcome. The geometry can be true while the coach-facing
+          word is still too strong.
+        </p>
+        <h3 className="cs-example-title">Composed concept: high-bypass pass</h3>
         <div className="cs-example-context" aria-label="High-bypass example context">
           <div>
             <span>Look for</span>
@@ -396,6 +476,29 @@ function TeamPressMiniReplay({
   );
 }
 
+function CoverShadowMiniReplay({
+  payload,
+  verdict,
+  caption
+}: {
+  payload: CoverShadowPayload | undefined;
+  verdict: string;
+  caption: string;
+}) {
+  return (
+    <figure className="cs-replay cs-replay-cover-shadow">
+      <div className="cs-replay-frame">
+        {payload ? <CoverShadowPitch payload={payload} /> : <div className="cs-replay-loading">Loading replay</div>}
+      </div>
+      <figcaption>
+        <span>{verdict}</span>
+        {payload ? <CoverShadowFacts payload={payload} /> : null}
+        {caption}
+      </figcaption>
+    </figure>
+  );
+}
+
 function TeamPressPitch({ payload }: { payload: TeamPressPayload }) {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const shellRef = React.useRef<HTMLDivElement | null>(null);
@@ -405,28 +508,43 @@ function TeamPressPitch({ payload }: { payload: TeamPressPayload }) {
     const shell = shellRef.current;
     if (!canvas || !shell) return;
 
-    let animationFrame = 0;
-    let startedAt: number | null = null;
-    const resizeObserver = new ResizeObserver(() => drawAt(performance.now()));
+    const draw = () => renderTeamPress(canvas, shell, payload);
+    const resizeObserver = new ResizeObserver(draw);
     resizeObserver.observe(shell);
-
-    const drawAt = (timestamp: number) => {
-      if (startedAt === null) startedAt = timestamp;
-      const progress = ((timestamp - startedAt) % 7200) / 7200;
-      renderTeamPress(canvas, shell, payload, progress);
-      animationFrame = window.requestAnimationFrame(drawAt);
-    };
-
-    animationFrame = window.requestAnimationFrame(drawAt);
+    draw();
     return () => {
-      window.cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
     };
   }, [payload]);
 
   return (
     <div className="momentCanvasShell" ref={shellRef}>
-      <canvas ref={canvasRef} aria-label="Animated observed team-press geometry on a football pitch" />
+      <canvas ref={canvasRef} aria-label="Observed team-press geometry on a football pitch" />
+    </div>
+  );
+}
+
+function CoverShadowPitch({ payload }: { payload: CoverShadowPayload }) {
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const shellRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    const shell = shellRef.current;
+    if (!canvas || !shell) return;
+
+    const draw = () => renderCoverShadow(canvas, shell, payload);
+    const resizeObserver = new ResizeObserver(draw);
+    resizeObserver.observe(shell);
+    draw();
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [payload]);
+
+  return (
+    <div className="momentCanvasShell" ref={shellRef}>
+      <canvas ref={canvasRef} aria-label="Observed cover-shadow lane geometry on a football pitch" />
     </div>
   );
 }
@@ -458,6 +576,38 @@ function TeamPressFacts({ payload }: { payload: TeamPressPayload }) {
       <div>
         <dt>Spread</dt>
         <dd>{moment.pressure_angle_spread_degrees.toFixed(1)}° / {moment.minimum_angle_spread_degrees.toFixed(0)}° min</dd>
+      </div>
+      <div>
+        <dt>Tracked</dt>
+        <dd>{moment.observed_defender_count} defenders</dd>
+      </div>
+    </dl>
+  );
+}
+
+function CoverShadowFacts({ payload }: { payload: CoverShadowPayload }) {
+  const moment = payload.moment;
+  return (
+    <dl className="cs-replay-facts" aria-label="Cover-shadow evidence facts">
+      <div>
+        <dt>Match</dt>
+        <dd>{moment.match_id}</dd>
+      </div>
+      <div>
+        <dt>Half</dt>
+        <dd>{periodLabel(moment.period)}</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>{moment.cover_shadow_status}</dd>
+      </div>
+      <div>
+        <dt>Lane</dt>
+        <dd>{moment.lane_length_m.toFixed(1)}m</dd>
+      </div>
+      <div>
+        <dt>Distance</dt>
+        <dd>{moment.screening_defender_distance_to_lane_m.toFixed(2)}m / {moment.maximum_lane_distance_m.toFixed(1)}m</dd>
       </div>
       <div>
         <dt>Tracked</dt>
@@ -515,8 +665,7 @@ function ReplayFacts({ payload }: { payload: CoachMomentPayload }) {
 function renderTeamPress(
   canvas: HTMLCanvasElement,
   shell: HTMLDivElement,
-  payload: TeamPressPayload,
-  progress: number
+  payload: TeamPressPayload
 ) {
   const replay = payload.replay;
   const moment = payload.moment;
@@ -539,15 +688,45 @@ function renderTeamPress(
   ctx.clearRect(0, 0, width, height);
 
   const frames = replay.frames;
-  const eased = easeInOut(Math.min(1, progress / 0.86));
-  const index = Math.min(frames.length - 1, Math.max(0, Math.round(eased * (frames.length - 1))));
-  const frame = frames[index];
-  const anchorFrame = frames.find((item) => item.frame_id === moment.anchor_frame_id) ?? frame;
-  const pressureReveal = smoothstep(0.32, 0.76, progress);
-  const anchorReveal = smoothstep(0.44, 0.82, progress);
+  const frame = frames.find((item) => item.frame_id === moment.anchor_frame_id) ?? frames[0];
+  if (!frame) return;
   drawCaseStudyPitch(ctx, layout);
-  drawTeamPressPlayers(ctx, replay, moment, frame, pressureReveal, layout);
-  drawTeamPressGeometry(ctx, replay, moment, anchorFrame, pressureReveal, anchorReveal, layout);
+  drawTeamPressGeometry(ctx, replay, moment, frame, layout);
+  drawTeamPressPlayers(ctx, replay, moment, frame, layout);
+  drawCaseStudyBall(ctx, replay, frame, layout);
+}
+
+function renderCoverShadow(
+  canvas: HTMLCanvasElement,
+  shell: HTMLDivElement,
+  payload: CoverShadowPayload
+) {
+  const replay = payload.replay;
+  const moment = payload.moment;
+  const layout = layoutPitch(replay.pitch, Math.max(360, shell.clientWidth));
+  const width = layout.canvasWidth;
+  const height = layout.canvasHeight;
+  const ratio = window.devicePixelRatio || 1;
+  const physicalWidth = Math.round(width * ratio);
+  const physicalHeight = Math.round(height * ratio);
+  if (canvas.width !== physicalWidth || canvas.height !== physicalHeight) {
+    canvas.width = physicalWidth;
+    canvas.height = physicalHeight;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+
+  const frames = replay.frames;
+  const frame = frames.find((item) => item.frame_id === moment.anchor_frame_id) ?? frames[0];
+  if (!frame) return;
+  drawCaseStudyPitch(ctx, layout);
+  drawCoverShadowGeometry(ctx, replay, moment, layout);
+  drawCoverShadowPlayers(ctx, replay, moment, frame, layout);
   drawCaseStudyBall(ctx, replay, frame, layout);
 }
 
@@ -577,7 +756,6 @@ function drawTeamPressPlayers(
   replay: ReplayPayload,
   moment: TeamPressPayload["moment"],
   frame: ReplayPayload["frames"][number],
-  reveal: number,
   layout: ReturnType<typeof layoutPitch>
 ) {
   const pressureActors = new Set(moment.pressure_actor_ids);
@@ -587,26 +765,15 @@ function drawTeamPressPlayers(
     const point = pitchPointToPixel(Number(entity.x_m), Number(entity.y_m), replay.pitch, layout);
     const isCarrierTeam = carrierTeam != null && entity.team_role === carrierTeam;
     ctx.beginPath();
-    ctx.fillStyle = isCarrierTeam ? "rgba(247,242,218,.46)" : "rgba(215,101,76,.16)";
-    ctx.strokeStyle = isCarrierTeam ? "rgba(255,251,226,.58)" : "rgba(238,148,124,.70)";
-    ctx.lineWidth = isCarrierTeam ? 1.05 : 1.35;
-    ctx.arc(point.x, point.y, isCarrierTeam ? 3.8 : 4.2, 0, Math.PI * 2);
+    ctx.fillStyle = isCarrierTeam ? "rgba(247,242,218,.30)" : "rgba(238,148,124,.22)";
+    ctx.arc(point.x, point.y, isCarrierTeam ? 2.8 : 2.7, 0, Math.PI * 2);
     ctx.fill();
-    ctx.stroke();
-    if (!isCarrierTeam) {
-      ctx.beginPath();
-      ctx.fillStyle = "rgba(238,148,124,.70)";
-      ctx.arc(point.x, point.y, 1.4, 0, Math.PI * 2);
-      ctx.fill();
-    }
   }
 
   const carrier = frame.entities.find((entity) => entity.entity_id === moment.carrier_id);
   if (carrier) {
     const point = pitchPointToPixel(Number(carrier.x_m), Number(carrier.y_m), replay.pitch, layout);
     ctx.save();
-    ctx.shadowColor = "rgba(255,245,203,.42)";
-    ctx.shadowBlur = 12 * reveal;
     ctx.beginPath();
     ctx.fillStyle = "#fff1bd";
     ctx.strokeStyle = "rgba(20,27,19,.72)";
@@ -626,10 +793,8 @@ function drawTeamPressPlayers(
     if (!actor) continue;
     const point = pitchPointToPixel(Number(actor.x_m), Number(actor.y_m), replay.pitch, layout);
     ctx.save();
-    ctx.shadowColor = "rgba(238,148,124,.34)";
-    ctx.shadowBlur = 7 * reveal;
     ctx.beginPath();
-    ctx.fillStyle = `rgba(215,101,76,${0.18 + reveal * 0.24})`;
+    ctx.fillStyle = "rgba(215,101,76,.22)";
     ctx.strokeStyle = "rgba(255,185,160,.96)";
     ctx.lineWidth = 2.1;
     ctx.arc(point.x, point.y, 5.8, 0, Math.PI * 2);
@@ -648,48 +813,129 @@ function drawTeamPressGeometry(
   replay: ReplayPayload,
   moment: TeamPressPayload["moment"],
   frame: ReplayPayload["frames"][number],
-  reveal: number,
-  anchorReveal: number,
   layout: ReturnType<typeof layoutPitch>
 ) {
   const carrier = frame.entities.find((entity) => entity.entity_id === moment.carrier_id);
   if (!carrier) return;
   const carrierPoint = pitchPointToPixel(Number(carrier.x_m), Number(carrier.y_m), replay.pitch, layout);
   ctx.save();
-  ctx.globalAlpha = 0.12 + 0.40 * reveal;
-  ctx.strokeStyle = "rgba(255,241,189,.86)";
-  ctx.lineWidth = 1.8;
-  ctx.setLineDash([8, 8]);
+  ctx.globalAlpha = 0.34;
+  ctx.strokeStyle = "rgba(255,241,189,.76)";
+  ctx.lineWidth = 1.2;
   ctx.beginPath();
   ctx.arc(carrierPoint.x, carrierPoint.y, moment.maximum_press_distance_m * layout.scalePxPerM, 0, Math.PI * 2);
   ctx.stroke();
   ctx.restore();
+}
 
-  for (const actorId of moment.pressure_actor_ids) {
-    const actor = frame.entities.find((entity) => entity.entity_id === actorId);
-    if (!actor) continue;
-    const actorPoint = pitchPointToPixel(Number(actor.x_m), Number(actor.y_m), replay.pitch, layout);
-    ctx.save();
-    ctx.globalAlpha = 0.18 + 0.70 * anchorReveal;
-    ctx.fillStyle = "rgba(215,101,76,.30)";
-    ctx.strokeStyle = "rgba(255,185,160,.96)";
-    ctx.lineWidth = 2.2;
+function drawCoverShadowPlayers(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: CoverShadowPayload["moment"],
+  frame: ReplayPayload["frames"][number],
+  layout: ReturnType<typeof layoutPitch>
+) {
+  const attackTeam = moment.team_role;
+  for (const entity of frame.entities) {
+    if (entity.entity_type === "ball" || entity.entity_id === moment.target_entity_id || entity.entity_id === moment.screening_defender_id) continue;
+    const point = pitchPointToPixel(Number(entity.x_m), Number(entity.y_m), replay.pitch, layout);
+    const isAttack = attackTeam != null && entity.team_role === attackTeam;
     ctx.beginPath();
-    ctx.arc(actorPoint.x, actorPoint.y, 8.2, 0, Math.PI * 2);
+    ctx.fillStyle = isAttack ? "rgba(247,242,218,.28)" : "rgba(238,148,124,.20)";
+    ctx.arc(point.x, point.y, isAttack ? 2.8 : 2.7, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const target = frame.entities.find((entity) => entity.entity_id === moment.target_entity_id);
+  if (target) {
+    const point = pitchPointToPixel(Number(target.x_m), Number(target.y_m), replay.pitch, layout);
+    ctx.save();
+    ctx.beginPath();
+    ctx.fillStyle = "#fff1bd";
+    ctx.strokeStyle = "rgba(20,27,19,.72)";
+    ctx.lineWidth = 1.45;
+    ctx.arc(point.x, point.y, 6.1, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.restore();
   }
 
+  const defender = frame.entities.find((entity) => entity.entity_id === moment.screening_defender_id);
+  if (defender) {
+    const point = pitchPointToPixel(Number(defender.x_m), Number(defender.y_m), replay.pitch, layout);
+    ctx.save();
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(215,101,76,.35)";
+    ctx.strokeStyle = "rgba(255,185,160,.96)";
+    ctx.lineWidth = 2.0;
+    ctx.arc(point.x, point.y, 6.0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.fillStyle = "#ee947c";
+    ctx.arc(point.x, point.y, 1.9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawCoverShadowGeometry(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: CoverShadowPayload["moment"],
+  layout: ReturnType<typeof layoutPitch>
+) {
+  const ball = pitchPointToPixel(Number(moment.ball_point.x_m), Number(moment.ball_point.y_m), replay.pitch, layout);
+  const target = pitchPointToPixel(Number(moment.target_point.x_m), Number(moment.target_point.y_m), replay.pitch, layout);
+  const projection = pitchPointToPixel(
+    Number(moment.screening_projection_point.x_m),
+    Number(moment.screening_projection_point.y_m),
+    replay.pitch,
+    layout
+  );
+  const defender = pitchPointToPixel(
+    Number(moment.screening_defender_point.x_m),
+    Number(moment.screening_defender_point.y_m),
+    replay.pitch,
+    layout
+  );
+  const dx = target.x - ball.x;
+  const dy = target.y - ball.y;
+  const length = Math.hypot(dx, dy);
+  if (length <= 0) return;
+  const nx = -dy / length;
+  const ny = dx / length;
+  const band = moment.maximum_lane_distance_m * layout.scalePxPerM;
+
   ctx.save();
-  ctx.globalAlpha = 0.22 + 0.68 * anchorReveal;
-  ctx.fillStyle = "rgba(255,241,189,.24)";
-  ctx.strokeStyle = "rgba(255,251,226,.96)";
-  ctx.lineWidth = 2.1;
+  ctx.globalAlpha = 0.16;
+  ctx.fillStyle = "#fff1bd";
   ctx.beginPath();
-  ctx.arc(carrierPoint.x, carrierPoint.y, 10.5, 0, Math.PI * 2);
+  ctx.moveTo(ball.x + nx * band, ball.y + ny * band);
+  ctx.lineTo(target.x + nx * band, target.y + ny * band);
+  ctx.lineTo(target.x - nx * band, target.y - ny * band);
+  ctx.lineTo(ball.x - nx * band, ball.y - ny * band);
+  ctx.closePath();
   ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,241,189,.78)";
+  ctx.lineWidth = 1.45;
+  ctx.beginPath();
+  ctx.moveTo(ball.x, ball.y);
+  ctx.lineTo(target.x, target.y);
   ctx.stroke();
+  ctx.strokeStyle = "rgba(255,185,160,.70)";
+  ctx.lineWidth = 1.1;
+  ctx.beginPath();
+  ctx.moveTo(defender.x, defender.y);
+  ctx.lineTo(projection.x, projection.y);
+  ctx.stroke();
+  ctx.fillStyle = "rgba(255,185,160,.86)";
+  ctx.beginPath();
+  ctx.arc(projection.x, projection.y, 2.4, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 
@@ -703,8 +949,6 @@ function drawCaseStudyBall(
   if (!ball) return;
   const point = pitchPointToPixel(Number(ball.x_m), Number(ball.y_m), replay.pitch, layout);
   ctx.save();
-  ctx.shadowColor = "rgba(242,207,115,.62)";
-  ctx.shadowBlur = 12;
   ctx.beginPath();
   ctx.fillStyle = "#f2cf73";
   ctx.strokeStyle = "rgba(20,27,19,.92)";
@@ -713,15 +957,6 @@ function drawCaseStudyBall(
   ctx.fill();
   ctx.stroke();
   ctx.restore();
-}
-
-function easeInOut(value: number) {
-  return value < 0.5 ? 4 * value * value * value : 1 - Math.pow(-2 * value + 2, 3) / 2;
-}
-
-function smoothstep(edge0: number, edge1: number, value: number) {
-  const x = Math.max(0, Math.min(1, (value - edge0) / (edge1 - edge0)));
-  return x * x * (3 - 2 * x);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
