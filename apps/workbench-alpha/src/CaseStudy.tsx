@@ -30,14 +30,13 @@ export function CaseStudy() {
 
       <article className="cs-col">
         <p className="cs-eyebrow">Priori · Engineering note</p>
-        <h1>When the compiler caught its own overclaim</h1>
+        <h1>A soccer language compiler: approach, library, and what testing it revealed</h1>
         <p className="cs-lede">
-          A coach-facing system can’t just find football-looking events. It has to know
-          exactly what it is claiming — and be built so the product language can never
-          run ahead of the evidence underneath it.
+          A compiler for football concepts: describe a situation, compile it into
+          evidence-backed primitives, and find the real moments in tracking data where
+          that situation occurred.
         </p>
 
-        {/* Architecture model */}
         <section className="cs-diagram" aria-label="Architecture">
           {LAYERS.map((l, i) => (
             <React.Fragment key={l}>
@@ -50,82 +49,132 @@ export function CaseStudy() {
           </div>
         </section>
 
-        <h2>The question</h2>
-        <p>That principle became concrete while building the high-bypass pass surface. The football idea was simple:</p>
-        <blockquote>Find completed passes that move the ball forward and bypass several opponents.</blockquote>
-        <p>In our system, that becomes a typed composition:</p>
+        <h2>What we’re building</h2>
+        <p>
+          The goal is a compiler for football concepts. Someone describes a situation — a pass that
+          breaks a line, a switch of play, a team building out from the back — and the system finds
+          the real moments in tracking data where that situation occurred. The input is public
+          IDSSE/DFL data: per-frame positions for every player and the ball, plus an event feed.
+        </p>
+        <p>
+          The hard part is not finding football-looking events. It is being precise about what the
+          system is allowed to claim about them. A “completed pass” in an event feed is a label.
+          Whether the receiver controlled it, whether the team kept it, and whether it led anywhere
+          are separate facts that need separate evidence. The system treats each as a distinct claim,
+          and the language shown to a user is never allowed to be stronger than the evidence behind it.
+        </p>
+
+        <h2>The approach</h2>
+        <p>
+          Every measurement is a primitive: a deterministic function over the tracking data that
+          returns a typed result plus the evidence for it. A primitive returns PASS, FAIL, or UNKNOWN.
+          UNKNOWN means the data was insufficient to decide, not that the answer is no. Each primitive
+          also has a claim boundary — an explicit statement of what its result does and does not mean:
+          geometry, for instance, but not intent, quality, or causation.
+        </p>
+        <p>
+          Primitives compose. A coach-facing concept is a typed plan over several primitives, with
+          thresholds and a defined set of evidence fields it may expose. A request either compiles to
+          an executable plan or returns an honest gap. Nothing is a hand-written highlight detector.
+        </p>
+
+        <h2>What the library contains</h2>
+        <p>The catalog currently has about forty primitives and relations. Grouped by what they describe:</p>
+        <ul>
+          <li><strong>Build-up:</strong> possession segments, pass chains, structured zones, controlled line breaks.</li>
+          <li><strong>Ball movement:</strong> switch of play, carries, one-touch relays, lateral shift, progressive corridors.</li>
+          <li><strong>Progression:</strong> forward progression and final-third entry, opponents bypassed.</li>
+          <li><strong>Defending and pressing:</strong> team press, pressure on the carrier, marking, cover shadow, defensive lines, compactness, local numerical advantage.</li>
+          <li><strong>Off the ball:</strong> runs and run types, support arrival, time to arrival, lane occupancy, space generation.</li>
+          <li><strong>Set pieces:</strong> set-piece structure and restart type.</li>
+        </ul>
+        <p>
+          These compute geometric and kinematic facts. A primitive existing in the catalog is not the
+          same as its coach-facing meaning being proven; each one still has to be validated on its own.
+        </p>
+
+        <h2>Putting it to test: high-bypass passes</h2>
+        <p>
+          We took one concept all the way through: a high-bypass pass — a completed, controlled pass
+          that moves the ball forward and takes several opponents out of the play. As a typed plan:
+        </p>
         <pre>{`controlled_pass_episode
 + opponents_bypassed_by_action
-+ forward_progression threshold
++ forward_progression ≥ 8 m
 → high_bypass_completed_pass`}</pre>
-        <p>The geometry was real. The pass progressed forward; the ball moved beyond multiple defenders; the query returned evidence-backed moments. But the product claim was still too strong.</p>
+        <p>
+          It was a useful test because it touches the whole stack: event feed, tracking, geometry,
+          control, possession, and the wording a coach finally sees.
+        </p>
 
-        <h2>What the primitive actually proved</h2>
-        <p>The controlled-pass verifier already shows why the distinction matters. On the verified <code>J03WOY</code> scope, it evaluated 639 candidate events and produced:</p>
+        <h2>Findings</h2>
+        <p>
+          At the substrate level the controlled-pass primitive does what it should. On the verified
+          scope, match <code>J03WOY</code>, it evaluated 639 candidate events:
+        </p>
         <pre>{`453 PASS
 135 FAIL
  51 UNKNOWN`}</pre>
-        <p>The system does not collapse uncertainty into false. If it can’t prove the pass, it says <code>UNKNOWN</code>. And the non-PASS cases carry football-meaningful reasons, not generic errors:</p>
-        <pre>{`another_player_controlled_first: 35
-possession_definitively_broke:   67
-release_contradicted:            33
-release_not_confirmed:           84
-unique_release_transition_not_found: 49
-missing_tracking:                 2`}</pre>
-        <p>But the same report shows why a controlled pass is still not a successful attacking action. Among verified controlled passes:</p>
-        <pre>{`release-to-reception   p50: 0.84 s
-forward progression    p50: 0.53 m
-forward progression    p90: 11.01 m`}</pre>
-        <p>A controlled pass can be a brief touch that barely progresses. That’s a valid primitive — but not enough to support words like “successful,” “valuable,” or “kept it.”</p>
+        <p>
+          The non-PASS cases carry specific reasons, among them <code>another_player_controlled_first</code>{" "}
+          (35), <code>possession_definitively_broke</code> (67), <code>release_contradicted</code>{" "}
+          (33), and <code>release_not_confirmed</code> (84). The system records why a candidate failed
+          instead of dropping it silently.
+        </p>
+        <p>
+          The same data shows the limit. Among verified controlled passes, the median time from release
+          to reception is 0.84 seconds and the median forward progression is 0.53 metres. A controlled
+          pass is often a brief touch that barely advances. That is a sound primitive, but it does not
+          support words like “successful” or “kept it.”
+        </p>
+        <p>
+          The first high-bypass surface ignored that limit and presented these moments as successful
+          attacking actions. When the replay was extended past the moment of reception, the receiver
+          often lost the ball within a couple of seconds. The geometry was right; the word “successful”
+          was not earned.
+        </p>
+        <p>
+          The first attempt to fix this used the provider’s possession flag to confirm the team kept the
+          ball. It passed the same moments that still looked like losses on replay, because that flag
+          credits a team through contested and transitional touches. It agreed with the original mistake
+          instead of catching it.
+        </p>
+        <p>
+          A second issue surfaced once control was handled properly. Of the five moments that passed a
+          stricter control check, two came from restarts — a free kick and a throw-in. They were valid
+          high-bypass passes and valid controlled receptions, but not open-play examples.
+        </p>
 
-        <h2>The false positive</h2>
-        <p>The first high-bypass replay surface treated these moments as <em>successful</em> attacking actions. That word carried more than the primitive proved.</p>
-        <div className="cs-two">
-          <div>
-            <p className="cs-cap">The primitive proved</p>
-            <pre>{`A provider pass event existed.
-Tracking confirmed a release and a
-controlled-reception candidate.
-The ball progressed forward.
-Opponents were bypassed geometrically.`}</pre>
-          </div>
-          <div>
-            <p className="cs-cap">What a coach hears</p>
-            <pre>{`The receiver properly controlled it.
-The attacking team kept possession.
-The action stayed useful after
-reception.`}</pre>
-          </div>
-        </div>
-        <p>When we rendered the follow-through and <em>watched</em>, the issue was obvious: some moments were geometrically correct but football-wrong as “successful.” The receiver touched or briefly controlled the ball, then the team lost it almost immediately. The system hadn’t lied about the geometry. The product language had outrun the evidence.</p>
+        <h2>Changes made</h2>
+        <p>Two layers were added, each fencing a specific overclaim.</p>
+        <p>
+          First, a clean-control check. A coach-facing “controlled reception” now requires more than a
+          provider flag or a brief touch: the ball stays close to the receiver, the receiver is clearly
+          closer to it than any opponent, the ball moves with the receiver, control is sustained, and
+          the moment is dropped if an opponent gains clean control. Of twenty raw high-bypass passes,
+          five passed.
+        </p>
+        <p>
+          Second, event-context filtering. Event type and restart status are now carried through to the
+          result, and the surface defaults to open play. The two restart cases stay available to inspect
+          rather than being hidden.
+        </p>
+        <p>
+          Both changes have the same shape. A primitive was true; a stronger claim was attached to it
+          that the evidence did not support; the fix was to supply the evidence that claim required, or
+          to stop making it. Each time one claim was tightened, the next mismatch became visible:
+          geometry, then control, then phase of play.
+        </p>
 
-        <h2>The fix</h2>
-        <p>Not to discard the primitive — to add the missing claim layer: <strong>clean control after reception.</strong> A coach-facing “successful reception” now requires more than provider possession or a brief touch:</p>
-        <ul>
-          <li>the ball stays close to the receiver,</li>
-          <li>the receiver is clearly closer than any opponent,</li>
-          <li>the ball moves <em>with</em> the receiver,</li>
-          <li>control is sustained for a meaningful window,</li>
-          <li>opponent clean control excludes the moment.</li>
-        </ul>
-        <p>Only then can the surface present it as a clean-control high-bypass pass.</p>
-
-        <h2>The lesson</h2>
-        <p className="cs-pull">The primitive is not “pass.” The primitive is the exact claim we are willing to make about the pass.</p>
-        <pre>{`provider marked it complete
-→ physical release detected
-→ receiver touched it
-→ receiver controlled it
-→ team retained clean control
-→ the action had a valuable outcome`}</pre>
-        <p>Each layer needs its own evidence. The product can only use language backed by the full composition underneath it.</p>
-
-        <h2>Why this matters</h2>
-        <blockquote className="cs-invariant-q">Product language cannot exceed evidence strength.</blockquote>
-        <p>The system shouldn’t bluff with football vocabulary. If it can prove a geometric bypass, it shows that. If it can prove clean control, it says that. If it can’t prove intent, quality, causation, or optimality, it must not imply them.</p>
-        <p>The high-bypass verifier follows that discipline itself. Its boundary states that it verifies high-bypass rows for a scoped match, does not expose results to Hermes, does not claim all-corpus execution, and does not claim replay/UI validation. That self-fencing is the point.</p>
-        <p>The most important boundary line is that <strong>“replay UI integration and human visual review remain future slices.”</strong> That is exactly the check that later exposed the product-level false positives. The verifier did not imply completeness; it named the next unproven surface. When we ran that visual review, it found the overclaim the report had not yet claimed to rule out.</p>
-        <p>The merit of the high-bypass work is not that it found a handful of clips. It’s that when the clips were wrong, the system gave us the handles to see why, tighten the definition, and prevent the same overclaim from reaching the product again.</p>
+        <h2>Where this leaves the approach</h2>
+        <p>
+          The substrate is broad and the claims are kept narrow. The library already spans build-up,
+          ball movement, progression, pressing, off-ball movement, and set pieces. What the high-bypass
+          work established is the rule the rest of the library has to follow: a coach-facing claim is
+          allowed only when the composition beneath it proves that exact claim. The system gets better
+          by making each remaining overclaim easy to find and easy to fence, not by adding cleverness on
+          top.
+        </p>
 
         <h2>Sources</h2>
         <ul className="cs-sources">
