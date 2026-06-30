@@ -443,7 +443,7 @@ body {
 
 .coachMomentFilterGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(120px, 1fr)) auto;
+  grid-template-columns: repeat(5, minmax(112px, 1fr)) auto;
   align-items: end;
   gap: 10px;
 }

@@ -25,10 +25,17 @@ const ORIGIN_FILTERS = [
   { value: "middle_third", label: "Middle" },
   { value: "final_third", label: "Final third" }
 ] as const;
+const PLAY_PHASE_FILTERS = [
+  { value: "open_play", label: "Open play" },
+  { value: "all", label: "All phases" },
+  { value: "restart", label: "Restarts" },
+  { value: "unknown", label: "Unknown" }
+] as const;
 
 type LengthFilter = (typeof PASS_LENGTH_FILTERS)[number]["value"];
 type ProgressFilter = (typeof PASS_PROGRESS_FILTERS)[number]["value"];
 type OriginFilter = (typeof ORIGIN_FILTERS)[number]["value"];
+type PhaseFilter = (typeof PLAY_PHASE_FILTERS)[number]["value"];
 
 type FilterOption = {
   value: string;
@@ -42,6 +49,7 @@ type MomentFilters = {
   length: LengthFilter;
   progress: ProgressFilter;
   origin: OriginFilter;
+  phase: PhaseFilter;
 };
 
 export function CoachSurface() {
@@ -52,7 +60,8 @@ export function CoachSurface() {
     team: "all",
     length: "all",
     progress: "all",
-    origin: "all"
+    origin: "all",
+    phase: "open_play"
   });
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [runId, setRunId] = useState(0);
@@ -64,11 +73,19 @@ export function CoachSurface() {
     () => filteredCatalogInstances(cleanInstances, filters, matches),
     [cleanInstances, filters, matches]
   );
+  const matchOptionInstances = useMemo(
+    () => filteredCatalogInstances(cleanInstances, { ...filters, match: "all" }, matches),
+    [cleanInstances, filters, matches]
+  );
+  const teamOptionInstances = useMemo(
+    () => filteredCatalogInstances(cleanInstances, { ...filters, team: "all" }, matches),
+    [cleanInstances, filters, matches]
+  );
   const activePayload = visibleInstances[activeInstanceIndex] ?? visibleInstances[0] ?? null;
-  const matchOptions = useMemo(() => catalogMatchOptions(cleanInstances, matches), [cleanInstances, matches]);
+  const matchOptions = useMemo(() => catalogMatchOptions(matchOptionInstances, matches), [matchOptionInstances, matches]);
   const teamOptions = useMemo(
-    () => catalogTeamOptions(cleanInstances, filters.match, matches),
-    [cleanInstances, filters.match, matches]
+    () => catalogTeamOptions(teamOptionInstances, filters.match, matches),
+    [teamOptionInstances, filters.match, matches]
   );
 
   useEffect(() => {
@@ -100,7 +117,8 @@ export function CoachSurface() {
             team: "all",
             length: "all",
             progress: "all",
-            origin: "all"
+            origin: "all",
+            phase: "open_play"
           });
           setRunId((value) => value + 1);
         }
@@ -219,6 +237,7 @@ function filteredCatalogInstances(
     if (progressMin > 0 && (progressMeters === null || progressMeters < progressMin)) return false;
 
     if (filters.origin !== "all" && passOriginZone(payload) !== filters.origin) return false;
+    if (filters.phase !== "all" && passPhaseStatus(payload) !== filters.phase) return false;
     return true;
   });
 }
@@ -369,6 +388,14 @@ function MomentFilterControls({
       </div>
       <div className="coachMomentFilterGrid">
         <label>
+          <span>Phase</span>
+          <select value={filters.phase} onChange={(event) => onChange({ phase: event.target.value as PhaseFilter })}>
+            {PLAY_PHASE_FILTERS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+        <label>
           <span>Team</span>
           <select value={filters.team} onChange={(event) => onChange({ team: event.target.value })}>
             {teamOptions.map((option) => (
@@ -417,7 +444,8 @@ function highBypassFacts(payload: CoachMomentPayload) {
     `${bypassed} bypassed`,
     lengthMeters === null ? null : `${lengthMeters.toFixed(1)}m pass`,
     progression === null ? null : `+${progression.toFixed(1)}m`,
-    originLabel(passOriginZone(payload))
+    originLabel(passOriginZone(payload)),
+    phaseLabel(payload)
   ].filter(Boolean);
   return parts.join(" · ");
 }
@@ -474,6 +502,32 @@ function passOriginZone(payload: CoachMomentPayload): OriginFilter {
   if (attackX < 0) return "own_half";
   if (attackX < 17.5) return "middle_third";
   return "final_third";
+}
+
+function passPhaseStatus(payload: CoachMomentPayload): PhaseFilter {
+  const value = String(momentRecord(payload).open_play_status ?? "unknown");
+  if (value === "open_play" || value === "restart") return value;
+  return "unknown";
+}
+
+function phaseLabel(payload: CoachMomentPayload) {
+  const moment = momentRecord(payload);
+  const status = passPhaseStatus(payload);
+  if (status === "open_play") return "open play";
+  if (status === "restart") {
+    return restartLabel(String(moment.restart_type ?? "")) ?? "restart";
+  }
+  return "phase unknown";
+}
+
+function restartLabel(value: string) {
+  if (value === "throw_in") return "throw-in";
+  if (value === "free_kick") return "free kick";
+  if (value === "corner_kick") return "corner";
+  if (value === "goal_kick") return "goal kick";
+  if (value === "kick_off") return "kick-off";
+  if (value === "penalty") return "penalty";
+  return null;
 }
 
 function pointFrom(value: unknown): { x_m: number; y_m: number } | null {

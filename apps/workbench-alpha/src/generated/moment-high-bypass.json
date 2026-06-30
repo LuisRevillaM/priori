@@ -85,8 +85,21 @@
       "DFL-OBJ-002GG4",
       "DFL-OBJ-J0178P"
     ],
+    "event_context": {
+      "claim_boundary": "Observed provider event type and FromOpenPlay flag only; no pass quality, intent, set-piece routine, or tactical causation claim.",
+      "event_row_index": 432,
+      "event_type": "Play_Pass",
+      "from_open_play": true,
+      "open_play_status": "open_play",
+      "pass_episode_id": "J03WPY:firstHalf:home:432:DFL-OBJ-00028V:DFL-OBJ-002FXT",
+      "restart_type": null,
+      "source": "canonical_event_row",
+      "status": "PASS"
+    },
+    "event_type": "Play_Pass",
     "forward_progression_m": 24.85,
     "match_id": "J03WPY",
+    "open_play_status": "open_play",
     "opponents_bypassed_count": 8,
     "outcome_sequence": {
       "ball_end_point": {
@@ -211,6 +224,7 @@
         "y_m": -18.04
       }
     },
+    "restart_type": null,
     "result_id": "3f94b2856c647001"
   },
   "replay": {
@@ -52803,6 +52817,13 @@
       "outcome_sequence.progression_status",
       "outcome_sequence.final_third_status",
       "outcome_sequence.final_third_outcome"
+    ],
+    "observed_pass_event_context": [
+      "event_type",
+      "restart_type",
+      "open_play_status",
+      "event_context.from_open_play",
+      "event_context.event_row_index"
     ],
     "observed_possession_retention": [
       "possession_retention.status",

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -142,6 +143,13 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_roo
     evidence = moment["requested_evidence"]
     release_frame_id = int(evidence["release_frame_id"])
     reception_frame_id = int(evidence["reception_frame_id"])
+    event_context = pass_event_context(
+        canonical_root=canonical_root,
+        match_id=str(moment["match_id"]),
+        period=str(moment["period"]),
+        team_role=str(moment["perspective_team_role"]),
+        pass_episode_id=str(evidence["pass_episode_id"]),
+    )
     start_frame_id = max(release_frame_id - 20, 0)
     end_frame_id = reception_frame_id + FRAME_RATE_HZ * 8
     replay = replay_window(
@@ -193,6 +201,10 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_roo
             "reception_frame_id": reception_frame_id,
             "passer_id": str(evidence["passer_id"]),
             "receiver_id": str(evidence["receiver_id"]),
+            "event_type": event_context["event_type"],
+            "restart_type": event_context["restart_type"],
+            "open_play_status": event_context["open_play_status"],
+            "event_context": event_context,
             "release_ball_point": evidence["release_ball_point"],
             "reception_ball_point": evidence["reception_ball_point"],
             "release_passer_point": evidence["release_passer_point"],
@@ -215,6 +227,13 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_roo
         },
         "visual_contract": {
             "completed_pass_path": ["release_frame_id", "reception_frame_id", "release_ball_point", "reception_ball_point"],
+            "observed_pass_event_context": [
+                "event_type",
+                "restart_type",
+                "open_play_status",
+                "event_context.from_open_play",
+                "event_context.event_row_index",
+            ],
             "actors": ["passer_id", "receiver_id"],
             "bypassed_opponents": ["opponents_bypassed_count", "bypassed_player_ids", "candidate_goal_side_player_ids"],
             "observed_outcome_sequence": [
@@ -252,7 +271,133 @@ def payload_from_moment(moment: dict[str, Any], *, canonical_root: Path, raw_roo
                 "pass probability",
             ],
         },
+}
+
+
+def pass_event_context(
+    *,
+    canonical_root: Path,
+    match_id: str,
+    period: str,
+    team_role: str,
+    pass_episode_id: str,
+) -> dict[str, Any]:
+    parsed = parse_pass_episode_id(pass_episode_id)
+    row_index = parsed.get("row_index")
+    if row_index is None:
+        return unknown_event_context(pass_episode_id, "pass_episode_id_parse_failed")
+
+    events = events_for_match(str(canonical_root), match_id)
+    if events.empty:
+        return unknown_event_context(pass_episode_id, "event_table_missing")
+    rows = events[
+        (events["period"].astype(str) == period)
+        & (events["team_role"].astype(str) == team_role)
+        & (events["row_index"].astype(int) == int(row_index))
+    ]
+    if rows.empty:
+        return unknown_event_context(pass_episode_id, "event_row_not_found", row_index=row_index)
+
+    row = rows.iloc[0]
+    event_type = str(row.get("event_type") or "")
+    from_open_play = qualifier_bool(row.get("qualifier_json"), "FromOpenPlay")
+    restart_type = restart_type_for_event_type(event_type)
+    if restart_type is not None:
+        open_play_status = "restart"
+    elif from_open_play is True:
+        open_play_status = "open_play"
+    elif from_open_play is False:
+        open_play_status = "not_open_play"
+    elif event_type.startswith("Play_"):
+        open_play_status = "open_play"
+    else:
+        open_play_status = "unknown"
+
+    return {
+        "status": "PASS" if open_play_status != "unknown" else "UNKNOWN",
+        "source": "canonical_event_row",
+        "pass_episode_id": pass_episode_id,
+        "event_row_index": int(row_index),
+        "event_type": event_type,
+        "restart_type": restart_type,
+        "from_open_play": from_open_play,
+        "open_play_status": open_play_status,
+        "claim_boundary": "Observed provider event type and FromOpenPlay flag only; no pass quality, intent, set-piece routine, or tactical causation claim.",
     }
+
+
+def parse_pass_episode_id(pass_episode_id: str) -> dict[str, Any]:
+    parts = str(pass_episode_id).split(":")
+    if len(parts) < 4:
+        return {}
+    try:
+        row_index = int(parts[3])
+    except ValueError:
+        return {}
+    return {
+        "match_id": parts[0],
+        "period": parts[1],
+        "team_role": parts[2],
+        "row_index": row_index,
+    }
+
+
+def unknown_event_context(pass_episode_id: str, reason: str, *, row_index: int | None = None) -> dict[str, Any]:
+    return {
+        "status": "UNKNOWN",
+        "source": "canonical_event_row",
+        "pass_episode_id": pass_episode_id,
+        "event_row_index": row_index,
+        "event_type": None,
+        "restart_type": None,
+        "from_open_play": None,
+        "open_play_status": "unknown",
+        "reason": reason,
+        "claim_boundary": "Observed provider event type and FromOpenPlay flag only; no pass quality, intent, set-piece routine, or tactical causation claim.",
+    }
+
+
+@lru_cache(maxsize=16)
+def events_for_match(canonical_root: str, match_id: str) -> pd.DataFrame:
+    path = Path(canonical_root) / "events" / f"match_id={match_id}.parquet"
+    if not path.exists():
+        return pd.DataFrame(columns=["period", "team_role", "row_index", "event_type", "qualifier_json"])
+    return pd.read_parquet(path, columns=["period", "team_role", "row_index", "event_type", "qualifier_json"])
+
+
+def qualifier_bool(qualifier_json: Any, key: str) -> bool | None:
+    if not isinstance(qualifier_json, str) or not qualifier_json.strip():
+        return None
+    try:
+        payload = json.loads(qualifier_json)
+    except json.JSONDecodeError:
+        return None
+    value = payload.get(key)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered == "true":
+            return True
+        if lowered == "false":
+            return False
+    return None
+
+
+def restart_type_for_event_type(event_type: str) -> str | None:
+    if event_type.startswith("CornerKick"):
+        return "corner_kick"
+    if event_type.startswith("FreeKick"):
+        return "free_kick"
+    if event_type.startswith("GoalKick"):
+        return "goal_kick"
+    if event_type.startswith("ThrowIn"):
+        return "throw_in"
+    if event_type.startswith("KickOff"):
+        return "kick_off"
+    if event_type.startswith("Penalty_"):
+        return "penalty"
+    return None
 
 
 def catalog_match_ids() -> list[str]:
