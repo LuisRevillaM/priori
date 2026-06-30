@@ -167,18 +167,18 @@ export function CaseStudy() {
         </p>
         <p>
           The first high-bypass surface ignored that limit and presented these moments as successful
-          attacking actions. When the replay was extended past the moment of reception, the receiver
-          often lost the ball within a couple of seconds. The geometry was right; the word “successful”
-          was not earned.
+          attacking actions. When the replay was extended past the moment of reception, the reception
+          often never settled into clean control. The ball could stay loose or contested without either
+          side holding it cleanly. The geometry was right; the word “successful” was not earned.
         </p>
         <MiniReplay
           payload={replays[5]}
           verdict="Clean-control FAIL · catalog index 5"
-          caption="The first surface would have treated this as successful. The geometry is real; sustained control is not."
+          caption="The first surface would have treated this as successful. The failure is narrower: clean control never settles long enough to back that word."
         />
         <p>
           The first attempt to fix this used the provider’s possession flag to confirm the team kept the
-          ball. It passed the same moments that still looked like losses on replay, because that flag
+          ball. It passed the same unsettled moments, because that flag
           credits a team through contested and transitional touches. It agreed with the original mistake
           instead of catching it.
         </p>
@@ -268,10 +268,57 @@ function MiniReplay({
       </div>
       <figcaption>
         <span>{verdict}</span>
+        {payload ? <ReplayFacts payload={payload} /> : null}
         {caption}
       </figcaption>
     </figure>
   );
+}
+
+function ReplayFacts({ payload }: { payload: CoachMomentPayload }) {
+  const moment = asRecord(payload.moment);
+  const clean = asRecord(moment.clean_control_retention);
+  const receiver = seconds(clean.receiver_clean_control_max_seconds);
+  const team = seconds(clean.team_clean_control_max_seconds);
+  const receiverMin = seconds(clean.minimum_receiver_control_seconds);
+  const teamMin = seconds(clean.minimum_team_control_seconds);
+  const opponent = seconds(clean.opponent_clean_control_max_seconds);
+  const phase = String(moment.open_play_status ?? "unknown");
+  const restart = typeof moment.restart_type === "string" ? moment.restart_type.replaceAll("_", " ") : null;
+  const status = String(clean.status ?? "UNKNOWN");
+  return (
+    <dl className="cs-replay-facts" aria-label="Replay control facts">
+      <div>
+        <dt>Control</dt>
+        <dd>{status}</dd>
+      </div>
+      <div>
+        <dt>Receiver</dt>
+        <dd>{receiver} / {receiverMin} min</dd>
+      </div>
+      <div>
+        <dt>Team</dt>
+        <dd>{team} / {teamMin} min</dd>
+      </div>
+      <div>
+        <dt>Opponent</dt>
+        <dd>{opponent}</dd>
+      </div>
+      <div>
+        <dt>Phase</dt>
+        <dd>{phase === "restart" && restart ? restart : phase.replaceAll("_", " ")}</dd>
+      </div>
+    </dl>
+  );
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function seconds(value: unknown) {
+  const number = Number(value);
+  return Number.isFinite(number) ? `${number.toFixed(2)}s` : "n/a";
 }
 
 const CSS = `
@@ -307,5 +354,10 @@ const CSS = `
 .cs-replay-loading{display:grid;place-items:center;min-height:320px;color:rgba(250,249,245,.72);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
 .cs-replay figcaption{margin:10px 2px 0;color:#4f5b52;font-size:13px;line-height:1.45}
 .cs-replay figcaption span{display:block;margin:0 0 3px;color:#2f6b4f;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.cs-replay-facts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:8px 0 10px}
+.cs-replay-facts div{min-width:0;border:1px solid #dfe4da;border-radius:6px;background:#f4f5ef;padding:6px 7px}
+.cs-replay-facts dt{margin:0 0 2px;color:#6b756d;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.cs-replay-facts dd{margin:0;color:#28332b;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:720px){.cs-replay-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.cs-replay{width:calc(100vw - 28px);margin-top:22px;margin-bottom:24px}}
 `;
