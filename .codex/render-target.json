@@ -4,7 +4,7 @@
   "service_name": "priori-integrated-alpha",
   "service_type": "web_service",
   "repo_url": "https://github.com/LuisRevillaM/priori",
-  "repo_branch": "main",
+  "repo_branch": "codex/afl08-passport-loop",
   "region": "oregon",
   "plan": "standard",
   "runtime": "docker",
