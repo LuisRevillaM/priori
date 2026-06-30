@@ -125,6 +125,19 @@ export function CaseStudy() {
           These compute geometric and kinematic facts. A primitive existing in the catalog is not the
           same as its coach-facing meaning being proven; each one still has to be validated on its own.
         </p>
+        <p>
+          The useful contrast is high-bypass beside team press. High-bypass asks whether one pass moved
+          the ball past opponents and whether the receiver controlled it — an on-ball attacking action
+          anchored on a pass event. Team press has no pass and no possession in it: it asks whether at
+          least two defenders came within seven metres of the carrier, were closing on him, and were
+          spread across at least thirty degrees, so the pressure arrived from more than one side. If too
+          few defenders are tracked, it returns UNKNOWN rather than judging pressure it cannot see.
+        </p>
+        <p>
+          That primitive is substrate-verified, not product-validated. It shows the range of the library:
+          attacking action and defensive pressure geometry compile to different evidence. It does not
+          claim a coordinated press, trap, intent, quality, or tactical cause.
+        </p>
 
         <h2>Putting it to test: high-bypass passes</h2>
         <p>
