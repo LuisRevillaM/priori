@@ -257,9 +257,13 @@ export function CaseStudy() {
             <strong>A coordinated press, trap, intent, quality, or tactical cause.</strong>
           </div>
         </div>
-        <TeamPressMiniReplay
+        <PrimitiveMiniReplay
+          className="cs-replay-team-press"
           payload={teamPressReplays[0]}
+          overlay="team_press"
+          ariaLabel="Observed team-press geometry on a football pitch"
           verdict="Team-press geometry PASS · substrate example"
+          facts={(payload) => <TeamPressFacts payload={payload} />}
           caption="Observed pressure on the carrier: the highlighted defenders satisfy the distance, closing, and angle-spread gates. This is substrate-verified geometry, not a product-validated press interpretation."
         />
         <h3 className="cs-example-title">Geometric primitive: cover shadow on a lane</h3>
@@ -277,9 +281,13 @@ export function CaseStudy() {
             <strong>Defender intent, pass probability, pitch-control value, interception, or quality.</strong>
           </div>
         </div>
-        <CoverShadowMiniReplay
+        <PrimitiveMiniReplay
+          className="cs-replay-cover-shadow"
           payload={coverShadowReplays[0]}
+          overlay="cover_shadow"
+          ariaLabel="Observed cover-shadow lane geometry on a football pitch"
           verdict="Cover-shadow geometry PASS · substrate example"
+          facts={(payload) => <CoverShadowFacts payload={payload} />}
           caption="Observed lane screening: one defender sits within the measured ball-target lane band. This is geometry only, not a claim that the pass was impossible or deliberately denied."
         />
 
@@ -453,53 +461,53 @@ function MiniReplay({
   );
 }
 
-function TeamPressMiniReplay({
+type PrimitiveOverlayKind = "team_press" | "cover_shadow";
+type PrimitivePayload = TeamPressPayload | CoverShadowPayload;
+
+function PrimitiveMiniReplay<T extends PrimitivePayload>({
   payload,
+  overlay,
+  className,
+  ariaLabel,
   verdict,
+  facts,
   caption
 }: {
-  payload: TeamPressPayload | undefined;
+  payload: T | undefined;
+  overlay: PrimitiveOverlayKind;
+  className: string;
+  ariaLabel: string;
   verdict: string;
+  facts: (payload: T) => React.ReactNode;
   caption: string;
 }) {
   return (
-    <figure className="cs-replay cs-replay-team-press">
+    <figure className={`cs-replay ${className}`}>
       <div className="cs-replay-frame">
-        {payload ? <TeamPressPitch payload={payload} /> : <div className="cs-replay-loading">Loading replay</div>}
+        {payload ? (
+          <PrimitivePitch payload={payload} overlay={overlay} ariaLabel={ariaLabel} />
+        ) : (
+          <div className="cs-replay-loading">Loading replay</div>
+        )}
       </div>
       <figcaption>
         <span>{verdict}</span>
-        {payload ? <TeamPressFacts payload={payload} /> : null}
+        {payload ? facts(payload) : null}
         {caption}
       </figcaption>
     </figure>
   );
 }
 
-function CoverShadowMiniReplay({
+function PrimitivePitch({
   payload,
-  verdict,
-  caption
+  overlay,
+  ariaLabel
 }: {
-  payload: CoverShadowPayload | undefined;
-  verdict: string;
-  caption: string;
+  payload: PrimitivePayload;
+  overlay: PrimitiveOverlayKind;
+  ariaLabel: string;
 }) {
-  return (
-    <figure className="cs-replay cs-replay-cover-shadow">
-      <div className="cs-replay-frame">
-        {payload ? <CoverShadowPitch payload={payload} /> : <div className="cs-replay-loading">Loading replay</div>}
-      </div>
-      <figcaption>
-        <span>{verdict}</span>
-        {payload ? <CoverShadowFacts payload={payload} /> : null}
-        {caption}
-      </figcaption>
-    </figure>
-  );
-}
-
-function TeamPressPitch({ payload }: { payload: TeamPressPayload }) {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const shellRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -508,43 +516,23 @@ function TeamPressPitch({ payload }: { payload: TeamPressPayload }) {
     const shell = shellRef.current;
     if (!canvas || !shell) return;
 
-    const draw = () => renderTeamPress(canvas, shell, payload);
-    const resizeObserver = new ResizeObserver(draw);
-    resizeObserver.observe(shell);
-    draw();
-    return () => {
-      resizeObserver.disconnect();
+    let animationFrame = 0;
+    let startedAt: number | null = null;
+    const draw = (timestamp: number) => {
+      if (startedAt === null) startedAt = timestamp;
+      const progress = ((timestamp - startedAt) % 6800) / 6800;
+      renderPrimitive(canvas, shell, payload, overlay, progress);
+      animationFrame = window.requestAnimationFrame(draw);
     };
-  }, [payload]);
+    animationFrame = window.requestAnimationFrame(draw);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [payload, overlay]);
 
   return (
     <div className="momentCanvasShell" ref={shellRef}>
-      <canvas ref={canvasRef} aria-label="Observed team-press geometry on a football pitch" />
-    </div>
-  );
-}
-
-function CoverShadowPitch({ payload }: { payload: CoverShadowPayload }) {
-  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
-  const shellRef = React.useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
-    const canvas = canvasRef.current;
-    const shell = shellRef.current;
-    if (!canvas || !shell) return;
-
-    const draw = () => renderCoverShadow(canvas, shell, payload);
-    const resizeObserver = new ResizeObserver(draw);
-    resizeObserver.observe(shell);
-    draw();
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [payload]);
-
-  return (
-    <div className="momentCanvasShell" ref={shellRef}>
-      <canvas ref={canvasRef} aria-label="Observed cover-shadow lane geometry on a football pitch" />
+      <canvas ref={canvasRef} aria-label={ariaLabel} />
     </div>
   );
 }
@@ -662,10 +650,12 @@ function ReplayFacts({ payload }: { payload: CoachMomentPayload }) {
   );
 }
 
-function renderTeamPress(
+function renderPrimitive(
   canvas: HTMLCanvasElement,
   shell: HTMLDivElement,
-  payload: TeamPressPayload
+  payload: PrimitivePayload,
+  overlay: PrimitiveOverlayKind,
+  progress: number
 ) {
   const replay = payload.replay;
   const moment = payload.moment;
@@ -687,46 +677,18 @@ function renderTeamPress(
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx.clearRect(0, 0, width, height);
 
-  const frames = replay.frames;
-  const frame = frames.find((item) => item.frame_id === moment.anchor_frame_id) ?? frames[0];
+  const frame = primitiveFrameForProgress(replay, moment.anchor_frame_id, progress);
   if (!frame) return;
+  const anchorFrame = replay.frames.find((item) => item.frame_id === moment.anchor_frame_id) ?? frame;
+  const evidenceAlpha = primitiveEvidenceAlpha(progress);
   drawCaseStudyPitch(ctx, layout);
-  drawTeamPressGeometry(ctx, replay, moment, frame, layout);
-  drawTeamPressPlayers(ctx, replay, moment, frame, layout);
-  drawCaseStudyBall(ctx, replay, frame, layout);
-}
-
-function renderCoverShadow(
-  canvas: HTMLCanvasElement,
-  shell: HTMLDivElement,
-  payload: CoverShadowPayload
-) {
-  const replay = payload.replay;
-  const moment = payload.moment;
-  const layout = layoutPitch(replay.pitch, Math.max(360, shell.clientWidth));
-  const width = layout.canvasWidth;
-  const height = layout.canvasHeight;
-  const ratio = window.devicePixelRatio || 1;
-  const physicalWidth = Math.round(width * ratio);
-  const physicalHeight = Math.round(height * ratio);
-  if (canvas.width !== physicalWidth || canvas.height !== physicalHeight) {
-    canvas.width = physicalWidth;
-    canvas.height = physicalHeight;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+  if (overlay === "team_press") {
+    drawTeamPressGeometry(ctx, replay, payload.moment as TeamPressPayload["moment"], anchorFrame, layout, evidenceAlpha);
+    drawTeamPressPlayers(ctx, replay, payload.moment as TeamPressPayload["moment"], frame, layout);
+  } else {
+    drawCoverShadowGeometry(ctx, replay, payload.moment as CoverShadowPayload["moment"], layout, evidenceAlpha);
+    drawCoverShadowPlayers(ctx, replay, payload.moment as CoverShadowPayload["moment"], frame, layout);
   }
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-  ctx.clearRect(0, 0, width, height);
-
-  const frames = replay.frames;
-  const frame = frames.find((item) => item.frame_id === moment.anchor_frame_id) ?? frames[0];
-  if (!frame) return;
-  drawCaseStudyPitch(ctx, layout);
-  drawCoverShadowGeometry(ctx, replay, moment, layout);
-  drawCoverShadowPlayers(ctx, replay, moment, frame, layout);
   drawCaseStudyBall(ctx, replay, frame, layout);
 }
 
@@ -813,13 +775,15 @@ function drawTeamPressGeometry(
   replay: ReplayPayload,
   moment: TeamPressPayload["moment"],
   frame: ReplayPayload["frames"][number],
-  layout: ReturnType<typeof layoutPitch>
+  layout: ReturnType<typeof layoutPitch>,
+  evidenceAlpha: number
 ) {
+  if (evidenceAlpha <= 0.01) return;
   const carrier = frame.entities.find((entity) => entity.entity_id === moment.carrier_id);
   if (!carrier) return;
   const carrierPoint = pitchPointToPixel(Number(carrier.x_m), Number(carrier.y_m), replay.pitch, layout);
   ctx.save();
-  ctx.globalAlpha = 0.34;
+  ctx.globalAlpha = 0.34 * evidenceAlpha;
   ctx.strokeStyle = "rgba(255,241,189,.76)";
   ctx.lineWidth = 1.2;
   ctx.beginPath();
@@ -883,8 +847,10 @@ function drawCoverShadowGeometry(
   ctx: CanvasRenderingContext2D,
   replay: ReplayPayload,
   moment: CoverShadowPayload["moment"],
-  layout: ReturnType<typeof layoutPitch>
+  layout: ReturnType<typeof layoutPitch>,
+  evidenceAlpha: number
 ) {
+  if (evidenceAlpha <= 0.01) return;
   const ball = pitchPointToPixel(Number(moment.ball_point.x_m), Number(moment.ball_point.y_m), replay.pitch, layout);
   const target = pitchPointToPixel(Number(moment.target_point.x_m), Number(moment.target_point.y_m), replay.pitch, layout);
   const projection = pitchPointToPixel(
@@ -908,7 +874,7 @@ function drawCoverShadowGeometry(
   const band = moment.maximum_lane_distance_m * layout.scalePxPerM;
 
   ctx.save();
-  ctx.globalAlpha = 0.16;
+  ctx.globalAlpha = 0.16 * evidenceAlpha;
   ctx.fillStyle = "#fff1bd";
   ctx.beginPath();
   ctx.moveTo(ball.x + nx * band, ball.y + ny * band);
@@ -920,6 +886,7 @@ function drawCoverShadowGeometry(
   ctx.restore();
 
   ctx.save();
+  ctx.globalAlpha = evidenceAlpha;
   ctx.strokeStyle = "rgba(255,241,189,.78)";
   ctx.lineWidth = 1.45;
   ctx.beginPath();
@@ -973,6 +940,39 @@ function periodLabel(value: unknown) {
   if (raw === "firstHalf") return "first half";
   if (raw === "secondHalf") return "second half";
   return raw.replaceAll("_", " ");
+}
+
+function primitiveFrameForProgress(replay: ReplayPayload, anchorFrameId: number, progress: number) {
+  const frames = replay.frames;
+  if (frames.length === 0) return undefined;
+  const anchorIndex = Math.max(0, frames.findIndex((frame) => frame.frame_id === anchorFrameId));
+  if (progress < 0.50) {
+    const local = easeInOutCubic(clamp01(progress / 0.50));
+    return frames[Math.min(anchorIndex, Math.round(local * anchorIndex))];
+  }
+  if (progress < 0.78) {
+    return frames[anchorIndex];
+  }
+  const tailLength = Math.max(0, frames.length - 1 - anchorIndex);
+  const local = easeInOutCubic(clamp01((progress - 0.78) / 0.22));
+  return frames[Math.min(frames.length - 1, anchorIndex + Math.round(local * tailLength))];
+}
+
+function primitiveEvidenceAlpha(progress: number) {
+  return fadeWindow(progress, 0.50, 0.60) * (1 - fadeWindow(progress, 0.72, 0.78));
+}
+
+function fadeWindow(value: number, start: number, end: number) {
+  return clamp01((value - start) / (end - start));
+}
+
+function easeInOutCubic(value: number) {
+  const v = clamp01(value);
+  return v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2;
+}
+
+function clamp01(value: number) {
+  return Math.max(0, Math.min(1, value));
 }
 
 const CSS = `
