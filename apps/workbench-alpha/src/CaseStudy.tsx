@@ -185,25 +185,46 @@ export function CaseStudy() {
           same as its coach-facing meaning being proven; each one still has to be validated on its own.
         </p>
         <p>
-          The useful contrast is high-bypass beside team press. High-bypass asks whether one pass moved
-          the ball past opponents and whether the receiver controlled it — an on-ball attacking action
-          anchored on a pass event. Team press has no pass and no possession in it: it asks whether at
-          least two defenders came within seven metres of the carrier, were closing on him, and were
-          spread across at least thirty degrees, so the pressure arrived from more than one side. If too
-          few defenders are tracked, it returns UNKNOWN rather than judging pressure it cannot see.
+          The useful contrast is high-bypass beside team press. One is an attacking action anchored on
+          a pass event. The other is defensive pressure geometry with no pass and no possession in it.
         </p>
-        <p>
-          That primitive is substrate-verified, not product-validated. It shows the range of the library:
-          attacking action and defensive pressure geometry compile to different evidence. It does not
-          claim a coordinated press, trap, intent, quality, or tactical cause.
-        </p>
+        <h3 className="cs-example-title">Defensive geometry: observed pressure on the carrier</h3>
+        <div className="cs-example-context" aria-label="Team-press example context">
+          <div>
+            <span>Look for</span>
+            <strong>The cream carrier, rust defenders, and the seven-metre pressure radius at the measured frame.</strong>
+          </div>
+          <div>
+            <span>Proves</span>
+            <strong>The highlighted defenders are close, closing, and spread around the carrier.</strong>
+          </div>
+          <div>
+            <span>Does not claim</span>
+            <strong>A coordinated press, trap, intent, quality, or tactical cause.</strong>
+          </div>
+        </div>
         <TeamPressMiniReplay
           payload={teamPressReplays[0]}
           verdict="Team-press geometry PASS · substrate example"
-          caption="Observed pressure on the carrier: four defenders satisfy the distance, closing, and angle-spread gates. This shows convergence geometry, not a coordinated press or trap."
+          caption="Observed pressure on the carrier: the highlighted defenders satisfy the distance, closing, and angle-spread gates. This is substrate-verified geometry, not a product-validated press interpretation."
         />
 
         <h2>Putting it to test: high-bypass passes</h2>
+        <h3 className="cs-example-title">Attacking action: high-bypass pass</h3>
+        <div className="cs-example-context" aria-label="High-bypass example context">
+          <div>
+            <span>Look for</span>
+            <strong>A pass that travels beyond multiple defending players.</strong>
+          </div>
+          <div>
+            <span>Proves</span>
+            <strong>Pass geometry, bypass count, and then whether clean control settled.</strong>
+          </div>
+          <div>
+            <span>Does not claim</span>
+            <strong>Success or value unless the stricter control gate also passes.</strong>
+          </div>
+        </div>
         <p>
           We took one concept all the way through: a high-bypass pass — a completed, controlled pass
           that moves the ball forward and takes several opponents out of the play. As a typed plan:
@@ -415,6 +436,14 @@ function TeamPressFacts({ payload }: { payload: TeamPressPayload }) {
   return (
     <dl className="cs-replay-facts" aria-label="Team-press evidence facts">
       <div>
+        <dt>Match</dt>
+        <dd>{moment.match_id}</dd>
+      </div>
+      <div>
+        <dt>Half</dt>
+        <dd>{periodLabel(moment.period)}</dd>
+      </div>
+      <div>
         <dt>Status</dt>
         <dd>{moment.team_press_status}</dd>
       </div>
@@ -451,6 +480,14 @@ function ReplayFacts({ payload }: { payload: CoachMomentPayload }) {
   const status = String(clean.status ?? "UNKNOWN");
   return (
     <dl className="cs-replay-facts" aria-label="Replay control facts">
+      <div>
+        <dt>Match</dt>
+        <dd>{String(moment.match_id ?? "unknown")}</dd>
+      </div>
+      <div>
+        <dt>Half</dt>
+        <dd>{periodLabel(moment.period)}</dd>
+      </div>
       <div>
         <dt>Control</dt>
         <dd>{status}</dd>
@@ -505,11 +542,12 @@ function renderTeamPress(
   const eased = easeInOut(Math.min(1, progress / 0.86));
   const index = Math.min(frames.length - 1, Math.max(0, Math.round(eased * (frames.length - 1))));
   const frame = frames[index];
+  const anchorFrame = frames.find((item) => item.frame_id === moment.anchor_frame_id) ?? frame;
   const pressureReveal = smoothstep(0.32, 0.76, progress);
   const anchorReveal = smoothstep(0.44, 0.82, progress);
   drawCaseStudyPitch(ctx, layout);
   drawTeamPressPlayers(ctx, replay, moment, frame, pressureReveal, layout);
-  drawTeamPressGeometry(ctx, replay, moment, frame, pressureReveal, anchorReveal, layout);
+  drawTeamPressGeometry(ctx, replay, moment, anchorFrame, pressureReveal, anchorReveal, layout);
   drawCaseStudyBall(ctx, replay, frame, layout);
 }
 
@@ -543,33 +581,43 @@ function drawTeamPressPlayers(
   layout: ReturnType<typeof layoutPitch>
 ) {
   const pressureActors = new Set(moment.pressure_actor_ids);
-  const actorTeam = moment.team_role;
+  const carrierTeam = moment.team_role;
   for (const entity of frame.entities) {
     if (entity.entity_type === "ball" || entity.entity_id === moment.carrier_id || pressureActors.has(entity.entity_id)) continue;
     const point = pitchPointToPixel(Number(entity.x_m), Number(entity.y_m), replay.pitch, layout);
-    const isCarrierTeam = actorTeam != null && entity.team_role === actorTeam;
+    const isCarrierTeam = carrierTeam != null && entity.team_role === carrierTeam;
     ctx.beginPath();
-    ctx.fillStyle = isCarrierTeam ? "rgba(237,247,238,.42)" : "rgba(157,90,82,.30)";
-    ctx.strokeStyle = isCarrierTeam ? "rgba(237,247,238,.52)" : "rgba(249,224,214,.42)";
-    ctx.lineWidth = 1;
-    ctx.arc(point.x, point.y, 3.7, 0, Math.PI * 2);
+    ctx.fillStyle = isCarrierTeam ? "rgba(247,242,218,.46)" : "rgba(215,101,76,.16)";
+    ctx.strokeStyle = isCarrierTeam ? "rgba(255,251,226,.58)" : "rgba(238,148,124,.70)";
+    ctx.lineWidth = isCarrierTeam ? 1.05 : 1.35;
+    ctx.arc(point.x, point.y, isCarrierTeam ? 3.8 : 4.2, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
+    if (!isCarrierTeam) {
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(238,148,124,.70)";
+      ctx.arc(point.x, point.y, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   const carrier = frame.entities.find((entity) => entity.entity_id === moment.carrier_id);
   if (carrier) {
     const point = pitchPointToPixel(Number(carrier.x_m), Number(carrier.y_m), replay.pitch, layout);
     ctx.save();
-    ctx.shadowColor = "rgba(255,245,203,.55)";
-    ctx.shadowBlur = 16 * reveal;
+    ctx.shadowColor = "rgba(255,245,203,.42)";
+    ctx.shadowBlur = 12 * reveal;
     ctx.beginPath();
-    ctx.fillStyle = "#fff5cb";
+    ctx.fillStyle = "#fff1bd";
     ctx.strokeStyle = "rgba(20,27,19,.72)";
     ctx.lineWidth = 1.6;
-    ctx.arc(point.x, point.y, 6.2, 0, Math.PI * 2);
+    ctx.arc(point.x, point.y, 6.6, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
+    ctx.beginPath();
+    ctx.fillStyle = "#1e3f31";
+    ctx.arc(point.x, point.y, 2.0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
@@ -578,15 +626,19 @@ function drawTeamPressPlayers(
     if (!actor) continue;
     const point = pitchPointToPixel(Number(actor.x_m), Number(actor.y_m), replay.pitch, layout);
     ctx.save();
-    ctx.shadowColor = "rgba(242,207,115,.45)";
-    ctx.shadowBlur = 10 * reveal;
+    ctx.shadowColor = "rgba(238,148,124,.34)";
+    ctx.shadowBlur = 7 * reveal;
     ctx.beginPath();
-    ctx.fillStyle = `rgba(242,207,115,${0.42 + reveal * 0.38})`;
-    ctx.strokeStyle = "rgba(255,249,220,.92)";
-    ctx.lineWidth = 1.8;
-    ctx.arc(point.x, point.y, 5.4, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(215,101,76,${0.18 + reveal * 0.24})`;
+    ctx.strokeStyle = "rgba(255,185,160,.96)";
+    ctx.lineWidth = 2.1;
+    ctx.arc(point.x, point.y, 5.8, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
+    ctx.beginPath();
+    ctx.fillStyle = "#ee947c";
+    ctx.arc(point.x, point.y, 1.8, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 }
@@ -604,10 +656,10 @@ function drawTeamPressGeometry(
   if (!carrier) return;
   const carrierPoint = pitchPointToPixel(Number(carrier.x_m), Number(carrier.y_m), replay.pitch, layout);
   ctx.save();
-  ctx.globalAlpha = 0.18 + 0.26 * reveal;
-  ctx.strokeStyle = "#f2cf73";
-  ctx.lineWidth = 1.4;
-  ctx.setLineDash([5, 8]);
+  ctx.globalAlpha = 0.12 + 0.40 * reveal;
+  ctx.strokeStyle = "rgba(255,241,189,.86)";
+  ctx.lineWidth = 1.8;
+  ctx.setLineDash([8, 8]);
   ctx.beginPath();
   ctx.arc(carrierPoint.x, carrierPoint.y, moment.maximum_press_distance_m * layout.scalePxPerM, 0, Math.PI * 2);
   ctx.stroke();
@@ -618,15 +670,27 @@ function drawTeamPressGeometry(
     if (!actor) continue;
     const actorPoint = pitchPointToPixel(Number(actor.x_m), Number(actor.y_m), replay.pitch, layout);
     ctx.save();
-    ctx.globalAlpha = 0.16 + 0.58 * anchorReveal;
-    ctx.strokeStyle = "#f2cf73";
-    ctx.lineWidth = 1.4;
+    ctx.globalAlpha = 0.18 + 0.70 * anchorReveal;
+    ctx.fillStyle = "rgba(215,101,76,.30)";
+    ctx.strokeStyle = "rgba(255,185,160,.96)";
+    ctx.lineWidth = 2.2;
     ctx.beginPath();
-    ctx.moveTo(actorPoint.x, actorPoint.y);
-    ctx.lineTo(carrierPoint.x, carrierPoint.y);
+    ctx.arc(actorPoint.x, actorPoint.y, 8.2, 0, Math.PI * 2);
+    ctx.fill();
     ctx.stroke();
     ctx.restore();
   }
+
+  ctx.save();
+  ctx.globalAlpha = 0.22 + 0.68 * anchorReveal;
+  ctx.fillStyle = "rgba(255,241,189,.24)";
+  ctx.strokeStyle = "rgba(255,251,226,.96)";
+  ctx.lineWidth = 2.1;
+  ctx.beginPath();
+  ctx.arc(carrierPoint.x, carrierPoint.y, 10.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawCaseStudyBall(
@@ -669,6 +733,13 @@ function seconds(value: unknown) {
   return Number.isFinite(number) ? `${number.toFixed(2)}s` : "n/a";
 }
 
+function periodLabel(value: unknown) {
+  const raw = String(value ?? "unknown");
+  if (raw === "firstHalf") return "first half";
+  if (raw === "secondHalf") return "second half";
+  return raw.replaceAll("_", " ");
+}
+
 const CSS = `
 .cs{background:#faf9f5;color:#1e2320;min-height:100vh;padding:72px 24px 120px;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 .cs-col{max-width:680px;margin:0 auto}
@@ -676,6 +747,11 @@ const CSS = `
 .cs h1{font-size:clamp(30px,5vw,42px);line-height:1.12;letter-spacing:-.02em;margin:0 0 18px;color:#1f2923}
 .cs-lede{font-size:19px;line-height:1.55;color:#303831;margin:0 0 40px}
 .cs h2{font-size:21px;letter-spacing:-.01em;margin:48px 0 14px;color:#1f2923}
+.cs-example-title{font-size:15px;line-height:1.35;letter-spacing:0;margin:28px 0 10px;color:#1f2923}
+.cs-example-context{display:grid;grid-template-columns:1fr;gap:8px;margin:0 0 20px;border-top:1px solid #dfe4da;border-bottom:1px solid #dfe4da;padding:12px 0}
+.cs-example-context div{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:start}
+.cs-example-context span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;line-height:1.45;text-transform:uppercase;letter-spacing:.07em;color:#718071}
+.cs-example-context strong{font-size:13px;line-height:1.45;color:#2d3830;font-weight:560}
 .cs p{margin:0 0 18px}
 .cs ul{margin:0 0 18px;padding-left:22px}.cs li{margin:0 0 6px}
 .cs code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:#edefe8;padding:2px 6px;border-radius:5px;color:#28332b}
@@ -702,7 +778,7 @@ const CSS = `
 .cs-replay-loading{display:grid;place-items:center;min-height:320px;color:rgba(250,249,245,.72);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
 .cs-replay figcaption{margin:10px 2px 0;color:#4f5b52;font-size:13px;line-height:1.45}
 .cs-replay figcaption span{display:block;margin:0 0 3px;color:#2f6b4f;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
-.cs-replay-facts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:8px 0 10px}
+.cs-replay-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:6px;margin:8px 0 10px}
 .cs-replay-facts div{min-width:0;border:1px solid #dfe4da;border-radius:6px;background:#f4f5ef;padding:6px 7px}
 .cs-replay-facts dt{margin:0 0 2px;color:#6b756d;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
 .cs-replay-facts dd{margin:0;color:#28332b;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import sys
 from pathlib import Path
@@ -32,15 +33,9 @@ def main() -> None:
     if not pass_records:
         raise RuntimeError("No PASS team-press records available for case-study replay.")
 
-    selected = sorted(
-        pass_records,
-        key=lambda record: (
-            -int(record.get("pressure_actor_count") or 0),
-            -float(record.get("pressure_angle_spread_degrees") or 0.0),
-            int(record.get("anchor_frame_id") or 0),
-        ),
-    )[0]
+    selected, stability = select_representative_record(pass_records, canonical_root=canonical_root)
     payload = payload_from_record(selected, canonical_root=canonical_root)
+    payload["moment"]["carrier_stability"] = stability
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(
         json.dumps(
@@ -68,11 +63,95 @@ def main() -> None:
                 "anchor_frame_id": payload["moment"]["anchor_frame_id"],
                 "pressure_actor_count": payload["moment"]["pressure_actor_count"],
                 "pressure_angle_spread_degrees": payload["moment"]["pressure_angle_spread_degrees"],
+                "carrier_near_ball_frames": stability["carrier_near_ball_frames"],
+                "carrier_closest_to_ball_frames": stability["carrier_closest_to_ball_frames"],
                 "frame_count": len(payload["replay"]["frames"]),
             },
             sort_keys=True,
         )
     )
+
+
+def select_representative_record(records: list[dict[str, Any]], *, canonical_root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    scored: list[tuple[tuple[int, int, int, float, float, int], dict[str, Any], dict[str, Any]]] = []
+    initial = sorted(
+        records,
+        key=lambda record: (
+            -int(record.get("pressure_actor_count") or 0),
+            -float(record.get("pressure_angle_spread_degrees") or 0.0),
+            int(record.get("anchor_frame_id") or 0),
+        ),
+    )[:80]
+    for record in initial:
+        stability = carrier_stability(record, canonical_root=canonical_root)
+        score = (
+            int(stability["carrier_near_ball_frames"]),
+            int(stability["carrier_closest_to_ball_frames"]),
+            int(record.get("pressure_actor_count") or 0),
+            float(record.get("pressure_angle_spread_degrees") or 0.0),
+            -float(stability["anchor_ball_distance_m"] or 99.0),
+            -int(record.get("anchor_frame_id") or 0),
+        )
+        scored.append((score, record, stability))
+    if not scored:
+        raise RuntimeError("No team-press records could be scored for case-study replay.")
+    _score, record, stability = max(scored, key=lambda item: item[0])
+    return record, stability
+
+
+def carrier_stability(record: dict[str, Any], *, canonical_root: Path) -> dict[str, Any]:
+    anchor_frame_id = int(record["anchor_frame_id"])
+    carrier_id = str(record["carrier_id"])
+    replay = replay_window(
+        canonical_root=canonical_root,
+        match_id=str(record["match_id"]),
+        period=str(record["period"]),
+        start_frame_id=max(anchor_frame_id - 20, 0),
+        end_frame_id=anchor_frame_id + 30,
+        raw_root=None,
+    )
+    observed_frames = 0
+    carrier_near_ball_frames = 0
+    carrier_closest_to_ball_frames = 0
+    anchor_ball_distance_m: float | None = None
+    for frame in replay["frames"]:
+        frame_id = int(frame["frame_id"])
+        if frame_id < anchor_frame_id - 10 or frame_id > anchor_frame_id + 20:
+            continue
+        ball = entity_by_id(frame, "__ball__")
+        carrier = entity_by_id(frame, carrier_id)
+        if ball is None or carrier is None:
+            continue
+        observed_frames += 1
+        distance = point_distance(ball, carrier)
+        if frame_id == anchor_frame_id:
+            anchor_ball_distance_m = distance
+        if distance <= 2.2:
+            carrier_near_ball_frames += 1
+        players = [entity for entity in frame["entities"] if entity.get("entity_type") == "player"]
+        if players:
+            closest = min(players, key=lambda entity: point_distance(ball, entity))
+            if closest.get("entity_id") == carrier_id:
+                carrier_closest_to_ball_frames += 1
+    return {
+        "mode": "case_study_visual_selection_stable_carrier_v0",
+        "observed_frames": observed_frames,
+        "carrier_near_ball_frames": carrier_near_ball_frames,
+        "carrier_closest_to_ball_frames": carrier_closest_to_ball_frames,
+        "near_ball_threshold_m": 2.2,
+        "anchor_ball_distance_m": None if anchor_ball_distance_m is None else round(anchor_ball_distance_m, 2),
+        "claim_boundary": "Visual selection aid only; it is not part of the team-press primitive and does not claim possession quality.",
+    }
+
+
+def entity_by_id(frame: dict[str, Any], entity_id: str) -> dict[str, Any] | None:
+    if entity_id == "__ball__":
+        return next((entity for entity in frame["entities"] if entity.get("entity_type") == "ball"), None)
+    return next((entity for entity in frame["entities"] if entity.get("entity_id") == entity_id), None)
+
+
+def point_distance(left: dict[str, Any], right: dict[str, Any]) -> float:
+    return math.hypot(float(left["x_m"]) - float(right["x_m"]), float(left["y_m"]) - float(right["y_m"]))
 
 
 def payload_from_record(record: dict[str, Any], *, canonical_root: Path) -> dict[str, Any]:
