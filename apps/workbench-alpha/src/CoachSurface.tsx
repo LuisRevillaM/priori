@@ -1,85 +1,74 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import { coachInterpret, fetchCoachCatalog, fetchMatches } from "./api";
-import { coachProductClaimGate } from "./coachProductClaims";
-import {
-  CoachMomentPitch,
-  momentHighBypassEvidence,
-  momentLineBreakSupportedEvidence,
-  momentZeroEvidence,
-  type CoachMomentPayload,
-  type MomentOverlayMode
-} from "./MomentZero";
+import { useEffect, useMemo, useState } from "react";
+import { fetchCoachCatalog, fetchMatches } from "./api";
+import { CoachMomentPitch, momentHighBypassEvidence, type CoachMomentPayload } from "./MomentZero";
 import type { CoachInterpretResponse, MatchSummary } from "./types";
 
-const DEFAULT_QUERY = "Show high-bypass passes";
-const EXAMPLES = [
-  "Show high-bypass passes",
-  "Show line breaks with underneath support",
-  "Show line breaks with no underneath outlet",
-  "Show line breaks with two underneath outlets",
-  "Show expected pass completion",
-  "Show dangerous attacks"
-];
-const CATALOG_MOMENTS = [
-  {
-    id: "high-bypass",
-    title: "High-bypass, controlled",
-    query: "Show high-bypass passes",
-    answer: "Passes bypassed multiple opponents with control after reception.",
-    claimKind: "high_bypass_completed_pass",
-    count: 5,
-    payload: momentHighBypassEvidence,
-    mode: "bypass"
-  },
-  {
-    id: "line-break-supported",
-    title: "Line break, outlet arrives",
-    query: "Show line breaks with underneath support",
-    answer: "Line broken. Support arrives underneath, with control held.",
-    claimKind: "line_break_with_underneath_outlet",
-    count: 6,
-    payload: momentLineBreakSupportedEvidence,
-    mode: "supported"
-  },
-  {
-    id: "line-break-isolated",
-    title: "Line break, outlet absent",
-    query: "Show line breaks with no underneath outlet",
-    answer: "Line broken. The outlet space stays empty, with control after reception.",
-    claimKind: "line_break_no_underneath_support",
-    count: 5,
-    payload: momentZeroEvidence,
-    mode: "isolated"
-  }
-] as const;
+const HIGH_BYPASS_CLAIM_KIND = "high_bypass_completed_pass";
 const MATCH_CONTEXT_FALLBACKS: Record<string, { title: string; home: string; away: string }> = {
-  J03WOH: { title: "Fortuna Düsseldorf:SSV Jahn Regensburg", home: "Fortuna", away: "Jahn Regensburg" }
+  J03WOH: { title: "Fortuna Dusseldorf:SSV Jahn Regensburg", home: "Fortuna", away: "Jahn Regensburg" }
+};
+const PASS_LENGTH_FILTERS = [
+  { value: "all", label: "Any length", min: 0 },
+  { value: "15", label: "15m+", min: 15 },
+  { value: "25", label: "25m+", min: 25 },
+  { value: "35", label: "35m+", min: 35 }
+] as const;
+const PASS_PROGRESS_FILTERS = [
+  { value: "all", label: "Any progress", min: 0 },
+  { value: "8", label: "+8m", min: 8 },
+  { value: "20", label: "+20m", min: 20 },
+  { value: "30", label: "+30m", min: 30 }
+] as const;
+const ORIGIN_FILTERS = [
+  { value: "all", label: "Any origin" },
+  { value: "own_half", label: "Own half" },
+  { value: "middle_third", label: "Middle" },
+  { value: "final_third", label: "Final third" }
+] as const;
+
+type LengthFilter = (typeof PASS_LENGTH_FILTERS)[number]["value"];
+type ProgressFilter = (typeof PASS_PROGRESS_FILTERS)[number]["value"];
+type OriginFilter = (typeof ORIGIN_FILTERS)[number]["value"];
+
+type FilterOption = {
+  value: string;
+  label: string;
+  count: number;
+};
+
+type MomentFilters = {
+  match: string;
+  team: string;
+  length: LengthFilter;
+  progress: ProgressFilter;
+  origin: OriginFilter;
 };
 
 export function CoachSurface() {
-  const examples = useMemo(() => EXAMPLES, []);
-  const catalogMoments = useMemo(() => CATALOG_MOMENTS, []);
-  const [query, setQuery] = useState(DEFAULT_QUERY);
-  const [result, setResult] = useState<CoachInterpretResponse | null>(null);
   const [activeInstances, setActiveInstances] = useState<CoachMomentPayload[]>([momentHighBypassEvidence]);
   const [activeInstanceIndex, setActiveInstanceIndex] = useState(0);
-  const [matchFilter, setMatchFilter] = useState("all");
-  const [teamFilter, setTeamFilter] = useState("all");
-  const [activeCatalogId, setActiveCatalogId] = useState<string>(CATALOG_MOMENTS[0].id);
+  const [filters, setFilters] = useState<MomentFilters>({
+    match: "all",
+    team: "all",
+    length: "all",
+    progress: "all",
+    origin: "all"
+  });
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [runId, setRunId] = useState(0);
-  const [overlayMode, setOverlayMode] = useState<MomentOverlayMode>("clean");
-  const [isLooking, setIsLooking] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const cleanInstances = useMemo(() => activeInstances.filter(isCleanControlReplay), [activeInstances]);
   const visibleInstances = useMemo(
-    () => filteredCatalogInstances(activeInstances, matchFilter, teamFilter, matches),
-    [activeInstances, matchFilter, teamFilter, matches]
+    () => filteredCatalogInstances(cleanInstances, filters, matches),
+    [cleanInstances, filters, matches]
   );
-  const activePayload = visibleInstances[activeInstanceIndex] ?? visibleInstances[0] ?? activeInstances[0] ?? CATALOG_MOMENTS[0].payload;
-  const matchOptions = useMemo(() => catalogMatchOptions(activeInstances, matches), [activeInstances, matches]);
+  const activePayload = visibleInstances[activeInstanceIndex] ?? visibleInstances[0] ?? null;
+  const matchOptions = useMemo(() => catalogMatchOptions(cleanInstances, matches), [cleanInstances, matches]);
   const teamOptions = useMemo(
-    () => catalogTeamOptions(activeInstances, matchFilter, matches),
-    [activeInstances, matchFilter, matches]
+    () => catalogTeamOptions(cleanInstances, filters.match, matches),
+    [cleanInstances, filters.match, matches]
   );
 
   useEffect(() => {
@@ -98,235 +87,102 @@ export function CoachSurface() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchCoachCatalog(CATALOG_MOMENTS[0].claimKind)
+    setIsLoading(true);
+    fetchCoachCatalog(HIGH_BYPASS_CLAIM_KIND)
       .then((next) => {
         if (cancelled) return;
-        setResult(next);
         const payloads = payloadsFromResponse(next);
         if (next.status === "moment_found" && payloads.length > 0) {
           setActiveInstances(payloads);
           setActiveInstanceIndex(0);
-          setMatchFilter("all");
-          setTeamFilter("all");
-          setActiveCatalogId(CATALOG_MOMENTS[0].id);
+          setFilters({
+            match: "all",
+            team: "all",
+            length: "all",
+            progress: "all",
+            origin: "all"
+          });
           setRunId((value) => value + 1);
         }
       })
       .catch(() => {
-        if (!cancelled) setError("The clean-control catalog could not be loaded.");
+        if (!cancelled) setError("The high-bypass clean-control catalog could not be loaded.");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const submit = async (event?: FormEvent<HTMLFormElement>) => {
-    event?.preventDefault();
-    setIsLooking(true);
-    setError(null);
-    try {
-      const next = await coachInterpret({ query });
-      setResult(next);
-      const payloads = payloadsFromResponse(next);
-      if (next.status === "moment_found" && payloads.length > 0) {
-        setActiveInstances(payloads);
-        setActiveInstanceIndex(0);
-        setMatchFilter("all");
-        setTeamFilter("all");
-        setActiveCatalogId(catalogIdForMoment(next.moments[0]?.moment_id) ?? "");
-        setRunId((value) => value + 1);
-      }
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "The moment could not be loaded.");
-    } finally {
-      setIsLooking(false);
+  useEffect(() => {
+    if (activeInstanceIndex >= visibleInstances.length) {
+      setActiveInstanceIndex(0);
     }
-  };
-
-  const chooseExample = async (example: string) => {
-    setQuery(example);
-    setIsLooking(true);
-    setError(null);
-    try {
-      const next = await coachInterpret({ query: example });
-      setResult(next);
-      const payloads = payloadsFromResponse(next);
-      if (next.status === "moment_found" && payloads.length > 0) {
-        setActiveInstances(payloads);
-        setActiveInstanceIndex(0);
-        setMatchFilter("all");
-        setTeamFilter("all");
-        setActiveCatalogId(catalogIdForMoment(next.moments[0]?.moment_id) ?? "");
-        setRunId((value) => value + 1);
-      }
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "The moment could not be loaded.");
-    } finally {
-      setIsLooking(false);
-    }
-  };
-
-  const chooseCatalogMoment = async (moment: (typeof CATALOG_MOMENTS)[number]) => {
-    if (!coachProductClaimGate(moment.claimKind, moment.payload).passed) return;
-    setQuery(moment.query);
-    setResult(null);
-    setError(null);
-    setActiveInstances([moment.payload]);
-    setActiveInstanceIndex(0);
-    setMatchFilter("all");
-    setTeamFilter("all");
-    setActiveCatalogId(moment.id);
-    setRunId((value) => value + 1);
-    setIsLooking(true);
-    try {
-      const next = await fetchCoachCatalog(moment.claimKind);
-      setResult(next);
-      const payloads = payloadsFromResponse(next);
-      if (next.status === "moment_found" && payloads.length > 0) {
-        setActiveInstances(payloads);
-        setActiveInstanceIndex(0);
-        setMatchFilter("all");
-        setTeamFilter("all");
-        setRunId((value) => value + 1);
-      }
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "The clean-control catalog could not be loaded.");
-    } finally {
-      setIsLooking(false);
-    }
-  };
+  }, [activeInstanceIndex, visibleInstances.length]);
 
   const chooseInstance = (nextIndex: number) => {
+    if (visibleInstances.length <= 0) return;
     const bounded = Math.max(0, Math.min(visibleInstances.length - 1, nextIndex));
     if (bounded === activeInstanceIndex) return;
     setActiveInstanceIndex(bounded);
     setRunId((value) => value + 1);
   };
 
-  const chooseMatchFilter = (nextMatch: string) => {
-    setMatchFilter(nextMatch);
-    setTeamFilter("all");
+  const updateFilters = (patch: Partial<MomentFilters>) => {
+    setFilters((current) => ({
+      ...current,
+      ...patch,
+      ...(patch.match ? { team: "all" } : null)
+    }));
     setActiveInstanceIndex(0);
     setRunId((value) => value + 1);
   };
-
-  const chooseTeamFilter = (nextTeam: string) => {
-    setTeamFilter(nextTeam);
-    setActiveInstanceIndex(0);
-    setRunId((value) => value + 1);
-  };
-
-  const isMoment = !result || result.status === "moment_found";
-  const activeCatalog = catalogMoments.find((moment) => moment.id === activeCatalogId) ?? catalogMoments[0];
 
   return (
     <main className="coachShell">
-      <section className={isMoment ? "coachExperience isMoment" : "coachExperience"} aria-label="Priori coach preview">
+      <section className="coachExperience isMoment" aria-label="Priori high-bypass replay browser">
         <div className="coachHeader">
           <span className="coachBrand">Priori</span>
-          <h1>Speak football. See the moment.</h1>
+          <h1>High-bypass control.</h1>
         </div>
 
-        <div className="coachTheater" aria-label="Observed football moment preview">
-          <MomentContext payload={activePayload} matches={matches} />
-          <CoachMomentPitch key={`${runId}-${overlayMode}`} payload={activePayload} overlayMode={overlayMode} />
-          <MomentTrustControls
-            payload={activePayload}
-            overlayMode={overlayMode}
-            instanceCount={visibleInstances.length}
-            instanceIndex={activeInstanceIndex}
-            onInstanceChange={chooseInstance}
-            onOverlayModeChange={setOverlayMode}
-          />
+        <section className="coachFocusSummary" aria-label="Current replay family">
+          <div>
+            <span>Clean-control browser</span>
+            <strong>One pass bypasses five or more opponents, then the receiver keeps clean control.</strong>
+          </div>
+          <p>{visibleInstances.length} of {cleanInstances.length} clean replays match the current filters.</p>
+        </section>
+
+        <div className="coachTheater" aria-label="Observed high-bypass replay">
+          {activePayload ? (
+            <>
+              <MomentContext payload={activePayload} matches={matches} />
+              <CoachMomentPitch key={runId} payload={activePayload} overlayMode="clean" />
+              <MomentTrustControls
+                payload={activePayload}
+                instanceCount={visibleInstances.length}
+                instanceIndex={activeInstanceIndex}
+                onInstanceChange={chooseInstance}
+              />
+            </>
+          ) : (
+            <NoReplayState isLoading={isLoading} error={error} />
+          )}
           <MomentFilterControls
-            matchFilter={matchFilter}
-            teamFilter={teamFilter}
+            filters={filters}
             matchOptions={matchOptions}
             teamOptions={teamOptions}
             visibleCount={visibleInstances.length}
-            totalCount={activeInstances.length}
-            onMatchChange={chooseMatchFilter}
-            onTeamChange={chooseTeamFilter}
+            totalCount={cleanInstances.length}
+            onChange={updateFilters}
           />
         </div>
-
-        <section className="coachCatalog" aria-label="Compiler-found moment catalog">
-          <div className="coachCatalogHeader">
-            <span>Clean moments across matches</span>
-            <strong>Compiler-found catalog</strong>
-          </div>
-          <div className="coachCatalogGrid">
-            {catalogMoments.map((moment) => (
-              <CatalogMomentTile
-                key={moment.id}
-                moment={moment}
-                isActive={moment.id === activeCatalogId}
-                isLooking={isLooking}
-                onChoose={chooseCatalogMoment}
-              />
-            ))}
-          </div>
-        </section>
-
-        <form className="coachCommand" onSubmit={submit}>
-          <label htmlFor="coach-query">Ask for an observable moment</label>
-          <div className="coachInputRow">
-            <input
-              id="coach-query"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              autoComplete="off"
-              spellCheck={false}
-              disabled={isLooking}
-            />
-            <button type="submit" disabled={isLooking}>{isLooking ? "Looking" : "Show"}</button>
-          </div>
-          <p className={isLooking ? "coachResponse isLoading" : "coachResponse"}>{responseCopy(result, isLooking, error, activeCatalog.answer)}</p>
-          <div className="coachPromptRail" aria-label="Example requests">
-            {examples.map((example) => (
-              <button type="button" key={example} onClick={() => void chooseExample(example)} disabled={isLooking}>
-                {example}
-              </button>
-            ))}
-          </div>
-        </form>
       </section>
     </main>
   );
-}
-
-function CatalogMomentTile({
-  moment,
-  isActive,
-  isLooking,
-  onChoose
-}: {
-  moment: (typeof CATALOG_MOMENTS)[number];
-  isActive: boolean;
-  isLooking: boolean;
-  onChoose: (moment: (typeof CATALOG_MOMENTS)[number]) => void;
-}) {
-  const claimGate = coachProductClaimGate(moment.claimKind, moment.payload);
-  return (
-    <button
-      type="button"
-      className={isActive ? `coachMomentTile isActive ${moment.mode}` : `coachMomentTile ${moment.mode}`}
-      onClick={() => onChoose(moment)}
-      disabled={isLooking || !claimGate.passed}
-      aria-disabled={isLooking || !claimGate.passed}
-    >
-      <span>{claimGate.passed ? `${moment.count} clean found · click to browse` : "Claim not backed"}</span>
-      <strong>{moment.title}</strong>
-      <small>{claimGate.passed ? moment.answer : "This replay is hidden until the full product claim is backed."}</small>
-    </button>
-  );
-}
-
-function catalogIdForMoment(momentId: string | undefined) {
-  if (momentId === "line_break_with_underneath_outlet") return "line-break-supported";
-  if (momentId === "line_break_no_underneath_support") return "line-break-isolated";
-  if (momentId === "high_bypass_completed_pass") return "high-bypass";
-  return null;
 }
 
 function payloadsFromResponse(response: CoachInterpretResponse) {
@@ -337,23 +193,38 @@ function payloadsFromResponse(response: CoachInterpretResponse) {
     .map((payload) => payload as unknown as CoachMomentPayload);
 }
 
-type FilterOption = {
-  value: string;
-  label: string;
-  count: number;
-};
+function isCleanControlReplay(payload: CoachMomentPayload) {
+  const clean = cleanControlRetention(payload);
+  return (
+    clean?.mode === "tracking_clean_team_control_after_reception_v0" &&
+    clean.status === "PASS"
+  );
+}
 
 function filteredCatalogInstances(
   payloads: CoachMomentPayload[],
-  matchFilter: string,
-  teamFilter: string,
+  filters: MomentFilters,
   matches: MatchSummary[]
 ) {
+  const lengthMin = thresholdMin(PASS_LENGTH_FILTERS, filters.length);
+  const progressMin = thresholdMin(PASS_PROGRESS_FILTERS, filters.progress);
   return payloads.filter((payload) => {
-    if (matchFilter !== "all" && payload.moment.match_id !== matchFilter) return false;
-    if (teamFilter !== "all" && attackingTeamKey(payload, matches) !== teamFilter) return false;
+    if (filters.match !== "all" && payload.moment.match_id !== filters.match) return false;
+    if (filters.team !== "all" && attackingTeamKey(payload, matches) !== filters.team) return false;
+
+    const lengthMeters = passLengthMeters(payload);
+    if (lengthMin > 0 && (lengthMeters === null || lengthMeters < lengthMin)) return false;
+
+    const progressMeters = passProgressionMeters(payload);
+    if (progressMin > 0 && (progressMeters === null || progressMeters < progressMin)) return false;
+
+    if (filters.origin !== "all" && passOriginZone(payload) !== filters.origin) return false;
     return true;
   });
+}
+
+function thresholdMin<T extends readonly { value: string; min: number }[]>(options: T, value: string) {
+  return options.find((option) => option.value === value)?.min ?? 0;
 }
 
 function catalogMatchOptions(payloads: CoachMomentPayload[], matches: MatchSummary[]): FilterOption[] {
@@ -388,19 +259,13 @@ function catalogTeamOptions(payloads: CoachMomentPayload[], matchFilter: string,
   return [{ value: "all", label: "All teams", count: scopedPayloads.length }, ...options];
 }
 
-function attackingTeamKey(payload: CoachMomentPayload, matches: MatchSummary[]) {
-  return attackingTeamLabel(payload, matches).toLowerCase();
-}
-
-function attackingTeamLabel(payload: CoachMomentPayload, matches: MatchSummary[]) {
-  const match = matches.find((item) => item.match_id === payload.moment.match_id);
-  const fallback = MATCH_CONTEXT_FALLBACKS[payload.moment.match_id];
-  return teamName(match, payload.moment.perspective_team_role, fallback);
-}
-
-function matchLabel(matchId: string, matches: MatchSummary[]) {
-  const match = matches.find((item) => item.match_id === matchId);
-  return match?.match_title ?? MATCH_CONTEXT_FALLBACKS[matchId]?.title ?? matchId;
+function NoReplayState({ isLoading, error }: { isLoading: boolean; error: string | null }) {
+  return (
+    <div className="coachNoReplay" role="status">
+      <span>{isLoading ? "Loading clean-control replays" : "No clean replay"}</span>
+      <strong>{error ?? "No high-bypass clean-control replay matches these filters."}</strong>
+    </div>
+  );
 }
 
 function MomentContext({ payload, matches }: { payload: CoachMomentPayload; matches: MatchSummary[] }) {
@@ -413,7 +278,7 @@ function MomentContext({ payload, matches }: { payload: CoachMomentPayload; matc
     <div className="coachMomentContext" aria-label="Match and team context">
       <div>
         <span>{moment.match_id}</span>
-        <strong>{match?.match_title ?? fallback?.title ?? "Observed match"}</strong>
+        <strong>{formatMatchTitle(match?.match_title ?? fallback?.title ?? "Observed match")}</strong>
         <span>{periodLabel(moment.period)} · {clockLabel(moment.reception_frame_id, payload.replay.frame_rate_hz)}</span>
       </div>
       <div className="coachTeamLegend">
@@ -426,21 +291,17 @@ function MomentContext({ payload, matches }: { payload: CoachMomentPayload; matc
 
 function MomentTrustControls({
   payload,
-  overlayMode,
   instanceCount,
   instanceIndex,
-  onInstanceChange,
-  onOverlayModeChange
+  onInstanceChange
 }: {
   payload: CoachMomentPayload;
-  overlayMode: MomentOverlayMode;
   instanceCount: number;
   instanceIndex: number;
   onInstanceChange: (index: number) => void;
-  onOverlayModeChange: (mode: MomentOverlayMode) => void;
 }) {
-  const retention = possessionRetention(payload);
   const cleanControl = cleanControlRetention(payload);
+  const facts = highBypassFacts(payload);
   return (
     <div className="coachTrustControls" aria-label="Replay inspection controls">
       <div>
@@ -448,8 +309,8 @@ function MomentTrustControls({
         <strong>{cleanControlCopy(cleanControl)}</strong>
       </div>
       <div>
-        <span>Possession feed</span>
-        <strong>{retentionCopy(retention)}</strong>
+        <span>Pass facts</span>
+        <strong>{facts}</strong>
       </div>
       <div className="coachInstanceControls" aria-label="Found moment browser">
         <button
@@ -470,70 +331,95 @@ function MomentTrustControls({
           Next
         </button>
       </div>
-      <div className="coachOverlayToggle" role="group" aria-label="Replay overlay mode">
-        <button
-          type="button"
-          className={overlayMode === "clean" ? "isActive" : ""}
-          onClick={() => onOverlayModeChange("clean")}
-        >
-          Clean replay
-        </button>
-        <button
-          type="button"
-          className={overlayMode === "evidence" ? "isActive" : ""}
-          onClick={() => onOverlayModeChange("evidence")}
-        >
-          Evidence overlay
-        </button>
-      </div>
     </div>
   );
 }
 
 function MomentFilterControls({
-  matchFilter,
-  teamFilter,
+  filters,
   matchOptions,
   teamOptions,
   visibleCount,
   totalCount,
-  onMatchChange,
-  onTeamChange
+  onChange
 }: {
-  matchFilter: string;
-  teamFilter: string;
+  filters: MomentFilters;
   matchOptions: FilterOption[];
   teamOptions: FilterOption[];
   visibleCount: number;
   totalCount: number;
-  onMatchChange: (matchId: string) => void;
-  onTeamChange: (teamKey: string) => void;
+  onChange: (patch: Partial<MomentFilters>) => void;
 }) {
   return (
-    <div className="coachMomentFilters" aria-label="Moment filters">
-      <label>
+    <div className="coachMomentFilters" aria-label="High-bypass filters">
+      <div className="coachMatchFilter">
         <span>Match</span>
-        <select value={matchFilter} onChange={(event) => onMatchChange(event.target.value)}>
+        <div className="coachMatchButtons" role="group" aria-label="Filter by match">
           {matchOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label} ({option.count})
-            </option>
+            <button
+              type="button"
+              key={option.value}
+              className={filters.match === option.value ? "isActive" : ""}
+              onClick={() => onChange({ match: option.value })}
+            >
+              {option.label} <small>{option.count}</small>
+            </button>
           ))}
-        </select>
-      </label>
-      <label>
-        <span>Team</span>
-        <select value={teamFilter} onChange={(event) => onTeamChange(event.target.value)}>
-          {teamOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label} ({option.count})
-            </option>
-          ))}
-        </select>
-      </label>
-      <strong>{visibleCount} of {totalCount} clean replays</strong>
+        </div>
+      </div>
+      <div className="coachMomentFilterGrid">
+        <label>
+          <span>Team</span>
+          <select value={filters.team} onChange={(event) => onChange({ team: event.target.value })}>
+            {teamOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label} ({option.count})
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Origin</span>
+          <select value={filters.origin} onChange={(event) => onChange({ origin: event.target.value as OriginFilter })}>
+            {ORIGIN_FILTERS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Pass length</span>
+          <select value={filters.length} onChange={(event) => onChange({ length: event.target.value as LengthFilter })}>
+            {PASS_LENGTH_FILTERS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Pass progress</span>
+          <select value={filters.progress} onChange={(event) => onChange({ progress: event.target.value as ProgressFilter })}>
+            {PASS_PROGRESS_FILTERS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+        <strong>{visibleCount} of {totalCount} clean replays</strong>
+      </div>
     </div>
   );
+}
+
+function highBypassFacts(payload: CoachMomentPayload) {
+  const moment = momentRecord(payload);
+  const bypassed = Number(moment.opponents_bypassed_count ?? requestedEvidence(payload).opponents_bypassed_count ?? 0);
+  const lengthMeters = passLengthMeters(payload);
+  const progression = passProgressionMeters(payload);
+  const parts = [
+    `${bypassed} bypassed`,
+    lengthMeters === null ? null : `${lengthMeters.toFixed(1)}m pass`,
+    progression === null ? null : `+${progression.toFixed(1)}m`,
+    originLabel(passOriginZone(payload))
+  ].filter(Boolean);
+  return parts.join(" · ");
 }
 
 function possessionRetention(payload: CoachMomentPayload) {
@@ -556,16 +442,69 @@ function cleanControlCopy(cleanControl: Record<string, unknown> | null) {
   return `Not a clean-control replay: ${reason}.`;
 }
 
-function retentionCopy(retention: Record<string, unknown> | null) {
-  if (!retention) return "Eight-second replay after reception.";
-  if (retention.mode === "raw_ball_possession_retention_not_used_for_clean_control") {
-    return "Provider feed is not used for control.";
-  }
-  const seconds = Number(retention.observed_seconds_after_reception ?? retention.required_retention_seconds ?? 0);
-  const rounded = Number.isFinite(seconds) && seconds > 0 ? `${seconds.toFixed(seconds % 1 === 0 ? 0 : 1)}s` : "the follow-through";
-  if (retention.status === "PASS") return `Provider possession stays with the same team for ${rounded}.`;
-  if (retention.status === "FAIL") return `Provider possession changes during ${rounded}.`;
-  return "Provider possession is unknown in this replay.";
+function requestedEvidence(payload: CoachMomentPayload): Record<string, unknown> {
+  return (payload.moment as { requested_evidence?: Record<string, unknown> }).requested_evidence ?? {};
+}
+
+function momentRecord(payload: CoachMomentPayload): Record<string, unknown> {
+  return payload.moment as unknown as Record<string, unknown>;
+}
+
+function passLengthMeters(payload: CoachMomentPayload) {
+  const moment = momentRecord(payload);
+  const release = pointFrom(moment.release_ball_point ?? requestedEvidence(payload).release_ball_point);
+  const reception = pointFrom(moment.reception_ball_point ?? requestedEvidence(payload).reception_ball_point);
+  if (!release || !reception) return null;
+  return Math.hypot(reception.x_m - release.x_m, reception.y_m - release.y_m);
+}
+
+function passProgressionMeters(payload: CoachMomentPayload) {
+  const moment = momentRecord(payload);
+  const raw = moment.forward_progression_m ?? requestedEvidence(payload).forward_progression_m;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
+}
+
+function passOriginZone(payload: CoachMomentPayload): OriginFilter {
+  const moment = momentRecord(payload);
+  const release = pointFrom(moment.release_ball_point ?? requestedEvidence(payload).release_ball_point);
+  if (!release) return "all";
+  const attackingDirection = Number(moment.attacking_direction ?? 1);
+  const attackX = release.x_m * (Number.isFinite(attackingDirection) && attackingDirection !== 0 ? attackingDirection : 1);
+  if (attackX < 0) return "own_half";
+  if (attackX < 17.5) return "middle_third";
+  return "final_third";
+}
+
+function pointFrom(value: unknown): { x_m: number; y_m: number } | null {
+  if (!value || typeof value !== "object") return null;
+  const point = value as { x_m?: unknown; y_m?: unknown };
+  const x_m = Number(point.x_m);
+  const y_m = Number(point.y_m);
+  if (!Number.isFinite(x_m) || !Number.isFinite(y_m)) return null;
+  return { x_m, y_m };
+}
+
+function originLabel(value: OriginFilter) {
+  if (value === "own_half") return "own half origin";
+  if (value === "middle_third") return "middle origin";
+  if (value === "final_third") return "final-third origin";
+  return "origin unknown";
+}
+
+function attackingTeamKey(payload: CoachMomentPayload, matches: MatchSummary[]) {
+  return attackingTeamLabel(payload, matches).toLowerCase();
+}
+
+function attackingTeamLabel(payload: CoachMomentPayload, matches: MatchSummary[]) {
+  const match = matches.find((item) => item.match_id === payload.moment.match_id);
+  const fallback = MATCH_CONTEXT_FALLBACKS[payload.moment.match_id];
+  return teamName(match, payload.moment.perspective_team_role, fallback);
+}
+
+function matchLabel(matchId: string, matches: MatchSummary[]) {
+  const match = matches.find((item) => item.match_id === matchId);
+  return formatMatchTitle(match?.match_title ?? MATCH_CONTEXT_FALLBACKS[matchId]?.title ?? matchId);
 }
 
 function teamName(match: MatchSummary | undefined, role: string, fallback: { home: string; away: string } | undefined) {
@@ -574,9 +513,18 @@ function teamName(match: MatchSummary | undefined, role: string, fallback: { hom
     if (role === "away") return fallback?.away ?? "Away";
     return role;
   }
-  if (role === "home") return match.home_team_brand?.short_name || match.home_team;
-  if (role === "away") return match.away_team_brand?.short_name || match.away_team;
+  if (role === "home") return readableTeamName(match.home_team_brand?.short_name || match.home_team, "Home");
+  if (role === "away") return readableTeamName(match.away_team_brand?.short_name || match.away_team, "Opponent");
   return role;
+}
+
+function readableTeamName(name: string | undefined, fallback: string) {
+  if (!name) return fallback;
+  return /^J\d{2}[A-Z]{3}$/i.test(name) ? fallback : name;
+}
+
+function formatMatchTitle(title: string) {
+  return title.replace(/:(?!\s)/g, ": ");
 }
 
 function periodLabel(period: string) {
@@ -591,11 +539,4 @@ function clockLabel(frameId: number, frameRateHz: number) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = String(totalSeconds % 60).padStart(2, "0");
   return `${minutes}:${seconds}`;
-}
-
-function responseCopy(result: CoachInterpretResponse | null, isLooking: boolean, error: string | null, fallback: string) {
-  if (error) return error;
-  if (isLooking) return "Looking through this match.";
-  if (result) return result.display_answer;
-  return fallback;
 }
