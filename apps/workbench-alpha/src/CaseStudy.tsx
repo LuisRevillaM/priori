@@ -1,5 +1,7 @@
 import React from "react";
 import { CoachMomentPitch, type CoachMomentPayload } from "./MomentZero";
+import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
+import type { ReplayPayload } from "./types";
 
 // Set to the GitHub blob base for the pushed branch IF the repo is public to the
 // reader (e.g. "https://github.com/<org>/<repo>/blob/codex/afl08-passport-loop").
@@ -25,6 +27,7 @@ const LAYERS = [
 ];
 
 const REPLAY_PACKET_PATH = "/case-study-high-bypass-replays.json";
+const TEAM_PRESS_PACKET_PATH = "/case-study-team-press-replays.json";
 
 type ReplayPacket = {
   replays: Array<{
@@ -33,8 +36,43 @@ type ReplayPacket = {
   }>;
 };
 
+type TeamPressPayload = {
+  schema_version: "coach_moment.team_press.v0";
+  moment: {
+    match_id: string;
+    period: string;
+    team_role?: string | null;
+    anchor_frame_id: number;
+    carrier_id: string;
+    team_press_status: string;
+    pressure_actor_ids: string[];
+    pressure_actor_count: number;
+    nearby_defender_count: number;
+    observed_defender_count: number;
+    pressure_angle_spread_degrees: number;
+    maximum_press_distance_m: number;
+    minimum_pressing_defenders: number;
+    minimum_angle_spread_degrees: number;
+    coverage_status: string;
+    pressure_actor_evidence: Array<{
+      player_id: string;
+      distance_m: number;
+      bearing_degrees: number;
+      closing_speed_mps: number;
+      approach_angle_degrees: number;
+      defender_point: { x_m: number; y_m: number };
+      previous_defender_point?: { x_m: number; y_m: number };
+    }>;
+    carrier_point: { x_m: number; y_m: number };
+    claim_boundary: string;
+  };
+  replay: ReplayPayload;
+  visual_contract: Record<string, unknown>;
+};
+
 export function CaseStudy() {
   const [replays, setReplays] = React.useState<Record<number, CoachMomentPayload>>({});
+  const [teamPressReplays, setTeamPressReplays] = React.useState<Record<number, TeamPressPayload>>({});
 
   React.useEffect(() => {
     let cancelled = false;
@@ -51,6 +89,27 @@ export function CaseStudy() {
       })
       .catch(() => {
         if (!cancelled) setReplays({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch(TEAM_PRESS_PACKET_PATH)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Team-press replay packet unavailable: ${response.status}`);
+        return response.json() as Promise<ReplayPacket>;
+      })
+      .then((packet) => {
+        if (cancelled) return;
+        setTeamPressReplays(
+          Object.fromEntries(packet.replays.map((item) => [item.index, item.payload as TeamPressPayload]))
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setTeamPressReplays({});
       });
     return () => {
       cancelled = true;
@@ -138,6 +197,11 @@ export function CaseStudy() {
           attacking action and defensive pressure geometry compile to different evidence. It does not
           claim a coordinated press, trap, intent, quality, or tactical cause.
         </p>
+        <TeamPressMiniReplay
+          payload={teamPressReplays[0]}
+          verdict="Team-press geometry PASS · substrate example"
+          caption="Observed pressure on the carrier: four defenders satisfy the distance, closing, and angle-spread gates. This shows convergence geometry, not a coordinated press or trap."
+        />
 
         <h2>Putting it to test: high-bypass passes</h2>
         <p>
@@ -288,6 +352,92 @@ function MiniReplay({
   );
 }
 
+function TeamPressMiniReplay({
+  payload,
+  verdict,
+  caption
+}: {
+  payload: TeamPressPayload | undefined;
+  verdict: string;
+  caption: string;
+}) {
+  return (
+    <figure className="cs-replay cs-replay-team-press">
+      <div className="cs-replay-frame">
+        {payload ? <TeamPressPitch payload={payload} /> : <div className="cs-replay-loading">Loading replay</div>}
+      </div>
+      <figcaption>
+        <span>{verdict}</span>
+        {payload ? <TeamPressFacts payload={payload} /> : null}
+        {caption}
+      </figcaption>
+    </figure>
+  );
+}
+
+function TeamPressPitch({ payload }: { payload: TeamPressPayload }) {
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const shellRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    const shell = shellRef.current;
+    if (!canvas || !shell) return;
+
+    let animationFrame = 0;
+    let startedAt: number | null = null;
+    const resizeObserver = new ResizeObserver(() => drawAt(performance.now()));
+    resizeObserver.observe(shell);
+
+    const drawAt = (timestamp: number) => {
+      if (startedAt === null) startedAt = timestamp;
+      const progress = ((timestamp - startedAt) % 7200) / 7200;
+      renderTeamPress(canvas, shell, payload, progress);
+      animationFrame = window.requestAnimationFrame(drawAt);
+    };
+
+    animationFrame = window.requestAnimationFrame(drawAt);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      resizeObserver.disconnect();
+    };
+  }, [payload]);
+
+  return (
+    <div className="momentCanvasShell" ref={shellRef}>
+      <canvas ref={canvasRef} aria-label="Animated observed team-press geometry on a football pitch" />
+    </div>
+  );
+}
+
+function TeamPressFacts({ payload }: { payload: TeamPressPayload }) {
+  const moment = payload.moment;
+  return (
+    <dl className="cs-replay-facts" aria-label="Team-press evidence facts">
+      <div>
+        <dt>Status</dt>
+        <dd>{moment.team_press_status}</dd>
+      </div>
+      <div>
+        <dt>Actors</dt>
+        <dd>{moment.pressure_actor_count} / {moment.minimum_pressing_defenders} min</dd>
+      </div>
+      <div>
+        <dt>Radius</dt>
+        <dd>{moment.maximum_press_distance_m.toFixed(1)}m</dd>
+      </div>
+      <div>
+        <dt>Spread</dt>
+        <dd>{moment.pressure_angle_spread_degrees.toFixed(1)}° / {moment.minimum_angle_spread_degrees.toFixed(0)}° min</dd>
+      </div>
+      <div>
+        <dt>Tracked</dt>
+        <dd>{moment.observed_defender_count} defenders</dd>
+      </div>
+    </dl>
+  );
+}
+
 function ReplayFacts({ payload }: { payload: CoachMomentPayload }) {
   const moment = asRecord(payload.moment);
   const clean = asRecord(moment.clean_control_retention);
@@ -323,6 +473,191 @@ function ReplayFacts({ payload }: { payload: CoachMomentPayload }) {
       </div>
     </dl>
   );
+}
+
+function renderTeamPress(
+  canvas: HTMLCanvasElement,
+  shell: HTMLDivElement,
+  payload: TeamPressPayload,
+  progress: number
+) {
+  const replay = payload.replay;
+  const moment = payload.moment;
+  const layout = layoutPitch(replay.pitch, Math.max(360, shell.clientWidth));
+  const width = layout.canvasWidth;
+  const height = layout.canvasHeight;
+  const ratio = window.devicePixelRatio || 1;
+  const physicalWidth = Math.round(width * ratio);
+  const physicalHeight = Math.round(height * ratio);
+  if (canvas.width !== physicalWidth || canvas.height !== physicalHeight) {
+    canvas.width = physicalWidth;
+    canvas.height = physicalHeight;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+
+  const frames = replay.frames;
+  const eased = easeInOut(Math.min(1, progress / 0.86));
+  const index = Math.min(frames.length - 1, Math.max(0, Math.round(eased * (frames.length - 1))));
+  const frame = frames[index];
+  const pressureReveal = smoothstep(0.32, 0.76, progress);
+  const anchorReveal = smoothstep(0.44, 0.82, progress);
+  drawCaseStudyPitch(ctx, layout);
+  drawTeamPressPlayers(ctx, replay, moment, frame, pressureReveal, layout);
+  drawTeamPressGeometry(ctx, replay, moment, frame, pressureReveal, anchorReveal, layout);
+  drawCaseStudyBall(ctx, replay, frame, layout);
+}
+
+function drawCaseStudyPitch(ctx: CanvasRenderingContext2D, layout: ReturnType<typeof layoutPitch>) {
+  ctx.fillStyle = "#102a20";
+  ctx.fillRect(0, 0, layout.canvasWidth, layout.canvasHeight);
+  const x = layout.marginX;
+  const y = layout.marginY;
+  const w = layout.fieldWidth;
+  const h = layout.fieldHeight;
+  ctx.save();
+  ctx.strokeStyle = "rgba(240,239,225,.34)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, w, h);
+  ctx.beginPath();
+  ctx.moveTo(x + w / 2, y);
+  ctx.lineTo(x + w / 2, y + h);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x + w / 2, y + h / 2, 9.15 * layout.scalePxPerM, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawTeamPressPlayers(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: TeamPressPayload["moment"],
+  frame: ReplayPayload["frames"][number],
+  reveal: number,
+  layout: ReturnType<typeof layoutPitch>
+) {
+  const pressureActors = new Set(moment.pressure_actor_ids);
+  const actorTeam = moment.team_role;
+  for (const entity of frame.entities) {
+    if (entity.entity_type === "ball" || entity.entity_id === moment.carrier_id || pressureActors.has(entity.entity_id)) continue;
+    const point = pitchPointToPixel(Number(entity.x_m), Number(entity.y_m), replay.pitch, layout);
+    const isCarrierTeam = actorTeam != null && entity.team_role === actorTeam;
+    ctx.beginPath();
+    ctx.fillStyle = isCarrierTeam ? "rgba(237,247,238,.42)" : "rgba(157,90,82,.30)";
+    ctx.strokeStyle = isCarrierTeam ? "rgba(237,247,238,.52)" : "rgba(249,224,214,.42)";
+    ctx.lineWidth = 1;
+    ctx.arc(point.x, point.y, 3.7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  const carrier = frame.entities.find((entity) => entity.entity_id === moment.carrier_id);
+  if (carrier) {
+    const point = pitchPointToPixel(Number(carrier.x_m), Number(carrier.y_m), replay.pitch, layout);
+    ctx.save();
+    ctx.shadowColor = "rgba(255,245,203,.55)";
+    ctx.shadowBlur = 16 * reveal;
+    ctx.beginPath();
+    ctx.fillStyle = "#fff5cb";
+    ctx.strokeStyle = "rgba(20,27,19,.72)";
+    ctx.lineWidth = 1.6;
+    ctx.arc(point.x, point.y, 6.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  for (const actorId of moment.pressure_actor_ids) {
+    const actor = frame.entities.find((entity) => entity.entity_id === actorId);
+    if (!actor) continue;
+    const point = pitchPointToPixel(Number(actor.x_m), Number(actor.y_m), replay.pitch, layout);
+    ctx.save();
+    ctx.shadowColor = "rgba(242,207,115,.45)";
+    ctx.shadowBlur = 10 * reveal;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(242,207,115,${0.42 + reveal * 0.38})`;
+    ctx.strokeStyle = "rgba(255,249,220,.92)";
+    ctx.lineWidth = 1.8;
+    ctx.arc(point.x, point.y, 5.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawTeamPressGeometry(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  moment: TeamPressPayload["moment"],
+  frame: ReplayPayload["frames"][number],
+  reveal: number,
+  anchorReveal: number,
+  layout: ReturnType<typeof layoutPitch>
+) {
+  const carrier = frame.entities.find((entity) => entity.entity_id === moment.carrier_id);
+  if (!carrier) return;
+  const carrierPoint = pitchPointToPixel(Number(carrier.x_m), Number(carrier.y_m), replay.pitch, layout);
+  ctx.save();
+  ctx.globalAlpha = 0.18 + 0.26 * reveal;
+  ctx.strokeStyle = "#f2cf73";
+  ctx.lineWidth = 1.4;
+  ctx.setLineDash([5, 8]);
+  ctx.beginPath();
+  ctx.arc(carrierPoint.x, carrierPoint.y, moment.maximum_press_distance_m * layout.scalePxPerM, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
+  for (const actorId of moment.pressure_actor_ids) {
+    const actor = frame.entities.find((entity) => entity.entity_id === actorId);
+    if (!actor) continue;
+    const actorPoint = pitchPointToPixel(Number(actor.x_m), Number(actor.y_m), replay.pitch, layout);
+    ctx.save();
+    ctx.globalAlpha = 0.16 + 0.58 * anchorReveal;
+    ctx.strokeStyle = "#f2cf73";
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(actorPoint.x, actorPoint.y);
+    ctx.lineTo(carrierPoint.x, carrierPoint.y);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawCaseStudyBall(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  frame: ReplayPayload["frames"][number],
+  layout: ReturnType<typeof layoutPitch>
+) {
+  const ball = frame.entities.find((entity) => entity.entity_type === "ball");
+  if (!ball) return;
+  const point = pitchPointToPixel(Number(ball.x_m), Number(ball.y_m), replay.pitch, layout);
+  ctx.save();
+  ctx.shadowColor = "rgba(242,207,115,.62)";
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.fillStyle = "#f2cf73";
+  ctx.strokeStyle = "rgba(20,27,19,.92)";
+  ctx.lineWidth = 1.5;
+  ctx.arc(point.x, point.y, 4.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function easeInOut(value: number) {
+  return value < 0.5 ? 4 * value * value * value : 1 - Math.pow(-2 * value + 2, 3) / 2;
+}
+
+function smoothstep(edge0: number, edge1: number, value: number) {
+  const x = Math.max(0, Math.min(1, (value - edge0) / (edge1 - edge0)));
+  return x * x * (3 - 2 * x);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
