@@ -32,7 +32,11 @@ gate enforces this).
 
 ## Verified State (re-verified locally 2026-07-01 on this branch)
 
-- `make test`: 188 tests pass; N1D.1 attestation check prints
+- `make test`: **277 tests, 11 failures.** The failures are stale-vocabulary
+  assertions (`test_scp0_semantic_registry` pins a capability count three
+  revisions old; `test_coach_interpret_surface` asserts renamed claim ids) —
+  see the 2026-07-01 foundation audit (`docs/audits/`) finding V3 and
+  remediation F0. The N1D.1 attestation check still prints
   `VERIFIED, blocking_reasons: []`.
 - `make n1d1-verify`: `VERIFIED`.
 - `make n1i-verify`: `10/10 pass`.
