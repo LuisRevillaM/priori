@@ -1,0 +1,10 @@
+e2ccab6 Implement M1.1S Gate S3 anchor trace core
+ Makefile                                           |   5 +-
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/reviews/gate-s3-controller-review.md |  38 ++++
+ .../m1.1/reviews/gate-s3-external-review-prompt.md |  68 ++++++
+ delivery/m1.1/status.yaml                          |   8 +-
+ .../2026-06-20-m1-1s-gate-s3-anchor-core.md        |  18 ++
+ src/tqe/runtime/executor.py                        | 195 ++++++++++++----
+ src/tqe/verification/m1_1_gate_s3.py               | 252 +++++++++++++++++++++
+ 8 files changed, 542 insertions(+), 43 deletions(-)

@@ -1,0 +1,10 @@
+# targeted backend unittest
+cwd: /Users/luisrevilla/Documents/priori
+utc: 2026-06-23T08:18:47Z
+
+..............
+----------------------------------------------------------------------
+Ran 14 tests in 0.122s
+
+OK
+{"attestation_status": "VERIFIED", "blocking_reasons": []}

@@ -1,0 +1,9 @@
+Makefile
+delivery/ledger.jsonl
+delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+delivery/m1.1/reviews/gate-s4-controller-review.md
+delivery/m1.1/status.yaml
+docs/learnings/2026-06-20-m1-1s-gate-s4-rule-emission.md
+src/tqe/runtime/executor.py
+src/tqe/verification/m1_1_gate_s4.py
+tests/test_m1_1_runtime.py

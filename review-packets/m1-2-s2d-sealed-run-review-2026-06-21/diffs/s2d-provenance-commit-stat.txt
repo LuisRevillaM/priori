@@ -1,0 +1,9 @@
+8a87380 Add M1.2 S2 session provenance
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.2/SPEC.md                              | 122 +++++++----
+ delivery/m1.2/status.yaml                          |  19 +-
+ .../2026-06-21-m1-2-s2d-provenance-integrity.md    |  21 ++
+ .../reviews/2026-06-21-m1-2-s2d-external-review.md |  36 +++
+ src/tqe/verification/m1_2_gate_s2.py               | 133 ++++++++++-
+ src/tqe/workshop/hermes_s2.py                      | 243 ++++++++++++++++++++-
+ 7 files changed, 506 insertions(+), 69 deletions(-)

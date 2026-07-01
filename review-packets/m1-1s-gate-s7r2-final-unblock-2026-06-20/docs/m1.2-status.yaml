@@ -1,0 +1,31 @@
+milestone: M1.2
+name: "Grounded Tactical Query Workshop"
+state: READY_AFTER_M1_1S_S7R2_COMMIT_AND_OWNER_CONFIRMATION
+source_of_truth: delivery/m1.2/SPEC.md
+last_updated: "2026-06-20"
+preconditions:
+  M1_1_runtime_accepted: READY_AFTER_M1_1S_S7R2_CONTROLLER_ACCEPTANCE
+  M1_1R_external_approval_or_required_changes_integrated: SUPERSEDED_BY_M1_1S
+  M1_1S_external_approval_or_required_changes_integrated: SATISFIED_BY_S7R2_REQUIRED_CHANGES_PENDING_COMMIT
+  M1_2_agent_eval_corpus: REQUIRED_BEFORE_ACCEPTANCE
+slices:
+  S0_tool_boundary_and_capability_context: NOT_STARTED
+  S1_draft_bind_confirm_execute_loop: NOT_STARTED
+  S2_feedback_and_known_miss_inspection: NOT_STARTED
+  S3_revision_diff_and_versioning: NOT_STARTED
+  S4_simple_immutable_persistence: NOT_STARTED
+  S5_thin_workshop_ui: NOT_STARTED
+  S6_agent_eval_and_verification: NOT_STARTED
+promotion_gates:
+  Gate_A_tool_boundary_capability_context: NOT_STARTED
+  Gate_B_draft_bind_confirm_execute: NOT_STARTED
+  Gate_C_feedback_non_match_inspection: NOT_STARTED
+  Gate_D_revision_versioning: NOT_STARTED
+  Gate_E_workshop_thin_slice: NOT_STARTED
+  Gate_F_agent_evaluation: NOT_STARTED
+verification:
+  automated: NOT_STARTED
+  planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+  independent_review: NOT_STARTED
+  controller_review: NOT_STARTED
+  owner_acceptance: NOT_STARTED

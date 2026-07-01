@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "audit_id": "workbench_product_audit_v1",
+  "pitch": {
+    "aspect_ratio": "layoutPitch uses canonical pitch dimensions and responsive canvas width",
+    "equal_metre_scale": "appears preserved by pitchPointToPixel/layoutPitch",
+    "ball_visibility": "white ball marker visible",
+    "team_legend": "not present",
+    "frame_time_labels": "frame id and frame count visible; canonical match time visible outside canvas",
+    "color_accessibility": "home blue and away red are distinguishable but no legend; corridor yellow may be low contrast on green for some users"
+  },
+  "corridor_overlay": {
+    "current_source": "PitchCanvas reads result.requested_evidence.target_player_id and current replay frame ball/player coordinates",
+    "source_marker_meaning": "current ball position in selected replay frame",
+    "target_marker_meaning": "current coordinates of target_player_id in selected replay frame",
+    "target_player_evidence_field": "requested_evidence.target_player_id from progressive_corridor episodes",
+    "line_meaning_current": "dashed line from current ball to target player",
+    "line_meaning_safe": "candidate geometric connection between ball and target player for the selected relation witness",
+    "open_frame": "not exposed in current requested evidence",
+    "close_frame": "not exposed in current requested evidence",
+    "duration": "requested_evidence.relation_duration_seconds",
+    "clearance_measurement": "requested_evidence.minimum_clearance_m",
+    "limiting_defender": "not exposed",
+    "actual_ball_path": "not shown",
+    "hypothetical_corridor": "shown as straight ball-to-target line",
+    "shown_only_while_relation_exists": false,
+    "proof_artifact": "artifacts/workbench-alpha/review-proof/screenshots/experimental-overlay-evidence-correlation.png",
+    "prohibited_claims": [
+      "optimal pass",
+      "player intent",
+      "pass probability",
+      "actual pass path unless ball trajectory confirms it"
+    ],
+    "required_legend_text": "A geometric corridor is a sufficiently clear forward connection from the ball to a teammate. It does not establish that this was the optimal pass.",
+    "recommendations": [
+      "Request and project relation open_frame_id and close_frame_id before claiming temporal availability in the overlay.",
+      "Show the corridor only between relation open and close frames; outside that interval, fade or hide it.",
+      "Expose clearance and duration as human labels near the replay, not only as evidence aliases.",
+      "Add source ball marker, target receiver marker, and dashed hypothetical-connection legend.",
+      "Add actual ball trail separately and label it as observed movement, not corridor."
+    ]
+  },
+  "block_shift_overlay": {
+    "current_mode": "hidden when exact overlay geometry is unavailable",
+    "baseline_defending_centroid": "not present as projected replay geometry",
+    "maximum_shift_centroid": "not present as projected replay geometry",
+    "displacement_arrow": "not present as projected replay geometry",
+    "ball_side_region": "not present as projected replay geometry",
+    "baseline_anchor_outcome_frames": "scalar/evidence fields exist in plan but no exact overlay geometry is rendered",
+    "recommendation": "Keep hidden until exact baseline centroid, max-shift centroid, region, and frame anchors are projected from runtime evidence."
+  },
+  "general_visual_recommendations": [
+    "Add a compact player/team legend.",
+    "Move raw frame/replay ids to Developer details.",
+    "Use canonical match time in the replay header and frame id only in Developer details.",
+    "Highlight selected receiver with a stable label that is not just raw entity id.",
+    "Avoid overlays obscuring player markers by using thinner lines, halo, and fade."
+  ]
+}

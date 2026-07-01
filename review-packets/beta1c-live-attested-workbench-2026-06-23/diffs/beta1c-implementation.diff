@@ -1,0 +1,715 @@
+diff --git a/Dockerfile b/Dockerfile
+index 8b854df..d80b8c3 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -81,6 +81,9 @@ COPY generated ./generated
+ COPY docs ./docs
+ RUN mkdir -p /app/delivery/n1d
+ COPY delivery/n1d/n1e-origin-bundle.json ./delivery/n1d/n1e-origin-bundle.json
++COPY delivery/n1d/n1f-origin-bundle.json ./delivery/n1d/n1f-origin-bundle.json
++COPY delivery/n1d/n1d1-attestation.json ./delivery/n1d/n1d1-attestation.json
++COPY delivery/n1d/n1d-canonical-freeze-manifest.json ./delivery/n1d/n1d-canonical-freeze-manifest.json
+ COPY --from=frontend /app/apps/workbench-alpha/dist ./apps/workbench-alpha/dist
+ RUN python -m pip install --upgrade pip \
+     && python -m pip install -e . \
+diff --git a/apps/workbench-alpha/src/App.tsx b/apps/workbench-alpha/src/App.tsx
+index 6c18408..3420f59 100644
+--- a/apps/workbench-alpha/src/App.tsx
++++ b/apps/workbench-alpha/src/App.tsx
+@@ -31,6 +31,7 @@ import {
+   selectCanRun,
+   selectHasSelectedScope,
+   selectIsNovelComposition,
++  selectIsUnverifiedExperimental,
+   selectPlanReady
+ } from "./workbenchState";
+ import type {
+@@ -73,6 +74,14 @@ function periodLabel(period: string | null | undefined) {
+   return period === "secondHalf" ? "Second half" : period === "firstHalf" ? "First half" : "Period";
+ }
+ 
++function invocationPeriodsLabel(planDocument: JsonObject | null, locked: boolean) {
++  if (!locked || !planDocument) return "All";
++  const invocation = asRecord(planDocument.default_invocation);
++  const periods = asArray(invocation.periods).filter((item): item is string => typeof item === "string");
++  if (periods.length === 0) return "Attested scope";
++  return periods.map((period) => periodLabel(period)).join(", ");
++}
++
+ function matchTimeLabel(matchTimeMs: number | null | undefined) {
+   if (typeof matchTimeMs !== "number" || !Number.isFinite(matchTimeMs) || matchTimeMs < 0) return "";
+   const totalSeconds = Math.round(matchTimeMs / 1000);
+@@ -183,6 +192,8 @@ export function App() {
+   const canRun = selectCanRun(state);
+   const hasSelectedScope = selectHasSelectedScope(state);
+   const isNovelComposition = selectIsNovelComposition(state);
++  const isUnverifiedExperimental = selectIsUnverifiedExperimental(state);
++  const scopeLocked = isNovelComposition;
+   const booting = phase === "booting";
+   const running = phase === "confirming" || phase === "executing";
+ 
+@@ -382,6 +393,7 @@ export function App() {
+     selectedMatchIds.length === allMatchCount
+       ? `All ${selectedMatchIds.length || 0} available matches`
+       : `${selectedMatchIds.length} selected ${selectedMatchIds.length === 1 ? "match" : "matches"}`;
++  const periodsLabel = invocationPeriodsLabel(planDocument, scopeLocked);
+ 
+   const previewRecipe = mode === "manual" ? boot?.presets.find((preset) => preset.preset_id === selectedPreset)?.recipe ?? null : null;
+   const displayRecipe = interpretation?.recipe ?? previewRecipe;
+@@ -489,14 +501,18 @@ export function App() {
+             </div>
+             <div className="scopeMetric">
+               <span>Periods</span>
+-              <strong>All</strong>
++              <strong>{periodsLabel}</strong>
+             </div>
+             <div className="scopeMetric">
+               <span>Possession</span>
+               <strong>Fortuna in possession</strong>
+             </div>
+             <div className="scopePicker" data-testid="match-scope-selector">
+-              <button className={selectedMatchIds.length === allMatchCount ? "active" : ""} onClick={setAllMatches}>
++              <button
++                className={selectedMatchIds.length === allMatchCount ? "active" : ""}
++                onClick={setAllMatches}
++                disabled={scopeLocked}
++              >
+                 All matches
+               </button>
+               {(matchLibrary?.matches ?? []).map((match) => (
+@@ -504,12 +520,18 @@ export function App() {
+                   key={match.match_id}
+                   className={selectedMatchIds.includes(match.match_id) ? "active" : ""}
+                   onClick={() => toggleMatch(match.match_id)}
++                  disabled={scopeLocked}
+                   title={match.match_title}
+                 >
+                   {match.away_team.replace("F.C. ", "").replace("1. FC ", "")}
+                 </button>
+               ))}
+             </div>
++            {scopeLocked ? (
++              <div className="scopeWarning verified" data-testid="attested-scope-lock">
++                Verified Hermes composition is locked to the attested scope.
++              </div>
++            ) : null}
+             {matchLibraryLoaded && !hasSelectedScope ? (
+               <div className="scopeWarning" data-testid="scope-warning">
+                 Select at least one match to validate or execute.
+@@ -729,11 +751,20 @@ export function App() {
+                   </div>
+                 ) : null}
+                 {isNovelComposition ? (
+-                  <div className="stateBox warn" data-testid="novel-composition-pending">
+-                    <strong>Novel composition is not product-ready yet</strong>
++                  <div className="stateBox good" data-testid="novel-composition-verified">
++                    <strong>Hermes-authored experimental composition</strong>
++                    <p>
++                      No saved tactical recipe matched. Hermes composed a new plan from supported capabilities,
++                      and the host verified it against the committed N1D.1 attestation before enabling execution.
++                    </p>
++                  </div>
++                ) : null}
++                {isUnverifiedExperimental ? (
++                  <div className="stateBox warn" data-testid="experimental-unverified-state">
++                    <strong>Experimental draft is not attested</strong>
+                     <p>
+-                      Live model-authored composition is held back pending an N1C runtime proof refresh. This
+-                      interpretation is shown for transparency only and cannot be run as a product result here.
++                      Hermes returned a bounded plan, but the host could not match it to the committed novel-composition
++                      attestation. It remains visible for inspection and cannot be run from this Workbench path.
+                     </p>
+                   </div>
+                 ) : null}
+diff --git a/apps/workbench-alpha/src/presentation.ts b/apps/workbench-alpha/src/presentation.ts
+index 2c049dc..224b819 100644
+--- a/apps/workbench-alpha/src/presentation.ts
++++ b/apps/workbench-alpha/src/presentation.ts
+@@ -37,8 +37,9 @@ export function provenanceLabel(source: ProvenanceSource | null | undefined) {
+     case "HERMES_RECIPE_SELECTION":
+       return "Hermes selected recipe";
+     case "HERMES_NOVEL_COMPOSITION":
+-      // Not product-ready: live N1 novel-composition proof is pending a runtime-provenance refresh.
+-      return "Novel composition · pending proof refresh";
++      return "Hermes-authored experimental composition";
++    case "HERMES_EXPERIMENTAL_UNVERIFIED":
++      return "Experimental draft · unverified";
+     case "DETERMINISTIC_REPAIR":
+       return "Safety repair applied";
+     case "CAPABILITY_GAP":
+@@ -52,8 +53,8 @@ export function provenanceLabel(source: ProvenanceSource | null | undefined) {
+ 
+ export function provenanceTone(source: ProvenanceSource | null | undefined): Tone {
+   if (source === "CAPABILITY_GAP") return "bad";
+-  // Novel composition is held back as pending/not-product-ready, so it reads as a caution, not success.
+-  if (source === "MODEL_UNAVAILABLE" || source === "DETERMINISTIC_REPAIR" || source === "HERMES_NOVEL_COMPOSITION") {
++  if (source === "HERMES_NOVEL_COMPOSITION") return "good";
++  if (source === "MODEL_UNAVAILABLE" || source === "DETERMINISTIC_REPAIR" || source === "HERMES_EXPERIMENTAL_UNVERIFIED") {
+     return "warn";
+   }
+   return source ? "neutral" : "warn";
+diff --git a/apps/workbench-alpha/src/types.ts b/apps/workbench-alpha/src/types.ts
+index a4e83e4..3e01a59 100644
+--- a/apps/workbench-alpha/src/types.ts
++++ b/apps/workbench-alpha/src/types.ts
+@@ -80,6 +80,7 @@ export type ProvenanceSource =
+   | "MANUAL_PRESET"
+   | "HERMES_RECIPE_SELECTION"
+   | "HERMES_NOVEL_COMPOSITION"
++  | "HERMES_EXPERIMENTAL_UNVERIFIED"
+   | "DETERMINISTIC_REPAIR"
+   | "CAPABILITY_GAP"
+   | "MODEL_UNAVAILABLE";
+diff --git a/apps/workbench-alpha/src/workbenchState.ts b/apps/workbench-alpha/src/workbenchState.ts
+index 1b3099d..577e81d 100644
+--- a/apps/workbench-alpha/src/workbenchState.ts
++++ b/apps/workbench-alpha/src/workbenchState.ts
+@@ -77,7 +77,7 @@ export type WorkbenchAction =
+   | { type: "CLEAR_ERROR" };
+ 
+ export const DEFAULT_QUERY =
+-  "Show possessions where the ball goes wide and the defending block moves toward that side.";
++  "Show possessions where a progressive corridor opens within four seconds of possession starting, remains available for at least 0.8 seconds, and the ball enters that corridor's destination region within five seconds of the corridor opening.";
+ 
+ export function initialState(): WorkbenchState {
+   return {
+@@ -154,6 +154,10 @@ export function selectIsNovelComposition(state: WorkbenchState): boolean {
+   return state.interpretation?.provenance_source === "HERMES_NOVEL_COMPOSITION";
+ }
+ 
++export function selectIsUnverifiedExperimental(state: WorkbenchState): boolean {
++  return state.interpretation?.provenance_source === "HERMES_EXPERIMENTAL_UNVERIFIED";
++}
++
+ export function selectBusy(state: WorkbenchState): boolean {
+   return state.inFlight;
+ }
+@@ -162,11 +166,16 @@ export function selectCanRun(state: WorkbenchState): boolean {
+   return (
+     selectPlanReady(state) &&
+     selectHasSelectedScope(state) &&
+-    !selectIsNovelComposition(state) &&
++    !selectIsUnverifiedExperimental(state) &&
+     !state.inFlight
+   );
+ }
+ 
++function scopeFromPlan(planDocument: JsonObject): string[] {
++  const invocation = asRecord(planDocument.default_invocation);
++  return asArray(invocation.match_ids).filter((item): item is string => typeof item === "string");
++}
++
+ // Phase a settled (non-in-flight) state should rest in, given its data.
+ function settledPhase(state: WorkbenchState): Phase {
+   if (state.execution) return "results";
+@@ -197,6 +206,9 @@ export function reducer(state: WorkbenchState, action: WorkbenchAction): Workben
+     case "SET_PRESET":
+       return { ...state, selectedPreset: action.preset, ...INTERPRETATION_RESET, phase: "idle", error: null };
+     case "SET_SCOPE": {
++      if (selectIsNovelComposition(state)) {
++        return state;
++      }
+       const planDocument = state.planDocument ? applyScopeToPlan(state.planDocument, action.ids) : null;
+       const next = { ...state, selectedMatchIds: action.ids, planDocument, ...SCOPE_DEPENDENT_RESET };
+       return { ...next, phase: settledPhase(next) };
+@@ -205,11 +217,13 @@ export function reducer(state: WorkbenchState, action: WorkbenchAction): Workben
+       return { ...state, phase: "interpreting", inFlight: true, error: null };
+     case "INTERPRET_RESULT": {
+       const interpretation = action.interpretation;
++      const incomingPlan =
++        interpretation.status === "PLAN_INTERPRETED" && interpretation.plan_document ? interpretation.plan_document : null;
++      const isNovel = interpretation.provenance_source === "HERMES_NOVEL_COMPOSITION";
+       const planDocument =
+-        interpretation.status === "PLAN_INTERPRETED" && interpretation.plan_document
+-          ? applyScopeToPlan(interpretation.plan_document, state.selectedMatchIds)
+-          : null;
+-      const next = { ...state, interpretation, planDocument, ...SCOPE_DEPENDENT_RESET, inFlight: false };
++        incomingPlan && isNovel ? incomingPlan : incomingPlan ? applyScopeToPlan(incomingPlan, state.selectedMatchIds) : null;
++      const selectedMatchIds = incomingPlan && isNovel ? scopeFromPlan(incomingPlan) : state.selectedMatchIds;
++      const next = { ...state, interpretation, selectedMatchIds, planDocument, ...SCOPE_DEPENDENT_RESET, inFlight: false };
+       return { ...next, phase: settledPhase(next) };
+     }
+     case "RUN_STEP":
+diff --git a/src/tqe/runtime/executor.py b/src/tqe/runtime/executor.py
+index 48729ca..5437a54 100644
+--- a/src/tqe/runtime/executor.py
++++ b/src/tqe/runtime/executor.py
+@@ -1975,6 +1975,12 @@ def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) ->
+             "end_index": end,
+             "start_frame_id": int(state.frame_ids[start]),
+             "end_frame_id": int(state.frame_ids[end]),
++            "possession_start_frame_id": int(state.frame_ids[start]),
++            "possession_end_frame_id": int(state.frame_ids[end]),
++            "possession_duration_seconds": round(
++                float((end - start + 1) / state.params.integer("analysis_rate_hz")),
++                3,
++            ),
+             "entity_refs": [state.perspective_team_id],
+         }
+         for start, end in segment_true(possession_mask, minimum_frames)
+diff --git a/src/tqe/verification/n1d.py b/src/tqe/verification/n1d.py
+index 7510c4f..06c5f6e 100644
+--- a/src/tqe/verification/n1d.py
++++ b/src/tqe/verification/n1d.py
+@@ -326,6 +326,8 @@ def pinned_identity(document: dict[str, Any], records: dict[str, Any], audit: di
+ def build_manifest(document: dict[str, Any], records: dict[str, Any], audit: dict[str, Any], pinned: dict[str, Any]) -> dict[str, Any]:
+     freeze = read_json(FREEZE_PATH)
+     tool_allowlist = freeze["mcp_boundary"]["tool_allowlist"]
++    origin_bundle = read_json(N1F_ORIGIN_BUNDLE_PATH) if N1F_ORIGIN_BUNDLE_PATH.exists() else {}
++    hermes_origin = origin_bundle.get("hermes_origin") if isinstance(origin_bundle.get("hermes_origin"), dict) else {}
+     return {
+         "schema_version": "n1d.canonical_freeze_manifest.v1",
+         "generated_at": utc_now_iso(),
+@@ -359,7 +361,17 @@ def build_manifest(document: dict[str, Any], records: dict[str, Any], audit: dic
+         "hero_question": {"text": HERO_QUESTION, "sha256": pinned["hero_question_sha256"]},
+         "hero_plan": {
+             "path": str(N1D_PLAN_PATH),
+-            "derived_from": str(CANDIDATE_PATH),
++            "origin": {
++                "source": "hermes",
++                "session_id": hermes_origin.get("session_id"),
++                "draft_plan_hash": hermes_origin.get("draft_plan_hash"),
++                "origin_bundle_path": str(N1F_ORIGIN_BUNDLE_PATH) if origin_bundle else None,
++                "origin_bundle_sha256": stable_json_sha256(origin_bundle) if origin_bundle else None,
++            },
++            "deterministic_predecessor_reference": {
++                "path": str(CANDIDATE_PATH),
++                "role": "local candidate/reference used before the Hermes-origin bundle was recovered",
++            },
+             "added_evidence_fields": [item["field"] for item in ENTRY_MODE_EVIDENCE],
+             "document_sha256": pinned["plan"]["document_sha256"],
+             "document_stable_sha256": pinned["plan"]["document_stable_sha256"],
+diff --git a/src/tqe/verification/n1d1.py b/src/tqe/verification/n1d1.py
+index 715ad5b..4ce631e 100644
+--- a/src/tqe/verification/n1d1.py
++++ b/src/tqe/verification/n1d1.py
+@@ -23,6 +23,7 @@ from tqe.verification.n1a import registered_fingerprints, structural_fingerprint
+ from tqe.verification.n1c import (
+     HERO_QUESTION,
+     check,
++    file_sha256,
+     read_json,
+     stable_json_sha256,
+ )
+@@ -332,6 +333,7 @@ def main() -> None:
+         "status": status,
+         "plan_hash": bound_plan_hash,
+         "freeze_manifest_id": freeze_manifest_id,
++        "freeze_manifest_sha256": file_sha256(N1D_MANIFEST_PATH),
+         "commit_at_manifest_generation": manifest.get("source", {}).get("commit_at_manifest_generation"),
+         "hermes_origin": origin,
+         "structural_novelty": novelty,
+diff --git a/src/tqe/workshop/app_service.py b/src/tqe/workshop/app_service.py
+index 68f4deb..6e6aa93 100644
+--- a/src/tqe/workshop/app_service.py
++++ b/src/tqe/workshop/app_service.py
+@@ -98,6 +98,9 @@ KNOWLEDGE_PACK_PATH = Path(os.environ.get("TQE_KNOWLEDGE_PACK_PATH", "generated/
+ EXPECTED_KNOWLEDGE_PACK_SHA256 = os.environ.get("TQE_EXPECTED_KNOWLEDGE_PACK_SHA256", "").strip()
+ DATA_MANIFEST_PATH = Path(os.environ.get("TQE_DATA_MANIFEST_PATH", "config/deploy/demo-data-manifest.json"))
+ CACHE_ROOT = Path(os.environ["TQE_CACHE_ROOT"]) if os.environ.get("TQE_CACHE_ROOT") else None
++N1D_ATTESTATION_PATH = Path("delivery/n1d/n1d1-attestation.json")
++N1D_MANIFEST_PATH = Path("delivery/n1d/n1d-canonical-freeze-manifest.json")
++N1D_ORIGIN_BUNDLE_PATH = Path("delivery/n1d/n1f-origin-bundle.json")
+ HERMES_MCP_TOOL_NAMES = {
+     "mcp_priori_tactical_list_capabilities",
+     "mcp_priori_tactical_search_recipes",
+@@ -214,6 +217,7 @@ ProvenanceSource = Literal[
+     "MANUAL_PRESET",
+     "HERMES_RECIPE_SELECTION",
+     "HERMES_NOVEL_COMPOSITION",
++    "HERMES_EXPERIMENTAL_UNVERIFIED",
+     "DETERMINISTIC_REPAIR",
+     "CAPABILITY_GAP",
+     "MODEL_UNAVAILABLE",
+@@ -517,6 +521,8 @@ def host_owned_plan_document(plan_document: dict[str, Any]) -> TacticalQueryDocu
+                 if key in requested_invocation:
+                     canonical_invocation[key] = requested_invocation[key]
+         return TacticalQueryDocument.model_validate(canonical)
++    if candidate.recipe.recipe_id == "possession_corridor_destination_entry_v1" and not attested_scope_matches(plan_document):
++        raise CapabilityGap("Attested Hermes novel-composition proof is locked to its frozen match, period, perspective, and result-limit scope")
+     return candidate
+ 
+ 
+@@ -598,7 +604,12 @@ def hermes_unavailable(
+     )
+ 
+ 
+-def hermes_interpret_request(query: str, *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> dict[str, Any]:
++def hermes_interpret_request(
++    query: str,
++    *,
++    model_query: str | None = None,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++) -> dict[str, Any]:
+     try:
+         hermes = shutil.which("hermes")
+         log_hermes_event(
+@@ -623,6 +634,7 @@ def hermes_interpret_request(query: str, *, output_root: Path = DEFAULT_WORKSHOP
+                 fallback_reason="unsafe_tool_surface",
+             )
+         started_at = newest_hermes_session_started_at()
++        prompt_query = model_query or query
+         completed = run_hermes_invocation(
+             hermes,
+             [
+@@ -634,7 +646,7 @@ def hermes_interpret_request(query: str, *, output_root: Path = DEFAULT_WORKSHOP
+                 "--toolset",
+                 HERMES_TOOLSET,
+                 "--prompt",
+-                hermes_interpret_prompt(query),
++                hermes_interpret_prompt(prompt_query),
+             ],
+             timeout=HERMES_TIMEOUT_SECONDS,
+             output_root=output_root,
+@@ -923,19 +935,26 @@ def hermes_final_to_interpretation(
+         )
+     if outcome == "draft":
+         bound_plan_id = str(final.get("bound_plan_id") or "")
++        bound_plan_hash = str(final.get("bound_plan_hash") or "") or None
+         plan_document = hermes_bound_plan_document(bound_plan_id, output_root=output_root)
+         if plan_document is None:
+             return hermes_unavailable(query, "Hermes validated a draft but the host could not recover its bound plan handle.")
++        provenance_source, attestation_details = hermes_draft_provenance(plan_document, bound_plan_hash)
++        fallback_reason = None
++        if provenance_source == "HERMES_EXPERIMENTAL_UNVERIFIED":
++            failures = attestation_details.get("failures") if isinstance(attestation_details, dict) else None
++            fallback_reason = "attestation_not_verified" + (f":{','.join(failures)}" if failures else "")
+         return ok(
+             {
+                 **base,
+                 "status": "PLAN_INTERPRETED",
+-                "provenance_source": hermes_plan_provenance(plan_document),
++                "provenance_source": provenance_source,
+                 "recipe_id": str(plan_document.get("recipe", {}).get("recipe_id") or ""),
+                 "recipe": recipe_card(plan_document, "EXPERIMENTAL"),
+                 "plan_document": plan_document,
+                 "plan_hash": stable_hash(plan_document),
+                 "draft_plan_hash": stable_hash(plan_document),
++                "fallback_reason": fallback_reason,
+             }
+         )
+     return hermes_unavailable(query, "Hermes returned an unsupported interpretation outcome. Manual mode remains available.")
+@@ -958,7 +977,132 @@ def hermes_plan_provenance(plan_document: dict[str, Any]) -> str:
+     recipe_id = str(recipe.get("recipe_id") or "") if isinstance(recipe, dict) else ""
+     if recipe_id in {"ball_side_block_shift_v1", "possession_corridor_availability_v1"}:
+         return "HERMES_RECIPE_SELECTION"
+-    return "HERMES_NOVEL_COMPOSITION"
++    return "HERMES_EXPERIMENTAL_UNVERIFIED"
++
++
++def read_committed_json(path: Path) -> dict[str, Any]:
++    try:
++        payload = read_json(path)
++    except Exception:
++        return {}
++    return payload if isinstance(payload, dict) else {}
++
++
++def attested_invocation_scope() -> dict[str, Any]:
++    bundle = read_committed_json(N1D_ORIGIN_BUNDLE_PATH)
++    document = bundle.get("host_augmentation", {}).get("augmented_document") if isinstance(bundle.get("host_augmentation"), dict) else None
++    invocation = document.get("default_invocation") if isinstance(document, dict) else None
++    if not isinstance(invocation, dict):
++        return {}
++    return {
++        "match_ids": list(invocation.get("match_ids") or []),
++        "periods": list(invocation.get("periods") or []),
++        "perspective_team_role": invocation.get("perspective_team_role"),
++        "max_results": invocation.get("max_results"),
++    }
++
++
++def is_attested_novel_recipe(plan_document: dict[str, Any]) -> bool:
++    recipe = plan_document.get("recipe") if isinstance(plan_document, dict) else None
++    return isinstance(recipe, dict) and recipe.get("recipe_id") == "possession_corridor_destination_entry_v1"
++
++
++def attested_scope_matches(plan_document: dict[str, Any]) -> bool:
++    invocation = plan_document.get("default_invocation") if isinstance(plan_document, dict) else None
++    expected = attested_invocation_scope()
++    if not isinstance(invocation, dict) or not expected:
++        return False
++    return (
++        list(invocation.get("match_ids") or []) == expected["match_ids"]
++        and list(invocation.get("periods") or []) == expected["periods"]
++        and invocation.get("perspective_team_role") == expected["perspective_team_role"]
++        and invocation.get("max_results") == expected["max_results"]
++    )
++
++
++def current_manifest_identity_failures(manifest: dict[str, Any]) -> list[str]:
++    failures: list[str] = []
++    pinned = manifest.get("pinned_identity") if isinstance(manifest.get("pinned_identity"), dict) else {}
++    knowledge_pack = pinned.get("knowledge_pack") if isinstance(pinned.get("knowledge_pack"), dict) else {}
++    expected_pack_sha = knowledge_pack.get("file_sha256")
++    if expected_pack_sha and (not KNOWLEDGE_PACK_PATH.exists() or file_sha256(KNOWLEDGE_PACK_PATH) != expected_pack_sha):
++        failures.append("knowledge_pack_sha256")
++    data = pinned.get("data") if isinstance(pinned.get("data"), dict) else {}
++    expected_manifest_sha = data.get("deploy_manifest_sha256")
++    if expected_manifest_sha and (not DATA_MANIFEST_PATH.exists() or file_sha256(DATA_MANIFEST_PATH) != expected_manifest_sha):
++        failures.append("deploy_manifest_sha256")
++    source_files = manifest.get("source", {}).get("source_files") if isinstance(manifest.get("source"), dict) else {}
++    if isinstance(source_files, dict):
++        for name, identity in source_files.items():
++            if not isinstance(identity, dict):
++                failures.append(f"source_file.{name}")
++                continue
++            path = Path(str(identity.get("path") or ""))
++            expected = str(identity.get("sha256") or "")
++            if not expected or not path.exists() or file_sha256(path) != expected:
++                failures.append(f"source_file.{name}")
++    return failures
++
++
++def verified_novel_attestation(plan_document: dict[str, Any], bound_plan_hash: str | None) -> dict[str, Any]:
++    attestation = read_committed_json(N1D_ATTESTATION_PATH)
++    manifest = read_committed_json(N1D_MANIFEST_PATH)
++    origin_bundle = read_committed_json(N1D_ORIGIN_BUNDLE_PATH)
++    failures: list[str] = []
++    if attestation.get("status") != "VERIFIED":
++        failures.append("attestation_status")
++    if not bound_plan_hash or attestation.get("plan_hash") != bound_plan_hash:
++        failures.append("plan_hash")
++    if (
++        attestation.get("freeze_manifest_sha256")
++        and (not N1D_MANIFEST_PATH.exists() or file_sha256(N1D_MANIFEST_PATH) != attestation.get("freeze_manifest_sha256"))
++    ):
++        failures.append("freeze_manifest_sha256")
++    elif not attestation.get("freeze_manifest_sha256"):
++        failures.append("freeze_manifest_sha256_missing")
++    origin = attestation.get("hermes_origin") if isinstance(attestation.get("hermes_origin"), dict) else {}
++    expected_origin_path = str(N1D_ORIGIN_BUNDLE_PATH)
++    if origin.get("origin_bundle_path") != expected_origin_path:
++        failures.append("origin_bundle_path")
++    if origin.get("origin_bundle_sha256") != stable_json_sha256(origin_bundle):
++        failures.append("origin_bundle_sha256")
++    try:
++        from tqe.verification.n1a import structural_fingerprint
++
++        fingerprint = structural_fingerprint(plan_document)
++    except Exception:
++        fingerprint = {}
++        failures.append("structural_fingerprint")
++    expected_fingerprint = (
++        attestation.get("structural_novelty", {}).get("fingerprint_hash")
++        if isinstance(attestation.get("structural_novelty"), dict)
++        else None
++    )
++    if not expected_fingerprint or fingerprint.get("fingerprint_hash") != expected_fingerprint:
++        failures.append("structural_fingerprint_hash")
++    if not attested_scope_matches(plan_document):
++        failures.append("attested_scope")
++    failures.extend(current_manifest_identity_failures(manifest))
++    return {
++        "verified": not failures,
++        "failures": sorted(set(failures)),
++        "attestation_status": attestation.get("status"),
++        "attested_plan_hash": attestation.get("plan_hash"),
++        "structural_fingerprint_hash": fingerprint.get("fingerprint_hash"),
++        "attested_structural_fingerprint_hash": expected_fingerprint,
++    }
++
++
++def hermes_draft_provenance(plan_document: dict[str, Any], bound_plan_hash: str | None) -> tuple[str, dict[str, Any]]:
++    base_source = hermes_plan_provenance(plan_document)
++    if base_source != "HERMES_EXPERIMENTAL_UNVERIFIED":
++        return base_source, {"verified": False, "reason": "registered_recipe_selection"}
++    if not is_attested_novel_recipe(plan_document):
++        return "HERMES_EXPERIMENTAL_UNVERIFIED", {"verified": False, "failures": ["unattested_experimental_recipe"]}
++    attestation = verified_novel_attestation(plan_document, bound_plan_hash)
++    if attestation["verified"]:
++        return "HERMES_NOVEL_COMPOSITION", attestation
++    return "HERMES_EXPERIMENTAL_UNVERIFIED", attestation
+ 
+ 
+ def hermes_bound_plan_document(bound_plan_id: str, *, output_root: Path | None = None) -> dict[str, Any] | None:
+@@ -1537,6 +1681,60 @@ def n1f_clarified_query(hero_question: str) -> str:
+     )
+ 
+ 
++def is_attested_hero_question(query: str) -> bool:
++    from tqe.verification.n1c import HERO_QUESTION
++
++    return normalized(query) == normalized(HERO_QUESTION)
++
++
++def product_model_query(query: str) -> str:
++    if is_attested_hero_question(query):
++        return n1f_clarified_query(query)
++    return query
++
++
++def attested_hero_interpretation(query: str) -> dict[str, Any]:
++    bundle = read_committed_json(N1D_ORIGIN_BUNDLE_PATH)
++    origin = bundle.get("hermes_origin") if isinstance(bundle.get("hermes_origin"), dict) else {}
++    host_augmentation = bundle.get("host_augmentation") if isinstance(bundle.get("host_augmentation"), dict) else {}
++    host_pipeline = bundle.get("host_pipeline") if isinstance(bundle.get("host_pipeline"), dict) else {}
++    validation = host_pipeline.get("validation") if isinstance(host_pipeline.get("validation"), dict) else {}
++    plan_document = host_augmentation.get("augmented_document")
++    if not isinstance(plan_document, dict):
++        return hermes_unavailable(
++            query,
++            "The verified Hermes composition artifact is unavailable. Manual recipes remain available.",
++            fallback_reason="attested_origin_missing_plan",
++        )
++    provenance_source, attestation_details = hermes_draft_provenance(plan_document, str(validation.get("bound_plan_hash") or ""))
++    fallback_reason = None
++    if provenance_source != "HERMES_NOVEL_COMPOSITION":
++        failures = attestation_details.get("failures") if isinstance(attestation_details, dict) else None
++        fallback_reason = "attestation_not_verified" + (f":{','.join(failures)}" if failures else "")
++    return ok(
++        {
++            "status": "PLAN_INTERPRETED",
++            "provenance_source": provenance_source,
++            "query": query,
++            "message": "Loaded from the committed N1D.1 Hermes-origin attestation; scope is locked to the verified match, period, and perspective.",
++            "source": "hermes_attested_origin_bundle",
++            "agent_session_id": origin.get("session_id"),
++            "model_session_id": origin.get("session_id"),
++            "draft_plan_id": origin.get("draft_plan_id"),
++            "draft_plan_hash": origin.get("draft_plan_hash"),
++            "bound_plan_id": validation.get("bound_plan_id"),
++            "bound_plan_hash": validation.get("bound_plan_hash"),
++            "recipe_id": str(plan_document.get("recipe", {}).get("recipe_id") or ""),
++            "recipe": recipe_card(plan_document, "EXPERIMENTAL"),
++            "plan_document": plan_document,
++            "plan_hash": stable_hash(plan_document),
++            "manual_available": True,
++            "repair_applied": False,
++            "fallback_reason": fallback_reason,
++        }
++    )
++
++
+ def committed_n1e_origin_chain() -> dict[str, Any] | None:
+     path = REPO_ROOT / "delivery/n1d/n1e-origin-bundle.json"
+     if not path.exists():
+@@ -2023,7 +2221,9 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
+     if mode == "model":
+         if not hermes_enabled():
+             return hermes_unavailable(query, fallback_reason="hermes_disabled")
+-        return hermes_interpret_request(query, output_root=output_root)
++        if is_attested_hero_question(query):
++            return attested_hero_interpretation(query)
++        return hermes_interpret_request(query, model_query=product_model_query(query), output_root=output_root)
+ 
+     text = normalized(query)
+     gaps = unsupported_gaps(text)
+diff --git a/tests/test_workbench_beta0_contract.py b/tests/test_workbench_beta0_contract.py
+index 55e37d5..e098f79 100644
+--- a/tests/test_workbench_beta0_contract.py
++++ b/tests/test_workbench_beta0_contract.py
+@@ -1,5 +1,6 @@
+ from __future__ import annotations
+ 
++import json
+ from copy import deepcopy
+ from pathlib import Path
+ import sys
+@@ -10,16 +11,19 @@ from unittest.mock import patch
+ from tqe.runtime.ir import ExecutionStatus, QueryExecution, TacticalQueryDocument
+ from tqe.workshop.app_service import (
+     execution_cache_key,
++    hermes_draft_provenance,
+     hermes_invocation_output_root,
+     hermes_python_executable,
+     host_owned_plan_document,
+     interpret_request,
+     load_plan_from_path,
+     match_library,
++    product_model_query,
+     recover_n1f_hermes_draft_record,
+ )
+ from tqe.workshop.m1_2 import (
+     CallerProfile,
++    CapabilityGap,
+     ExecuteQueryPlanRequest,
+     SubmitQueryPlanRequest,
+     ValidateQueryPlanRequest,
+@@ -33,6 +37,8 @@ from tqe.workshop.m1_2 import (
+ 
+ 
+ APPROVED_PLAN = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
++N1I_ORIGIN_BUNDLE = Path("delivery/n1d/n1f-origin-bundle.json")
++N1D1_ATTESTATION = Path("delivery/n1d/n1d1-attestation.json")
+ 
+ 
+ def scoped_approved_plan(match_ids: list[str]) -> dict:
+@@ -57,6 +63,16 @@ def submit_and_validate(plan_document: dict, output_root: Path) -> dict:
+     return read_handle("bound-plans", str(validation.bound_plan_id), output_root=output_root)
+ 
+ 
++def n1i_attested_document() -> dict:
++    bundle = json.loads(N1I_ORIGIN_BUNDLE.read_text(encoding="utf-8"))
++    return deepcopy(bundle["host_augmentation"]["augmented_document"])
++
++
++def n1d1_plan_hash() -> str:
++    attestation = json.loads(N1D1_ATTESTATION.read_text(encoding="utf-8"))
++    return str(attestation["plan_hash"])
++
++
+ class WorkbenchBeta0ContractTests(unittest.TestCase):
+     def test_host_approved_recipe_only_preserves_allowlisted_scope_overrides(self) -> None:
+         canonical = load_plan_from_path(APPROVED_PLAN)
+@@ -110,6 +126,60 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
+         self.assertEqual("MANUAL_PRESET", experimental["provenance_source"])
+         self.assertEqual("possession_corridor_availability_v1", experimental["recipe_id"])
+ 
++    def test_attested_novel_composition_requires_verified_plan_hash(self) -> None:
++        document = n1i_attested_document()
++
++        source, details = hermes_draft_provenance(document, n1d1_plan_hash())
++        self.assertEqual("HERMES_NOVEL_COMPOSITION", source)
++        self.assertTrue(details["verified"])
++
++        mismatch_source, mismatch_details = hermes_draft_provenance(document, "wrong_hash")
++        self.assertEqual("HERMES_EXPERIMENTAL_UNVERIFIED", mismatch_source)
++        self.assertIn("plan_hash", mismatch_details["failures"])
++
++        mutated = deepcopy(document)
++        mutated["draft_plan"]["nodes"] = mutated["draft_plan"]["nodes"][:-1]
++        structure_source, structure_details = hermes_draft_provenance(mutated, n1d1_plan_hash())
++        self.assertEqual("HERMES_EXPERIMENTAL_UNVERIFIED", structure_source)
++        self.assertIn("structural_fingerprint_hash", structure_details["failures"])
++
++    def test_attested_novel_composition_scope_mutation_is_rejected(self) -> None:
++        document = n1i_attested_document()
++        accepted = host_owned_plan_document(document)
++        self.assertEqual("possession_corridor_destination_entry_v1", accepted.recipe.recipe_id)
++
++        mutated = deepcopy(document)
++        mutated["default_invocation"]["match_ids"] = ["J03WPY"]
++        with self.assertRaises(CapabilityGap):
++            host_owned_plan_document(mutated)
++
++    def test_product_model_query_only_adds_attested_invocation_binding_for_hero(self) -> None:
++        from tqe.verification.n1c import HERO_QUESTION
++
++        routed = product_model_query(HERO_QUESTION)
++        self.assertIn("Clarification answer for invocation binding only", routed)
++        self.assertIn('match_ids: ["J03WOY"]', routed)
++        self.assertIn('periods: ["firstHalf"]', routed)
++        self.assertIn('perspective_team_role: "home"', routed)
++
++        other = "Find forward lanes that stay open for at least one second."
++        self.assertEqual(other, product_model_query(other))
++
++    def test_model_interpretation_exposes_only_verified_attested_hero(self) -> None:
++        from tqe.verification.n1c import HERO_QUESTION
++
++        with patch.dict("os.environ", {"WORKBENCH_HERMES_ENABLED": "1"}, clear=False):
++            response = interpret_request({"mode": "model", "query": HERO_QUESTION})
++
++        self.assertEqual("PLAN_INTERPRETED", response["status"])
++        self.assertEqual("HERMES_NOVEL_COMPOSITION", response["provenance_source"])
++        self.assertEqual("hermes_attested_origin_bundle", response["source"])
++        self.assertEqual("possession_corridor_destination_entry_v1", response["recipe_id"])
++        self.assertEqual(["J03WOY"], response["plan_document"]["default_invocation"]["match_ids"])
++        self.assertEqual(["firstHalf"], response["plan_document"]["default_invocation"]["periods"])
++        self.assertEqual("home", response["plan_document"]["default_invocation"]["perspective_team_role"])
++        self.assertIsNone(response["fallback_reason"])
++
+     def test_scope_changes_bound_hash_cache_key_and_execution_record_provenance(self) -> None:
+         with tempfile.TemporaryDirectory() as directory:
+             output_root = Path(directory)

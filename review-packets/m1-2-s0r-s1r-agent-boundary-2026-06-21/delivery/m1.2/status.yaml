@@ -1,0 +1,40 @@
+milestone: M1.2
+name: "Grounded Tactical Query Workshop"
+state: S0R_S1R_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW
+source_of_truth: delivery/m1.2/SPEC.md
+last_updated: "2026-06-21"
+preconditions:
+  M1_1_runtime_accepted: SATISFIED_BY_M1_1S_S7R2_APPROVAL
+  M1_1R_external_approval_or_required_changes_integrated: SUPERSEDED_BY_M1_1S
+  M1_1S_external_approval_or_required_changes_integrated: SATISFIED_BY_S7R2_COMMIT_5428D9D_AND_APPROVE_M1_2_UNBLOCKED
+  M1_2_agent_eval_corpus: REQUIRED_BEFORE_ACCEPTANCE
+slices:
+  S0_tool_boundary_and_capability_context: DONE_CONTROLLER_VERIFIED
+  S0R_agent_boundary_correction: DONE_CONTROLLER_VERIFIED
+  S1_manual_reference_workshop: DONE_CONTROLLER_VERIFIED
+  S1R_dispatcher_backed_manual_workshop: DONE_CONTROLLER_VERIFIED
+  S2_hermes_drafting_and_clarification: NOT_STARTED
+  S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
+promotion_gates:
+  Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
+  Gate_S0R_real_schemas_handles_host_profiles: PASS_CONTROLLER
+  Gate_S1_manual_typed_plan_execution_traces_replay_feedback: PASS_CONTROLLER
+  Gate_S1R_serialized_dispatcher_manual_loop: PASS_CONTROLLER
+  Gate_S2_hermes_drafting: NOT_STARTED
+  Gate_S3_revision_recipe_loop: NOT_STARTED
+verification:
+  automated: PASS_FOR_S0_S1
+  planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+  independent_review: M1_1S_S7R2_APPROVED_M1_2_UNBLOCKED
+  controller_review: S0R_S1R_PASS_PENDING_EXTERNAL_PACKET
+  owner_acceptance: APPROVED_TO_PROCEED
+evidence:
+  S0_report: artifacts/m1.2/gate-s0-verification-report.json
+  S1_report: artifacts/m1.2/gate-s1-verification-report.json
+  aggregate_report: artifacts/m1.2/verification-report.json
+  capability_context: generated/capability-context.json
+  workshop_html: artifacts/m1.2/workshop/index.html
+  workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
+next_step:
+  external_review: REQUIRED_BEFORE_HERMES_S2
+  scope: "Review S0R/S1R boundary corrections; do not start Hermes until approved."

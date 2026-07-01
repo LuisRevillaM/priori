@@ -1,0 +1,200 @@
+tests/test_m1_1_runtime.py:19:from tqe.runtime.relations import evaluate_geometric_progressive_corridors
+tests/test_m1_1_runtime.py:148:    def test_geometric_progressive_corridor_relation_has_real_episode_breadth(self) -> None:
+tests/test_m1_1_runtime.py:149:        report = evaluate_geometric_progressive_corridors(
+docs/primitives/registry.yaml:8:    required_for: ["eligibility", "outcome_classification"]
+docs/primitives/registry.yaml:31:  signed_lateral_shift:
+config/query-plans/ball_side_block_shift.ir.v1.json:354:        "catalog_ref": "signed_lateral_shift",
+config/query-plans/ball_side_block_shift.ir.v1.json:406:        "catalog_ref": "outcome_classification",
+generated/capability-catalog.json:1:{"default_complexity_limits":{"max_execution_cost":100000,"max_nesting_depth":12,"max_plan_nodes":40,"max_relations_per_anchor":1000,"max_returned_moments":500,"max_temporal_horizon_seconds":15.0},"operators":[{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gt","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a strict lower numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"lte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to an upper numeric threshold.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"eq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to an equal typed value.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"neq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to a non-equal typed value.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":true,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean"],"input_temporal_types":["frame_signal"],"limitations":["UNKNOWN remains UNKNOWN; absence is not converted to FALSE."],"name":"persists_for","output_cardinality":"collection","output_payload_type":"boolean","output_temporal_type":"episode_set","output_unit":"none","purpose":"Promote a boolean frame signal to intervals after minimum duration.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["boolean"],"input_temporal_types":["episode_set"],"limitations":[],"name":"exists","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Test whether a boolean episode or anchor-evaluation collection exists.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["entity_set","boolean"],"input_temporal_types":["episode_set"],"limitations":[],"name":"count_at_least","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Count a boolean or entity collection and compare to a count threshold.","version":"1.0.0"}],"primitives":[{"evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"executable":true,"inputs":[],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"possession_segment","outputs":[{"cardinality":"collection","entity_scope":"possession","evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"boolean","temporal_type":"episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","start_frame_id","end_frame_id"],"missing_data_semantics":"unknown","name":"anchors","payload_type":"anchor_ref","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Identify active-ball possession intervals for the perspective team.","version":"0.1.0"},{"evidence_fields":["wide_entry_y_m","ball_side"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Depends on canonical pitch coordinates and known pitch width."],"missing_data_semantics":"unknown","name":"ball_lateral_fraction","outputs":[{"cardinality":"single","entity_scope":"ball","evidence_fields":["wide_entry_y_m","ball_side"],"missing_data_semantics":"unknown","name":"fraction","payload_type":"number","temporal_type":"frame_signal","unit":"fraction"}],"parameters":[],"purpose":"Normalize ball distance from pitch centerline toward either touchline.","version":"0.1.0"},{"evidence_fields":["baseline_defensive_centroid_y_m","defending_team_id"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Goalkeepers are excluded from the outfield centroid."],"missing_data_semantics":"unknown","name":"defensive_outfield_centroid","outputs":[{"cardinality":"per_team","entity_scope":"team","evidence_fields":["baseline_defensive_centroid_y_m"],"missing_data_semantics":"unknown","name":"centroid_y","payload_type":"number","temporal_type":"frame_signal","unit":"metre"}],"parameters":[],"purpose":"Measure defending outfield team centroid without goalkeeper bias.","version":"0.1.0"},{"evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"possession","name":"possession_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"ball","name":"entry_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"per_team","entity_scope":"team","name":"defensive_centroid","payload_type":"number","required":true,"temporal_type":"frame_signal","unit":"metre"}],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"signed_lateral_shift","outputs":[{"cardinality":"single","entity_scope":"team","evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"missing_data_semantics":"unknown","name":"signed_shift","payload_type":"number","temporal_type":"frame_signal","unit":"metre"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","start_frame_id","end_frame_id"],"missing_data_semantics":"unknown","name":"anchors","payload_type":"anchor_ref","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Measure defensive centroid movement toward the ball side.","version":"0.1.0"},{"evidence_fields":["classification","outcome_frame_id"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"team","name":"accepted_shift_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"}],"kind":"primitive","limitations":["Does not infer intent, optimality, or missed opportunity."],"missing_data_semantics":"unknown","name":"outcome_classification","outputs":[{"cardinality":"single","entity_scope":"possession","evidence_fields":["classification","outcome_frame_id"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Outcome lookahead horizon in seconds.","maximum":30.0,"minimum":0.2,"name":"horizon","payload_type":"number","required":true,"unit":"second"}],"purpose":"Classify the post-anchor outcome under the frozen M1 predicates.","version":"0.1.0"},{"evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"relation","name":"relation_episodes","payload_type":"relation_ref","required":true,"temporal_type":"relation_episode_set","unit":"none"}],"kind":"primitive","limitations":["Requires an upstream relation episode set.","No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."],"missing_data_semantics":"unknown","name":"relation_destination_entry_classification","outputs":[{"cardinality":"single","entity_scope":"relation","evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Lookahead horizon for destination lane entry.","maximum":30.0,"minimum":0.2,"name":"destination_entry_horizon_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Seed used to derive deterministic experimental result IDs.","name":"result_id_seed","payload_type":"enum","required":true,"unit":"none"},{"allowed_values":["first_by_duration_clearance"],"description":"Deterministic selection strategy when an anchor has multiple relation episodes.","name":"episode_selection","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Classify whether the ball later enters the destination region of a previously evaluated relation episode.","version":"0.1.0"}],"relations":[{"evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"executable":true,"inputs":[{"cardinality":"single","entity_scope":"possession","name":"anchors","payload_type":"enum","required":true,"temporal_type":"frame_signal","unit":"none"}],"kind":"relation","limitations":["No pass probability.","No optimality or decision-quality claim.","No receiver body-orientation model.","No offside model in V1 acceptance."],"missing_data_semantics":"unknown","name":"geometric_progressive_corridor","outputs":[{"cardinality":"collection","entity_scope":"relation","evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"relation_ref","temporal_type":"relation_episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","evaluation_status","relation_count","witness_relation_id","unknown_reason","state_counts"],"missing_data_semantics":"unknown","name":"anchor_evaluations","payload_type":"boolean","temporal_type":"episode_set","unit":"none"}],"parameters":[{"description":"Maximum relation search window after the anchor.","maximum":15.0,"minimum":0.2,"name":"max_window_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Minimum forward progression from source to target.","maximum":80.0,"minimum":0.0,"name":"minimum_progression_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum source-target segment length.","maximum":80.0,"minimum":0.0,"name":"minimum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Maximum source-target segment length.","maximum":100.0,"minimum":0.0,"name":"maximum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum defender clearance from the source-target segment.","maximum":40.0,"minimum":0.0,"name":"minimum_clearance_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Frames required before a corridor is considered open.","maximum":100.0,"minimum":1.0,"name":"open_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Frames required before a corridor is considered closed.","maximum":100.0,"minimum":1.0,"name":"close_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Minimum open duration retained in the relation output.","maximum":15.0,"minimum":0.0,"name":"minimum_duration_seconds","payload_type":"number","required":true,"unit":"second"},{"allowed_values":["any","same_ball_side","opposite_ball_side"],"description":"Retain corridors by relation destination side relative to the ball side.","name":"side_filter","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Represent a geometrically clear forward connection from the ball location to an attacking teammate over an interval.","version":"0.1.0"},{"evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"anchor","name":"anchors","payload_type":"anchor_ref","required":true,"temporal_type":"episode_set","unit":"none"}],"kind":"relation","limitations":["No pass probability.","No optimality or decision-quality claim.","No player intent, causation, or missed-opportunity claim.","No receiver body-orientation or offside model."],"missing_data_semantics":"unknown","name":"geometric_progressive_corridor_from_anchor_set","outputs":[{"cardinality":"collection","entity_scope":"relation","evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"relation_ref","temporal_type":"relation_episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","evaluation_status","relation_count","witness_relation_id","unknown_reason","state_counts"],"missing_data_semantics":"unknown","name":"anchor_evaluations","payload_type":"boolean","temporal_type":"episode_set","unit":"none"}],"parameters":[{"description":"Maximum relation search window after the anchor.","maximum":15.0,"minimum":0.2,"name":"max_window_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Minimum forward progression from source to target.","maximum":80.0,"minimum":0.0,"name":"minimum_progression_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum source-target segment length.","maximum":80.0,"minimum":0.0,"name":"minimum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Maximum source-target segment length.","maximum":100.0,"minimum":0.0,"name":"maximum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum defender clearance from the source-target segment.","maximum":40.0,"minimum":0.0,"name":"minimum_clearance_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Frames required before a corridor is considered open.","maximum":100.0,"minimum":1.0,"name":"open_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Frames required before a corridor is considered closed.","maximum":100.0,"minimum":1.0,"name":"close_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Minimum open duration retained in the relation output.","maximum":15.0,"minimum":0.0,"name":"minimum_duration_seconds","payload_type":"number","required":true,"unit":"second"},{"allowed_values":["any","same_ball_side","opposite_ball_side"],"description":"Retain corridors by relation destination side relative to the ball side.","name":"side_filter","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Represent a geometrically clear forward connection from a generic anchor set to an attacking teammate over an interval.","version":"0.1.0"}],"schema_version":"1.0"}
+src/tqe/verification/m1_2_gate_s0.py:98:            context.safe_operator_source_rules.get("exists", {}).get("allowed_output_name")
+src/tqe/verification/m1_2_gate_s0.py:100:            and context.safe_operator_source_rules.get("count_at_least", {}).get("allowed_output_name")
+src/tqe/verification/m1_2_gate_s0.py:102:            "exists/count_at_least are visible only as anchor_evaluations operators.",
+src/tqe/verification/m1_2_gate_s0.py:103:            {"safe_operator_source_rules": context.safe_operator_source_rules},
+src/tqe/verification/m1_2_gate_s0.py:144:            and any("anchor_evaluations" in issue.get("message", "") for issue in unsafe_validation.issues),
+generated/audits/next-primitive-recommendations.json:126:      "outputType": "relation_episode_set with arrival_frame_id, arrival_delay_seconds, support_player_id, support_lane, support_distance_m, and anchor_evaluations",
+config/query-plans/possession_corridor_availability.experimental.v1.json:214:        "catalog_ref": "geometric_progressive_corridor_from_anchor_set",
+config/query-plans/possession_corridor_availability.experimental.v1.json:267:          "output_name": "anchor_evaluations"
+generated/audits/primitive-dependency-graph.json:55:      "id": "signed_lateral_shift",
+generated/audits/primitive-dependency-graph.json:73:      "id": "outcome_classification",
+generated/audits/primitive-dependency-graph.json:85:      "id": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:91:      "id": "geometric_progressive_corridor_from_anchor_set",
+generated/audits/primitive-dependency-graph.json:97:      "id": "anchor_evaluations",
+generated/audits/primitive-dependency-graph.json:233:      "to": "signed_lateral_shift",
+generated/audits/primitive-dependency-graph.json:248:      "to": "outcome_classification",
+generated/audits/primitive-dependency-graph.json:297:      "from": "signed_lateral_shift",
+generated/audits/primitive-dependency-graph.json:302:      "from": "signed_lateral_shift",
+generated/audits/primitive-dependency-graph.json:307:      "from": "signed_lateral_shift",
+generated/audits/primitive-dependency-graph.json:312:      "from": "signed_lateral_shift",
+generated/audits/primitive-dependency-graph.json:318:      "to": "signed_lateral_shift",
+generated/audits/primitive-dependency-graph.json:337:      "from": "outcome_classification",
+generated/audits/primitive-dependency-graph.json:342:      "from": "outcome_classification",
+generated/audits/primitive-dependency-graph.json:347:      "from": "outcome_classification",
+generated/audits/primitive-dependency-graph.json:353:      "to": "outcome_classification",
+generated/audits/primitive-dependency-graph.json:368:      "to": "geometric_progressive_corridor_from_anchor_set",
+generated/audits/primitive-dependency-graph.json:377:      "from": "geometric_progressive_corridor_from_anchor_set",
+generated/audits/primitive-dependency-graph.json:382:      "from": "geometric_progressive_corridor_from_anchor_set",
+generated/audits/primitive-dependency-graph.json:383:      "to": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:387:      "from": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:392:      "from": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:397:      "from": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:402:      "from": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:407:      "from": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:412:      "from": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:417:      "from": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:418:      "to": "anchor_evaluations",
+generated/audits/primitive-dependency-graph.json:423:      "to": "anchor_evaluations",
+generated/audits/primitive-dependency-graph.json:438:      "to": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:458:      "to": "anchor_evaluations",
+generated/audits/primitive-dependency-graph.json:468:      "to": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:500:      "signed_lateral_shift",
+generated/audits/primitive-dependency-graph.json:503:      "outcome_classification",
+generated/audits/primitive-dependency-graph.json:510:      "geometric_progressive_corridor_from_anchor_set",
+generated/audits/primitive-dependency-graph.json:511:      "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:513:      "anchor_evaluations",
+generated/audits/primitive-dependency-graph.json:520:      "id": "signed_lateral_shift",
+generated/audits/primitive-dependency-graph.json:524:      "id": "outcome_classification",
+generated/audits/primitive-dependency-graph.json:528:      "id": "geometric_progressive_corridor",
+generated/audits/primitive-dependency-graph.json:547:      "node": "signed_lateral_shift",
+generated/audits/primitive-dependency-graph.json:558:      "node": "outcome_classification",
+generated/audits/primitive-dependency-graph.json:569:      "node": "geometric_progressive_corridor",
+src/tqe/verification/m1_1_gate_d.py:16:    evaluate_geometric_progressive_corridors,
+src/tqe/verification/m1_1_gate_d.py:73:    relation_report = evaluate_geometric_progressive_corridors(results=rows)
+src/tqe/verification/m1_1_gate_d.py:121:            if entry.name == "geometric_progressive_corridor" and entry.version == "0.1.0"
+src/tqe/verification/m1_1_gate_d.py:126:        return [fail_check("relation.catalog_entry", "geometric_progressive_corridor@0.1.0 is missing")]
+src/tqe/verification/m1_1_gate_d.py:130:        pass_check("relation.catalog_entry", "geometric_progressive_corridor@0.1.0 is cataloged"),
+generated/audits/primitive-inventory.json:138:        "signed_lateral_shift"
+generated/audits/primitive-inventory.json:156:      "id": "signed_lateral_shift",
+generated/audits/primitive-inventory.json:211:      "id": "outcome_classification",
+generated/audits/primitive-inventory.json:281:        "geometric_progressive_corridor",
+generated/audits/primitive-inventory.json:307:      "id": "geometric_progressive_corridor",
+generated/audits/primitive-inventory.json:318:        "anchor_evaluations": "episode_set<boolean>"
+generated/audits/primitive-inventory.json:359:      "id": "geometric_progressive_corridor_from_anchor_set",
+generated/audits/primitive-inventory.json:364:      "description": "Same geometric corridor relation as geometric_progressive_corridor, but anchored from generic anchor_ref episode sets.",
+generated/audits/primitive-inventory.json:370:        "anchor_evaluations": "episode_set<boolean>"
+generated/audits/primitive-inventory.json:376:      "unknownBehavior": "Same PASS/FAIL/UNKNOWN anchor coverage as geometric_progressive_corridor.",
+generated/audits/primitive-inventory.json:380:        "geometric_progressive_corridor"
+generated/audits/primitive-inventory.json:431:        "geometric_progressive_corridor_from_anchor_set"
+generated/audits/primitive-inventory.json:449:      "id": "anchor_evaluations",
+generated/audits/primitive-inventory.json:521:        "signed_lateral_shift",
+generated/audits/primitive-inventory.json:565:        "outcome_classification",
+generated/audits/primitive-inventory.json:952:      "unknownBehavior": "On anchor_evaluations, PASS/FAIL/UNKNOWN is preserved from coverage records.",
+generated/audits/primitive-inventory.json:955:        "anchor_evaluations"
+generated/audits/primitive-inventory.json:973:        "Agent-visible only on anchor_evaluations; raw collection existence is rejected."
+generated/audits/primitive-inventory.json:994:      "unknownBehavior": "On anchor_evaluations, UNKNOWN records remain UNKNOWN.",
+generated/audits/primitive-inventory.json:997:        "anchor_evaluations"
+generated/audits/primitive-inventory.json:1014:        "Agent-visible only on anchor_evaluations until broader collection semantics are designed and tested."
+generated/audits/primitive-inventory.json:1048:        "signed_lateral_shift",
+generated/audits/primitive-inventory.json:1050:        "outcome_classification",
+generated/audits/primitive-inventory.json:1100:        "geometric_progressive_corridor_from_anchor_set",
+generated/audits/primitive-inventory.json:1150:        "geometric_progressive_corridor",
+generated/audits/primitive-inventory.json:1184:      "geometric_progressive_corridor and geometric_progressive_corridor_from_anchor_set duplicate football semantics with different input contracts.",
+generated/audits/primitive-inventory.json:1189:      "signed_lateral_shift is registered as a primitive but embeds candidate extraction, baseline/search policy, quality gating, and anchor creation.",
+generated/audits/primitive-inventory.json:1190:      "outcome_classification is recipe-specific L4 logic registered as a primitive.",
+generated/audits/primitive-inventory.json:1191:      "geometric_progressive_corridor is agent-visible and useful, but its L1 geometric lowering is not cataloged as reusable kernel operations."
+generated/audits/primitive-inventory.json:1195:      "signed_lateral_shift reads baseline_window_seconds, shift_search_window_seconds, minimum_outfield_players_per_team, prior_central_fraction, and minimum_wide_dwell_seconds through shared runtime state rather than catalog-declared node parameters.",
+generated/audits/primitive-inventory.json:1196:      "outcome_classification reads result_id_seed_hash, analysis_rate_hz, dedupe_window_seconds, opposite_side_fraction, and retained_after_switch_seconds beyond its declared horizon parameter.",
+generated/audits/tactical-query-coverage-matrix.json:23:        "signed_lateral_shift",
+generated/audits/tactical-query-coverage-matrix.json:32:      "recommendedNextStep": "Keep as the approved M1 family; document signed_lateral_shift as a high-level detector stage rather than a pure primitive."
+generated/audits/tactical-query-coverage-matrix.json:40:        "geometric_progressive_corridor",
+generated/audits/tactical-query-coverage-matrix.json:41:        "geometric_progressive_corridor_from_anchor_set",
+generated/audits/tactical-query-coverage-matrix.json:42:        "anchor_evaluations",
+generated/audits/tactical-query-coverage-matrix.json:59:        "geometric_progressive_corridor"
+generated/audits/tactical-query-coverage-matrix.json:179:        "geometric_progressive_corridor destination_lane evidence"
+generated/audits/tactical-query-coverage-matrix.json:235:        "geometric_progressive_corridor",
+generated/audits/tactical-query-coverage-matrix.json:236:        "geometric_progressive_corridor_from_anchor_set",
+generated/audits/tactical-query-coverage-matrix.json:255:        "geometric_progressive_corridor",
+src/tqe/verification/m1_1_gate_r1.py:121:        if entry.name in {"signed_lateral_shift", "outcome_classification", "geometric_progressive_corridor"}:
+src/tqe/verification/m1_1_gate_r1.py:148:            if node.catalog_ref in {"signed_lateral_shift", "outcome_classification", "geometric_progressive_corridor"}
+src/tqe/verification/m1_1_gate_e.py:152:        and node.catalog_ref == "geometric_progressive_corridor"
+src/tqe/verification/m1_1_gate_e.py:171:        pass_check("plan.relation_node", "plan composes geometric_progressive_corridor as a relation node")
+src/tqe/verification/m1_1_gate_e.py:175:            "plan must contain one geometric_progressive_corridor relation node",
+generated/capability-context.json:19:    "geometric_progressive_corridor": [
+generated/capability-context.json:38:    "geometric_progressive_corridor_from_anchor_set": [
+generated/capability-context.json:57:    "outcome_classification": [
+generated/capability-context.json:77:    "signed_lateral_shift": [
+generated/capability-context.json:105:    "exists/count_at_least are agent-visible only on anchor_evaluations.",
+generated/capability-context.json:302:        "allowed_output_name": "anchor_evaluations",
+generated/capability-context.json:333:        "allowed_output_name": "anchor_evaluations",
+generated/capability-context.json:514:      "name": "signed_lateral_shift",
+generated/capability-context.json:573:      "name": "outcome_classification",
+generated/capability-context.json:733:      "name": "geometric_progressive_corridor",
+generated/capability-context.json:776:          "name": "anchor_evaluations",
+generated/capability-context.json:910:      "name": "geometric_progressive_corridor_from_anchor_set",
+generated/capability-context.json:953:          "name": "anchor_evaluations",
+generated/capability-context.json:1049:  "safe_operator_source_rules": {
+generated/capability-context.json:1051:      "allowed_output_name": "anchor_evaluations"
+generated/capability-context.json:1054:      "allowed_output_name": "anchor_evaluations"
+generated/capability-context.json:1199:              "safe_operator_source_rules": {
+generated/capability-context.json:1226:              "safe_operator_source_rules",
+src/tqe/verification/m1_1_gate_s6.py:123:        "signed_lateral_shift",
+src/tqe/verification/m1_1_gate_s6.py:124:        "outcome_classification",
+src/tqe/verification/m1_1_gate_s6.py:172:        and relation_nodes[0].catalog_ref == "geometric_progressive_corridor_from_anchor_set"
+config/query-plans/opposite_corridor_after_shift.experimental.v1.json:426:        "catalog_ref": "signed_lateral_shift",
+config/query-plans/opposite_corridor_after_shift.experimental.v1.json:478:        "catalog_ref": "outcome_classification",
+config/query-plans/opposite_corridor_after_shift.experimental.v1.json:513:        "catalog_ref": "geometric_progressive_corridor",
+config/query-plans/opposite_corridor_after_shift.experimental.v1.json:566:          "output_name": "anchor_evaluations"
+src/tqe/verification/m1_1_gate_r4.py:71:            if entry.name == "geometric_progressive_corridor"
+src/tqe/verification/m1_1_gate_r4.py:87:        checks.append(fail_check("catalog.relation.present", "geometric_progressive_corridor is missing"))
+src/tqe/verification/m1_1_gate_r4.py:94:                "geometric_progressive_corridor declares an explicit anchors input",
+src/tqe/verification/m1_1_gate_r4.py:100:                "geometric_progressive_corridor does not expose only explicit anchors",
+src/tqe/verification/m1_1_gate_r4.py:160:        "relation_geometric_progressive_corridor",
+src/tqe/verification/m1_1_gate_r4.py:205:        and node.catalog_ref == "geometric_progressive_corridor"
+src/tqe/verification/m1_1_gate_s7r.py:70:    coverage = state.runtime_values["progressive_corridor"]["anchor_evaluations"].value
+src/tqe/verification/m1_1_gate_s7r.py:120:        and predicate.input.output_name == "anchor_evaluations"
+src/tqe/verification/m1_1_gate_s7r.py:127:            "s7r.plan_predicate_consumes_anchor_evaluations",
+src/tqe/verification/m1_1_gate_s7r.py:133:            "s7r.plan_predicate_consumes_anchor_evaluations",
+src/tqe/verification/m1_1_gate_s7r.py:181:    coverage = state.runtime_values["progressive_corridor"]["anchor_evaluations"].value
+src/tqe/verification/m1_1_gate_s7r.py:257:    runtime_output = state.runtime_values["progressive_corridor"]["anchor_evaluations"].output
+src/tqe/verification/m1_1_gate_s7r.py:271:        inputs={"anchor_evaluations": RuntimeValue(output=runtime_output, value=records)},
+src/tqe/verification/m1_1_gate_s7r.py:412:    anchor_eval_output = state.runtime_values["progressive_corridor"]["anchor_evaluations"].output
+src/tqe/verification/m1_1_gate_s7r.py:423:            "source_output_name": "anchor_evaluations",
+src/tqe/verification/m1_1_gate_s7r.py:447:                "anchor_evaluations": RuntimeValue(
+src/tqe/verification/m1_1_gate_s7r.py:490:    runtime_value = state.runtime_values["progressive_corridor"]["anchor_evaluations"]
+src/tqe/verification/m1_1_gate_s7r.py:499:        inputs={"anchor_evaluations": runtime_value},
+src/tqe/verification/m1_1_gate_s7r.py:571:    fail_record = next(item for item in state.runtime_values["progressive_corridor"]["anchor_evaluations"].value if item["evaluation_status"] == "FAIL")
+src/tqe/runtime/executor.py:48:    evaluate_geometric_progressive_corridors,
+src/tqe/runtime/executor.py:191:            "signed_lateral_shift": primitive_signed_lateral_shift,
+src/tqe/runtime/executor.py:192:            "outcome_classification": primitive_outcome_classification,
+src/tqe/runtime/executor.py:200:            "geometric_progressive_corridor": relation_geometric_progressive_corridor,
+src/tqe/runtime/executor.py:201:            "geometric_progressive_corridor_from_anchor_set": relation_geometric_progressive_corridor,
+src/tqe/runtime/executor.py:1007:        runtime_value = outputs.get("anchor_evaluations")
+src/tqe/runtime/executor.py:1038:    if requested_output_name == "episodes" and source_output == "anchor_evaluations":
+src/tqe/runtime/executor.py:1550:                return exists_from_anchor_evaluations(
+src/tqe/runtime/executor.py:1600:            return count_at_least_from_anchor_evaluations(
+src/tqe/runtime/executor.py:1619:def exists_from_anchor_evaluations(
+src/tqe/runtime/executor.py:1625:    return predicate_output_from_anchor_evaluations(
+src/tqe/runtime/executor.py:1634:def count_at_least_from_anchor_evaluations(
+src/tqe/runtime/executor.py:1654:    return predicate_output_from_anchor_evaluations(
+src/tqe/runtime/executor.py:1672:def predicate_output_from_anchor_evaluations(
+src/tqe/runtime/executor.py:1936:def primitive_signed_lateral_shift(state: PeriodState, node: BoundCatalogNode) -> None:
+src/tqe/runtime/executor.py:2035:def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode) -> None:
+src/tqe/runtime/executor.py:2207:def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatalogNode) -> None:
+src/tqe/runtime/executor.py:2212:            "anchor_evaluations": [],
+src/tqe/runtime/executor.py:2232:    relation_report = evaluate_geometric_progressive_corridors(
+src/tqe/runtime/executor.py:2264:    anchor_evaluations = relation_anchor_evaluations_from_filtered(
+src/tqe/runtime/executor.py:2267:        raw_anchor_evaluations=relation_report.get("anchor_evaluations") or [],
+src/tqe/runtime/executor.py:2271:        "anchor_evaluations": anchor_evaluations,
+src/tqe/runtime/executor.py:2279:                sorted(Counter(item["evaluation_status"] for item in anchor_evaluations).items())
+src/tqe/runtime/executor.py:2290:def relation_anchor_evaluations_from_filtered(
+src/tqe/runtime/executor.py:2294:    raw_anchor_evaluations: list[dict[str, Any]],
+src/tqe/runtime/executor.py:2298:        for record in raw_anchor_evaluations
+src/tqe/runtime/executor.py:2312:            "relation": "geometric_progressive_corridor",
+src/tqe/verification/m1_1_gate_s2.py:23:    primitive_outcome_classification,
+src/tqe/verification/m1_1_gate_s2.py:25:    primitive_signed_lateral_shift,
+src/tqe/verification/m1_1_gate_s2.py:121:        "primitive_signed_lateral_shift": (
+src/tqe/verification/m1_1_gate_s2.py:122:            primitive_signed_lateral_shift,
+src/tqe/verification/m1_1_gate_s2.py:125:        "primitive_outcome_classification": (
+src/tqe/verification/m1_1_gate_s2.py:126:            primitive_outcome_classification,
+src/tqe/verification/m1_1_gate_s2.py:205:    primitive_signed_lateral_shift(substituted, signed_shift_node)
+src/tqe/verification/m1_1_gate_s2.py:217:            "substituting a compatible defensive_centroid RuntimeValue changes signed_lateral_shift output",
+src/tqe/verification/m1_1_gate_s2.py:227:            "signed_lateral_shift output did not change after declared input substitution",
+src/tqe/verification/m1_1_gate_r5.py:125:        if node.get("catalog_ref") == "signed_lateral_shift":
+src/tqe/verification/m1_1_gate_r5.py:135:                "removing signed_lateral_shift.possession_episodes fails binding",
+generated/tactical-knowledge-pack.json:307:    "geometric_progressive_corridor": [
+generated/tactical-knowledge-pack.json:326:    "geometric_progressive_corridor_from_anchor_set": [
+generated/tactical-knowledge-pack.json:345:    "outcome_classification": [
+generated/tactical-knowledge-pack.json:365:    "signed_lateral_shift": [
+generated/tactical-knowledge-pack.json:1063:              "safe_operator_source_rules": {
+generated/tactical-knowledge-pack.json:1090:              "safe_operator_source_rules",
+generated/tactical-knowledge-pack.json:3273:      "name": "signed_lateral_shift",
+generated/tactical-knowledge-pack.json:3333:      "name": "outcome_classification",

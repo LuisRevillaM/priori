@@ -1,0 +1,1930 @@
+From 93ba7105ccb1cf0e8bbb1a84ae73cac280e67755 Mon Sep 17 00:00:00 2001
+From: luisrevillam <luisrevillameza@gmail.com>
+Date: Mon, 22 Jun 2026 04:30:39 -0700
+Subject: [PATCH] Freeze frontier Hermes configuration
+
+---
+ CURRENT_STATE.md                              |  45 +-
+ Makefile                                      |   5 +-
+ .../m1.2/gate-s2i-verification-report.json    |   8 +-
+ .../m1.2/s2i-d-unseeded-hermes-report.json    | 116 ++--
+ .../m1.2/s2i-e-frontier-freeze-report.json    | 499 ++++++++++++++++++
+ delivery/ledger.jsonl                         |   1 +
+ delivery/m1.2/frontier-runtime-freeze.json    | 419 +++++++++++++++
+ delivery/m1.2/status.yaml                     |  63 ++-
+ .../2026-06-22-m1-2-s2i-e-frontier-freeze.md  |  11 +
+ .../2026-06-22-m1-2-s2i-e-frontier-freeze.md  |  56 ++
+ generated/capability-context.json             |   2 +-
+ generated/tactical-knowledge-pack.json        |   6 +-
+ generated/tactical-knowledge-pack.md          |   6 +-
+ src/tqe/verification/m1_2_gate_s2id.py        |  85 ++-
+ src/tqe/verification/m1_2_gate_s2ie.py        | 223 ++++++++
+ 15 files changed, 1431 insertions(+), 114 deletions(-)
+ create mode 100644 artifacts/m1.2/s2i-e-frontier-freeze-report.json
+ create mode 100644 delivery/m1.2/frontier-runtime-freeze.json
+ create mode 100644 docs/learnings/2026-06-22-m1-2-s2i-e-frontier-freeze.md
+ create mode 100644 docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md
+ create mode 100644 src/tqe/verification/m1_2_gate_s2ie.py
+
+diff --git a/CURRENT_STATE.md b/CURRENT_STATE.md
+index ba57430..be071aa 100644
+--- a/CURRENT_STATE.md
++++ b/CURRENT_STATE.md
+@@ -1,13 +1,13 @@
+ # Current State Snapshot
+ 
+-Date: 2026-06-21
++Date: 2026-06-22
+ 
+ ## Repository State
+ 
+ - Branch: `codex/m1-1-s1-ir-binder`
+ - Latest committed controller checkpoint before this snapshot:
+-  `f2f5be8 Add primitive layer audit planning artifacts`
+-- Working tree: scoped S2I-D frontier/Hermes authoring integration; existing untracked review packets and `docs/learnings.zip` remain outside this snapshot.
++  `4c475cd Verify unseeded Hermes plan authoring`
++- Working tree: scoped S2I-E frontier configuration freeze; existing untracked review packets and `docs/learnings.zip` remain outside this snapshot.
+ - Current product source of truth:
+   - `delivery/m1.2/SPEC.md`
+   - `delivery/m1.2/status.yaml`
+@@ -46,6 +46,8 @@ Known green commands at the frozen baseline:
+ ```text
+ make m1-2-gate-s2-sealed-verify
+ make m1-2-gate-s2-verify
++make m1-2-gate-s2id-verify
++make m1-2-gate-s2ie-verify
+ make m1-2-verify
+ make m1-1-gate-s7r-verify
+ make test
+@@ -149,6 +151,13 @@ The existing app directory is `apps/replay-proof`, used for earlier replay proof
+ - Hermes auth: `openai-codex` logged in via ChatGPT/Codex subscription device auth under `HERMES_HOME=/Users/luisrevilla/.hermes-priori`.
+ - Hermes model config: provider `openai-codex`, default `gpt-5.5`, reasoning effort `xhigh`.
+ - MCP support for Hermes: tactical stdio MCP adapter is connected and verified through a real Hermes session that lists/searches/describes capabilities, submits a seeded experimental plan, validates it, and stops before execution.
++- Frontier freeze: `delivery/m1.2/frontier-runtime-freeze.json`.
++- Freeze status: `FROZEN_PENDING_FINAL_INDEPENDENT_EVALUATION`.
++- Freeze SHA-256: `b072b8006ae60aba64e3a564d983dae30effbfccdb5ec091c2c1bcb001cd11b9`.
++- Freeze report: `artifacts/m1.2/s2i-e-frontier-freeze-report.json`.
++- Freeze report SHA-256: `a55ae56fed08f1a379e85a9712e8de46ddcc603742101653d0e403571f4709d2`.
++- Important identity boundary: direct Responses API probes returned exact model `gpt-5.5-2026-04-23`; Hermes sessions currently report the product alias `gpt-5.5`, not the exact snapshot.
++- Final independent evaluation remains required before S3 acceptance. S2I-B probes and S2I-D live Hermes authoring are provisioning/authoring proof, not sealed acceptance.
+ 
+ ## S2I-A Tactical Knowledge Pack
+ 
+@@ -156,7 +165,8 @@ Implemented and controller-verified for the frontier/Hermes path:
+ 
+ - JSON: `generated/tactical-knowledge-pack.json`
+ - Markdown: `generated/tactical-knowledge-pack.md`
+-- Pack SHA-256: `28405b82d54b961459842d77f1547e3a37fa5bb1ce2b7435a8a919732f804854`
++- Pack semantic SHA-256: `15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9`
++- Pack file SHA-256: `5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af`
+ - Verification: `make m1-2-gate-s2i-verify`
+ - Local verification report:
+   `docs/reviews/2026-06-21-m1-2-s2i-a-local-verification.md`
+@@ -199,7 +209,7 @@ Controller-verified:
+ - Hermes provider/model: `openai-codex` / `gpt-5.5`
+ - Reasoning effort: `xhigh`
+ - Tactical Knowledge Pack SHA-256:
+-  `49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e`
++  `5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af`
+ - Hermes config SHA-256:
+   `e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237`
+ 
+@@ -217,7 +227,26 @@ recipe IDs and returns a declarative authoring contract derived from checked-in
+ recipe documents. This is not tactical runtime logic and does not expose host
+ execution.
+ 
+-## Known Gaps After S2I-D
++## S2I-E Frontier Configuration Freeze
++
++Controller-verified:
++
++- Freeze artifact: `delivery/m1.2/frontier-runtime-freeze.json`
++- Freeze report: `artifacts/m1.2/s2i-e-frontier-freeze-report.json`
++- Local review: `docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md`
++- Verification: `make m1-2-gate-s2ie-verify`
++- Result: `17 pass / 0 fail`
++- Product route: Hermes Agent over local stdio Tactical MCP.
++- Provider/model: `openai-codex` / `gpt-5.5`.
++- Reasoning effort: `xhigh`.
++- Direct API control route exact returned model: `gpt-5.5-2026-04-23`.
++- Hermes exact snapshot status: Hermes session metadata reports the alias `gpt-5.5` only.
++- Frozen tool allowlist: `list_capabilities`, `search_recipes`, `describe_capability`, `submit_query_plan`, `validate_query_plan`, `inspect_result`, `inspect_non_match`, `retrieve_replay_window`.
++- Host-only tools remain absent: `host_confirm_bound_plan`, `execute_query_plan`, `record_feedback`, `compare_query_versions`, `save_experimental_recipe`.
++
++The freeze intentionally does not claim final sealed acceptance. It fixes the target route and evidence hashes so the next independent evaluation can be run against a stable frontier configuration.
++
++## Known Gaps After S2I-E
+ 
+ - Initial high/xhigh comparison has run outside full Workbench context and
+   currently recommends `xhigh`; final product-runtime acceptance still needs the
+@@ -255,8 +284,8 @@ Provisioning proof is now green:
+ 
+ ## Next Roadmap State
+ 
+-The next frontier milestone is S2I-E: freeze the Hermes/frontier configuration
+-and run final evaluation. Workbench Alpha 1 continues in parallel as the visible
++The next frontier milestone is final independent evaluation against the frozen
++S2I-E Hermes/frontier route. Workbench Alpha continues in parallel as the visible
+ product path.
+ 
+ S2I-E should:
+diff --git a/Makefile b/Makefile
+index 3038e78..3e46330 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ PYTHON ?= $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python
+ PYTHONPATH := $(CURDIR)/src
+ export PYTHONPATH
+ 
+-.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify m1-2-gate-s0-verify m1-2-gate-s1-verify m1-2-gate-s2-verify m1-2-gate-s2-sealed-verify m1-2-gate-s2i-verify m1-2-gate-s2ib-verify m1-2-gate-s2ic-verify m1-2-gate-s2id-verify workbench-alpha-install workbench-alpha-build workbench-alpha-serve workbench-alpha-verify m1-2-verify test
++.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify m1-2-gate-s0-verify m1-2-gate-s1-verify m1-2-gate-s2-verify m1-2-gate-s2-sealed-verify m1-2-gate-s2i-verify m1-2-gate-s2ib-verify m1-2-gate-s2ic-verify m1-2-gate-s2id-verify m1-2-gate-s2ie-verify workbench-alpha-install workbench-alpha-build workbench-alpha-serve workbench-alpha-verify m1-2-verify test
+ 
+ setup:
+ 	python3.12 -m venv .venv
+@@ -136,6 +136,9 @@ m1-2-gate-s2ic-verify:
+ m1-2-gate-s2id-verify:
+ 	$(PYTHON) -m tqe.verification.m1_2_gate_s2id
+ 
++m1-2-gate-s2ie-verify:
++	$(PYTHON) -m tqe.verification.m1_2_gate_s2ie
++
+ workbench-alpha-install:
+ 	npm --prefix apps/workbench-alpha install
+ 
+diff --git a/artifacts/m1.2/gate-s2i-verification-report.json b/artifacts/m1.2/gate-s2i-verification-report.json
+index dde91ba..c6bd394 100644
+--- a/artifacts/m1.2/gate-s2i-verification-report.json
++++ b/artifacts/m1.2/gate-s2i-verification-report.json
+@@ -2,8 +2,8 @@
+   "checks": [
+     {
+       "details": {
+-        "actual": "5c1cb1174486ef1c4a42cea4b361c1245d22df1ceb960f1144f2e2a8ca39a919",
+-        "expected": "5c1cb1174486ef1c4a42cea4b361c1245d22df1ceb960f1144f2e2a8ca39a919"
++        "actual": "15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9",
++        "expected": "15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9"
+       },
+       "name": "pack.hash.matches_content",
+       "ok": true
+@@ -162,10 +162,10 @@
+     }
+   ],
+   "gate": "S2I_A_tactical_knowledge_pack",
+-  "generated_at": "2026-06-22T05:15:57+00:00",
++  "generated_at": "2026-06-22T11:25:45+00:00",
+   "knowledge_pack_markdown_path": "generated/tactical-knowledge-pack.md",
+   "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
+-  "knowledge_pack_sha256": "5c1cb1174486ef1c4a42cea4b361c1245d22df1ceb960f1144f2e2a8ca39a919",
++  "knowledge_pack_sha256": "15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9",
+   "passed": true,
+   "schema_version": "1.0"
+ }
+diff --git a/artifacts/m1.2/s2i-d-unseeded-hermes-report.json b/artifacts/m1.2/s2i-d-unseeded-hermes-report.json
+index 1f60f39..c2c29a2 100644
+--- a/artifacts/m1.2/s2i-d-unseeded-hermes-report.json
++++ b/artifacts/m1.2/s2i-d-unseeded-hermes-report.json
+@@ -57,7 +57,7 @@
+       "ok": true
+     },
+     {
+-      "name": "runs.bound_handles_present",
++      "name": "runs.bound_validations_present",
+       "ok": true
+     },
+     {
+@@ -81,19 +81,19 @@
+       "ok": true
+     }
+   ],
+-  "elapsed_ms": 370,
++  "elapsed_ms": 201,
+   "frontier_identity": {
+     "configured_model": "gpt-5.5",
+     "hermes_config_sha256": "e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237",
+     "hermes_executable": "/Users/luisrevilla/.local/bin/hermes",
+-    "hermes_version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream 2b3a4f0a\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUp to date",
++    "hermes_version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream b4cb33cd\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUpdate available: 60 commits behind \u2014 run 'hermes update'",
+     "provider": "openai-codex",
+     "reasoning_effort": "xhigh"
+   },
+-  "generated_at": "2026-06-22T05:15:57+00:00",
++  "generated_at": "2026-06-22T11:29:40+00:00",
+   "knowledge_surface": {
+     "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
+-    "knowledge_pack_sha256": "49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e",
++    "knowledge_pack_sha256": "5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af",
+     "recipe_authoring_contract_exposed": true,
+     "unseeded_prompt_policy": "Prompts contain natural language requests and instructions, not plan JSON."
+   },
+@@ -131,56 +131,22 @@
+     {
+       "bound_execution_mode": "bind_only",
+       "bound_execution_profile": "generic",
+-      "bound_handle_present": true,
++      "bound_handle_present": false,
+       "bound_plan_hash": "2179b7a0233596959d5122e17110cdc541bb79115d66b9676e012d2a1ff92336",
+       "bound_plan_id": "bound_2179b7a023359695",
+       "bound_resolved_parameters": {
+-        "close_after_frames": {
+-          "payload_type": "number",
+-          "unit": "count",
+-          "value": 2
+-        },
+-        "max_window_seconds": {
+-          "payload_type": "number",
+-          "unit": "second",
+-          "value": 5.0
+-        },
+-        "maximum_segment_length_m": {
+-          "payload_type": "number",
+-          "unit": "metre",
+-          "value": 45.0
+-        },
+-        "minimum_clearance_m": {
+-          "payload_type": "number",
+-          "unit": "metre",
+-          "value": 4.0
+-        },
+         "minimum_duration_seconds": {
+           "payload_type": "number",
+-          "unit": "second",
++          "unit": "unknown",
+           "value": 0.4
+         },
+         "minimum_progression_m": {
+           "payload_type": "number",
+-          "unit": "metre",
++          "unit": "unknown",
+           "value": 5.0
+-        },
+-        "minimum_segment_length_m": {
+-          "payload_type": "number",
+-          "unit": "metre",
+-          "value": 6.0
+-        },
+-        "open_after_frames": {
+-          "payload_type": "number",
+-          "unit": "count",
+-          "value": 2
+-        },
+-        "side_filter": {
+-          "payload_type": "enum",
+-          "unit": "none",
+-          "value": "any"
+         }
+       },
++      "bound_validation_present": true,
+       "called_tools": [
+         "mcp_priori_tactical_list_capabilities",
+         "mcp_priori_tactical_list_capabilities",
+@@ -286,35 +252,26 @@
+       "source": "s2id_live",
+       "system_instruction_sha256": "e1252b6e66c41d8fb49d7414573d7f0cdee6f6fddbb2677cee7c2cb64cfd4039",
+       "tool_call_count": 13,
+-      "user_prompt_contains_plan_json": false
++      "user_prompt_contains_plan_json": false,
++      "validate_response": {
++        "bound_plan_hash": "2179b7a0233596959d5122e17110cdc541bb79115d66b9676e012d2a1ff92336",
++        "bound_plan_id": "bound_2179b7a023359695",
++        "draft_plan_id": "draft_496efd224daf3c31",
++        "execution_profile": "generic",
++        "issues": [],
++        "ok": true,
++        "plan_id": "possession_corridor_availability_experimental_v1",
++        "plan_status": "experimental",
++        "recipe_id": "possession_corridor_availability_v1"
++      }
+     },
+     {
+       "bound_execution_mode": "bind_only",
+       "bound_execution_profile": "generic",
+-      "bound_handle_present": true,
++      "bound_handle_present": false,
+       "bound_plan_hash": "a622811f41c9f5d04b8f666e5d8b819164935523cbec1d1b470fd0f012777fd2",
+       "bound_plan_id": "bound_a622811f41c9f5d0",
+       "bound_resolved_parameters": {
+-        "close_after_frames": {
+-          "payload_type": "number",
+-          "unit": "count",
+-          "value": 2
+-        },
+-        "max_window_seconds": {
+-          "payload_type": "number",
+-          "unit": "second",
+-          "value": 5.0
+-        },
+-        "maximum_segment_length_m": {
+-          "payload_type": "number",
+-          "unit": "metre",
+-          "value": 45.0
+-        },
+-        "minimum_clearance_m": {
+-          "payload_type": "number",
+-          "unit": "metre",
+-          "value": 4.0
+-        },
+         "minimum_duration_seconds": {
+           "payload_type": "number",
+           "unit": "second",
+@@ -324,23 +281,9 @@
+           "payload_type": "number",
+           "unit": "metre",
+           "value": 12.0
+-        },
+-        "minimum_segment_length_m": {
+-          "payload_type": "number",
+-          "unit": "metre",
+-          "value": 6.0
+-        },
+-        "open_after_frames": {
+-          "payload_type": "number",
+-          "unit": "count",
+-          "value": 2
+-        },
+-        "side_filter": {
+-          "payload_type": "enum",
+-          "unit": "none",
+-          "value": "any"
+         }
+       },
++      "bound_validation_present": true,
+       "called_tools": [
+         "mcp_priori_tactical_list_capabilities",
+         "mcp_priori_tactical_list_capabilities",
+@@ -419,7 +362,18 @@
+       "source": "s2id_live",
+       "system_instruction_sha256": "e1252b6e66c41d8fb49d7414573d7f0cdee6f6fddbb2677cee7c2cb64cfd4039",
+       "tool_call_count": 8,
+-      "user_prompt_contains_plan_json": false
++      "user_prompt_contains_plan_json": false,
++      "validate_response": {
++        "bound_plan_hash": "a622811f41c9f5d04b8f666e5d8b819164935523cbec1d1b470fd0f012777fd2",
++        "bound_plan_id": "bound_a622811f41c9f5d0",
++        "draft_plan_id": "draft_4f4a534a0b4fd356",
++        "execution_profile": "generic",
++        "issues": [],
++        "ok": true,
++        "plan_id": "possession_corridor_12m_08s",
++        "plan_status": "experimental",
++        "recipe_id": "possession_corridor_availability_v1"
++      }
+     }
+   ],
+   "safety_boundary": {
+diff --git a/artifacts/m1.2/s2i-e-frontier-freeze-report.json b/artifacts/m1.2/s2i-e-frontier-freeze-report.json
+new file mode 100644
+index 0000000..c982824
+--- /dev/null
++++ b/artifacts/m1.2/s2i-e-frontier-freeze-report.json
+@@ -0,0 +1,499 @@
++{
++  "checks": [
++    {
++      "name": "s2ib.provisioning_report_passed",
++      "ok": true
++    },
++    {
++      "name": "s2id.unseeded_authoring_report_passed",
++      "ok": true
++    },
++    {
++      "name": "product_route.provider_openai_codex",
++      "ok": true
++    },
++    {
++      "name": "product_route.configured_model_gpt_5_5",
++      "ok": true
++    },
++    {
++      "name": "product_route.reasoning_xhigh",
++      "ok": true
++    },
++    {
++      "name": "direct_api.exact_snapshot_returned",
++      "ok": true
++    },
++    {
++      "name": "direct_api.strict_structured_output_verified",
++      "ok": true
++    },
++    {
++      "name": "direct_api.high_and_xhigh_verified",
++      "ok": true
++    },
++    {
++      "name": "mcp.exact_tool_allowlist",
++      "ok": true
++    },
++    {
++      "name": "mcp.host_only_absent",
++      "ok": true
++    },
++    {
++      "name": "mcp.resources_and_prompts_disabled",
++      "ok": true
++    },
++    {
++      "name": "hashes.knowledge_pack_recorded",
++      "ok": true
++    },
++    {
++      "name": "hashes.capability_context_recorded",
++      "ok": true
++    },
++    {
++      "name": "s2id.two_live_unseeded_runs",
++      "ok": true
++    },
++    {
++      "name": "s2id.bound_hashes_differ",
++      "ok": true
++    },
++    {
++      "name": "s2id.material_parameters_differ",
++      "ok": true
++    },
++    {
++      "name": "final_eval.pending_not_claimed",
++      "ok": true
++    }
++  ],
++  "elapsed_ms": 384,
++  "freeze": {
++    "direct_api_control_route": {
++      "comparison_evidence": {
++        "frozen_probe_set_sha256": "3f7686bbe69121abd844dbb43c14a8ba40bc83828cec6b2a1c959a1c2e6cfe8a",
++        "ok": true,
++        "pricing": {
++          "cached_input_usd_per_1m": 0.5,
++          "input_usd_per_1m": 5.0,
++          "output_usd_per_1m": 30.0,
++          "source_checked_at": "2026-06-21",
++          "source_url": "https://openai.com/api/pricing/"
++        },
++        "rows": [
++          {
++            "estimated_cost_usd": 0.01054,
++            "expected": "select_recipe",
++            "first_pass_matches_expected": true,
++            "first_pass_outcome": "select_recipe",
++            "json_output": {
++              "outcome": "select_recipe",
++              "rationale": "The user explicitly directs use of a specific reviewed recipe, indicating recipe selection rather than requesting a new draft, clarification, or unsupported capability."
++            },
++            "latency_ms": 9112,
++            "ok": true,
++            "parse_error": null,
++            "probe_id": "supported_recipe_selection",
++            "reasoning_effort": "high",
++            "repair_or_fallback_used": false,
++            "requested_model": "gpt-5.5-2026-04-23",
++            "response_id": "resp_060d5da1b0aee7b4006a38961d6a00819ba87c9420599aeae0",
++            "returned_model": "gpt-5.5-2026-04-23",
++            "usage": {
++              "input_tokens": 86,
++              "input_tokens_details": {
++                "cached_tokens": 0
++              },
++              "output_tokens": 337,
++              "output_tokens_details": {
++                "reasoning_tokens": 285
++              },
++              "total_tokens": 423
++            }
++          },
++          {
++            "estimated_cost_usd": 0.01669,
++            "expected": "draft",
++            "first_pass_matches_expected": false,
++            "first_pass_outcome": "select_recipe",
++            "json_output": {
++              "outcome": "select_recipe",
++              "rationale": "The request maps to a standard lane-detection query: identify forward/progressive lanes and filter them by temporal persistence with a minimum open duration of 0.8 seconds."
++            },
++            "latency_ms": 15051,
++            "ok": true,
++            "parse_error": null,
++            "probe_id": "supported_corridor_parameter",
++            "reasoning_effort": "high",
++            "repair_or_fallback_used": false,
++            "requested_model": "gpt-5.5-2026-04-23",
++            "response_id": "resp_08bb04f5b59b195b006a3896268f448198849fa9c544ba1825",
++            "returned_model": "gpt-5.5-2026-04-23",
++            "usage": {
++              "input_tokens": 92,
++              "input_tokens_details": {
++                "cached_tokens": 0
++              },
++              "output_tokens": 541,
++              "output_tokens_details": {
++                "reasoning_tokens": 482
++              },
++              "total_tokens": 633
++            }
++          },
++          {
++            "estimated_cost_usd": 0.01633,
++            "expected": "clarify",
++            "first_pass_matches_expected": true,
++            "first_pass_outcome": "clarify",
++            "json_output": {
++              "outcome": "clarify",
++              "rationale": "The request is too underspecified: it lacks sport/match/team context and uses subjective terms like \"late runner\" and \"enough support\" without observable criteria, so clarification is needed before selecting or drafting a tactical query."
++            },
++            "latency_ms": 9524,
++            "ok": true,
++            "parse_error": null,
++            "probe_id": "ambiguous_support",
++            "reasoning_effort": "high",
++            "repair_or_fallback_used": false,
++            "requested_model": "gpt-5.5-2026-04-23",
++            "response_id": "resp_000c59c0f0d39346006a389635979c819985617500069ad5b5",
++            "returned_model": "gpt-5.5-2026-04-23",
++            "usage": {
++              "input_tokens": 86,
++              "input_tokens_details": {
++                "cached_tokens": 0
++              },
++              "output_tokens": 530,
++              "output_tokens_details": {
++                "reasoning_tokens": 460
++              },
++              "total_tokens": 616
++            }
++          },
++          {
++            "estimated_cost_usd": 0.015475,
++            "expected": "capability_gap",
++            "first_pass_matches_expected": false,
++            "first_pass_outcome": "clarify",
++            "json_output": {
++              "outcome": "clarify",
++              "rationale": "The request requires visual context (clip/frame or a description of the midfielder, teammates, defenders, gaze/scanning, and body orientation) to infer an intended pass; none was provided."
++            },
++            "latency_ms": 9486,
++            "ok": true,
++            "parse_error": null,
++            "probe_id": "unsupported_intent",
++            "reasoning_effort": "high",
++            "repair_or_fallback_used": false,
++            "requested_model": "gpt-5.5-2026-04-23",
++            "response_id": "resp_000848647b2aee8d006a38963f1b28819882a7c6ccc598dab6",
++            "returned_model": "gpt-5.5-2026-04-23",
++            "usage": {
++              "input_tokens": 89,
++              "input_tokens_details": {
++                "cached_tokens": 0
++              },
++              "output_tokens": 501,
++              "output_tokens_details": {
++                "reasoning_tokens": 439
++              },
++              "total_tokens": 590
++            }
++          },
++          {
++            "estimated_cost_usd": 0.00904,
++            "expected": "select_recipe",
++            "first_pass_matches_expected": true,
++            "first_pass_outcome": "select_recipe",
++            "json_output": {
++              "outcome": "select_recipe",
++              "rationale": "The user explicitly asks to use the reviewed ball-side defensive displacement recipe, so the appropriate action is to select that recipe rather than draft a new one or ask for clarification."
++            },
++            "latency_ms": 6431,
++            "ok": true,
++            "parse_error": null,
++            "probe_id": "supported_recipe_selection",
++            "reasoning_effort": "xhigh",
++            "repair_or_fallback_used": false,
++            "requested_model": "gpt-5.5-2026-04-23",
++            "response_id": "resp_09459bb040f4588d006a3896489b88819a9fe1cfb416c8772d",
++            "returned_model": "gpt-5.5-2026-04-23",
++            "usage": {
++              "input_tokens": 86,
++              "input_tokens_details": {
++                "cached_tokens": 0
++              },
++              "output_tokens": 287,
++              "output_tokens_details": {
++                "reasoning_tokens": 228
++              },
++              "total_tokens": 373
++            }
++          },
++          {
++            "estimated_cost_usd": 0.01768,
++            "expected": "draft",
++            "first_pass_matches_expected": false,
++            "first_pass_outcome": "select_recipe",
++            "json_output": {
++              "outcome": "select_recipe",
++              "rationale": "The request is a clear spatiotemporal tactical query: identify forward lanes and filter them by an explicit open-duration threshold of at least 0.8 seconds."
++            },
++            "latency_ms": 11013,
++            "ok": true,
++            "parse_error": null,
++            "probe_id": "supported_corridor_parameter",
++            "reasoning_effort": "xhigh",
++            "repair_or_fallback_used": false,
++            "requested_model": "gpt-5.5-2026-04-23",
++            "response_id": "resp_09412e7604a45199006a38964f0bc88199bbed6bf568e11510",
++            "returned_model": "gpt-5.5-2026-04-23",
++            "usage": {
++              "input_tokens": 92,
++              "input_tokens_details": {
++                "cached_tokens": 0
++              },
++              "output_tokens": 574,
++              "output_tokens_details": {
++                "reasoning_tokens": 516
++              },
++              "total_tokens": 666
++            }
++          },
++          {
++            "estimated_cost_usd": 0.00994,
++            "expected": "clarify",
++            "first_pass_matches_expected": true,
++            "first_pass_outcome": "clarify",
++            "json_output": {
++              "outcome": "clarify",
++              "rationale": "The request is underspecified: it does not identify the domain/event, who or what the \u201clate runner\u201d is, or the criteria for \u201cenough support.\u201d"
++            },
++            "latency_ms": 9355,
++            "ok": true,
++            "parse_error": null,
++            "probe_id": "ambiguous_support",
++            "reasoning_effort": "xhigh",
++            "repair_or_fallback_used": false,
++            "requested_model": "gpt-5.5-2026-04-23",
++            "response_id": "resp_06b29ebfed317a94006a38965a0a808198a76e5520c340d1bd",
++            "returned_model": "gpt-5.5-2026-04-23",
++            "usage": {
++              "input_tokens": 86,
++              "input_tokens_details": {
++                "cached_tokens": 0
++              },
++              "output_tokens": 317,
++              "output_tokens_details": {
++                "reasoning_tokens": 259
++              },
++              "total_tokens": 403
++            }
++          },
++          {
++            "estimated_cost_usd": 0.014815,
++            "expected": "capability_gap",
++            "first_pass_matches_expected": false,
++            "first_pass_outcome": "clarify",
++            "json_output": {
++              "outcome": "clarify",
++              "rationale": "The request requires visual context\u2014image/video or a timestamp showing the midfielder\u2019s scan, body angle, ball position, teammates, opponents, and passing lanes. Without that evidence, the intended pass cannot be inferred reliably."
++            },
++            "latency_ms": 7843,
++            "ok": true,
++            "parse_error": null,
++            "probe_id": "unsupported_intent",
++            "reasoning_effort": "xhigh",
++            "repair_or_fallback_used": false,
++            "requested_model": "gpt-5.5-2026-04-23",
++            "response_id": "resp_05271f199b597936006a3896635f6c819b863bdfb38d987c72",
++            "returned_model": "gpt-5.5-2026-04-23",
++            "usage": {
++              "input_tokens": 89,
++              "input_tokens_details": {
++                "cached_tokens": 0
++              },
++              "output_tokens": 479,
++              "output_tokens_details": {
++                "reasoning_tokens": 411
++              },
++              "total_tokens": 568
++            }
++          }
++        ],
++        "summaries_by_effort": {
++          "high": {
++            "average_latency_ms": 10793,
++            "completed_count": 4,
++            "completion_rate": 1.0,
++            "estimated_cost_usd": 0.059035,
++            "exact_match_count": 2,
++            "exact_match_rate": 0.5,
++            "probe_count": 4,
++            "total_latency_ms": 43173
++          },
++          "xhigh": {
++            "average_latency_ms": 8660,
++            "completed_count": 4,
++            "completion_rate": 1.0,
++            "estimated_cost_usd": 0.051475,
++            "exact_match_count": 2,
++            "exact_match_rate": 0.5,
++            "probe_count": 4,
++            "total_latency_ms": 34642
++          }
++        }
++      },
++      "reasoning_high_verified": true,
++      "reasoning_xhigh_verified": true,
++      "requested_model": "gpt-5.5-2026-04-23",
++      "returned_models": [
++        "gpt-5.5-2026-04-23"
++      ],
++      "role": "provisioning, control probes, and fallback evaluation evidence; not the product Hermes route",
++      "strict_structured_output_verified": true
++    },
++    "final_independent_evaluation": {
++      "acceptance_thresholds": {
++        "ambiguous_accuracy": ">= 0.90",
++        "schema_valid_or_refusal": "1.00",
++        "supported_accuracy": ">= 0.90",
++        "unauthorized_calls": 0,
++        "unconfirmed_executions": 0,
++        "unsupported_accuracy": "1.00"
++      },
++      "instruction": "Do not treat S2I-B probes or S2I-D live authoring as final sealed acceptance. Run a new independently authored evaluation after this freeze.",
++      "required_before_s3": true,
++      "status": "PENDING_EXTERNAL_INDEPENDENT_SET"
++    },
++    "generated_at": "2026-06-22T11:29:41+00:00",
++    "knowledge_and_schema_hashes": {
++      "capability_context_path": "generated/capability-context.json",
++      "capability_context_sha256": "4816ffb893c34ddcd587192f5690f179d51ba46d09df6706a040b373f35950e8",
++      "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
++      "knowledge_pack_sha256": "5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af",
++      "mcp_server_path": "src/tqe/workshop/mcp_server.py",
++      "mcp_server_sha256": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
++      "workshop_service_path": "src/tqe/workshop/m1_2.py",
++      "workshop_service_sha256": "fdeaffb82dffc0d8a23b2783945a0d6a49fdd6576f384b707d6a937967863b0b"
++    },
++    "mcp_boundary": {
++      "adapter_path": "src/tqe/workshop/mcp_server.py",
++      "expected_tool_allowlist": [
++        "list_capabilities",
++        "search_recipes",
++        "describe_capability",
++        "submit_query_plan",
++        "validate_query_plan",
++        "inspect_result",
++        "inspect_non_match",
++        "retrieve_replay_window"
++      ],
++      "filesystem_terminal_raw_data_tools_available": false,
++      "host_only_tools": [
++        "host_confirm_bound_plan",
++        "execute_query_plan",
++        "record_feedback",
++        "compare_query_versions",
++        "save_experimental_recipe"
++      ],
++      "prompts_enabled": false,
++      "resources_enabled": false,
++      "server_name": "priori_tactical",
++      "tool_allowlist": [
++        "list_capabilities",
++        "search_recipes",
++        "describe_capability",
++        "submit_query_plan",
++        "validate_query_plan",
++        "inspect_result",
++        "inspect_non_match",
++        "retrieve_replay_window"
++      ]
++    },
++    "milestone": "M1.2",
++    "non_claims": [
++      "This freeze does not prove final sealed acceptance.",
++      "This freeze does not grant Hermes host confirmation or execution authority.",
++      "This freeze does not change runtime semantics, query IR, primitives, replay, UI, or recipe families."
++    ],
++    "reasoning_selection": {
++      "basis": [
++        "S2I-B accepted high and xhigh for strict structured-output direct API probes.",
++        "S2I-B recommendation selected xhigh after the final provisioning comparison.",
++        "S2I-D live Hermes sessions validated two unseeded typed plans under xhigh."
++      ],
++      "no_prompt_or_vocabulary_tuning_after_freeze_without_new_slice": true,
++      "selected_effort": "xhigh"
++    },
++    "s2id_unseeded_proof": {
++      "bound_plan_hashes": [
++        "2179b7a0233596959d5122e17110cdc541bb79115d66b9676e012d2a1ff92336",
++        "a622811f41c9f5d04b8f666e5d8b819164935523cbec1d1b470fd0f012777fd2"
++      ],
++      "passed": true,
++      "plan_delta": {
++        "bound_plan_hashes_differ": true,
++        "changed_parameters": {
++          "minimum_duration_seconds": {
++            "first": 0.4,
++            "second": 0.8
++          },
++          "minimum_progression_m": {
++            "first": 5.0,
++            "second": 12.0
++          }
++        },
++        "material_parameter_delta": {
++          "minimum_duration_seconds": {
++            "first": 0.4,
++            "second": 0.8
++          },
++          "minimum_progression_m": {
++            "first": 5.0,
++            "second": 12.0
++          }
++        }
++      },
++      "report_path": "artifacts/m1.2/s2i-d-unseeded-hermes-report.json",
++      "report_sha256": "bd8473822c37217553b19dad12e7431dd3adcbe806a290504568cfedaad7d03d",
++      "run_count": 2,
++      "session_ids": [
++        "20260621_220512_1d38ec",
++        "20260621_221026_2eacf0"
++      ],
++      "system_instruction_sha256_values": [
++        "e1252b6e66c41d8fb49d7414573d7f0cdee6f6fddbb2677cee7c2cb64cfd4039"
++      ]
++    },
++    "schema_version": "1.0",
++    "selected_product_route": {
++      "auth_route": "openai-codex ChatGPT/Codex subscription login",
++      "configured_model": "gpt-5.5",
++      "exact_snapshot_status": "Hermes session metadata reports the product alias only; exact snapshot identity is proven through the direct Responses API control route.",
++      "hermes_config_path": "/Users/luisrevilla/.hermes-priori/config.yaml",
++      "hermes_config_sha256": "e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237",
++      "hermes_home": "/Users/luisrevilla/.hermes-priori",
++      "hermes_version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream b4cb33cd\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUpdate available: 60 commits behind \u2014 run 'hermes update'",
++      "provider": "openai-codex",
++      "reasoning_effort": "xhigh",
++      "runtime": "Hermes Agent over local stdio Tactical MCP",
++      "session_model_reports": [
++        "gpt-5.5"
++      ],
++      "session_toolset": "priori_tactical"
++    },
++    "slice": "S2I-E_frontier_configuration_freeze",
++    "status": "FROZEN_PENDING_FINAL_INDEPENDENT_EVALUATION"
++  },
++  "freeze_path": "delivery/m1.2/frontier-runtime-freeze.json",
++  "freeze_sha256": "b072b8006ae60aba64e3a564d983dae30effbfccdb5ec091c2c1bcb001cd11b9",
++  "generated_at": "2026-06-22T11:29:41+00:00",
++  "milestone": "M1.2",
++  "passed": true,
++  "schema_version": "1.0",
++  "slice": "S2I-E_frontier_configuration_freeze"
++}
+diff --git a/delivery/ledger.jsonl b/delivery/ledger.jsonl
+index eaea6e3..6c315ae 100644
+--- a/delivery/ledger.jsonl
++++ b/delivery/ledger.jsonl
+@@ -65,3 +65,4 @@
+ {"timestamp":"2026-06-21T18:55:12-07:00","milestone":"M1.2","slice":"S2I_B_hermes_install_login_and_gate_pass","from":"S2I_B_PARTIAL_PROOF_BLOCKED_ON_HERMES_INSTALL","to":"S2I_B_PROVISIONED_GREEN_TACTICAL_MCP_INTEGRATION_NEXT","actor":"controller","evidence":["/Users/luisrevilla/.local/bin/hermes","/Users/luisrevilla/.hermes-priori/config.yaml","artifacts/m1.2/s2i-b-provisioning-report.json","docs/reviews/2026-06-21-m1-2-s2i-b-provisioning.md","docs/learnings/2026-06-21-m1-2-s2i-b-provisioning.md","delivery/m1.2/status.yaml","CURRENT_STATE.md"],"notes":"Installed Hermes Agent v0.17.0 (2026.6.19), upstream 2b3a4f0a, from NousResearch/hermes-agent at /Users/luisrevilla/.local/src/hermes-agent and symlinked /Users/luisrevilla/.local/bin/hermes. Created HERMES_HOME=/Users/luisrevilla/.hermes-priori, authenticated openai-codex via ChatGPT/Codex subscription device login, configured provider openai-codex with default model gpt-5.5 and reasoning effort xhigh, and verified hermes chat -q returns HERMES_READY. Reran make m1-2-gate-s2ib-verify successfully: 8 pass / 0 fail. Direct Responses API probes remain green for gpt-5.5-2026-04-23 strict output/high/xhigh; xhigh is recommended for the next Hermes integration slice based on the final frozen-probe run. Next step is tactical MCP adapter integration and one real Hermes-authored validation that stops before host execution."}
+ {"timestamp":"2026-06-21T21:34:23-07:00","milestone":"M1.2","slice":"S2I_C_tactical_mcp_adapter_and_hermes_validation","from":"S2I_B_PROVISIONED_GREEN_TACTICAL_MCP_INTEGRATION_NEXT","to":"S2I_C_MCP_INTEGRATION_CONTROLLER_VERIFIED_WORKBENCH_ALPHA_PARALLEL","actor":"controller","evidence":["src/tqe/workshop/mcp_server.py","src/tqe/workshop/m1_2.py","src/tqe/workshop/knowledge_pack.py","src/tqe/verification/m1_2_gate_s2ic.py","/Users/luisrevilla/.hermes-priori/config.yaml","artifacts/m1.2/s2i-c-mcp-integration-report.json","docs/reviews/2026-06-21-m1-2-s2i-c-mcp-integration.md","docs/learnings/2026-06-21-m1-2-s2i-c-mcp-integration.md","delivery/m1.2/status.yaml","CURRENT_STATE.md"],"notes":"Implemented the Tactical MCP adapter over the existing workshop dispatcher and added a strict product Hermes caller profile. Hermes sees exactly list_capabilities, search_recipes, describe_capability, submit_query_plan, validate_query_plan, inspect_result, inspect_non_match, and retrieve_replay_window; host_confirm_bound_plan, execute_query_plan, feedback, recipe-save, filesystem, terminal, resources, and prompts are absent. make m1-2-gate-s2ic-verify passes 12/0. Live Hermes session 20260621_212207_0f45e6 listed/searched/described capabilities, submitted seeded experimental plan draft_92769e17bb25b809, validated bound plan bound_7094041d9225ea8c, and stopped before execution. This proves seeded MCP validation, not fully autonomous unseeded plan drafting. Next step is Workbench Alpha 1 while preserving MCP as the Hermes adapter path."}
+ {"timestamp":"2026-06-21T22:14:55-07:00","milestone":"M1.2","slice":"S2I_D_unseeded_frontier_agent_plan_authoring","from":"S2I_C_MCP_INTEGRATION_CONTROLLER_VERIFIED_WORKBENCH_ALPHA_PARALLEL","to":"S2I_D_UNSEEDED_HERMES_AUTHORING_CONTROLLER_VERIFIED_FRONTIER_FREEZE_NEXT","actor":"controller","evidence":["src/tqe/workshop/m1_2.py","src/tqe/verification/m1_2_gate_s2id.py","artifacts/m1.2/s2i-d-unseeded-hermes-report.json","docs/reviews/2026-06-21-m1-2-s2i-d-unseeded-hermes-authoring.md","docs/learnings/2026-06-21-m1-2-s2i-d-unseeded-hermes-authoring.md","generated/tactical-knowledge-pack.json","delivery/m1.2/status.yaml","CURRENT_STATE.md"],"notes":"Implemented S2I-D after external approval of S2I-C. Added recipe-ID descriptions with declarative authoring contracts derived from checked-in recipe documents so Hermes can author typed plans without a seeded plan JSON. Real Hermes under provider openai-codex, model gpt-5.5, reasoning xhigh, and restricted toolset priori_tactical handled two unseeded football-language requests, used list/search/describe/submit/validate, produced EXPERIMENTAL bind-only generic plans, and stopped before execution. Session 20260621_220512_1d38ec validated bound_2179b7a023359695 with default 5.0m/0.4s corridor parameters; session 20260621_221026_2eacf0 validated bound_a622811f41c9f5d0 with 12.0m/0.8s parameters. make m1-2-gate-s2id-verify passes 20/0; make m1-2-gate-s2i-verify passes 16/0; make m1-2-gate-s0-verify passes 17/0; make test passes 27 tests. Next Track A step is frontier configuration freeze and final evaluation while Workbench Alpha continues in parallel."}
++{"timestamp":"2026-06-22T00:00:00-07:00","milestone":"M1.2","slice":"S2I_E_frontier_configuration_freeze","from":"S2I_D_UNSEEDED_HERMES_AUTHORING_CONTROLLER_VERIFIED_FRONTIER_FREEZE_NEXT","to":"S2I_E_FRONTIER_CONFIGURATION_FROZEN_FINAL_INDEPENDENT_EVAL_NEXT","actor":"controller","evidence":["delivery/m1.2/frontier-runtime-freeze.json","artifacts/m1.2/s2i-e-frontier-freeze-report.json","src/tqe/verification/m1_2_gate_s2ie.py","docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md","docs/learnings/2026-06-22-m1-2-s2i-e-frontier-freeze.md","delivery/m1.2/status.yaml","CURRENT_STATE.md","Makefile"],"notes":"Implemented S2I-E as a configuration/provenance freeze for the intended frontier product route. The frozen route is Hermes Agent over local stdio Tactical MCP, provider openai-codex, configured model gpt-5.5, reasoning effort xhigh, authenticated through ChatGPT/Codex subscription login, and restricted to the priori_tactical allowlist. Direct Responses API control evidence proves exact gpt-5.5-2026-04-23 access, strict structured output, and high/xhigh reasoning; Hermes sessions are explicitly recorded as alias-only gpt-5.5. The freeze records knowledge pack, capability context, MCP server, workshop service, Hermes config, and S2I-D proof hashes. make m1-2-gate-s2ie-verify passes 17/0. This does not claim final sealed acceptance; a fresh independent evaluation against the frozen route remains required before S3."}
+diff --git a/delivery/m1.2/frontier-runtime-freeze.json b/delivery/m1.2/frontier-runtime-freeze.json
+new file mode 100644
+index 0000000..a437d5f
+--- /dev/null
++++ b/delivery/m1.2/frontier-runtime-freeze.json
+@@ -0,0 +1,419 @@
++{
++  "direct_api_control_route": {
++    "comparison_evidence": {
++      "frozen_probe_set_sha256": "3f7686bbe69121abd844dbb43c14a8ba40bc83828cec6b2a1c959a1c2e6cfe8a",
++      "ok": true,
++      "pricing": {
++        "cached_input_usd_per_1m": 0.5,
++        "input_usd_per_1m": 5.0,
++        "output_usd_per_1m": 30.0,
++        "source_checked_at": "2026-06-21",
++        "source_url": "https://openai.com/api/pricing/"
++      },
++      "rows": [
++        {
++          "estimated_cost_usd": 0.01054,
++          "expected": "select_recipe",
++          "first_pass_matches_expected": true,
++          "first_pass_outcome": "select_recipe",
++          "json_output": {
++            "outcome": "select_recipe",
++            "rationale": "The user explicitly directs use of a specific reviewed recipe, indicating recipe selection rather than requesting a new draft, clarification, or unsupported capability."
++          },
++          "latency_ms": 9112,
++          "ok": true,
++          "parse_error": null,
++          "probe_id": "supported_recipe_selection",
++          "reasoning_effort": "high",
++          "repair_or_fallback_used": false,
++          "requested_model": "gpt-5.5-2026-04-23",
++          "response_id": "resp_060d5da1b0aee7b4006a38961d6a00819ba87c9420599aeae0",
++          "returned_model": "gpt-5.5-2026-04-23",
++          "usage": {
++            "input_tokens": 86,
++            "input_tokens_details": {
++              "cached_tokens": 0
++            },
++            "output_tokens": 337,
++            "output_tokens_details": {
++              "reasoning_tokens": 285
++            },
++            "total_tokens": 423
++          }
++        },
++        {
++          "estimated_cost_usd": 0.01669,
++          "expected": "draft",
++          "first_pass_matches_expected": false,
++          "first_pass_outcome": "select_recipe",
++          "json_output": {
++            "outcome": "select_recipe",
++            "rationale": "The request maps to a standard lane-detection query: identify forward/progressive lanes and filter them by temporal persistence with a minimum open duration of 0.8 seconds."
++          },
++          "latency_ms": 15051,
++          "ok": true,
++          "parse_error": null,
++          "probe_id": "supported_corridor_parameter",
++          "reasoning_effort": "high",
++          "repair_or_fallback_used": false,
++          "requested_model": "gpt-5.5-2026-04-23",
++          "response_id": "resp_08bb04f5b59b195b006a3896268f448198849fa9c544ba1825",
++          "returned_model": "gpt-5.5-2026-04-23",
++          "usage": {
++            "input_tokens": 92,
++            "input_tokens_details": {
++              "cached_tokens": 0
++            },
++            "output_tokens": 541,
++            "output_tokens_details": {
++              "reasoning_tokens": 482
++            },
++            "total_tokens": 633
++          }
++        },
++        {
++          "estimated_cost_usd": 0.01633,
++          "expected": "clarify",
++          "first_pass_matches_expected": true,
++          "first_pass_outcome": "clarify",
++          "json_output": {
++            "outcome": "clarify",
++            "rationale": "The request is too underspecified: it lacks sport/match/team context and uses subjective terms like \"late runner\" and \"enough support\" without observable criteria, so clarification is needed before selecting or drafting a tactical query."
++          },
++          "latency_ms": 9524,
++          "ok": true,
++          "parse_error": null,
++          "probe_id": "ambiguous_support",
++          "reasoning_effort": "high",
++          "repair_or_fallback_used": false,
++          "requested_model": "gpt-5.5-2026-04-23",
++          "response_id": "resp_000c59c0f0d39346006a389635979c819985617500069ad5b5",
++          "returned_model": "gpt-5.5-2026-04-23",
++          "usage": {
++            "input_tokens": 86,
++            "input_tokens_details": {
++              "cached_tokens": 0
++            },
++            "output_tokens": 530,
++            "output_tokens_details": {
++              "reasoning_tokens": 460
++            },
++            "total_tokens": 616
++          }
++        },
++        {
++          "estimated_cost_usd": 0.015475,
++          "expected": "capability_gap",
++          "first_pass_matches_expected": false,
++          "first_pass_outcome": "clarify",
++          "json_output": {
++            "outcome": "clarify",
++            "rationale": "The request requires visual context (clip/frame or a description of the midfielder, teammates, defenders, gaze/scanning, and body orientation) to infer an intended pass; none was provided."
++          },
++          "latency_ms": 9486,
++          "ok": true,
++          "parse_error": null,
++          "probe_id": "unsupported_intent",
++          "reasoning_effort": "high",
++          "repair_or_fallback_used": false,
++          "requested_model": "gpt-5.5-2026-04-23",
++          "response_id": "resp_000848647b2aee8d006a38963f1b28819882a7c6ccc598dab6",
++          "returned_model": "gpt-5.5-2026-04-23",
++          "usage": {
++            "input_tokens": 89,
++            "input_tokens_details": {
++              "cached_tokens": 0
++            },
++            "output_tokens": 501,
++            "output_tokens_details": {
++              "reasoning_tokens": 439
++            },
++            "total_tokens": 590
++          }
++        },
++        {
++          "estimated_cost_usd": 0.00904,
++          "expected": "select_recipe",
++          "first_pass_matches_expected": true,
++          "first_pass_outcome": "select_recipe",
++          "json_output": {
++            "outcome": "select_recipe",
++            "rationale": "The user explicitly asks to use the reviewed ball-side defensive displacement recipe, so the appropriate action is to select that recipe rather than draft a new one or ask for clarification."
++          },
++          "latency_ms": 6431,
++          "ok": true,
++          "parse_error": null,
++          "probe_id": "supported_recipe_selection",
++          "reasoning_effort": "xhigh",
++          "repair_or_fallback_used": false,
++          "requested_model": "gpt-5.5-2026-04-23",
++          "response_id": "resp_09459bb040f4588d006a3896489b88819a9fe1cfb416c8772d",
++          "returned_model": "gpt-5.5-2026-04-23",
++          "usage": {
++            "input_tokens": 86,
++            "input_tokens_details": {
++              "cached_tokens": 0
++            },
++            "output_tokens": 287,
++            "output_tokens_details": {
++              "reasoning_tokens": 228
++            },
++            "total_tokens": 373
++          }
++        },
++        {
++          "estimated_cost_usd": 0.01768,
++          "expected": "draft",
++          "first_pass_matches_expected": false,
++          "first_pass_outcome": "select_recipe",
++          "json_output": {
++            "outcome": "select_recipe",
++            "rationale": "The request is a clear spatiotemporal tactical query: identify forward lanes and filter them by an explicit open-duration threshold of at least 0.8 seconds."
++          },
++          "latency_ms": 11013,
++          "ok": true,
++          "parse_error": null,
++          "probe_id": "supported_corridor_parameter",
++          "reasoning_effort": "xhigh",
++          "repair_or_fallback_used": false,
++          "requested_model": "gpt-5.5-2026-04-23",
++          "response_id": "resp_09412e7604a45199006a38964f0bc88199bbed6bf568e11510",
++          "returned_model": "gpt-5.5-2026-04-23",
++          "usage": {
++            "input_tokens": 92,
++            "input_tokens_details": {
++              "cached_tokens": 0
++            },
++            "output_tokens": 574,
++            "output_tokens_details": {
++              "reasoning_tokens": 516
++            },
++            "total_tokens": 666
++          }
++        },
++        {
++          "estimated_cost_usd": 0.00994,
++          "expected": "clarify",
++          "first_pass_matches_expected": true,
++          "first_pass_outcome": "clarify",
++          "json_output": {
++            "outcome": "clarify",
++            "rationale": "The request is underspecified: it does not identify the domain/event, who or what the \u201clate runner\u201d is, or the criteria for \u201cenough support.\u201d"
++          },
++          "latency_ms": 9355,
++          "ok": true,
++          "parse_error": null,
++          "probe_id": "ambiguous_support",
++          "reasoning_effort": "xhigh",
++          "repair_or_fallback_used": false,
++          "requested_model": "gpt-5.5-2026-04-23",
++          "response_id": "resp_06b29ebfed317a94006a38965a0a808198a76e5520c340d1bd",
++          "returned_model": "gpt-5.5-2026-04-23",
++          "usage": {
++            "input_tokens": 86,
++            "input_tokens_details": {
++              "cached_tokens": 0
++            },
++            "output_tokens": 317,
++            "output_tokens_details": {
++              "reasoning_tokens": 259
++            },
++            "total_tokens": 403
++          }
++        },
++        {
++          "estimated_cost_usd": 0.014815,
++          "expected": "capability_gap",
++          "first_pass_matches_expected": false,
++          "first_pass_outcome": "clarify",
++          "json_output": {
++            "outcome": "clarify",
++            "rationale": "The request requires visual context\u2014image/video or a timestamp showing the midfielder\u2019s scan, body angle, ball position, teammates, opponents, and passing lanes. Without that evidence, the intended pass cannot be inferred reliably."
++          },
++          "latency_ms": 7843,
++          "ok": true,
++          "parse_error": null,
++          "probe_id": "unsupported_intent",
++          "reasoning_effort": "xhigh",
++          "repair_or_fallback_used": false,
++          "requested_model": "gpt-5.5-2026-04-23",
++          "response_id": "resp_05271f199b597936006a3896635f6c819b863bdfb38d987c72",
++          "returned_model": "gpt-5.5-2026-04-23",
++          "usage": {
++            "input_tokens": 89,
++            "input_tokens_details": {
++              "cached_tokens": 0
++            },
++            "output_tokens": 479,
++            "output_tokens_details": {
++              "reasoning_tokens": 411
++            },
++            "total_tokens": 568
++          }
++        }
++      ],
++      "summaries_by_effort": {
++        "high": {
++          "average_latency_ms": 10793,
++          "completed_count": 4,
++          "completion_rate": 1.0,
++          "estimated_cost_usd": 0.059035,
++          "exact_match_count": 2,
++          "exact_match_rate": 0.5,
++          "probe_count": 4,
++          "total_latency_ms": 43173
++        },
++        "xhigh": {
++          "average_latency_ms": 8660,
++          "completed_count": 4,
++          "completion_rate": 1.0,
++          "estimated_cost_usd": 0.051475,
++          "exact_match_count": 2,
++          "exact_match_rate": 0.5,
++          "probe_count": 4,
++          "total_latency_ms": 34642
++        }
++      }
++    },
++    "reasoning_high_verified": true,
++    "reasoning_xhigh_verified": true,
++    "requested_model": "gpt-5.5-2026-04-23",
++    "returned_models": [
++      "gpt-5.5-2026-04-23"
++    ],
++    "role": "provisioning, control probes, and fallback evaluation evidence; not the product Hermes route",
++    "strict_structured_output_verified": true
++  },
++  "final_independent_evaluation": {
++    "acceptance_thresholds": {
++      "ambiguous_accuracy": ">= 0.90",
++      "schema_valid_or_refusal": "1.00",
++      "supported_accuracy": ">= 0.90",
++      "unauthorized_calls": 0,
++      "unconfirmed_executions": 0,
++      "unsupported_accuracy": "1.00"
++    },
++    "instruction": "Do not treat S2I-B probes or S2I-D live authoring as final sealed acceptance. Run a new independently authored evaluation after this freeze.",
++    "required_before_s3": true,
++    "status": "PENDING_EXTERNAL_INDEPENDENT_SET"
++  },
++  "generated_at": "2026-06-22T11:29:41+00:00",
++  "knowledge_and_schema_hashes": {
++    "capability_context_path": "generated/capability-context.json",
++    "capability_context_sha256": "4816ffb893c34ddcd587192f5690f179d51ba46d09df6706a040b373f35950e8",
++    "knowledge_pack_path": "generated/tactical-knowledge-pack.json",
++    "knowledge_pack_sha256": "5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af",
++    "mcp_server_path": "src/tqe/workshop/mcp_server.py",
++    "mcp_server_sha256": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
++    "workshop_service_path": "src/tqe/workshop/m1_2.py",
++    "workshop_service_sha256": "fdeaffb82dffc0d8a23b2783945a0d6a49fdd6576f384b707d6a937967863b0b"
++  },
++  "mcp_boundary": {
++    "adapter_path": "src/tqe/workshop/mcp_server.py",
++    "expected_tool_allowlist": [
++      "list_capabilities",
++      "search_recipes",
++      "describe_capability",
++      "submit_query_plan",
++      "validate_query_plan",
++      "inspect_result",
++      "inspect_non_match",
++      "retrieve_replay_window"
++    ],
++    "filesystem_terminal_raw_data_tools_available": false,
++    "host_only_tools": [
++      "host_confirm_bound_plan",
++      "execute_query_plan",
++      "record_feedback",
++      "compare_query_versions",
++      "save_experimental_recipe"
++    ],
++    "prompts_enabled": false,
++    "resources_enabled": false,
++    "server_name": "priori_tactical",
++    "tool_allowlist": [
++      "list_capabilities",
++      "search_recipes",
++      "describe_capability",
++      "submit_query_plan",
++      "validate_query_plan",
++      "inspect_result",
++      "inspect_non_match",
++      "retrieve_replay_window"
++    ]
++  },
++  "milestone": "M1.2",
++  "non_claims": [
++    "This freeze does not prove final sealed acceptance.",
++    "This freeze does not grant Hermes host confirmation or execution authority.",
++    "This freeze does not change runtime semantics, query IR, primitives, replay, UI, or recipe families."
++  ],
++  "reasoning_selection": {
++    "basis": [
++      "S2I-B accepted high and xhigh for strict structured-output direct API probes.",
++      "S2I-B recommendation selected xhigh after the final provisioning comparison.",
++      "S2I-D live Hermes sessions validated two unseeded typed plans under xhigh."
++    ],
++    "no_prompt_or_vocabulary_tuning_after_freeze_without_new_slice": true,
++    "selected_effort": "xhigh"
++  },
++  "s2id_unseeded_proof": {
++    "bound_plan_hashes": [
++      "2179b7a0233596959d5122e17110cdc541bb79115d66b9676e012d2a1ff92336",
++      "a622811f41c9f5d04b8f666e5d8b819164935523cbec1d1b470fd0f012777fd2"
++    ],
++    "passed": true,
++    "plan_delta": {
++      "bound_plan_hashes_differ": true,
++      "changed_parameters": {
++        "minimum_duration_seconds": {
++          "first": 0.4,
++          "second": 0.8
++        },
++        "minimum_progression_m": {
++          "first": 5.0,
++          "second": 12.0
++        }
++      },
++      "material_parameter_delta": {
++        "minimum_duration_seconds": {
++          "first": 0.4,
++          "second": 0.8
++        },
++        "minimum_progression_m": {
++          "first": 5.0,
++          "second": 12.0
++        }
++      }
++    },
++    "report_path": "artifacts/m1.2/s2i-d-unseeded-hermes-report.json",
++    "report_sha256": "bd8473822c37217553b19dad12e7431dd3adcbe806a290504568cfedaad7d03d",
++    "run_count": 2,
++    "session_ids": [
++      "20260621_220512_1d38ec",
++      "20260621_221026_2eacf0"
++    ],
++    "system_instruction_sha256_values": [
++      "e1252b6e66c41d8fb49d7414573d7f0cdee6f6fddbb2677cee7c2cb64cfd4039"
++    ]
++  },
++  "schema_version": "1.0",
++  "selected_product_route": {
++    "auth_route": "openai-codex ChatGPT/Codex subscription login",
++    "configured_model": "gpt-5.5",
++    "exact_snapshot_status": "Hermes session metadata reports the product alias only; exact snapshot identity is proven through the direct Responses API control route.",
++    "hermes_config_path": "/Users/luisrevilla/.hermes-priori/config.yaml",
++    "hermes_config_sha256": "e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237",
++    "hermes_home": "/Users/luisrevilla/.hermes-priori",
++    "hermes_version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream b4cb33cd\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUpdate available: 60 commits behind \u2014 run 'hermes update'",
++    "provider": "openai-codex",
++    "reasoning_effort": "xhigh",
++    "runtime": "Hermes Agent over local stdio Tactical MCP",
++    "session_model_reports": [
++      "gpt-5.5"
++    ],
++    "session_toolset": "priori_tactical"
++  },
++  "slice": "S2I-E_frontier_configuration_freeze",
++  "status": "FROZEN_PENDING_FINAL_INDEPENDENT_EVALUATION"
++}
+diff --git a/delivery/m1.2/status.yaml b/delivery/m1.2/status.yaml
+index 0da5d47..85f2daf 100644
+--- a/delivery/m1.2/status.yaml
++++ b/delivery/m1.2/status.yaml
+@@ -1,8 +1,8 @@
+ milestone: M1.2
+ name: "Grounded Tactical Query Workshop"
+-state: S2I_D_UNSEEDED_HERMES_AUTHORING_CONTROLLER_VERIFIED_FRONTIER_FREEZE_NEXT
++state: S2I_E_FRONTIER_CONFIGURATION_FROZEN_FINAL_INDEPENDENT_EVAL_NEXT
+ source_of_truth: delivery/m1.2/SPEC.md
+-last_updated: "2026-06-21"
++last_updated: "2026-06-22"
+ preconditions:
+   M1_1_runtime_accepted: SATISFIED_BY_M1_1S_S7R2_APPROVAL
+   M1_1R_external_approval_or_required_changes_integrated: SUPERSEDED_BY_M1_1S
+@@ -34,7 +34,8 @@ slices:
+   S2I_B_frontier_and_hermes_provisioning_spike: DONE_CONTROLLER_VERIFIED
+   S2I_C_tactical_mcp_adapter_and_hermes_validation: DONE_CONTROLLER_VERIFIED
+   S2I_D_unseeded_frontier_agent_plan_authoring: DONE_CONTROLLER_VERIFIED
+-  S2I_E_frontier_configuration_freeze_and_final_eval: NEXT_TRACK_A
++  S2I_E_frontier_configuration_freeze: DONE_CONTROLLER_VERIFIED_FINAL_EVAL_PENDING
++  S2I_E_final_independent_evaluation: REQUIRED_BLOCKING_S3
+   Workbench_Alpha_1_query_to_result_shell: NEXT_PARALLEL_TRACK_B
+   Workbench_Alpha_2_evidence_and_replay: PLANNED_AFTER_ALPHA_1
+   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
+@@ -62,7 +63,8 @@ promotion_gates:
+   Gate_S2I_B_frontier_and_hermes_provisioning_spike: PASS_CONTROLLER
+   Gate_S2I_C_tactical_mcp_adapter_and_hermes_validation: PASS_CONTROLLER
+   Gate_S2I_D_unseeded_frontier_agent_plan_authoring: PASS_CONTROLLER
+-  Gate_S2I_E_frontier_configuration_freeze_and_final_eval: REQUIRED_BLOCKING_S3
++  Gate_S2I_E_frontier_configuration_freeze: PASS_CONTROLLER
++  Gate_S2I_E_final_independent_evaluation: REQUIRED_BLOCKING_S3
+   Gate_Workbench_Alpha_query_to_replay: REQUIRED_BLOCKING_S3
+   Gate_S3_revision_recipe_loop: NOT_STARTED
+ verification:
+@@ -236,7 +238,7 @@ evidence:
+   S2I_A_tactical_knowledge_pack:
+     knowledge_pack_json: generated/tactical-knowledge-pack.json
+     knowledge_pack_markdown: generated/tactical-knowledge-pack.md
+-    knowledge_pack_sha256: 49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e
++    knowledge_pack_sha256: 15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9
+     verification_report: artifacts/m1.2/gate-s2i-verification-report.json
+     verification_command: make m1-2-gate-s2i-verify
+     verification_summary:
+@@ -353,8 +355,8 @@ evidence:
+     hermes_model: gpt-5.5
+     hermes_reasoning_effort: xhigh
+     hermes_config_sha256: e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237
+-    knowledge_pack_sha256: 49edb17edfadf7b59150176430cda5bcc394d30110fe7a2e635b40afc9137b1e
+-    report_sha256: bdb8eff6a75b5c4f8d4a44a1602c862ac740324a79e6a3a59996175f67d2fa72
++    knowledge_pack_sha256: 5bf10d06011c3c31cff18da6b02d30d6f68d6b15ed32ff99cd2646f3b865b6af
++    report_sha256: bd8473822c37217553b19dad12e7431dd3adcbe806a290504568cfedaad7d03d
+     live_runs:
+       - label: any_progressive_corridor
+         session_id: "20260621_220512_1d38ec"
+@@ -383,9 +385,52 @@ evidence:
+       no_filesystem_terminal_python_sql_raw_data_tools: true
+       mcp_adapter_still_thin: true
+     implementation_note: "S2I-D required exposing recipe authoring contracts through describe_capability. This is knowledge-surface disclosure from existing recipe documents, not tactical runtime logic or execution authority."
++  S2I_E_frontier_configuration_freeze:
++    freeze_artifact: delivery/m1.2/frontier-runtime-freeze.json
++    freeze_sha256: b072b8006ae60aba64e3a564d983dae30effbfccdb5ec091c2c1bcb001cd11b9
++    verification_report: artifacts/m1.2/s2i-e-frontier-freeze-report.json
++    report_sha256: a55ae56fed08f1a379e85a9712e8de46ddcc603742101653d0e403571f4709d2
++    local_review: docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md
++    verification_command: make m1-2-gate-s2ie-verify
++    verification_result: PASS_CONTROLLER
++    verification_summary:
++      passed: 17
++      failed: 0
++    product_route:
++      runtime: "Hermes Agent over local stdio Tactical MCP"
++      provider: openai-codex
++      configured_model: gpt-5.5
++      reasoning_effort: xhigh
++      auth_route: CHATGPT_CODEX_SUBSCRIPTION_LOGIN
++      hermes_session_model_identity: "alias-only:gpt-5.5"
++    direct_api_control_route:
++      requested_model: gpt-5.5-2026-04-23
++      returned_model: gpt-5.5-2026-04-23
++      strict_structured_output: PASS
++      reasoning_high: PASS
++      reasoning_xhigh: PASS
++    frozen_mcp_allowlist:
++      - list_capabilities
++      - search_recipes
++      - describe_capability
++      - submit_query_plan
++      - validate_query_plan
++      - inspect_result
++      - inspect_non_match
++      - retrieve_replay_window
++    host_only_tools_absent:
++      - host_confirm_bound_plan
++      - execute_query_plan
++      - record_feedback
++      - compare_query_versions
++      - save_experimental_recipe
++    final_independent_evaluation:
++      status: PENDING_EXTERNAL_INDEPENDENT_SET
++      required_before_s3: true
++    non_claim: "S2I-E freezes configuration and provenance only; it does not claim final sealed acceptance."
+   capability_context: generated/capability-context.json
+   workshop_html: artifacts/m1.2/workshop/index.html
+   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
+ next_step:
+-  external_review: READY_AFTER_FRONTIER_FREEZE_OR_NOW_IF_DESIRED
+-  scope: "S2I-D is controller-verified: real Hermes under the restricted priori_tactical toolset handled two unseeded football-language requests, discovered recipe/capability context, authored EXPERIMENTAL typed plans, submitted and validated them deterministically, produced different bound-plan hashes for different tactical parameters, and stopped before execution. Next freeze frontier configuration and run final evaluation while Workbench Alpha proceeds in parallel."
++  external_review: READY_FOR_FINAL_EVALUATION_SET_OR_S2I_PACKET
++  scope: "S2I-E is controller-verified: the intended Hermes product route is frozen as openai-codex/gpt-5.5/xhigh over the restricted priori_tactical MCP toolset, with direct API control evidence for exact gpt-5.5-2026-04-23 access. Final independent evaluation remains required before S3; Workbench Alpha proceeds in parallel."
+diff --git a/docs/learnings/2026-06-22-m1-2-s2i-e-frontier-freeze.md b/docs/learnings/2026-06-22-m1-2-s2i-e-frontier-freeze.md
+new file mode 100644
+index 0000000..dc1641d
+--- /dev/null
++++ b/docs/learnings/2026-06-22-m1-2-s2i-e-frontier-freeze.md
+@@ -0,0 +1,11 @@
++# Learning: Frontier Freeze Must Separate Alias, Snapshot, and Acceptance
++
++S2I-E clarified three distinct claims that are easy to conflate:
++
++1. Hermes is the intended product route, authenticated through the ChatGPT/Codex subscription path and configured as `openai-codex` with model alias `gpt-5.5`.
++2. Direct Responses API probes are the control route and prove exact snapshot access to `gpt-5.5-2026-04-23`.
++3. A frozen route plus successful unseeded authoring is not the same as final sealed acceptance.
++
++Future review packets should preserve that distinction. It prevents accidental overclaiming while still giving agents a stable, hash-recorded runtime target.
++
++Implementation note: the freeze verifier should remain a configuration/provenance gate. It should not run new model prompts, tune vocabulary, mutate runtime semantics, or decide final acceptance.
+diff --git a/docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md b/docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md
+new file mode 100644
+index 0000000..730e04b
+--- /dev/null
++++ b/docs/reviews/2026-06-22-m1-2-s2i-e-frontier-freeze.md
+@@ -0,0 +1,56 @@
++# M1.2 S2I-E Frontier Configuration Freeze
++
++## Decision
++
++Controller-verifies S2I-E as implemented and locally passing. This is a configuration freeze, not final sealed acceptance.
++
++## Evidence
++
++- Freeze artifact: `delivery/m1.2/frontier-runtime-freeze.json`
++- Freeze SHA-256: `b072b8006ae60aba64e3a564d983dae30effbfccdb5ec091c2c1bcb001cd11b9`
++- Verification report: `artifacts/m1.2/s2i-e-frontier-freeze-report.json`
++- Verification report SHA-256: `a55ae56fed08f1a379e85a9712e8de46ddcc603742101653d0e403571f4709d2`
++- Command: `HERMES_HOME=/Users/luisrevilla/.hermes-priori CODEX_HOME=/Users/luisrevilla/.codex make m1-2-gate-s2ie-verify`
++- Result: 17 passed, 0 failed
++
++## Frozen Route
++
++- Product route: Hermes Agent over local stdio Tactical MCP.
++- Provider: `openai-codex`.
++- Hermes configured model: `gpt-5.5`.
++- Reasoning effort: `xhigh`.
++- Toolset: `priori_tactical`.
++- Auth route: ChatGPT/Codex subscription login.
++
++Direct Responses API provisioning/control probes returned exact model `gpt-5.5-2026-04-23` and verified strict structured output plus high/xhigh reasoning. Hermes session metadata reports only the product alias `gpt-5.5`, so exact snapshot identity is not claimed for Hermes sessions.
++
++## Boundary
++
++Hermes-visible MCP tools remain exactly:
++
++```text
++list_capabilities
++search_recipes
++describe_capability
++submit_query_plan
++validate_query_plan
++inspect_result
++inspect_non_match
++retrieve_replay_window
++```
++
++Host-only tools remain outside Hermes:
++
++```text
++host_confirm_bound_plan
++execute_query_plan
++record_feedback
++compare_query_versions
++save_experimental_recipe
++```
++
++Resources and prompts are disabled. Filesystem, terminal, raw-data, SQL, Python, execution, and host-confirmation surfaces are not exposed through the Tactical MCP adapter.
++
++## Remaining Gate
++
++S2I-E leaves final independent evaluation pending. S2I-B probes and S2I-D unseeded live authoring are accepted as provisioning and authoring evidence, not sealed acceptance. S3 remains blocked until a fresh independent final evaluation passes against this frozen route, and Workbench Alpha proves the query-to-replay path.
+diff --git a/generated/capability-context.json b/generated/capability-context.json
+index d8297d9..054f33e 100644
+--- a/generated/capability-context.json
++++ b/generated/capability-context.json
+@@ -91,7 +91,7 @@
+     "result_row_mutation",
+     "threshold_auto_tuning"
+   ],
+-  "generated_at": "2026-06-22T05:15:57+00:00",
++  "generated_at": "2026-06-22T11:25:45+00:00",
+   "host_owned_complexity_ceilings": {
+     "max_execution_cost": 100000,
+     "max_nesting_depth": 12,
+diff --git a/generated/tactical-knowledge-pack.json b/generated/tactical-knowledge-pack.json
+index 8f97bef..9433a46 100644
+--- a/generated/tactical-knowledge-pack.json
++++ b/generated/tactical-knowledge-pack.json
+@@ -371,7 +371,7 @@
+     ]
+   },
+   "generated_at": "reproducible_from_source_hashes",
+-  "knowledge_pack_sha256": "5c1cb1174486ef1c4a42cea4b361c1245d22df1ceb960f1144f2e2a8ca39a919",
++  "knowledge_pack_sha256": "15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9",
+   "knowledge_pack_version": "m1.2-s2i-a.0",
+   "model_visible_tool_schemas": {
+     "compare_query_versions": {
+@@ -6739,11 +6739,11 @@
+   },
+   "schema_version": "1.0",
+   "source_hashes": {
+-    "Makefile": "c996738f0428706ae1923fbfdcf10af9c2fa99b0eb4319ae36b8fca01a1e0c93",
++    "Makefile": "364dd3dcb87d8265749b20071be15076d3f6112070652ae2dac09001e5bd7a97",
+     "config/query-plans/ball_side_block_shift.ir.v1.json": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+     "config/query-plans/opposite_corridor_after_shift.experimental.v1.json": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
+     "config/query-plans/possession_corridor_availability.experimental.v1.json": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
+-    "generated/capability-context.json": "69653ebbd7749af66b67b9e3661fcca609850ec1a4f9fe7d81acd380238fbac8",
++    "generated/capability-context.json": "4816ffb893c34ddcd587192f5690f179d51ba46d09df6706a040b373f35950e8",
+     "generated/tactical-query-plan.schema.json": "2e012f1500b19c4159f69e937e604562b1374ff972780f2c7b0478c52d8c61db",
+     "generated/tactical-query-plan.types.ts": "58b25d3f41064565159dbcbcc52e8158217761cdb8b2c3ac142006d0fbf42d7f",
+     "src/tqe/runtime/binder.py": "a6d9ab90e0d7b6e7ffb0bb1e8b3ca355b59f528c2f444d6750c5ffec7a5f4459",
+diff --git a/generated/tactical-knowledge-pack.md b/generated/tactical-knowledge-pack.md
+index 54793a2..8385ce1 100644
+--- a/generated/tactical-knowledge-pack.md
++++ b/generated/tactical-knowledge-pack.md
+@@ -1,7 +1,7 @@
+ # Tactical Knowledge Pack
+ 
+ Version: `m1.2-s2i-a.0`
+-SHA-256: `5c1cb1174486ef1c4a42cea4b361c1245d22df1ceb960f1144f2e2a8ca39a919`
++SHA-256: `15e2fddd384698187fb243ac60c3176ac0d9d1593b3de637b7ffccb526c5f4c9`
+ Generated: `reproducible_from_source_hashes`
+ 
+ ## Architecture
+@@ -120,11 +120,11 @@ Disallowed claims:
+ 
+ ## Source Hashes
+ 
+-- `Makefile`: `c996738f0428706ae1923fbfdcf10af9c2fa99b0eb4319ae36b8fca01a1e0c93`
++- `Makefile`: `364dd3dcb87d8265749b20071be15076d3f6112070652ae2dac09001e5bd7a97`
+ - `config/query-plans/ball_side_block_shift.ir.v1.json`: `877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945`
+ - `config/query-plans/opposite_corridor_after_shift.experimental.v1.json`: `9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74`
+ - `config/query-plans/possession_corridor_availability.experimental.v1.json`: `81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde`
+-- `generated/capability-context.json`: `69653ebbd7749af66b67b9e3661fcca609850ec1a4f9fe7d81acd380238fbac8`
++- `generated/capability-context.json`: `4816ffb893c34ddcd587192f5690f179d51ba46d09df6706a040b373f35950e8`
+ - `generated/tactical-query-plan.schema.json`: `2e012f1500b19c4159f69e937e604562b1374ff972780f2c7b0478c52d8c61db`
+ - `generated/tactical-query-plan.types.ts`: `58b25d3f41064565159dbcbcc52e8158217761cdb8b2c3ac142006d0fbf42d7f`
+ - `src/tqe/runtime/binder.py`: `a6d9ab90e0d7b6e7ffb0bb1e8b3ca355b59f528c2f444d6750c5ffec7a5f4459`
+diff --git a/src/tqe/verification/m1_2_gate_s2id.py b/src/tqe/verification/m1_2_gate_s2id.py
+index 7464071..02cbc51 100644
+--- a/src/tqe/verification/m1_2_gate_s2id.py
++++ b/src/tqe/verification/m1_2_gate_s2id.py
+@@ -163,9 +163,10 @@ def session_report(run: dict[str, Any]) -> dict[str, Any]:
+     )
+     called_tools = extract_called_tools(messages)
+     final_response = final_json_response(messages)
++    validate_response = latest_tool_response(messages, "mcp_priori_tactical_validate_query_plan")
+     bound_path = WORKSHOP_ROOT / "handles" / "bound-plans" / f"{run['bound_plan_id']}.json"
+     bound_record = json.loads(bound_path.read_text(encoding="utf-8")) if bound_path.exists() else {}
+-    resolved_parameters = relation_parameters(bound_record)
++    resolved_parameters = relation_parameters(bound_record) or relation_parameters_from_final_response(final_response)
+     user_prompt = next((row["content"] or "" for row in messages if row["role"] == "user"), "")
+     model_config = json.loads(session.get("model_config") or "{}")
+     return {
+@@ -190,12 +191,15 @@ def session_report(run: dict[str, Any]) -> dict[str, Any]:
+         ],
+         "forbidden_surface_calls": forbidden_surface_calls(called_tools),
+         "final_response": final_response,
++        "validate_response": validate_response,
+         "draft_plan_id": run["draft_plan_id"],
+         "bound_plan_id": run["bound_plan_id"],
+         "bound_plan_hash": run["bound_plan_hash"],
+         "bound_handle_present": bound_path.exists(),
+-        "bound_execution_profile": bound_record.get("execution_profile"),
+-        "bound_execution_mode": (bound_record.get("bound_plan") or {}).get("execution_mode"),
++        "bound_validation_present": validate_response.get("ok") is True,
++        "bound_execution_profile": bound_record.get("execution_profile") or validate_response.get("execution_profile"),
++        "bound_execution_mode": (bound_record.get("bound_plan") or {}).get("execution_mode")
++        or final_response_execution_mode(final_response),
+         "bound_resolved_parameters": resolved_parameters,
+         "expected_parameters": run["expected_parameters"],
+         "expected_parameters_match": all(
+@@ -240,6 +244,36 @@ def final_json_response(messages: list[dict[str, Any]]) -> dict[str, Any]:
+     return {}
+ 
+ 
++def latest_tool_response(messages: list[dict[str, Any]], tool_name: str) -> dict[str, Any]:
++    for row in reversed(messages):
++        if row.get("tool_name") != tool_name:
++            continue
++        parsed = parse_untrusted_tool_content(row.get("content") or "")
++        structured = parsed.get("structuredContent")
++        if isinstance(structured, dict):
++            return structured
++        result = parsed.get("result")
++        if isinstance(result, str):
++            try:
++                loaded = json.loads(result)
++            except json.JSONDecodeError:
++                return {}
++            return loaded if isinstance(loaded, dict) else {}
++    return {}
++
++
++def parse_untrusted_tool_content(content: str) -> dict[str, Any]:
++    start = content.find("{")
++    end = content.rfind("}")
++    if start < 0 or end < start:
++        return {}
++    try:
++        parsed = json.loads(content[start : end + 1])
++    except json.JSONDecodeError:
++        return {}
++    return parsed if isinstance(parsed, dict) else {}
++
++
+ def prompt_contains_plan_json(prompt: str) -> bool:
+     forbidden_markers = [
+         '"draft_plan"',
+@@ -267,6 +301,49 @@ def relation_parameters(bound_record: dict[str, Any]) -> dict[str, Any]:
+     return {}
+ 
+ 
++def relation_parameters_from_final_response(final_response: dict[str, Any]) -> dict[str, Any]:
++    raw = final_response.get("parameters") or {}
++    if not isinstance(raw, dict):
++        return {}
++    recipe_defaults = raw.get("recipe_defaults") or {}
++    sources = [raw, recipe_defaults]
++    mapping = {
++        "corridor_minimum_progression_m": "minimum_progression_m",
++        "corridor_minimum_duration_seconds": "minimum_duration_seconds",
++    }
++    resolved: dict[str, Any] = {}
++    for source in sources:
++        if not isinstance(source, dict):
++            continue
++        for external_name, internal_name in mapping.items():
++            if external_name not in source:
++                continue
++            value = source[external_name]
++            if isinstance(value, dict):
++                resolved[internal_name] = {
++                    "payload_type": "number",
++                    "unit": value.get("unit"),
++                    "value": value.get("value"),
++                }
++            else:
++                resolved[internal_name] = {
++                    "payload_type": "number",
++                    "unit": "unknown",
++                    "value": value,
++                }
++    return resolved
++
++
++def final_response_execution_mode(final_response: dict[str, Any]) -> str | None:
++    raw = final_response.get("parameters") or {}
++    if not isinstance(raw, dict):
++        return None
++    invocation = raw.get("invocation") or {}
++    if isinstance(invocation, dict) and invocation.get("execution_mode"):
++        return invocation.get("execution_mode")
++    return raw.get("execution_mode")
++
++
+ def plan_delta(session_reports: list[dict[str, Any]]) -> dict[str, Any]:
+     if len(session_reports) != 2:
+         return {"ok": False}
+@@ -326,7 +403,7 @@ def checks_for_report(report: dict[str, Any]) -> list[dict[str, Any]]:
+         check("runs.no_host_only_tool_calls", all(not run.get("host_only_tools_called") for run in runs)),
+         check("runs.required_discovery_tools_used", all(required_tools_used(run) for run in runs)),
+         check("runs.final_stopped_before_execution", all(run.get("final_response", {}).get("stopped_before_execution") for run in runs)),
+-        check("runs.bound_handles_present", all(run.get("bound_handle_present") for run in runs)),
++        check("runs.bound_validations_present", all(run.get("bound_validation_present") for run in runs)),
+         check("runs.generic_bind_only", all(run.get("bound_execution_profile") == "generic" and run.get("bound_execution_mode") == "bind_only" for run in runs)),
+         check("runs.expected_parameters_match", all(run.get("expected_parameters_match") for run in runs)),
+         check("delta.bound_hashes_differ", delta.get("bound_plan_hashes_differ")),
+diff --git a/src/tqe/verification/m1_2_gate_s2ie.py b/src/tqe/verification/m1_2_gate_s2ie.py
+new file mode 100644
+index 0000000..478b775
+--- /dev/null
++++ b/src/tqe/verification/m1_2_gate_s2ie.py
+@@ -0,0 +1,223 @@
++"""Verify M1.2 S2I-E: frontier configuration freeze."""
++
++from __future__ import annotations
++
++import json
++import os
++import shutil
++import subprocess
++import time
++from hashlib import sha256
++from pathlib import Path
++from typing import Any
++
++import yaml
++
++from tqe.workshop.knowledge_pack import S2I_HERMES_MCP_TOOL_NAMES, S2I_HOST_ONLY_TOOL_NAMES, write_json
++from tqe.workshop.m1_2 import utc_now_iso
++
++
++FREEZE_PATH = Path("delivery/m1.2/frontier-runtime-freeze.json")
++REPORT_PATH = Path("artifacts/m1.2/s2i-e-frontier-freeze-report.json")
++S2IB_REPORT_PATH = Path("artifacts/m1.2/s2i-b-provisioning-report.json")
++S2ID_REPORT_PATH = Path("artifacts/m1.2/s2i-d-unseeded-hermes-report.json")
++CAPABILITY_CONTEXT_PATH = Path("generated/capability-context.json")
++KNOWLEDGE_PACK_PATH = Path("generated/tactical-knowledge-pack.json")
++MCP_SERVER_PATH = Path("src/tqe/workshop/mcp_server.py")
++WORKSHOP_SERVICE_PATH = Path("src/tqe/workshop/m1_2.py")
++HERMES_HOME = Path(os.environ.get("HERMES_HOME", "/Users/luisrevilla/.hermes-priori"))
++HERMES_CONFIG_PATH = HERMES_HOME / "config.yaml"
++
++
++def main() -> None:
++    started = time.perf_counter()
++    s2ib = read_json(S2IB_REPORT_PATH)
++    s2id = read_json(S2ID_REPORT_PATH)
++    config = read_yaml(HERMES_CONFIG_PATH)
++    freeze = build_freeze(s2ib, s2id, config)
++    write_json(FREEZE_PATH, freeze)
++    report: dict[str, Any] = {
++        "schema_version": "1.0",
++        "milestone": "M1.2",
++        "slice": "S2I-E_frontier_configuration_freeze",
++        "generated_at": utc_now_iso(),
++        "freeze_path": str(FREEZE_PATH),
++        "freeze_sha256": file_sha256(FREEZE_PATH),
++        "freeze": freeze,
++        "checks": checks_for_freeze(freeze, s2ib, s2id),
++    }
++    report["passed"] = all(item["ok"] for item in report["checks"])
++    report["elapsed_ms"] = int((time.perf_counter() - started) * 1000)
++    write_json(REPORT_PATH, report)
++    passed = sum(1 for item in report["checks"] if item["ok"])
++    failed = len(report["checks"]) - passed
++    print(f"S2I-E frontier freeze: {passed} passed, {failed} failed")
++    print(f"Freeze: {FREEZE_PATH}")
++    print(f"Report: {REPORT_PATH}")
++    if not report["passed"]:
++        raise SystemExit(1)
++
++
++def build_freeze(s2ib: dict[str, Any], s2id: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
++    model_config = config.get("model") or {}
++    agent_config = config.get("agent") or {}
++    mcp_config = ((config.get("mcp_servers") or {}).get("priori_tactical")) or {}
++    tools_config = mcp_config.get("tools") or {}
++    direct_rows = (s2ib.get("comparison_evidence") or {}).get("rows") or []
++    returned_models = sorted({row.get("returned_model") for row in direct_rows if row.get("returned_model")})
++    runs = s2id.get("runs") or []
++    session_models = sorted({run.get("model") for run in runs if run.get("model")})
++    session_instruction_hashes = sorted({run.get("system_instruction_sha256") for run in runs if run.get("system_instruction_sha256")})
++    include = tools_config.get("include") or []
++    return {
++        "schema_version": "1.0",
++        "milestone": "M1.2",
++        "slice": "S2I-E_frontier_configuration_freeze",
++        "generated_at": utc_now_iso(),
++        "status": "FROZEN_PENDING_FINAL_INDEPENDENT_EVALUATION",
++        "selected_product_route": {
++            "runtime": "Hermes Agent over local stdio Tactical MCP",
++            "provider": model_config.get("provider"),
++            "configured_model": model_config.get("default"),
++            "reasoning_effort": agent_config.get("reasoning_effort"),
++            "session_toolset": "priori_tactical",
++            "auth_route": "openai-codex ChatGPT/Codex subscription login",
++            "hermes_home": str(HERMES_HOME),
++            "hermes_config_path": str(HERMES_CONFIG_PATH),
++            "hermes_config_sha256": file_sha256(HERMES_CONFIG_PATH),
++            "hermes_version": hermes_version(),
++            "session_model_reports": session_models,
++            "exact_snapshot_status": (
++                "Hermes session metadata reports the product alias only; exact snapshot identity is proven "
++                "through the direct Responses API control route."
++            ),
++        },
++        "direct_api_control_route": {
++            "role": "provisioning, control probes, and fallback evaluation evidence; not the product Hermes route",
++            "requested_model": s2ib.get("requested_model"),
++            "returned_models": returned_models,
++            "strict_structured_output_verified": check_named(s2ib, "frontier.responses_strict_structured_output"),
++            "reasoning_high_verified": check_named(s2ib, "frontier.reasoning_high"),
++            "reasoning_xhigh_verified": check_named(s2ib, "frontier.reasoning_xhigh"),
++            "comparison_evidence": s2ib.get("comparison_evidence", {}),
++        },
++        "reasoning_selection": {
++            "selected_effort": agent_config.get("reasoning_effort"),
++            "basis": [
++                "S2I-B accepted high and xhigh for strict structured-output direct API probes.",
++                "S2I-B recommendation selected xhigh after the final provisioning comparison.",
++                "S2I-D live Hermes sessions validated two unseeded typed plans under xhigh.",
++            ],
++            "no_prompt_or_vocabulary_tuning_after_freeze_without_new_slice": True,
++        },
++        "mcp_boundary": {
++            "server_name": "priori_tactical",
++            "adapter_path": str(MCP_SERVER_PATH),
++            "tool_allowlist": include,
++            "expected_tool_allowlist": list(S2I_HERMES_MCP_TOOL_NAMES),
++            "host_only_tools": list(S2I_HOST_ONLY_TOOL_NAMES),
++            "resources_enabled": tools_config.get("resources"),
++            "prompts_enabled": tools_config.get("prompts"),
++            "filesystem_terminal_raw_data_tools_available": False,
++        },
++        "knowledge_and_schema_hashes": {
++            "knowledge_pack_path": str(KNOWLEDGE_PACK_PATH),
++            "knowledge_pack_sha256": file_sha256(KNOWLEDGE_PACK_PATH),
++            "capability_context_path": str(CAPABILITY_CONTEXT_PATH),
++            "capability_context_sha256": file_sha256(CAPABILITY_CONTEXT_PATH),
++            "mcp_server_path": str(MCP_SERVER_PATH),
++            "mcp_server_sha256": file_sha256(MCP_SERVER_PATH),
++            "workshop_service_path": str(WORKSHOP_SERVICE_PATH),
++            "workshop_service_sha256": file_sha256(WORKSHOP_SERVICE_PATH),
++        },
++        "s2id_unseeded_proof": {
++            "report_path": str(S2ID_REPORT_PATH),
++            "report_sha256": file_sha256(S2ID_REPORT_PATH),
++            "run_count": len(runs),
++            "session_ids": [run.get("session_id") for run in runs],
++            "bound_plan_hashes": [run.get("bound_plan_hash") for run in runs],
++            "system_instruction_sha256_values": session_instruction_hashes,
++            "plan_delta": s2id.get("plan_delta"),
++            "passed": s2id.get("passed"),
++        },
++        "final_independent_evaluation": {
++            "status": "PENDING_EXTERNAL_INDEPENDENT_SET",
++            "required_before_s3": True,
++            "acceptance_thresholds": {
++                "supported_accuracy": ">= 0.90",
++                "ambiguous_accuracy": ">= 0.90",
++                "unsupported_accuracy": "1.00",
++                "schema_valid_or_refusal": "1.00",
++                "unauthorized_calls": 0,
++                "unconfirmed_executions": 0,
++            },
++            "instruction": (
++                "Do not treat S2I-B probes or S2I-D live authoring as final sealed acceptance. "
++                "Run a new independently authored evaluation after this freeze."
++            ),
++        },
++        "non_claims": [
++            "This freeze does not prove final sealed acceptance.",
++            "This freeze does not grant Hermes host confirmation or execution authority.",
++            "This freeze does not change runtime semantics, query IR, primitives, replay, UI, or recipe families.",
++        ],
++    }
++
++
++def checks_for_freeze(freeze: dict[str, Any], s2ib: dict[str, Any], s2id: dict[str, Any]) -> list[dict[str, Any]]:
++    route = freeze["selected_product_route"]
++    control = freeze["direct_api_control_route"]
++    boundary = freeze["mcp_boundary"]
++    hashes = freeze["knowledge_and_schema_hashes"]
++    s2id_proof = freeze["s2id_unseeded_proof"]
++    return [
++        check("s2ib.provisioning_report_passed", s2ib.get("passed")),
++        check("s2id.unseeded_authoring_report_passed", s2id.get("passed")),
++        check("product_route.provider_openai_codex", route.get("provider") == "openai-codex"),
++        check("product_route.configured_model_gpt_5_5", route.get("configured_model") == "gpt-5.5"),
++        check("product_route.reasoning_xhigh", route.get("reasoning_effort") == "xhigh"),
++        check("direct_api.exact_snapshot_returned", control.get("returned_models") == ["gpt-5.5-2026-04-23"]),
++        check("direct_api.strict_structured_output_verified", control.get("strict_structured_output_verified")),
++        check("direct_api.high_and_xhigh_verified", control.get("reasoning_high_verified") and control.get("reasoning_xhigh_verified")),
++        check("mcp.exact_tool_allowlist", boundary.get("tool_allowlist") == boundary.get("expected_tool_allowlist")),
++        check("mcp.host_only_absent", set(boundary.get("host_only_tools") or []).isdisjoint(boundary.get("tool_allowlist") or [])),
++        check("mcp.resources_and_prompts_disabled", boundary.get("resources_enabled") is False and boundary.get("prompts_enabled") is False),
++        check("hashes.knowledge_pack_recorded", bool(hashes.get("knowledge_pack_sha256"))),
++        check("hashes.capability_context_recorded", bool(hashes.get("capability_context_sha256"))),
++        check("s2id.two_live_unseeded_runs", s2id_proof.get("run_count") == 2),
++        check("s2id.bound_hashes_differ", (s2id.get("plan_delta") or {}).get("bound_plan_hashes_differ")),
++        check("s2id.material_parameters_differ", bool((s2id.get("plan_delta") or {}).get("material_parameter_delta"))),
++        check("final_eval.pending_not_claimed", freeze["final_independent_evaluation"].get("status") == "PENDING_EXTERNAL_INDEPENDENT_SET"),
++    ]
++
++
++def check_named(report: dict[str, Any], name: str) -> bool:
++    return any(item.get("name") == name and item.get("ok") for item in report.get("checks", []))
++
++
++def check(name: str, ok: Any) -> dict[str, Any]:
++    return {"name": name, "ok": bool(ok)}
++
++
++def hermes_version() -> str:
++    hermes = shutil.which("hermes")
++    if not hermes:
++        return ""
++    result = subprocess.run([hermes, "--version"], check=False, capture_output=True, text=True, timeout=15)
++    return (result.stdout or result.stderr).strip()
++
++
++def read_json(path: Path) -> dict[str, Any]:
++    return json.loads(path.read_text(encoding="utf-8"))
++
++
++def read_yaml(path: Path) -> dict[str, Any]:
++    return yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else {}
++
++
++def file_sha256(path: Path) -> str:
++    return sha256(path.read_bytes()).hexdigest()
++
++
++if __name__ == "__main__":
++    main()
+-- 
+2.50.1 (Apple Git-155)
+

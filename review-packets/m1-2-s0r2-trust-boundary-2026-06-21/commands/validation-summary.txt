@@ -1,0 +1,12 @@
+python -m py_compile src/tqe/workshop/m1_2.py src/tqe/verification/m1_2_gate_s0.py src/tqe/verification/m1_2_gate_s1.py
+PASS
+
+make m1-2-verify
+{"status": "pass", "summary": {"fail": 0, "pass": 2}}
+
+make m1-1-gate-s7r-verify
+{"status": "pass", "summary": {"fail": 0, "not_ready": 0, "pass": 13}}
+
+make test
+Ran 27 tests in 176.735s
+OK

@@ -1,0 +1,110 @@
+milestone: SCP-0
+name: Semantic Registry Foundation
+state: SCP_0E_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW
+last_updated: "2026-06-23"
+outcome: >
+  Create a versioned semantic parity and projection layer over the current
+  Priori system without changing execution behavior.
+slices:
+  SCP-0A:
+    name: Registry Schemas, Runtime Manifest, and Parity Skeleton
+    state: DONE
+    evidence:
+      - src/tqe/semantic_registry/models.py
+      - src/tqe/semantic_registry/runtime_manifest.py
+      - src/tqe/semantic_registry/generate.py
+      - semantic-registry/schemas/semantic-registry.schema.json
+      - generated/semantic-registry/runtime-manifest.json
+      - semantic-registry/registry.lock.json
+      - tests/test_scp0_semantic_registry.py
+  SCP-0B:
+    name: Current-System Mappings and Projections
+    state: DONE
+    evidence:
+      - semantic-registry/registry.yaml
+      - semantic-registry/atlas/raw/five_year_capability_manifest.yaml
+      - generated/semantic-registry/product-projection.json
+      - generated/semantic-registry/ai-projection.json
+      - generated/semantic-registry/recipe-library-projection.json
+      - generated/semantic-registry/unsupported-capability-projection.json
+      - generated/semantic-registry/research-atlas-projection.json
+      - generated/semantic-registry/semantic-parity-report.json
+      - artifacts/scp-0/verification-report.json
+  SCP-0C:
+    name: Projection, Parity, and Integrity Hardening
+    state: DONE
+    evidence:
+      - generated/semantic-registry/plan-artifact-index.json
+      - generated/semantic-registry/semantic-parity-report.json
+      - semantic-registry/registry.lock.json
+      - src/tqe/semantic_registry/generate.py
+      - src/tqe/semantic_registry/runtime_manifest.py
+      - tests/test_scp0_semantic_registry.py
+  SCP-0D:
+    name: Declarative Gate Closure
+    state: DONE
+    evidence:
+      - semantic-registry/registry.yaml
+      - semantic-registry/registry.lock.json
+      - generated/semantic-registry/semantic-parity-report.json
+      - generated/semantic-registry/plan-artifact-index.json
+      - src/tqe/semantic_registry/generate.py
+      - src/tqe/semantic_registry/models.py
+      - tests/test_scp0_semantic_registry.py
+  SCP-0E:
+    name: Waiver and Conformance Closure
+    state: DONE
+    evidence:
+      - semantic-registry/registry.yaml
+      - semantic-registry/registry.lock.json
+      - semantic-registry/schemas/semantic-registry.schema.json
+      - generated/semantic-registry/semantic-parity-report.json
+      - generated/semantic-registry/ai-projection.json
+      - generated/semantic-registry/product-projection.json
+      - generated/semantic-registry/unsupported-capability-projection.json
+      - src/tqe/semantic_registry/generate.py
+      - src/tqe/semantic_registry/models.py
+      - tests/test_scp0_semantic_registry.py
+claims:
+  registry_coverage: VERIFIED
+  runtime_binding_coverage: VERIFIED
+  atlas_isolation: VERIFIED
+  semantic_parity: VERIFIED_WITH_EXPLICIT_ACCEPTED_DIFFERENCES
+  projection_policy_enforcement: VERIFIED
+  plan_content_integrity: VERIFIED
+  full_origin_provenance_integrity: VERIFIED
+  recipe_contract_lineage: VERIFIED
+  composition_contract_lineage: VERIFIED
+  exact_signature_conformance: VERIFIED
+  partial_signature_conformance: VERIFIED
+  parity_waiver_integrity: VERIFIED
+  pilot_graph_traversal: VERIFIED
+  runtime_authority: CURRENT_RUNTIME
+  projection_authority: SHADOW_ONLY
+  scp_1_gate: BLOCKED_PENDING_EXTERNAL_SCP_0E_REVIEW
+verification:
+  required:
+    - make scp-0-verify
+    - make test
+  latest_result:
+    status: PASS
+    timestamp: "2026-06-23T17:22:22-07:00"
+    commands:
+      - "make scp-0-verify"
+      - "make test"
+    summary:
+      - "SCP-0 verifier PASS: 11 runtime capabilities bound, 8 operators defined, 4 recipes mapped, 1 validated composition mapped, 741 atlas entries isolated, zero product/AI atlas leakage."
+      - "SCP-0E closure active: runtime bindings declare explicit input/output/parameter bindings including runtime-context sources; exact and partial/legacy conformance is validated bidirectionally; parity waivers are pinned by difference kind, baseline hash, projection hash, and permitted fields; plan dependency contracts are enforced for recipes and compositions; AI operator and unsupported projections obey declared projection policy."
+      - "Focused SCP-0 adversarial unit suite: 42 tests OK."
+      - "Repository unittest discovery: 124 tests OK; attestation VERIFIED."
+review:
+  external_packet: review-packets/scp-0e-waiver-conformance-closure-2026-06-23.zip
+  accepted: false
+  last_external_decision: CHANGES_REQUIRED_BEFORE_SCP_1_NARROW_SCP_0E
+non_goals:
+  - runtime behavior changes
+  - new tactical capabilities
+  - new football IR
+  - Hermes behavior changes
+  - Workbench UI changes
+  - product or AI exposure for atlas-only entries

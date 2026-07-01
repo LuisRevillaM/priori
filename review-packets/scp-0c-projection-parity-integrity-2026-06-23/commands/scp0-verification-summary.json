@@ -1,0 +1,104 @@
+{
+  "atlas_leakage": {
+    "ai": 0,
+    "product": 0
+  },
+  "operators": {
+    "missing_definitions": 0,
+    "runtime_total": 8,
+    "semantically_defined": 8
+  },
+  "projection_differences": {
+    "ai": {
+      "added": [
+        "composition:composition.ai_corridor_destination.2026_06_23"
+      ],
+      "baseline_count": 21,
+      "changed": [
+        "operator:count_at_least:1.0.0",
+        "operator:eq:1.0.0",
+        "operator:exists:1.0.0",
+        "operator:gt:1.0.0",
+        "operator:gte:1.0.0",
+        "operator:lte:1.0.0",
+        "operator:neq:1.0.0",
+        "operator:persists_for:1.0.0",
+        "recipe:ball_side_block_shift_v1:1.0.0",
+        "recipe:high_bypass_completed_pass_v1:0.1.0",
+        "recipe:opposite_corridor_after_shift_v1:0.1.0",
+        "recipe:possession_corridor_availability_v1:0.1.0",
+        "runtime:primitive:ball_lateral_fraction:0.1.0",
+        "runtime:primitive:controlled_pass_episode:0.1.0",
+        "runtime:primitive:defensive_outfield_centroid:0.1.0",
+        "runtime:primitive:possession_segment:0.1.0",
+        "runtime:primitive:relation_destination_entry:0.1.0",
+        "runtime:primitive:signed_lateral_shift:0.1.0",
+        "runtime:relation:geometric_progressive_corridor:0.1.0",
+        "runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0",
+        "runtime:relation:opponents_bypassed_by_action:0.1.0"
+      ],
+      "projection_count": 22,
+      "removed": []
+    },
+    "product": {
+      "added": [
+        "composition:composition.ai_corridor_destination.2026_06_23"
+      ],
+      "baseline_count": 15,
+      "changed": [
+        "recipe:ball_side_block_shift_v1:1.0.0",
+        "recipe:high_bypass_completed_pass_v1:0.1.0",
+        "recipe:opposite_corridor_after_shift_v1:0.1.0",
+        "recipe:possession_corridor_availability_v1:0.1.0",
+        "runtime:primitive:ball_lateral_fraction:0.1.0",
+        "runtime:primitive:controlled_pass_episode:0.1.0",
+        "runtime:primitive:defensive_outfield_centroid:0.1.0",
+        "runtime:primitive:outcome_classification:0.1.0",
+        "runtime:primitive:possession_segment:0.1.0",
+        "runtime:primitive:relation_destination_entry:0.1.0",
+        "runtime:primitive:relation_destination_entry_classification:0.1.0",
+        "runtime:primitive:signed_lateral_shift:0.1.0",
+        "runtime:relation:geometric_progressive_corridor:0.1.0",
+        "runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0",
+        "runtime:relation:opponents_bypassed_by_action:0.1.0"
+      ],
+      "projection_count": 16,
+      "removed": []
+    }
+  },
+  "recipes": {
+    "mapped": 4,
+    "missing_plan_artifacts": 0,
+    "parsed_plan_artifacts": 5,
+    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
+    "registered": 4
+  },
+  "registry_lock": {
+    "ai_projection_policy": "projection.ai.v1",
+    "evidence_schema_version": "1.0",
+    "generator_version": "scp0.generator.v1",
+    "lock_hash": "d3c1f3c0cafd5b4bb6b500f7b258a6217c210be1169814947beab5837a85c390",
+    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
+    "product_projection_policy": "projection.product.v1",
+    "recipe_projection_policy": "projection.recipe_library.v1",
+    "registry_revision": "80afeb152caa7413782c88799c7a6025be9f63b73068cdd946cbf627ce11b9c7",
+    "research_atlas_projection_policy": "projection.research_atlas.v1",
+    "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+    "schema_version": "1.0",
+    "typed_plan_schema_version": "1.0",
+    "unsupported_projection_policy": "projection.unsupported.v1"
+  },
+  "runtime_capabilities": {
+    "bound": 11,
+    "duplicate_bindings": 0,
+    "including_operators_total": 19,
+    "orphaned": 0,
+    "runtime_total": 11,
+    "unresolved_bindings": 0
+  },
+  "status": "PASS",
+  "validated_compositions": {
+    "mapped": 1,
+    "total": 1
+  }
+}

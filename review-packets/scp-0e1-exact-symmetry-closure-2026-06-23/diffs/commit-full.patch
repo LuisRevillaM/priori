@@ -1,0 +1,609 @@
+commit bb3195b3c0538ba97d2a43f2241bb2735df0d295
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Tue Jun 23 18:53:58 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Tue Jun 23 18:53:58 2026 -0700
+
+    Close SCP-0E.1 exact symmetry gate
+
+diff --git a/artifacts/scp-0/verification-report.json b/artifacts/scp-0/verification-report.json
+index ab57f3d..6a50b28 100644
+--- a/artifacts/scp-0/verification-report.json
++++ b/artifacts/scp-0/verification-report.json
+@@ -833,11 +833,11 @@
+     "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "7eaa218d66d3bb328c76aff244b9f8e1d0766f3bf9e885b0e8cf2d6dfbbafc47",
++    "lock_hash": "9352c17308d7f146d0efb1ec51232e5a5893256432043826aa12a16bc15363f4",
+     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "e7095fb221ee3157c6b47d99f38c77748113387a3d1c6de2b8065c19ab63174c",
++    "registry_revision": "c6235dbb7bdb8f5275102bf210caec6a885cac27b1cca13ecbeded0b8ddb9325",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "50b869b2dec576a7a37c62a363f73ea9b40b4743e5905eb4fa62f7d2600b9866",
+     "schema_version": "1.0",
+diff --git a/delivery/ledger.jsonl b/delivery/ledger.jsonl
+index 34c7a51..f3a56b8 100644
+--- a/delivery/ledger.jsonl
++++ b/delivery/ledger.jsonl
+@@ -81,3 +81,4 @@
+ {"timestamp":"2026-06-23T16:42:00-07:00","milestone":"SCP-0","slice":"SCP-0D_declarative_gate_closure","from":"CHANGES_REQUIRED_BEFORE_SCP_1_NARROW_SCP_0D","to":"SCP_0D_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW","actor":"controller","evidence":["src/tqe/semantic_registry/generate.py","src/tqe/semantic_registry/models.py","semantic-registry/registry.yaml","semantic-registry/registry.lock.json","generated/semantic-registry/plan-artifact-index.json","generated/semantic-registry/semantic-parity-report.json","artifacts/scp-0/verification-report.json","tests/test_scp0_semantic_registry.py","delivery/scp-0/status.yaml"],"notes":"Implemented SCP-0D closure after external review. ProjectionPolicy.requires values now execute declaratively across product, AI, recipe-library, and research-atlas projections. Baseline source hashes are pinned in the lock and canonical parity reports membership drift separately from contract drift with explicit accepted differences. Recipe and composition records now require top-level concepts and inherited concept/profile claim and evidence contracts. Full AI origin bundle bytes are hashed separately from normalized selected typed plan documents. Composition plans are checked for unbound capabilities and undefined operators. Exact bindings require port/parameter compatibility; partial/legacy bindings require explicit mappings and uncovered fields. Failed generation no longer overwrites existing projection artifacts. make scp-0-verify passes with 32 focused adversarial tests; make test passes 114 repository tests with attestation VERIFIED; SCP-1 remains blocked pending external SCP-0D review."}
+ {"timestamp":"2026-06-23T17:22:22-07:00","milestone":"SCP-0","slice":"SCP-0E_waiver_and_conformance_closure","from":"CHANGES_REQUIRED_BEFORE_SCP_1_NARROW_SCP_0E","to":"SCP_0E_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW","actor":"controller","evidence":["src/tqe/semantic_registry/generate.py","src/tqe/semantic_registry/models.py","semantic-registry/registry.yaml","semantic-registry/registry.lock.json","semantic-registry/schemas/semantic-registry.schema.json","generated/semantic-registry/semantic-parity-report.json","artifacts/scp-0/verification-report.json","tests/test_scp0_semantic_registry.py","delivery/scp-0/status.yaml"],"notes":"Implemented SCP-0E after external review. Runtime bindings now use explicit semantic input/output/parameter bindings, including RUNTIME_CONTEXT sources for implicit match-state inputs. Exact and partial/legacy conformance validates semantic/runtime inputs, outputs, and parameters bidirectionally. Parity waivers are no longer subject-wide: each waiver pins difference kind, baseline hash, projection hash, permitted fields, rationale, and review condition, and stale/hash-drifted waivers fail. Recipe and composition contracts now preserve dependency-derived claim/evidence obligations from parsed plan runtime dependencies. AI operators and unsupported projection items are governed by their declared ProjectionPolicy. make scp-0-verify passes with 42 focused adversarial tests; make test passes 124 repository tests with attestation VERIFIED; SCP-1 remains blocked pending external SCP-0E review."}
+ {"timestamp":"2026-06-23T18:10:31-07:00","milestone":"SCP-0","slice":"SCP-0E_closure_patch_exactness_and_waiver_uniqueness","from":"CHANGES_REQUIRED_BEFORE_SCP_1_SMALL_SCP_0E_CLOSURE_PATCH","to":"SCP_0E_CLOSURE_PATCH_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW","actor":"controller","evidence":["src/tqe/semantic_registry/runtime_manifest.py","src/tqe/semantic_registry/generate.py","src/tqe/semantic_registry/models.py","semantic-registry/registry.yaml","semantic-registry/registry.lock.json","semantic-registry/schemas/semantic-registry.schema.json","generated/semantic-registry/semantic-parity-report.json","artifacts/scp-0/verification-report.json","tests/test_scp0_semantic_registry.py","delivery/scp-0/status.yaml"],"notes":"Implemented the second external-review SCP-0E closure patch. Runtime-context bindings now resolve against generated typed context definitions and source-target exclusivity is schema-enforced. Exact field checks now cover unit, cardinality, entity scope, coordinate frame where declared, and runtime input requiredness; runtime unit none is no longer a wildcard. Semantic parameter specs now carry and validate bounds, defaults, and allowed values. Exact bindings may not declare known deviations. Uncovered runtime/semantic names must resolve and be unique. Projection parity waivers are unique by projection target, difference kind, and subject. Product recipe parity output now explicitly labels recipe comparison as current-runtime alignment until a pinned product recipe baseline exists. make scp-0-verify passes with 49 focused adversarial tests; make test passes 131 repository tests with attestation VERIFIED."}
++{"timestamp":"2026-06-23T18:51:30-07:00","milestone":"SCP-0","slice":"SCP-0E_1_exact_symmetry_closure","from":"BLOCKED_ON_TINY_SCP_0E_1_PATCH","to":"SCP_0E_1_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW","actor":"controller","evidence":["src/tqe/semantic_registry/runtime_manifest.py","src/tqe/semantic_registry/generate.py","semantic-registry/registry.yaml","semantic-registry/registry.lock.json","generated/semantic-registry/runtime-manifest.json","generated/semantic-registry/semantic-parity-report.json","artifacts/scp-0/verification-report.json","tests/test_scp0_semantic_registry.py","delivery/scp-0/status.yaml","delivery/scp-0/progress.md","docs/learnings/2026-06-23-scp-0-semantic-registry.md"],"notes":"Implemented the tiny SCP-0E.1 exact-symmetry closure requested by external review. EXACT conformance now treats only explicit semantic any as a wildcard; semantic concrete plus runtime missing metadata fails; semantic missing plus runtime concrete metadata fails; exact semantic optional inputs and outputs must be bound. Returned runtime manifests deep-copy runtime-context declarations so deletion tests cannot mutate global context definitions. The original geometric_progressive_corridor operationalization now declares possession-scoped anchors to match its exact runtime input; the anchor-set corridor remains the generic anchor-scoped variant. make scp-0-verify passes with 52 focused adversarial tests; make test passes 134 repository tests with attestation VERIFIED. SCP-1 remains blocked pending external acceptance of SCP-0E.1."}
+diff --git a/delivery/scp-0/SPEC.md b/delivery/scp-0/SPEC.md
+index 5eb13f4..f577ceb 100644
+--- a/delivery/scp-0/SPEC.md
++++ b/delivery/scp-0/SPEC.md
+@@ -98,6 +98,23 @@ SCP-0 covers four implementation slices:
+ - Apply projection-policy filtering to AI operators and unsupported projection
+   items.
+ 
++### SCP-0E.1 - Exact Symmetry Closure
++
++- Make `EXACT` conformance symmetric for metadata-bearing type dimensions:
++  cardinality, entity scope, and coordinate frame.
++- Treat only explicit semantic `any` as a wildcard.
++- Fail exact validation when the semantic side is concrete and the runtime side
++  omits the corresponding metadata.
++- Fail exact validation when the semantic side omits metadata and the runtime
++  side is concrete.
++- Require every semantic input and output to be bound under exact conformance,
++  including optional semantic ports.
++- Keep partial and legacy conformance behavior scoped to explicit mappings and
++  uncovered declarations.
++- Declare the original geometric progressive corridor input as
++  possession-scoped; keep the anchor-set corridor as the generic anchor-scoped
++  variant.
++
+ ## Non-Goals
+ 
+ SCP-0 must not add:
+@@ -313,6 +330,16 @@ SCP-0 passes only if:
+     implied by registry prose.
+ 56. Per-team semantic signal cardinality is explicit where exact runtime
+     bindings depend on it.
++57. Exact metadata validation fails when runtime cardinality, entity scope, or
++    coordinate frame is deleted while the semantic side remains concrete.
++58. Exact metadata validation fails when semantic cardinality, entity scope, or
++    coordinate frame is omitted while the runtime side is concrete, unless the
++    semantic side explicitly declares `any`.
++59. Exact bindings cannot silently omit optional semantic inputs or optional
++    semantic outputs.
++60. The original `geometric_progressive_corridor` operationalization declares
++    possession-scoped anchors, while the anchor-set variant remains the generic
++    anchor-scoped corridor capability.
+ 
+ ## Side Effects
+ 
+diff --git a/delivery/scp-0/progress.md b/delivery/scp-0/progress.md
+index 9c48e52..b3c6351 100644
+--- a/delivery/scp-0/progress.md
++++ b/delivery/scp-0/progress.md
+@@ -7,5 +7,6 @@
+ | SCP-0C | DONE | `generated/semantic-registry/plan-artifact-index.json`, `generated/semantic-registry/semantic-parity-report.json`, `semantic-registry/registry.lock.json`, `tests/test_scp0_semantic_registry.py` | External required changes implemented: projection policies execute, real baseline differences are reported, plan content is hashed into the lock, registry/plan disagreements fail, pilot reports traverse discovered graph paths, and signatures/contracts are checked more deeply. |
+ | SCP-0D | DONE | `semantic-registry/registry.yaml`, `semantic-registry/registry.lock.json`, `generated/semantic-registry/semantic-parity-report.json`, `generated/semantic-registry/plan-artifact-index.json`, `src/tqe/semantic_registry/generate.py`, `tests/test_scp0_semantic_registry.py` | Narrow closure slice implemented after external review: `ProjectionPolicy.requires` is executable, baseline hashes are pinned, canonical parity separates membership and contract drift, recipe/composition concept and contract lineage is enforced, full AI origin bundle byte hashes are recorded, exact/non-exact binding conformance is stricter, and failed generation does not overwrite valid projections. |
+ | SCP-0E | DONE | `semantic-registry/registry.yaml`, `semantic-registry/registry.lock.json`, `semantic-registry/schemas/semantic-registry.schema.json`, `generated/semantic-registry/semantic-parity-report.json`, `src/tqe/semantic_registry/runtime_manifest.py`, `src/tqe/semantic_registry/generate.py`, `src/tqe/semantic_registry/models.py`, `tests/test_scp0_semantic_registry.py` | Waiver and conformance closure implemented after external review, then patched after the second external review: runtime bindings now declare explicit semantic input/output/parameter bindings, runtime-context inputs resolve to typed runtime-context definitions, exact and partial/legacy conformance validate both directions and compare unit/cardinality/entity scope/requiredness plus parameter bounds/defaults/allowed values, uncovered declarations must resolve, duplicate waivers fail, product recipe parity is labeled as current-runtime alignment, dependency-derived recipe/composition contract closure is enforced, and AI operator plus unsupported projections obey declared projection policies. |
+-| Verification | DONE | `make scp-0-verify`, `make test` | Parity report PASS; 49 adversarial SCP-0 tests pass; full repository unittest discovery passes 131 tests with attestation VERIFIED. SCP-1 remains blocked until external review accepts the SCP-0E closure patch. |
++| SCP-0E.1 | DONE | `semantic-registry/registry.yaml`, `semantic-registry/registry.lock.json`, `generated/semantic-registry/runtime-manifest.json`, `generated/semantic-registry/semantic-parity-report.json`, `src/tqe/semantic_registry/runtime_manifest.py`, `src/tqe/semantic_registry/generate.py`, `tests/test_scp0_semantic_registry.py` | Tiny external-review closure patch implemented: exact mode is now symmetric for cardinality, entity scope, and coordinate frame metadata; only explicit semantic `any` is a wildcard; missing runtime metadata and missing semantic metadata both fail under exact bindings; exact semantic optional ports must be bound; returned runtime manifests deep-copy context declarations; and the original geometric progressive corridor anchor input declares `entity_scope: possession`. |
++| Verification | DONE | `make scp-0-verify`, `make test` | Parity report PASS; 52 adversarial SCP-0 tests pass; full repository unittest discovery passes 134 tests with attestation VERIFIED. SCP-1 remains blocked until external review accepts the SCP-0E.1 closure patch. |
+ | External review packet | DONE | `review-packets/scp-0-semantic-registry-foundation-2026-06-23.zip` | Inspection packet generated with internal `SHA256SUMS`; adjacent `.zip.sha256` file is the authoritative packet checksum. |
+diff --git a/delivery/scp-0/status.yaml b/delivery/scp-0/status.yaml
+index 6b3d3c2..c0dbf95 100644
+--- a/delivery/scp-0/status.yaml
++++ b/delivery/scp-0/status.yaml
+@@ -1,6 +1,6 @@
+ milestone: SCP-0
+ name: Semantic Registry Foundation
+-state: SCP_0E_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW
++state: SCP_0E_1_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW
+ last_updated: "2026-06-23"
+ outcome: >
+   Create a versioned semantic parity and projection layer over the current
+@@ -66,6 +66,17 @@ slices:
+       - src/tqe/semantic_registry/generate.py
+       - src/tqe/semantic_registry/models.py
+       - tests/test_scp0_semantic_registry.py
++  SCP-0E.1:
++    name: Exact Symmetry Closure
++    state: DONE
++    evidence:
++      - semantic-registry/registry.yaml
++      - semantic-registry/registry.lock.json
++      - generated/semantic-registry/runtime-manifest.json
++      - generated/semantic-registry/semantic-parity-report.json
++      - src/tqe/semantic_registry/runtime_manifest.py
++      - src/tqe/semantic_registry/generate.py
++      - tests/test_scp0_semantic_registry.py
+ claims:
+   registry_coverage: VERIFIED
+   runtime_binding_coverage: VERIFIED
+@@ -85,27 +96,28 @@ claims:
+   pilot_graph_traversal: VERIFIED
+   runtime_authority: CURRENT_RUNTIME
+   projection_authority: SHADOW_ONLY
+-  scp_1_gate: BLOCKED_PENDING_EXTERNAL_SCP_0E_REVIEW
++  scp_1_gate: BLOCKED_PENDING_EXTERNAL_SCP_0E_1_REVIEW
+ verification:
+   required:
+     - make scp-0-verify
+     - make test
+   latest_result:
+     status: PASS
+-    timestamp: "2026-06-23T18:10:31-07:00"
++    timestamp: "2026-06-23T18:51:30-07:00"
+     commands:
+       - "make scp-0-verify"
+       - "make test"
+     summary:
+       - "SCP-0 verifier PASS: 11 runtime capabilities bound, 8 operators defined, 4 recipes mapped, 1 validated composition mapped, 741 atlas entries isolated, zero product/AI atlas leakage."
+-      - "SCP-0E closure active: runtime bindings declare explicit input/output/parameter bindings including runtime-context sources; runtime-context refs resolve to typed runtime manifest entries; exact and partial/legacy conformance is validated bidirectionally; exact checks include unit, cardinality, entity scope, input requiredness, and parameter bounds/defaults/allowed values; parity waivers are pinned by difference kind, baseline hash, projection hash, permitted fields, and unique waiver key; plan dependency contracts are enforced for recipes and compositions; AI operator and unsupported projections obey declared projection policy."
++      - "SCP-0E.1 closure active: EXACT conformance is symmetric for metadata; only explicit semantic any is a wildcard; semantic concrete plus runtime missing fails; semantic missing plus runtime concrete fails; exact semantic optional inputs and outputs must be bound; exact runtime inputs, outputs, parameters, and semantic parameters remain fully mapped with no uncovered elements."
++      - "The original geometric progressive corridor operationalization now declares possession-scoped anchors, matching its exact runtime binding; the generic anchor-set corridor remains the separate anchor-scoped variant."
+       - "Product recipe comparison is explicitly reported as current-runtime alignment rather than frozen product recipe baseline parity."
+-      - "Focused SCP-0 adversarial unit suite: 49 tests OK."
+-      - "Repository unittest discovery: 131 tests OK; attestation VERIFIED."
++      - "Focused SCP-0 adversarial unit suite: 52 tests OK."
++      - "Repository unittest discovery: 134 tests OK; attestation VERIFIED."
+ review:
+-  external_packet: review-packets/scp-0e-waiver-conformance-closure-patch-2026-06-23.zip
++  external_packet: review-packets/scp-0e1-exact-symmetry-closure-2026-06-23.zip
+   accepted: false
+-  last_external_decision: CHANGES_REQUIRED_BEFORE_SCP_1_SMALL_SCP_0E_CLOSURE_PATCH
++  last_external_decision: BLOCKED_ON_TINY_SCP_0E_1_PATCH
+ non_goals:
+   - runtime behavior changes
+   - new tactical capabilities
+diff --git a/docs/learnings/2026-06-23-scp-0-semantic-registry.md b/docs/learnings/2026-06-23-scp-0-semantic-registry.md
+index 2d7befe..f064ffa 100644
+--- a/docs/learnings/2026-06-23-scp-0-semantic-registry.md
++++ b/docs/learnings/2026-06-23-scp-0-semantic-registry.md
+@@ -166,3 +166,32 @@ the weaker guarantee rather than borrowing stronger parity language.
+ 
+ **Follow-up:** Generate the SCP-0E closure-patch packet. If external review
+ accepts it, begin SCP-1 immediately with the existing-runtime compiler pilot.
++
++## 2026-06-23 - SCP-0E.1 Exact Symmetry Closure
++
++**Fact:** External review of the SCP-0E closure patch found one remaining
++false-`EXACT` path: deleting runtime metadata or omitting semantic metadata
++could make cardinality, entity-scope, or coordinate-frame checks disappear.
++Exact bindings also did not require optional semantic inputs and outputs to be
++bound.
++
++**Decision:** Treat exact mode as symmetric. Only explicit semantic `any` is a
++wildcard. Under exact conformance, concrete semantic metadata plus missing
++runtime metadata fails, and missing semantic metadata plus concrete runtime
++metadata also fails. Exact semantic optional inputs and outputs must be bound.
++The original geometric progressive corridor operationalization now declares its
++anchors as possession-scoped, matching the exact runtime binding; the generic
++anchor-set corridor remains the separate anchor-scoped variant.
++
++**Learning:** Missing metadata is not neutral when a binding claims exactness.
++In exact mode, omission is either an explicit wildcard or a failed contract.
++This keeps `EXACT` from becoming a reward-hackable label that can be restored by
++deleting inconvenient facts.
++
++**Evidence:** `make scp-0-verify` with 52 focused adversarial tests OK;
++`make test` with 134 repository tests OK and attestation VERIFIED;
++`generated/semantic-registry/semantic-parity-report.json`;
++`semantic-registry/registry.lock.json`.
++
++**Follow-up:** Generate the SCP-0E.1 exact-symmetry review packet. If external
++review accepts it, SCP-1 can start without another SCP-0 architecture cycle.
+diff --git a/generated/semantic-registry/ai-projection.json b/generated/semantic-registry/ai-projection.json
+index 16b1e9d..c1df60c 100644
+--- a/generated/semantic-registry/ai-projection.json
++++ b/generated/semantic-registry/ai-projection.json
+@@ -1654,11 +1654,11 @@
+     "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "7eaa218d66d3bb328c76aff244b9f8e1d0766f3bf9e885b0e8cf2d6dfbbafc47",
++    "lock_hash": "9352c17308d7f146d0efb1ec51232e5a5893256432043826aa12a16bc15363f4",
+     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "e7095fb221ee3157c6b47d99f38c77748113387a3d1c6de2b8065c19ab63174c",
++    "registry_revision": "c6235dbb7bdb8f5275102bf210caec6a885cac27b1cca13ecbeded0b8ddb9325",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "50b869b2dec576a7a37c62a363f73ea9b40b4743e5905eb4fa62f7d2600b9866",
+     "schema_version": "1.0",
+diff --git a/generated/semantic-registry/product-projection.json b/generated/semantic-registry/product-projection.json
+index 896b3c1..a2eea85 100644
+--- a/generated/semantic-registry/product-projection.json
++++ b/generated/semantic-registry/product-projection.json
+@@ -1773,11 +1773,11 @@
+     "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "7eaa218d66d3bb328c76aff244b9f8e1d0766f3bf9e885b0e8cf2d6dfbbafc47",
++    "lock_hash": "9352c17308d7f146d0efb1ec51232e5a5893256432043826aa12a16bc15363f4",
+     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "e7095fb221ee3157c6b47d99f38c77748113387a3d1c6de2b8065c19ab63174c",
++    "registry_revision": "c6235dbb7bdb8f5275102bf210caec6a885cac27b1cca13ecbeded0b8ddb9325",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "50b869b2dec576a7a37c62a363f73ea9b40b4743e5905eb4fa62f7d2600b9866",
+     "schema_version": "1.0",
+diff --git a/generated/semantic-registry/recipe-library-projection.json b/generated/semantic-registry/recipe-library-projection.json
+index 1347e7b..5f7261b 100644
+--- a/generated/semantic-registry/recipe-library-projection.json
++++ b/generated/semantic-registry/recipe-library-projection.json
+@@ -459,11 +459,11 @@
+     "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "7eaa218d66d3bb328c76aff244b9f8e1d0766f3bf9e885b0e8cf2d6dfbbafc47",
++    "lock_hash": "9352c17308d7f146d0efb1ec51232e5a5893256432043826aa12a16bc15363f4",
+     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "e7095fb221ee3157c6b47d99f38c77748113387a3d1c6de2b8065c19ab63174c",
++    "registry_revision": "c6235dbb7bdb8f5275102bf210caec6a885cac27b1cca13ecbeded0b8ddb9325",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "50b869b2dec576a7a37c62a363f73ea9b40b4743e5905eb4fa62f7d2600b9866",
+     "schema_version": "1.0",
+diff --git a/generated/semantic-registry/research-atlas-projection.json b/generated/semantic-registry/research-atlas-projection.json
+index dea4ee3..830cd72 100644
+--- a/generated/semantic-registry/research-atlas-projection.json
++++ b/generated/semantic-registry/research-atlas-projection.json
+@@ -5224,11 +5224,11 @@
+     "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "7eaa218d66d3bb328c76aff244b9f8e1d0766f3bf9e885b0e8cf2d6dfbbafc47",
++    "lock_hash": "9352c17308d7f146d0efb1ec51232e5a5893256432043826aa12a16bc15363f4",
+     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "e7095fb221ee3157c6b47d99f38c77748113387a3d1c6de2b8065c19ab63174c",
++    "registry_revision": "c6235dbb7bdb8f5275102bf210caec6a885cac27b1cca13ecbeded0b8ddb9325",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "50b869b2dec576a7a37c62a363f73ea9b40b4743e5905eb4fa62f7d2600b9866",
+     "schema_version": "1.0",
+diff --git a/generated/semantic-registry/semantic-parity-report.json b/generated/semantic-registry/semantic-parity-report.json
+index ab57f3d..6a50b28 100644
+--- a/generated/semantic-registry/semantic-parity-report.json
++++ b/generated/semantic-registry/semantic-parity-report.json
+@@ -833,11 +833,11 @@
+     "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "7eaa218d66d3bb328c76aff244b9f8e1d0766f3bf9e885b0e8cf2d6dfbbafc47",
++    "lock_hash": "9352c17308d7f146d0efb1ec51232e5a5893256432043826aa12a16bc15363f4",
+     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "e7095fb221ee3157c6b47d99f38c77748113387a3d1c6de2b8065c19ab63174c",
++    "registry_revision": "c6235dbb7bdb8f5275102bf210caec6a885cac27b1cca13ecbeded0b8ddb9325",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "50b869b2dec576a7a37c62a363f73ea9b40b4743e5905eb4fa62f7d2600b9866",
+     "schema_version": "1.0",
+diff --git a/generated/semantic-registry/unsupported-capability-projection.json b/generated/semantic-registry/unsupported-capability-projection.json
+index d8658cd..e3f9b8a 100644
+--- a/generated/semantic-registry/unsupported-capability-projection.json
++++ b/generated/semantic-registry/unsupported-capability-projection.json
+@@ -179,11 +179,11 @@
+     "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "7eaa218d66d3bb328c76aff244b9f8e1d0766f3bf9e885b0e8cf2d6dfbbafc47",
++    "lock_hash": "9352c17308d7f146d0efb1ec51232e5a5893256432043826aa12a16bc15363f4",
+     "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "e7095fb221ee3157c6b47d99f38c77748113387a3d1c6de2b8065c19ab63174c",
++    "registry_revision": "c6235dbb7bdb8f5275102bf210caec6a885cac27b1cca13ecbeded0b8ddb9325",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "50b869b2dec576a7a37c62a363f73ea9b40b4743e5905eb4fa62f7d2600b9866",
+     "schema_version": "1.0",
+diff --git a/semantic-registry/registry.lock.json b/semantic-registry/registry.lock.json
+index f910809..1643ec7 100644
+--- a/semantic-registry/registry.lock.json
++++ b/semantic-registry/registry.lock.json
+@@ -3,11 +3,11 @@
+   "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+   "evidence_schema_version": "1.0",
+   "generator_version": "scp0.generator.v1",
+-  "lock_hash": "7eaa218d66d3bb328c76aff244b9f8e1d0766f3bf9e885b0e8cf2d6dfbbafc47",
++  "lock_hash": "9352c17308d7f146d0efb1ec51232e5a5893256432043826aa12a16bc15363f4",
+   "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+   "product_projection_policy": "projection.product.v1",
+   "recipe_projection_policy": "projection.recipe_library.v1",
+-  "registry_revision": "e7095fb221ee3157c6b47d99f38c77748113387a3d1c6de2b8065c19ab63174c",
++  "registry_revision": "c6235dbb7bdb8f5275102bf210caec6a885cac27b1cca13ecbeded0b8ddb9325",
+   "research_atlas_projection_policy": "projection.research_atlas.v1",
+   "runtime_manifest_revision": "50b869b2dec576a7a37c62a363f73ea9b40b4743e5905eb4fa62f7d2600b9866",
+   "schema_version": "1.0",
+diff --git a/semantic-registry/registry.yaml b/semantic-registry/registry.yaml
+index 9ec8d63..a65b039 100644
+--- a/semantic-registry/registry.yaml
++++ b/semantic-registry/registry.yaml
+@@ -275,7 +275,7 @@ operationalizations:
+     applicability: [anchor_available, attacking_teammates_available, defending_outfield_available]
+     inputs:
+       - name: anchors
+-        type: {container: FrameSignal, value: Enum, quantity: anchor, unit: none}
++        type: {container: FrameSignal, value: Enum, quantity: anchor, unit: none, entity_scope: possession}
+     outputs:
+       - name: episodes
+         type: {container: RelationEpisodeSet, value: RelationRef, quantity: progressive_corridor, unit: none, entity_scope: relation}
+diff --git a/src/tqe/semantic_registry/generate.py b/src/tqe/semantic_registry/generate.py
+index 343bb04..214d798 100644
+--- a/src/tqe/semantic_registry/generate.py
++++ b/src/tqe/semantic_registry/generate.py
+@@ -467,7 +467,12 @@ def _field_map(fields: list[Any]) -> dict[str, Any]:
+ 
+ 
+ def _signature_mismatch(
+-    semantic_field: Any, runtime_field: Any, *, allow_any_unit: bool = False
++    semantic_field: Any,
++    runtime_field: Any,
++    *,
++    allow_any_unit: bool = False,
++    strict_metadata: bool = False,
++    compare_required: bool = False,
+ ) -> list[str]:
+     semantic = _type_signature(semantic_field)
+     runtime = _type_signature(runtime_field)
+@@ -482,28 +487,19 @@ def _signature_mismatch(
+         and semantic["unit"] != runtime["unit"]
+     ):
+         mismatches.append(f"unit {semantic['unit']} != {runtime['unit']}")
+-    if (
+-        semantic.get("cardinality") not in {None, "any", runtime.get("cardinality")}
+-        and runtime.get("cardinality") is not None
+-    ):
+-        mismatches.append(
+-            f"cardinality {semantic.get('cardinality')} != {runtime.get('cardinality')}"
+-        )
+-    if (
+-        semantic.get("entity_scope") not in {None, "any", runtime.get("entity_scope")}
+-        and runtime.get("entity_scope") is not None
+-    ):
+-        mismatches.append(
+-            f"entity_scope {semantic.get('entity_scope')} != {runtime.get('entity_scope')}"
+-        )
+-    if (
+-        semantic.get("coordinate_frame") not in {None, "any", runtime.get("coordinate_frame")}
+-        and runtime.get("coordinate_frame") is not None
+-    ):
+-        mismatches.append(
+-            f"coordinate_frame {semantic.get('coordinate_frame')} != {runtime.get('coordinate_frame')}"
+-        )
+-    if runtime.get("required") is not None and semantic.get("required") != runtime.get("required"):
++
++    for key in ("cardinality", "entity_scope", "coordinate_frame"):
++        semantic_value = semantic.get(key)
++        runtime_value = runtime.get(key)
++        if semantic_value == "any":
++            continue
++        if strict_metadata:
++            if semantic_value != runtime_value:
++                mismatches.append(f"{key} {semantic_value} != {runtime_value}")
++        elif semantic_value not in {None, runtime_value} and runtime_value is not None:
++            mismatches.append(f"{key} {semantic_value} != {runtime_value}")
++
++    if compare_required and semantic.get("required") != runtime.get("required"):
+         mismatches.append(f"required {semantic.get('required')} != {runtime.get('required')}")
+     return mismatches
+ 
+@@ -691,6 +687,7 @@ def validate_runtime_signature_compatibility(
+     runtime_outputs = {item["name"]: item for item in runtime_entry.get("outputs", [])}
+     runtime_parameters = {item["name"]: item for item in runtime_entry.get("parameters", [])}
+     semantic_parameters = _field_map(binding.semantic_parameters)
++    exact_conformance = binding.conformance_status == ConformanceStatus.EXACT
+ 
+     findings.extend(
+         _validate_uncovered_names(
+@@ -772,7 +769,12 @@ def validate_runtime_signature_compatibility(
+                 )
+                 continue
+             mapped_runtime_inputs.add(str(runtime_port))
+-            mismatches = _signature_mismatch(semantic_field, runtime_input)
++            mismatches = _signature_mismatch(
++                semantic_field,
++                runtime_input,
++                strict_metadata=exact_conformance,
++                compare_required=True,
++            )
+             if mismatches:
+                 findings.append(
+                     _finding(
+@@ -792,7 +794,12 @@ def validate_runtime_signature_compatibility(
+                     )
+                 )
+                 continue
+-            mismatches = _signature_mismatch(semantic_field, context)
++            mismatches = _signature_mismatch(
++                semantic_field,
++                context,
++                strict_metadata=exact_conformance,
++                compare_required=True,
++            )
+             if mismatches:
+                 findings.append(
+                     _finding(
+@@ -803,14 +810,19 @@ def validate_runtime_signature_compatibility(
+                 )
+     for semantic_name, semantic_field in semantic_inputs.items():
+         if (
+-            getattr(semantic_field, "required", True)
++            (exact_conformance or getattr(semantic_field, "required", True))
+             and semantic_name not in binding.input_bindings
+             and semantic_name not in binding.uncovered_semantic_inputs
+         ):
++            reason = (
++                "is required by exact conformance"
++                if exact_conformance and not getattr(semantic_field, "required", True)
++                else "is required"
++            )
+             findings.append(
+                 _finding(
+                     "runtime_signature_mismatch",
+-                    f"{binding.id} semantic input {semantic_name} is required but is neither bound nor explicitly uncovered.",
++                    f"{binding.id} semantic input {semantic_name} {reason} but is neither bound nor explicitly uncovered.",
+                     f"{path}.input_bindings.{semantic_name}",
+                 )
+             )
+@@ -850,7 +862,12 @@ def validate_runtime_signature_compatibility(
+             )
+             continue
+         mapped_runtime_outputs.add(output_binding.runtime_port)
+-        mismatches = _signature_mismatch(semantic_field, runtime_output)
++        mismatches = _signature_mismatch(
++            semantic_field,
++            runtime_output,
++            strict_metadata=exact_conformance,
++            compare_required=False,
++        )
+         if mismatches:
+             findings.append(
+                 _finding(
+@@ -861,14 +878,19 @@ def validate_runtime_signature_compatibility(
+             )
+     for semantic_name, semantic_field in semantic_outputs.items():
+         if (
+-            getattr(semantic_field, "required", True)
++            (exact_conformance or getattr(semantic_field, "required", True))
+             and semantic_name not in binding.output_bindings
+             and semantic_name not in binding.uncovered_semantic_outputs
+         ):
++            reason = (
++                "is required by exact conformance"
++                if exact_conformance and not getattr(semantic_field, "required", True)
++                else "is required"
++            )
+             findings.append(
+                 _finding(
+                     "runtime_signature_mismatch",
+-                    f"{binding.id} semantic output {semantic_name} is required but is neither bound nor explicitly uncovered.",
++                    f"{binding.id} semantic output {semantic_name} {reason} but is neither bound nor explicitly uncovered.",
+                     f"{path}.output_bindings.{semantic_name}",
+                 )
+             )
+@@ -941,7 +963,7 @@ def validate_runtime_signature_compatibility(
+                     f"{path}.semantic_parameters.{semantic_name}",
+                 )
+             )
+-    if binding.conformance_status == ConformanceStatus.EXACT:
++    if exact_conformance:
+         if binding.known_deviations:
+             findings.append(
+                 _finding(
+diff --git a/src/tqe/semantic_registry/runtime_manifest.py b/src/tqe/semantic_registry/runtime_manifest.py
+index 00bd43f..f213014 100644
+--- a/src/tqe/semantic_registry/runtime_manifest.py
++++ b/src/tqe/semantic_registry/runtime_manifest.py
+@@ -6,6 +6,7 @@ of restating them in the semantic registry.
+ 
+ from __future__ import annotations
+ 
++import copy
+ from pathlib import Path
+ from typing import Any
+ 
+@@ -186,7 +187,7 @@ def generate_runtime_manifest() -> dict[str, Any]:
+         "schema_version": "1.0",
+         "manifest_id": "priori.runtime_manifest.scp0",
+         "generator_version": GENERATOR_VERSION,
+-        "runtime_contexts": sorted(RUNTIME_CONTEXTS, key=lambda item: item["name"]),
++        "runtime_contexts": sorted(copy.deepcopy(RUNTIME_CONTEXTS), key=lambda item: item["name"]),
+         "capabilities": sorted(capabilities, key=lambda item: item["runtime_id"]),
+         "operators": sorted(operators, key=lambda item: item["runtime_id"]),
+         "recipes": sorted(recipes, key=lambda item: (item["recipe_id"], item["recipe_version"])),
+diff --git a/tests/test_scp0_semantic_registry.py b/tests/test_scp0_semantic_registry.py
+index 5d634f1..226aec5 100644
+--- a/tests/test_scp0_semantic_registry.py
++++ b/tests/test_scp0_semantic_registry.py
+@@ -19,7 +19,7 @@ from tqe.semantic_registry.generate import (
+     validate_registry,
+ )
+ from tqe.semantic_registry.models import AuthoringExposure, MaturityLevel
+-from tqe.semantic_registry.models import RuntimeInputBinding
++from tqe.semantic_registry.models import RuntimeInputBinding, TypeRef, TypedField
+ 
+ 
+ def finding_codes(findings) -> set[str]:
+@@ -576,6 +576,77 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
+         self.assertIn("entity_scope team != player", messages)
+         self.assertIn("required True != False", messages)
+ 
++    def test_exact_missing_runtime_metadata_fails(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        signed_shift = runtime_capability(
++            runtime_manifest, kind="primitive", name="signed_lateral_shift"
++        )
++        del signed_shift["outputs"][0]["cardinality"]
++        del signed_shift["inputs"][2]["entity_scope"]
++        lock = make_registry_lock(registry, runtime_manifest)
++
++        findings = validate_registry(registry, runtime_manifest, lock)
++        messages = "\n".join(finding.message for finding in findings)
++
++        self.assertIn("runtime_signature_mismatch", finding_codes(findings))
++        self.assertIn("cardinality single != None", messages)
++        self.assertIn("entity_scope team != None", messages)
++
++    def test_exact_missing_runtime_context_metadata_fails(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        context = next(
++            item
++            for item in runtime_manifest["runtime_contexts"]
++            if item["name"] == "canonical_match_state.ball_position"
++        )
++        del context["coordinate_frame"]
++        lock = make_registry_lock(registry, runtime_manifest)
++
++        findings = validate_registry(registry, runtime_manifest, lock)
++        messages = "\n".join(finding.message for finding in findings)
++
++        self.assertIn("runtime_context_signature_mismatch", finding_codes(findings))
++        self.assertIn("coordinate_frame pitch_absolute != None", messages)
++
++    def test_exact_unbound_optional_semantic_ports_fail(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        op = next(
++            item
++            for item in registry.operationalizations
++            if item.id == "op.ball_lateral_fraction.v1"
++        )
++        op.inputs.append(
++            TypedField(
++                name="optional_extra_input",
++                type=TypeRef(container="FrameSignal", value="Scalar", unit="none"),
++                required=False,
++            )
++        )
++        op.outputs.append(
++            TypedField(
++                name="optional_extra_output",
++                type=TypeRef(container="FrameSignal", value="Scalar", unit="none"),
++                required=False,
++            )
++        )
++        lock = make_registry_lock(registry, runtime_manifest)
++
++        findings = validate_registry(registry, runtime_manifest, lock)
++        messages = "\n".join(finding.message for finding in findings)
++
++        self.assertIn("runtime_signature_mismatch", finding_codes(findings))
++        self.assertIn(
++            "semantic input optional_extra_input is required by exact conformance",
++            messages,
++        )
++        self.assertIn(
++            "semantic output optional_extra_output is required by exact conformance",
++            messages,
++        )
++
+     def test_exact_parameter_bounds_default_and_allowed_value_drift_fail(self) -> None:
+         registry = load_registry()
+         runtime_manifest = generate_runtime_manifest()

@@ -1,0 +1,430 @@
+{
+  "artifacts": {
+    "plan.ai_corridor_destination.2026_06_23": {
+      "artifact_id": "plan.ai_corridor_destination.2026_06_23",
+      "capability_dependencies": [
+        {
+          "kind": "primitive",
+          "name": "possession_segment",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "relation",
+          "name": "geometric_progressive_corridor_from_anchor_set",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "relation_destination_entry",
+          "version": "0.1.0"
+        }
+      ],
+      "dependency_refs": [
+        "possession_segment",
+        "geometric_progressive_corridor_from_anchor_set",
+        "relation_destination_entry",
+        "exists",
+        "eq"
+      ],
+      "draft_status": "experimental",
+      "exists": true,
+      "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+      "normalized_selected_document_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+      "operator_dependencies": [
+        {
+          "name": "exists",
+          "version": "1.0.0"
+        },
+        {
+          "name": "eq",
+          "version": "1.0.0"
+        }
+      ],
+      "origin": "AI_AUTHORED",
+      "parameter_defaults": {
+        "corridor_close_after_frames": 2,
+        "corridor_max_window_seconds": 4.0,
+        "corridor_maximum_segment_length_m": 45.0,
+        "corridor_minimum_clearance_m": 4.0,
+        "corridor_minimum_duration_seconds": 0.8,
+        "corridor_minimum_progression_m": 5.0,
+        "corridor_minimum_segment_length_m": 6.0,
+        "corridor_open_after_frames": 2,
+        "destination_entry_horizon_seconds": 5.0
+      },
+      "path": "delivery/n1d/n1f-origin-bundle.json",
+      "plan_id": "possession_corridor_destination_entry_plan",
+      "plan_version": "0.1.0",
+      "promotion_status": "VALIDATED_COMPOSITION",
+      "recipe_id": "possession_corridor_destination_entry_v1",
+      "recipe_version": "0.1.0",
+      "referenced_parameters": [
+        "corridor_close_after_frames",
+        "corridor_max_window_seconds",
+        "corridor_maximum_segment_length_m",
+        "corridor_minimum_clearance_m",
+        "corridor_minimum_duration_seconds",
+        "corridor_minimum_progression_m",
+        "corridor_minimum_segment_length_m",
+        "corridor_open_after_frames",
+        "destination_entry_horizon_seconds"
+      ],
+      "source_artifact_sha256": "707b5cd6d2d8f981401a9ec8bd31af4c91435118a94883cb68b621137365fba4",
+      "source_kind": "n1f_origin_bundle.host_augmented_document",
+      "valid_typed_plan": true
+    },
+    "plan.ball_side_block_shift.v1": {
+      "artifact_id": "plan.ball_side_block_shift.v1",
+      "capability_dependencies": [
+        {
+          "kind": "primitive",
+          "name": "possession_segment",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "ball_lateral_fraction",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "defensive_outfield_centroid",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "signed_lateral_shift",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "outcome_classification",
+          "version": "0.1.0"
+        }
+      ],
+      "dependency_refs": [
+        "possession_segment",
+        "ball_lateral_fraction",
+        "defensive_outfield_centroid",
+        "signed_lateral_shift",
+        "outcome_classification",
+        "gt",
+        "persists_for",
+        "gte",
+        "neq"
+      ],
+      "draft_status": "approved",
+      "exists": true,
+      "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+      "normalized_selected_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+      "operator_dependencies": [
+        {
+          "name": "gt",
+          "version": "1.0.0"
+        },
+        {
+          "name": "persists_for",
+          "version": "1.0.0"
+        },
+        {
+          "name": "gte",
+          "version": "1.0.0"
+        },
+        {
+          "name": "neq",
+          "version": "1.0.0"
+        }
+      ],
+      "origin": "REVIEWED_RECIPE",
+      "parameter_defaults": {
+        "accepted_per_match_limit": 5,
+        "accepted_result_limit": 16,
+        "analysis_rate_hz": 5,
+        "baseline_window_seconds": 0.8,
+        "dedupe_window_seconds": 8.0,
+        "maximum_analysis_gap_ms": 250,
+        "minimum_outfield_players_per_team": 9,
+        "minimum_possession_seconds": 8.0,
+        "minimum_shift_metres": 5.0,
+        "minimum_shift_persistence_seconds": 0.6,
+        "minimum_wide_dwell_seconds": 1.2,
+        "near_miss_limit": 8,
+        "opposite_side_fraction": 0.35,
+        "outcome_horizon_seconds": 6.0,
+        "prior_central_fraction": 0.45,
+        "result_id_seed_hash": "af42853e6a3c8449e023dd98751ababbc7d34640f8751fbffa1c2bbbd0eab523",
+        "retained_after_switch_seconds": 1.0,
+        "shift_search_window_seconds": 4.0,
+        "wide_entry_fraction": 0.6
+      },
+      "path": "config/query-plans/ball_side_block_shift.ir.v1.json",
+      "plan_id": "ball_side_block_shift_ir_v1",
+      "plan_version": "1.0.0",
+      "promotion_status": "REVIEWED_RECIPE",
+      "recipe_id": "ball_side_block_shift_v1",
+      "recipe_version": "1.0.0",
+      "referenced_parameters": [
+        "minimum_shift_metres",
+        "minimum_shift_persistence_seconds",
+        "minimum_wide_dwell_seconds",
+        "outcome_horizon_seconds",
+        "wide_entry_fraction"
+      ],
+      "source_artifact_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+      "source_kind": "typed_plan",
+      "valid_typed_plan": true
+    },
+    "plan.high_bypass_completed_pass.v1": {
+      "artifact_id": "plan.high_bypass_completed_pass.v1",
+      "capability_dependencies": [
+        {
+          "kind": "primitive",
+          "name": "controlled_pass_episode",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "relation",
+          "name": "opponents_bypassed_by_action",
+          "version": "0.1.0"
+        }
+      ],
+      "dependency_refs": [
+        "controlled_pass_episode",
+        "opponents_bypassed_by_action",
+        "gte"
+      ],
+      "draft_status": "experimental",
+      "exists": true,
+      "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+      "normalized_selected_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+      "operator_dependencies": [
+        {
+          "name": "gte",
+          "version": "1.0.0"
+        }
+      ],
+      "origin": "MANUAL_PRESET",
+      "parameter_defaults": {
+        "bypassed_buffer_m": 1.0,
+        "goal_side_buffer_m": 1.0,
+        "minimum_bypassed_opponents": 5,
+        "minimum_forward_progression_m": 8.0
+      },
+      "path": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
+      "plan_id": "m2a_high_bypass_completed_pass",
+      "plan_version": "0.1.0",
+      "promotion_status": "EXPERIMENTAL_PRESET",
+      "recipe_id": "high_bypass_completed_pass_v1",
+      "recipe_version": "0.1.0",
+      "referenced_parameters": [
+        "bypassed_buffer_m",
+        "goal_side_buffer_m",
+        "minimum_bypassed_opponents",
+        "minimum_forward_progression_m"
+      ],
+      "source_artifact_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
+      "source_kind": "typed_plan",
+      "valid_typed_plan": true
+    },
+    "plan.opposite_corridor_after_shift.v1": {
+      "artifact_id": "plan.opposite_corridor_after_shift.v1",
+      "capability_dependencies": [
+        {
+          "kind": "primitive",
+          "name": "possession_segment",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "ball_lateral_fraction",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "defensive_outfield_centroid",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "signed_lateral_shift",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "outcome_classification",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "relation",
+          "name": "geometric_progressive_corridor",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "primitive",
+          "name": "relation_destination_entry_classification",
+          "version": "0.1.0"
+        }
+      ],
+      "dependency_refs": [
+        "possession_segment",
+        "ball_lateral_fraction",
+        "defensive_outfield_centroid",
+        "signed_lateral_shift",
+        "outcome_classification",
+        "geometric_progressive_corridor",
+        "relation_destination_entry_classification",
+        "gt",
+        "persists_for",
+        "gte",
+        "neq",
+        "exists"
+      ],
+      "draft_status": "experimental",
+      "exists": true,
+      "normalized_plan_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
+      "normalized_selected_document_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
+      "operator_dependencies": [
+        {
+          "name": "gt",
+          "version": "1.0.0"
+        },
+        {
+          "name": "persists_for",
+          "version": "1.0.0"
+        },
+        {
+          "name": "gte",
+          "version": "1.0.0"
+        },
+        {
+          "name": "neq",
+          "version": "1.0.0"
+        },
+        {
+          "name": "exists",
+          "version": "1.0.0"
+        }
+      ],
+      "origin": "MANUAL_PRESET",
+      "parameter_defaults": {
+        "analysis_rate_hz": 5,
+        "baseline_window_seconds": 0.8,
+        "corridor_close_after_frames": 2,
+        "corridor_max_window_seconds": 4.0,
+        "corridor_maximum_segment_length_m": 45.0,
+        "corridor_minimum_clearance_m": 5.0,
+        "corridor_minimum_duration_seconds": 0.8,
+        "corridor_minimum_progression_m": 8.0,
+        "corridor_minimum_segment_length_m": 8.0,
+        "corridor_open_after_frames": 2,
+        "dedupe_window_seconds": 8.0,
+        "destination_entry_horizon_seconds": 6.0,
+        "maximum_analysis_gap_ms": 250,
+        "minimum_outfield_players_per_team": 9,
+        "minimum_possession_seconds": 8.0,
+        "minimum_shift_metres": 5.0,
+        "minimum_shift_persistence_seconds": 0.6,
+        "minimum_wide_dwell_seconds": 1.2,
+        "opposite_side_fraction": 0.35,
+        "outcome_horizon_seconds": 6.0,
+        "prior_central_fraction": 0.45,
+        "result_id_seed_hash": "opposite_corridor_after_shift_experimental_v1",
+        "retained_after_switch_seconds": 1.0,
+        "shift_search_window_seconds": 4.0,
+        "wide_entry_fraction": 0.6
+      },
+      "path": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json",
+      "plan_id": "opposite_corridor_after_shift_experimental_v1",
+      "plan_version": "0.1.0",
+      "promotion_status": "EXPERIMENTAL_PRESET",
+      "recipe_id": "opposite_corridor_after_shift_v1",
+      "recipe_version": "0.1.0",
+      "referenced_parameters": [
+        "corridor_close_after_frames",
+        "corridor_max_window_seconds",
+        "corridor_maximum_segment_length_m",
+        "corridor_minimum_clearance_m",
+        "corridor_minimum_duration_seconds",
+        "corridor_minimum_progression_m",
+        "corridor_minimum_segment_length_m",
+        "corridor_open_after_frames",
+        "destination_entry_horizon_seconds",
+        "minimum_shift_metres",
+        "minimum_shift_persistence_seconds",
+        "minimum_wide_dwell_seconds",
+        "outcome_horizon_seconds",
+        "result_id_seed_hash",
+        "wide_entry_fraction"
+      ],
+      "source_artifact_sha256": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
+      "source_kind": "typed_plan",
+      "valid_typed_plan": true
+    },
+    "plan.possession_corridor_availability.v1": {
+      "artifact_id": "plan.possession_corridor_availability.v1",
+      "capability_dependencies": [
+        {
+          "kind": "primitive",
+          "name": "possession_segment",
+          "version": "0.1.0"
+        },
+        {
+          "kind": "relation",
+          "name": "geometric_progressive_corridor_from_anchor_set",
+          "version": "0.1.0"
+        }
+      ],
+      "dependency_refs": [
+        "possession_segment",
+        "geometric_progressive_corridor_from_anchor_set",
+        "exists"
+      ],
+      "draft_status": "experimental",
+      "exists": true,
+      "normalized_plan_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+      "normalized_selected_document_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+      "operator_dependencies": [
+        {
+          "name": "exists",
+          "version": "1.0.0"
+        }
+      ],
+      "origin": "MANUAL_PRESET",
+      "parameter_defaults": {
+        "analysis_rate_hz": 5,
+        "corridor_close_after_frames": 2,
+        "corridor_max_window_seconds": 5.0,
+        "corridor_maximum_segment_length_m": 45.0,
+        "corridor_minimum_clearance_m": 4.0,
+        "corridor_minimum_duration_seconds": 0.4,
+        "corridor_minimum_progression_m": 5.0,
+        "corridor_minimum_segment_length_m": 6.0,
+        "corridor_open_after_frames": 2,
+        "maximum_analysis_gap_ms": 250,
+        "minimum_outfield_players_per_team": 9,
+        "minimum_possession_seconds": 5.0
+      },
+      "path": "config/query-plans/possession_corridor_availability.experimental.v1.json",
+      "plan_id": "possession_corridor_availability_experimental_v1",
+      "plan_version": "0.1.0",
+      "promotion_status": "EXPERIMENTAL_PRESET",
+      "recipe_id": "possession_corridor_availability_v1",
+      "recipe_version": "0.1.0",
+      "referenced_parameters": [
+        "corridor_close_after_frames",
+        "corridor_max_window_seconds",
+        "corridor_maximum_segment_length_m",
+        "corridor_minimum_clearance_m",
+        "corridor_minimum_duration_seconds",
+        "corridor_minimum_progression_m",
+        "corridor_minimum_segment_length_m",
+        "corridor_open_after_frames"
+      ],
+      "source_artifact_sha256": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
+      "source_kind": "typed_plan",
+      "valid_typed_plan": true
+    }
+  },
+  "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+  "schema_version": "1.0"
+}

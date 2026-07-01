@@ -1,0 +1,4 @@
+ artifacts/n1c/n1c-canonical-freeze-manifest.json |  14 +--
+ artifacts/n1c/n1c-verification-report.json       | 130 +++++++++++++----------
+ delivery/n1d/N1I_REPORT.md                       |  78 +-------------
+ 3 files changed, 83 insertions(+), 139 deletions(-)

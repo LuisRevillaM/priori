@@ -1,0 +1,325 @@
+{
+  "artifacts": {
+    "capability_context": "generated/capability-context.json"
+  },
+  "checks": [
+    {
+      "details": {
+        "tools": [
+          "list_capabilities",
+          "describe_capability",
+          "submit_query_plan",
+          "validate_query_plan",
+          "execute_query_plan",
+          "inspect_result",
+          "inspect_non_match",
+          "retrieve_replay_window"
+        ]
+      },
+      "id": "s0.hermes_tool_surface.exact",
+      "message": "Hermes sees only the S2 tool surface.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "tools": [
+          "list_capabilities",
+          "describe_capability",
+          "submit_query_plan",
+          "validate_query_plan",
+          "execute_query_plan",
+          "inspect_result",
+          "inspect_non_match",
+          "retrieve_replay_window",
+          "compare_query_versions",
+          "record_feedback",
+          "save_experimental_recipe"
+        ]
+      },
+      "id": "s0.manual_tool_surface.full",
+      "message": "Host/manual sees the full staged tool surface.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "placeholder_schemas": []
+      },
+      "id": "s0.tool_schemas.real",
+      "message": "Every tool advertises real generated request/response JSON schemas.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "forbidden_surfaces": [
+          "arbitrary_python",
+          "sql",
+          "filesystem_editing",
+          "primitive_mutation",
+          "raw_match_dump",
+          "result_row_mutation",
+          "threshold_auto_tuning"
+        ]
+      },
+      "id": "s0.forbidden_surfaces.absent",
+      "message": "Forbidden code, data, and mutation surfaces are explicitly unavailable.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "path": "generated/capability-context.json"
+      },
+      "id": "s0.capability_context.schema_valid",
+      "message": "Generated capability context is schema-valid.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "safe_operator_source_rules": {
+          "count_at_least": {
+            "allowed_output_name": "anchor_evaluations"
+          },
+          "exists": {
+            "allowed_output_name": "anchor_evaluations"
+          }
+        }
+      },
+      "id": "s0.anchor_relative_operator_rules.visible",
+      "message": "exists/count_at_least are visible only as anchor_evaluations operators.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "ceilings": {
+          "max_execution_cost": 100000,
+          "max_nesting_depth": 12,
+          "max_plan_nodes": 40,
+          "max_relations_per_anchor": 1000,
+          "max_returned_moments": 500,
+          "max_temporal_horizon_seconds": 15.0
+        }
+      },
+      "id": "s0.host_owned_complexity_ceilings.visible",
+      "message": "Capability context exposes trusted host-owned complexity ceilings.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bound_plan_hash": "4a5a1dabc168ffcc511923700ddb28af67393fb13c7caccd7b92689289d8b4ce",
+        "bound_plan_id": "bound_4a5a1dabc168ffcc",
+        "draft_plan_id": "draft_afbb42ec0e5f7de3",
+        "execution_profile": "legacy_m1_parity",
+        "issues": [],
+        "ok": true,
+        "plan_id": "ball_side_block_shift_ir_v1",
+        "plan_status": "approved",
+        "recipe_id": "ball_side_block_shift_v1"
+      },
+      "id": "s0.approved_plan.validates",
+      "message": "Manual plan entry validates through an opaque draft_plan_id, not a filesystem path.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bound_plan_hash": null,
+        "bound_plan_id": null,
+        "draft_plan_id": "draft_bf41d6bb9ffaca1d",
+        "execution_profile": null,
+        "issues": [
+          {
+            "code": "CapabilityGap",
+            "message": "exists is agent-visible only for anchor_evaluations; got possession.episodes",
+            "path": "draft_bf41d6bb9ffaca1d"
+          }
+        ],
+        "ok": false,
+        "plan_id": null,
+        "plan_status": null,
+        "recipe_id": null
+      },
+      "id": "s0.unsafe_raw_episode_exists_rejected",
+      "message": "Raw boolean EpisodeSet exists is rejected by the agent-visible boundary.",
+      "status": "pass"
+    },
+    {
+      "details": {},
+      "id": "s0.unsupported_capability_gap",
+      "message": "Unsupported concepts fail explicitly as capability gaps.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "ok": true,
+        "response": {
+          "bound_plan_hash": "4a5a1dabc168ffcc511923700ddb28af67393fb13c7caccd7b92689289d8b4ce",
+          "bound_plan_id": "bound_4a5a1dabc168ffcc",
+          "draft_plan_id": "draft_afbb42ec0e5f7de3",
+          "execution_profile": "legacy_m1_parity",
+          "issues": [],
+          "ok": true,
+          "plan_id": "ball_side_block_shift_ir_v1",
+          "plan_status": "approved",
+          "recipe_id": "ball_side_block_shift_v1"
+        },
+        "tool_name": "validate_query_plan"
+      },
+      "id": "s0.serialized_dispatcher_validates",
+      "message": "Serialized dispatcher reaches the same validation boundary Hermes will use.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bound_plan_id": "bound_4a5a1dabc168ffcc",
+        "draft_plan_id": "draft_afbb42ec0e5f7de3",
+        "execution_id": "exec_a814849e06f7f6fe",
+        "replay_window_id": "replay_3e8fc424424ba032"
+      },
+      "id": "s0.content_addressed_retries_idempotent",
+      "message": "Repeated content-addressed tool calls return existing resources instead of false failures.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "ok": false,
+        "response": {
+          "details": {
+            "exception_type": "CapabilityGap"
+          },
+          "error_code": "CAPABILITY_GAP",
+          "message": "record_feedback is not available to Hermes S2",
+          "ok": false
+        },
+        "tool_name": "record_feedback"
+      },
+      "id": "s0.hermes_manual_tool_denied",
+      "message": "Hermes cannot call manual-only tools.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "ok": false,
+        "response": {
+          "details": {
+            "exception_type": "CapabilityGap"
+          },
+          "error_code": "CAPABILITY_GAP",
+          "message": "Hermes-authored query documents must be EXPERIMENTAL",
+          "ok": false
+        },
+        "tool_name": "submit_query_plan"
+      },
+      "id": "s0.hermes_cannot_submit_approved",
+      "message": "Hermes-authored documents cannot claim APPROVED status.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bound_plan_hash": null,
+        "bound_plan_id": null,
+        "draft_plan_id": "draft_../../badbad",
+        "execution_profile": null,
+        "issues": [
+          {
+            "code": "CapabilityGap",
+            "message": "Invalid draft-plans handle: draft_../../badbad",
+            "path": "draft_../../badbad"
+          }
+        ],
+        "ok": false,
+        "plan_id": null,
+        "plan_status": null,
+        "recipe_id": null
+      },
+      "id": "s0.handle_traversal_rejected",
+      "message": "Invalid handle patterns and traversal are rejected.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bound_plan_hash": null,
+        "bound_plan_id": null,
+        "draft_plan_id": "draft_38c31dcca1a33b89",
+        "execution_profile": null,
+        "issues": [
+          {
+            "code": "CapabilityGap",
+            "message": "outcome_classification is not agent-authorable",
+            "path": "draft_38c31dcca1a33b89"
+          }
+        ],
+        "ok": false,
+        "plan_id": null,
+        "plan_status": null,
+        "recipe_id": null
+      },
+      "id": "s0.non_authorable_capability_rejected",
+      "message": "Non-authorable catalog capabilities are rejected.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "matrix": [
+          {
+            "failure_code": "REQUEST_SCHEMA_INVALID",
+            "failure_ok": true,
+            "success_ok": true,
+            "tool": "list_capabilities"
+          },
+          {
+            "failure_code": "CAPABILITY_GAP",
+            "failure_ok": true,
+            "success_ok": true,
+            "tool": "describe_capability"
+          },
+          {
+            "failure_code": "REQUEST_SCHEMA_INVALID",
+            "failure_ok": true,
+            "success_ok": true,
+            "tool": "submit_query_plan"
+          },
+          {
+            "failure_code": null,
+            "failure_ok": true,
+            "success_ok": true,
+            "tool": "validate_query_plan"
+          },
+          {
+            "failure_code": "UNKNOWN_HANDLE",
+            "failure_ok": true,
+            "success_ok": true,
+            "tool": "execute_query_plan"
+          },
+          {
+            "failure_code": "CAPABILITY_GAP",
+            "failure_ok": true,
+            "success_ok": true,
+            "tool": "inspect_result"
+          },
+          {
+            "failure_code": "REQUEST_SCHEMA_INVALID",
+            "failure_ok": true,
+            "success_ok": true,
+            "tool": "inspect_non_match"
+          },
+          {
+            "failure_code": "REQUEST_SCHEMA_INVALID",
+            "failure_ok": true,
+            "success_ok": true,
+            "tool": "retrieve_replay_window"
+          }
+        ]
+      },
+      "id": "s0.model_visible_schema_conformance_all_s2_tools",
+      "message": "Model-visible dispatcher validates successful and failing responses for every S2-visible tool.",
+      "status": "pass"
+    }
+  ],
+  "gate": "S0_capability_tool_boundary",
+  "generated_at": "2026-06-21T17:24:57+00:00",
+  "milestone": "M1.2",
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "pass": 17
+  }
+}

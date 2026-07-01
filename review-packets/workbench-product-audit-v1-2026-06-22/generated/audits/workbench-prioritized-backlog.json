@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "audit_id": "workbench_product_audit_v1",
+  "items": [
+    {
+      "priority": "P0",
+      "title": "Add truthful provenance labels for every interpreted plan",
+      "user_problem": "A user cannot reliably tell whether a plan came from a reviewed recipe, manual preset, Hermes selection, Hermes authorship, deterministic repair, or a capability gap.",
+      "evidence": "Current UI derives labels from raw source strings such as manual_preset, manual_host_interpreter, and hermes_frontier_agent; it does not expose the required source ontology.",
+      "proposed_change": "Add source enum and trace fields for REVIEWED_RECIPE, MANUAL_PRESET, HERMES_RECIPE_SELECTION, HERMES_NOVEL_COMPOSITION, DETERMINISTIC_REPAIR, and CAPABILITY_GAP. Show a concise label in the interpretation panel and detailed lineage in Developer details.",
+      "affected_state_screen": "Interpreted plan; Developer details; execution provenance",
+      "acceptance_test": "A preset never displays as AI-authored; Hermes recipe selection never displays as novel composition; deterministic fallback displays Safety repair applied; unsupported requests display CAPABILITY_GAP and no plan_document.",
+      "expected_impact": "Prevents the core trust failure of making a fallback or preset look like model authorship.",
+      "implementation_risk": "Medium",
+      "dependencies": ["InterpretResponse source enum", "Hermes trace mapping"]
+    },
+    {
+      "priority": "P0",
+      "title": "Make Hermes model interpretation fail closed and stable",
+      "user_problem": "The UI says Hermes frontier interpretation is ready, but model-mode interpretation currently returns HTTP 500.",
+      "evidence": "Live /api/interpret mode=model returned HTTP 500 for supported, ambiguous, unsupported, and novel candidate prompts.",
+      "proposed_change": "Catch Hermes invocation exceptions and return MODEL_UNAVAILABLE with a trace id; fix the underlying deployment invocation so one supported Hermes journey succeeds.",
+      "affected_state_screen": "Ask Hermes; interpretation loading; error state",
+      "acceptance_test": "Supported recipe, corridor draft, ambiguous support, and unsupported optimality prompts return typed InterpretResponse states with no 500s.",
+      "expected_impact": "Restores trust in Hermes as first-class citizen.",
+      "implementation_risk": "Medium",
+      "dependencies": ["Render env/Hermes invocation logs", "Hermes tool-surface probe"]
+    },
+    {
+      "priority": "P0",
+      "title": "Prove one true novel composition or remove the claim from the preview",
+      "user_problem": "The product thesis says Hermes authors new tactical definitions, but current product evidence only proves recipe selection and corridor-template drafting.",
+      "evidence": "Compiler supports select_recipe/draft_corridor/clarify/capability_gap; live model mode fails; no UI New experimental composition label.",
+      "proposed_change": "Implement a live proof where Hermes composes at least two capabilities into a non-template plan, binds it, executes it, and labels it New experimental composition.",
+      "affected_state_screen": "Ask Hermes; interpreted plan; result rail; replay",
+      "acceptance_test": "Natural-language hero request makes Hermes create a schema-valid plan structurally different from both registered recipes/templates, combines at least two agent-composable capabilities, uses temporal or relational logic, requires no code/prompt change, produces a new plan hash, starts with cache_status=MISS, and executes honestly over real data.",
+      "expected_impact": "Proves the main product thesis instead of a recipe workbench.",
+      "implementation_risk": "High",
+      "dependencies": ["Hermes stability", "safe plan-authoring contract", "hero composition choice"]
+    },
+    {
+      "priority": "P0",
+      "title": "Block unsupported concepts before preset fallback",
+      "user_problem": "A user can ask for scanning/body-angle intent and receive a corridor plan if a preset is selected.",
+      "evidence": "Manual query 'Infer what the midfielder meant to do from his scanning and body angle' returned PLAN_INTERPRETED for corridor preset.",
+      "proposed_change": "Normalize unsupported gap codes before any preset selection; include scanning, body angle, body shape, intent, optimality, pass probability, communication, and video.",
+      "affected_state_screen": "Capability gap; Ask/Browse interpretation",
+      "acceptance_test": "Unsupported prompt variants always return CAPABILITY_GAP and preserve original request; no plan_document is returned.",
+      "expected_impact": "Prevents misleading measurement claims.",
+      "implementation_risk": "Low",
+      "dependencies": ["Capability-gap code list"]
+    },
+    {
+      "priority": "P0",
+      "title": "Clear stale artifacts on mode, query, and preset changes",
+      "user_problem": "Prior plans/results can remain visible after the user changes the mode or wording that produced them.",
+      "evidence": "Source clears dependent state for scope changes but not for mode/query edits; preset can coexist with unrelated query text.",
+      "proposed_change": "Mark interpretation stale on query edit and clear validation/confirmation/execution/replay on mode or preset change.",
+      "affected_state_screen": "Query panel; interpreted plan; result rail; replay",
+      "acceptance_test": "After post-execution query edit, mode switch, or preset switch, validate/confirm/execute are disabled and old results/replay are hidden until reinterpreted.",
+      "expected_impact": "Eliminates contradictory states and stale evidence risk.",
+      "implementation_risk": "Low",
+      "dependencies": []
+    },
+    {
+      "priority": "P1",
+      "title": "Add corridor overlay legend and temporal validity",
+      "user_problem": "The replay line looks authoritative but does not say when the corridor exists or what it proves.",
+      "evidence": "PitchCanvas draws ball-to-target whenever both are in frame using target_player_id; open/close frames and limiting defender are not rendered.",
+      "proposed_change": "Project open/close frame evidence, show corridor only during valid interval, add legend and measurements for duration/clearance.",
+      "affected_state_screen": "Coordinate Replay; Evidence",
+      "acceptance_test": "Scrubbing outside relation interval hides/fades corridor; legend includes required non-optimality claim.",
+      "expected_impact": "Makes tactical visualization inspectable and safer.",
+      "implementation_risk": "Medium",
+      "dependencies": ["Evidence projection fields for relation open/close"]
+    },
+    {
+      "priority": "P1",
+      "title": "Simplify default IA into four stages",
+      "user_problem": "The first-time user has to parse host confirmation, validation, raw IDs, evidence aliases, and predicate JSON.",
+      "evidence": "UI shows Host confirm, Submit and validate, browser/API badges, known-timestamp form, raw result/replay ids, predicate ids.",
+      "proposed_change": "Default layout becomes Ask or choose, Understand, Approve and run, Explore moments; move technical material to Developer details.",
+      "affected_state_screen": "Global workbench",
+      "acceptance_test": "Default view hides known timestamp, API badges, raw IDs, raw predicate JSON, and raw typed plan while Developer details preserve them.",
+      "expected_impact": "Makes the link understandable without coaching.",
+      "implementation_risk": "Medium",
+      "dependencies": ["Stable Developer details drawer"]
+    },
+    {
+      "priority": "P1",
+      "title": "Improve cold execution waiting state",
+      "user_problem": "Cold execution can take minutes without explaining what is happening.",
+      "evidence": "Observed first-run cloud latency: approved 62.631s; corridor 170.909s.",
+      "proposed_change": "Show selected matches, elapsed time, deterministic runtime phase, cache promise, and cancel.",
+      "affected_state_screen": "Run State; Execute",
+      "acceptance_test": "Cold MISS displays elapsed time and selected match count; cancel stops UI wait and preserves validated plan.",
+      "expected_impact": "Reduces abandonment during the slowest path.",
+      "implementation_risk": "Medium",
+      "dependencies": ["Cancelable frontend request or cancel-safe UI state"]
+    },
+    {
+      "priority": "P1",
+      "title": "Replace result-card implementation labels with tactical summaries",
+      "user_problem": "Result rail labels such as RETAINED_NO_SWITCH and PROGRESSIVE_CORRIDOR_AVAILABLE are not self-explanatory.",
+      "evidence": "Result rail renders result.classification.replaceAll('_',' ') as primary copy.",
+      "proposed_change": "Map classifications to concise tactical headlines and show two principal measurements.",
+      "affected_state_screen": "Result Rail",
+      "acceptance_test": "Formal classifications appear only in Developer details; visible cards show match, time, tactical event, and measurements.",
+      "expected_impact": "Makes moments scannable for a football expert.",
+      "implementation_risk": "Low",
+      "dependencies": ["Measurement projection for each recipe family"]
+    },
+    {
+      "priority": "P2",
+      "title": "Guided clarification inputs",
+      "user_problem": "Clarification questions require manual rewriting in the query box.",
+      "evidence": "Clarification state lists questions but no answer controls.",
+      "proposed_change": "Add structured answer chips/fields for support definition, time window, and distance threshold.",
+      "affected_state_screen": "Clarification",
+      "acceptance_test": "Answering clarification submits clarifications array and produces a fresh interpretation.",
+      "expected_impact": "Makes ambiguity resolution feel like a product loop.",
+      "implementation_risk": "Medium",
+      "dependencies": ["Interpret API clarifications field in browser"]
+    },
+    {
+      "priority": "P2",
+      "title": "Add match grouping and filters in result rail",
+      "user_problem": "Large result sets are flat and hard to compare across matches.",
+      "evidence": "Approved run returns 180 total; UI shows returned result list without grouping.",
+      "proposed_change": "Group by match/period and add filters for classification and result source.",
+      "affected_state_screen": "Result Rail",
+      "acceptance_test": "User can filter to one match/classification and preserve replay selection coherently.",
+      "expected_impact": "Improves exploration after first replay.",
+      "implementation_risk": "Low",
+      "dependencies": []
+    },
+    {
+      "priority": "P3",
+      "title": "Recipe revision and feedback loop",
+      "user_problem": "The intended feedback/revision loop is not yet in the deployed Workbench.",
+      "evidence": "Knowledge pack includes feedback/version tools but browser routes for record_feedback are 404 in Workbench tests.",
+      "proposed_change": "Add labels, semantic diffs, result deltas, and immutable saved recipes after the preview is stable.",
+      "affected_state_screen": "Feedback; Recipe history",
+      "acceptance_test": "User labels a result, Hermes proposes revision, UI shows added/removed/retained moments, user saves version.",
+      "expected_impact": "Moves from demo to analyst workflow.",
+      "implementation_risk": "High",
+      "dependencies": ["S3 revision milestone"]
+    }
+  ]
+}

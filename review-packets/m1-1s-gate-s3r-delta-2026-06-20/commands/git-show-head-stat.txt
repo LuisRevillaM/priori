@@ -1,0 +1,30 @@
+commit 9febb97f681fd862b156a62316a90d6cfe75cb0c
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Sat Jun 20 09:55:07 2026 -0500
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Sat Jun 20 09:55:07 2026 -0500
+
+    Implement M1.1S Gate S3R anchor contract
+
+ Makefile                                           |   5 +-
+ .../query-plans/ball_side_block_shift.ir.v1.json   |  10 +-
+ ...osite_corridor_after_shift.experimental.v1.json |  10 +-
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md        |  17 +
+ .../m1.1/reviews/gate-s3r-controller-review.md     |  50 +++
+ delivery/m1.1/status.yaml                          |   8 +-
+ ...6-20-m1-1s-gate-s3r-explicit-anchor-contract.md |  16 +
+ .../2026-06-20-m1-1s-gate-s3-external-review.md    |  34 ++
+ generated/capability-catalog.json                  |   2 +-
+ generated/tactical-query-plan.schema.json          |   2 +-
+ generated/tactical-query-plan.types.ts             |   6 +-
+ src/tqe/runtime/binder.py                          |  25 ++
+ src/tqe/runtime/catalog.py                         |  38 +-
+ src/tqe/runtime/executor.py                        | 470 ++++++++++++++-------
+ src/tqe/runtime/ir.py                              |   5 +
+ src/tqe/runtime/values.py                          |  26 +-
+ src/tqe/verification/m1_1_gate_r5.py               |   4 +
+ src/tqe/verification/m1_1_gate_s2.py               |   2 +-
+ src/tqe/verification/m1_1_gate_s3.py               |   2 +-
+ src/tqe/verification/m1_1_gate_s3r.py              | 430 +++++++++++++++++++
+ 21 files changed, 972 insertions(+), 191 deletions(-)

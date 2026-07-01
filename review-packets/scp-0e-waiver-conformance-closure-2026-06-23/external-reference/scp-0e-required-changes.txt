@@ -1,0 +1,368 @@
+# Decision
+
+**Changes required before SCP-1, through one narrow `SCP-0E — Waiver and Conformance Closure`.**
+
+The packet is materially stronger. I verified its internal checksums and inspected the implementation, registry, generated artifacts, plans, origin bundle, parity report, and tests. The packet reports 32 focused tests and 114 repository tests passing; because it is inspection-only, I could not independently rerun the complete repository suite.
+
+Several prior blockers are genuinely closed:
+
+* Required baselines are present and hash-pinned.
+* The complete N1F origin artifact and selected normalized document are independently hashed.
+* Plan contents participate in the registry lock.
+* Validation failure does not publish generated projections.
+* Policy `requires` now affects capabilities and plans.
+* Recipes and compositions now have top-level concepts.
+* Plan dependencies and operators are discovered rather than hard-coded.
+* Atlas isolation remains sound.
+
+This continues to fit Priori’s incremental architecture: retain deterministic binding/execution and existing authorability boundaries while adding semantic governance around them.  
+
+## 1. Signature conformance still produces false `EXACT` results
+
+This is the clearest blocker.
+
+In `validate_runtime_signature_compatibility()`, runtime inputs are checked against semantic inputs, but the reverse check is implemented only for outputs:
+
+```text
+runtime input  → semantic input       checked
+semantic input → runtime/context      not checked
+
+runtime output → semantic output      checked
+semantic output → runtime output      checked
+```
+
+There are already two concrete false-positive `EXACT` bindings:
+
+| Binding                 | Required semantic input | Runtime-declared inputs |
+| ----------------------- | ----------------------- | ----------------------: |
+| `possession_segment`    | `canonical_match_state` |                    none |
+| `ball_lateral_fraction` | `ball_position`         |                    none |
+
+These may legitimately be **implicit runtime-context inputs**, but the registry does not represent that. Therefore they are not currently proven exact.
+
+The partial-binding problem is larger. `PARTIAL` and `LEGACY_APPROXIMATION` bindings are not passed through signature validation at all. They merely need:
+
+```text
+a nonempty field_mapping
+a known_deviations entry
+some uncovered field
+```
+
+The mapping itself need not be valid or complete.
+
+For example, `controlled_pass_episode` declares required semantic inputs:
+
+```text
+candidate_pass_events
+tracking_window
+```
+
+but has no runtime input mapping and does not list them as uncovered semantic inputs. Its six runtime parameters are also neither mapped nor individually declared uncovered.
+
+Parameter compatibility is similarly incomplete. For exact bindings, only the **keys** of `parameter_mapping` are checked against runtime parameter names. Mapping values are not resolved to any semantic parameter declaration, and parameter types, units, requiredness, bounds, or defaults are not compared.
+
+### Required correction
+
+Introduce explicit binding categories:
+
+```yaml
+input_bindings:
+  canonical_match_state:
+    source: RUNTIME_CONTEXT
+    context_ref: canonical_match_state
+
+  possession_episodes:
+    source: NODE_INPUT
+    runtime_port: possession_episodes
+```
+
+And separate uncovered elements:
+
+```text
+uncovered_runtime_inputs
+uncovered_runtime_outputs
+uncovered_runtime_parameters
+
+uncovered_semantic_inputs
+uncovered_semantic_outputs
+uncovered_semantic_parameters
+```
+
+Then enforce:
+
+```text
+EXACT:
+  every required semantic input is bound
+  every runtime input is mapped
+  every required semantic output is mapped
+  every runtime output is mapped
+  parameters are compatible in both directions
+  no uncovered elements
+
+PARTIAL / LEGACY:
+  all mappings resolve to real fields
+  every discrepancy is mapped or explicitly uncovered
+  mapped fields remain type-compatible
+  deviations describe the uncovered discrepancy
+```
+
+## 2. Parity waivers are too broad to remain safety gates
+
+The canonical parity work is improved for capability contracts, but the four AI recipe differences are accepted by subject ID alone:
+
+```yaml
+contract_changed:
+  - recipe:ball_side_block_shift_v1:1.0.0
+  - recipe:high_bypass_completed_pass_v1:0.1.0
+  - recipe:opposite_corridor_after_shift_v1:0.1.0
+  - recipe:possession_corridor_availability_v1:0.1.0
+```
+
+Once a subject appears in that list, **any future contract change for that recipe is accepted**. The validator does not pin:
+
+```text
+expected baseline hash
+expected projection hash
+expected differing fields
+rationale
+expiry or review condition
+```
+
+The present differences also combine several incomparable representations:
+
+* The AI baseline uses a raw source-file SHA.
+* The semantic projection uses a normalized plan hash.
+* The AI baseline exposes authorable nodes.
+* The semantic projection includes complete execution dependencies.
+* The baseline canonicalizer does not extract operators from `required_predicates`.
+
+That explains why all four recipes require exemptions, but it does not make subject-wide exemptions safe.
+
+There is an additional product-parity issue. Product recipe identities are synthesized from the **current runtime manifest**, rather than loaded from the pinned product baseline:
+
+```text
+capability contracts:
+  pinned capability-catalog baseline → projection
+
+recipe contracts:
+  current runtime manifest → projection
+```
+
+That recipe comparison is effectively two views of current state, not a frozen product baseline. It cannot independently detect product recipe drift.
+
+The accepted composition addition has the same issue: only the added subject ID is approved, so its content may change while continuing to appear as the same accepted addition.
+
+### Required correction
+
+Replace open-ended lists with pinned waiver records:
+
+```yaml
+accepted_difference:
+  subject_ref: recipe:high_bypass_completed_pass_v1:0.1.0
+  difference_kind: CONTRACT_CHANGED
+  baseline_contract_hash: ...
+  projection_contract_hash: ...
+  permitted_fields:
+    - execution_dependencies
+    - operator_dependencies
+  rationale: >
+    Existing AI baseline exposes its public authoring contract,
+    while the semantic projection records the complete bound plan.
+```
+
+Generation should fail when:
+
+* either hash changes;
+* additional fields differ;
+* an accepted waiver is no longer observed;
+* a difference reappears after its waiver was removed.
+
+Better still, separate recipe parity into:
+
+```text
+public authoring contract
+execution plan contract
+```
+
+Then compare like with like. Raw SHA must be compared with raw SHA, and normalized hash with normalized hash.
+
+## 3. Composition lineage is currently circular, not dependency-derived
+
+Recipe lineage is now checked against concepts and declared profiles. That is useful.
+
+Composition lineage, however, checks only:
+
+```text
+composition contract
+  inherits
+top-level concept contract
+```
+
+The current composition’s concept points directly to the same composition claim and evidence contracts:
+
+```text
+concept.progressive_connection_followed_by_destination_entry
+  claim → claim.ai_corridor_destination_composition.v1
+  evidence → evidence.ai_corridor_destination_composition.v1
+
+composition
+  claim → claim.ai_corridor_destination_composition.v1
+  evidence → evidence.ai_corridor_destination_composition.v1
+```
+
+Therefore the lineage check is tautological.
+
+It does not derive obligations from the plan’s actual dependencies:
+
+```text
+possession_segment
+geometric_progressive_corridor_from_anchor_set
+relation_destination_entry
+exists
+eq
+```
+
+The current contract happens to inherit possession, corridor, and destination-entry contracts, but the validator does not prove that. A future edit could change both the concept and composition to an empty contract, and the present concept-lineage check would still pass.
+
+### Required correction
+
+Derive contract obligations from the parsed plan:
+
+```text
+plan capability
+→ runtime binding
+→ operationalization
+→ concept
+→ required claim/evidence contracts
+```
+
+Then require the recipe or composition contract to preserve every dependency obligation:
+
+```text
+effective composition claims
+  must inherit/narrow all dependency claim contracts
+
+effective composition evidence
+  must include all dependency evidence minima
+```
+
+For recipes, include both dependency-derived obligations and declared profile obligations.
+
+For compositions, add profile references where a definition profile was actually selected—or record an explicit reason that no profile applies.
+
+## 4. Projection policies do not govern every projected item
+
+`ProjectionPolicy.requires` now governs capabilities, recipes, and compositions. That closes most of the earlier problem.
+
+AI operators still bypass the AI projection policy:
+
+```python
+ai_operators = [
+    ...
+    for item in registry.operator_definitions
+    if item.authorability == ALLOWED
+]
+```
+
+Consequently:
+
+```yaml
+projection.ai.v1:
+  excludes:
+    - operator:gte:1.0.0
+```
+
+would not remove `gte`.
+
+The declared `projection.unsupported.v1` policy is also not consulted when constructing the unsupported projection.
+
+Either every declared policy must be executable for every applicable item kind, or non-executable policies should be removed from the registry.
+
+## Recommended `SCP-0E` scope
+
+Do not reopen the architecture. The remaining slice should contain only four corrections:
+
+```text
+1. Real bidirectional binding conformance
+2. Hash- and field-pinned parity waivers
+3. Dependency-derived recipe/composition contract closure
+4. Projection-policy application to operators and unsupported output
+```
+
+### Required acceptance tests
+
+```text
+An EXACT binding with an unbound required semantic input fails.
+
+An implicit runtime-context input passes only when explicitly bound as context.
+
+A PARTIAL binding containing a nonexistent mapping key or target fails.
+
+A PARTIAL binding with an unmapped and undeclared runtime parameter fails.
+
+An EXACT parameter mapping whose semantic target does not exist fails.
+
+Changing an allowlisted recipe contract changes its projection hash and fails
+unless the exact new hash and permitted fields are reviewed.
+
+An unused or stale parity waiver fails.
+
+Changing an accepted composition’s contract while retaining its ID fails.
+
+A composition whose concept and local contracts are changed together, but whose
+contract omits one plan-dependency contract, fails.
+
+Excluding an operator through the AI ProjectionPolicy removes it.
+
+Changing the unsupported ProjectionPolicy changes the unsupported projection.
+```
+
+## Suggested status
+
+```yaml
+registry_coverage: VERIFIED
+runtime_binding_coverage: VERIFIED
+atlas_isolation: VERIFIED
+plan_content_integrity: VERIFIED
+full_origin_provenance_integrity: VERIFIED
+validation_failure_publish_safety: VERIFIED
+
+projection_policy_enforcement: PARTIAL
+semantic_parity: PARTIAL
+recipe_contract_lineage: VERIFIED_FOR_CURRENT_RECIPES
+composition_contract_lineage: PARTIAL
+exact_signature_conformance: NOT_VERIFIED
+partial_signature_conformance: NOT_VERIFIED
+
+scp_1_gate: BLOCKED_ON_NARROW_SCP_0E
+```
+
+## Non-blocking observations
+
+The temporary-directory publishing prevents validation failures from replacing valid artifacts, which satisfies the requested adversarial test. It is not a transaction across the complete artifact set: sequential `shutil.move()` operations could still leave a partial release after an I/O failure. That can be hardened later with a versioned generation directory and one atomic pointer/symlink replacement.
+
+The status file still points `review.external_packet` to the SCP-0C packet rather than this SCP-0D packet.
+
+The semantic cleanup previously identified for `ball_lateral_fraction` remains: its concept is now correctly named normalized lateral position, but its claim/evidence contracts still include configured wide-entry semantics. Measurement-versus-judgement separation should be an early SCP-1 exercise rather than another SCP-0 blocker.
+
+## What should happen after SCP-0E
+
+Once these four gates pass, **unblock SCP-1 immediately**. SCP-1 should remain narrow:
+
+```text
+SemanticExpression
+→ compile to existing TacticalQueryDocument
+→ existing binder
+→ existing deterministic runtime
+```
+
+Use:
+
+```text
+High-Bypass Completed Pass
+Ball-Side Block Shift
+```
+
+as the dual-run pilots. Do not add new capabilities or a new executor during that first algebra milestone.
+
+[Reviewed SCP-0D packet](sandbox:/mnt/data/4a3f374e-c670-4217-acbe-8e04dc902821.zip)

@@ -1,0 +1,9 @@
+be7ecf6 Add model-backed Hermes S2B evaluation
+ delivery/m1.2/SPEC.md                              |  48 ++-
+ delivery/m1.2/status.yaml                          |  15 +-
+ .../2026-06-21-m1-2-s2b-model-backed-hermes.md     |  17 +
+ .../reviews/2026-06-21-m1-2-s2b-external-review.md |  43 ++
+ generated/capability-context.json                  |   2 +-
+ src/tqe/verification/m1_2_gate_s2.py               | 258 +++++++++--
+ src/tqe/workshop/hermes_s2.py                      | 472 ++++++++++++++++++++-
+ 7 files changed, 810 insertions(+), 45 deletions(-)

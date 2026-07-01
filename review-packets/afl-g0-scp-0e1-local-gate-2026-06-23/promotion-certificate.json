@@ -1,0 +1,19 @@
+{
+  "candidate_commit": "19bc11a10214a41399dcee47305c2035edfa070b",
+  "candidate_target": "SCP-0E.1",
+  "contract_hash": "aaec4491feed675f7e6458195e1a04684d7b03f3f9a09ef09b394cd6754590ba",
+  "contract_schema_hash": "79047c828e9f12db9b452885691a815aaee772ac573f6eb2346eacf527916d85",
+  "denominators_hash": "12970ab7783a20e2bd06ecc6becd585879e16c6e0ba562b85d62c17f904776af",
+  "gate_runner_hash": "d6d93b0ef80311faaac517da6496bacf0c0be0b0fb1fae40e675710448ed3776",
+  "generated_at": "2026-06-24T04:17:46Z",
+  "milestone": "AFL-G0",
+  "program": "priori-autonomous-football-language",
+  "promotion_signature": null,
+  "protected_suite_hash": "UNAVAILABLE_SELF_VERIFIED",
+  "protected_suite_id": "UNAVAILABLE_SELF_VERIFIED",
+  "registry_lock": "ee074e5ab40db08bdf265eff54e3608bf11be5f808c5e3dd58cb9cd1763a47b8",
+  "result": "BLOCKED",
+  "schema_version": "1.0",
+  "signature_status": "NOT_SIGNED_RESULT_NOT_PROMOTED",
+  "source_tree_hash": "e09032e0001a04fcbc89f96abaa809a464e3b0f89e447f5b153a10accaa44d0f"
+}

@@ -1,0 +1,1021 @@
+commit e5f6618b42855e1ab9b9922778524570f660bc9d
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Sat Jun 20 13:35:49 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Sat Jun 20 13:35:49 2026 -0700
+
+    Implement M1.1S S4 rule-driven emission
+
+diff --git a/Makefile b/Makefile
+index e7f7b26..32d4aee 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ PYTHON ?= $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python
+ PYTHONPATH := $(CURDIR)/src
+ export PYTHONPATH
+ 
+-.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-verify test
++.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-verify test
+ 
+ setup:
+ 	python3.12 -m venv .venv
+@@ -93,6 +93,9 @@ m1-1-gate-s3-verify:
+ m1-1-gate-s3r-verify:
+ 	$(PYTHON) -m tqe.verification.m1_1_gate_s3r
+ 
++m1-1-gate-s4-verify:
++	$(PYTHON) -m tqe.verification.m1_1_gate_s4
++
+ m1-1-verify:
+ 	$(PYTHON) -m tqe.verification.m1_1
+ 
+diff --git a/delivery/ledger.jsonl b/delivery/ledger.jsonl
+index 026bcad..fce9b2b 100644
+--- a/delivery/ledger.jsonl
++++ b/delivery/ledger.jsonl
+@@ -42,3 +42,4 @@
+ {"timestamp":"2026-06-20T10:36:35-07:00","milestone":"M1.1S","slice":"Gate_S3R3_explicit_profile_single_temporal_unknown_trace","from":"APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["/Users/luisrevilla/.codex/attachments/446f59e8-9bb2-4f3e-a515-8112e6fcf4c9/pasted-text.txt","docs/reviews/2026-06-20-m1-1s-gate-s3r2-external-review.md","delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md","delivery/m1.1/status.yaml","src/tqe/runtime/executor.py","src/tqe/verification/m1_1_gate_s3r.py","artifacts/m1.1/gate-s3r-verification-report.json","artifacts/m1.1/parity-report.json","artifacts/m1.1/gate-c-verification-report.json","artifacts/m1.1/gate-r5-verification-report.json","delivery/m1.1/reviews/gate-s3r3-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s3r3-profile-temporal-correction.md"],"notes":"Integrated external decision APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4 for S3R2 and implemented focused S3R3. Added host-only compatibility profiles: generic execution cannot invoke legacy adapters and legacy trace fallback is only available to legacy_m1_parity. Generic target inspection ignores _runtime_result and _predicate_status. execute_persists_for is now the single shared generic temporal implementation and preserves UNKNOWN intervals alongside PASS episodes. The S3R verifier now executes actual non-M1 predicate nodes in generic mode, proves PASS/FAIL/UNKNOWN traces, verifies side-channel perturbation does not change generic target traces, and asserts generic node provenance has no adapter. make m1-1-gate-s3r-verify passes 12/0/0; regressions pass for Gate B 14/0/0, Gate C 10/0/0, R5 10/0/0, and make test 26 tests."}
+ {"timestamp":"2026-06-20T11:18:54-07:00","milestone":"M1.1S","slice":"Gate_S3R4_temporal_correctness_default_generic","from":"APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["/Users/luisrevilla/.codex/attachments/da15d7c0-f47b-4bbb-9523-7221b5bd7c56/pasted-text.txt","docs/reviews/2026-06-20-m1-1s-gate-s3r3-external-review.md","delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md","delivery/m1.1/status.yaml","src/tqe/runtime/executor.py","src/tqe/runtime/values.py","src/tqe/verification/m1_1_gate_s3r.py","src/tqe/verification/m1_1_gate_c.py","src/tqe/verification/m1_1_gate_r5.py","tests/test_m1_1_runtime.py","artifacts/m1.1/gate-s3r-verification-report.json","artifacts/m1.1/parity-report.json","artifacts/m1.1/gate-c-verification-report.json","artifacts/m1.1/gate-r5-verification-report.json","delivery/m1.1/reviews/gate-s3r4-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s3r4-temporal-correctness.md"],"notes":"Integrated external decision APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4 for S3R3 and implemented S3R4 temporal-correctness patch. TacticalQueryExecutor now defaults to generic; frozen M1 parity call sites explicitly request legacy_m1_parity. duration_to_frames normalizes second, millisecond, and frame units with positive-duration validation and ceiling semantics. execute_persists_for now emits PASS, UNKNOWN, and FAIL intervals; target tracing returns UNKNOWN outside evaluated temporal coverage; FrameSignal asserts unknown_mask consistency; and generic target results no longer carry _predicate_status. S3R verifier now proves duration-unit equivalence, indeterminate TRUE/TRUE/UNKNOWN windows, definitive TRUE/TRUE/FALSE failure, outside-coverage UNKNOWN, and predicate_trace side-channel perturbation. make m1-1-gate-s3r-verify passes 13/0/0; regressions pass for Gate B 14/0/0, Gate C 10/0/0, R5 10/0/0, and make test 26 tests."}
+ {"timestamp":"2026-06-20T12:35:51-07:00","milestone":"M1.1S","slice":"Gate_S3R4_external_approval_and_s4_opening_helper_split","from":"ACCEPTED_CONTROLLER_ONLY","to":"APPROVED_S4_UNBLOCKED","actor":"controller","evidence":["docs/reviews/2026-06-20-m1-1s-gate-s3r4-external-review.md","docs/learnings/2026-06-20-m1-1s-s4-helper-split.md","delivery/m1.1/status.yaml","src/tqe/runtime/executor.py","src/tqe/inspector/m1_1.py","src/tqe/verification/m1_1_gate_e.py","tests/test_m1_1_runtime.py","artifacts/m1.1/gate-e-verification-report.json"],"notes":"External review approved S3R4 and unblocked S4, with one required opening cleanup. execute_plan_from_path now uses the generic executor default; execute_legacy_m1_plan_from_path is the explicit parity-only helper. Top-level execution provenance records compatibility_profile. Legacy M1.1 experimental inspector and Gate E call the explicit legacy helper. A runtime test proves execute_plan_from_path reports generic compatibility. Direct probe showed generic experimental execution returns 0 rows under generic and legacy helper returns 51 rows under legacy_m1_parity, confirming S4 must complete generic result production rather than rely on legacy helpers. Gate E passes 21/0/0 with explicit legacy helper; make test passes 27 tests."}
++{"timestamp":"2026-06-20T13:32:33-07:00","milestone":"M1.1S","slice":"Gate_S4_rule_driven_result_emission","from":"NOT_STARTED","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md","src/tqe/runtime/executor.py","src/tqe/verification/m1_1_gate_s4.py","tests/test_m1_1_runtime.py","Makefile","artifacts/m1.1/gate-s4-verification-report.json","artifacts/m1.1/gate-s3r-verification-report.json","artifacts/m1.1/gate-e-verification-report.json","delivery/m1.1/reviews/gate-s4-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s4-rule-emission.md"],"notes":"Implemented and controller-accepted M1.1S Gate S4. Generic execution now emits QueryResult rows from plan-designated anchors, declared predicate traces, classification rules, and requested evidence instead of relying on legacy accepted-result records. The experimental corridor plan emits 15 generic rows and 105 traces under compatibility_profile=generic, with both DESTINATION_ENTERED and CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY labels. Requested evidence resolves from declared runtime outputs, generic rows omit block_shift_score, wide_entry_frame_id, and signed_shift_metres, deterministic ordering and max_results are proven, execution modes are honored, and frozen M1 parity remains exact through explicit legacy helpers. make m1-1-gate-s4-verify passes 13/0/0; regressions pass for S3R 13/0/0 and Gate E 21/0/0."}
+diff --git a/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md b/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+index e9cef29..cc4bcc8 100644
+--- a/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
++++ b/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+@@ -218,6 +218,23 @@ Acceptance:
+ - frame-signal frame-ID/value length mismatch is a hard error;
+ - `persists_for` consumes tri-state Boolean signals and emits episodes without shift-specific fields;
+ - generic anchor/target code contains no `wide_entry_*`, `block_shift_*`, or `shift_gate_*` assumptions;
++
++### Gate S4 - Rule-Driven Result Emission
++
++Acceptance:
++
++- a generic plan produces at least one real `QueryResult` from canonical match data;
++- classification rules control both result inclusion and labels;
++- changing a required predicate changes inclusion while preserving labels for still-matching rules;
++- PASS, FAIL, and UNKNOWN traces obey the plan's `unknown_evidence_policy`;
++- requested evidence resolves from declared runtime outputs, not flat result sidecars;
++- generic result envelopes do not require `block_shift_score`, `wide_entry_frame_id`, or `signed_shift_metres`;
++- every generic execution proves `compatibility_profile = generic` and no legacy adapter use;
++- result IDs and ordering are deterministic;
++- `max_results`, `bind_only`, and `dry_run` are honored;
++- frozen M1 parity remains exact only through explicit legacy helpers.
++
++S4 is intentionally narrow. It must not add Hermes, UI work, new primitives, a second tactical family, a ranking language, or visualization grammar.
+ - node execution returns an explicit result containing resolved inputs, parameters, outputs, runtime values, warnings, and provenance.
+ 
+ External review rejected the first S3R packet as insufficient. The strengthened S3R acceptance additionally requires:
+diff --git a/delivery/m1.1/reviews/gate-s4-controller-review.md b/delivery/m1.1/reviews/gate-s4-controller-review.md
+new file mode 100644
+index 0000000..4681edd
+--- /dev/null
++++ b/delivery/m1.1/reviews/gate-s4-controller-review.md
+@@ -0,0 +1,22 @@
++# M1.1S Gate S4 Controller Review
++
++Decision: `ACCEPTED_CONTROLLER_ONLY`
++
++S4 implements rule-driven generic result emission.
++
++The generic experimental corridor plan now emits real `QueryResult` rows under `compatibility_profile=generic` instead of returning zero rows or relying on the legacy M1 result emitter.
++
++Accepted evidence:
++
++- `make m1-1-gate-s4-verify`: pass, 13/0/0.
++- Generic experimental execution emits 15 rows and 105 predicate traces.
++- Both declared labels are present: `DESTINATION_ENTERED` and `CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY`.
++- Requested evidence resolves from declared runtime outputs.
++- Generic rows do not expose `block_shift_score`, `wide_entry_frame_id`, or `signed_shift_metres`.
++- Generic traces contain no legacy adapter evidence.
++- `max_results`, `bind_only`, and `dry_run` are honored.
++- Frozen M1 parity remains 180 rows and 900 traces through the explicit legacy helper.
++
++Residual risk:
++
++S4 does not prove a second tactical family, Hermes, UI behavior, or final demo readiness. The next architecture proof should be the second dissimilar tactical pattern.
+diff --git a/delivery/m1.1/status.yaml b/delivery/m1.1/status.yaml
+index b63c702..8fc6fc3 100644
+--- a/delivery/m1.1/status.yaml
++++ b/delivery/m1.1/status.yaml
+@@ -33,7 +33,7 @@ slices:
+   S16_m1_1s_anchor_predicate_trace_core: DONE
+   S16R_m1_1s_explicit_anchor_contract_generic_temporal_semantics: DONE
+   S16R4_opening_s4_generic_helper_split: DONE
+-  S17_m1_1s_rule_driven_result_emission: NOT_STARTED
++  S17_m1_1s_rule_driven_result_emission: DONE
+   S18_m1_1s_alias_based_evidence_projection: NOT_STARTED
+   S19_m1_1s_second_real_plan_relation_proof: NOT_STARTED
+   S20_m1_1s_parity_adapter_final_architecture_proof: NOT_STARTED
+@@ -57,14 +57,14 @@ promotion_gates:
+   Gate_S3_anchor_predicate_trace_core: ACCEPTED_CONTROLLER_ONLY
+   Gate_S3R_explicit_anchor_contract_generic_temporal_semantics: APPROVED_S4_UNBLOCKED
+   Gate_S3R4_opening_s4_generic_helper_split: ACCEPTED_CONTROLLER_ONLY
+-  Gate_S4_rule_driven_result_emission: NOT_STARTED
++  Gate_S4_rule_driven_result_emission: ACCEPTED_CONTROLLER_ONLY
+   Gate_S5_alias_based_evidence_projection: NOT_STARTED
+   Gate_S6_second_real_plan_relation_proof: NOT_STARTED
+   Gate_S7_parity_adapter_final_architecture_proof: NOT_STARTED
+ verification:
+-  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_S1_GATE_S2_GATE_S3_GATE_S3R_PASS
++  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_S1_GATE_S2_GATE_S3_GATE_S3R_GATE_S4_PASS
+   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+   independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19_REJECTED_M1_1R_GATE_R5_REVIEW_2026_06_20_S3_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R_REJECT_KEEP_S4_BLOCKED_2026_06_20_S3R2_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R3_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R4_APPROVE_S4_UNBLOCKED_2026_06_20
+-  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_GATE_S1_GATE_S2_GATE_S3_GATE_S3R4_ACCEPTED_CONTROLLER_ONLY_S4_HELPER_SPLIT_ACCEPTED_CONTROLLER_ONLY
++  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_GATE_S1_GATE_S2_GATE_S3_GATE_S3R4_ACCEPTED_CONTROLLER_ONLY_S4_HELPER_SPLIT_ACCEPTED_CONTROLLER_ONLY_GATE_S4_ACCEPTED_CONTROLLER_ONLY
+   owner_acceptance: NOT_STARTED
+   m1_2_blocked_until: M1_1S_S4_S5_S6_COMPLETION_AND_EXTERNAL_REVIEW
+diff --git a/docs/learnings/2026-06-20-m1-1s-gate-s4-rule-emission.md b/docs/learnings/2026-06-20-m1-1s-gate-s4-rule-emission.md
+new file mode 100644
+index 0000000..d5967d8
+--- /dev/null
++++ b/docs/learnings/2026-06-20-m1-1s-gate-s4-rule-emission.md
+@@ -0,0 +1,14 @@
++# Learning: The Plan Becomes The Program At Result Emission
++
++S4 showed that trustworthy generic predicate traces are necessary but not sufficient. The missing layer was the generic result emitter:
++
++```text
++anchors -> predicate traces -> classification rules -> evidence projection -> QueryResult
++```
++
++The experimental corridor plan now emits 15 generic rows from canonical data with both declared labels. Legacy parity remains isolated behind explicit legacy helpers.
++
++Two implementation lessons matter for future agents:
++
++- Generic temporal intervals should preserve links to declared source records when downstream primitives need to continue from the interval.
++- Final `QueryResult` construction must not overwrite evidence that has already been projected from declared runtime outputs.
+diff --git a/src/tqe/runtime/executor.py b/src/tqe/runtime/executor.py
+index 1b67641..56b3255 100644
+--- a/src/tqe/runtime/executor.py
++++ b/src/tqe/runtime/executor.py
+@@ -27,6 +27,7 @@ from tqe.runtime.ir import (
+     BoundPredicateNode,
+     BoundQueryPlan,
+     BoundPlanNode,
++    ClassificationRule,
+     EvaluationTarget,
+     ExecutionMode,
+     ExecutionStatus,
+@@ -292,7 +293,9 @@ class TacticalQueryExecutor:
+                         for key, value in result.items()
+                         if key != "result_id" and not key.startswith("_")
+                     },
+-                    "requested_evidence": project_requested_evidence(result, bound_plan),
++                    "requested_evidence": result.get("requested_evidence")
++                    if isinstance(result.get("requested_evidence"), dict)
++                    else project_requested_evidence(result, bound_plan),
+                     "plan_status": bound_plan.plan_status.value,
+                 },
+             )
+@@ -354,17 +357,37 @@ class TacticalQueryExecutor:
+                 params=params,
+                 compatibility_profile=compatibility_profile,
+             )
+-            accepted.extend(state.accepted)
+-            traces.extend(accepted_predicate_traces(state, compatibility_profile=compatibility_profile))
++            if compatibility_profile == LEGACY_M1_PARITY_PROFILE:
++                accepted.extend(state.accepted)
++                traces.extend(accepted_predicate_traces(state, compatibility_profile=compatibility_profile))
++            else:
++                period_results, period_traces = emit_generic_results_from_rules(
++                    state=state,
++                    bound_plan=bound_plan,
++                    compatibility_profile=compatibility_profile,
++                )
++                accepted.extend(period_results)
++                traces.extend(period_traces)
+             runtime_value_count += sum(len(outputs) for outputs in state.runtime_values.values())
+-        accepted.sort(
+-            key=lambda item: (
+-                -float(item["block_shift_score"]),
+-                item["match_id"],
+-                item["period"],
+-                item["wide_entry_frame_id"],
++        if compatibility_profile == LEGACY_M1_PARITY_PROFILE:
++            accepted.sort(
++                key=lambda item: (
++                    -float(item["block_shift_score"]),
++                    item["match_id"],
++                    item["period"],
++                    item["wide_entry_frame_id"],
++                )
++            )
++        else:
++            accepted.sort(
++                key=lambda item: (
++                    item["match_id"],
++                    item["period"],
++                    int(item["anchor_frame_id"]),
++                    item["classification"],
++                    item["result_id"],
++                )
+             )
+-        )
+         return accepted, traces, runtime_value_count
+ 
+     def evaluate_target(
+@@ -680,6 +703,124 @@ def apply_result_semantics(
+     return filtered, filtered_traces, ExecutionStatus.PASS
+ 
+ 
++def emit_generic_results_from_rules(
++    *,
++    state: PeriodState,
++    bound_plan: BoundQueryPlan,
++    compatibility_profile: str,
++) -> tuple[list[dict[str, Any]], list[PredicateTrace]]:
++    anchors = runtime_anchors(state, bound_plan.anchor_source)
++    emitted: list[dict[str, Any]] = []
++    traces: list[PredicateTrace] = []
++    for anchor in anchors:
++        base_result = generic_result_base(
++            state=state,
++            bound_plan=bound_plan,
++            anchor=anchor,
++        )
++        anchor_traces = predicate_traces_for_anchor(
++            state,
++            anchor,
++            base_result,
++            bound_plan=bound_plan,
++            compatibility_profile=compatibility_profile,
++        )
++        anchor_traces.extend(
++            missing_target_predicate_traces(
++                bound_plan=bound_plan,
++                state=state,
++                anchor=anchor,
++                result=base_result,
++                existing_predicate_ids={trace.predicate_id for trace in anchor_traces},
++            )
++        )
++        labels = rule_labels_for_traces(
++            traces=anchor_traces,
++            bound_plan=bound_plan,
++        )
++        if not labels:
++            continue
++        classification = labels[0]
++        result = {
++            **base_result,
++            "classification": classification,
++            "accepted": True,
++            "matched_classification_rules": labels,
++            "requested_evidence": project_requested_evidence_from_runtime(
++                state=state,
++                anchor=anchor,
++                bound_plan=bound_plan,
++            ),
++            "provenance": {
++                "emitter": "generic_rule_emitter",
++                "anchor_source": f"{bound_plan.anchor_source.source_node_id}.{bound_plan.anchor_source.output_name}"
++                if bound_plan.anchor_source is not None
++                else None,
++                "compatibility_profile": compatibility_profile,
++            },
++        }
++        emitted.append(result)
++        traces.extend(
++            [
++                trace.model_copy(
++                    update={
++                        "source_evidence": {
++                            **trace.source_evidence,
++                            "result_id": result["result_id"],
++                        }
++                    }
++                )
++                for trace in anchor_traces
++            ]
++        )
++    return emitted, traces
++
++
++def generic_result_base(
++    *,
++    state: PeriodState,
++    bound_plan: BoundQueryPlan,
++    anchor: RuntimeAnchor,
++) -> dict[str, Any]:
++    result_id = hashlib.sha256(
++        (
++            f"{bound_plan.bound_plan_hash}:generic:"
++            f"{anchor.match_id}:{anchor.period}:{anchor.anchor_id}"
++        ).encode("utf-8")
++    ).hexdigest()[:16]
++    return {
++        "result_id": result_id,
++        "classification": None,
++        "match_id": anchor.match_id,
++        "period": anchor.period,
++        "anchor_frame_id": anchor.anchor_frame_id,
++        "anchor_id": anchor.anchor_id,
++        "accepted": False,
++        "perspective_team_role": state.perspective_team_role,
++        "defending_team_role": state.defending_team_role,
++    }
++
++
++def rule_labels_for_traces(
++    *,
++    traces: list[PredicateTrace],
++    bound_plan: BoundQueryPlan,
++) -> list[str]:
++    status_by_predicate = {trace.predicate_id: trace.status for trace in traces}
++    matching: list[ClassificationRule] = []
++    for rule in bound_plan.classification_rules:
++        statuses = [status_by_predicate.get(predicate_id, "UNKNOWN") for predicate_id in rule.predicate_ids]
++        if any(status == "FAIL" for status in statuses):
++            continue
++        if any(status == "UNKNOWN" for status in statuses):
++            if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INCLUDE_WITH_WARNING:
++                matching.append(rule)
++            continue
++        matching.append(rule)
++    matching.sort(key=lambda rule: (-len(rule.predicate_ids), rule.label))
++    return [rule.label for rule in matching]
++
++
+ def matching_classification_rules(
+     *,
+     result: dict[str, Any],
+@@ -707,6 +848,61 @@ def project_requested_evidence(
+     return projected
+ 
+ 
++def project_requested_evidence_from_runtime(
++    *,
++    state: PeriodState,
++    anchor: RuntimeAnchor,
++    bound_plan: BoundQueryPlan,
++) -> dict[str, Any]:
++    projected: dict[str, Any] = {}
++    for request in bound_plan.requested_evidence:
++        key = f"{request.source.source_node_id}.{request.field}"
++        runtime_value = state.runtime_values.get(request.source.source_node_id, {}).get(request.source.output_name)
++        projected[key] = evidence_value_for_anchor(
++            runtime_value=runtime_value,
++            anchor=anchor,
++            field=request.field,
++        )
++    return projected
++
++
++def evidence_value_for_anchor(
++    *,
++    runtime_value: RuntimeValue | None,
++    anchor: RuntimeAnchor,
++    field: str,
++) -> Any:
++    if runtime_value is None:
++        return None
++    for record in runtime_records(runtime_value):
++        if record_matches_anchor(record, anchor):
++            return record.get(field)
++    if isinstance(runtime_value.value, FrameSignal):
++        try:
++            index = runtime_value.value.frame_ids.index(anchor.anchor_frame_id)
++        except ValueError:
++            return None
++        if field == runtime_value.output.name or field in {"value", "classification"}:
++            return runtime_value.value.values[index]
++    return None
++
++
++def record_matches_anchor(record: dict[str, Any], anchor: RuntimeAnchor) -> bool:
++    if not isinstance(record, dict):
++        return False
++    if str(record.get("anchor_id") or "") == anchor.anchor_id:
++        return True
++    if optional_int(record.get("anchor_frame_id")) == anchor.anchor_frame_id:
++        return True
++    source = record.get("source_result")
++    if isinstance(source, dict) and record_matches_anchor(source, anchor):
++        return True
++    for source_record in record.get("source_records") or []:
++        if isinstance(source_record, dict) and record_matches_anchor(source_record, anchor):
++            return True
++    return False
++
++
+ def catalog_input_value(
+     state: PeriodState,
+     node: BoundCatalogNode,
+@@ -1109,7 +1305,7 @@ def execute_predicate_with_resolved_inputs(
+                         },
+                     )
+             output["items"] = [record for record, status in zip(records, passed, strict=False) if status]
+-            output["predicate_records"] = output["items"]
++            output["predicate_records"] = records
+         return output
+     if node.operator.name == "persists_for":
+         duration = parameters.get("duration")
+@@ -1122,15 +1318,41 @@ def execute_predicate_with_resolved_inputs(
+             duration=duration,
+             analysis_rate_hz=context.params.integer("analysis_rate_hz"),
+         )
++        records = attach_source_records_to_temporal_records(
++            temporal.output_records(),
++            source_records=runtime_records(runtime_value),
++        )
+         return {
+-            "predicate": temporal.output_records(),
+-            "episodes": temporal.output_records(),
++            "predicate": records,
++            "episodes": records,
+             "passing_episodes": temporal.episodes,
+             "unknown_intervals": temporal.unknown_intervals,
+         }
+     if node.operator.name == "exists":
+         source = runtime_value.value
+         if isinstance(source, list):
++            records = [record for record in source if isinstance(record, dict)]
++            frame_ids = [
++                source_record_frame_id(record)
++                for record in records
++            ]
++            usable = [
++                (record, int(frame_id))
++                for record, frame_id in zip(records, frame_ids, strict=False)
++                if frame_id is not None
++            ]
++            if usable:
++                return {
++                    "predicate": FrameSignal(
++                        frame_ids=[frame_id for _record, frame_id in usable],
++                        values=[True for _record, _frame_id in usable],
++                        unknown_mask=[False for _record, _frame_id in usable],
++                        unit=node.output.unit,
++                        entity_scope=node.output.entity_scope,
++                    ),
++                    "predicate_records": [record for record, _frame_id in usable],
++                    "episodes": source,
++                }
+             return {"predicate": bool(source), "episodes": source}
+         raise RuntimeError(f"Unsupported exists source for {node.node_id}")
+     if node.operator.name == "count_at_least":
+@@ -1446,6 +1668,7 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
+     accepted_shift_records = catalog_input_value(state, node, "accepted_shift_episodes").value
+     if not isinstance(accepted_shift_records, list):
+         raise RuntimeError(f"{node.node_id} requires accepted shift episode records")
++    accepted_shift_records = expanded_pass_source_records(accepted_shift_records)
+     query_hash = state.params.text("result_id_seed_hash")
+     analysis_rate_hz = state.params.integer("analysis_rate_hz")
+     dedupe_source_frames = int(round(state.params.number("dedupe_window_seconds") * FRAME_RATE_HZ))
+@@ -1528,6 +1751,25 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
+     }
+ 
+ 
++def expanded_pass_source_records(records: list[Any]) -> list[dict[str, Any]]:
++    expanded: list[dict[str, Any]] = []
++    for record in records:
++        if not isinstance(record, dict):
++            continue
++        if record.get("temporal_status") not in {None, "PASS"}:
++            continue
++        source_records = [
++            item
++            for item in record.get("source_records") or []
++            if isinstance(item, dict) and "possession_start_frame_id" in item
++        ]
++        if source_records:
++            expanded.extend(source_records)
++        elif "possession_start_frame_id" in record:
++            expanded.append(record)
++    return expanded
++
++
+ def relation_anchor_source(node: BoundCatalogNode) -> str:
+     anchor_reference = node.inputs.get("anchors")
+     if anchor_reference is None:
+@@ -2031,9 +2273,12 @@ def wide_entry_candidates_from_episodes(
+ ) -> list[dict[str, Any]]:
+     wide_mask = np.zeros(len(state.frame_ids), dtype=bool)
+     structured_episodes: list[dict[str, Any]] = []
++    frame_index = {int(frame_id): index for index, frame_id in enumerate(state.frame_ids)}
+     for episode in entry_episodes:
+-        start_index = episode_start_index(episode)
+-        end_index = episode_end_index(episode)
++        if isinstance(episode, dict) and episode.get("temporal_status") not in {None, "PASS"}:
++            continue
++        start_index = episode_start_index(episode, frame_index=frame_index)
++        end_index = episode_end_index(episode, frame_index=frame_index)
+         if start_index is None or end_index is None:
+             continue
+         wide_mask[start_index : end_index + 1] = True
+@@ -2065,17 +2310,62 @@ def wide_entry_candidates_from_episodes(
+     return candidates
+ 
+ 
+-def episode_start_index(episode: Any) -> int | None:
++def attach_source_records_to_temporal_records(
++    records: list[dict[str, Any]],
++    *,
++    source_records: list[dict[str, Any]],
++) -> list[dict[str, Any]]:
++    if not source_records:
++        return records
++    enriched: list[dict[str, Any]] = []
++    for record in records:
++        start = optional_int(record.get("start_frame_id"))
++        end = optional_int(record.get("end_frame_id"))
++        if start is None or end is None:
++            enriched.append(record)
++            continue
++        matches = [
++            source
++            for source in source_records
++            if source_record_frame_id(source) is not None
++            and start <= int(source_record_frame_id(source)) <= end
++        ]
++        enriched.append({**record, "source_records": matches} if matches else record)
++    return enriched
++
++
++def source_record_frame_id(record: dict[str, Any]) -> int | None:
++    for key in ("anchor_frame_id", "frame_id", "wide_entry_frame_id", "start_frame_id"):
++        frame_id = optional_int(record.get(key))
++        if frame_id is not None:
++            return frame_id
++    source = record.get("source_result")
++    if isinstance(source, dict):
++        frame_id = source_record_frame_id(source)
++        if frame_id is not None:
++            return frame_id
++    return None
++
++
++def episode_start_index(episode: Any, *, frame_index: dict[int, int] | None = None) -> int | None:
+     if isinstance(episode, dict):
+-        return int(episode["start_index"]) if "start_index" in episode else None
++        if "start_index" in episode:
++            return int(episode["start_index"])
++        if frame_index is not None and "start_frame_id" in episode:
++            return frame_index.get(int(episode["start_frame_id"]))
++        return None
+     if isinstance(episode, tuple | list) and len(episode) >= 1:
+         return int(episode[0])
+     return None
+ 
+ 
+-def episode_end_index(episode: Any) -> int | None:
++def episode_end_index(episode: Any, *, frame_index: dict[int, int] | None = None) -> int | None:
+     if isinstance(episode, dict):
+-        return int(episode["end_index"]) if "end_index" in episode else None
++        if "end_index" in episode:
++            return int(episode["end_index"])
++        if frame_index is not None and "end_frame_id" in episode:
++            return frame_index.get(int(episode["end_frame_id"]))
++        return None
+     if isinstance(episode, tuple | list) and len(episode) >= 2:
+         return int(episode[1])
+     return None
+@@ -2432,6 +2722,14 @@ def predicate_trace_from_runtime_value(
+         "source_output_name": node.input.output_name,
+         "trace_source": f"{node.node_id}.{node.output.name}",
+     }
++    record_trace = predicate_trace_from_runtime_record(
++        node=node,
++        runtime_value=runtime_value,
++        anchor=anchor,
++        source_evidence=source_evidence,
++    )
++    if record_trace is not None:
++        return record_trace
+     if isinstance(runtime_value.value, FrameSignal):
+         try:
+             index = runtime_value.value.frame_ids.index(anchor.anchor_frame_id)
+@@ -2507,6 +2805,45 @@ def predicate_trace_from_runtime_value(
+     return None
+ 
+ 
++def predicate_trace_from_runtime_record(
++    *,
++    node: BoundPredicateNode,
++    runtime_value: RuntimeValue,
++    anchor: RuntimeAnchor,
++    source_evidence: dict[str, Any],
++) -> PredicateTrace | None:
++    for record in runtime_records(runtime_value):
++        if not record_matches_anchor(record, anchor):
++            continue
++        status_record = None
++        if isinstance(record.get("_predicate_status"), dict):
++            status_record = record["_predicate_status"].get(node.node_id)
++        if not isinstance(status_record, dict):
++            continue
++        return PredicateTrace(
++            predicate_id=node.node_id,
++            status=status_record["status"],
++            value=TypedValue.model_validate(status_record["value"])
++            if status_record.get("value") is not None
++            else None,
++            threshold=TypedValue.model_validate(status_record["threshold"])
++            if status_record.get("threshold") is not None
++            else None,
++            unit=Unit(status_record.get("unit", Unit.NONE.value)),
++            frame_id=optional_int(status_record.get("frame_id")) or anchor.anchor_frame_id,
++            window=status_record.get("window"),
++            source_evidence={
++                **source_evidence,
++                **{
++                    key: value
++                    for key, value in dict(status_record.get("source_evidence") or {}).items()
++                    if value is not None
++                },
++            },
++        )
++    return None
++
++
+ def missing_target_predicate_traces(
+     *,
+     bound_plan: BoundQueryPlan,
+diff --git a/src/tqe/verification/m1_1_gate_s4.py b/src/tqe/verification/m1_1_gate_s4.py
+new file mode 100644
+index 0000000..8545c55
+--- /dev/null
++++ b/src/tqe/verification/m1_1_gate_s4.py
+@@ -0,0 +1,359 @@
++"""Verify M1.1S Gate S4: rule-driven generic result emission."""
++
++from __future__ import annotations
++
++import json
++from collections import Counter
++from copy import deepcopy
++from datetime import UTC, datetime
++from pathlib import Path
++from typing import Any
++
++from tqe.runtime.binder import bind_document
++from tqe.runtime.executor import (
++    TacticalQueryExecutor,
++    execute_default_plan,
++    execute_plan_from_path,
++    execution_result_rows,
++    rule_labels_for_traces,
++)
++from tqe.runtime.ir import (
++    ClassificationRule,
++    ExecutionMode,
++    ExecutionStatus,
++    PredicateTrace,
++    TacticalQueryDocument,
++    UnknownEvidencePolicy,
++)
++
++PLAN_PATH = Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json")
++REPORT_PATH = Path("artifacts/m1.1/gate-s4-verification-report.json")
++
++
++def utc_now_iso() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat()
++
++
++def write_json(path: Path, payload: dict[str, Any]) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++
++
++def pass_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "pass", "message": message, "details": details or {}}
++
++
++def fail_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "fail", "message": message, "details": details or {}}
++
++
++def build_report() -> dict[str, Any]:
++    checks: list[dict[str, Any]] = []
++    bound, execution = execute_plan_from_path(PLAN_PATH)
++    rows = execution_result_rows(execution)
++
++    checks.extend(validate_real_generic_rows(execution, rows))
++    checks.extend(validate_classification_rules_control_labels(rows))
++    checks.extend(validate_required_predicate_changes_inclusion())
++    checks.extend(validate_unknown_policy_semantics(bound))
++    checks.extend(validate_evidence_projection(rows))
++    checks.extend(validate_no_required_m1_fields(rows))
++    checks.extend(validate_generic_profile_and_no_legacy_adapter(execution))
++    checks.extend(validate_determinism())
++    checks.extend(validate_limits_and_modes(bound))
++    checks.extend(validate_legacy_parity_is_explicit())
++
++    summary = {
++        "pass": sum(1 for check in checks if check["status"] == "pass"),
++        "fail": sum(1 for check in checks if check["status"] == "fail"),
++        "not_ready": sum(1 for check in checks if check["status"] == "not_ready"),
++    }
++    report = {
++        "schema_version": "1.0",
++        "milestone": "M1.1S",
++        "gate": "Gate_S4_rule_driven_result_emission",
++        "generated_at": utc_now_iso(),
++        "status": "pass" if summary["fail"] == 0 and summary["not_ready"] == 0 else "fail",
++        "summary": summary,
++        "execution": {
++            "plan_path": str(PLAN_PATH),
++            "execution_id": execution.execution_id,
++            "status": execution.status.value,
++            "result_count": len(rows),
++            "trace_count": len(execution.predicate_traces),
++            "compatibility_profile": execution.provenance.get("compatibility_profile"),
++        },
++        "checks": checks,
++    }
++    write_json(REPORT_PATH, report)
++    return report
++
++
++def validate_real_generic_rows(execution: Any, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    by_label = Counter(str(row["classification"]) for row in rows)
++    return [
++        pass_check(
++            "generic.real_rows",
++            "generic execution emits real QueryResult rows from canonical match data",
++            {"result_count": len(rows), "by_label": dict(sorted(by_label.items()))},
++        )
++        if execution.status == ExecutionStatus.PASS
++        and execution.provenance.get("compatibility_profile") == "generic"
++        and len(rows) > 0
++        else fail_check(
++            "generic.real_rows",
++            "generic execution did not emit real rows",
++            {
++                "status": execution.status.value,
++                "result_count": len(rows),
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++            },
++        )
++    ]
++
++
++def validate_classification_rules_control_labels(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    labels = {str(row["classification"]) for row in rows}
++    matched = [
++        row
++        for row in rows
++        if row.get("matched_classification_rules") == [row.get("classification")]
++    ]
++    expected = {"DESTINATION_ENTERED", "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY"}
++    return [
++        pass_check(
++            "rules.labels",
++            "classification labels come from matching classification rules",
++            {"labels": sorted(labels), "matched_count": len(matched)},
++        )
++        if expected.issubset(labels) and len(matched) == len(rows)
++        else fail_check(
++            "rules.labels",
++            "classification labels are missing or not rule matched",
++            {"labels": sorted(labels), "matched_count": len(matched), "result_count": len(rows)},
++        )
++    ]
++
++
++def validate_required_predicate_changes_inclusion() -> list[dict[str, Any]]:
++    baseline_rows = execution_result_rows(execute_plan_from_path(PLAN_PATH)[1])
++    payload = plan_payload()
++    for rule in payload["draft_plan"]["classification_rules"]:
++        if rule["label"] == "DESTINATION_ENTERED":
++            rule["predicate_ids"] = [
++                predicate_id
++                for predicate_id in rule["predicate_ids"]
++                if predicate_id != "destination_region_entered"
++            ]
++    mutated = bind_document(TacticalQueryDocument.model_validate(payload))
++    mutated_execution = TacticalQueryExecutor().execute(mutated)
++    mutated_rows = execution_result_rows(mutated_execution)
++    before = Counter(str(row["classification"]) for row in baseline_rows)
++    after = Counter(str(row["classification"]) for row in mutated_rows)
++    return [
++        pass_check(
++            "rules.required_predicate_changes_inclusion",
++            "changing a required predicate changes inclusion while retaining declared labels",
++            {"before": dict(sorted(before.items())), "after": dict(sorted(after.items()))},
++        )
++        if after != before and set(after).issubset(set(before))
++        else fail_check(
++            "rules.required_predicate_changes_inclusion",
++            "predicate mutation did not change inclusion as expected",
++            {"before": dict(sorted(before.items())), "after": dict(sorted(after.items()))},
++        )
++    ]
++
++
++def validate_unknown_policy_semantics(bound: Any) -> list[dict[str, Any]]:
++    traces = [
++        PredicateTrace(predicate_id="p1", status="PASS"),
++        PredicateTrace(predicate_id="p2", status="UNKNOWN"),
++        PredicateTrace(predicate_id="p3", status="FAIL"),
++    ]
++    rules = [
++        ClassificationRule(label="A_PASS_UNKNOWN", predicate_ids=["p1", "p2"], description="probe"),
++        ClassificationRule(label="B_PASS_FAIL", predicate_ids=["p1", "p3"], description="probe"),
++    ]
++    checks: list[dict[str, Any]] = []
++    for policy, expected in [
++        (UnknownEvidencePolicy.EXCLUDE_CANDIDATE, []),
++        (UnknownEvidencePolicy.INCLUDE_WITH_WARNING, ["A_PASS_UNKNOWN"]),
++    ]:
++        policy_bound = bound.model_copy(
++            update={"unknown_evidence_policy": policy, "classification_rules": rules}
++        )
++        labels = rule_labels_for_traces(traces=traces, bound_plan=policy_bound)
++        checks.append(
++            pass_check(
++                f"unknown_policy.{policy.value}",
++                "unknown evidence policy controls rule labels",
++                {"labels": labels},
++            )
++            if labels == expected
++            else fail_check(
++                f"unknown_policy.{policy.value}",
++                "unknown evidence policy did not control labels",
++                {"expected": expected, "actual": labels},
++            )
++        )
++    return checks
++
++
++def validate_evidence_projection(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    failures = [
++        row["result_id"]
++        for row in rows
++        if not row.get("requested_evidence", {}).get("opposite_corridor.relation_id")
++        or row.get("requested_evidence", {}).get("opposite_corridor.destination_region") is None
++        or row.get("requested_evidence", {}).get("opposite_corridor.duration_seconds") is None
++        or row.get("requested_evidence", {}).get("destination_entry.classification") != row["classification"]
++    ]
++    return [
++        pass_check(
++            "evidence.declared_runtime_outputs",
++            "requested evidence resolves from declared runtime outputs",
++            {"result_count": len(rows)},
++        )
++        if not failures and rows
++        else fail_check(
++            "evidence.declared_runtime_outputs",
++            "one or more rows lack declared requested evidence",
++            {"failure_sample": failures[:10], "result_count": len(rows)},
++        )
++    ]
++
++
++def validate_no_required_m1_fields(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    forbidden = {"block_shift_score", "wide_entry_frame_id", "signed_shift_metres"}
++    violations = [
++        {"result_id": row["result_id"], "fields": sorted(forbidden.intersection(row))}
++        for row in rows
++        if forbidden.intersection(row)
++    ]
++    return [
++        pass_check(
++            "generic.no_required_m1_fields",
++            "generic result rows do not expose required M1 result fields",
++        )
++        if not violations
++        else fail_check(
++            "generic.no_required_m1_fields",
++            "generic result rows still expose M1-specific fields",
++            {"violations": violations[:10]},
++        )
++    ]
++
++
++def validate_generic_profile_and_no_legacy_adapter(execution: Any) -> list[dict[str, Any]]:
++    adapter_hits = [
++        trace.model_dump(mode="json", exclude_none=True)
++        for trace in execution.predicate_traces
++        if "legacy_m1" in json.dumps(trace.source_evidence, sort_keys=True)
++    ]
++    return [
++        pass_check(
++            "generic.no_legacy_adapter",
++            "generic execution reports generic profile and traces contain no legacy adapter evidence",
++            {"trace_count": len(execution.predicate_traces)},
++        )
++        if execution.provenance.get("compatibility_profile") == "generic" and not adapter_hits
++        else fail_check(
++            "generic.no_legacy_adapter",
++            "generic execution used or reported legacy behavior",
++            {
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++                "adapter_hit_count": len(adapter_hits),
++            },
++        )
++    ]
++
++
++def validate_determinism() -> list[dict[str, Any]]:
++    first_rows = execution_result_rows(execute_plan_from_path(PLAN_PATH)[1])
++    second_rows = execution_result_rows(execute_plan_from_path(PLAN_PATH)[1])
++    first_ids = [row["result_id"] for row in first_rows]
++    second_ids = [row["result_id"] for row in second_rows]
++    return [
++        pass_check(
++            "execution.deterministic_ids_order",
++            "generic result IDs and ordering are deterministic",
++            {"result_count": len(first_ids)},
++        )
++        if first_ids == second_ids and first_ids
++        else fail_check(
++            "execution.deterministic_ids_order",
++            "generic result IDs or ordering changed across runs",
++            {"first": first_ids[:10], "second": second_ids[:10]},
++        )
++    ]
++
++
++def validate_limits_and_modes(bound: Any) -> list[dict[str, Any]]:
++    executor = TacticalQueryExecutor()
++    limited = executor.execute(bound.model_copy(update={"max_results": 3}))
++    bind_only = executor.execute(bound.model_copy(update={"execution_mode": ExecutionMode.BIND_ONLY}))
++    dry_run = executor.execute(bound.model_copy(update={"execution_mode": ExecutionMode.DRY_RUN}))
++    checks = [
++        pass_check(
++            "execution.max_results",
++            "generic max_results truncates emitted results",
++            {"result_count": len(limited.results)},
++        )
++        if len(limited.results) == 3
++        else fail_check(
++            "execution.max_results",
++            "generic max_results was not honored",
++            {"result_count": len(limited.results)},
++        ),
++        pass_check("execution.bind_only", "bind_only does not execute results")
++        if bind_only.status == ExecutionStatus.NOT_STARTED and not bind_only.results
++        else fail_check("execution.bind_only", "bind_only emitted results"),
++        pass_check("execution.dry_run", "dry_run validates without results")
++        if dry_run.status == ExecutionStatus.PASS and not dry_run.results
++        else fail_check("execution.dry_run", "dry_run emitted results or failed"),
++    ]
++    return checks
++
++
++def validate_legacy_parity_is_explicit() -> list[dict[str, Any]]:
++    _bound, execution = execute_default_plan()
++    rows = execution_result_rows(execution)
++    return [
++        pass_check(
++            "legacy.explicit_parity_preserved",
++            "frozen M1 parity remains exact through the explicit legacy helper",
++            {
++                "result_count": len(rows),
++                "trace_count": len(execution.predicate_traces),
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++            },
++        )
++        if len(rows) == 180
++        and len(execution.predicate_traces) == 900
++        and execution.provenance.get("compatibility_profile") == "legacy_m1_parity"
++        else fail_check(
++            "legacy.explicit_parity_preserved",
++            "legacy helper did not preserve frozen parity",
++            {
++                "result_count": len(rows),
++                "trace_count": len(execution.predicate_traces),
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++            },
++        )
++    ]
++
++
++def plan_payload() -> dict[str, Any]:
++    return json.loads(PLAN_PATH.read_text(encoding="utf-8"))
++
++
++def main() -> None:
++    report = build_report()
++    print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
++    if report["status"] != "pass":
++        raise SystemExit(1)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/tests/test_m1_1_runtime.py b/tests/test_m1_1_runtime.py
+index b55b19a..7407021 100644
+--- a/tests/test_m1_1_runtime.py
++++ b/tests/test_m1_1_runtime.py
+@@ -63,8 +63,17 @@ class M11RuntimeTests(unittest.TestCase):
+         _bound, execution = execute_plan_from_path(
+             Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json")
+         )
++        rows = execution_result_rows(execution)
+ 
+         self.assertEqual("generic", execution.provenance["compatibility_profile"])
++        self.assertGreater(len(rows), 0)
++        self.assertEqual(
++            {"CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY", "DESTINATION_ENTERED"},
++            {row["classification"] for row in rows},
++        )
++        self.assertFalse(
++            {"block_shift_score", "wide_entry_frame_id", "signed_shift_metres"}.intersection(rows[0])
++        )
+ 
+     def test_max_results_is_honored_deterministically(self) -> None:
+         executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)

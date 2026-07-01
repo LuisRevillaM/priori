@@ -1,0 +1,5239 @@
+{
+  "atlas": {
+    "entries": [
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.tracking_presence",
+        "source_name": "tracking_presence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.tracking_coverage_ratio",
+        "source_name": "tracking_coverage_ratio",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.sample_gap_episode",
+        "source_name": "sample_gap_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.irregular_sampling_signal",
+        "source_name": "irregular_sampling_signal",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.coordinate_outlier_candidate",
+        "source_name": "coordinate_outlier_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.kinematic_outlier_candidate",
+        "source_name": "kinematic_outlier_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.identity_swap_candidate",
+        "source_name": "identity_swap_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.ball_track_quality",
+        "source_name": "ball_track_quality",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.pitch_calibration_quality",
+        "source_name": "pitch_calibration_quality",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.event_tracking_alignment_candidate",
+        "source_name": "event_tracking_alignment_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.event_tracking_alignment_confidence",
+        "source_name": "event_tracking_alignment_confidence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.clock_offset_estimate",
+        "source_name": "clock_offset_estimate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.clock_drift_estimate",
+        "source_name": "clock_drift_estimate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.provider_event_conflict",
+        "source_name": "provider_event_conflict",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.interpolation_mask",
+        "source_name": "interpolation_mask",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.smoothing_provenance",
+        "source_name": "smoothing_provenance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.source_provenance",
+        "source_name": "source_provenance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.measurement_uncertainty",
+        "source_name": "measurement_uncertainty",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.required_entity_coverage",
+        "source_name": "required_entity_coverage",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Data quality, synchronization, and provenance",
+        "id": "atlas.quality_reason_histogram",
+        "source_name": "quality_reason_histogram",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.period_episode",
+        "source_name": "period_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.canonical_match_clock",
+        "source_name": "canonical_match_clock",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.ball_in_play_state",
+        "source_name": "ball_in_play_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.restart_state",
+        "source_name": "restart_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.restart_episode",
+        "source_name": "restart_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.score_state",
+        "source_name": "score_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.match_status_state",
+        "source_name": "match_status_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.remaining_time",
+        "source_name": "remaining_time",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.stoppage_time_state",
+        "source_name": "stoppage_time_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.numerical_strength_state",
+        "source_name": "numerical_strength_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.pitch_dimensions",
+        "source_name": "pitch_dimensions",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.attacking_direction",
+        "source_name": "attacking_direction",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.competition_context",
+        "source_name": "competition_context",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.weather_and_surface_context",
+        "source_name": "weather_and_surface_context",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Match clock, laws, and contextual state",
+        "id": "atlas.game_state_window",
+        "source_name": "game_state_window",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.registered_entity",
+        "source_name": "registered_entity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.active_player_timeline",
+        "source_name": "active_player_timeline",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.substitution_episode",
+        "source_name": "substitution_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.dismissal_episode",
+        "source_name": "dismissal_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.goalkeeper_timeline",
+        "source_name": "goalkeeper_timeline",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.team_membership",
+        "source_name": "team_membership",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.provider_position_label",
+        "source_name": "provider_position_label",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.tactical_role_assignment",
+        "source_name": "tactical_role_assignment",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.tactical_role_episode",
+        "source_name": "tactical_role_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.role_change_candidate",
+        "source_name": "role_change_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.role_exchange_candidate",
+        "source_name": "role_exchange_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.unit_membership",
+        "source_name": "unit_membership",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.reference_player_set",
+        "source_name": "reference_player_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.expected_entity_set",
+        "source_name": "expected_entity_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.entity_alias_resolution",
+        "source_name": "entity_alias_resolution",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Entities, availability, roles, and tactical identity",
+        "id": "atlas.entity_visibility_state",
+        "source_name": "entity_visibility_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.ball_motion_state",
+        "source_name": "ball_motion_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.ball_height_state",
+        "source_name": "ball_height_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.player_ball_proximity",
+        "source_name": "player_ball_proximity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.player_ball_reachability",
+        "source_name": "player_ball_reachability",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.touch_candidate",
+        "source_name": "touch_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.contact_candidate",
+        "source_name": "contact_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.control_gain_candidate",
+        "source_name": "control_gain_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.control_loss_candidate",
+        "source_name": "control_loss_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.player_control_state",
+        "source_name": "player_control_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.player_control_episode",
+        "source_name": "player_control_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.team_control_state",
+        "source_name": "team_control_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.team_possession_episode",
+        "source_name": "team_possession_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.possession_sequence",
+        "source_name": "possession_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.loose_ball_episode",
+        "source_name": "loose_ball_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.contested_ball_episode",
+        "source_name": "contested_ball_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.duel_for_control_episode",
+        "source_name": "duel_for_control_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.possession_change",
+        "source_name": "possession_change",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.same_possession_relation",
+        "source_name": "same_possession_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.possession_continuity_score",
+        "source_name": "possession_continuity_score",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.provider_possession_comparison",
+        "source_name": "provider_possession_comparison",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.ball_out_of_bounds_candidate",
+        "source_name": "ball_out_of_bounds_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.dead_ball_control_state",
+        "source_name": "dead_ball_control_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.second_ball_episode",
+        "source_name": "second_ball_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Ball contact, control, contest, and possession",
+        "id": "atlas.recovery_of_control",
+        "source_name": "recovery_of_control",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.position",
+        "source_name": "position",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.velocity",
+        "source_name": "velocity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.acceleration",
+        "source_name": "acceleration",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.speed",
+        "source_name": "speed",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.heading_of_motion",
+        "source_name": "heading_of_motion",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.longitudinal_velocity",
+        "source_name": "longitudinal_velocity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.lateral_velocity",
+        "source_name": "lateral_velocity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.relative_velocity",
+        "source_name": "relative_velocity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.closing_speed",
+        "source_name": "closing_speed",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.separation_speed",
+        "source_name": "separation_speed",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.path_length",
+        "source_name": "path_length",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.net_displacement",
+        "source_name": "net_displacement",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.trajectory_curvature",
+        "source_name": "trajectory_curvature",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.turn_rate",
+        "source_name": "turn_rate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.jerk",
+        "source_name": "jerk",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.movement_onset",
+        "source_name": "movement_onset",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.movement_stop",
+        "source_name": "movement_stop",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.acceleration_episode",
+        "source_name": "acceleration_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.deceleration_episode",
+        "source_name": "deceleration_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.sprint_episode",
+        "source_name": "sprint_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.high_intensity_run_episode",
+        "source_name": "high_intensity_run_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.change_of_direction_episode",
+        "source_name": "change_of_direction_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.trajectory_similarity",
+        "source_name": "trajectory_similarity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.movement_synchrony",
+        "source_name": "movement_synchrony",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.convergence_relation",
+        "source_name": "convergence_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.divergence_relation",
+        "source_name": "divergence_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.trajectory_change_point",
+        "source_name": "trajectory_change_point",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Kinematics and trajectory structure",
+        "id": "atlas.predicted_short_horizon_trajectory",
+        "source_name": "predicted_short_horizon_trajectory",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.distance",
+        "source_name": "distance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.signed_longitudinal_separation",
+        "source_name": "signed_longitudinal_separation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.signed_lateral_separation",
+        "source_name": "signed_lateral_separation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.bearing",
+        "source_name": "bearing",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.relative_bearing",
+        "source_name": "relative_bearing",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.angle_to_goal",
+        "source_name": "angle_to_goal",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.distance_to_goal",
+        "source_name": "distance_to_goal",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.goal_side_relation",
+        "source_name": "goal_side_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.ball_side_relation",
+        "source_name": "ball_side_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.ahead_of_ball_relation",
+        "source_name": "ahead_of_ball_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.behind_ball_relation",
+        "source_name": "behind_ball_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.between_relation",
+        "source_name": "between_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.inside_outside_shape_relation",
+        "source_name": "inside_outside_shape_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.nearest_entity",
+        "source_name": "nearest_entity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.k_nearest_entities",
+        "source_name": "k_nearest_entities",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.segment_clearance",
+        "source_name": "segment_clearance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.capsule_clearance",
+        "source_name": "capsule_clearance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.line_of_sight",
+        "source_name": "line_of_sight",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.goal_mouth_visibility",
+        "source_name": "goal_mouth_visibility",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.convex_hull",
+        "source_name": "convex_hull",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.concave_hull",
+        "source_name": "concave_hull",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.centroid",
+        "source_name": "centroid",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.weighted_centroid",
+        "source_name": "weighted_centroid",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.covariance_ellipse",
+        "source_name": "covariance_ellipse",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.voronoi_partition",
+        "source_name": "voronoi_partition",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.delaunay_adjacency",
+        "source_name": "delaunay_adjacency",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.free_space_radius",
+        "source_name": "free_space_radius",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.local_density",
+        "source_name": "local_density",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.spatial_entropy",
+        "source_name": "spatial_entropy",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.overlap_area",
+        "source_name": "overlap_area",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.region_distance",
+        "source_name": "region_distance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.region_adjacency",
+        "source_name": "region_adjacency",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.region_crossing",
+        "source_name": "region_crossing",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Spatial geometry and topological relations",
+        "id": "atlas.spatial_ordering",
+        "source_name": "spatial_ordering",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.absolute_pitch_frame",
+        "source_name": "absolute_pitch_frame",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.attacking_team_frame",
+        "source_name": "attacking_team_frame",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.defending_team_frame",
+        "source_name": "defending_team_frame",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.ball_relative_frame",
+        "source_name": "ball_relative_frame",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.actor_relative_frame",
+        "source_name": "actor_relative_frame",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.goal_relative_frame",
+        "source_name": "goal_relative_frame",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.unit_relative_frame",
+        "source_name": "unit_relative_frame",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.static_pitch_zone",
+        "source_name": "static_pitch_zone",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.pitch_third_region",
+        "source_name": "pitch_third_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.vertical_channel_region",
+        "source_name": "vertical_channel_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.penalty_area_region",
+        "source_name": "penalty_area_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.zone_14_region",
+        "source_name": "zone_14_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.cutback_region",
+        "source_name": "cutback_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.goal_corridor_region",
+        "source_name": "goal_corridor_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.ball_side_region",
+        "source_name": "ball_side_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.weak_side_region",
+        "source_name": "weak_side_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.team_shape_interior",
+        "source_name": "team_shape_interior",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.between_units_region",
+        "source_name": "between_units_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.behind_unit_region",
+        "source_name": "behind_unit_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.outside_team_shape_region",
+        "source_name": "outside_team_shape_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.rest_defense_region",
+        "source_name": "rest_defense_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.custom_dynamic_region",
+        "source_name": "custom_dynamic_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.region_membership",
+        "source_name": "region_membership",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.region_dwell_episode",
+        "source_name": "region_dwell_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.region_entry",
+        "source_name": "region_entry",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.region_exit",
+        "source_name": "region_exit",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.region_arrival",
+        "source_name": "region_arrival",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reference frames and dynamic football regions",
+        "id": "atlas.region_vacation",
+        "source_name": "region_vacation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.time_to_location",
+        "source_name": "time_to_location",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.time_to_moving_target",
+        "source_name": "time_to_moving_target",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.time_to_intercept_ball",
+        "source_name": "time_to_intercept_ball",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.arrival_time_field",
+        "source_name": "arrival_time_field",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.player_reachability_region",
+        "source_name": "player_reachability_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.team_reachability_region",
+        "source_name": "team_reachability_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.interception_margin",
+        "source_name": "interception_margin",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.control_probability_field",
+        "source_name": "control_probability_field",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.pitch_control_field",
+        "source_name": "pitch_control_field",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.dominant_control_region",
+        "source_name": "dominant_control_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.controlled_area",
+        "source_name": "controlled_area",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.local_control_margin",
+        "source_name": "local_control_margin",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.free_space_field",
+        "source_name": "free_space_field",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.available_space_region",
+        "source_name": "available_space_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.available_space_episode",
+        "source_name": "available_space_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.space_opening_rate",
+        "source_name": "space_opening_rate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.space_closing_rate",
+        "source_name": "space_closing_rate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.space_accessibility",
+        "source_name": "space_accessibility",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.occupied_space_value",
+        "source_name": "occupied_space_value",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.generated_space_value",
+        "source_name": "generated_space_value",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.closed_space_value",
+        "source_name": "closed_space_value",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.space_transfer",
+        "source_name": "space_transfer",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.space_creation_candidate",
+        "source_name": "space_creation_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.space_denial_candidate",
+        "source_name": "space_denial_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Reachability, interception, space control, and spatial value",
+        "id": "atlas.space_exploitation_candidate",
+        "source_name": "space_exploitation_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.team_centroid",
+        "source_name": "team_centroid",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.team_width",
+        "source_name": "team_width",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.team_length",
+        "source_name": "team_length",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.team_area",
+        "source_name": "team_area",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.team_stretch_index",
+        "source_name": "team_stretch_index",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.horizontal_compactness",
+        "source_name": "horizontal_compactness",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.vertical_compactness",
+        "source_name": "vertical_compactness",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.team_shape_orientation",
+        "source_name": "team_shape_orientation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.team_shape_anisotropy",
+        "source_name": "team_shape_anisotropy",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.team_shape_skew",
+        "source_name": "team_shape_skew",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.team_shape_similarity",
+        "source_name": "team_shape_similarity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.formation_state_distribution",
+        "source_name": "formation_state_distribution",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.formation_transition_episode",
+        "source_name": "formation_transition_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.unit_detection",
+        "source_name": "unit_detection",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.unit_line_model",
+        "source_name": "unit_line_model",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.unit_line_membership",
+        "source_name": "unit_line_membership",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.unit_height",
+        "source_name": "unit_height",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.unit_width",
+        "source_name": "unit_width",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.unit_orientation",
+        "source_name": "unit_orientation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.unit_curvature",
+        "source_name": "unit_curvature",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.unit_spacing",
+        "source_name": "unit_spacing",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.last_defensive_line",
+        "source_name": "last_defensive_line",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.offside_line_candidate",
+        "source_name": "offside_line_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.onside_margin",
+        "source_name": "onside_margin",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.line_integrity",
+        "source_name": "line_integrity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.line_step_episode",
+        "source_name": "line_step_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.line_drop_episode",
+        "source_name": "line_drop_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.line_shift_episode",
+        "source_name": "line_shift_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.line_stagger",
+        "source_name": "line_stagger",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.players_ahead_of_ball",
+        "source_name": "players_ahead_of_ball",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.players_behind_ball",
+        "source_name": "players_behind_ball",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.lane_occupancy",
+        "source_name": "lane_occupancy",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.occupation_matrix",
+        "source_name": "occupation_matrix",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.weak_side_balance",
+        "source_name": "weak_side_balance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.rest_defense_shape",
+        "source_name": "rest_defense_shape",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.shape_expansion_episode",
+        "source_name": "shape_expansion_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.shape_contraction_episode",
+        "source_name": "shape_contraction_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.shape_translation_episode",
+        "source_name": "shape_translation_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Team shape, units, lines, occupation, and structural change",
+        "id": "atlas.shape_deformation_episode",
+        "source_name": "shape_deformation_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.nearest_defender_relation",
+        "source_name": "nearest_defender_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.defender_arrival_time",
+        "source_name": "defender_arrival_time",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.pressure_intensity",
+        "source_name": "pressure_intensity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.pressure_actor_set",
+        "source_name": "pressure_actor_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.pressure_direction",
+        "source_name": "pressure_direction",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.pressure_diversity",
+        "source_name": "pressure_diversity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.direct_pressure_candidate",
+        "source_name": "direct_pressure_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.indirect_pressure_candidate",
+        "source_name": "indirect_pressure_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.multi_angle_pressure_candidate",
+        "source_name": "multi_angle_pressure_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.press_onset",
+        "source_name": "press_onset",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.press_release",
+        "source_name": "press_release",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.pressing_episode",
+        "source_name": "pressing_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.team_press_synchrony",
+        "source_name": "team_press_synchrony",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.cover_relation",
+        "source_name": "cover_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.cover_shadow_region",
+        "source_name": "cover_shadow_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.passing_lane_denial",
+        "source_name": "passing_lane_denial",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.marking_proximity",
+        "source_name": "marking_proximity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.marking_assignment_candidate",
+        "source_name": "marking_assignment_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.marking_tightness",
+        "source_name": "marking_tightness",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.tracking_run_candidate",
+        "source_name": "tracking_run_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.containment_episode",
+        "source_name": "containment_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.delay_episode",
+        "source_name": "delay_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.forced_direction_candidate",
+        "source_name": "forced_direction_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.touchline_isolation_candidate",
+        "source_name": "touchline_isolation_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.press_trap_candidate",
+        "source_name": "press_trap_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.back_pressure_candidate",
+        "source_name": "back_pressure_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.recovery_run_episode",
+        "source_name": "recovery_run_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.tackle_attempt_candidate",
+        "source_name": "tackle_attempt_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.interception_attempt_candidate",
+        "source_name": "interception_attempt_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.shot_lane_block",
+        "source_name": "shot_lane_block",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.cross_lane_block",
+        "source_name": "cross_lane_block",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.defensive_access_to_receiver",
+        "source_name": "defensive_access_to_receiver",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.defensive_overload",
+        "source_name": "defensive_overload",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.block_shift_episode",
+        "source_name": "block_shift_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.block_depth_state",
+        "source_name": "block_depth_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.block_compactness_state",
+        "source_name": "block_compactness_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Pressure, marking, cover, denial, and collective defending",
+        "id": "atlas.defensive_reaction_to_pass",
+        "source_name": "defensive_reaction_to_pass",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.local_attacker_count",
+        "source_name": "local_attacker_count",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.local_defender_count",
+        "source_name": "local_defender_count",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.local_number_balance",
+        "source_name": "local_number_balance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.local_reachability_balance",
+        "source_name": "local_reachability_balance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.numerical_superiority_episode",
+        "source_name": "numerical_superiority_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.numerical_inferiority_episode",
+        "source_name": "numerical_inferiority_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.qualitative_superiority_proxy",
+        "source_name": "qualitative_superiority_proxy",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.spare_player_candidate",
+        "source_name": "spare_player_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.free_player_candidate",
+        "source_name": "free_player_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.support_distance",
+        "source_name": "support_distance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.support_angle",
+        "source_name": "support_angle",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.support_depth",
+        "source_name": "support_depth",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.support_width",
+        "source_name": "support_width",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.support_triangle_candidate",
+        "source_name": "support_triangle_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.support_arrival_relation",
+        "source_name": "support_arrival_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.receiver_support_state",
+        "source_name": "receiver_support_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.receiver_isolation_candidate",
+        "source_name": "receiver_isolation_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.separation_from_marker",
+        "source_name": "separation_from_marker",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.passing_option_set",
+        "source_name": "passing_option_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.escape_option_set",
+        "source_name": "escape_option_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.progressive_option_set",
+        "source_name": "progressive_option_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.switch_option_set",
+        "source_name": "switch_option_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.overload_relation",
+        "source_name": "overload_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.underload_relation",
+        "source_name": "underload_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.one_v_one_isolation",
+        "source_name": "one_v_one_isolation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.two_v_one_relation",
+        "source_name": "two_v_one_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.three_v_two_relation",
+        "source_name": "three_v_two_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Support, options, numerical relations, and local structure",
+        "id": "atlas.support_quality_score",
+        "source_name": "support_quality_score",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.action_candidate",
+        "source_name": "action_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.action_anchor",
+        "source_name": "action_anchor",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.physical_ball_release",
+        "source_name": "physical_ball_release",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.physical_ball_reception",
+        "source_name": "physical_ball_reception",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.action_origin",
+        "source_name": "action_origin",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.action_destination",
+        "source_name": "action_destination",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.action_duration",
+        "source_name": "action_duration",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.action_ball_trajectory",
+        "source_name": "action_ball_trajectory",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.action_ground_air_mode",
+        "source_name": "action_ground_air_mode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.controlled_action_episode",
+        "source_name": "controlled_action_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.pass_episode",
+        "source_name": "pass_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.cross_episode",
+        "source_name": "cross_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.cutback_episode",
+        "source_name": "cutback_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.through_ball_candidate",
+        "source_name": "through_ball_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.switch_of_play_action",
+        "source_name": "switch_of_play_action",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.carry_episode",
+        "source_name": "carry_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.dribble_attempt_episode",
+        "source_name": "dribble_attempt_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.shot_episode",
+        "source_name": "shot_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.clearance_episode",
+        "source_name": "clearance_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.headed_action_candidate",
+        "source_name": "headed_action_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.deflection_candidate",
+        "source_name": "deflection_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.block_candidate",
+        "source_name": "block_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.rebound_episode",
+        "source_name": "rebound_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.miscontrol_candidate",
+        "source_name": "miscontrol_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.interception_episode",
+        "source_name": "interception_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.tackle_episode",
+        "source_name": "tackle_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.ball_recovery_episode",
+        "source_name": "ball_recovery_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.duel_episode",
+        "source_name": "duel_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.action_outcome_state",
+        "source_name": "action_outcome_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.action_family_hierarchy",
+        "source_name": "action_family_hierarchy",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Physical action reconstruction",
+        "id": "atlas.action_hypothesis_set",
+        "source_name": "action_hypothesis_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_vector",
+        "source_name": "pass_vector",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.forward_progression",
+        "source_name": "forward_progression",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.lateral_transfer",
+        "source_name": "lateral_transfer",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_length",
+        "source_name": "pass_length",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_speed_profile",
+        "source_name": "pass_speed_profile",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_lane",
+        "source_name": "pass_lane",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_lane_clearance",
+        "source_name": "pass_lane_clearance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_lane_interception_margin",
+        "source_name": "pass_lane_interception_margin",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_window_state",
+        "source_name": "pass_window_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_window_episode",
+        "source_name": "pass_window_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_window_opening",
+        "source_name": "pass_window_opening",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_window_closing",
+        "source_name": "pass_window_closing",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_window_duration",
+        "source_name": "pass_window_duration",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_window_opening_rate",
+        "source_name": "pass_window_opening_rate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.receiver_arrival_margin",
+        "source_name": "receiver_arrival_margin",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.receiver_control_margin",
+        "source_name": "receiver_control_margin",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.receiver_openness",
+        "source_name": "receiver_openness",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.receiving_location_relation",
+        "source_name": "receiving_location_relation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.receive_between_units",
+        "source_name": "receive_between_units",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.receive_behind_unit",
+        "source_name": "receive_behind_unit",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.receive_outside_shape",
+        "source_name": "receive_outside_shape",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.receive_under_pressure",
+        "source_name": "receive_under_pressure",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.receive_on_back_foot_proxy",
+        "source_name": "receive_on_back_foot_proxy",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.receive_and_turn_candidate",
+        "source_name": "receive_and_turn_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.one_touch_distribution_candidate",
+        "source_name": "one_touch_distribution_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.destination_entry",
+        "source_name": "destination_entry",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.target_player_entry",
+        "source_name": "target_player_entry",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.opponents_bypassed_by_action",
+        "source_name": "opponents_bypassed_by_action",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.structural_displacement_by_pass",
+        "source_name": "structural_displacement_by_pass",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_disruption_score",
+        "source_name": "pass_disruption_score",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_completion_probability",
+        "source_name": "pass_completion_probability",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Passing lanes, windows, reception, and distribution effects",
+        "id": "atlas.pass_selection_probability",
+        "source_name": "pass_selection_probability",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_displacement",
+        "source_name": "carry_displacement",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_progression",
+        "source_name": "carry_progression",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_duration",
+        "source_name": "carry_duration",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_speed_profile",
+        "source_name": "carry_speed_profile",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_pressure_profile",
+        "source_name": "carry_pressure_profile",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_lane",
+        "source_name": "carry_lane",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_into_space",
+        "source_name": "carry_into_space",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_out_of_pressure",
+        "source_name": "carry_out_of_pressure",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_between_units",
+        "source_name": "carry_between_units",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_beyond_unit",
+        "source_name": "carry_beyond_unit",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.defender_engagement_episode",
+        "source_name": "defender_engagement_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.defender_bypassed_by_carry",
+        "source_name": "defender_bypassed_by_carry",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.dribble_success_state",
+        "source_name": "dribble_success_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.direction_change_under_pressure",
+        "source_name": "direction_change_under_pressure",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.stop_start_evasion_candidate",
+        "source_name": "stop_start_evasion_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.ball_shielding_proxy",
+        "source_name": "ball_shielding_proxy",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.progressive_carry_option",
+        "source_name": "progressive_carry_option",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Carrying, dribbling, evasion, and ball progression on foot",
+        "id": "atlas.carry_value_change",
+        "source_name": "carry_value_change",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.movement_toward_ball",
+        "source_name": "movement_toward_ball",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.movement_away_from_ball",
+        "source_name": "movement_away_from_ball",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.movement_toward_goal",
+        "source_name": "movement_toward_goal",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.movement_away_from_goal",
+        "source_name": "movement_away_from_goal",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.movement_to_width",
+        "source_name": "movement_to_width",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.movement_to_depth",
+        "source_name": "movement_to_depth",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.movement_inside",
+        "source_name": "movement_inside",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.movement_outside",
+        "source_name": "movement_outside",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.movement_to_receive_candidate",
+        "source_name": "movement_to_receive_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.offering_to_receive_candidate",
+        "source_name": "offering_to_receive_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.offer_window_episode",
+        "source_name": "offer_window_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.separation_creation",
+        "source_name": "separation_creation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.marker_attraction_candidate",
+        "source_name": "marker_attraction_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.defender_displacement",
+        "source_name": "defender_displacement",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.teammate_accessibility_gain",
+        "source_name": "teammate_accessibility_gain",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.occupy_region_episode",
+        "source_name": "occupy_region_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.vacate_region_episode",
+        "source_name": "vacate_region_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.arrive_in_region_episode",
+        "source_name": "arrive_in_region_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.hold_width_candidate",
+        "source_name": "hold_width_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.hold_depth_candidate",
+        "source_name": "hold_depth_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.drop_between_units",
+        "source_name": "drop_between_units",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.run_beyond_last_line",
+        "source_name": "run_beyond_last_line",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.run_across_line",
+        "source_name": "run_across_line",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.diagonal_run_candidate",
+        "source_name": "diagonal_run_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.curved_run_candidate",
+        "source_name": "curved_run_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.check_away_then_to_ball",
+        "source_name": "check_away_then_to_ball",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.check_to_ball_then_behind",
+        "source_name": "check_to_ball_then_behind",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.overlap_candidate",
+        "source_name": "overlap_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.underlap_candidate",
+        "source_name": "underlap_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.third_player_run_candidate",
+        "source_name": "third_player_run_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.wall_pass_support_candidate",
+        "source_name": "wall_pass_support_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.rotation_candidate",
+        "source_name": "rotation_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.position_exchange_candidate",
+        "source_name": "position_exchange_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.pinning_candidate",
+        "source_name": "pinning_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.dragging_run_candidate",
+        "source_name": "dragging_run_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.decoy_run_candidate",
+        "source_name": "decoy_run_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.space_creating_run_candidate",
+        "source_name": "space_creating_run_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.box_entry_run",
+        "source_name": "box_entry_run",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.near_post_run_candidate",
+        "source_name": "near_post_run_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.far_post_run_candidate",
+        "source_name": "far_post_run_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.cutback_support_run",
+        "source_name": "cutback_support_run",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.rebound_positioning_candidate",
+        "source_name": "rebound_positioning_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Off-ball attacking movement and behavior",
+        "id": "atlas.off_ball_run_effect",
+        "source_name": "off_ball_run_effect",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.relative_position_to_unit",
+        "source_name": "relative_position_to_unit",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.relative_position_to_line",
+        "source_name": "relative_position_to_line",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.ball_crosses_unit",
+        "source_name": "ball_crosses_unit",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.player_crosses_unit",
+        "source_name": "player_crosses_unit",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.receive_beyond_unit",
+        "source_name": "receive_beyond_unit",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.controlled_line_break",
+        "source_name": "controlled_line_break",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.line_break_mode",
+        "source_name": "line_break_mode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.specific_unit_broken",
+        "source_name": "specific_unit_broken",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.number_of_units_broken",
+        "source_name": "number_of_units_broken",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.line_break_receiver_state",
+        "source_name": "line_break_receiver_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.line_recovery_after_break",
+        "source_name": "line_recovery_after_break",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.intra_unit_gap",
+        "source_name": "intra_unit_gap",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.inter_unit_gap",
+        "source_name": "inter_unit_gap",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.gap_width",
+        "source_name": "gap_width",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.gap_depth",
+        "source_name": "gap_depth",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.gap_control_margin",
+        "source_name": "gap_control_margin",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.gap_opening_episode",
+        "source_name": "gap_opening_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.gap_closing_episode",
+        "source_name": "gap_closing_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.gap_exploitation_episode",
+        "source_name": "gap_exploitation_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.line_fixing_candidate",
+        "source_name": "line_fixing_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.unit_dislocation",
+        "source_name": "unit_dislocation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.penetration_depth",
+        "source_name": "penetration_depth",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.penetration_retention",
+        "source_name": "penetration_retention",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Lines, gaps, penetration, and structural breaks",
+        "id": "atlas.penetration_support_response",
+        "source_name": "penetration_support_response",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_duration",
+        "source_name": "possession_duration",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_distance_advanced",
+        "source_name": "possession_distance_advanced",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_progression_rate",
+        "source_name": "possession_progression_rate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_directness",
+        "source_name": "possession_directness",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_width",
+        "source_name": "possession_width",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_depth",
+        "source_name": "possession_depth",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.circulation_speed",
+        "source_name": "circulation_speed",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.pass_tempo",
+        "source_name": "pass_tempo",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.touch_tempo",
+        "source_name": "touch_tempo",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_security",
+        "source_name": "possession_security",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.territorial_possession",
+        "source_name": "territorial_possession",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.side_circulation_episode",
+        "source_name": "side_circulation_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.central_circulation_episode",
+        "source_name": "central_circulation_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.switch_frequency",
+        "source_name": "switch_frequency",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.recycle_episode",
+        "source_name": "recycle_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.reset_to_back_line",
+        "source_name": "reset_to_back_line",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.attract_then_release_candidate",
+        "source_name": "attract_then_release_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.overload_to_isolate_candidate",
+        "source_name": "overload_to_isolate_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.third_player_combination",
+        "source_name": "third_player_combination",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.up_back_through_sequence",
+        "source_name": "up_back_through_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.give_and_go_sequence",
+        "source_name": "give_and_go_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.bounce_pass_sequence",
+        "source_name": "bounce_pass_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.wall_pass_sequence",
+        "source_name": "wall_pass_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.switch_of_play_sequence",
+        "source_name": "switch_of_play_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.central_progression_sequence",
+        "source_name": "central_progression_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.wide_progression_sequence",
+        "source_name": "wide_progression_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.outside_inside_sequence",
+        "source_name": "outside_inside_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.inside_outside_sequence",
+        "source_name": "inside_outside_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_stall_episode",
+        "source_name": "possession_stall_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_acceleration_episode",
+        "source_name": "possession_acceleration_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_deceleration_episode",
+        "source_name": "possession_deceleration_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.pattern_repetition",
+        "source_name": "pattern_repetition",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Possession behavior, circulation, combinations, and repeated patterns",
+        "id": "atlas.possession_signature",
+        "source_name": "possession_signature",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.possession_loss_anchor",
+        "source_name": "possession_loss_anchor",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.possession_gain_anchor",
+        "source_name": "possession_gain_anchor",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.attacking_transition_window",
+        "source_name": "attacking_transition_window",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.defensive_transition_window",
+        "source_name": "defensive_transition_window",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.first_action_after_regain",
+        "source_name": "first_action_after_regain",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.first_forward_action_after_regain",
+        "source_name": "first_forward_action_after_regain",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.counterattack_candidate",
+        "source_name": "counterattack_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.counterpress_candidate",
+        "source_name": "counterpress_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.counterpress_actor_set",
+        "source_name": "counterpress_actor_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.ball_recovery_time",
+        "source_name": "ball_recovery_time",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.defensive_reorganization_time",
+        "source_name": "defensive_reorganization_time",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.recovery_shape_state",
+        "source_name": "recovery_shape_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.transition_overload",
+        "source_name": "transition_overload",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.transition_open_space",
+        "source_name": "transition_open_space",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.opposition_outlet_set",
+        "source_name": "opposition_outlet_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.outlet_denial",
+        "source_name": "outlet_denial",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.rest_defense_count",
+        "source_name": "rest_defense_count",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.rest_defense_depth",
+        "source_name": "rest_defense_depth",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.rest_defense_width",
+        "source_name": "rest_defense_width",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.rest_defense_balance",
+        "source_name": "rest_defense_balance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.rest_attack_structure",
+        "source_name": "rest_attack_structure",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.counterattack_prevention",
+        "source_name": "counterattack_prevention",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.transition_termination",
+        "source_name": "transition_termination",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.regain_location",
+        "source_name": "regain_location",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.loss_location",
+        "source_name": "loss_location",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Transitions, counterpressure, recovery, and rest defense",
+        "id": "atlas.post_regain_retention",
+        "source_name": "post_regain_retention",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.in_possession_phase_distribution",
+        "source_name": "in_possession_phase_distribution",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.out_of_possession_phase_distribution",
+        "source_name": "out_of_possession_phase_distribution",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.in_contest_phase_distribution",
+        "source_name": "in_contest_phase_distribution",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.goalkeeping_phase_distribution",
+        "source_name": "goalkeeping_phase_distribution",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.build_up_phase_candidate",
+        "source_name": "build_up_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.progression_phase_candidate",
+        "source_name": "progression_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.final_third_phase_candidate",
+        "source_name": "final_third_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.counterattack_phase_candidate",
+        "source_name": "counterattack_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.attacking_set_piece_phase",
+        "source_name": "attacking_set_piece_phase",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.high_press_phase_candidate",
+        "source_name": "high_press_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.mid_press_phase_candidate",
+        "source_name": "mid_press_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.low_press_phase_candidate",
+        "source_name": "low_press_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.high_block_phase_candidate",
+        "source_name": "high_block_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.mid_block_phase_candidate",
+        "source_name": "mid_block_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.low_block_phase_candidate",
+        "source_name": "low_block_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.counterpress_phase_candidate",
+        "source_name": "counterpress_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.defensive_recovery_phase_candidate",
+        "source_name": "defensive_recovery_phase_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.defensive_set_piece_phase",
+        "source_name": "defensive_set_piece_phase",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.organized_unorganized_state",
+        "source_name": "organized_unorganized_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.phase_transition",
+        "source_name": "phase_transition",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.phase_evidence_projection",
+        "source_name": "phase_evidence_projection",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Phases of play and team behavioral states",
+        "id": "atlas.team_behavior_state_embedding",
+        "source_name": "team_behavior_state_embedding",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_origin",
+        "source_name": "shot_origin",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_trajectory",
+        "source_name": "shot_trajectory",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_speed_profile",
+        "source_name": "shot_speed_profile",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_angle",
+        "source_name": "shot_angle",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_distance",
+        "source_name": "shot_distance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_pressure",
+        "source_name": "shot_pressure",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_lane_clearance",
+        "source_name": "shot_lane_clearance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_position_at_shot",
+        "source_name": "goalkeeper_position_at_shot",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_goal_coverage",
+        "source_name": "goalkeeper_goal_coverage",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.defender_goal_coverage",
+        "source_name": "defender_goal_coverage",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_target_region",
+        "source_name": "shot_target_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_outcome_state",
+        "source_name": "shot_outcome_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.blocked_shot_episode",
+        "source_name": "blocked_shot_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.saved_shot_episode",
+        "source_name": "saved_shot_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.post_shot_rebound",
+        "source_name": "post_shot_rebound",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_creation_sequence",
+        "source_name": "shot_creation_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.box_entry_to_shot",
+        "source_name": "box_entry_to_shot",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.cutback_to_shot",
+        "source_name": "cutback_to_shot",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.cross_to_shot",
+        "source_name": "cross_to_shot",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.second_ball_to_shot",
+        "source_name": "second_ball_to_shot",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_depth",
+        "source_name": "goalkeeper_depth",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_lateral_alignment",
+        "source_name": "goalkeeper_lateral_alignment",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_set_position_proxy",
+        "source_name": "goalkeeper_set_position_proxy",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_sweeper_position",
+        "source_name": "goalkeeper_sweeper_position",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_intervention_race",
+        "source_name": "goalkeeper_intervention_race",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.cross_claim_region",
+        "source_name": "cross_claim_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_claim_episode",
+        "source_name": "goalkeeper_claim_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_punch_candidate",
+        "source_name": "goalkeeper_punch_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_distribution_episode",
+        "source_name": "goalkeeper_distribution_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_distribution_option_set",
+        "source_name": "goalkeeper_distribution_option_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.goalkeeper_support_option",
+        "source_name": "goalkeeper_support_option",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.backpass_episode",
+        "source_name": "backpass_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.shot_expected_goal",
+        "source_name": "shot_expected_goal",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+        "id": "atlas.post_shot_expected_goal",
+        "source_name": "post_shot_expected_goal",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.restart_type",
+        "source_name": "restart_type",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.restart_award_anchor",
+        "source_name": "restart_award_anchor",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.restart_taken_anchor",
+        "source_name": "restart_taken_anchor",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_setup_episode",
+        "source_name": "set_piece_setup_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_attacking_shape",
+        "source_name": "set_piece_attacking_shape",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_defensive_shape",
+        "source_name": "set_piece_defensive_shape",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_marking_scheme_candidate",
+        "source_name": "set_piece_marking_scheme_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_run_onset",
+        "source_name": "set_piece_run_onset",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_run_pattern",
+        "source_name": "set_piece_run_pattern",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.screen_candidate",
+        "source_name": "screen_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_block_candidate",
+        "source_name": "set_piece_block_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.delivery_episode",
+        "source_name": "delivery_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.delivery_target_region",
+        "source_name": "delivery_target_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.delivery_trajectory_class",
+        "source_name": "delivery_trajectory_class",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.first_contact",
+        "source_name": "first_contact",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.first_contact_winner",
+        "source_name": "first_contact_winner",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.second_ball_region",
+        "source_name": "second_ball_region",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.second_ball_recovery",
+        "source_name": "second_ball_recovery",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_clearance",
+        "source_name": "set_piece_clearance",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_continuation",
+        "source_name": "set_piece_continuation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.short_restart_sequence",
+        "source_name": "short_restart_sequence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.corner_variant_candidate",
+        "source_name": "corner_variant_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.free_kick_variant_candidate",
+        "source_name": "free_kick_variant_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.throw_in_pattern_candidate",
+        "source_name": "throw_in_pattern_candidate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.goal_kick_build_structure",
+        "source_name": "goal_kick_build_structure",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.penalty_setup_state",
+        "source_name": "penalty_setup_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_outcome",
+        "source_name": "set_piece_outcome",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Restarts and set-piece behavior",
+        "id": "atlas.set_piece_routine_signature",
+        "source_name": "set_piece_routine_signature",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.at",
+        "source_name": "at",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.during",
+        "source_name": "during",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.before",
+        "source_name": "before",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.after",
+        "source_name": "after",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.meets",
+        "source_name": "meets",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.overlaps",
+        "source_name": "overlaps",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.starts_with",
+        "source_name": "starts_with",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.finishes_with",
+        "source_name": "finishes_with",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.contains",
+        "source_name": "contains",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.within",
+        "source_name": "within",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.followed_by",
+        "source_name": "followed_by",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.preceded_by",
+        "source_name": "preceded_by",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.until",
+        "source_name": "until",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.since",
+        "source_name": "since",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.cooccurs_with",
+        "source_name": "cooccurs_with",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.persists_for",
+        "source_name": "persists_for",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.persists_for_total",
+        "source_name": "persists_for_total",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.dwell_time",
+        "source_name": "dwell_time",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.gap_tolerant_persistence",
+        "source_name": "gap_tolerant_persistence",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.hysteresis_episode",
+        "source_name": "hysteresis_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.debounce",
+        "source_name": "debounce",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.rising_edge",
+        "source_name": "rising_edge",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.falling_edge",
+        "source_name": "falling_edge",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.state_change",
+        "source_name": "state_change",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.change_point",
+        "source_name": "change_point",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.local_maximum",
+        "source_name": "local_maximum",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.local_minimum",
+        "source_name": "local_minimum",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.delta",
+        "source_name": "delta",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.delta_from_baseline",
+        "source_name": "delta_from_baseline",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.slope",
+        "source_name": "slope",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.integral",
+        "source_name": "integral",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.mean_over",
+        "source_name": "mean_over",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.median_over",
+        "source_name": "median_over",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.quantile_over",
+        "source_name": "quantile_over",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.min_over",
+        "source_name": "min_over",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.max_over",
+        "source_name": "max_over",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.argmin",
+        "source_name": "argmin",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.argmax",
+        "source_name": "argmax",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.count",
+        "source_name": "count",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.count_at_least",
+        "source_name": "count_at_least",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.exists",
+        "source_name": "exists",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.for_all",
+        "source_name": "for_all",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.n_of_m",
+        "source_name": "n_of_m",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.rate",
+        "source_name": "rate",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.sequence_pattern",
+        "source_name": "sequence_pattern",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.same_possession",
+        "source_name": "same_possession",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.same_action",
+        "source_name": "same_action",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.same_player",
+        "source_name": "same_player",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.same_team",
+        "source_name": "same_team",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.distinct_entities",
+        "source_name": "distinct_entities",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.join_by_anchor",
+        "source_name": "join_by_anchor",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.join_by_episode",
+        "source_name": "join_by_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.map_entities",
+        "source_name": "map_entities",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.filter_entities",
+        "source_name": "filter_entities",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.group_by_entity",
+        "source_name": "group_by_entity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.group_by_possession",
+        "source_name": "group_by_possession",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.union",
+        "source_name": "union",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.intersection",
+        "source_name": "intersection",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.difference",
+        "source_name": "difference",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.rank",
+        "source_name": "rank",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.top_k",
+        "source_name": "top_k",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.window",
+        "source_name": "window",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.resample",
+        "source_name": "resample",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.normalize",
+        "source_name": "normalize",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.compare_to_baseline",
+        "source_name": "compare_to_baseline",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.threshold",
+        "source_name": "threshold",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.classify_by_rules",
+        "source_name": "classify_by_rules",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Temporal logic, set operations, and aggregation",
+        "id": "atlas.probability_at_least",
+        "source_name": "probability_at_least",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.proximity_graph",
+        "source_name": "proximity_graph",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.reachability_graph",
+        "source_name": "reachability_graph",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.passing_option_graph",
+        "source_name": "passing_option_graph",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.actual_pass_graph",
+        "source_name": "actual_pass_graph",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.marking_graph",
+        "source_name": "marking_graph",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.pressure_graph",
+        "source_name": "pressure_graph",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.support_graph",
+        "source_name": "support_graph",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.space_dependency_graph",
+        "source_name": "space_dependency_graph",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.graph_connected_component",
+        "source_name": "graph_connected_component",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.graph_centrality",
+        "source_name": "graph_centrality",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.graph_betweenness_option",
+        "source_name": "graph_betweenness_option",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.graph_edge_opening",
+        "source_name": "graph_edge_opening",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.graph_edge_closing",
+        "source_name": "graph_edge_closing",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.network_rewiring_episode",
+        "source_name": "network_rewiring_episode",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.passing_network_motif",
+        "source_name": "passing_network_motif",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.movement_coordination_motif",
+        "source_name": "movement_coordination_motif",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.defensive_assignment_switch",
+        "source_name": "defensive_assignment_switch",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Dynamic graphs and interaction structure",
+        "id": "atlas.team_graph_signature",
+        "source_name": "team_graph_signature",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.same_team_control_after",
+        "source_name": "same_team_control_after",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.same_player_control_after",
+        "source_name": "same_player_control_after",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.possession_retained_for",
+        "source_name": "possession_retained_for",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.territorial_gain_after",
+        "source_name": "territorial_gain_after",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.space_gain_after",
+        "source_name": "space_gain_after",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.pressure_change_after",
+        "source_name": "pressure_change_after",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.shape_change_after",
+        "source_name": "shape_change_after",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.option_count_change_after",
+        "source_name": "option_count_change_after",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.line_state_change_after",
+        "source_name": "line_state_change_after",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.shot_within",
+        "source_name": "shot_within",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.box_entry_within",
+        "source_name": "box_entry_within",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.final_third_entry_within",
+        "source_name": "final_third_entry_within",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.turnover_within",
+        "source_name": "turnover_within",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.foul_won_within",
+        "source_name": "foul_won_within",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.restart_won_within",
+        "source_name": "restart_won_within",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.continuation_state",
+        "source_name": "continuation_state",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.outcome_horizon_bundle",
+        "source_name": "outcome_horizon_bundle",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Outcomes, continuation, and consequences",
+        "id": "atlas.association_not_causation_record",
+        "source_name": "association_not_causation_record",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_goals",
+        "source_name": "expected_goals",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_pass_completion",
+        "source_name": "expected_pass_completion",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_possession_retention",
+        "source_name": "expected_possession_retention",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_progression",
+        "source_name": "expected_progression",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_final_third_entry",
+        "source_name": "expected_final_third_entry",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_box_entry",
+        "source_name": "expected_box_entry",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_shot_creation",
+        "source_name": "expected_shot_creation",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_goal_concession",
+        "source_name": "expected_goal_concession",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_threat",
+        "source_name": "expected_threat",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_possession_value",
+        "source_name": "expected_possession_value",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.action_value",
+        "source_name": "action_value",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.off_ball_action_value",
+        "source_name": "off_ball_action_value",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.space_value_field",
+        "source_name": "space_value_field",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.counterfactual_pass_option_set",
+        "source_name": "counterfactual_pass_option_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.counterfactual_carry_option_set",
+        "source_name": "counterfactual_carry_option_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.counterfactual_movement_set",
+        "source_name": "counterfactual_movement_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.counterfactual_state_rollout",
+        "source_name": "counterfactual_state_rollout",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.expected_regret",
+        "source_name": "expected_regret",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.decision_quality_model",
+        "source_name": "decision_quality_model",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.trajectory_likelihood",
+        "source_name": "trajectory_likelihood",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.behavior_novelty",
+        "source_name": "behavior_novelty",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.opponent_response_model",
+        "source_name": "opponent_response_model",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.team_style_embedding",
+        "source_name": "team_style_embedding",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.model_domain_validity",
+        "source_name": "model_domain_validity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.model_calibration_record",
+        "source_name": "model_calibration_record",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Learned probability, value, and counterfactual models",
+        "id": "atlas.counterfactual_assumption_record",
+        "source_name": "counterfactual_assumption_record",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.evidence_frame_set",
+        "source_name": "evidence_frame_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.evidence_entity_set",
+        "source_name": "evidence_entity_set",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.evidence_geometry",
+        "source_name": "evidence_geometry",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.evidence_measurements",
+        "source_name": "evidence_measurements",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.predicate_trace",
+        "source_name": "predicate_trace",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.capability_trace",
+        "source_name": "capability_trace",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.provenance_trace",
+        "source_name": "provenance_trace",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.unknown_reason",
+        "source_name": "unknown_reason",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.degradation_reason",
+        "source_name": "degradation_reason",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.conflict_record",
+        "source_name": "conflict_record",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.replay_window",
+        "source_name": "replay_window",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.replay_overlay_bundle",
+        "source_name": "replay_overlay_bundle",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.result_identity",
+        "source_name": "result_identity",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.capability_contract",
+        "source_name": "capability_contract",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.capability_invariant_test",
+        "source_name": "capability_invariant_test",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.synthetic_scenario_test",
+        "source_name": "synthetic_scenario_test",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.gold_clip_test",
+        "source_name": "gold_clip_test",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.cross_provider_conformance_test",
+        "source_name": "cross_provider_conformance_test",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.parameter_sensitivity_report",
+        "source_name": "parameter_sensitivity_report",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.boundary_stability_report",
+        "source_name": "boundary_stability_report",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.performance_budget",
+        "source_name": "performance_budget",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.modality_requirement",
+        "source_name": "modality_requirement",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.semantic_claim_level",
+        "source_name": "semantic_claim_level",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.authorability_policy",
+        "source_name": "authorability_policy",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.deprecation_and_migration",
+        "source_name": "deprecation_and_migration",
+        "status": "PROPOSED_ATLAS"
+      },
+      {
+        "exposure_default": "DENIED",
+        "family": "Evidence, replay, tests, and capability governance",
+        "id": "atlas.catalog_gap_record",
+        "source_name": "catalog_gap_record",
+        "status": "PROPOSED_ATLAS"
+      }
+    ],
+    "families": [
+      "Ball contact, control, contest, and possession",
+      "Carrying, dribbling, evasion, and ball progression on foot",
+      "Data quality, synchronization, and provenance",
+      "Dynamic graphs and interaction structure",
+      "Entities, availability, roles, and tactical identity",
+      "Evidence, replay, tests, and capability governance",
+      "Kinematics and trajectory structure",
+      "Learned probability, value, and counterfactual models",
+      "Lines, gaps, penetration, and structural breaks",
+      "Match clock, laws, and contextual state",
+      "Off-ball attacking movement and behavior",
+      "Outcomes, continuation, and consequences",
+      "Passing lanes, windows, reception, and distribution effects",
+      "Phases of play and team behavioral states",
+      "Physical action reconstruction",
+      "Possession behavior, circulation, combinations, and repeated patterns",
+      "Pressure, marking, cover, denial, and collective defending",
+      "Reachability, interception, space control, and spatial value",
+      "Reference frames and dynamic football regions",
+      "Restarts and set-piece behavior",
+      "Shooting, chance structure, goalmouth defense, and goalkeeper behavior",
+      "Spatial geometry and topological relations",
+      "Support, options, numerical relations, and local structure",
+      "Team shape, units, lines, occupation, and structural change",
+      "Temporal logic, set operations, and aggregation",
+      "Transitions, counterpressure, recovery, and rest defense"
+    ],
+    "total": 741
+  },
+  "registry_lock": {
+    "ai_projection_policy": "projection.ai.v1",
+    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+    "evidence_schema_version": "1.0",
+    "generator_version": "scp0.generator.v1",
+    "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
+    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+    "product_projection_policy": "projection.product.v1",
+    "recipe_projection_policy": "projection.recipe_library.v1",
+    "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
+    "research_atlas_projection_policy": "projection.research_atlas.v1",
+    "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+    "schema_version": "1.0",
+    "typed_plan_schema_version": "1.0",
+    "unsupported_projection_policy": "projection.unsupported.v1"
+  },
+  "schema_version": "1.0"
+}

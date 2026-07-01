@@ -1,0 +1,1505 @@
+schema_version: "1.0"
+registry_id: priori.semantic_registry.scp0
+registry_version: 0.1.0
+
+concepts:
+  - id: concept.possession_context
+    kind: Concept
+    display_name: Possession Context
+    description: Active-ball possession intervals and anchors for a perspective team.
+    claim_contract_ref: claim.possession_context.v1
+    evidence_contract_ref: evidence.possession_context.v1
+    tags: [possession, anchor]
+
+  - id: concept.controlled_ball_transfer
+    kind: Concept
+    display_name: Controlled Ball Transfer
+    description: The ball moves from one player to a teammate and the teammate gains controlled possession.
+    claim_contract_ref: claim.controlled_ball_transfer.v1
+    evidence_contract_ref: evidence.controlled_ball_transfer.v1
+    tags: [pass, control, event_tracking_alignment]
+
+  - id: concept.normalized_ball_lateral_position
+    kind: Concept
+    display_name: Normalized Ball Lateral Position
+    description: The ball's lateral position normalized against the pitch centerline and touchline distance.
+    claim_contract_ref: claim.wide_ball_entry.v1
+    evidence_contract_ref: evidence.wide_ball_entry.v1
+    tags: [width, ball_position, measurement]
+
+  - id: concept.defensive_outfield_centroid
+    kind: Concept
+    display_name: Defensive Outfield Centroid
+    description: The aggregate position of defending outfield players, excluding the goalkeeper.
+    claim_contract_ref: claim.defensive_outfield_centroid.v1
+    evidence_contract_ref: evidence.defensive_outfield_centroid.v1
+    tags: [defending, shape]
+
+  - id: concept.defensive_block_lateral_shift
+    kind: Concept
+    display_name: Defensive Block Lateral Shift
+    description: Baseline-relative lateral movement of a defending outfield block toward the ball side.
+    claim_contract_ref: claim.defensive_block_lateral_shift.v1
+    evidence_contract_ref: evidence.defensive_block_lateral_shift.v1
+    tags: [defending, block_shift]
+
+  - id: concept.reviewed_outcome_classification
+    kind: Concept
+    display_name: Reviewed Outcome Classification
+    description: A saved-plan classification rule whose assumptions are controlled by a reviewed tactical recipe.
+    claim_contract_ref: claim.reviewed_outcome_classification.v1
+    evidence_contract_ref: evidence.reviewed_outcome_classification.v1
+    tags: [classification, reviewed_plan_only]
+
+  - id: concept.progressive_connection_availability
+    kind: Concept
+    display_name: Progressive Connection Availability
+    description: A geometrically clear forward connection from the ball or anchor to a teammate.
+    claim_contract_ref: claim.progressive_connection_availability.v1
+    evidence_contract_ref: evidence.progressive_connection_availability.v1
+    tags: [corridor, progression, relation]
+
+  - id: concept.relation_destination_entry
+    kind: Concept
+    display_name: Relation Destination Entry
+    description: Ball entry into the destination region defined by a relation episode within a declared window.
+    claim_contract_ref: claim.relation_destination_entry.v1
+    evidence_contract_ref: evidence.relation_destination_entry.v1
+    tags: [destination_entry, relation, temporal]
+
+  - id: concept.opponent_ball_side_transition_count
+    kind: Concept
+    display_name: Opponent Ball-Side Transition Count
+    description: Count of opposition outfield players whose position relative to the ball changes between action endpoints.
+    claim_contract_ref: claim.opponent_ball_side_transition_count.v1
+    evidence_contract_ref: evidence.opponent_ball_side_transition_count.v1
+    tags: [bypass, action, count]
+
+  - id: concept.high_bypass_completed_pass
+    kind: Concept
+    display_name: High-Bypass Completed Pass
+    description: A controlled completed pass with sufficient forward progression and opponent bypass count.
+    claim_contract_ref: claim.high_bypass_completed_pass.v1
+    evidence_contract_ref: evidence.high_bypass_completed_pass.v1
+    tags: [bypass, pass, recipe]
+
+  - id: concept.ball_side_block_shift
+    kind: Concept
+    display_name: Ball-Side Block Shift
+    description: A reviewed ball-side entry and defensive block-shift pattern with saved-plan outcome classification.
+    claim_contract_ref: claim.ball_side_block_shift.v1
+    evidence_contract_ref: evidence.ball_side_block_shift.v1
+    tags: [block_shift, recipe, reviewed]
+
+  - id: concept.progressive_connection_followed_by_destination_entry
+    kind: Concept
+    display_name: Progressive Connection Followed By Destination Entry
+    description: A possession anchor has a progressive connection relation and the ball is evaluated for later entry into that relation's destination region.
+    claim_contract_ref: claim.ai_corridor_destination_composition.v1
+    evidence_contract_ref: evidence.ai_corridor_destination_composition.v1
+    tags: [corridor, destination_entry, composition]
+  - id: concept.opposite_corridor_after_shift
+    kind: Concept
+    display_name: Opposite Corridor After Shift
+    description: A ball-side block-shift context followed by a progressive corridor and destination-entry evaluation on the opposite-side relation.
+    claim_contract_ref: claim.opposite_corridor_after_shift.v1
+    evidence_contract_ref: evidence.opposite_corridor_after_shift.v1
+    tags: [corridor, block_shift, destination_entry, recipe]
+
+operationalizations:
+  - id: op.possession_segment_intervals.v1
+    kind: Operationalization
+    display_name: Possession Segment Intervals
+    description: Identify active-ball possession intervals and anchors for the perspective team.
+    concept_refs: [concept.possession_context]
+    semantic_basis: INFERRED_CANDIDATE
+    required_modalities: [tracking, events]
+    applicability: [ball_in_play_candidate, perspective_team_known]
+    inputs:
+      - name: canonical_match_state
+        type: {container: WorldState, value: MatchState, unit: none}
+    outputs:
+      - name: episodes
+        type: {container: EpisodeSet, value: Boolean, quantity: possession, unit: none, entity_scope: possession}
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: possession_anchor, unit: none, entity_scope: anchor}
+    lowering: [team_control_candidates, possession_episode_extraction]
+    claim_contract_ref: claim.possession_context.v1
+    evidence_contract_ref: evidence.possession_context.v1
+
+  - id: op.event_seeded_tracking_confirmed_pass.v1
+    kind: Operationalization
+    display_name: Event-Seeded Tracking-Confirmed Pass
+    description: Use event data to find candidate completed passes, then tracking data to confirm physical release and controlled reception.
+    concept_refs: [concept.controlled_ball_transfer]
+    semantic_basis: INFERRED_CANDIDATE
+    required_modalities: [events, tracking]
+    applicability: [candidate_pass_event, tracking_available_around_event]
+    inputs:
+      - name: candidate_pass_events
+        type: {container: EventSet, value: ProviderEvent, unit: none}
+      - name: tracking_window
+        type: {container: TrajectorySet, value: Position, unit: metre, coordinate_frame: pitch_absolute}
+    outputs:
+      - name: controlled_pass_status
+        type: {container: FrameSignal, value: Enum, quantity: controlled_pass_status, unit: none, entity_scope: possession}
+      - name: forward_progression_m
+        type: {container: FrameSignal, value: Scalar, quantity: forward_progression, unit: metre, entity_scope: possession}
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: controlled_pass_anchor, unit: none, entity_scope: anchor}
+    lowering: [event_tracking_alignment_candidate, physical_ball_release, physical_ball_reception, possession_continuity]
+    claim_contract_ref: claim.controlled_ball_transfer.v1
+    evidence_contract_ref: evidence.controlled_ball_transfer.v1
+
+  - id: op.ball_lateral_fraction.v1
+    kind: Operationalization
+    display_name: Ball Lateral Fraction
+    description: Normalize ball distance from pitch centerline toward either touchline.
+    concept_refs: [concept.normalized_ball_lateral_position]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [ball_position_available, pitch_width_known]
+    inputs:
+      - name: ball_position
+        type: {container: PointSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: ball}
+    outputs:
+      - name: fraction
+        type: {container: FrameSignal, value: Scalar, quantity: pitch_width_fraction, unit: fraction, entity_scope: ball}
+    lowering: [coordinate_transform, normalized_lateral_position]
+    claim_contract_ref: claim.wide_ball_entry.v1
+    evidence_contract_ref: evidence.wide_ball_entry.v1
+
+  - id: op.defensive_outfield_centroid.v1
+    kind: Operationalization
+    display_name: Defensive Outfield Centroid
+    description: Measure defending outfield team centroid without goalkeeper bias.
+    concept_refs: [concept.defensive_outfield_centroid]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [defending_team_known, outfield_player_set_available]
+    inputs:
+      - name: defending_outfield_positions
+        type: {container: EntitySetSignal, value: Point, unit: metre, coordinate_frame: pitch_absolute, entity_scope: team}
+    outputs:
+      - name: centroid_y
+        type: {container: FrameSignal, value: Scalar, quantity: lateral_position, unit: metre, entity_scope: team}
+    lowering: [reference_player_set, centroid]
+    claim_contract_ref: claim.defensive_outfield_centroid.v1
+    evidence_contract_ref: evidence.defensive_outfield_centroid.v1
+
+  - id: op.baseline_relative_defensive_shift.v1
+    kind: Operationalization
+    display_name: Baseline-Relative Defensive Shift
+    description: Measure defensive centroid movement toward the ball side relative to a baseline.
+    concept_refs: [concept.defensive_block_lateral_shift]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [possession_anchor_available, defensive_centroid_available]
+    inputs:
+      - name: possession_episodes
+        type: {container: EpisodeSet, value: Boolean, quantity: possession, unit: none, entity_scope: possession}
+      - name: entry_episodes
+        type: {container: EpisodeSet, value: Boolean, quantity: wide_entry, unit: none, entity_scope: ball}
+      - name: defensive_centroid
+        type: {container: FrameSignal, value: Scalar, quantity: lateral_position, unit: metre, entity_scope: team}
+    outputs:
+      - name: signed_shift
+        type: {container: FrameSignal, value: Scalar, quantity: lateral_shift, unit: metre, entity_scope: team}
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: shift_anchor, unit: none, entity_scope: anchor}
+    lowering: [baseline_selection, signed_difference, anchor_projection]
+    claim_contract_ref: claim.defensive_block_lateral_shift.v1
+    evidence_contract_ref: evidence.defensive_block_lateral_shift.v1
+
+  - id: op.reviewed_block_shift_outcome.v1
+    kind: Operationalization
+    display_name: Reviewed Block-Shift Outcome
+    description: Classify post-anchor outcome under reviewed block-shift recipe semantics.
+    concept_refs: [concept.reviewed_outcome_classification]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking, events]
+    applicability: [accepted_shift_episode]
+    inputs:
+      - name: accepted_shift_episodes
+        type: {container: EpisodeSet, value: Boolean, quantity: accepted_shift, unit: none}
+    outputs:
+      - name: classification
+        type: {container: FrameSignal, value: Enum, quantity: reviewed_outcome, unit: none}
+    lowering: [recipe_rule_set, outcome_window]
+    claim_contract_ref: claim.reviewed_outcome_classification.v1
+    evidence_contract_ref: evidence.reviewed_outcome_classification.v1
+
+  - id: op.relation_destination_entry.v1
+    kind: Operationalization
+    display_name: Relation Destination Entry
+    description: Measure whether the ball enters a relation episode destination region inside a declared window.
+    concept_refs: [concept.relation_destination_entry]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [relation_episode_available, ball_tracking_available]
+    inputs:
+      - name: relation_episodes
+        type: {container: RelationEpisodeSet, value: RelationRef, quantity: relation_episode, unit: none, entity_scope: relation}
+    outputs:
+      - name: entry_status
+        type: {container: FrameSignal, value: Enum, quantity: destination_entry_status, unit: none, entity_scope: relation}
+    lowering: [dynamic_region_membership, temporal_window, tri_state_thresholding]
+    claim_contract_ref: claim.relation_destination_entry.v1
+    evidence_contract_ref: evidence.relation_destination_entry.v1
+
+  - id: op.reviewed_relation_destination_entry_classification.v1
+    kind: Operationalization
+    display_name: Reviewed Relation Destination Entry Classification
+    description: Classify ball entry into a relation destination for a reviewed saved-plan path.
+    concept_refs: [concept.relation_destination_entry]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [relation_episode_available, reviewed_plan_context]
+    inputs:
+      - name: relation_episodes
+        type: {container: RelationEpisodeSet, value: RelationRef, quantity: relation_episode, unit: none, entity_scope: relation}
+    outputs:
+      - name: classification
+        type: {container: FrameSignal, value: Enum, quantity: reviewed_destination_entry_classification, unit: none}
+    lowering: [recipe_rule_set, dynamic_region_membership]
+    claim_contract_ref: claim.relation_destination_entry.v1
+    evidence_contract_ref: evidence.relation_destination_entry.v1
+
+  - id: op.geometric_progressive_corridor.v1
+    kind: Operationalization
+    display_name: Geometric Progressive Corridor
+    description: Represent a clear forward connection from ball location to attacking teammate over an interval.
+    concept_refs: [concept.progressive_connection_availability]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_available, attacking_teammates_available, defending_outfield_available]
+    inputs:
+      - name: anchors
+        type: {container: FrameSignal, value: Enum, quantity: anchor, unit: none}
+    outputs:
+      - name: episodes
+        type: {container: RelationEpisodeSet, value: RelationRef, quantity: progressive_corridor, unit: none, entity_scope: relation}
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: Boolean, quantity: anchor_relation_evaluation, unit: none, entity_scope: anchor}
+    lowering: [segment_geometry, clearance_measurement, relation_episode_extraction]
+    claim_contract_ref: claim.progressive_connection_availability.v1
+    evidence_contract_ref: evidence.progressive_connection_availability.v1
+
+  - id: op.geometric_progressive_corridor_anchor_set.v1
+    kind: Operationalization
+    display_name: Geometric Progressive Corridor From Anchor Set
+    description: Represent a clear forward connection from a generic anchor set to an attacking teammate over an interval.
+    concept_refs: [concept.progressive_connection_availability]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking]
+    applicability: [anchor_set_available, attacking_teammates_available, defending_outfield_available]
+    inputs:
+      - name: anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: anchor_set, unit: none, entity_scope: anchor}
+    outputs:
+      - name: episodes
+        type: {container: RelationEpisodeSet, value: RelationRef, quantity: progressive_corridor, unit: none, entity_scope: relation}
+      - name: anchor_evaluations
+        type: {container: EpisodeSet, value: Boolean, quantity: anchor_relation_evaluation, unit: none, entity_scope: anchor}
+    lowering: [anchor_set_join, segment_geometry, clearance_measurement, relation_episode_extraction]
+    claim_contract_ref: claim.progressive_connection_availability.v1
+    evidence_contract_ref: evidence.progressive_connection_availability.v1
+
+  - id: op.release_reception_opponent_transition_count.v1
+    kind: Operationalization
+    display_name: Release-Reception Opponent Transition Count
+    description: Count opposition outfield players goal-side of the ball at release and behind the ball at controlled reception.
+    concept_refs: [concept.opponent_ball_side_transition_count]
+    semantic_basis: DETERMINISTIC
+    required_modalities: [tracking, events]
+    applicability: [controlled_pass_episode_available, expected_opponent_set_available]
+    inputs:
+      - name: controlled_pass_episodes
+        type: {container: EpisodeSet, value: Boolean, quantity: controlled_pass, unit: none, entity_scope: possession}
+      - name: controlled_pass_anchors
+        type: {container: EpisodeSet, value: AnchorRef, quantity: controlled_pass_anchor, unit: none, entity_scope: anchor}
+    outputs:
+      - name: opponents_bypassed_count
+        type: {container: FrameSignal, value: Scalar, quantity: count, unit: count, entity_scope: anchor}
+      - name: evaluation_status
+        type: {container: FrameSignal, value: Enum, quantity: bypass_evaluation_status, unit: none, entity_scope: anchor}
+    lowering: [active_opponent_selection, goal_side_relation, release_reception_comparison, coverage_aware_count]
+    claim_contract_ref: claim.opponent_ball_side_transition_count.v1
+    evidence_contract_ref: evidence.opponent_ball_side_transition_count.v1
+
+definition_profiles:
+  - id: profile.high_bypass_default.v1
+    kind: DefinitionProfile
+    display_name: High-Bypass Default Profile
+    description: Default high-bypass completed pass profile using forward progression and opponent-count thresholds.
+    operationalization_ref: op.release_reception_opponent_transition_count.v1
+    bindings:
+      minimum_forward_progression_m: 8.0
+      minimum_bypassed_opponents: 5
+      goalkeeper_policy: exclude_goalkeepers
+    claim_contract_ref: claim.high_bypass_completed_pass.v1
+    evidence_contract_ref: evidence.high_bypass_completed_pass.v1
+
+  - id: profile.ball_side_block_shift_reviewed.v1
+    kind: DefinitionProfile
+    display_name: Ball-Side Block Shift Reviewed Profile
+    description: Reviewed profile for the ball-side block-shift recipe.
+    operationalization_ref: op.baseline_relative_defensive_shift.v1
+    bindings:
+      requires_wide_entry: true
+      requires_persistence: true
+      classifier: reviewed_plan_only
+    claim_contract_ref: claim.ball_side_block_shift.v1
+    evidence_contract_ref: evidence.ball_side_block_shift.v1
+
+  - id: profile.progressive_corridor_default.v1
+    kind: DefinitionProfile
+    display_name: Progressive Corridor Default Profile
+    description: Default geometric progressive corridor profile for possession anchors.
+    operationalization_ref: op.geometric_progressive_corridor_anchor_set.v1
+    bindings:
+      claim_pass_probability: false
+      claim_optimality: false
+    claim_contract_ref: claim.progressive_connection_availability.v1
+    evidence_contract_ref: evidence.progressive_connection_availability.v1
+
+  - id: profile.destination_entry_default.v1
+    kind: DefinitionProfile
+    display_name: Destination Entry Default Profile
+    description: Default profile for geometric entry into a relation destination region.
+    operationalization_ref: op.relation_destination_entry.v1
+    bindings:
+      entry_modes: [PRESENT_AT_OPEN, ENTERED_AFTER_OPEN, NOT_ENTERED, UNKNOWN]
+    claim_contract_ref: claim.relation_destination_entry.v1
+    evidence_contract_ref: evidence.relation_destination_entry.v1
+
+implementations:
+  - id: impl.possession_segment.python.v1
+    kind: Implementation
+    display_name: Possession Segment Python Implementation
+    description: Current Python implementation registered in the runtime catalog.
+    implements: [op.possession_segment_intervals.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.controlled_pass_episode.python.v1
+    kind: Implementation
+    display_name: Controlled Pass Episode Python Implementation
+    description: Current event-seeded tracking-confirmed pass implementation.
+    implements: [op.event_seeded_tracking_confirmed_pass.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py, src/tqe/runtime/pass_bypass.py]
+  - id: impl.ball_lateral_fraction.python.v1
+    kind: Implementation
+    display_name: Ball Lateral Fraction Python Implementation
+    description: Current Python implementation registered in the runtime catalog.
+    implements: [op.ball_lateral_fraction.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.defensive_outfield_centroid.python.v1
+    kind: Implementation
+    display_name: Defensive Outfield Centroid Python Implementation
+    description: Current Python implementation registered in the runtime catalog.
+    implements: [op.defensive_outfield_centroid.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.signed_lateral_shift.python.v1
+    kind: Implementation
+    display_name: Signed Lateral Shift Python Implementation
+    description: Current baseline-relative shift implementation.
+    implements: [op.baseline_relative_defensive_shift.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.outcome_classification.python.v1
+    kind: Implementation
+    display_name: Outcome Classification Python Implementation
+    description: Current reviewed block-shift outcome classifier.
+    implements: [op.reviewed_block_shift_outcome.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.relation_destination_entry.python.v1
+    kind: Implementation
+    display_name: Relation Destination Entry Python Implementation
+    description: Current generic relation destination entry implementation.
+    implements: [op.relation_destination_entry.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.relation_destination_entry_classification.python.v1
+    kind: Implementation
+    display_name: Relation Destination Entry Classification Python Implementation
+    description: Current reviewed-plan-only destination-entry classification implementation.
+    implements: [op.reviewed_relation_destination_entry_classification.v1]
+    source_refs: [src/tqe/runtime/executor.py, src/tqe/runtime/catalog.py]
+  - id: impl.geometric_progressive_corridor.python.v1
+    kind: Implementation
+    display_name: Geometric Progressive Corridor Python Implementation
+    description: Current progressive corridor relation implementation.
+    implements: [op.geometric_progressive_corridor.v1]
+    source_refs: [src/tqe/runtime/relations.py, src/tqe/runtime/catalog.py]
+  - id: impl.geometric_progressive_corridor_anchor_set.python.v1
+    kind: Implementation
+    display_name: Geometric Progressive Corridor Anchor Set Python Implementation
+    description: Current anchor-set progressive corridor relation implementation.
+    implements: [op.geometric_progressive_corridor_anchor_set.v1]
+    source_refs: [src/tqe/runtime/relations.py, src/tqe/runtime/catalog.py]
+  - id: impl.opponents_bypassed_by_action.python.v1
+    kind: Implementation
+    display_name: Opponents Bypassed By Action Python Implementation
+    description: Current release-to-reception opponent transition count implementation.
+    implements: [op.release_reception_opponent_transition_count.v1]
+    source_refs: [src/tqe/runtime/pass_bypass.py, src/tqe/runtime/catalog.py]
+
+runtime_bindings:
+  - id: binding.primitive.possession_segment.0_1_0
+    kind: RuntimeBinding
+    display_name: possession_segment runtime binding
+    description: Canonical runtime binding for possession_segment 0.1.0.
+    runtime_capability: {id: possession_segment, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.possession_segment.python.v1
+    implements: [op.possession_segment_intervals.v1]
+    conformance_status: EXACT
+    input_bindings:
+      canonical_match_state: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state}
+    output_bindings:
+      episodes: {runtime_port: episodes}
+      anchors: {runtime_port: anchors}
+
+  - id: binding.primitive.controlled_pass_episode.0_1_0
+    kind: RuntimeBinding
+    display_name: controlled_pass_episode runtime binding
+    description: Canonical runtime binding for controlled_pass_episode 0.1.0.
+    runtime_capability: {id: controlled_pass_episode, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.controlled_pass_episode.python.v1
+    implements: [op.event_seeded_tracking_confirmed_pass.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Control candidates are currently collapsed into final status rather than retained as a candidate distribution.]
+    input_bindings:
+      candidate_pass_events: {source: RUNTIME_CONTEXT, context_ref: provider_event_stream.completed_pass_events}
+      tracking_window: {source: RUNTIME_CONTEXT, context_ref: canonical_tracking_window}
+    output_bindings:
+      controlled_pass_status: {runtime_port: controlled_pass_status}
+      forward_progression_m: {runtime_port: forward_progression_m}
+      anchors: {runtime_port: anchors}
+    semantic_parameters:
+      - name: release_search_before_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+      - name: release_search_after_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+      - name: reception_search_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+      - name: control_distance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+      - name: nearest_teammate_margin_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+      - name: minimum_receiver_dwell_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: false
+    parameter_bindings:
+      release_search_before_seconds: release_search_before_seconds
+      release_search_after_seconds: release_search_after_seconds
+      reception_search_seconds: reception_search_seconds
+      control_distance_m: control_distance_m
+      nearest_teammate_margin_m: nearest_teammate_margin_m
+      minimum_receiver_dwell_seconds: minimum_receiver_dwell_seconds
+    uncovered_runtime_outputs: [episodes]
+
+  - id: binding.primitive.ball_lateral_fraction.0_1_0
+    kind: RuntimeBinding
+    display_name: ball_lateral_fraction runtime binding
+    description: Canonical runtime binding for ball_lateral_fraction 0.1.0.
+    runtime_capability: {id: ball_lateral_fraction, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.ball_lateral_fraction.python.v1
+    implements: [op.ball_lateral_fraction.v1]
+    conformance_status: EXACT
+    input_bindings:
+      ball_position: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.ball_position}
+    output_bindings:
+      fraction: {runtime_port: fraction}
+
+  - id: binding.primitive.defensive_outfield_centroid.0_1_0
+    kind: RuntimeBinding
+    display_name: defensive_outfield_centroid runtime binding
+    description: Canonical runtime binding for defensive_outfield_centroid 0.1.0.
+    runtime_capability: {id: defensive_outfield_centroid, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.defensive_outfield_centroid.python.v1
+    implements: [op.defensive_outfield_centroid.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Active-player membership is derived from current implementation behavior rather than a standalone authoritative active-player timeline.]
+    input_bindings:
+      defending_outfield_positions: {source: RUNTIME_CONTEXT, context_ref: canonical_match_state.defending_outfield_positions}
+    output_bindings:
+      centroid_y: {runtime_port: centroid_y}
+
+  - id: binding.primitive.signed_lateral_shift.0_1_0
+    kind: RuntimeBinding
+    display_name: signed_lateral_shift runtime binding
+    description: Canonical runtime binding for signed_lateral_shift 0.1.0.
+    runtime_capability: {id: signed_lateral_shift, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.signed_lateral_shift.python.v1
+    implements: [op.baseline_relative_defensive_shift.v1]
+    conformance_status: EXACT
+    input_bindings:
+      possession_episodes: {source: NODE_INPUT, runtime_port: possession_episodes}
+      entry_episodes: {source: NODE_INPUT, runtime_port: entry_episodes}
+      defensive_centroid: {source: NODE_INPUT, runtime_port: defensive_centroid}
+    output_bindings:
+      signed_shift: {runtime_port: signed_shift}
+      anchors: {runtime_port: anchors}
+
+  - id: binding.primitive.outcome_classification.0_1_0
+    kind: RuntimeBinding
+    display_name: outcome_classification runtime binding
+    description: Canonical runtime binding for outcome_classification 0.1.0.
+    runtime_capability: {id: outcome_classification, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.outcome_classification.python.v1
+    implements: [op.reviewed_block_shift_outcome.v1]
+    conformance_status: LEGACY_APPROXIMATION
+    known_deviations: [Reviewed-plan-specific classifier is intentionally not a general-purpose authorable primitive.]
+    input_bindings:
+      accepted_shift_episodes: {source: NODE_INPUT, runtime_port: accepted_shift_episodes}
+    output_bindings:
+      classification: {runtime_port: classification}
+    semantic_parameters:
+      - name: horizon
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: true
+    parameter_bindings:
+      horizon: horizon
+
+  - id: binding.primitive.relation_destination_entry.0_1_0
+    kind: RuntimeBinding
+    display_name: relation_destination_entry runtime binding
+    description: Canonical runtime binding for relation_destination_entry 0.1.0.
+    runtime_capability: {id: relation_destination_entry, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.relation_destination_entry.python.v1
+    implements: [op.relation_destination_entry.v1]
+    conformance_status: EXACT
+    input_bindings:
+      relation_episodes: {source: NODE_INPUT, runtime_port: relation_episodes}
+    output_bindings:
+      entry_status: {runtime_port: entry_status}
+    semantic_parameters:
+      - name: destination_entry_horizon_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: true
+      - name: result_id_seed
+        type: {container: Scalar, value: Enum, unit: none}
+        required: true
+      - name: episode_selection
+        type: {container: Scalar, value: Enum, unit: none}
+        required: true
+    parameter_bindings:
+      destination_entry_horizon_seconds: destination_entry_horizon_seconds
+      result_id_seed: result_id_seed
+      episode_selection: episode_selection
+
+  - id: binding.primitive.relation_destination_entry_classification.0_1_0
+    kind: RuntimeBinding
+    display_name: relation_destination_entry_classification runtime binding
+    description: Canonical runtime binding for relation_destination_entry_classification 0.1.0.
+    runtime_capability: {id: relation_destination_entry_classification, version: 0.1.0, kind: primitive}
+    implementation_ref: impl.relation_destination_entry_classification.python.v1
+    implements: [op.reviewed_relation_destination_entry_classification.v1]
+    conformance_status: LEGACY_APPROXIMATION
+    known_deviations: [Reviewed-plan-specific wrapper; AI-authored plans should use relation_destination_entry.]
+    input_bindings:
+      relation_episodes: {source: NODE_INPUT, runtime_port: relation_episodes}
+    output_bindings:
+      classification: {runtime_port: classification}
+    semantic_parameters:
+      - name: destination_entry_horizon_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: true
+      - name: result_id_seed
+        type: {container: Scalar, value: Enum, unit: none}
+        required: true
+      - name: episode_selection
+        type: {container: Scalar, value: Enum, unit: none}
+        required: true
+    parameter_bindings:
+      destination_entry_horizon_seconds: destination_entry_horizon_seconds
+      result_id_seed: result_id_seed
+      episode_selection: episode_selection
+
+  - id: binding.relation.geometric_progressive_corridor.0_1_0
+    kind: RuntimeBinding
+    display_name: geometric_progressive_corridor runtime binding
+    description: Canonical runtime binding for geometric_progressive_corridor 0.1.0.
+    runtime_capability: {id: geometric_progressive_corridor, version: 0.1.0, kind: relation}
+    implementation_ref: impl.geometric_progressive_corridor.python.v1
+    implements: [op.geometric_progressive_corridor.v1]
+    conformance_status: EXACT
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+    output_bindings:
+      episodes: {runtime_port: episodes}
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+    semantic_parameters:
+      - name: max_window_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: true
+      - name: minimum_progression_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: true
+      - name: minimum_segment_length_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: true
+      - name: maximum_segment_length_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: true
+      - name: minimum_clearance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: true
+      - name: open_after_frames
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: true
+      - name: close_after_frames
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: true
+      - name: minimum_duration_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: true
+      - name: side_filter
+        type: {container: Scalar, value: Enum, unit: none}
+        required: true
+    parameter_bindings:
+      max_window_seconds: max_window_seconds
+      minimum_progression_m: minimum_progression_m
+      minimum_segment_length_m: minimum_segment_length_m
+      maximum_segment_length_m: maximum_segment_length_m
+      minimum_clearance_m: minimum_clearance_m
+      open_after_frames: open_after_frames
+      close_after_frames: close_after_frames
+      minimum_duration_seconds: minimum_duration_seconds
+      side_filter: side_filter
+
+  - id: binding.relation.geometric_progressive_corridor_from_anchor_set.0_1_0
+    kind: RuntimeBinding
+    display_name: geometric_progressive_corridor_from_anchor_set runtime binding
+    description: Canonical runtime binding for geometric_progressive_corridor_from_anchor_set 0.1.0.
+    runtime_capability: {id: geometric_progressive_corridor_from_anchor_set, version: 0.1.0, kind: relation}
+    implementation_ref: impl.geometric_progressive_corridor_anchor_set.python.v1
+    implements: [op.geometric_progressive_corridor_anchor_set.v1]
+    conformance_status: EXACT
+    input_bindings:
+      anchors: {source: NODE_INPUT, runtime_port: anchors}
+    output_bindings:
+      episodes: {runtime_port: episodes}
+      anchor_evaluations: {runtime_port: anchor_evaluations}
+    semantic_parameters:
+      - name: max_window_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: true
+      - name: minimum_progression_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: true
+      - name: minimum_segment_length_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: true
+      - name: maximum_segment_length_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: true
+      - name: minimum_clearance_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: true
+      - name: open_after_frames
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: true
+      - name: close_after_frames
+        type: {container: Scalar, value: Scalar, unit: count}
+        required: true
+      - name: minimum_duration_seconds
+        type: {container: Scalar, value: Scalar, unit: second}
+        required: true
+      - name: side_filter
+        type: {container: Scalar, value: Enum, unit: none}
+        required: true
+    parameter_bindings:
+      max_window_seconds: max_window_seconds
+      minimum_progression_m: minimum_progression_m
+      minimum_segment_length_m: minimum_segment_length_m
+      maximum_segment_length_m: maximum_segment_length_m
+      minimum_clearance_m: minimum_clearance_m
+      open_after_frames: open_after_frames
+      close_after_frames: close_after_frames
+      minimum_duration_seconds: minimum_duration_seconds
+      side_filter: side_filter
+
+  - id: binding.relation.opponents_bypassed_by_action.0_1_0
+    kind: RuntimeBinding
+    display_name: opponents_bypassed_by_action runtime binding
+    description: Canonical runtime binding for opponents_bypassed_by_action 0.1.0.
+    runtime_capability: {id: opponents_bypassed_by_action, version: 0.1.0, kind: relation}
+    implementation_ref: impl.opponents_bypassed_by_action.python.v1
+    implements: [op.release_reception_opponent_transition_count.v1]
+    conformance_status: PARTIAL
+    known_deviations: [Active-opponent denominator is implemented for current data shape but not yet backed by a standalone authoritative active-player timeline.]
+    input_bindings:
+      controlled_pass_episodes: {source: NODE_INPUT, runtime_port: controlled_pass_episodes}
+      controlled_pass_anchors: {source: NODE_INPUT, runtime_port: controlled_pass_anchors}
+    output_bindings:
+      opponents_bypassed_count: {runtime_port: opponents_bypassed_count}
+      evaluation_status: {runtime_port: evaluation_status}
+    semantic_parameters:
+      - name: goal_side_buffer_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+      - name: bypassed_buffer_m
+        type: {container: Scalar, value: Scalar, unit: metre}
+        required: false
+    parameter_bindings:
+      goal_side_buffer_m: goal_side_buffer_m
+      bypassed_buffer_m: bypassed_buffer_m
+    uncovered_runtime_outputs: [anchor_evaluations, forward_progression_m]
+
+operator_definitions:
+  - id: operator.gt.1_0_0
+    kind: OperatorDefinition
+    display_name: Greater Than
+    description: Strict lower-bound numeric comparison.
+    operator_id: gt
+    operator_version: 1.0.0
+    input: {container: FrameSignal, value: Scalar, unit: any, nullable: true}
+    output: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
+    compare: {container: Scalar, value: Scalar, unit: any, nullable: false}
+    authorability: ALLOWED
+  - id: operator.gte.1_0_0
+    kind: OperatorDefinition
+    display_name: Greater Than Or Equal
+    description: Inclusive lower-bound numeric comparison.
+    operator_id: gte
+    operator_version: 1.0.0
+    input: {container: FrameSignal, value: Scalar, unit: any, nullable: true}
+    output: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
+    compare: {container: Scalar, value: Scalar, unit: any, nullable: false}
+    authorability: ALLOWED
+  - id: operator.lte.1_0_0
+    kind: OperatorDefinition
+    display_name: Less Than Or Equal
+    description: Inclusive upper-bound numeric comparison.
+    operator_id: lte
+    operator_version: 1.0.0
+    input: {container: FrameSignal, value: Scalar, unit: any, nullable: true}
+    output: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
+    compare: {container: Scalar, value: Scalar, unit: any, nullable: false}
+    authorability: ALLOWED
+  - id: operator.eq.1_0_0
+    kind: OperatorDefinition
+    display_name: Equal
+    description: Typed equality comparison.
+    operator_id: eq
+    operator_version: 1.0.0
+    input: {container: FrameSignal, value: Any, unit: none, nullable: true}
+    output: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
+    compare: {container: Scalar, value: Any, unit: none, nullable: false}
+    authorability: ALLOWED
+  - id: operator.neq.1_0_0
+    kind: OperatorDefinition
+    display_name: Not Equal
+    description: Typed non-equality comparison.
+    operator_id: neq
+    operator_version: 1.0.0
+    input: {container: FrameSignal, value: Any, unit: none, nullable: true}
+    output: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
+    compare: {container: Scalar, value: Any, unit: none, nullable: false}
+    authorability: ALLOWED
+  - id: operator.persists_for.1_0_0
+    kind: OperatorDefinition
+    display_name: Persists For
+    description: Promote a Boolean frame signal to intervals after a minimum duration.
+    operator_id: persists_for
+    operator_version: 1.0.0
+    input: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
+    output: {container: EpisodeSet, value: Boolean, unit: none, nullable: true}
+    parameters:
+      - name: duration
+        type: {container: Scalar, value: Scalar, unit: second, nullable: false}
+        required: true
+        description: Minimum persistence duration.
+    unknown_semantics:
+      gaps_do_not_become_false: true
+      unknown_does_not_bridge_intervals: true
+    authorability: ALLOWED
+  - id: operator.exists.1_0_0
+    kind: OperatorDefinition
+    display_name: Exists
+    description: Test whether an anchor-relative Boolean episode or relation collection exists.
+    operator_id: exists
+    operator_version: 1.0.0
+    input: {container: EpisodeSet, value: Boolean, unit: none, nullable: true}
+    output: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
+    unknown_semantics:
+      missing_anchor_evaluation_remains_unknown: true
+    authorability: ALLOWED
+  - id: operator.count_at_least.1_0_0
+    kind: OperatorDefinition
+    display_name: Count At Least
+    description: Count a Boolean or entity collection and compare to a count threshold.
+    operator_id: count_at_least
+    operator_version: 1.0.0
+    input: {container: EpisodeSet, value: Boolean, unit: none, nullable: true}
+    output: {container: FrameSignal, value: Boolean, unit: none, nullable: true}
+    compare: {container: Scalar, value: Scalar, unit: count, nullable: false}
+    unknown_semantics:
+      missing_coverage_may_change_count: true
+    authorability: ALLOWED
+
+claim_contracts:
+  - id: claim.possession_context.v1
+    kind: ClaimContract
+    display_name: Possession Context Claims
+    description: Claims permitted for possession interval and anchor outputs.
+    permitted: [team_active_ball_possession_interval_identified, possession_anchor_identified]
+    prohibited: [proves_possession_intent, proves_best_action]
+    unknown_conditions: [ball_control_unresolved, possession_boundary_unresolved]
+  - id: claim.controlled_ball_transfer.v1
+    kind: ClaimContract
+    display_name: Controlled Ball Transfer Claims
+    description: Claims permitted for event-seeded tracking-confirmed completed pass episodes.
+    permitted: [event_candidate_pass_identified, tracking_confirmed_physical_release, tracking_confirmed_controlled_reception]
+    prohibited: [proves_passer_intent, proves_pass_optimality, proves_pass_probability]
+    unknown_conditions: [physical_release_unresolved, controlled_reception_unresolved, possession_continuity_unresolved]
+  - id: claim.wide_ball_entry.v1
+    kind: ClaimContract
+    display_name: Wide Ball Entry Claims
+    description: Claims permitted for ball lateral-position measurements.
+    permitted: [ball_lateral_position_measured, configured_wide_area_entry_measured]
+    prohibited: [proves_tactical_intent, proves_space_was_available]
+    unknown_conditions: [ball_position_missing, pitch_width_unknown]
+  - id: claim.defensive_outfield_centroid.v1
+    kind: ClaimContract
+    display_name: Defensive Outfield Centroid Claims
+    description: Claims permitted for defending outfield centroid measurements.
+    permitted: [defending_outfield_centroid_measured]
+    prohibited: [proves_defender_intent, proves_marking_assignment]
+    unknown_conditions: [defending_player_positions_missing, goalkeeper_identity_unresolved]
+  - id: claim.defensive_block_lateral_shift.v1
+    kind: ClaimContract
+    display_name: Defensive Block Lateral Shift Claims
+    description: Claims permitted for baseline-relative defending block shift.
+    inherits: [claim.defensive_outfield_centroid.v1]
+    permitted: [defensive_centroid_shift_measured_toward_ball_side]
+    prohibited: [proves_defensive_intent, proves_attack_caused_shift]
+    unknown_conditions: [baseline_unresolved, centroid_signal_incomplete]
+  - id: claim.reviewed_outcome_classification.v1
+    kind: ClaimContract
+    display_name: Reviewed Outcome Classification Claims
+    description: Claims permitted only inside reviewed saved-plan context.
+    permitted: [reviewed_recipe_outcome_label_assigned]
+    prohibited: [proves_optimal_decision, proves_missed_opportunity, proves_player_intent]
+    unknown_conditions: [outcome_window_unresolved, required_event_or_tracking_missing]
+  - id: claim.progressive_connection_availability.v1
+    kind: ClaimContract
+    display_name: Progressive Connection Availability Claims
+    description: Claims permitted for geometric progressive corridor relations.
+    permitted: [geometric_forward_connection_available_under_declared_thresholds]
+    prohibited: [proves_pass_should_be_played, proves_pass_probability, proves_optimality, proves_receiver_body_orientation]
+    unknown_conditions: [ball_position_missing, target_position_missing, defender_coverage_incomplete]
+  - id: claim.relation_destination_entry.v1
+    kind: ClaimContract
+    display_name: Relation Destination Entry Claims
+    description: Claims permitted for ball entry into relation destination regions.
+    permitted: [ball_entered_relation_destination_region, ball_did_not_enter_relation_destination_region_when_window_complete]
+    prohibited: [proves_intent, proves_causation, proves_missed_opportunity, proves_decision_quality]
+    unknown_conditions: [ball_coverage_incomplete, destination_region_unresolved, relation_witness_missing]
+  - id: claim.opponent_ball_side_transition_count.v1
+    kind: ClaimContract
+    display_name: Opponent Ball-Side Transition Count Claims
+    description: Claims permitted for opponent bypass counts between action endpoints.
+    permitted: [listed_opponents_changed_from_goal_side_to_behind_ball_between_release_and_reception]
+    prohibited: [pass_alone_caused_every_opponent_to_be_bypassed, defensive_line_was_broken, pass_was_optimal, passer_intended_measured_outcome]
+    unknown_conditions: [release_endpoint_unresolved, reception_endpoint_unresolved, active_opponent_coverage_incomplete]
+  - id: claim.high_bypass_completed_pass.v1
+    kind: ClaimContract
+    display_name: High-Bypass Completed Pass Claims
+    description: Claims permitted for the high-bypass completed pass recipe.
+    inherits: [claim.controlled_ball_transfer.v1, claim.opponent_ball_side_transition_count.v1]
+    permitted: [completed_pass_met_forward_progression_threshold, completed_pass_met_bypassed_opponent_threshold]
+    prohibited: [pass_alone_caused_every_opponent_to_be_bypassed, defensive_line_was_broken, pass_was_optimal, passer_intended_measured_outcome]
+    unknown_conditions: [release_endpoint_unresolved, reception_endpoint_unresolved, active_opponent_coverage_incomplete]
+  - id: claim.ball_side_block_shift.v1
+    kind: ClaimContract
+    display_name: Ball-Side Block Shift Claims
+    description: Claims permitted for the reviewed ball-side block-shift recipe.
+    inherits: [claim.possession_context.v1, claim.wide_ball_entry.v1, claim.defensive_block_lateral_shift.v1, claim.reviewed_outcome_classification.v1]
+    permitted: [ball_entered_configured_wide_area, defending_outfield_centroid_shifted_toward_ball_side, reviewed_outcome_label_assigned]
+    prohibited: [proves_attack_intentionally_caused_shift, proves_switch_was_available, proves_not_switching_was_mistake, proves_optimal_decision]
+    unknown_conditions: [wide_entry_unresolved, centroid_shift_unresolved, outcome_window_unresolved]
+  - id: claim.possession_corridor_availability.v1
+    kind: ClaimContract
+    display_name: Possession Corridor Availability Claims
+    description: Claims permitted for a possession-anchor progressive corridor recipe.
+    inherits: [claim.possession_context.v1, claim.progressive_connection_availability.v1]
+    permitted: [possession_anchor_had_progressive_corridor]
+    prohibited: [proves_pass_should_be_played, proves_pass_probability, proves_optimality, proves_player_intent]
+    unknown_conditions: [possession_boundary_unresolved, corridor_relation_missing]
+  - id: claim.ai_corridor_destination_composition.v1
+    kind: ClaimContract
+    display_name: AI Corridor Destination Composition Claims
+    description: Claims permitted for the validated AI-authored corridor destination composition.
+    inherits: [claim.possession_context.v1, claim.progressive_connection_availability.v1, claim.relation_destination_entry.v1]
+    permitted: [possession_anchor_had_progressive_corridor, ball_entry_into_corridor_destination_region_evaluated]
+    prohibited: [proves_pass_should_be_played, proves_optimality, proves_player_intent]
+    unknown_conditions: [corridor_relation_missing, destination_entry_coverage_incomplete]
+  - id: claim.opposite_corridor_after_shift.v1
+    kind: ClaimContract
+    display_name: Opposite Corridor After Shift Claims
+    description: Claims permitted for the opposite-corridor-after-shift experimental recipe.
+    inherits: [claim.ball_side_block_shift.v1, claim.progressive_connection_availability.v1, claim.relation_destination_entry.v1]
+    permitted: [ball_side_shift_context_identified, opposite_side_progressive_corridor_identified, destination_entry_evaluated_after_shift]
+    prohibited: [proves_switch_was_available, proves_not_switching_was_mistake, proves_pass_should_be_played, proves_optimality, proves_player_intent]
+    unknown_conditions: [shift_context_unresolved, corridor_relation_missing, destination_entry_coverage_incomplete]
+
+evidence_contracts:
+  - id: evidence.possession_context.v1
+    kind: EvidenceContract
+    display_name: Possession Context Evidence
+    description: Evidence required for possession interval and anchor outputs.
+    required: [match_id, period, anchor_id, anchor_frame_id, possession_start_frame_id, possession_end_frame_id]
+    replay_projection: [anchor_frame_id, possession_window]
+  - id: evidence.controlled_ball_transfer.v1
+    kind: EvidenceContract
+    display_name: Controlled Ball Transfer Evidence
+    description: Evidence required for controlled pass episodes.
+    required: [passer_id, receiver_id, event_anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, release_ball_point, reception_ball_point, forward_progression_m]
+    replay_projection: [release_frame, reception_frame, passer_marker, receiver_marker, ball_path]
+  - id: evidence.wide_ball_entry.v1
+    kind: EvidenceContract
+    display_name: Wide Ball Entry Evidence
+    description: Evidence required for ball lateral fraction and wide-entry predicates.
+    required: [anchor_frame_id, ball_side, wide_entry_y_m]
+    replay_projection: [ball_position, wide_channel_region]
+  - id: evidence.defensive_outfield_centroid.v1
+    kind: EvidenceContract
+    display_name: Defensive Outfield Centroid Evidence
+    description: Evidence required for defensive outfield centroid measurements.
+    required: [baseline_defensive_centroid_y_m, defending_outfield_player_ids]
+    replay_projection: [defending_outfield_positions, centroid_marker]
+  - id: evidence.defensive_block_lateral_shift.v1
+    kind: EvidenceContract
+    display_name: Defensive Block Lateral Shift Evidence
+    description: Evidence required for signed defensive lateral shift.
+    inherits: [evidence.defensive_outfield_centroid.v1]
+    required: [baseline_defensive_centroid_y_m, defending_outfield_player_ids, signed_shift_metres, shift_frame_id]
+    replay_projection: [baseline_centroid_marker, shifted_centroid_marker]
+  - id: evidence.reviewed_outcome_classification.v1
+    kind: EvidenceContract
+    display_name: Reviewed Outcome Classification Evidence
+    description: Evidence required for reviewed recipe outcome classification.
+    required: [classification, outcome_window_start_frame_id, outcome_window_end_frame_id]
+    replay_projection: [outcome_window]
+  - id: evidence.progressive_connection_availability.v1
+    kind: EvidenceContract
+    display_name: Progressive Connection Evidence
+    description: Evidence required for progressive corridor relations.
+    required: [relation_id, anchor_id, open_frame_id, target_player_id, destination_region, minimum_clearance_m]
+    replay_projection: [source_point, target_point, destination_region, limiting_defender_marker]
+  - id: evidence.relation_destination_entry.v1
+    kind: EvidenceContract
+    display_name: Relation Destination Entry Evidence
+    description: Evidence required for destination-entry evaluation.
+    required: [relation_id, anchor_id, entry_status, entry_mode, destination_region, witness_frame_id]
+    replay_projection: [destination_region, ball_path, witness_frame]
+  - id: evidence.opponent_ball_side_transition_count.v1
+    kind: EvidenceContract
+    display_name: Opponent Ball-Side Transition Count Evidence
+    description: Evidence required for opponent bypass counts.
+    required: [release_frame_id, reception_frame_id, bypassed_player_ids, opponents_bypassed_count, active_opponent_denominator, forward_progression_m]
+    replay_projection: [release_positions, reception_positions, bypassed_opponent_markers]
+  - id: evidence.high_bypass_completed_pass.v1
+    kind: EvidenceContract
+    display_name: High-Bypass Completed Pass Evidence
+    description: Evidence required for high-bypass completed pass results.
+    inherits: [evidence.controlled_ball_transfer.v1, evidence.opponent_ball_side_transition_count.v1]
+    required: [passer_id, receiver_id, event_anchor_frame_id, physical_release_frame_id, controlled_reception_frame_id, release_ball_point, reception_ball_point, forward_progression_m, release_frame_id, reception_frame_id, bypassed_player_ids, opponents_bypassed_count, active_opponent_denominator]
+    replay_projection: [completed_pass_line, bypassed_opponent_markers, release_frame, reception_frame]
+  - id: evidence.ball_side_block_shift.v1
+    kind: EvidenceContract
+    display_name: Ball-Side Block Shift Evidence
+    description: Evidence required for reviewed ball-side block-shift results.
+    inherits: [evidence.possession_context.v1, evidence.wide_ball_entry.v1, evidence.defensive_block_lateral_shift.v1, evidence.reviewed_outcome_classification.v1]
+    required: [match_id, period, anchor_id, anchor_frame_id, possession_start_frame_id, possession_end_frame_id, ball_side, wide_entry_y_m, baseline_defensive_centroid_y_m, defending_outfield_player_ids, signed_shift_metres, shift_frame_id, classification, outcome_window_start_frame_id, outcome_window_end_frame_id]
+    replay_projection: [ball_position, defending_outfield_positions, centroid_shift, outcome_window]
+  - id: evidence.possession_corridor_availability.v1
+    kind: EvidenceContract
+    display_name: Possession Corridor Availability Evidence
+    description: Evidence required for a possession-anchor progressive corridor recipe.
+    inherits: [evidence.possession_context.v1, evidence.progressive_connection_availability.v1]
+    required: [match_id, period, anchor_id, anchor_frame_id, possession_start_frame_id, possession_end_frame_id, relation_id, open_frame_id, target_player_id, destination_region, minimum_clearance_m]
+    replay_projection: [possession_window, corridor_geometry, destination_region]
+  - id: evidence.ai_corridor_destination_composition.v1
+    kind: EvidenceContract
+    display_name: AI Corridor Destination Composition Evidence
+    description: Evidence required for validated AI-authored corridor destination results.
+    inherits: [evidence.possession_context.v1, evidence.progressive_connection_availability.v1, evidence.relation_destination_entry.v1]
+    required: [match_id, period, anchor_id, anchor_frame_id, possession_start_frame_id, possession_end_frame_id, relation_id, open_frame_id, target_player_id, destination_region, minimum_clearance_m, entry_status, entry_mode, witness_frame_id]
+    replay_projection: [possession_window, corridor_geometry, destination_region, ball_path]
+  - id: evidence.opposite_corridor_after_shift.v1
+    kind: EvidenceContract
+    display_name: Opposite Corridor After Shift Evidence
+    description: Evidence required for the opposite-corridor-after-shift experimental recipe.
+    inherits: [evidence.ball_side_block_shift.v1, evidence.progressive_connection_availability.v1, evidence.relation_destination_entry.v1]
+    required: [match_id, period, anchor_id, anchor_frame_id, possession_start_frame_id, possession_end_frame_id, ball_side, wide_entry_y_m, baseline_defensive_centroid_y_m, defending_outfield_player_ids, signed_shift_metres, shift_frame_id, classification, outcome_window_start_frame_id, outcome_window_end_frame_id, relation_id, open_frame_id, target_player_id, destination_region, minimum_clearance_m, entry_status, entry_mode, witness_frame_id]
+    replay_projection: [ball_position, centroid_shift, corridor_geometry, destination_region, ball_path]
+
+exposure_policies:
+  - id: exposure.runtime.possession_segment.0_1_0
+    kind: ExposurePolicy
+    display_name: possession_segment exposure
+    description: Exposure policy for possession_segment.
+    subject_ref: runtime:primitive:possession_segment:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.controlled_pass_episode.0_1_0
+    kind: ExposurePolicy
+    display_name: controlled_pass_episode exposure
+    description: Exposure policy for controlled_pass_episode.
+    subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.ball_lateral_fraction.0_1_0
+    kind: ExposurePolicy
+    display_name: ball_lateral_fraction exposure
+    description: Exposure policy for ball_lateral_fraction.
+    subject_ref: runtime:primitive:ball_lateral_fraction:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.defensive_outfield_centroid.0_1_0
+    kind: ExposurePolicy
+    display_name: defensive_outfield_centroid exposure
+    description: Exposure policy for defensive_outfield_centroid.
+    subject_ref: runtime:primitive:defensive_outfield_centroid:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.signed_lateral_shift.0_1_0
+    kind: ExposurePolicy
+    display_name: signed_lateral_shift exposure
+    description: Exposure policy for signed_lateral_shift.
+    subject_ref: runtime:primitive:signed_lateral_shift:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.outcome_classification.0_1_0
+    kind: ExposurePolicy
+    display_name: outcome_classification exposure
+    description: Reviewed-plan-only classifier exposure policy.
+    subject_ref: runtime:primitive:outcome_classification:0.1.0
+    ai_compiler: REVIEWED_PLAN_ONLY
+    product: ALLOWED
+    reasons: [reviewed_plan_only_classifier]
+  - id: exposure.runtime.relation_destination_entry.0_1_0
+    kind: ExposurePolicy
+    display_name: relation_destination_entry exposure
+    description: Exposure policy for relation_destination_entry.
+    subject_ref: runtime:primitive:relation_destination_entry:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.relation_destination_entry_classification.0_1_0
+    kind: ExposurePolicy
+    display_name: relation_destination_entry_classification exposure
+    description: Reviewed-plan-only destination entry classifier exposure policy.
+    subject_ref: runtime:primitive:relation_destination_entry_classification:0.1.0
+    ai_compiler: REVIEWED_PLAN_ONLY
+    product: ALLOWED
+    reasons: [reviewed_plan_only_wrapper]
+  - id: exposure.runtime.geometric_progressive_corridor.0_1_0
+    kind: ExposurePolicy
+    display_name: geometric_progressive_corridor exposure
+    description: Exposure policy for geometric_progressive_corridor.
+    subject_ref: runtime:relation:geometric_progressive_corridor:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.geometric_progressive_corridor_from_anchor_set.0_1_0
+    kind: ExposurePolicy
+    display_name: geometric_progressive_corridor_from_anchor_set exposure
+    description: Exposure policy for geometric_progressive_corridor_from_anchor_set.
+    subject_ref: runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.runtime.opponents_bypassed_by_action.0_1_0
+    kind: ExposurePolicy
+    display_name: opponents_bypassed_by_action exposure
+    description: Exposure policy for opponents_bypassed_by_action.
+    subject_ref: runtime:relation:opponents_bypassed_by_action:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+  - id: exposure.recipe.ball_side_block_shift.v1
+    kind: ExposurePolicy
+    display_name: ball_side_block_shift_v1 exposure
+    description: Exposure policy for the reviewed ball-side block-shift recipe.
+    subject_ref: recipe:ball_side_block_shift_v1:1.0.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [reviewed_recipe_selection_allowed]
+  - id: exposure.recipe.possession_corridor_availability.v1
+    kind: ExposurePolicy
+    display_name: possession_corridor_availability_v1 exposure
+    description: Exposure policy for the possession corridor availability experimental preset.
+    subject_ref: recipe:possession_corridor_availability_v1:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [experimental_recipe_selection_allowed]
+  - id: exposure.recipe.opposite_corridor_after_shift.v1
+    kind: ExposurePolicy
+    display_name: opposite_corridor_after_shift_v1 exposure
+    description: Exposure policy for the opposite corridor after shift experimental preset.
+    subject_ref: recipe:opposite_corridor_after_shift_v1:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [experimental_recipe_selection_allowed]
+  - id: exposure.recipe.high_bypass_completed_pass.v1
+    kind: ExposurePolicy
+    display_name: high_bypass_completed_pass_v1 exposure
+    description: Exposure policy for the high-bypass completed pass experimental preset.
+    subject_ref: recipe:high_bypass_completed_pass_v1:0.1.0
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [experimental_recipe_selection_allowed]
+  - id: exposure.composition.ai_corridor_destination.2026_06_23
+    kind: ExposurePolicy
+    display_name: AI corridor destination composition exposure
+    description: Exposure policy for the verified Hermes-authored corridor destination composition.
+    subject_ref: composition:composition.ai_corridor_destination.2026_06_23
+    ai_compiler: ALLOWED
+    product: ALLOWED
+    reasons: [validated_composition_selection_allowed]
+
+projection_policies:
+  - id: projection.product.v1
+    kind: ProjectionPolicy
+    display_name: Product Projection Policy
+    description: Includes product-approved current capabilities, recipes, and validated compositions.
+    target: product
+    requires: {runtime_binding: VERIFIED, product_exposure: ALLOWED, product_maturity: EXPOSED, validation: VERIFIED}
+    excludes: [PROPOSED_ATLAS, DEPRECATED]
+    accepted_differences:
+      - subject_ref: composition:composition.ai_corridor_destination.2026_06_23
+        difference_kind: ADDED
+        projection_contract_hash: a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b
+        permitted_fields: []
+        rationale: Verified Hermes-authored composition is intentionally new relative to the product baseline.
+        review_condition: Remove or update this waiver when the product baseline intentionally includes the composition.
+  - id: projection.ai.v1
+    kind: ProjectionPolicy
+    display_name: AI Projection Policy
+    description: Includes only AI-approved authorable capabilities, operators, recipes, and validated compositions.
+    target: ai
+    requires: {runtime_binding: VERIFIED, agent_safety: APPROVED, ai_compiler: ALLOWED, validation: VERIFIED}
+    excludes: [PROPOSED_ATLAS, REVIEWED_PLAN_ONLY, DEPRECATED]
+    accepted_differences:
+      - subject_ref: composition:composition.ai_corridor_destination.2026_06_23
+        difference_kind: ADDED
+        projection_contract_hash: a796f3d6ca9399358c6bf535d0d7d8f57509bbf9763661cf191c76e346af9d3b
+        permitted_fields: []
+        rationale: Verified Hermes-authored composition is intentionally new relative to the model-visible knowledge-pack baseline.
+        review_condition: Remove or update this waiver when the AI baseline intentionally includes the composition.
+      - subject_ref: recipe:ball_side_block_shift_v1:1.0.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 00bc3c9303cd4b29f5cab4d760d741d7fcc89c69107ebe7f55c13a7786ef5c9a
+        projection_contract_hash: 3e3f2db76424e3dd2400588ddc2395ce1461a3a7a0d7956e68d1df8063900536
+        permitted_fields: [capability_dependencies, normalized_plan_hash, operator_dependencies]
+        rationale: Existing AI baseline exposes its public authoring contract while the semantic projection records complete bound-plan dependencies.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
+      - subject_ref: recipe:high_bypass_completed_pass_v1:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: ab114133e2ddd681c5b1ec3c22e05b0a61dc4bc17be1b5d428f27b89242003e4
+        projection_contract_hash: 432ab3ca35a0ed3a05a6fc44b1ec3cdbb7b5d5ae64ddfc6115ac60bdbd5f2ac2
+        permitted_fields: [normalized_plan_hash, operator_dependencies]
+        rationale: Existing AI baseline exposes its public authoring contract while the semantic projection records complete bound-plan dependencies.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
+      - subject_ref: recipe:opposite_corridor_after_shift_v1:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: 4787ae0c978901f5ee8834a767209890d77b3508f4ee6d8fef87836a6d505f5e
+        projection_contract_hash: 6a24c077c8ed2d8627aeb275e6f794ea33c81e28d1b4f37cd54c296e68f4b6ed
+        permitted_fields: [capability_dependencies, normalized_plan_hash, operator_dependencies]
+        rationale: Existing AI baseline exposes its public authoring contract while the semantic projection records complete bound-plan dependencies.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
+      - subject_ref: recipe:possession_corridor_availability_v1:0.1.0
+        difference_kind: CONTRACT_CHANGED
+        baseline_contract_hash: b7359184607500bc53c07cb0146b116f414cefb51c30168a22646b89ce059e77
+        projection_contract_hash: 0d1daea8595cd6fe2d7c3a8b483f05efa3fea99dbe5e9df496c443783d8b4f70
+        permitted_fields: [normalized_plan_hash, operator_dependencies]
+        rationale: Existing AI baseline exposes its public authoring contract while the semantic projection records complete bound-plan dependencies.
+        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
+  - id: projection.recipe_library.v1
+    kind: ProjectionPolicy
+    display_name: Recipe Library Projection Policy
+    description: Includes registered recipe definitions and validated composition instances.
+    target: recipe_library
+    requires: {plan_artifact: EXISTS}
+    excludes: [PROPOSED_ATLAS]
+  - id: projection.unsupported.v1
+    kind: ProjectionPolicy
+    display_name: Unsupported Capability Projection Policy
+    description: Reports denied or proposed capabilities with explicit reasons.
+    target: unsupported
+    requires: {}
+    excludes: []
+  - id: projection.research_atlas.v1
+    kind: ProjectionPolicy
+    display_name: Research Atlas Projection Policy
+    description: Includes raw proposed atlas entries in a denied staging namespace.
+    target: research_atlas
+    requires: {status: PROPOSED_ATLAS}
+    excludes: [PRODUCT_SUPPORTED, AI_AUTHORABLE]
+
+maturity_assessments:
+  - id: maturity.runtime.possession_segment.0_1_0
+    kind: MaturityAssessment
+    display_name: possession_segment maturity
+    description: Maturity assessment for possession_segment.
+    subject_ref: runtime:primitive:possession_segment:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.controlled_pass_episode.0_1_0
+    kind: MaturityAssessment
+    display_name: controlled_pass_episode maturity
+    description: Maturity assessment for controlled_pass_episode.
+    subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.ball_lateral_fraction.0_1_0
+    kind: MaturityAssessment
+    display_name: ball_lateral_fraction maturity
+    description: Maturity assessment for ball_lateral_fraction.
+    subject_ref: runtime:primitive:ball_lateral_fraction:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.defensive_outfield_centroid.0_1_0
+    kind: MaturityAssessment
+    display_name: defensive_outfield_centroid maturity
+    description: Maturity assessment for defensive_outfield_centroid.
+    subject_ref: runtime:primitive:defensive_outfield_centroid:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.signed_lateral_shift.0_1_0
+    kind: MaturityAssessment
+    display_name: signed_lateral_shift maturity
+    description: Maturity assessment for signed_lateral_shift.
+    subject_ref: runtime:primitive:signed_lateral_shift:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.outcome_classification.0_1_0
+    kind: MaturityAssessment
+    display_name: outcome_classification maturity
+    description: Maturity assessment for reviewed-plan-only outcome_classification.
+    subject_ref: runtime:primitive:outcome_classification:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.relation_destination_entry.0_1_0
+    kind: MaturityAssessment
+    display_name: relation_destination_entry maturity
+    description: Maturity assessment for relation_destination_entry.
+    subject_ref: runtime:primitive:relation_destination_entry:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.relation_destination_entry_classification.0_1_0
+    kind: MaturityAssessment
+    display_name: relation_destination_entry_classification maturity
+    description: Maturity assessment for reviewed-plan-only relation_destination_entry_classification.
+    subject_ref: runtime:primitive:relation_destination_entry_classification:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.geometric_progressive_corridor.0_1_0
+    kind: MaturityAssessment
+    display_name: geometric_progressive_corridor maturity
+    description: Maturity assessment for geometric_progressive_corridor.
+    subject_ref: runtime:relation:geometric_progressive_corridor:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.geometric_progressive_corridor_from_anchor_set.0_1_0
+    kind: MaturityAssessment
+    display_name: geometric_progressive_corridor_from_anchor_set maturity
+    description: Maturity assessment for geometric_progressive_corridor_from_anchor_set.
+    subject_ref: runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.runtime.opponents_bypassed_by_action.0_1_0
+    kind: MaturityAssessment
+    display_name: opponents_bypassed_by_action maturity
+    description: Maturity assessment for opponents_bypassed_by_action.
+    subject_ref: runtime:relation:opponents_bypassed_by_action:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.recipe.ball_side_block_shift.v1
+    kind: MaturityAssessment
+    display_name: ball_side_block_shift_v1 maturity
+    description: Maturity assessment for the reviewed ball-side block-shift recipe.
+    subject_ref: recipe:ball_side_block_shift_v1:1.0.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.recipe.possession_corridor_availability.v1
+    kind: MaturityAssessment
+    display_name: possession_corridor_availability_v1 maturity
+    description: Maturity assessment for the possession corridor availability experimental preset.
+    subject_ref: recipe:possession_corridor_availability_v1:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.recipe.opposite_corridor_after_shift.v1
+    kind: MaturityAssessment
+    display_name: opposite_corridor_after_shift_v1 maturity
+    description: Maturity assessment for the opposite corridor after shift experimental preset.
+    subject_ref: recipe:opposite_corridor_after_shift_v1:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.recipe.high_bypass_completed_pass.v1
+    kind: MaturityAssessment
+    display_name: high_bypass_completed_pass_v1 maturity
+    description: Maturity assessment for the high-bypass completed pass experimental preset.
+    subject_ref: recipe:high_bypass_completed_pass_v1:0.1.0
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+  - id: maturity.composition.ai_corridor_destination.2026_06_23
+    kind: MaturityAssessment
+    display_name: AI corridor destination composition maturity
+    description: Maturity assessment for the verified Hermes-authored corridor destination composition.
+    subject_ref: composition:composition.ai_corridor_destination.2026_06_23
+    semantic: REVIEWED
+    implementation: IMPLEMENTED
+    validation: VERIFIED
+    agent_safety: APPROVED
+    product: EXPOSED
+
+plan_artifacts:
+  - id: plan.ball_side_block_shift.v1
+    kind: PlanArtifact
+    display_name: Ball-Side Block Shift Typed Plan
+    description: Exact current typed plan artifact for the reviewed ball-side block-shift recipe.
+    origin: REVIEWED_RECIPE
+    promotion_status: REVIEWED_RECIPE
+    exact_typed_plan_ref: config/query-plans/ball_side_block_shift.ir.v1.json
+    recipe_ref: recipe.ball_side_block_shift.v1
+  - id: plan.possession_corridor_availability.v1
+    kind: PlanArtifact
+    display_name: Possession Corridor Availability Typed Plan
+    description: Exact current typed plan artifact for the possession corridor availability recipe.
+    origin: MANUAL_PRESET
+    promotion_status: EXPERIMENTAL_PRESET
+    exact_typed_plan_ref: config/query-plans/possession_corridor_availability.experimental.v1.json
+    recipe_ref: recipe.possession_corridor_availability.v1
+  - id: plan.opposite_corridor_after_shift.v1
+    kind: PlanArtifact
+    display_name: Opposite Corridor After Shift Typed Plan
+    description: Exact current typed plan artifact for the opposite corridor after shift recipe.
+    origin: MANUAL_PRESET
+    promotion_status: EXPERIMENTAL_PRESET
+    exact_typed_plan_ref: config/query-plans/opposite_corridor_after_shift.experimental.v1.json
+    recipe_ref: recipe.opposite_corridor_after_shift.v1
+  - id: plan.high_bypass_completed_pass.v1
+    kind: PlanArtifact
+    display_name: High-Bypass Completed Pass Typed Plan
+    description: Exact current typed plan artifact for the high-bypass completed pass recipe.
+    origin: MANUAL_PRESET
+    promotion_status: EXPERIMENTAL_PRESET
+    exact_typed_plan_ref: config/query-plans/high_bypass_completed_pass.experimental.v1.json
+    recipe_ref: recipe.high_bypass_completed_pass.v1
+  - id: plan.ai_corridor_destination.2026_06_23
+    kind: PlanArtifact
+    display_name: AI Corridor Destination Plan Artifact
+    description: Validated AI-authored corridor destination composition record. This is not a reusable recipe.
+    origin: AI_AUTHORED
+    promotion_status: VALIDATED_COMPOSITION
+    exact_typed_plan_ref: delivery/n1d/n1f-origin-bundle.json
+
+recipe_definitions:
+  - id: recipe.ball_side_block_shift.v1
+    kind: RecipeDefinition
+    display_name: Ball-Side Block Shift Recipe Mapping
+    description: Semantic mapping for the reviewed ball-side block-shift recipe.
+    recipe_id: ball_side_block_shift_v1
+    recipe_version: 1.0.0
+    concept_ref: concept.ball_side_block_shift
+    plan_artifact_ref: plan.ball_side_block_shift.v1
+    dependency_refs: [possession_segment, ball_lateral_fraction, gt, persists_for, defensive_outfield_centroid, signed_lateral_shift, gte, outcome_classification, neq]
+    profile_refs: [profile.ball_side_block_shift_reviewed.v1]
+    claim_contract_ref: claim.ball_side_block_shift.v1
+    evidence_contract_ref: evidence.ball_side_block_shift.v1
+  - id: recipe.possession_corridor_availability.v1
+    kind: RecipeDefinition
+    display_name: Possession Corridor Availability Recipe Mapping
+    description: Semantic mapping for the possession corridor availability experimental recipe.
+    recipe_id: possession_corridor_availability_v1
+    recipe_version: 0.1.0
+    concept_ref: concept.progressive_connection_availability
+    plan_artifact_ref: plan.possession_corridor_availability.v1
+    dependency_refs: [possession_segment, geometric_progressive_corridor_from_anchor_set, exists]
+    profile_refs: [profile.progressive_corridor_default.v1]
+    claim_contract_ref: claim.possession_corridor_availability.v1
+    evidence_contract_ref: evidence.possession_corridor_availability.v1
+  - id: recipe.opposite_corridor_after_shift.v1
+    kind: RecipeDefinition
+    display_name: Opposite Corridor After Shift Recipe Mapping
+    description: Semantic mapping for the opposite corridor after shift experimental recipe.
+    recipe_id: opposite_corridor_after_shift_v1
+    recipe_version: 0.1.0
+    concept_ref: concept.opposite_corridor_after_shift
+    plan_artifact_ref: plan.opposite_corridor_after_shift.v1
+    dependency_refs: [possession_segment, ball_lateral_fraction, gt, persists_for, defensive_outfield_centroid, signed_lateral_shift, gte, outcome_classification, neq, geometric_progressive_corridor, exists, relation_destination_entry_classification]
+    profile_refs: [profile.ball_side_block_shift_reviewed.v1, profile.progressive_corridor_default.v1, profile.destination_entry_default.v1]
+    claim_contract_ref: claim.opposite_corridor_after_shift.v1
+    evidence_contract_ref: evidence.opposite_corridor_after_shift.v1
+  - id: recipe.high_bypass_completed_pass.v1
+    kind: RecipeDefinition
+    display_name: High-Bypass Completed Pass Recipe Mapping
+    description: Semantic mapping for the high-bypass completed pass experimental recipe.
+    recipe_id: high_bypass_completed_pass_v1
+    recipe_version: 0.1.0
+    concept_ref: concept.high_bypass_completed_pass
+    plan_artifact_ref: plan.high_bypass_completed_pass.v1
+    dependency_refs: [controlled_pass_episode, opponents_bypassed_by_action, gte]
+    profile_refs: [profile.high_bypass_default.v1]
+    claim_contract_ref: claim.high_bypass_completed_pass.v1
+    evidence_contract_ref: evidence.high_bypass_completed_pass.v1
+
+composition_instances:
+  - id: composition.ai_corridor_destination.2026_06_23
+    kind: CompositionInstance
+    display_name: AI Corridor Destination Composition
+    description: Validated AI-authored corridor destination composition. It remains a composition instance, not a registered recipe.
+    plan_artifact_ref: plan.ai_corridor_destination.2026_06_23
+    concept_ref: concept.progressive_connection_followed_by_destination_entry
+    origin: AI_AUTHORED
+    promotion_status: VALIDATED_COMPOSITION
+    claim_contract_ref: claim.ai_corridor_destination_composition.v1
+    evidence_contract_ref: evidence.ai_corridor_destination_composition.v1

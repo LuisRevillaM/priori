@@ -1,0 +1,2 @@
+/Users/luisrevilla/Documents/priori/.venv/bin/python -m tqe.verification.m1_1_gate_s4
+{"status": "pass", "summary": {"fail": 0, "not_ready": 0, "pass": 13}}

@@ -1,0 +1,391 @@
+{
+  "artifacts": {
+    "corpus": "artifacts/m1.2/agent-evaluation-corpus.json",
+    "trace_report": "artifacts/m1.2/hermes-s2-trace-report.json"
+  },
+  "checks": [
+    {
+      "details": {
+        "bound_plan_hash": "e101c5299f2305fcfc31113c661e6520572916b00eadd0a925a2799b91513758",
+        "bound_plan_id": "bound_e101c5299f2305fc",
+        "capability_gaps": [],
+        "clarification_questions": [],
+        "draft_plan_hash": "d4526d024b685b8a11163304ded7c8921d1b14cbc6d311929ef07ca74fd80c96",
+        "draft_plan_id": "draft_d4526d024b685b8a",
+        "interpretation": {
+          "allowed_claims": [
+            "The team had an active-ball possession anchor.",
+            "A geometric progressive corridor appeared under configured thresholds.",
+            "Replay coordinates come from canonical tracking frames."
+          ],
+          "automatic_execution": false,
+          "disallowed_claims": [
+            "Intent, optimality, pass probability, or video-backed claims."
+          ],
+          "intent": "draft_experimental_progressive_corridor_query",
+          "recipe_state": "EXPERIMENTAL",
+          "summary": "Detect possession anchors where a geometric progressive corridor becomes available."
+        },
+        "ok": true,
+        "original_language": "Find moments where an open progressive corridor appears from possession.",
+        "selected_recipe": {
+          "allowed_claims": [
+            "The team had an active-ball possession anchor.",
+            "A geometric progressive corridor appeared under the configured relation thresholds.",
+            "The replay coordinates come from canonical 25 Hz source frames."
+          ],
+          "display_name": "Possession Corridor Availability",
+          "limitations": [
+            "Experimental plan; not an approved recipe.",
+            "No offside, receiver body orientation, pressure, pass probability, or optimality model is evaluated.",
+            "No match video is used."
+          ],
+          "output_classifications": [
+            "PROGRESSIVE_CORRIDOR_AVAILABLE"
+          ],
+          "recipe_id": "possession_corridor_availability_v1",
+          "recipe_version": "0.1.0",
+          "state": "EXPERIMENTAL"
+        },
+        "status": "DRAFT_VALIDATED",
+        "tool_calls": [
+          {
+            "arguments_summary": {},
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "ok": true,
+            "response_keys": [
+              "default_complexity_limits",
+              "evidence_fields",
+              "forbidden_surfaces",
+              "generated_at",
+              "host_owned_complexity_ceilings",
+              "limitations",
+              "milestone",
+              "operators",
+              "primitives",
+              "recipe_states",
+              "relations",
+              "safe_operator_source_rules",
+              "schema_version",
+              "tools"
+            ],
+            "tool_name": "list_capabilities"
+          },
+          {
+            "arguments_summary": {
+              "capability_name": "geometric_progressive_corridor_from_anchor_set"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "ok": true,
+            "response_keys": [
+              "capability",
+              "ok"
+            ],
+            "tool_name": "describe_capability"
+          },
+          {
+            "arguments_summary": {
+              "plan_document": {
+                "plan_id": "hermes_s2_progressive_corridor_experimental",
+                "recipe_id": "possession_corridor_availability_v1",
+                "status": "experimental"
+              },
+              "source_label": "hermes_s2"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "ok": true,
+            "response_keys": [
+              "draft_plan_hash",
+              "draft_plan_id",
+              "ok",
+              "plan_status",
+              "recipe_id",
+              "recipe_version"
+            ],
+            "tool_name": "submit_query_plan"
+          },
+          {
+            "arguments_summary": {
+              "draft_plan_id": "draft_d4526d024b685b8a"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "ok": true,
+            "response_keys": [
+              "bound_plan_hash",
+              "bound_plan_id",
+              "draft_plan_id",
+              "execution_profile",
+              "issues",
+              "ok",
+              "plan_id",
+              "plan_status",
+              "recipe_id"
+            ],
+            "tool_name": "validate_query_plan"
+          }
+        ],
+        "trace_id": "hermes_649cdd1172bf737f",
+        "validation_result": {
+          "bound_plan_hash": "e101c5299f2305fcfc31113c661e6520572916b00eadd0a925a2799b91513758",
+          "bound_plan_id": "bound_e101c5299f2305fc",
+          "draft_plan_id": "draft_d4526d024b685b8a",
+          "execution_profile": "generic",
+          "issues": [],
+          "ok": true,
+          "plan_id": "hermes_s2_progressive_corridor_experimental",
+          "plan_status": "experimental",
+          "recipe_id": "possession_corridor_availability_v1"
+        }
+      },
+      "id": "s2.hermes_experimental_draft_validated",
+      "message": "Hermes compiles a supported prompt into a validated experimental draft through the Hermes caller profile.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "execution_id": "exec_98fc75f11c2fd4fa",
+        "replay_window_id": "replay_8e478d7548c94514",
+        "result_count": 64,
+        "trace_id": "hermes_exec_2a608a42fc1c8acc"
+      },
+      "id": "s2.hermes_confirmed_execution_grounded",
+      "message": "After host confirmation, Hermes executes, inspects, and retrieves replay through the model-visible boundary.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "compile_trace_id": "hermes_649cdd1172bf737f"
+      },
+      "id": "s2.confirmation_boundary_preserved",
+      "message": "Hermes compile output does not mint or receive execution authorization before host confirmation.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bound_plan_hash": null,
+        "bound_plan_id": null,
+        "capability_gaps": [],
+        "clarification_questions": [
+          "Should support mean an open progressive corridor from possession?",
+          "How long may the support option take to appear?",
+          "Should the receiver have to be inside the corridor, or is geometric availability enough?"
+        ],
+        "draft_plan_hash": null,
+        "draft_plan_id": null,
+        "interpretation": {
+          "automatic_execution": false,
+          "intent": "ambiguous_support_request",
+          "reason": "The current vocabulary can measure possession anchors and progressive corridors, but support has multiple tactical meanings."
+        },
+        "ok": false,
+        "original_language": "Find when the receiver has support after we break the line.",
+        "selected_recipe": null,
+        "status": "CLARIFICATION_REQUIRED",
+        "tool_calls": [
+          {
+            "arguments_summary": {},
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "ok": true,
+            "response_keys": [
+              "default_complexity_limits",
+              "evidence_fields",
+              "forbidden_surfaces",
+              "generated_at",
+              "host_owned_complexity_ceilings",
+              "limitations",
+              "milestone",
+              "operators",
+              "primitives",
+              "recipe_states",
+              "relations",
+              "safe_operator_source_rules",
+              "schema_version",
+              "tools"
+            ],
+            "tool_name": "list_capabilities"
+          }
+        ],
+        "trace_id": "hermes_cac72ef3746941c6",
+        "validation_result": null
+      },
+      "id": "s2.ambiguous_prompt_requests_clarification",
+      "message": "Ambiguous support language asks clarification instead of silently approximating.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bound_plan_hash": null,
+        "bound_plan_id": null,
+        "capability_gaps": [
+          {
+            "concept": "body orientation",
+            "reason": "No body-orientation primitive is exposed."
+          },
+          {
+            "concept": "orientation",
+            "reason": "No body-orientation primitive is exposed."
+          },
+          {
+            "concept": "intent",
+            "reason": "Intent is not observable in the current deterministic vocabulary."
+          },
+          {
+            "concept": "optimal",
+            "reason": "Optimal-action claims are outside the approved claims."
+          },
+          {
+            "concept": "communication",
+            "reason": "Communication is not represented in the tracking data."
+          }
+        ],
+        "clarification_questions": [],
+        "draft_plan_hash": null,
+        "draft_plan_id": null,
+        "interpretation": {
+          "available_tool_count": 8,
+          "intent": "unsupported_tactical_request",
+          "reason": "The request asks for concepts outside the exposed capability context."
+        },
+        "ok": false,
+        "original_language": "Show optimal actions using body orientation, intent, and communication.",
+        "selected_recipe": null,
+        "status": "CAPABILITY_GAP",
+        "tool_calls": [
+          {
+            "arguments_summary": {},
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "ok": true,
+            "response_keys": [
+              "default_complexity_limits",
+              "evidence_fields",
+              "forbidden_surfaces",
+              "generated_at",
+              "host_owned_complexity_ceilings",
+              "limitations",
+              "milestone",
+              "operators",
+              "primitives",
+              "recipe_states",
+              "relations",
+              "safe_operator_source_rules",
+              "schema_version",
+              "tools"
+            ],
+            "tool_name": "list_capabilities"
+          }
+        ],
+        "trace_id": "hermes_0b3f6def29413a07",
+        "validation_result": null
+      },
+      "id": "s2.unsupported_prompt_capability_gap",
+      "message": "Unsupported concepts return explicit capability gaps.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "bound_plan_hash": null,
+        "bound_plan_id": null,
+        "capability_gaps": [],
+        "clarification_questions": [],
+        "draft_plan_hash": null,
+        "draft_plan_id": null,
+        "interpretation": {
+          "automatic_execution": false,
+          "intent": "reuse_trusted_recipe",
+          "requires_host_recipe_load": true,
+          "summary": "Use the trusted approved ball-side block-shift recipe."
+        },
+        "ok": true,
+        "original_language": "Use the approved ball-side block shift recipe.",
+        "selected_recipe": {
+          "allowed_claims": [
+            "The ball entered a configured wide area.",
+            "The defending outfield centroid shifted toward the ball side by the configured threshold.",
+            "The subsequent outcome was SWITCHED, RETAINED_NO_SWITCH, LOST_BEFORE_SWITCH, or excluded STOPPAGE under the frozen predicates.",
+            "The replay coordinates come from canonical 25 Hz source frames."
+          ],
+          "display_name": "Ball-Side Block Shift",
+          "limitations": [
+            "M1.1 Gate A binds this plan only; execution and parity are Gate B.",
+            "The legacy M1 detector remains the read-only oracle through the demo.",
+            "No pass probability, optimality, or player-intent claim is allowed."
+          ],
+          "output_classifications": [
+            "SWITCHED",
+            "RETAINED_NO_SWITCH",
+            "LOST_BEFORE_SWITCH",
+            "STOPPAGE"
+          ],
+          "recipe_id": "ball_side_block_shift_v1",
+          "recipe_version": "1.0.0",
+          "state": "APPROVED"
+        },
+        "status": "EXISTING_RECIPE_SELECTED",
+        "tool_calls": [
+          {
+            "arguments_summary": {},
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "ok": true,
+            "response_keys": [
+              "default_complexity_limits",
+              "evidence_fields",
+              "forbidden_surfaces",
+              "generated_at",
+              "host_owned_complexity_ceilings",
+              "limitations",
+              "milestone",
+              "operators",
+              "primitives",
+              "recipe_states",
+              "relations",
+              "safe_operator_source_rules",
+              "schema_version",
+              "tools"
+            ],
+            "tool_name": "list_capabilities"
+          }
+        ],
+        "trace_id": "hermes_4bb1b88c979e7dc3",
+        "validation_result": null
+      },
+      "id": "s2.approved_recipe_selected_not_authored",
+      "message": "Approved recipes are selected as trusted host records rather than submitted as Hermes-authored approved documents.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "first_trace_id": "hermes_649cdd1172bf737f",
+        "second_trace_id": "hermes_347185470bb678dc",
+        "shared_bound_plan_id": "bound_e101c5299f2305fc",
+        "shared_draft_plan_id": "draft_d4526d024b685b8a"
+      },
+      "id": "s2.language_trace_survives_shared_plan_handles",
+      "message": "Semantically identical drafts can share content handles while each language request keeps its own trace.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "path": "artifacts/m1.2/agent-evaluation-corpus.json"
+      },
+      "id": "s2.initial_evaluation_corpus_frozen",
+      "message": "Initial S2 evaluation corpus exists with supported, ambiguous, and unsupported prompts.",
+      "status": "pass"
+    }
+  ],
+  "gate": "S2_hermes_drafting_and_clarification",
+  "generated_at": "2026-06-21T16:45:11+00:00",
+  "milestone": "M1.2",
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "pass": 8
+  }
+}

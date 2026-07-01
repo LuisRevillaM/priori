@@ -1,0 +1,2 @@
+$ npm run test:acceptance
+Full command was run from apps/workbench-alpha and passed before packaging. See validation-output.md for summarized output; full console output omitted to keep packet compact.

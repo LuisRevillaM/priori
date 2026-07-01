@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://priori.local/schemas/review_packet_manifest.schema.json",
+  "title": "Priori AFL Review Packet Manifest",
+  "type": "object",
+  "required": [
+    "milestone",
+    "candidate_commit",
+    "contract_hash",
+    "packet_hash",
+    "required_artifacts",
+    "known_limitations",
+    "waivers"
+  ],
+  "properties": {
+    "milestone": {"type": "string", "pattern": "^AFL-(G0|[0-9]{2})$"},
+    "candidate_commit": {"type": "string"},
+    "contract_hash": {"type": "string"},
+    "packet_hash": {"type": "string"},
+    "required_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "sha256", "artifact_class"],
+        "properties": {
+          "path": {"type": "string"},
+          "sha256": {"type": "string"},
+          "artifact_class": {"type": "string"}
+        }
+      }
+    },
+    "known_limitations": {"type": "array", "items": {"type": "string"}},
+    "waivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["subject", "difference_kind", "old_hash", "new_hash", "owner", "expires_or_removal_condition"],
+        "properties": {
+          "subject": {"type": "string"},
+          "difference_kind": {"type": "string"},
+          "old_hash": {"type": "string"},
+          "new_hash": {"type": "string"},
+          "permitted_fields": {"type": "array", "items": {"type": "string"}},
+          "owner": {"type": "string"},
+          "expires_or_removal_condition": {"type": "string"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,573 @@
+commit cf5b058eb7e02ce4f7b22e9c56f85e64341d117b
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Tue Jun 23 04:48:17 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Tue Jun 23 04:48:17 2026 -0700
+
+    Close Beta 1C required evidence contract
+
+diff --git a/apps/workbench-alpha/src/App.tsx b/apps/workbench-alpha/src/App.tsx
+index 3420f59..9a8cf00 100644
+--- a/apps/workbench-alpha/src/App.tsx
++++ b/apps/workbench-alpha/src/App.tsx
+@@ -403,6 +403,8 @@ export function App() {
+   const sourceTone = provenanceTone(provenance);
+   const manualRecipeDescription = recipeDescription(displayRecipe);
+   const elapsedSeconds = runStartedAt ? Math.max(0, Math.round((nowTs - runStartedAt) / 1000)) : 0;
++  const executionIncomplete = Boolean(execution && !execution.execution.execution_complete);
++  const evidenceFailureCount = execution?.execution.requested_evidence_failure_count ?? 0;
+ 
+   const selectedEvidence = selectedResult?.requested_evidence ?? null;
+   const selectedEntryMode = entryModePresentation(
+@@ -752,10 +754,10 @@ export function App() {
+                 ) : null}
+                 {isNovelComposition ? (
+                   <div className="stateBox good" data-testid="novel-composition-verified">
+-                    <strong>Hermes-authored experimental composition</strong>
++                    <strong>Verified Hermes-authored composition</strong>
+                     <p>
+-                      No saved tactical recipe matched. Hermes composed a new plan from supported capabilities,
+-                      and the host verified it against the committed N1D.1 attestation before enabling execution.
++                      Loaded from a previously attested Hermes session. No saved tactical recipe matched, and the host
++                      verified the committed N1D.1 attestation before enabling execution.
+                     </p>
+                   </div>
+                 ) : null}
+@@ -992,6 +994,15 @@ export function App() {
+                     <small>First run may take longer; repeat runs are cached.</small>
+                     <small className="muted">This runs on the host and cannot be canceled once started.</small>
+                   </div>
++                ) : executionIncomplete ? (
++                  <div className="stateBox warn" data-testid="execution-incomplete-state">
++                    <strong>Execution incomplete</strong>
++                    <p>
++                      The deterministic runtime returned results, but {evidenceFailureCount} required evidence{" "}
++                      {evidenceFailureCount === 1 ? "alias is" : "aliases are"} missing. Treat this run as diagnostic
++                      until the evidence contract is complete.
++                    </p>
++                  </div>
+                 ) : executionProgress ? (
+                   <div className="progressBox" data-testid="execution-progress">
+                     <div>
+diff --git a/apps/workbench-alpha/src/presentation.ts b/apps/workbench-alpha/src/presentation.ts
+index 224b819..81b1680 100644
+--- a/apps/workbench-alpha/src/presentation.ts
++++ b/apps/workbench-alpha/src/presentation.ts
+@@ -37,7 +37,7 @@ export function provenanceLabel(source: ProvenanceSource | null | undefined) {
+     case "HERMES_RECIPE_SELECTION":
+       return "Hermes selected recipe";
+     case "HERMES_NOVEL_COMPOSITION":
+-      return "Hermes-authored experimental composition";
++      return "Verified Hermes-authored composition";
+     case "HERMES_EXPERIMENTAL_UNVERIFIED":
+       return "Experimental draft · unverified";
+     case "DETERMINISTIC_REPAIR":
+diff --git a/apps/workbench-alpha/src/types.ts b/apps/workbench-alpha/src/types.ts
+index 3e01a59..ea788ff 100644
+--- a/apps/workbench-alpha/src/types.ts
++++ b/apps/workbench-alpha/src/types.ts
+@@ -156,6 +156,10 @@ export type ExecutionResponse = Omit<GeneratedExecutionResponse, "execution" | "
+   execution: {
+     ok: boolean;
+     execution_id: string;
++    execution_status: string;
++    execution_complete: boolean;
++    requested_evidence_failure_count: number;
++    requested_evidence_failures: JsonObject[];
+     bound_plan_id: string;
+     plan_id: string;
+     plan_status: string;
+diff --git a/delivery/n1d/BETA_1C_1_REQUIRED_EVIDENCE_REPORT.md b/delivery/n1d/BETA_1C_1_REQUIRED_EVIDENCE_REPORT.md
+new file mode 100644
+index 0000000..6e49f43
+--- /dev/null
++++ b/delivery/n1d/BETA_1C_1_REQUIRED_EVIDENCE_REPORT.md
+@@ -0,0 +1,77 @@
++# Beta 1C.1 - Required Evidence Contract Closure
++
++## Decision
++
++Implemented and locally verified.
++
++## Defect Closed
++
++The deployed Beta 1C hero could reuse a stale cached execution whose underlying record was incomplete:
++
++```text
++execution.status = incomplete
++requested_evidence_failure_count = 14
++possession_start_frame_id = null on every result
++```
++
++Current deterministic execution resolves the required possession-start evidence for the complete hero result set.
++
++## Changes
++
++- Public `execute_query_plan` responses now expose `execution_status`, `execution_complete`, `requested_evidence_failure_count`, and `requested_evidence_failures`.
++- Execution records carry the same completeness fields.
++- Execution cache identity was bumped to `workbench_beta1c1_required_evidence_cache_v3`, preventing reuse of stale incomplete hero cache entries.
++- N1D now audits and pins the required-evidence contract:
++  - `execution_status == pass`
++  - `requested_evidence_failure_count == 0`
++  - every required evidence alias is non-null for every returned result
++- N1D.1 now fails closed unless the N1D manifest and committed Hermes-origin bundle both prove complete required evidence.
++- The committed Hermes-origin bundle host pipeline was refreshed under the corrected runtime.
++- Workbench renders incomplete executions visibly if they ever occur.
++- Product copy now says: `Verified Hermes-authored composition` and explains it is loaded from a previously attested Hermes session.
++
++## Current Proof
++
++N1D pinned required-evidence audit:
++
++```text
++execution_status: pass
++requested_evidence_failure_count: 0
++result_count: 14
++all_required_aliases_resolved: true
++required aliases:
++  corridor_duration_seconds
++  corridor_open_frame_id
++  destination_entry_status
++  destination_region
++  destination_time_to_entry_seconds
++  possession_start_frame_id
++  relation_id
++```
++
++## Verification
++
++```text
++make m1-2-gate-s2i-verify
++make n1d-freeze
++make n1d-verify
++make n1d1-verify
++make n1c-verify
++make n1i-verify
++.venv/bin/python -m unittest tests.test_workbench_beta0_contract
++.venv/bin/python -m unittest discover tests
++npm --prefix apps/workbench-alpha run test:acceptance
++```
++
++Results:
++
++```text
++S2I-A: 25 passed, 0 failed
++N1D: 15 passed, 0 failed
++N1D.1: VERIFIED
++N1C: 8 passed, 0 failed
++N1I: 10 passed, 0 failed
++Workbench backend contract: 14 tests OK
++Python discovery: 53 tests OK
++Workbench acceptance: 16 Playwright tests passed
++```
+diff --git a/src/tqe/verification/n1d.py b/src/tqe/verification/n1d.py
+index 06c5f6e..1ba5ac5 100644
+--- a/src/tqe/verification/n1d.py
++++ b/src/tqe/verification/n1d.py
+@@ -185,7 +185,7 @@ def run_pipeline(document: dict[str, Any], output_root: Path) -> dict[str, Any]:
+     if not execution.results:
+         raise RuntimeError("N1D hero execution produced no results")
+     first_result_id = str(execution.results[0]["result_id"])
+-    inspect_result(
++    inspection = inspect_result(
+         InspectResultRequest(execution_id=execution.execution_id, result_id=first_result_id),
+         output_root=output_root,
+     )
+@@ -194,6 +194,12 @@ def run_pipeline(document: dict[str, Any], output_root: Path) -> dict[str, Any]:
+         output_root=output_root,
+     )
+     return {
++        "submit": submit.model_dump(mode="json"),
++        "validation": validation.model_dump(mode="json"),
++        "confirmation": confirmation.model_dump(mode="json"),
++        "execution": execution.model_dump(mode="json"),
++        "inspection": inspection.model_dump(mode="json"),
++        "replay_window": replay.model_dump(mode="json"),
+         "draft_plan_id": submit.draft_plan_id,
+         "draft_plan_hash": submit.draft_plan_hash,
+         "bound_plan_id": validation.bound_plan_id,
+@@ -209,6 +215,47 @@ def run_pipeline(document: dict[str, Any], output_root: Path) -> dict[str, Any]:
+     }
+ 
+ 
++def required_evidence_aliases(document: dict[str, Any]) -> list[str]:
++    return sorted(
++        str(item.get("alias") or f"{item.get('source', {}).get('source_node_id')}.{item.get('field')}")
++        for item in document.get("draft_plan", {}).get("requested_evidence", [])
++        if item.get("required")
++    )
++
++
++def required_evidence_audit(execution_record: dict[str, Any], document: dict[str, Any]) -> dict[str, Any]:
++    rows = execution_record.get("rows", [])
++    required_aliases = required_evidence_aliases(document)
++    execution = execution_record.get("execution") if isinstance(execution_record.get("execution"), dict) else {}
++    provenance = execution.get("provenance") if isinstance(execution.get("provenance"), dict) else {}
++    execution_status = str(execution.get("status") or execution_record.get("execution_status") or "")
++    failure_count = int(
++        provenance.get(
++            "requested_evidence_failure_count",
++            execution_record.get("requested_evidence_failure_count", 0),
++        )
++        or 0
++    )
++    missing_by_result: list[dict[str, Any]] = []
++    for row in rows:
++        evidence = row.get("requested_evidence") if isinstance(row.get("requested_evidence"), dict) else {}
++        missing = [alias for alias in required_aliases if evidence.get(alias) is None]
++        if missing:
++            missing_by_result.append({"result_id": row.get("result_id"), "missing_aliases": missing})
++    all_required_aliases_resolved = bool(rows) and not missing_by_result
++    return {
++        "execution_status": execution_status,
++        "requested_evidence_failure_count": failure_count,
++        "required_aliases": required_aliases,
++        "result_count": len(rows),
++        "all_required_aliases_resolved": all_required_aliases_resolved,
++        "missing_by_result": missing_by_result,
++        "acceptance_pass": execution_status == "pass"
++        and failure_count == 0
++        and all_required_aliases_resolved,
++    }
++
++
+ def entry_mode_audit(execution_record: dict[str, Any]) -> dict[str, Any]:
+     rows = execution_record.get("rows", [])
+     distribution = {mode: 0 for mode in ENTRY_MODE_DOMAIN}
+@@ -275,7 +322,12 @@ def runtime_hashes() -> dict[str, str]:
+     return {name: file_sha256(path) for name, path in RUNTIME_SOURCE_FILES.items()}
+ 
+ 
+-def pinned_identity(document: dict[str, Any], records: dict[str, Any], audit: dict[str, Any]) -> dict[str, Any]:
++def pinned_identity(
++    document: dict[str, Any],
++    records: dict[str, Any],
++    audit: dict[str, Any],
++    required_audit: dict[str, Any],
++) -> dict[str, Any]:
+     """The deterministic subset the freeze gate recomputes and compares. Any drift fails the gate."""
+     rows = records["execution_record"].get("rows", [])
+     knowledge_pack = read_json(KNOWLEDGE_PACK_PATH)
+@@ -320,7 +372,58 @@ def pinned_identity(document: dict[str, Any], records: dict[str, Any], audit: di
+             "entry_before_open_count": audit["entry_before_open_count"],
+             "contains_entry_mode_evidence": audit["contains_entry_mode_evidence"],
+         },
++        "required_evidence": {
++            "execution_status": required_audit["execution_status"],
++            "requested_evidence_failure_count": required_audit["requested_evidence_failure_count"],
++            "required_aliases": required_audit["required_aliases"],
++            "result_count": required_audit["result_count"],
++            "all_required_aliases_resolved": required_audit["all_required_aliases_resolved"],
++            "acceptance_pass": required_audit["acceptance_pass"],
++        },
++    }
++
++
++def refresh_origin_bundle_host_pipeline(records: dict[str, Any], audit: dict[str, Any], required_audit: dict[str, Any]) -> None:
++    if not N1F_ORIGIN_BUNDLE_PATH.exists():
++        return
++    bundle = read_json(N1F_ORIGIN_BUNDLE_PATH)
++    if bundle.get("status") != "exported":
++        return
++    source = bundle.get("source") if isinstance(bundle.get("source"), dict) else {}
++    source.update(
++        {
++            "repo_commit": git_output("rev-parse", "HEAD"),
++            "runtime_hashes": runtime_hashes(),
++            "host_pipeline_refreshed_at": utc_now_iso(),
++            "host_pipeline_refresh_reason": "Beta 1C.1 required-evidence contract closure.",
++        }
++    )
++    bundle["source"] = source
++    bundle["host_pipeline"] = {
++        "submit": records["submit"],
++        "validation": records["validation"],
++        "confirmation": records["confirmation"],
++        "cache_before": {
++            "cache_status": "NOT_USED",
++            "message": "N1D freeze uses direct deterministic execution to pin corrected artifacts.",
++        },
++        "execution": records["execution"],
++        "cache_after_execute": {
++            "cache_status": "NOT_USED",
++            "message": "N1D freeze uses direct deterministic execution to pin corrected artifacts.",
++        },
++        "inspection": records["inspection"],
++        "replay_window": records["replay_window"],
+     }
++    bundle["artifact_records"] = {
++        "draft_record": records["draft_record"],
++        "bound_record": records["bound_record"],
++        "execution_record": records["execution_record"],
++        "replay_record": records["replay_record"],
++    }
++    bundle["entry_mode_audit"] = audit
++    bundle["required_evidence_audit"] = required_audit
++    write_json(N1F_ORIGIN_BUNDLE_PATH, bundle)
+ 
+ 
+ def build_manifest(document: dict[str, Any], records: dict[str, Any], audit: dict[str, Any], pinned: dict[str, Any]) -> dict[str, Any]:
+@@ -424,7 +527,11 @@ def freeze() -> int:
+     write_json(N1D_PLAN_PATH, document)
+     records = run_pipeline(document, N1D_WORKSHOP_ROOT)
+     audit = entry_mode_audit(records["execution_record"])
+-    pinned = pinned_identity(document, records, audit)
++    required_audit = required_evidence_audit(records["execution_record"], document)
++    if not required_audit["acceptance_pass"]:
++        raise RuntimeError(f"N1D required-evidence contract failed: {required_audit}")
++    refresh_origin_bundle_host_pipeline(records, audit, required_audit)
++    pinned = pinned_identity(document, records, audit, required_audit)
+     manifest = build_manifest(document, records, audit, pinned)
+     write_json(MANIFEST_PATH, manifest)
+     write_json(AUDIT_PATH, audit)
+@@ -436,6 +543,7 @@ def freeze() -> int:
+         "manifest_path": str(MANIFEST_PATH),
+         "manifest_sha256": file_sha256(MANIFEST_PATH),
+         "entry_mode_distribution": audit["distribution"],
++        "required_evidence": required_audit,
+     }
+     write_json(REPORT_PATH, report)
+     print(json.dumps({"mode": "freeze", "status": "frozen", "entry_mode": audit["distribution"]}, sort_keys=True))
+@@ -466,6 +574,7 @@ def gate() -> int:
+     )
+     drift: list[dict[str, Any]] = []
+     audit: dict[str, Any] = {}
++    required_audit: dict[str, Any] = {}
+     if manifest_present:
+         manifest = read_json(MANIFEST_PATH)
+         document = read_json(N1D_PLAN_PATH)
+@@ -473,7 +582,8 @@ def gate() -> int:
+         try:
+             records = run_pipeline(document, scratch)
+             audit = entry_mode_audit(records["execution_record"])
+-            current = pinned_identity(document, records, audit)
++            required_audit = required_evidence_audit(records["execution_record"], document)
++            current = pinned_identity(document, records, audit, required_audit)
+         finally:
+             shutil.rmtree(scratch, ignore_errors=True)
+         drift = diff_pinned(manifest.get("pinned_identity", {}), current)
+@@ -525,6 +635,33 @@ def gate() -> int:
+                 {"anomalies": audit["entry_before_open_anomalies"], "analysis": ENTRY_BEFORE_OPEN_ANALYSIS},
+             )
+         )
++        checks.append(
++            check(
++                "n1d.execution_status_pass",
++                required_audit["execution_status"] == "pass",
++                "The frozen hero execution is complete and passes the deterministic runtime status gate.",
++                {"execution_status": required_audit["execution_status"]},
++            )
++        )
++        checks.append(
++            check(
++                "n1d.required_evidence_failure_count_zero",
++                required_audit["requested_evidence_failure_count"] == 0,
++                "The frozen hero execution reports zero requested-evidence failures.",
++                {
++                    "requested_evidence_failure_count": required_audit["requested_evidence_failure_count"],
++                    "required_aliases": required_audit["required_aliases"],
++                },
++            )
++        )
++        checks.append(
++            check(
++                "n1d.required_evidence_aliases_resolve",
++                required_audit["all_required_aliases_resolved"],
++                "Every required evidence alias is non-null for every returned hero result.",
++                {"missing_by_result": required_audit["missing_by_result"]},
++            )
++        )
+ 
+     # Preserve the N1C UNKNOWN + enum-domain + runtime-parameter contracts.
+     tri_state = relation_destination_entry_tri_state_fixture()
+@@ -589,6 +726,7 @@ def gate() -> int:
+         "manifest_path": str(MANIFEST_PATH),
+         "drift": drift,
+         "entry_mode_audit": audit,
++        "required_evidence_audit": required_audit,
+         "checks": checks,
+     }
+     write_json(REPORT_PATH, report)
+diff --git a/src/tqe/verification/n1d1.py b/src/tqe/verification/n1d1.py
+index 4ce631e..8141aea 100644
+--- a/src/tqe/verification/n1d1.py
++++ b/src/tqe/verification/n1d1.py
+@@ -138,6 +138,29 @@ def bundle_bound_plan_hash(bundle: dict[str, Any]) -> str | None:
+     return None
+ 
+ 
++def bundle_required_evidence_audit(bundle: dict[str, Any]) -> dict[str, Any]:
++    audit = bundle.get("required_evidence_audit")
++    if isinstance(audit, dict):
++        return audit
++    pipeline = bundle.get("host_pipeline") if isinstance(bundle.get("host_pipeline"), dict) else {}
++    execution = pipeline.get("execution") if isinstance(pipeline.get("execution"), dict) else {}
++    artifact_records = bundle.get("artifact_records") if isinstance(bundle.get("artifact_records"), dict) else {}
++    execution_record = artifact_records.get("execution_record") if isinstance(artifact_records.get("execution_record"), dict) else {}
++    nested_execution = (
++        execution_record.get("execution") if isinstance(execution_record.get("execution"), dict) else {}
++    )
++    provenance = nested_execution.get("provenance") if isinstance(nested_execution.get("provenance"), dict) else {}
++    return {
++        "execution_status": execution.get("execution_status") or nested_execution.get("status"),
++        "requested_evidence_failure_count": execution.get("requested_evidence_failure_count")
++        if execution.get("requested_evidence_failure_count") is not None
++        else provenance.get("requested_evidence_failure_count"),
++        "all_required_aliases_resolved": False,
++        "acceptance_pass": False,
++        "reason": "origin bundle predates explicit required_evidence_audit",
++    }
++
++
+ def origin_bundle_path() -> Path | None:
+     if N1F_ORIGIN_BUNDLE_PATH.exists():
+         return N1F_ORIGIN_BUNDLE_PATH
+@@ -286,6 +309,10 @@ def main() -> None:
+     origin = audit_hermes_origin(n1d_plan)
+     novelty = attest_structural_novelty(n1d_plan)
+     aug = origin.get("allowed_augmentation_diff")
++    manifest_required_evidence = pinned.get("required_evidence", {})
++    bundle_required_evidence = (
++        bundle_required_evidence_audit(origin_bundle) if isinstance(origin_bundle, dict) else {}
++    )
+ 
+     checks = [
+         check(
+@@ -324,6 +351,18 @@ def main() -> None:
+             "existing_recipe_selected is false (the plan is not a registered recipe selection).",
+             {"existing_recipe_selected": novelty["existing_recipe_selected"]},
+         ),
++        check(
++            "n1d1.freeze_required_evidence_complete",
++            manifest_required_evidence.get("acceptance_pass") is True,
++            "The N1D freeze proves execution.status == pass, zero requested-evidence failures, and non-null required aliases.",
++            manifest_required_evidence,
++        ),
++        check(
++            "n1d1.origin_host_pipeline_required_evidence_complete",
++            bundle_required_evidence.get("acceptance_pass") is True,
++            "The committed Hermes-origin bundle host pipeline was refreshed with complete required evidence.",
++            bundle_required_evidence,
++        ),
+     ]
+     blocking_reasons = [item["id"] for item in checks if item["status"] != "pass"]
+     status = "VERIFIED" if not blocking_reasons else "BLOCKED"
+diff --git a/src/tqe/workshop/app_service.py b/src/tqe/workshop/app_service.py
+index 6e6aa93..d10821b 100644
+--- a/src/tqe/workshop/app_service.py
++++ b/src/tqe/workshop/app_service.py
+@@ -2335,7 +2335,8 @@ def cache_request_identity(request: ExecuteQueryPlanRequest, *, output_root: Pat
+     invocation = document.get("default_invocation") if isinstance(document, dict) else {}
+     return {
+         "schema_version": "1.0",
+-        "runtime_version": "workbench_beta0_execution_cache_v2",
++        "runtime_version": "workbench_beta1c1_required_evidence_cache_v3",
++        "execution_contract": "required_evidence_complete_v1",
+         "canonical_data_hash": canonical_data_hash(),
+         "bound_plan_hash": bound_record.get("bound_plan_hash"),
+         "scope": {
+diff --git a/src/tqe/workshop/m1_2.py b/src/tqe/workshop/m1_2.py
+index d590009..b64a491 100644
+--- a/src/tqe/workshop/m1_2.py
++++ b/src/tqe/workshop/m1_2.py
+@@ -41,6 +41,7 @@ from tqe.runtime.ir import (
+     BoundPredicateNode,
+     ClassificationMode,
+     ExecutionMode,
++    ExecutionStatus,
+     EvaluationTarget,
+     NodeKind,
+     PayloadType,
+@@ -323,6 +324,10 @@ class ExecuteQueryPlanRequest(StrictModel):
+ class ExecuteQueryPlanResponse(StrictModel):
+     ok: bool
+     execution_id: str
++    execution_status: str
++    execution_complete: bool
++    requested_evidence_failure_count: int
++    requested_evidence_failures: list[dict[str, Any]] = Field(default_factory=list)
+     bound_plan_id: str
+     plan_id: str
+     plan_status: str
+@@ -1231,9 +1236,15 @@ def execute_query_plan(
+         execution_id=execution_id,
+     )
+     write_handle("executions", execution_id, execution_record, output_root=output_root)
++    evidence_failure_count = int(execution.provenance.get("requested_evidence_failure_count") or 0)
++    evidence_failures = execution.provenance.get("requested_evidence_failures")
+     return ExecuteQueryPlanResponse(
+         ok=True,
+         execution_id=execution_id,
++        execution_status=execution.status.value,
++        execution_complete=execution.status == ExecutionStatus.PASS and evidence_failure_count == 0,
++        requested_evidence_failure_count=evidence_failure_count,
++        requested_evidence_failures=evidence_failures if isinstance(evidence_failures, list) else [],
+         bound_plan_id=request.bound_plan_id,
+         plan_id=bound.plan_id,
+         plan_status=bound.plan_status.value,
+@@ -1543,10 +1554,16 @@ def execution_record_payload(
+     document = bound_record["document"]
+     scope = selected_scope_from_document(document)
+     enriched_rows = [result_row_with_context(row) for row in rows]
++    evidence_failure_count = int(execution.provenance.get("requested_evidence_failure_count") or 0)
++    evidence_failures = execution.provenance.get("requested_evidence_failures")
+     return {
+         "schema_version": "1.0",
+         "created_at": utc_now_iso(),
+         "execution_id": execution_id,
++        "execution_status": execution.status.value,
++        "execution_complete": execution.status == ExecutionStatus.PASS and evidence_failure_count == 0,
++        "requested_evidence_failure_count": evidence_failure_count,
++        "requested_evidence_failures": evidence_failures if isinstance(evidence_failures, list) else [],
+         "draft_plan_id": bound_record["draft_plan_id"],
+         "draft_plan_hash": bound_record["draft_plan_hash"],
+         "bound_plan_id": bound_record["bound_plan_id"],
+diff --git a/tests/test_workbench_beta0_contract.py b/tests/test_workbench_beta0_contract.py
+index e098f79..6e10608 100644
+--- a/tests/test_workbench_beta0_contract.py
++++ b/tests/test_workbench_beta0_contract.py
+@@ -20,6 +20,7 @@ from tqe.workshop.app_service import (
+     match_library,
+     product_model_query,
+     recover_n1f_hermes_draft_record,
++    run_host_authority_pipeline,
+ )
+ from tqe.workshop.m1_2 import (
+     CallerProfile,
+@@ -180,6 +181,36 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
+         self.assertEqual("home", response["plan_document"]["default_invocation"]["perspective_team_role"])
+         self.assertIsNone(response["fallback_reason"])
+ 
++    def test_attested_hero_execution_resolves_every_required_evidence_alias(self) -> None:
++        document = n1i_attested_document()
++        required_aliases = [
++            str(item.get("alias") or f"{item['source']['source_node_id']}.{item['field']}")
++            for item in document["draft_plan"]["requested_evidence"]
++            if item.get("required")
++        ]
++
++        with tempfile.TemporaryDirectory() as directory:
++            records = run_host_authority_pipeline(
++                document,
++                output_root=Path(directory),
++                source_label="beta1c1_required_evidence_contract",
++            )
++
++        execution = records["execution"]
++        execution_record = records["execution_record"]
++        rows = execution_record["rows"]
++        self.assertEqual("pass", execution["execution_status"])
++        self.assertTrue(execution["execution_complete"])
++        self.assertEqual(0, execution["requested_evidence_failure_count"])
++        self.assertEqual("pass", execution_record["execution_status"])
++        self.assertTrue(execution_record["execution_complete"])
++        self.assertEqual(0, execution_record["requested_evidence_failure_count"])
++        self.assertEqual(14, len(rows))
++        for row in rows:
++            evidence = row["requested_evidence"]
++            for alias in required_aliases:
++                self.assertIsNotNone(evidence.get(alias), f"{row['result_id']} missing {alias}")
++
+     def test_scope_changes_bound_hash_cache_key_and_execution_record_provenance(self) -> None:
+         with tempfile.TemporaryDirectory() as directory:
+             output_root = Path(directory)

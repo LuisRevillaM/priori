@@ -1,0 +1,86 @@
+   300	            )
+   301	            accepted.extend(state.accepted)
+   302	            traces.extend(accepted_predicate_traces(state))
+   303	            runtime_value_count += sum(len(outputs) for outputs in state.runtime_values.values())
+   304	        accepted.sort(
+   305	            key=lambda item: (
+   306	                -float(item["block_shift_score"]),
+   307	                item["match_id"],
+   308	                item["period"],
+   309	                item["wide_entry_frame_id"],
+   310	            )
+   311	        )
+   312	        return accepted, traces, runtime_value_count
+   313	
+   314	    def evaluate_target(
+   315	        self,
+   316	        bound_plan: BoundQueryPlan,
+   317	        target: EvaluationTarget,
+   318	    ) -> dict[str, Any]:
+   319	        if target.match_id not in bound_plan.match_ids:
+   320	            raise RuntimeError(f"target match {target.match_id} is outside the bound invocation")
+   321	        if target.period not in bound_plan.periods:
+   322	            raise RuntimeError(f"target period {target.period} is outside the bound invocation")
+   323	
+   324	        params = runtime_parameters(bound_plan)
+   325	        state = self._execute_period(
+   326	            bound_plan=bound_plan,
+   327	            match_id=target.match_id,
+   328	            period=target.period,
+   329	            params=params,
+   330	        )
+   331	        target_frame_id = int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
+   332	        radius_frames = int(round(target.search_radius_ms / 1000.0 * FRAME_RATE_HZ))
+   333	        anchors = runtime_anchors(state)
+   334	        compatible = [
+   335	            anchor
+   336	            for anchor in anchors
+   337	            if abs(anchor.anchor_frame_id - target_frame_id) <= radius_frames
+   338	        ]
+   339	        if not compatible:
+   340	            return {
+   341	                "target": target.model_dump(mode="json"),
+   342	                "status": "NO_COMPATIBLE_ANCHOR",
+   343	                "target_frame_id": target_frame_id,
+   344	                "search_radius_frames": radius_frames,
+   345	                "candidate_count": 0,
+   346	                "closest_candidate": None,
+   347	                "predicate_traces": [],
+   348	                "failed_predicates": [],
+   349	            }
+   350	
+   351	        closest = min(
+   352	            compatible,
+   353	            key=lambda anchor: abs(anchor.anchor_frame_id - target_frame_id),
+   354	        )
+   355	        anchor_record = closest.attributes
+   356	        result = anchor_record.get("_runtime_result") or base_result_fields(
+   357	            state,
+   358	            anchor_record,
+   359	            state.params.text("result_id_seed_hash"),
+   360	            state.params.integer("analysis_rate_hz"),
+   361	        )
+   362	        traces = predicate_traces_for_anchor(state, closest, result)
+   363	        traces.extend(
+   364	            missing_target_predicate_traces(
+   365	                bound_plan=bound_plan,
+   366	                state=state,
+   367	                anchor=closest,
+   368	                result=result,
+   369	                existing_predicate_ids={trace.predicate_id for trace in traces},
+   370	            )
+   371	        )
+   372	        trace_payload = [trace.model_dump(mode="json", exclude_none=True) for trace in traces]
+   373	        failed = [
+   374	            trace
+   375	            for trace in trace_payload
+   376	            if trace["status"] in {"FAIL", "UNKNOWN"}
+   377	        ]
+   378	        accepted = bool(result.get("accepted"))
+   379	        return {
+   380	            "target": target.model_dump(mode="json"),
+   381	            "status": "MATCH" if accepted else "NON_MATCH",
+   382	            "target_frame_id": target_frame_id,
+   383	            "search_radius_frames": radius_frames,
+   384	            "candidate_count": len(compatible),
+   385	            "closest_candidate": {

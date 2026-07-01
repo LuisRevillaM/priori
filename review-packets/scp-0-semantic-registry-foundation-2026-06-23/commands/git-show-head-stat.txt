@@ -1,0 +1,26 @@
+b348595 Add SCP-0 semantic registry foundation
+ Makefile                                           |    6 +-
+ delivery/ledger.jsonl                              |    4 +
+ delivery/scp-0/SPEC.md                             |  195 +
+ delivery/scp-0/progress.md                         |    8 +
+ delivery/scp-0/status.yaml                         |   57 +
+ .../2026-06-23-scp-0-semantic-registry.md          |   57 +
+ generated/capability-catalog.json                  |    2 +-
+ generated/semantic-registry/ai-projection.json     |  281 ++
+ .../semantic-registry/product-projection.json      |  259 +
+ .../recipe-library-projection.json                 |  116 +
+ .../research-atlas-projection.json                 | 5237 ++++++++++++++++++++
+ generated/semantic-registry/runtime-manifest.json  | 1525 ++++++
+ .../semantic-registry/semantic-parity-report.json  |   96 +
+ .../unsupported-capability-projection.json         |   45 +
+ .../atlas/raw/five_year_capability_manifest.yaml   | 4000 +++++++++++++++
+ semantic-registry/registry.lock.json               |   14 +
+ semantic-registry/registry.yaml                    | 1110 +++++
+ .../schemas/semantic-registry.schema.json          | 2346 +++++++++
+ src/tqe/semantic_registry/__init__.py              |    1 +
+ src/tqe/semantic_registry/generate.py              |  875 ++++
+ src/tqe/semantic_registry/models.py                |  386 ++
+ src/tqe/semantic_registry/runtime_manifest.py      |   99 +
+ src/tqe/verification/scp0.py                       |   27 +
+ tests/test_scp0_semantic_registry.py               |  143 +
+ 24 files changed, 16887 insertions(+), 2 deletions(-)

@@ -1,0 +1,248 @@
+{
+  "data": {
+    "canonical_inventory_sha256": "8386ac9ae7d028fa45db536a38ecd4c6dfeb098c0a837018daa152491e83392c",
+    "canonical_root": "data/canonical/v1",
+    "deploy_manifest": {
+      "exists": true,
+      "path": "config/deploy/demo-data-manifest.json",
+      "sha256": "b213fa333c0493335ff4405a6e38ed30bafac67108db54ecabfbf957bea16b80"
+    }
+  },
+  "entry_mode_audit": {
+    "all_in_domain": true,
+    "contains_entry_mode_evidence": true,
+    "distribution": {
+      "ENTERED_AFTER_OPEN": 2,
+      "NOT_ENTERED": 0,
+      "PRESENT_AT_OPEN": 3,
+      "UNKNOWN": 0
+    },
+    "entry_before_open_analysis": "Entry-before-open is structurally impossible: ball_entry_evaluation_into_destination_region scans ball frames from open_frame_id forward, so the first in-region frame satisfies frame_id >= open_frame_id. time_to_entry_seconds is therefore always >= 0.0, and entry_mode is PRESENT_AT_OPEN exactly when the entry frame equals the open frame (time_to_entry_seconds == 0.0).",
+    "entry_before_open_anomalies": [],
+    "entry_before_open_count": 0,
+    "entry_mode_domain": [
+      "PRESENT_AT_OPEN",
+      "ENTERED_AFTER_OPEN",
+      "NOT_ENTERED",
+      "UNKNOWN"
+    ],
+    "out_of_domain": [],
+    "per_result": [
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": 11375,
+        "entry_mode": "PRESENT_AT_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": 11500,
+        "result_id": "0b06e5f2a538ab8e",
+        "time_to_entry_seconds": 0.0
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": 16969,
+        "entry_mode": "ENTERED_AFTER_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": 17090,
+        "result_id": "a950be165bcf2a01",
+        "time_to_entry_seconds": 0.16
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": 23375,
+        "entry_mode": "PRESENT_AT_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": 23500,
+        "result_id": "f81740ea1ba517e4",
+        "time_to_entry_seconds": 0.0
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": 27460,
+        "entry_mode": "PRESENT_AT_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": 27585,
+        "result_id": "ac61ba5a1fe73030",
+        "time_to_entry_seconds": 0.0
+      },
+      {
+        "classification": "DESTINATION_ENTERED",
+        "entry_frame_id": 27697,
+        "entry_mode": "ENTERED_AFTER_OPEN",
+        "entry_status": "PASS",
+        "observed_window_end_frame_id": 27815,
+        "result_id": "3e052a0bb2e6559d",
+        "time_to_entry_seconds": 0.28
+      }
+    ],
+    "present_at_open_zero_time_consistent": true,
+    "result_count": 5,
+    "time_zero_mismatch": []
+  },
+  "generated_at": "2026-06-22T23:54:52+00:00",
+  "hermes": {
+    "config_sha256": "e6eb64649a9880f318c669ceb00844b9ff2f03360a4ffd877c3c2b1cf0eff237",
+    "configured_model": "gpt-5.5",
+    "provider": "openai-codex",
+    "reasoning_effort": "xhigh",
+    "version": "Hermes Agent v0.17.0 (2026.6.19) \u00b7 upstream 2a58fee1\nProject: /Users/luisrevilla/.local/src/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.24.0\nUpdate available: 91 commits behind \u2014 run 'hermes update'"
+  },
+  "hero_plan": {
+    "added_evidence_fields": [
+      "entry_mode",
+      "time_to_entry_seconds"
+    ],
+    "derived_from": "artifacts/n1-live-novel-composition-2026-06-22/n1-local-only-candidate-plan.json",
+    "document_sha256": "064be47c06cce4aeb4b87d2600397daa06ce1a168495e91126e25e235396f23a",
+    "document_stable_sha256": "c3876c0dd17369a7aa372fabf2c95c442ee78feca1977aa3090044285d4bf17d",
+    "path": "delivery/n1d/n1d-hero-plan.json"
+  },
+  "hero_question": {
+    "sha256": "4c0341c50842ea253a19959ca656a36b97ef4fa3bfb181db60f8a8bd68031fcf",
+    "text": "Show possessions where a progressive corridor opens within four seconds of possession starting, remains available for at least 0.8 seconds, and the ball enters that corridor's destination region within five seconds of the corridor opening."
+  },
+  "knowledge_pack": {
+    "capability_context": {
+      "exists": true,
+      "path": "generated/capability-context.json",
+      "sha256": "0ef53564bf09c7b6e64d1ba8da1aff14bd7ce426b23e0dcb293eaf5256506fe4"
+    },
+    "file_sha256": "7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962",
+    "path": "generated/tactical-knowledge-pack.json",
+    "semantic_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0"
+  },
+  "mcp": {
+    "server_name": "priori_tactical",
+    "tool_allowlist": [
+      "list_capabilities",
+      "search_recipes",
+      "describe_capability",
+      "submit_query_plan",
+      "validate_query_plan",
+      "inspect_result",
+      "inspect_non_match",
+      "retrieve_replay_window"
+    ],
+    "tool_allowlist_sha256": "98c8984d70bd1bedc0b3912583706949c732316af311b66c1ed2eac5bdd33231"
+  },
+  "n1d_live_artifacts": {
+    "bound_plan": {
+      "content_sha256": "017f27e44889526461838375ee25681083baab889e54d3c7c127ab666703504d",
+      "relative_path": "artifacts/n1d/workshop/bound-plans/bound_73d049710392394d.json"
+    },
+    "draft_plan": {
+      "content_sha256": "5cb5069726cde62e416851e3f04f6d11eb394361a3022f237e8922dbd5dd3e7f",
+      "relative_path": "artifacts/n1d/workshop/draft-plans/draft_55983414d43845f3.json"
+    },
+    "execution_handle": {
+      "content_sha256": "4c8c56e45b84eddad4c5444c9ed8a33c53892e410eb9b766fba058e0c34cb581",
+      "relative_path": "artifacts/n1d/workshop/executions/exec_d549f238bbc6ef39.json"
+    },
+    "replay_window": {
+      "content_sha256": "f7d0551e46157a1003efe72d6ca3ff915ab0a3ef463059a01891476d6e92a86e",
+      "relative_path": "artifacts/n1d/workshop/replay-windows/replay_a9d17b6b632465e9.json"
+    }
+  },
+  "pinned_identity": {
+    "artifacts": {
+      "bound_plan": "017f27e44889526461838375ee25681083baab889e54d3c7c127ab666703504d",
+      "draft_plan": "5cb5069726cde62e416851e3f04f6d11eb394361a3022f237e8922dbd5dd3e7f",
+      "execution": "4c8c56e45b84eddad4c5444c9ed8a33c53892e410eb9b766fba058e0c34cb581",
+      "replay_window": "f7d0551e46157a1003efe72d6ca3ff915ab0a3ef463059a01891476d6e92a86e"
+    },
+    "data": {
+      "canonical_inventory_sha256": "8386ac9ae7d028fa45db536a38ecd4c6dfeb098c0a837018daa152491e83392c",
+      "deploy_manifest_sha256": "b213fa333c0493335ff4405a6e38ed30bafac67108db54ecabfbf957bea16b80"
+    },
+    "entry_mode": {
+      "all_in_domain": true,
+      "contains_entry_mode_evidence": true,
+      "distribution": {
+        "ENTERED_AFTER_OPEN": 2,
+        "NOT_ENTERED": 0,
+        "PRESENT_AT_OPEN": 3,
+        "UNKNOWN": 0
+      },
+      "entry_before_open_count": 0,
+      "present_at_open_zero_time_consistent": true
+    },
+    "hero_question_sha256": "4c0341c50842ea253a19959ca656a36b97ef4fa3bfb181db60f8a8bd68031fcf",
+    "identity": {
+      "bound_plan_id": "bound_73d049710392394d",
+      "draft_plan_id": "draft_55983414d43845f3",
+      "execution_id": "exec_d549f238bbc6ef39",
+      "first_result_id": "0b06e5f2a538ab8e",
+      "replay_window_id": "replay_a9d17b6b632465e9",
+      "result_fingerprint": "d97ef1a2656ead4b53546ca274bbb74bcca037fc261d22e52ab4e2c369f5b284",
+      "result_ids": [
+        "0b06e5f2a538ab8e",
+        "a950be165bcf2a01",
+        "f81740ea1ba517e4",
+        "ac61ba5a1fe73030",
+        "3e052a0bb2e6559d"
+      ]
+    },
+    "knowledge_pack": {
+      "file_sha256": "7cf720c8210b1d81f12574c5c8299a1dc309930eb1ce17f8eb934d8814119962",
+      "semantic_sha256": "fd6d0843d32cc9632bc864b3dad11af4fea060fa2a5fd827196b3458af37b7a0"
+    },
+    "plan": {
+      "bound_plan_hash": "73d049710392394dfc4dbcdf46b09a282761708a3922bda7c208f9361a46c6b4",
+      "document_sha256": "064be47c06cce4aeb4b87d2600397daa06ce1a168495e91126e25e235396f23a",
+      "document_stable_sha256": "c3876c0dd17369a7aa372fabf2c95c442ee78feca1977aa3090044285d4bf17d",
+      "draft_plan_hash": "55983414d43845f3190ff1b6d11db3e17e82a09ddf9f6af5c46f76a2852b3358"
+    },
+    "runtime": {
+      "mcp_server": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817",
+      "runtime_binder": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
+      "runtime_catalog": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
+      "runtime_executor": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446",
+      "runtime_values": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166",
+      "workshop_service": "57e088c3cb732362ee7de530311558170b9236c8889db73b683af74a25ffbd16"
+    }
+  },
+  "refresh_reason": "N1B/N1C live hero artifacts predate the runtime entry_mode contract. N1D re-executes the frozen hero under current HEAD so result evidence carries honest entry_mode.",
+  "runtime": {
+    "binder_sha256": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210",
+    "catalog_sha256": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677",
+    "compatibility_profile": "generic",
+    "executor_sha256": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446",
+    "values_sha256": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166"
+  },
+  "schema_version": "n1d.canonical_freeze_manifest.v1",
+  "source": {
+    "commit_at_manifest_generation": "59b67499f37c595028fdb5952f4cf71ff5175fa1",
+    "source_files": {
+      "mcp_server": {
+        "exists": true,
+        "path": "src/tqe/workshop/mcp_server.py",
+        "sha256": "c83309c375f369c3e48231201bcd83ba9b5b811bed59f048ca23ce7fdf106817"
+      },
+      "runtime_binder": {
+        "exists": true,
+        "path": "src/tqe/runtime/binder.py",
+        "sha256": "1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210"
+      },
+      "runtime_catalog": {
+        "exists": true,
+        "path": "src/tqe/runtime/catalog.py",
+        "sha256": "5537e58df2822b7268452cd948e0c5230c5eb76950b9cec15c1ca3e1dc36c677"
+      },
+      "runtime_executor": {
+        "exists": true,
+        "path": "src/tqe/runtime/executor.py",
+        "sha256": "f74725adace6470d9d6f81d8f8ffb41bce8d3ba603c3624b6f3bc62e756d0446"
+      },
+      "runtime_values": {
+        "exists": true,
+        "path": "src/tqe/runtime/values.py",
+        "sha256": "c7b38a4a15e6326542ed484ef14d20845c750b273db48533c6b63311206e5166"
+      },
+      "workshop_service": {
+        "exists": true,
+        "path": "src/tqe/workshop/m1_2.py",
+        "sha256": "57e088c3cb732362ee7de530311558170b9236c8889db73b683af74a25ffbd16"
+      }
+    }
+  },
+  "supersedes": "artifacts/n1c/n1c-canonical-freeze-manifest.json"
+}

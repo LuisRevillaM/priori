@@ -1,0 +1,46 @@
+    80	
+    81	@dataclass
+    82	class PeriodState:
+    83	    match_id: str
+    84	    period: str
+    85	    params: RuntimeParameters
+    86	    recipe_id: str
+    87	    recipe_version: str
+    88	    perspective_team_role: str
+    89	    perspective_team_id: str
+    90	    defending_team_role: str
+    91	    defending_team_id: str
+    92	    canonical_root: Path
+    93	    raw_tracking: Path
+    94	    positions: pd.DataFrame
+    95	    frame_ids: np.ndarray
+    96	    ball_y: np.ndarray
+    97	    possession_role: np.ndarray
+    98	    ball_alive: np.ndarray
+    99	    defender_count: pd.Series
+   100	    defender_centroid_y: pd.Series
+   101	    signals: dict[str, Any] = field(default_factory=dict)
+   102	    runtime_values: dict[str, dict[str, RuntimeValue]] = field(default_factory=dict)
+   103	    candidates: list[dict[str, Any]] = field(default_factory=list)
+   104	    accepted: list[dict[str, Any]] = field(default_factory=list)
+   105	    near_misses: list[dict[str, Any]] = field(default_factory=list)
+   106	    predicate_traces: list[PredicateTrace] = field(default_factory=list)
+   107	
+   108	
+   109	@dataclass(frozen=True)
+   110	class RuntimeAnchor:
+   111	    anchor_id: str
+   112	    match_id: str
+   113	    period: str
+   114	    anchor_frame_id: int
+   115	    source_node_id: str
+   116	    output_name: str
+   117	    start_frame_id: int | None
+   118	    end_frame_id: int | None
+   119	    attributes: dict[str, Any]
+   120	
+   121	
+   122	PrimitiveImplementation = Callable[[PeriodState, BoundCatalogNode], None]
+   123	RelationImplementation = Callable[[PeriodState, BoundCatalogNode], None]
+   124	PredicateImplementation = Callable[[PeriodState, BoundPredicateNode], None]
+   125	

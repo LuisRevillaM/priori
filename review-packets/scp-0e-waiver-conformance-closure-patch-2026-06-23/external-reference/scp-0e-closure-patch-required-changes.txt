@@ -1,0 +1,294 @@
+# Decision
+
+**Changes required before SCP-1, but only through a small SCP-0E closure patch—not another architectural milestone.**
+
+The packet closes most of the requested work:
+
+* Dependency-derived claim and evidence closure is real.
+* Waivers now pin hashes and changed fields.
+* Stale waivers fail.
+* AI operators and unsupported items obey projection policies.
+* Exact, partial, and legacy bindings now have explicit input, output, and parameter mappings.
+* The current 11 capabilities, eight operators, four recipes, one composition, and 741 isolated atlas entries remain accounted for.
+
+That preserves Priori’s existing bounded-authoring and deterministic-execution architecture rather than replacing it.  It also preserves the current authorable versus reviewed-plan-only catalog boundaries. 
+
+However, the packet’s strongest claim—
+
+```text
+exact_signature_conformance: VERIFIED
+partial_signature_conformance: VERIFIED
+```
+
+—is not yet supported by the validator.
+
+## The decisive finding
+
+I independently exercised the included validator code against the packet’s registry and the prior packet’s runtime manifest and plan index.
+
+These mutations all produced a **full pipeline PASS with zero findings**:
+
+| Mutation                                                         | Expected |
+| ---------------------------------------------------------------- | -------- |
+| `context_ref: fake.context.that.does.not.exist`                  | FAIL     |
+| Exact output unit changed from `metre` to `none`                 | FAIL     |
+| Exact input changed from required to optional                    | FAIL     |
+| Exact entity scope changed from `team` to `player`               | FAIL     |
+| Exact output cardinality changed from `single` to `collection`   | FAIL     |
+| Bogus partial uncovered field added                              | FAIL     |
+| Duplicate waiver with the same subject and difference kind added | FAIL     |
+
+So the conformance machinery is improved, but `EXACT` still means approximately:
+
+```text
+matching declared field names
++ payload type
++ temporal type
++ partially checked unit
+```
+
+It does not yet mean exact contract conformance.
+
+# Blocking corrections
+
+## 1. Runtime-context references must resolve to typed context definitions
+
+For a `RUNTIME_CONTEXT` input, validation currently confirms only that `context_ref` is nonempty. It never verifies that the context exists or is type-compatible.
+
+Thus this passes:
+
+```yaml
+input_bindings:
+  canonical_match_state:
+    source: RUNTIME_CONTEXT
+    context_ref: fake.context
+```
+
+Add a generated runtime-context manifest such as:
+
+```yaml
+runtime_contexts:
+  canonical_match_state:
+    type:
+      container: WorldState
+      value: MatchState
+
+  canonical_match_state.ball_position:
+    type:
+      container: PointSignal
+      value: Point
+      unit: metre
+      coordinate_frame: pitch_absolute
+      entity_scope: ball
+
+  provider_event_stream.completed_pass_events:
+    type:
+      container: EventSet
+      value: ProviderEvent
+```
+
+Then require:
+
+```text
+context_ref exists
+AND semantic input is compatible with context type
+```
+
+Also make `RuntimeInputBinding` exclusive:
+
+```text
+NODE_INPUT:
+  runtime_port required
+  context_ref forbidden
+
+RUNTIME_CONTEXT:
+  context_ref required
+  runtime_port forbidden
+```
+
+## 2. Define and enforce the complete meaning of `EXACT`
+
+At minimum, exact field comparison should cover every relevant dimension already exposed by the runtime manifest:
+
+```text
+payload type
+temporal type
+unit
+cardinality
+entity scope
+input requiredness
+```
+
+The current unit logic incorrectly treats runtime unit `none` as a wildcard. Only explicit `any` should behave as a wildcard.
+
+For parameters, compare:
+
+```text
+payload type
+unit
+requiredness
+minimum
+maximum
+default
+allowed values, where applicable
+```
+
+That likely requires replacing binding-local `TypedField` parameters with a proper `ParameterSpec`.
+
+Where a dimension cannot yet be compared—such as coordinate frame because the runtime manifest does not expose it—the binding should either:
+
+```text
+declare that dimension explicitly in the runtime manifest
+```
+
+or be downgraded from `EXACT`.
+
+An exact binding should also be prohibited from declaring `known_deviations`.
+
+## 3. Validate uncovered declarations themselves
+
+The validator ensures that an actual unmapped runtime field is listed as uncovered. It does not ensure that uncovered names refer to real elements.
+
+This currently passes:
+
+```yaml
+uncovered_runtime_inputs:
+  - not_a_real_runtime_input
+```
+
+For `PARTIAL` and `LEGACY_APPROXIMATION`, require:
+
+```text
+every uncovered runtime name exists in the runtime contract
+every uncovered semantic name exists in the semantic contract
+no duplicate uncovered names
+every real discrepancy is mapped or uncovered
+```
+
+This is necessary to satisfy the stated acceptance criterion that all mappings and uncovered elements resolve to real fields.
+
+## 4. Enforce waiver-key uniqueness
+
+Waivers are indexed internally through:
+
+```text
+(difference_kind, subject_ref) → waiver
+```
+
+but duplicate records are accepted. Dictionary construction silently selects the last one, while the stale-waiver check treats both as observed.
+
+Require uniqueness for:
+
+```text
+projection target
++ difference kind
++ subject ref
+```
+
+Conflicting or duplicate waivers must fail schema or registry validation.
+
+## 5. Resolve the product-recipe baseline ambiguity
+
+`_baseline_contracts()` loads capability contracts from the pinned product catalog, but product recipe contracts are still synthesized from the **current runtime manifest**:
+
+```text
+product capabilities:
+  frozen capability-catalog baseline
+
+product recipes:
+  current runtime manifest
+```
+
+That does not provide independent product-recipe drift detection.
+
+Choose one explicit correction:
+
+```text
+A. Add a pinned product recipe baseline artifact.
+```
+
+or:
+
+```text
+B. Rename this part of the report to current-runtime recipe alignment
+   and stop claiming it is frozen product-baseline parity.
+```
+
+The current four recipes are also present in the frozen AI baseline, which mitigates today’s risk, but the product parity model is still incomplete for future product-only recipes.
+
+# Required final acceptance tests
+
+The existing suite should be extended with these mutations:
+
+```text
+Unknown RUNTIME_CONTEXT context_ref fails.
+
+RUNTIME_CONTEXT with runtime_port also populated fails schema validation.
+
+NODE_INPUT with context_ref also populated fails schema validation.
+
+Exact unit metre → none fails.
+
+Exact entity scope team → player fails.
+
+Exact cardinality single → collection fails.
+
+Exact required input → optional runtime input fails.
+
+Exact parameter bounds/default drift fails.
+
+Unknown uncovered runtime or semantic field fails.
+
+Duplicate waiver key fails.
+
+A product-only recipe drift fails against a frozen recipe baseline,
+or the report explicitly identifies it as current-runtime alignment.
+```
+
+These are small tests and narrow validator changes. They do not require a new executor, football IR, capability, or product surface.
+
+# Non-blocking items to carry into SCP-1
+
+These should not prolong SCP-0E, but they should become early SCP-1 acceptance criteria:
+
+* Validate that required evidence contracts can actually be supplied by runtime outputs or declared runtime context.
+* Strengthen profile-to-plan binding validation: a profile binding that does not correspond to a plan or operationalization parameter should not be silently ignored.
+* Separate measurement and judgement semantics, beginning with `ball_lateral_fraction`.
+* Add explicit profile references—or an explicit no-profile rationale—to composition instances.
+* Eventually replace multi-file sequential publication with an atomic version-directory pointer switch.
+
+# Recommended status
+
+```yaml
+registry_coverage: VERIFIED
+runtime_binding_coverage: VERIFIED
+atlas_isolation: VERIFIED
+plan_content_integrity: VERIFIED
+full_origin_provenance_integrity: VERIFIED
+
+dependency_contract_lineage: VERIFIED
+projection_policy_enforcement: VERIFIED
+
+parity_waiver_hash_integrity: VERIFIED
+parity_waiver_uniqueness: NOT_VERIFIED
+
+runtime_context_conformance: NOT_VERIFIED
+exact_signature_conformance: PARTIAL
+partial_signature_conformance: PARTIAL
+
+semantic_parity: VERIFIED_WITH_LIMITATIONS
+scp_1_gate: BLOCKED_ON_SMALL_SCP_0E_CLOSURE
+```
+
+Once these exactness and uniqueness checks pass, I would approve SCP-0 immediately and begin SCP-1:
+
+```text
+SemanticExpression
+→ compile to existing TacticalQueryDocument
+→ existing binder
+→ existing deterministic runtime
+```
+
+using High-Bypass Completed Pass and Ball-Side Block Shift as the two dual-run pilots.
+
+[Reviewed SCP-0E packet](sandbox:/mnt/data/scp-0e-waiver-conformance-closure-2026-06-23.zip)

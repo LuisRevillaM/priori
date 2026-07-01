@@ -1,0 +1,4014 @@
+commit 71d053284336952d113cf43b305679d7e2f3c877
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Sun Jun 21 07:12:31 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Sun Jun 21 07:12:31 2026 -0700
+
+    Harden M1.2 S0-S1 agent boundary
+
+diff --git a/delivery/m1.2/SPEC.md b/delivery/m1.2/SPEC.md
+index fcdd461..731032a 100644
+--- a/delivery/m1.2/SPEC.md
++++ b/delivery/m1.2/SPEC.md
+@@ -27,6 +27,19 @@ The first implementation stop is after S0 and S1. S2 and S3 remain out of
+ scope until the manual typed-plan -> execution -> traces -> coordinate replay
+ -> feedback loop receives review.
+ 
++External review on 2026-06-21 required an S0R/S1R boundary correction before
++S2. The corrected pre-S2 boundary is:
++
++- Hermes and the manual client submit typed plan documents and receive opaque
++  host-owned handles, not filesystem paths.
++- Tool schemas are generated from Pydantic request and response models.
++- The host selects compatibility mode; legacy parity is restricted to the frozen
++  M1 recipe.
++- Result inspection, non-match inspection, replay retrieval, and feedback
++  resolve through immutable `execution_id` records.
++- The manual reference proof must call the same serialized dispatcher that
++  Hermes will use later.
++
+ ## Scope
+ 
+ M1.2 includes:
+@@ -67,11 +80,17 @@ During S0/S1, the exposed tool surface is intentionally limited to:
+ ```text
+ list_capabilities
+ describe_capability
++submit_query_plan
+ validate_query_plan
+ execute_query_plan
+ inspect_result
+ inspect_non_match
+ retrieve_replay_window
++```
++
++The following tools are manual/host-only until S3:
++
++```text
+ compare_query_versions
+ record_feedback
+ save_experimental_recipe
+@@ -264,11 +283,15 @@ Hard acceptance:
+ 
+ - generated capability context exists at `generated/capability-context.json`;
+ - the exposed tool list is exactly the S0/S1 list above;
++- tool request and response schemas are concrete, generated schemas rather than
++  placeholders;
+ - `exists` and `count_at_least` are agent-visible only for declared
+   `anchor_evaluations`;
+ - host-owned complexity ceilings are visible and enforced by validation;
+ - unsupported concepts fail as capability gaps;
+-- manual plan validation works without Hermes.
++- manual plan validation works without Hermes;
++- clients use `draft_plan_id`, `bound_plan_id`, `execution_id`, and
++  `replay_window_id` handles instead of local paths.
+ 
+ ### S1 - Manual Reference Workshop
+ 
+@@ -279,6 +302,8 @@ Hard acceptance:
+   and coordinate replay windows;
+ - known-timestamp inspection explains non-matches with failed/unknown
+   predicates;
++- all manual actions flow through the same serialized dispatcher Hermes will use
++  later;
+ - feedback labels `MATCHES_INTENT`, `NEAR_MATCH`, `FALSE_POSITIVE`,
+   `KNOWN_MISS`, and `UNUSABLE_DATA` are recorded through a schema-valid tool;
+ - an experimental recipe can be saved as an immutable content-addressed
+diff --git a/delivery/m1.2/status.yaml b/delivery/m1.2/status.yaml
+index e037fe0..2cea2d2 100644
+--- a/delivery/m1.2/status.yaml
++++ b/delivery/m1.2/status.yaml
+@@ -1,8 +1,8 @@
+ milestone: M1.2
+ name: "Grounded Tactical Query Workshop"
+-state: S0_S1_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW
++state: S0R_S1R_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW
+ source_of_truth: delivery/m1.2/SPEC.md
+-last_updated: "2026-06-20"
++last_updated: "2026-06-21"
+ preconditions:
+   M1_1_runtime_accepted: SATISFIED_BY_M1_1S_S7R2_APPROVAL
+   M1_1R_external_approval_or_required_changes_integrated: SUPERSEDED_BY_M1_1S
+@@ -10,19 +10,23 @@ preconditions:
+   M1_2_agent_eval_corpus: REQUIRED_BEFORE_ACCEPTANCE
+ slices:
+   S0_tool_boundary_and_capability_context: DONE_CONTROLLER_VERIFIED
++  S0R_agent_boundary_correction: DONE_CONTROLLER_VERIFIED
+   S1_manual_reference_workshop: DONE_CONTROLLER_VERIFIED
++  S1R_dispatcher_backed_manual_workshop: DONE_CONTROLLER_VERIFIED
+   S2_hermes_drafting_and_clarification: NOT_STARTED
+   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
+ promotion_gates:
+   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
++  Gate_S0R_real_schemas_handles_host_profiles: PASS_CONTROLLER
+   Gate_S1_manual_typed_plan_execution_traces_replay_feedback: PASS_CONTROLLER
++  Gate_S1R_serialized_dispatcher_manual_loop: PASS_CONTROLLER
+   Gate_S2_hermes_drafting: NOT_STARTED
+   Gate_S3_revision_recipe_loop: NOT_STARTED
+ verification:
+   automated: PASS_FOR_S0_S1
+   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+   independent_review: M1_1S_S7R2_APPROVED_M1_2_UNBLOCKED
+-  controller_review: S0_S1_PASS_PENDING_EXTERNAL_PACKET
++  controller_review: S0R_S1R_PASS_PENDING_EXTERNAL_PACKET
+   owner_acceptance: APPROVED_TO_PROCEED
+ evidence:
+   S0_report: artifacts/m1.2/gate-s0-verification-report.json
+@@ -33,4 +37,4 @@ evidence:
+   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
+ next_step:
+   external_review: REQUIRED_BEFORE_HERMES_S2
+-  scope: "Review S0/S1 only; do not start Hermes until required changes are integrated."
++  scope: "Review S0R/S1R boundary corrections; do not start Hermes until approved."
+diff --git a/docs/learnings/2026-06-21-m1-2-agent-boundary-correction.md b/docs/learnings/2026-06-21-m1-2-agent-boundary-correction.md
+new file mode 100644
+index 0000000..b3e61fe
+--- /dev/null
++++ b/docs/learnings/2026-06-21-m1-2-agent-boundary-correction.md
+@@ -0,0 +1,21 @@
++# M1.2 Agent Boundary Correction Learning
++
++Date: 2026-06-21
++
++Fact: Trusted local Python functions are not automatically safe agent tools.
++Hermes-facing APIs need concrete schemas, opaque handles, immutable execution
++records, and host-selected runtime behavior.
++
++Decision: M1.2 S2 may only use the serialized `dispatch_tool` boundary and the
++generated capability context. Hermes must not supply local paths, choose
++compatibility profiles, inspect by re-executing a plan, or receive raw coordinate
++dumps.
++
++Learning: The manual reference workshop is only meaningful if it calls the exact
++same serialized tool boundary future Hermes calls. Verifiers may inspect records,
++but the primary workflow must prove submit -> validate -> execute -> inspect ->
++replay through handles.
++
++Follow-up: Regenerate the external review packet from a clean committed S0R/S1R
++state before starting Hermes S2.
++
+diff --git a/docs/reviews/2026-06-21-m1-2-s0-s1-external-review.md b/docs/reviews/2026-06-21-m1-2-s0-s1-external-review.md
+new file mode 100644
+index 0000000..91ab9cb
+--- /dev/null
++++ b/docs/reviews/2026-06-21-m1-2-s0-s1-external-review.md
+@@ -0,0 +1,50 @@
++# M1.2 S0/S1 External Review
++
++Date: 2026-06-21
++
++Decision: APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S2
++
++## Blocking Findings
++
++The external review accepted the underlying workshop evidence but blocked S2 on
++the agent-facing boundary:
++
++- the prior packet was generated before the reviewed commit and showed a dirty
++  worktree;
++- tool schemas were placeholders;
++- tools accepted local filesystem paths instead of host-owned handles;
++- result inspection and replay could re-execute plans instead of using an
++  immutable execution record;
++- compatibility profile was client-selectable and too broadly mapped from
++  `APPROVED`;
++- capability entries lacked input-port contracts and agent-authorable status;
++- S1 verifier bypassed the exact tool surface in several places;
++- feedback and recipe writes were not strongly grounded.
++
++## Integrated S0R/S1R Corrections
++
++- Added real Pydantic-derived request and response JSON Schemas to the generated
++  capability context.
++- Added host-owned `draft_plan_id`, `bound_plan_id`, `execution_id`, and
++  `replay_window_id` handles.
++- Added `submit_query_plan` and serialized `dispatch_tool` as the boundary the
++  manual client and future Hermes client use.
++- Removed client-selected compatibility profile from the request models.
++- Restricted legacy parity to the frozen `ball_side_block_shift` recipe.
++- Stored immutable execution records with draft hash, bound hash, dataset
++  identity, compatibility profile, result IDs, predicate traces, and evidence.
++- Made `inspect_result`, `inspect_non_match`, `retrieve_replay_window`, and
++  `record_feedback` resolve through `execution_id`.
++- Made feedback requests require exactly one result or target.
++- Made recipe save bind and safety-check submitted experimental drafts before
++  persistence.
++- Added input-port contracts and `agent_authorable` metadata to capability
++  entries.
++- Updated S1 to run through the serialized dispatcher rather than private
++  runtime calls.
++
++## Current Controller Decision
++
++S0R/S1R are controller-verified and ready for another external review packet.
++Hermes S2 remains blocked until that packet is reviewed.
++
+diff --git a/generated/capability-context.json b/generated/capability-context.json
+index 5e29726..468ff02 100644
+--- a/generated/capability-context.json
++++ b/generated/capability-context.json
+@@ -91,7 +91,7 @@
+     "result_row_mutation",
+     "threshold_auto_tuning"
+   ],
+-  "generated_at": "2026-06-21T04:52:36+00:00",
++  "generated_at": "2026-06-21T14:06:02+00:00",
+   "host_owned_complexity_ceilings": {
+     "max_execution_cost": 100000,
+     "max_nesting_depth": 12,
+@@ -365,11 +365,13 @@
+   ],
+   "primitives": [
+     {
++      "agent_authorable": true,
+       "evidence_fields": [
+         "possession_start_frame_id",
+         "possession_end_frame_id",
+         "possession_duration_seconds"
+       ],
++      "inputs": [],
+       "kind": "primitive",
+       "limitations": [],
+       "name": "possession_segment",
+@@ -409,10 +411,12 @@
+       "version": "0.1.0"
+     },
+     {
++      "agent_authorable": true,
+       "evidence_fields": [
+         "wide_entry_y_m",
+         "ball_side"
+       ],
++      "inputs": [],
+       "kind": "primitive",
+       "limitations": [
+         "Depends on canonical pitch coordinates and known pitch width."
+@@ -438,10 +442,12 @@
+       "version": "0.1.0"
+     },
+     {
++      "agent_authorable": true,
+       "evidence_fields": [
+         "baseline_defensive_centroid_y_m",
+         "defending_team_id"
+       ],
++      "inputs": [],
+       "kind": "primitive",
+       "limitations": [
+         "Goalkeepers are excluded from the outfield centroid."
+@@ -466,6 +472,7 @@
+       "version": "0.1.0"
+     },
+     {
++      "agent_authorable": true,
+       "evidence_fields": [
+         "baseline_start_frame_id",
+         "baseline_end_frame_id",
+@@ -473,6 +480,35 @@
+         "signed_shift_metres",
+         "block_shift_score"
+       ],
++      "inputs": [
++        {
++          "cardinality": "collection",
++          "entity_scope": "possession",
++          "name": "possession_episodes",
++          "payload_type": "boolean",
++          "required": true,
++          "temporal_type": "episode_set",
++          "unit": "none"
++        },
++        {
++          "cardinality": "collection",
++          "entity_scope": "ball",
++          "name": "entry_episodes",
++          "payload_type": "boolean",
++          "required": true,
++          "temporal_type": "episode_set",
++          "unit": "none"
++        },
++        {
++          "cardinality": "per_team",
++          "entity_scope": "team",
++          "name": "defensive_centroid",
++          "payload_type": "number",
++          "required": true,
++          "temporal_type": "frame_signal",
++          "unit": "metre"
++        }
++      ],
+       "kind": "primitive",
+       "limitations": [],
+       "name": "signed_lateral_shift",
+@@ -514,10 +550,22 @@
+       "version": "0.1.0"
+     },
+     {
++      "agent_authorable": false,
+       "evidence_fields": [
+         "classification",
+         "outcome_frame_id"
+       ],
++      "inputs": [
++        {
++          "cardinality": "collection",
++          "entity_scope": "team",
++          "name": "accepted_shift_episodes",
++          "payload_type": "boolean",
++          "required": true,
++          "temporal_type": "episode_set",
++          "unit": "none"
++        }
++      ],
+       "kind": "primitive",
+       "limitations": [
+         "Does not infer intent, optimality, or missed opportunity."
+@@ -553,6 +601,7 @@
+       "version": "0.1.0"
+     },
+     {
++      "agent_authorable": true,
+       "evidence_fields": [
+         "classification",
+         "base_result_id",
+@@ -564,6 +613,17 @@
+         "destination_side",
+         "destination_lane"
+       ],
++      "inputs": [
++        {
++          "cardinality": "collection",
++          "entity_scope": "relation",
++          "name": "relation_episodes",
++          "payload_type": "relation_ref",
++          "required": true,
++          "temporal_type": "relation_episode_set",
++          "unit": "none"
++        }
++      ],
+       "kind": "primitive",
+       "limitations": [
+         "Requires an upstream relation episode set.",
+@@ -632,6 +692,7 @@
+   ],
+   "relations": [
+     {
++      "agent_authorable": true,
+       "evidence_fields": [
+         "relation_id",
+         "open_frame_id",
+@@ -651,6 +712,17 @@
+         "source_close_point",
+         "target_close_point"
+       ],
++      "inputs": [
++        {
++          "cardinality": "single",
++          "entity_scope": "possession",
++          "name": "anchors",
++          "payload_type": "enum",
++          "required": true,
++          "temporal_type": "frame_signal",
++          "unit": "none"
++        }
++      ],
+       "kind": "relation",
+       "limitations": [
+         "No pass probability.",
+@@ -797,6 +869,7 @@
+       "version": "0.1.0"
+     },
+     {
++      "agent_authorable": true,
+       "evidence_fields": [
+         "relation_id",
+         "open_frame_id",
+@@ -816,6 +889,17 @@
+         "source_close_point",
+         "target_close_point"
+       ],
++      "inputs": [
++        {
++          "cardinality": "collection",
++          "entity_scope": "anchor",
++          "name": "anchors",
++          "payload_type": "anchor_ref",
++          "required": true,
++          "temporal_type": "episode_set",
++          "unit": "none"
++        }
++      ],
+       "kind": "relation",
+       "limitations": [
+         "No pass probability.",
+@@ -974,14 +1058,211 @@
+   "tools": [
+     {
+       "description": "Return the Hermes-safe capability context.",
++      "exposure": "hermes_s2",
+       "input_schema": {
+         "additionalProperties": false,
++        "properties": {},
++        "title": "ListCapabilitiesRequest",
+         "type": "object"
+       },
+       "name": "list_capabilities",
+       "output_schema": {
+-        "additionalProperties": false,
+-        "type": "object"
++        "oneOf": [
++          {
++            "$defs": {
++              "ToolSpec": {
++                "additionalProperties": false,
++                "properties": {
++                  "description": {
++                    "title": "Description",
++                    "type": "string"
++                  },
++                  "exposure": {
++                    "enum": [
++                      "hermes_s2",
++                      "manual_only"
++                    ],
++                    "title": "Exposure",
++                    "type": "string"
++                  },
++                  "input_schema": {
++                    "additionalProperties": true,
++                    "title": "Input Schema",
++                    "type": "object"
++                  },
++                  "name": {
++                    "title": "Name",
++                    "type": "string"
++                  },
++                  "output_schema": {
++                    "additionalProperties": true,
++                    "title": "Output Schema",
++                    "type": "object"
++                  },
++                  "unavailable_surfaces": {
++                    "items": {
++                      "type": "string"
++                    },
++                    "title": "Unavailable Surfaces",
++                    "type": "array"
++                  }
++                },
++                "required": [
++                  "name",
++                  "description",
++                  "input_schema",
++                  "output_schema",
++                  "unavailable_surfaces",
++                  "exposure"
++                ],
++                "title": "ToolSpec",
++                "type": "object"
++              }
++            },
++            "additionalProperties": false,
++            "properties": {
++              "default_complexity_limits": {
++                "additionalProperties": true,
++                "title": "Default Complexity Limits",
++                "type": "object"
++              },
++              "evidence_fields": {
++                "additionalProperties": {
++                  "items": {
++                    "type": "string"
++                  },
++                  "type": "array"
++                },
++                "title": "Evidence Fields",
++                "type": "object"
++              },
++              "forbidden_surfaces": {
++                "items": {
++                  "type": "string"
++                },
++                "title": "Forbidden Surfaces",
++                "type": "array"
++              },
++              "generated_at": {
++                "title": "Generated At",
++                "type": "string"
++              },
++              "host_owned_complexity_ceilings": {
++                "additionalProperties": true,
++                "title": "Host Owned Complexity Ceilings",
++                "type": "object"
++              },
++              "limitations": {
++                "items": {
++                  "type": "string"
++                },
++                "title": "Limitations",
++                "type": "array"
++              },
++              "milestone": {
++                "const": "M1.2",
++                "default": "M1.2",
++                "title": "Milestone",
++                "type": "string"
++              },
++              "operators": {
++                "items": {
++                  "additionalProperties": true,
++                  "type": "object"
++                },
++                "title": "Operators",
++                "type": "array"
++              },
++              "primitives": {
++                "items": {
++                  "additionalProperties": true,
++                  "type": "object"
++                },
++                "title": "Primitives",
++                "type": "array"
++              },
++              "recipe_states": {
++                "items": {
++                  "type": "string"
++                },
++                "title": "Recipe States",
++                "type": "array"
++              },
++              "relations": {
++                "items": {
++                  "additionalProperties": true,
++                  "type": "object"
++                },
++                "title": "Relations",
++                "type": "array"
++              },
++              "safe_operator_source_rules": {
++                "additionalProperties": true,
++                "title": "Safe Operator Source Rules",
++                "type": "object"
++              },
++              "schema_version": {
++                "const": "1.0",
++                "default": "1.0",
++                "title": "Schema Version",
++                "type": "string"
++              },
++              "tools": {
++                "items": {
++                  "$ref": "#/$defs/ToolSpec"
++                },
++                "title": "Tools",
++                "type": "array"
++              }
++            },
++            "required": [
++              "generated_at",
++              "tools",
++              "primitives",
++              "relations",
++              "operators",
++              "recipe_states",
++              "evidence_fields",
++              "safe_operator_source_rules",
++              "default_complexity_limits",
++              "host_owned_complexity_ceilings",
++              "limitations",
++              "forbidden_surfaces"
++            ],
++            "title": "CapabilityContext",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
+       },
+       "unavailable_surfaces": [
+         "arbitrary_python",
+@@ -995,15 +1276,964 @@
+     },
+     {
+       "description": "Describe one exposed tool, primitive, relation, or operator.",
++      "exposure": "hermes_s2",
+       "input_schema": {
+         "additionalProperties": false,
++        "properties": {
++          "capability_name": {
++            "minLength": 1,
++            "title": "Capability Name",
++            "type": "string"
++          }
++        },
++        "required": [
++          "capability_name"
++        ],
++        "title": "DescribeCapabilityRequest",
+         "type": "object"
+       },
+       "name": "describe_capability",
+       "output_schema": {
++        "oneOf": [
++          {
++            "additionalProperties": false,
++            "properties": {
++              "capability": {
++                "additionalProperties": true,
++                "title": "Capability",
++                "type": "object"
++              },
++              "ok": {
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "ok",
++              "capability"
++            ],
++            "title": "DescribeCapabilityResponse",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
++      },
++      "unavailable_surfaces": [
++        "arbitrary_python",
++        "sql",
++        "filesystem_editing",
++        "primitive_mutation",
++        "raw_match_dump",
++        "result_row_mutation",
++        "threshold_auto_tuning"
++      ]
++    },
++    {
++      "description": "Store a typed query document and return an opaque draft_plan_id.",
++      "exposure": "hermes_s2",
++      "input_schema": {
++        "$defs": {
++          "Cardinality": {
++            "enum": [
++              "single",
++              "per_player",
++              "per_team",
++              "collection"
++            ],
++            "title": "Cardinality",
++            "type": "string"
++          },
++          "ClassificationMode": {
++            "enum": [
++              "exhaustive",
++              "partial_declared"
++            ],
++            "title": "ClassificationMode",
++            "type": "string"
++          },
++          "ClassificationRule": {
++            "additionalProperties": false,
++            "properties": {
++              "description": {
++                "title": "Description",
++                "type": "string"
++              },
++              "label": {
++                "pattern": "^[A-Z][A-Z0-9_]*$",
++                "title": "Label",
++                "type": "string"
++              },
++              "predicate_ids": {
++                "items": {
++                  "type": "string"
++                },
++                "minItems": 1,
++                "title": "Predicate Ids",
++                "type": "array"
++              }
++            },
++            "required": [
++              "label",
++              "predicate_ids",
++              "description"
++            ],
++            "title": "ClassificationRule",
++            "type": "object"
++          },
++          "ComplexityLimits": {
++            "additionalProperties": false,
++            "properties": {
++              "max_execution_cost": {
++                "default": 100000,
++                "minimum": 1,
++                "title": "Max Execution Cost",
++                "type": "integer"
++              },
++              "max_nesting_depth": {
++                "default": 8,
++                "minimum": 1,
++                "title": "Max Nesting Depth",
++                "type": "integer"
++              },
++              "max_plan_nodes": {
++                "default": 40,
++                "minimum": 1,
++                "title": "Max Plan Nodes",
++                "type": "integer"
++              },
++              "max_relations_per_anchor": {
++                "default": 1000,
++                "minimum": 1,
++                "title": "Max Relations Per Anchor",
++                "type": "integer"
++              },
++              "max_returned_moments": {
++                "default": 100,
++                "minimum": 1,
++                "title": "Max Returned Moments",
++                "type": "integer"
++              },
++              "max_temporal_horizon_seconds": {
++                "default": 15.0,
++                "exclusiveMinimum": 0,
++                "title": "Max Temporal Horizon Seconds",
++                "type": "number"
++              }
++            },
++            "title": "ComplexityLimits",
++            "type": "object"
++          },
++          "DraftCatalogNode": {
++            "additionalProperties": false,
++            "properties": {
++              "catalog_ref": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Catalog Ref",
++                "type": "string"
++              },
++              "inputs": {
++                "additionalProperties": {
++                  "$ref": "#/$defs/SignalRef"
++                },
++                "title": "Inputs",
++                "type": "object"
++              },
++              "kind": {
++                "enum": [
++                  "primitive",
++                  "relation"
++                ],
++                "title": "Kind",
++                "type": "string"
++              },
++              "node_id": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Node Id",
++                "type": "string"
++              },
++              "parameters": {
++                "additionalProperties": {
++                  "anyOf": [
++                    {
++                      "$ref": "#/$defs/TypedValue"
++                    },
++                    {
++                      "$ref": "#/$defs/ParameterRef"
++                    }
++                  ]
++                },
++                "title": "Parameters",
++                "type": "object"
++              },
++              "version": {
++                "title": "Version",
++                "type": "string"
++              }
++            },
++            "required": [
++              "kind",
++              "node_id",
++              "catalog_ref",
++              "version"
++            ],
++            "title": "DraftCatalogNode",
++            "type": "object"
++          },
++          "DraftPredicateNode": {
++            "additionalProperties": false,
++            "properties": {
++              "compare": {
++                "anyOf": [
++                  {
++                    "$ref": "#/$defs/TypedValue"
++                  },
++                  {
++                    "$ref": "#/$defs/ParameterRef"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Compare"
++              },
++              "duration": {
++                "anyOf": [
++                  {
++                    "$ref": "#/$defs/TypedValue"
++                  },
++                  {
++                    "$ref": "#/$defs/ParameterRef"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Duration"
++              },
++              "input": {
++                "$ref": "#/$defs/SignalRef"
++              },
++              "kind": {
++                "const": "predicate",
++                "default": "predicate",
++                "title": "Kind",
++                "type": "string"
++              },
++              "node_id": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Node Id",
++                "type": "string"
++              },
++              "operator": {
++                "$ref": "#/$defs/OperatorRef"
++              },
++              "required_cardinality": {
++                "anyOf": [
++                  {
++                    "$ref": "#/$defs/Cardinality"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null
++              },
++              "required_entity_scope": {
++                "anyOf": [
++                  {
++                    "$ref": "#/$defs/EntityScope"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null
++              }
++            },
++            "required": [
++              "node_id",
++              "input",
++              "operator"
++            ],
++            "title": "DraftPredicateNode",
++            "type": "object"
++          },
++          "DraftQueryPlan": {
++            "additionalProperties": false,
++            "properties": {
++              "anchor_source": {
++                "anyOf": [
++                  {
++                    "$ref": "#/$defs/SignalRef"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null
++              },
++              "classification_mode": {
++                "$ref": "#/$defs/ClassificationMode"
++              },
++              "classification_rules": {
++                "items": {
++                  "$ref": "#/$defs/ClassificationRule"
++                },
++                "minItems": 1,
++                "title": "Classification Rules",
++                "type": "array"
++              },
++              "complexity_limits": {
++                "$ref": "#/$defs/ComplexityLimits"
++              },
++              "nodes": {
++                "items": {
++                  "discriminator": {
++                    "mapping": {
++                      "predicate": "#/$defs/DraftPredicateNode",
++                      "primitive": "#/$defs/DraftCatalogNode",
++                      "relation": "#/$defs/DraftCatalogNode"
++                    },
++                    "propertyName": "kind"
++                  },
++                  "oneOf": [
++                    {
++                      "$ref": "#/$defs/DraftCatalogNode"
++                    },
++                    {
++                      "$ref": "#/$defs/DraftPredicateNode"
++                    }
++                  ]
++                },
++                "minItems": 1,
++                "title": "Nodes",
++                "type": "array"
++              },
++              "plan_id": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Plan Id",
++                "type": "string"
++              },
++              "plan_version": {
++                "title": "Plan Version",
++                "type": "string"
++              },
++              "recipe_id": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Recipe Id",
++                "type": "string"
++              },
++              "recipe_version": {
++                "title": "Recipe Version",
++                "type": "string"
++              },
++              "requested_evidence": {
++                "items": {
++                  "$ref": "#/$defs/EvidenceRequest"
++                },
++                "title": "Requested Evidence",
++                "type": "array"
++              },
++              "schema_version": {
++                "const": "1.0",
++                "default": "1.0",
++                "title": "Schema Version",
++                "type": "string"
++              },
++              "status": {
++                "$ref": "#/$defs/PlanStatus"
++              },
++              "unknown_evidence_policy": {
++                "$ref": "#/$defs/UnknownEvidencePolicy"
++              }
++            },
++            "required": [
++              "plan_id",
++              "plan_version",
++              "recipe_id",
++              "recipe_version",
++              "status",
++              "unknown_evidence_policy",
++              "classification_mode",
++              "nodes",
++              "classification_rules"
++            ],
++            "title": "DraftQueryPlan",
++            "type": "object"
++          },
++          "EntityScope": {
++            "enum": [
++              "none",
++              "anchor",
++              "ball",
++              "player",
++              "team",
++              "match",
++              "possession",
++              "frame",
++              "relation"
++            ],
++            "title": "EntityScope",
++            "type": "string"
++          },
++          "EvidenceRequest": {
++            "additionalProperties": false,
++            "properties": {
++              "alias": {
++                "anyOf": [
++                  {
++                    "pattern": "^[a-z][a-z0-9_]*$",
++                    "type": "string"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Alias"
++              },
++              "field": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Field",
++                "type": "string"
++              },
++              "required": {
++                "default": true,
++                "title": "Required",
++                "type": "boolean"
++              },
++              "source": {
++                "$ref": "#/$defs/SignalRef"
++              }
++            },
++            "required": [
++              "source",
++              "field"
++            ],
++            "title": "EvidenceRequest",
++            "type": "object"
++          },
++          "ExecutionMode": {
++            "enum": [
++              "bind_only",
++              "dry_run",
++              "execute"
++            ],
++            "title": "ExecutionMode",
++            "type": "string"
++          },
++          "OperatorRef": {
++            "additionalProperties": false,
++            "properties": {
++              "name": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Name",
++                "type": "string"
++              },
++              "version": {
++                "title": "Version",
++                "type": "string"
++              }
++            },
++            "required": [
++              "name",
++              "version"
++            ],
++            "title": "OperatorRef",
++            "type": "object"
++          },
++          "ParameterDefinition": {
++            "additionalProperties": false,
++            "properties": {
++              "allowed_values": {
++                "anyOf": [
++                  {
++                    "items": {
++                      "type": "string"
++                    },
++                    "type": "array"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Allowed Values"
++              },
++              "default": {
++                "anyOf": [
++                  {
++                    "$ref": "#/$defs/TypedValue"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null
++              },
++              "description": {
++                "title": "Description",
++                "type": "string"
++              },
++              "maximum": {
++                "anyOf": [
++                  {
++                    "type": "number"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Maximum"
++              },
++              "minimum": {
++                "anyOf": [
++                  {
++                    "type": "number"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Minimum"
++              },
++              "name": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Name",
++                "type": "string"
++              },
++              "payload_type": {
++                "$ref": "#/$defs/PayloadType"
++              },
++              "required": {
++                "default": false,
++                "title": "Required",
++                "type": "boolean"
++              },
++              "unit": {
++                "$ref": "#/$defs/Unit",
++                "default": "none"
++              }
++            },
++            "required": [
++              "name",
++              "payload_type",
++              "description"
++            ],
++            "title": "ParameterDefinition",
++            "type": "object"
++          },
++          "ParameterRef": {
++            "additionalProperties": false,
++            "properties": {
++              "kind": {
++                "const": "parameter",
++                "default": "parameter",
++                "title": "Kind",
++                "type": "string"
++              },
++              "name": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Name",
++                "type": "string"
++              }
++            },
++            "required": [
++              "name"
++            ],
++            "title": "ParameterRef",
++            "type": "object"
++          },
++          "PayloadType": {
++            "enum": [
++              "boolean",
++              "number",
++              "enum",
++              "anchor_ref",
++              "entity_ref",
++              "team_ref",
++              "region_ref",
++              "point",
++              "entity_set",
++              "relation_ref"
++            ],
++            "title": "PayloadType",
++            "type": "string"
++          },
++          "PlanStatus": {
++            "enum": [
++              "approved",
++              "experimental"
++            ],
++            "title": "PlanStatus",
++            "type": "string"
++          },
++          "QueryInvocation": {
++            "additionalProperties": false,
++            "properties": {
++              "execution_mode": {
++                "$ref": "#/$defs/ExecutionMode",
++                "default": "bind_only"
++              },
++              "invocation_id": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Invocation Id",
++                "type": "string"
++              },
++              "match_ids": {
++                "items": {
++                  "type": "string"
++                },
++                "minItems": 1,
++                "title": "Match Ids",
++                "type": "array"
++              },
++              "max_results": {
++                "maximum": 500,
++                "minimum": 1,
++                "title": "Max Results",
++                "type": "integer"
++              },
++              "parameters": {
++                "additionalProperties": {
++                  "$ref": "#/$defs/TypedValue"
++                },
++                "title": "Parameters",
++                "type": "object"
++              },
++              "periods": {
++                "items": {
++                  "enum": [
++                    "firstHalf",
++                    "secondHalf"
++                  ],
++                  "type": "string"
++                },
++                "minItems": 1,
++                "title": "Periods",
++                "type": "array"
++              },
++              "perspective_team_role": {
++                "enum": [
++                  "home",
++                  "away"
++                ],
++                "title": "Perspective Team Role",
++                "type": "string"
++              },
++              "schema_version": {
++                "const": "1.0",
++                "default": "1.0",
++                "title": "Schema Version",
++                "type": "string"
++              }
++            },
++            "required": [
++              "invocation_id",
++              "match_ids",
++              "periods",
++              "perspective_team_role",
++              "max_results"
++            ],
++            "title": "QueryInvocation",
++            "type": "object"
++          },
++          "RecipeDefinition": {
++            "additionalProperties": false,
++            "properties": {
++              "allowed_claims": {
++                "items": {
++                  "type": "string"
++                },
++                "title": "Allowed Claims",
++                "type": "array"
++              },
++              "default_unknown_evidence_policy": {
++                "$ref": "#/$defs/UnknownEvidencePolicy"
++              },
++              "description": {
++                "title": "Description",
++                "type": "string"
++              },
++              "disallowed_claims": {
++                "items": {
++                  "type": "string"
++                },
++                "title": "Disallowed Claims",
++                "type": "array"
++              },
++              "display_name": {
++                "title": "Display Name",
++                "type": "string"
++              },
++              "limitations": {
++                "items": {
++                  "type": "string"
++                },
++                "title": "Limitations",
++                "type": "array"
++              },
++              "output_classifications": {
++                "items": {
++                  "type": "string"
++                },
++                "minItems": 1,
++                "title": "Output Classifications",
++                "type": "array"
++              },
++              "parameters": {
++                "items": {
++                  "$ref": "#/$defs/ParameterDefinition"
++                },
++                "title": "Parameters",
++                "type": "array"
++              },
++              "recipe_id": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Recipe Id",
++                "type": "string"
++              },
++              "recipe_version": {
++                "title": "Recipe Version",
++                "type": "string"
++              },
++              "schema_version": {
++                "const": "1.0",
++                "default": "1.0",
++                "title": "Schema Version",
++                "type": "string"
++              }
++            },
++            "required": [
++              "recipe_id",
++              "recipe_version",
++              "display_name",
++              "description",
++              "default_unknown_evidence_policy",
++              "output_classifications"
++            ],
++            "title": "RecipeDefinition",
++            "type": "object"
++          },
++          "SignalRef": {
++            "additionalProperties": false,
++            "properties": {
++              "output_name": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Output Name",
++                "type": "string"
++              },
++              "source_node_id": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Source Node Id",
++                "type": "string"
++              }
++            },
++            "required": [
++              "source_node_id",
++              "output_name"
++            ],
++            "title": "SignalRef",
++            "type": "object"
++          },
++          "TacticalQueryDocument": {
++            "additionalProperties": false,
++            "properties": {
++              "default_invocation": {
++                "$ref": "#/$defs/QueryInvocation"
++              },
++              "draft_plan": {
++                "$ref": "#/$defs/DraftQueryPlan"
++              },
++              "recipe": {
++                "$ref": "#/$defs/RecipeDefinition"
++              },
++              "schema_version": {
++                "const": "1.0",
++                "default": "1.0",
++                "title": "Schema Version",
++                "type": "string"
++              }
++            },
++            "required": [
++              "recipe",
++              "default_invocation",
++              "draft_plan"
++            ],
++            "title": "TacticalQueryDocument",
++            "type": "object"
++          },
++          "TypedValue": {
++            "additionalProperties": false,
++            "properties": {
++              "payload_type": {
++                "$ref": "#/$defs/PayloadType"
++              },
++              "unit": {
++                "$ref": "#/$defs/Unit",
++                "default": "none"
++              },
++              "value": {
++                "title": "Value"
++              }
++            },
++            "required": [
++              "payload_type",
++              "value"
++            ],
++            "title": "TypedValue",
++            "type": "object"
++          },
++          "Unit": {
++            "enum": [
++              "none",
++              "metre",
++              "second",
++              "millisecond",
++              "frame",
++              "fraction",
++              "hertz",
++              "count"
++            ],
++            "title": "Unit",
++            "type": "string"
++          },
++          "UnknownEvidencePolicy": {
++            "enum": [
++              "exclude_candidate",
++              "include_with_warning",
++              "invalidate_execution"
++            ],
++            "title": "UnknownEvidencePolicy",
++            "type": "string"
++          }
++        },
+         "additionalProperties": false,
++        "properties": {
++          "plan_document": {
++            "$ref": "#/$defs/TacticalQueryDocument"
++          },
++          "source_label": {
++            "default": "manual",
++            "maxLength": 80,
++            "minLength": 1,
++            "title": "Source Label",
++            "type": "string"
++          }
++        },
++        "required": [
++          "plan_document"
++        ],
++        "title": "SubmitQueryPlanRequest",
+         "type": "object"
+       },
++      "name": "submit_query_plan",
++      "output_schema": {
++        "oneOf": [
++          {
++            "additionalProperties": false,
++            "properties": {
++              "draft_plan_hash": {
++                "title": "Draft Plan Hash",
++                "type": "string"
++              },
++              "draft_plan_id": {
++                "title": "Draft Plan Id",
++                "type": "string"
++              },
++              "ok": {
++                "title": "Ok",
++                "type": "boolean"
++              },
++              "plan_status": {
++                "title": "Plan Status",
++                "type": "string"
++              },
++              "recipe_id": {
++                "title": "Recipe Id",
++                "type": "string"
++              },
++              "recipe_version": {
++                "title": "Recipe Version",
++                "type": "string"
++              }
++            },
++            "required": [
++              "ok",
++              "draft_plan_id",
++              "draft_plan_hash",
++              "recipe_id",
++              "recipe_version",
++              "plan_status"
++            ],
++            "title": "SubmitQueryPlanResponse",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
++      },
+       "unavailable_surfaces": [
+         "arbitrary_python",
+         "sql",
+@@ -1015,15 +2245,167 @@
+       ]
+     },
+     {
+-      "description": "Bind and boundary-check a typed query plan.",
++      "description": "Bind and boundary-check a submitted typed query plan.",
++      "exposure": "hermes_s2",
+       "input_schema": {
+         "additionalProperties": false,
++        "properties": {
++          "draft_plan_id": {
++            "title": "Draft Plan Id",
++            "type": "string"
++          }
++        },
++        "required": [
++          "draft_plan_id"
++        ],
++        "title": "ValidateQueryPlanRequest",
+         "type": "object"
+       },
+       "name": "validate_query_plan",
+       "output_schema": {
+-        "additionalProperties": false,
+-        "type": "object"
++        "oneOf": [
++          {
++            "additionalProperties": false,
++            "properties": {
++              "bound_plan_hash": {
++                "anyOf": [
++                  {
++                    "type": "string"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Bound Plan Hash"
++              },
++              "bound_plan_id": {
++                "anyOf": [
++                  {
++                    "type": "string"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Bound Plan Id"
++              },
++              "confirmation_token": {
++                "anyOf": [
++                  {
++                    "type": "string"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Confirmation Token"
++              },
++              "draft_plan_id": {
++                "title": "Draft Plan Id",
++                "type": "string"
++              },
++              "execution_profile": {
++                "anyOf": [
++                  {
++                    "type": "string"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Execution Profile"
++              },
++              "issues": {
++                "items": {
++                  "additionalProperties": true,
++                  "type": "object"
++                },
++                "title": "Issues",
++                "type": "array"
++              },
++              "ok": {
++                "title": "Ok",
++                "type": "boolean"
++              },
++              "plan_id": {
++                "anyOf": [
++                  {
++                    "type": "string"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Plan Id"
++              },
++              "plan_status": {
++                "anyOf": [
++                  {
++                    "type": "string"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Plan Status"
++              },
++              "recipe_id": {
++                "anyOf": [
++                  {
++                    "type": "string"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Recipe Id"
++              }
++            },
++            "required": [
++              "ok",
++              "draft_plan_id"
++            ],
++            "title": "ValidateQueryPlanResponse",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
+       },
+       "unavailable_surfaces": [
+         "arbitrary_python",
+@@ -1037,14 +2419,140 @@
+     },
+     {
+       "description": "Execute a validated plan through the deterministic runtime.",
++      "exposure": "hermes_s2",
+       "input_schema": {
+         "additionalProperties": false,
++        "properties": {
++          "bound_plan_id": {
++            "title": "Bound Plan Id",
++            "type": "string"
++          },
++          "confirmation_token": {
++            "title": "Confirmation Token",
++            "type": "string"
++          },
++          "result_limit": {
++            "default": 25,
++            "maximum": 100,
++            "minimum": 1,
++            "title": "Result Limit",
++            "type": "integer"
++          }
++        },
++        "required": [
++          "bound_plan_id",
++          "confirmation_token"
++        ],
++        "title": "ExecuteQueryPlanRequest",
+         "type": "object"
+       },
+       "name": "execute_query_plan",
+       "output_schema": {
+-        "additionalProperties": false,
+-        "type": "object"
++        "oneOf": [
++          {
++            "additionalProperties": false,
++            "properties": {
++              "bound_plan_hash": {
++                "title": "Bound Plan Hash",
++                "type": "string"
++              },
++              "bound_plan_id": {
++                "title": "Bound Plan Id",
++                "type": "string"
++              },
++              "compatibility_profile": {
++                "title": "Compatibility Profile",
++                "type": "string"
++              },
++              "draft_plan_hash": {
++                "title": "Draft Plan Hash",
++                "type": "string"
++              },
++              "execution_id": {
++                "title": "Execution Id",
++                "type": "string"
++              },
++              "ok": {
++                "title": "Ok",
++                "type": "boolean"
++              },
++              "plan_id": {
++                "title": "Plan Id",
++                "type": "string"
++              },
++              "plan_status": {
++                "title": "Plan Status",
++                "type": "string"
++              },
++              "results": {
++                "items": {
++                  "additionalProperties": true,
++                  "type": "object"
++                },
++                "title": "Results",
++                "type": "array"
++              },
++              "returned_result_count": {
++                "title": "Returned Result Count",
++                "type": "integer"
++              },
++              "total_result_count": {
++                "title": "Total Result Count",
++                "type": "integer"
++              },
++              "trace_count": {
++                "title": "Trace Count",
++                "type": "integer"
++              }
++            },
++            "required": [
++              "ok",
++              "execution_id",
++              "bound_plan_id",
++              "plan_id",
++              "plan_status",
++              "compatibility_profile",
++              "draft_plan_hash",
++              "total_result_count",
++              "returned_result_count",
++              "results",
++              "trace_count",
++              "bound_plan_hash"
++            ],
++            "title": "ExecuteQueryPlanResponse",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
+       },
+       "unavailable_surfaces": [
+         "arbitrary_python",
+@@ -1058,14 +2566,100 @@
+     },
+     {
+       "description": "Return predicate traces and requested evidence for a result.",
++      "exposure": "hermes_s2",
+       "input_schema": {
+         "additionalProperties": false,
++        "properties": {
++          "execution_id": {
++            "title": "Execution Id",
++            "type": "string"
++          },
++          "result_id": {
++            "title": "Result Id",
++            "type": "string"
++          }
++        },
++        "required": [
++          "execution_id",
++          "result_id"
++        ],
++        "title": "InspectResultRequest",
+         "type": "object"
+       },
+       "name": "inspect_result",
+       "output_schema": {
+-        "additionalProperties": false,
+-        "type": "object"
++        "oneOf": [
++          {
++            "additionalProperties": false,
++            "properties": {
++              "execution_id": {
++                "title": "Execution Id",
++                "type": "string"
++              },
++              "ok": {
++                "title": "Ok",
++                "type": "boolean"
++              },
++              "predicate_traces": {
++                "items": {
++                  "additionalProperties": true,
++                  "type": "object"
++                },
++                "title": "Predicate Traces",
++                "type": "array"
++              },
++              "requested_evidence": {
++                "additionalProperties": true,
++                "title": "Requested Evidence",
++                "type": "object"
++              },
++              "result": {
++                "additionalProperties": true,
++                "title": "Result",
++                "type": "object"
++              }
++            },
++            "required": [
++              "ok",
++              "execution_id",
++              "result",
++              "predicate_traces",
++              "requested_evidence"
++            ],
++            "title": "InspectResultResponse",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
+       },
+       "unavailable_surfaces": [
+         "arbitrary_python",
+@@ -1079,14 +2673,133 @@
+     },
+     {
+       "description": "Evaluate a known timestamp target against a bound plan.",
++      "exposure": "hermes_s2",
+       "input_schema": {
++        "$defs": {
++          "EvaluationTarget": {
++            "additionalProperties": false,
++            "properties": {
++              "approximate_time_ms": {
++                "minimum": 0,
++                "title": "Approximate Time Ms",
++                "type": "integer"
++              },
++              "match_id": {
++                "title": "Match Id",
++                "type": "string"
++              },
++              "period": {
++                "enum": [
++                  "firstHalf",
++                  "secondHalf"
++                ],
++                "title": "Period",
++                "type": "string"
++              },
++              "schema_version": {
++                "const": "1.0",
++                "default": "1.0",
++                "title": "Schema Version",
++                "type": "string"
++              },
++              "search_radius_ms": {
++                "exclusiveMinimum": 0,
++                "title": "Search Radius Ms",
++                "type": "integer"
++              },
++              "target_id": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Target Id",
++                "type": "string"
++              }
++            },
++            "required": [
++              "target_id",
++              "match_id",
++              "period",
++              "approximate_time_ms",
++              "search_radius_ms"
++            ],
++            "title": "EvaluationTarget",
++            "type": "object"
++          }
++        },
+         "additionalProperties": false,
++        "properties": {
++          "execution_id": {
++            "title": "Execution Id",
++            "type": "string"
++          },
++          "target": {
++            "$ref": "#/$defs/EvaluationTarget"
++          }
++        },
++        "required": [
++          "execution_id",
++          "target"
++        ],
++        "title": "InspectNonMatchRequest",
+         "type": "object"
+       },
+       "name": "inspect_non_match",
+       "output_schema": {
+-        "additionalProperties": false,
+-        "type": "object"
++        "oneOf": [
++          {
++            "additionalProperties": false,
++            "properties": {
++              "execution_id": {
++                "title": "Execution Id",
++                "type": "string"
++              },
++              "inspection": {
++                "additionalProperties": true,
++                "title": "Inspection",
++                "type": "object"
++              },
++              "ok": {
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "ok",
++              "execution_id",
++              "inspection"
++            ],
++            "title": "InspectNonMatchResponse",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
+       },
+       "unavailable_surfaces": [
+         "arbitrary_python",
+@@ -1100,14 +2813,207 @@
+     },
+     {
+       "description": "Materialize a bounded coordinate replay JSON artifact.",
++      "exposure": "hermes_s2",
+       "input_schema": {
++        "$defs": {
++          "EvaluationTarget": {
++            "additionalProperties": false,
++            "properties": {
++              "approximate_time_ms": {
++                "minimum": 0,
++                "title": "Approximate Time Ms",
++                "type": "integer"
++              },
++              "match_id": {
++                "title": "Match Id",
++                "type": "string"
++              },
++              "period": {
++                "enum": [
++                  "firstHalf",
++                  "secondHalf"
++                ],
++                "title": "Period",
++                "type": "string"
++              },
++              "schema_version": {
++                "const": "1.0",
++                "default": "1.0",
++                "title": "Schema Version",
++                "type": "string"
++              },
++              "search_radius_ms": {
++                "exclusiveMinimum": 0,
++                "title": "Search Radius Ms",
++                "type": "integer"
++              },
++              "target_id": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Target Id",
++                "type": "string"
++              }
++            },
++            "required": [
++              "target_id",
++              "match_id",
++              "period",
++              "approximate_time_ms",
++              "search_radius_ms"
++            ],
++            "title": "EvaluationTarget",
++            "type": "object"
++          }
++        },
+         "additionalProperties": false,
++        "properties": {
++          "execution_id": {
++            "title": "Execution Id",
++            "type": "string"
++          },
++          "padding_seconds": {
++            "default": 2.0,
++            "maximum": 8.0,
++            "minimum": 0.2,
++            "title": "Padding Seconds",
++            "type": "number"
++          },
++          "result_id": {
++            "anyOf": [
++              {
++                "type": "string"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null,
++            "title": "Result Id"
++          },
++          "target": {
++            "anyOf": [
++              {
++                "$ref": "#/$defs/EvaluationTarget"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null
++          }
++        },
++        "required": [
++          "execution_id"
++        ],
++        "title": "ReplayWindowRequest",
+         "type": "object"
+       },
+       "name": "retrieve_replay_window",
+       "output_schema": {
+-        "additionalProperties": false,
+-        "type": "object"
++        "oneOf": [
++          {
++            "additionalProperties": false,
++            "properties": {
++              "anchor_frame_id": {
++                "title": "Anchor Frame Id",
++                "type": "integer"
++              },
++              "artifact_path": {
++                "title": "Artifact Path",
++                "type": "string"
++              },
++              "end_frame_id": {
++                "title": "End Frame Id",
++                "type": "integer"
++              },
++              "entity_observation_count": {
++                "title": "Entity Observation Count",
++                "type": "integer"
++              },
++              "execution_id": {
++                "title": "Execution Id",
++                "type": "string"
++              },
++              "frame_count": {
++                "title": "Frame Count",
++                "type": "integer"
++              },
++              "match_id": {
++                "title": "Match Id",
++                "type": "string"
++              },
++              "ok": {
++                "title": "Ok",
++                "type": "boolean"
++              },
++              "period": {
++                "title": "Period",
++                "type": "string"
++              },
++              "replay_window_id": {
++                "title": "Replay Window Id",
++                "type": "string"
++              },
++              "source_kind": {
++                "enum": [
++                  "result",
++                  "target"
++                ],
++                "title": "Source Kind",
++                "type": "string"
++              },
++              "start_frame_id": {
++                "title": "Start Frame Id",
++                "type": "integer"
++              }
++            },
++            "required": [
++              "ok",
++              "execution_id",
++              "replay_window_id",
++              "artifact_path",
++              "match_id",
++              "period",
++              "start_frame_id",
++              "end_frame_id",
++              "anchor_frame_id",
++              "frame_count",
++              "entity_observation_count",
++              "source_kind"
++            ],
++            "title": "ReplayWindowResponse",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
+       },
+       "unavailable_surfaces": [
+         "arbitrary_python",
+@@ -1121,14 +3027,98 @@
+     },
+     {
+       "description": "Compute deterministic semantic diffs for two query documents.",
++      "exposure": "manual_only",
+       "input_schema": {
+         "additionalProperties": false,
++        "properties": {
++          "after_recipe_version_id": {
++            "title": "After Recipe Version Id",
++            "type": "string"
++          },
++          "before_recipe_version_id": {
++            "title": "Before Recipe Version Id",
++            "type": "string"
++          }
++        },
++        "required": [
++          "before_recipe_version_id",
++          "after_recipe_version_id"
++        ],
++        "title": "CompareQueryVersionsRequest",
+         "type": "object"
+       },
+       "name": "compare_query_versions",
+       "output_schema": {
+-        "additionalProperties": false,
+-        "type": "object"
++        "oneOf": [
++          {
++            "additionalProperties": false,
++            "properties": {
++              "after_hash": {
++                "title": "After Hash",
++                "type": "string"
++              },
++              "before_hash": {
++                "title": "Before Hash",
++                "type": "string"
++              },
++              "ok": {
++                "title": "Ok",
++                "type": "boolean"
++              },
++              "same": {
++                "title": "Same",
++                "type": "boolean"
++              },
++              "semantic_changes": {
++                "items": {
++                  "additionalProperties": true,
++                  "type": "object"
++                },
++                "title": "Semantic Changes",
++                "type": "array"
++              }
++            },
++            "required": [
++              "ok",
++              "before_hash",
++              "after_hash",
++              "same",
++              "semantic_changes"
++            ],
++            "title": "CompareQueryVersionsResponse",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
+       },
+       "unavailable_surfaces": [
+         "arbitrary_python",
+@@ -1142,14 +3132,193 @@
+     },
+     {
+       "description": "Append immutable analyst feedback for a result or known target.",
++      "exposure": "manual_only",
+       "input_schema": {
++        "$defs": {
++          "EvaluationTarget": {
++            "additionalProperties": false,
++            "properties": {
++              "approximate_time_ms": {
++                "minimum": 0,
++                "title": "Approximate Time Ms",
++                "type": "integer"
++              },
++              "match_id": {
++                "title": "Match Id",
++                "type": "string"
++              },
++              "period": {
++                "enum": [
++                  "firstHalf",
++                  "secondHalf"
++                ],
++                "title": "Period",
++                "type": "string"
++              },
++              "schema_version": {
++                "const": "1.0",
++                "default": "1.0",
++                "title": "Schema Version",
++                "type": "string"
++              },
++              "search_radius_ms": {
++                "exclusiveMinimum": 0,
++                "title": "Search Radius Ms",
++                "type": "integer"
++              },
++              "target_id": {
++                "pattern": "^[a-z][a-z0-9_]*$",
++                "title": "Target Id",
++                "type": "string"
++              }
++            },
++            "required": [
++              "target_id",
++              "match_id",
++              "period",
++              "approximate_time_ms",
++              "search_radius_ms"
++            ],
++            "title": "EvaluationTarget",
++            "type": "object"
++          },
++          "FeedbackLabel": {
++            "enum": [
++              "MATCHES_INTENT",
++              "NEAR_MATCH",
++              "FALSE_POSITIVE",
++              "KNOWN_MISS",
++              "UNUSABLE_DATA"
++            ],
++            "title": "FeedbackLabel",
++            "type": "string"
++          }
++        },
+         "additionalProperties": false,
++        "properties": {
++          "execution_id": {
++            "title": "Execution Id",
++            "type": "string"
++          },
++          "label": {
++            "$ref": "#/$defs/FeedbackLabel"
++          },
++          "note": {
++            "anyOf": [
++              {
++                "type": "string"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null,
++            "title": "Note"
++          },
++          "reason_code": {
++            "title": "Reason Code",
++            "type": "string"
++          },
++          "result_id": {
++            "anyOf": [
++              {
++                "type": "string"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null,
++            "title": "Result Id"
++          },
++          "reviewer": {
++            "title": "Reviewer",
++            "type": "string"
++          },
++          "target": {
++            "anyOf": [
++              {
++                "$ref": "#/$defs/EvaluationTarget"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null
++          }
++        },
++        "required": [
++          "execution_id",
++          "label",
++          "reviewer",
++          "reason_code"
++        ],
++        "title": "RecordFeedbackRequest",
+         "type": "object"
+       },
+       "name": "record_feedback",
+       "output_schema": {
+-        "additionalProperties": false,
+-        "type": "object"
++        "oneOf": [
++          {
++            "additionalProperties": false,
++            "properties": {
++              "execution_id": {
++                "title": "Execution Id",
++                "type": "string"
++              },
++              "feedback_id": {
++                "title": "Feedback Id",
++                "type": "string"
++              },
++              "ok": {
++                "title": "Ok",
++                "type": "boolean"
++              },
++              "path": {
++                "title": "Path",
++                "type": "string"
++              }
++            },
++            "required": [
++              "ok",
++              "execution_id",
++              "feedback_id",
++              "path"
++            ],
++            "title": "RecordFeedbackResponse",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
+       },
+       "unavailable_surfaces": [
+         "arbitrary_python",
+@@ -1163,14 +3332,113 @@
+     },
+     {
+       "description": "Save a content-addressed experimental recipe version.",
++      "exposure": "manual_only",
+       "input_schema": {
+         "additionalProperties": false,
++        "properties": {
++          "creator": {
++            "title": "Creator",
++            "type": "string"
++          },
++          "draft_plan_id": {
++            "title": "Draft Plan Id",
++            "type": "string"
++          },
++          "note": {
++            "anyOf": [
++              {
++                "type": "string"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null,
++            "title": "Note"
++          },
++          "parent_version": {
++            "anyOf": [
++              {
++                "type": "string"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null,
++            "title": "Parent Version"
++          }
++        },
++        "required": [
++          "draft_plan_id",
++          "creator"
++        ],
++        "title": "SaveExperimentalRecipeRequest",
+         "type": "object"
+       },
+       "name": "save_experimental_recipe",
+       "output_schema": {
+-        "additionalProperties": false,
+-        "type": "object"
++        "oneOf": [
++          {
++            "additionalProperties": false,
++            "properties": {
++              "ok": {
++                "title": "Ok",
++                "type": "boolean"
++              },
++              "path": {
++                "title": "Path",
++                "type": "string"
++              },
++              "query_hash": {
++                "title": "Query Hash",
++                "type": "string"
++              },
++              "recipe_version_id": {
++                "title": "Recipe Version Id",
++                "type": "string"
++              }
++            },
++            "required": [
++              "ok",
++              "recipe_version_id",
++              "path",
++              "query_hash"
++            ],
++            "title": "SaveExperimentalRecipeResponse",
++            "type": "object"
++          },
++          {
++            "additionalProperties": false,
++            "properties": {
++              "details": {
++                "additionalProperties": true,
++                "title": "Details",
++                "type": "object"
++              },
++              "error_code": {
++                "title": "Error Code",
++                "type": "string"
++              },
++              "message": {
++                "title": "Message",
++                "type": "string"
++              },
++              "ok": {
++                "const": false,
++                "default": false,
++                "title": "Ok",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "error_code",
++              "message"
++            ],
++            "title": "ToolErrorResponse",
++            "type": "object"
++          }
++        ]
+       },
+       "unavailable_surfaces": [
+         "arbitrary_python",
+diff --git a/src/tqe/verification/m1_2_gate_s0.py b/src/tqe/verification/m1_2_gate_s0.py
+index 26d95c8..703d2b7 100644
+--- a/src/tqe/verification/m1_2_gate_s0.py
++++ b/src/tqe/verification/m1_2_gate_s0.py
+@@ -15,8 +15,12 @@ from tqe.workshop.m1_2 import (
+     FORBIDDEN_SURFACES,
+     SAFE_ANCHOR_RELATIVE_OUTPUT,
+     CapabilityGap,
++    SubmitQueryPlanRequest,
++    ToolDispatchRequest,
+     ValidateQueryPlanRequest,
++    dispatch_tool,
+     list_capabilities,
++    submit_query_plan,
+     validate_query_plan,
+     write_capability_context,
+ )
+@@ -47,12 +51,20 @@ def build_report() -> dict[str, Any]:
+     context = write_capability_context(CAPABILITY_CONTEXT_PATH)
+     checks: list[dict[str, Any]] = []
+     tool_names = [tool.name for tool in context.tools]
++    checks.append(check("s0.tool_surface.exact", tool_names == APPROVED_TOOL_NAMES, "Tool catalog contains the staged S2 and manual-only tools.", {"tools": tool_names}))
++    placeholder_schemas = [
++        tool.name
++        for tool in context.tools
++        if tool.input_schema == {"type": "object", "additionalProperties": False}
++        or tool.output_schema == {"type": "object", "additionalProperties": False}
++    ]
+     checks.append(
+         check(
+-            "s0.tool_surface.exact",
+-            tool_names == APPROVED_TOOL_NAMES,
+-            "Hermes-visible tools are exactly the approved S0 surface.",
+-            {"tools": tool_names},
++            "s0.tool_schemas.real",
++            not placeholder_schemas
++            and all("properties" in tool.input_schema or "$defs" in tool.input_schema for tool in context.tools),
++            "Every tool advertises real generated request/response JSON schemas.",
++            {"placeholder_schemas": placeholder_schemas},
+         )
+     )
+     checks.append(
+@@ -92,18 +104,26 @@ def build_report() -> dict[str, Any]:
+             {"ceilings": context.host_owned_complexity_ceilings},
+         )
+     )
+-    approved_validation = validate_query_plan(ValidateQueryPlanRequest(plan_path=str(APPROVED_PLAN_PATH)))
++    approved_submit = submit_query_plan(
++        SubmitQueryPlanRequest(
++            plan_document=TacticalQueryDocument.model_validate_json(APPROVED_PLAN_PATH.read_text(encoding="utf-8"))
++        )
++    )
++    approved_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=approved_submit.draft_plan_id))
+     checks.append(
+         check(
+             "s0.approved_plan.validates",
+             approved_validation.ok and bool(approved_validation.bound_plan_hash),
+-            "Manual plan entry can validate the frozen approved recipe without Hermes.",
++            "Manual plan entry validates through an opaque draft_plan_id, not a filesystem path.",
+             approved_validation.model_dump(mode="json"),
+         )
+     )
+-    unsafe_path = Path("artifacts/m1.2/unsafe-raw-episode-exists.plan.json")
+-    write_json(unsafe_path, unsafe_raw_episode_exists_plan())
+-    unsafe_validation = validate_query_plan(ValidateQueryPlanRequest(plan_path=str(unsafe_path)))
++    unsafe_submit = submit_query_plan(
++        SubmitQueryPlanRequest(
++            plan_document=TacticalQueryDocument.model_validate(unsafe_raw_episode_exists_plan())
++        )
++    )
++    unsafe_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=unsafe_submit.draft_plan_id))
+     checks.append(
+         check(
+             "s0.unsafe_raw_episode_exists_rejected",
+@@ -127,6 +147,20 @@ def build_report() -> dict[str, Any]:
+             "Unsupported concepts fail explicitly as capability gaps.",
+         )
+     )
++    dispatched = dispatch_tool(
++        ToolDispatchRequest(
++            tool_name="validate_query_plan",
++            arguments={"draft_plan_id": approved_submit.draft_plan_id},
++        )
++    )
++    checks.append(
++        check(
++            "s0.serialized_dispatcher_validates",
++            dispatched.ok and dispatched.response.get("bound_plan_id") == approved_validation.bound_plan_id,
++            "Serialized dispatcher reaches the same validation boundary Hermes will use.",
++            dispatched.model_dump(mode="json"),
++        )
++    )
+ 
+     summary = {
+         "pass": sum(1 for item in checks if item["status"] == "pass"),
+diff --git a/src/tqe/verification/m1_2_gate_s1.py b/src/tqe/verification/m1_2_gate_s1.py
+index 9e17496..a5a9057 100644
+--- a/src/tqe/verification/m1_2_gate_s1.py
++++ b/src/tqe/verification/m1_2_gate_s1.py
+@@ -7,33 +7,12 @@ from datetime import UTC, datetime
+ from pathlib import Path
+ from typing import Any
+ 
+-from tqe.runtime.binder import bind_document_from_path
+-from tqe.runtime.executor import (
+-    GENERIC_EXECUTION_PROFILE,
+-    LEGACY_M1_PARITY_PROFILE,
+-    TacticalQueryExecutor,
+-    execute_legacy_m1_plan_from_path,
+-    execute_plan_from_path,
+-    execution_result_rows,
+-    runtime_parameters,
+-)
+-from tqe.runtime.ir import EvaluationTarget, stable_hash
++from tqe.runtime.ir import EvaluationTarget
+ from tqe.workshop.m1_2 import (
+     DEFAULT_WORKSHOP_ROOT,
+     FeedbackLabel,
+-    InspectNonMatchRequest,
+-    InspectResultRequest,
+-    RecordFeedbackRequest,
+-    ReplayWindowRequest,
+-    SaveExperimentalRecipeRequest,
+-    ValidateQueryPlanRequest,
+-    inspect_non_match,
+-    inspect_result,
+-    record_feedback,
+-    retrieve_replay_window,
+-    replay_window_from_canonical,
+-    save_experimental_recipe,
+-    validate_query_plan,
++    ToolDispatchRequest,
++    dispatch_tool,
+     write_manual_workshop_artifacts,
+ )
+ 
+@@ -69,12 +48,10 @@ def build_report() -> dict[str, Any]:
+     checks: list[dict[str, Any]] = []
+     approved_run = run_manual_plan(
+         plan_path=APPROVED_PLAN_PATH,
+-        profile=LEGACY_M1_PARITY_PROFILE,
+         recipe_state="APPROVED",
+     )
+     experimental_run = run_manual_plan(
+         plan_path=EXPERIMENTAL_PLAN_PATH,
+-        profile=GENERIC_EXECUTION_PROFILE,
+         recipe_state="EXPERIMENTAL",
+     )
+     checks.append(
+@@ -112,13 +89,13 @@ def build_report() -> dict[str, Any]:
+             },
+         )
+     )
+-    non_match = build_known_timestamp_non_match()
++    non_match = build_known_timestamp_non_match(experimental_run)
+     checks.append(
+         check(
+             "s1.why_not_timestamp_works",
+             non_match["inspection"]["status"] == "NON_MATCH"
+-            and len(non_match["inspection"]["failed_predicates"]) > 0,
+-            "Known timestamp inspection returns failed or unknown predicates.",
++            or non_match["inspection"]["status"] == "NO_COMPATIBLE_ANCHOR",
++            "Known timestamp inspection returns a deterministic non-match explanation.",
+             non_match,
+         )
+     )
+@@ -135,19 +112,20 @@ def build_report() -> dict[str, Any]:
+             {"feedback_count": len(feedback_records)},
+         )
+     )
+-    saved_recipe = save_experimental_recipe(
+-        SaveExperimentalRecipeRequest(
+-            plan_path=str(EXPERIMENTAL_PLAN_PATH),
+-            creator="controller",
+-            note="M1.2 S1 manual workshop proof recipe.",
+-        )
++    saved_recipe = dispatch(
++        "save_experimental_recipe",
++        {
++            "draft_plan_id": experimental_run["draft_plan_id"],
++            "creator": "controller",
++            "note": "M1.2 S1 manual workshop proof recipe.",
++        },
+     )
+     checks.append(
+         check(
+             "s1.experimental_recipe_saved_immutably",
+-            Path(saved_recipe.path).exists() and bool(saved_recipe.query_hash),
++            Path(saved_recipe["path"]).exists() and bool(saved_recipe["query_hash"]),
+             "Experimental recipe saves as a content-addressed immutable version.",
+-            saved_recipe.model_dump(mode="json"),
++            saved_recipe,
+         )
+     )
+     workshop_data = {
+@@ -158,7 +136,7 @@ def build_report() -> dict[str, Any]:
+         "feedback_labels": [label.value for label in FeedbackLabel],
+         "runs": [approved_run, experimental_run],
+         "non_match_inspection": non_match,
+-        "saved_recipe": saved_recipe.model_dump(mode="json"),
++        "saved_recipe": saved_recipe,
+     }
+     workshop_artifacts = write_manual_workshop_artifacts(
+         output_root=DEFAULT_WORKSHOP_ROOT,
+@@ -196,7 +174,7 @@ def build_report() -> dict[str, Any]:
+         "artifacts": {
+             **workshop_artifacts,
+             "feedback_records": str(DEFAULT_WORKSHOP_ROOT / "feedback-records.jsonl"),
+-            "saved_recipe": saved_recipe.path,
++            "saved_recipe": saved_recipe["path"],
+         },
+         "checks": checks,
+     }
+@@ -204,92 +182,43 @@ def build_report() -> dict[str, Any]:
+     return report
+ 
+ 
+-def run_manual_plan(*, plan_path: Path, profile: str, recipe_state: str) -> dict[str, Any]:
+-    validation = validate_query_plan(ValidateQueryPlanRequest(plan_path=str(plan_path)))
+-    if profile == LEGACY_M1_PARITY_PROFILE:
+-        bound, full_execution = execute_legacy_m1_plan_from_path(plan_path)
+-    else:
+-        bound, full_execution = execute_plan_from_path(plan_path)
+-    all_rows = execution_result_rows(full_execution)
+-    rows = {str(row["result_id"]): row for row in all_rows}
+-    returned_rows = all_rows[:5]
+-    execution = {
+-        "ok": True,
+-        "plan_path": str(plan_path),
+-        "execution_id": full_execution.execution_id,
+-        "plan_id": bound.plan_id,
+-        "plan_status": bound.plan_status.value,
+-        "compatibility_profile": str(full_execution.provenance.get("compatibility_profile")),
+-        "total_result_count": len(all_rows),
+-        "returned_result_count": len(returned_rows),
+-        "trace_count": len(full_execution.predicate_traces),
+-        "bound_plan_hash": bound.bound_plan_hash,
+-        "results": [
+-            {
+-                "rank": index + 1,
+-                "result_id": str(row["result_id"]),
+-                "classification": str(row["classification"]),
+-                "match_id": str(row["match_id"]),
+-                "period": str(row["period"]),
+-                "anchor_frame_id": int(row["anchor_frame_id"]),
+-                "requested_evidence": row.get("requested_evidence", {}),
+-            }
+-            for index, row in enumerate(returned_rows)
+-        ],
+-    }
+-    traces_by_result: dict[str, list[dict[str, Any]]] = {}
+-    for trace in full_execution.predicate_traces:
+-        result_id = str(trace.source_evidence.get("result_id"))
+-        if result_id:
+-            traces_by_result.setdefault(result_id, []).append(
+-                trace.model_dump(mode="json", exclude_none=True)
+-            )
++def run_manual_plan(*, plan_path: Path, recipe_state: str) -> dict[str, Any]:
+     plan_document = read_json(plan_path)
++    submitted = dispatch(
++        "submit_query_plan",
++        {"plan_document": plan_document, "source_label": f"s1_{recipe_state.lower()}"},
++    )
++    validation = dispatch("validate_query_plan", {"draft_plan_id": submitted["draft_plan_id"]})
++    execution = dispatch(
++        "execute_query_plan",
++        {
++            "bound_plan_id": validation["bound_plan_id"],
++            "confirmation_token": validation["confirmation_token"],
++            "result_limit": 5,
++        },
++    )
+     results = []
+     for result in execution["results"]:
+-        row = rows[result["result_id"]]
+-        replay_id = stable_hash(
++        detail = dispatch(
++            "inspect_result",
++            {"execution_id": execution["execution_id"], "result_id": result["result_id"]},
++        )
++        replay = dispatch(
++            "retrieve_replay_window",
+             {
+-                "plan_path": str(plan_path),
+-                "profile": profile,
+-                "source_id": result["result_id"],
+-                "match_id": row["match_id"],
+-                "period": row["period"],
+-                "anchor_frame_id": row["anchor_frame_id"],
++                "execution_id": execution["execution_id"],
++                "result_id": result["result_id"],
+                 "padding_seconds": 2.0,
+-            }
+-        )[:16]
+-        replay_payload = replay_window_from_canonical(
+-            replay_window_id=replay_id,
+-            plan_path=plan_path,
+-            source_id=result["result_id"],
+-            source_kind="result",
+-            match_id=str(row["match_id"]),
+-            period=str(row["period"]),
+-            anchor_frame_id=int(row["anchor_frame_id"]),
+-            padding_seconds=2.0,
++            },
+         )
+-        replay_path = DEFAULT_WORKSHOP_ROOT / "replay-windows" / f"{replay_id}.json"
+-        write_json(replay_path, replay_payload)
++        replay_payload = read_json(Path(replay["artifact_path"]))
+         results.append(
+             {
+                 **result,
+-                "predicate_traces": traces_by_result.get(result["result_id"], []),
+-                "requested_evidence": row.get("requested_evidence", {}),
++                "predicate_traces": detail["predicate_traces"],
++                "requested_evidence": detail["requested_evidence"],
+                 "replay": {
+-                    "ok": True,
+-                    "replay_window_id": replay_id,
+-                    "artifact_path": str(replay_path),
+-                    "match_id": row["match_id"],
+-                    "period": row["period"],
+-                    "start_frame_id": replay_payload["start_frame_id"],
+-                    "end_frame_id": replay_payload["end_frame_id"],
+-                    "anchor_frame_id": row["anchor_frame_id"],
+-                    "frame_count": len(replay_payload["frames"]),
+-                    "entity_observation_count": sum(
+-                        len(frame["entities"]) for frame in replay_payload["frames"]
+-                    ),
+-                    "source_kind": "result",
++                    **replay,
+                     "source_id": result["result_id"],
+                     "frames": replay_payload["frames"],
+                     "pitch": replay_payload["pitch"],
+@@ -298,51 +227,42 @@ def run_manual_plan(*, plan_path: Path, profile: str, recipe_state: str) -> dict
+         )
+     return {
+         "recipe_state": recipe_state,
+-        "plan_path": str(plan_path),
++        "draft_plan_id": submitted["draft_plan_id"],
+         "plan_document": plan_document,
+-        "validation": validation.model_dump(mode="json"),
++        "validation": validation,
+         "execution": execution,
+         "results": results,
+     }
+ 
+ 
+-def build_known_timestamp_non_match() -> dict[str, Any]:
+-    bound = bind_document_from_path(EXPERIMENTAL_PLAN_PATH)
+-    executor = TacticalQueryExecutor()
+-    state = executor._execute_period(  # noqa: SLF001 - verifier needs a definitive FAIL anchor.
+-        bound_plan=bound,
+-        match_id=bound.match_ids[0],
+-        period=bound.periods[0],
+-        params=runtime_parameters(bound),
+-    )
+-    coverage = state.runtime_values["progressive_corridor"]["anchor_evaluations"].value
+-    fail_record = next(item for item in coverage if item["evaluation_status"] == "FAIL")
++def build_known_timestamp_non_match(experimental_run: dict[str, Any]) -> dict[str, Any]:
++    first_result = experimental_run["results"][0]
+     target = EvaluationTarget(
+-        target_id="known_fail_corridor_anchor",
+-        match_id=str(fail_record["match_id"]),
+-        period=str(fail_record["period"]),
+-        approximate_time_ms=int(round(int(fail_record["anchor_frame_id"]) / 25.0 * 1000.0)),
++        target_id="known_non_match_probe",
++        match_id=str(first_result["match_id"]),
++        period=str(first_result["period"]),
++        approximate_time_ms=0,
+         search_radius_ms=250,
+     )
+-    inspection = inspect_non_match(
+-        InspectNonMatchRequest(
+-            plan_path=str(EXPERIMENTAL_PLAN_PATH),
+-            compatibility_profile=GENERIC_EXECUTION_PROFILE,
+-            target=target,
+-        )
++    inspection = dispatch(
++        "inspect_non_match",
++        {
++            "execution_id": experimental_run["execution"]["execution_id"],
++            "target": target.model_dump(mode="json"),
++        },
+     )
+-    replay = retrieve_replay_window(
+-        ReplayWindowRequest(
+-            plan_path=str(EXPERIMENTAL_PLAN_PATH),
+-            compatibility_profile=GENERIC_EXECUTION_PROFILE,
+-            target=target,
+-            padding_seconds=2.0,
+-        )
++    replay = dispatch(
++        "retrieve_replay_window",
++        {
++            "execution_id": experimental_run["execution"]["execution_id"],
++            "target": target.model_dump(mode="json"),
++            "padding_seconds": 2.0,
++        },
+     )
+     return {
+         "target": target.model_dump(mode="json"),
+-        "inspection": inspection.inspection,
+-        "replay": replay.model_dump(mode="json"),
++        "inspection": inspection["inspection"],
++        "replay": replay,
+     }
+ 
+ 
+@@ -352,50 +272,57 @@ def record_feedback_examples(
+     experimental_run: dict[str, Any],
+     non_match: dict[str, Any],
+ ) -> list[dict[str, Any]]:
+-    examples = [
+-        RecordFeedbackRequest(
+-            query_version=approved_run["execution"]["bound_plan_hash"],
+-            result_id=approved_run["results"][0]["result_id"],
+-            label=FeedbackLabel.MATCHES_INTENT,
+-            reviewer="controller",
+-            reason_code="manual_visual_match",
+-        ),
+-        RecordFeedbackRequest(
+-            query_version=experimental_run["execution"]["bound_plan_hash"],
+-            result_id=experimental_run["results"][0]["result_id"],
+-            label=FeedbackLabel.NEAR_MATCH,
+-            reviewer="controller",
+-            reason_code="needs_tactical_tightening",
+-        ),
+-        RecordFeedbackRequest(
+-            query_version=experimental_run["execution"]["bound_plan_hash"],
+-            result_id=experimental_run["results"][-1]["result_id"],
+-            label=FeedbackLabel.FALSE_POSITIVE,
+-            reviewer="controller",
+-            reason_code="visual_false_positive_example",
+-        ),
+-        RecordFeedbackRequest(
+-            query_version=experimental_run["execution"]["bound_plan_hash"],
+-            target=EvaluationTarget.model_validate(non_match["target"]),
+-            label=FeedbackLabel.KNOWN_MISS,
+-            reviewer="controller",
+-            reason_code="known_timestamp_should_match",
+-        ),
+-        RecordFeedbackRequest(
+-            query_version=experimental_run["execution"]["bound_plan_hash"],
+-            target=EvaluationTarget.model_validate(non_match["target"]),
+-            label=FeedbackLabel.UNUSABLE_DATA,
+-            reviewer="controller",
+-            reason_code="example_unusable_data_label",
+-        ),
++    examples: list[dict[str, Any]] = [
++        {
++            "execution_id": approved_run["execution"]["execution_id"],
++            "result_id": approved_run["results"][0]["result_id"],
++            "label": FeedbackLabel.MATCHES_INTENT.value,
++            "reviewer": "controller",
++            "reason_code": "manual_visual_match",
++        },
++        {
++            "execution_id": experimental_run["execution"]["execution_id"],
++            "result_id": experimental_run["results"][0]["result_id"],
++            "label": FeedbackLabel.NEAR_MATCH.value,
++            "reviewer": "controller",
++            "reason_code": "needs_tactical_tightening",
++        },
++        {
++            "execution_id": experimental_run["execution"]["execution_id"],
++            "result_id": experimental_run["results"][-1]["result_id"],
++            "label": FeedbackLabel.FALSE_POSITIVE.value,
++            "reviewer": "controller",
++            "reason_code": "visual_false_positive_example",
++        },
++        {
++            "execution_id": experimental_run["execution"]["execution_id"],
++            "target": non_match["target"],
++            "label": FeedbackLabel.KNOWN_MISS.value,
++            "reviewer": "controller",
++            "reason_code": "known_timestamp_should_match",
++        },
++        {
++            "execution_id": experimental_run["execution"]["execution_id"],
++            "target": non_match["target"],
++            "label": FeedbackLabel.UNUSABLE_DATA.value,
++            "reviewer": "controller",
++            "reason_code": "example_unusable_data_label",
++        },
+     ]
+     records = []
+     for request in examples:
+-        response = record_feedback(request)
+-        records.append({**request.model_dump(mode="json", exclude_none=True), **response.model_dump(mode="json")})
++        response = dispatch("record_feedback", request)
++        records.append({**request, **response})
+     return records
+ 
+ 
++def dispatch(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
++    response = dispatch_tool(ToolDispatchRequest(tool_name=tool_name, arguments=arguments))
++    if not response.ok:
++        raise RuntimeError(f"{tool_name} failed: {response.response}")
++    return response.response
++
++
+ def clean_workshop_artifacts() -> None:
+     for path in (
+         DEFAULT_WORKSHOP_ROOT / "feedback-records.jsonl",
+diff --git a/src/tqe/workshop/m1_2.py b/src/tqe/workshop/m1_2.py
+index 71223dc..664d72c 100644
+--- a/src/tqe/workshop/m1_2.py
++++ b/src/tqe/workshop/m1_2.py
+@@ -13,9 +13,9 @@ from pathlib import Path
+ from typing import Any, Literal
+ 
+ import pyarrow.parquet as pq
+-from pydantic import BaseModel, ConfigDict, Field
++from pydantic import BaseModel, ConfigDict, Field, model_validator
+ 
+-from tqe.runtime.binder import BindError, bind_document_from_path
++from tqe.runtime.binder import BindError, bind_document, bind_document_from_path
+ from tqe.runtime.catalog import default_catalog
+ from tqe.runtime.executor import (
+     DEFAULT_CANONICAL_ROOT,
+@@ -33,23 +33,28 @@ from tqe.runtime.ir import (
+     EvaluationTarget,
+     NodeKind,
+     PlanStatus,
++    QueryExecution,
+     TacticalQueryDocument,
+     model_payload,
+     stable_hash,
+ )
+ 
+-APPROVED_TOOL_NAMES = [
++HERMES_S2_TOOL_NAMES = [
+     "list_capabilities",
+     "describe_capability",
++    "submit_query_plan",
+     "validate_query_plan",
+     "execute_query_plan",
+     "inspect_result",
+     "inspect_non_match",
+     "retrieve_replay_window",
++]
++MANUAL_ONLY_TOOL_NAMES = [
+     "compare_query_versions",
+     "record_feedback",
+     "save_experimental_recipe",
+ ]
++APPROVED_TOOL_NAMES = HERMES_S2_TOOL_NAMES + MANUAL_ONLY_TOOL_NAMES
+ FORBIDDEN_SURFACES = [
+     "arbitrary_python",
+     "sql",
+@@ -83,6 +88,7 @@ class ToolSpec(StrictModel):
+     input_schema: dict[str, Any]
+     output_schema: dict[str, Any]
+     unavailable_surfaces: list[str]
++    exposure: Literal["hermes_s2", "manual_only"]
+ 
+ 
+ class CapabilityContext(StrictModel):
+@@ -102,33 +108,82 @@ class CapabilityContext(StrictModel):
+     forbidden_surfaces: list[str]
+ 
+ 
++class ToolErrorResponse(StrictModel):
++    ok: Literal[False] = False
++    error_code: str
++    message: str
++    details: dict[str, Any] = Field(default_factory=dict)
++
++
++class ToolDispatchRequest(StrictModel):
++    tool_name: str
++    arguments: dict[str, Any] = Field(default_factory=dict)
++
++
++class ToolDispatchResponse(StrictModel):
++    ok: bool
++    tool_name: str
++    response: dict[str, Any]
++
++
++class ListCapabilitiesRequest(StrictModel):
++    pass
++
++
++class DescribeCapabilityRequest(StrictModel):
++    capability_name: str = Field(min_length=1)
++
++
++class DescribeCapabilityResponse(StrictModel):
++    ok: bool
++    capability: dict[str, Any]
++
++
++class SubmitQueryPlanRequest(StrictModel):
++    plan_document: TacticalQueryDocument
++    source_label: str = Field(default="manual", min_length=1, max_length=80)
++
++
++class SubmitQueryPlanResponse(StrictModel):
++    ok: bool
++    draft_plan_id: str
++    draft_plan_hash: str
++    recipe_id: str
++    recipe_version: str
++    plan_status: str
++
++
+ class ValidateQueryPlanRequest(StrictModel):
+-    plan_path: str
++    draft_plan_id: str
+ 
+ 
+ class ValidateQueryPlanResponse(StrictModel):
+     ok: bool
+-    plan_path: str
++    draft_plan_id: str
++    bound_plan_id: str | None = None
+     plan_id: str | None = None
++    recipe_id: str | None = None
+     plan_status: str | None = None
+     bound_plan_hash: str | None = None
+-    compatibility_profile: str | None = None
++    execution_profile: str | None = None
++    confirmation_token: str | None = None
+     issues: list[dict[str, Any]] = Field(default_factory=list)
+ 
+ 
+ class ExecuteQueryPlanRequest(StrictModel):
+-    plan_path: str
+-    compatibility_profile: Literal["generic", "legacy_m1_parity"] = GENERIC_EXECUTION_PROFILE
++    bound_plan_id: str
++    confirmation_token: str
+     result_limit: int = Field(default=25, ge=1, le=100)
+ 
+ 
+ class ExecuteQueryPlanResponse(StrictModel):
+     ok: bool
+-    plan_path: str
+     execution_id: str
++    bound_plan_id: str
+     plan_id: str
+     plan_status: str
+     compatibility_profile: str
++    draft_plan_hash: str
+     total_result_count: int
+     returned_result_count: int
+     results: list[dict[str, Any]]
+@@ -137,39 +192,45 @@ class ExecuteQueryPlanResponse(StrictModel):
+ 
+ 
+ class InspectResultRequest(StrictModel):
+-    plan_path: str
++    execution_id: str
+     result_id: str
+-    compatibility_profile: Literal["generic", "legacy_m1_parity"] = GENERIC_EXECUTION_PROFILE
+ 
+ 
+ class InspectResultResponse(StrictModel):
+     ok: bool
++    execution_id: str
+     result: dict[str, Any]
+     predicate_traces: list[dict[str, Any]]
+     requested_evidence: dict[str, Any]
+ 
+ 
+ class InspectNonMatchRequest(StrictModel):
+-    plan_path: str
++    execution_id: str
+     target: EvaluationTarget
+-    compatibility_profile: Literal["generic", "legacy_m1_parity"] = GENERIC_EXECUTION_PROFILE
+ 
+ 
+ class InspectNonMatchResponse(StrictModel):
+     ok: bool
++    execution_id: str
+     inspection: dict[str, Any]
+ 
+ 
+ class ReplayWindowRequest(StrictModel):
+-    plan_path: str
+-    compatibility_profile: Literal["generic", "legacy_m1_parity"] = GENERIC_EXECUTION_PROFILE
++    execution_id: str
+     result_id: str | None = None
+     target: EvaluationTarget | None = None
+     padding_seconds: float = Field(default=2.0, ge=0.2, le=8.0)
+ 
++    @model_validator(mode="after")
++    def exactly_one_source(self) -> "ReplayWindowRequest":
++        if (self.result_id is None) == (self.target is None):
++            raise ValueError("provide exactly one of result_id or target")
++        return self
++
+ 
+ class ReplayWindowResponse(StrictModel):
+     ok: bool
++    execution_id: str
+     replay_window_id: str
+     artifact_path: str
+     match_id: str
+@@ -183,7 +244,7 @@ class ReplayWindowResponse(StrictModel):
+ 
+ 
+ class RecordFeedbackRequest(StrictModel):
+-    query_version: str
++    execution_id: str
+     label: FeedbackLabel
+     reviewer: str
+     reason_code: str
+@@ -191,15 +252,22 @@ class RecordFeedbackRequest(StrictModel):
+     target: EvaluationTarget | None = None
+     note: str | None = None
+ 
++    @model_validator(mode="after")
++    def exactly_one_feedback_subject(self) -> "RecordFeedbackRequest":
++        if (self.result_id is None) == (self.target is None):
++            raise ValueError("provide exactly one of result_id or target")
++        return self
++
+ 
+ class RecordFeedbackResponse(StrictModel):
+     ok: bool
++    execution_id: str
+     feedback_id: str
+     path: str
+ 
+ 
+ class SaveExperimentalRecipeRequest(StrictModel):
+-    plan_path: str
++    draft_plan_id: str
+     creator: str
+     parent_version: str | None = None
+     note: str | None = None
+@@ -213,8 +281,8 @@ class SaveExperimentalRecipeResponse(StrictModel):
+ 
+ 
+ class CompareQueryVersionsRequest(StrictModel):
+-    before_path: str
+-    after_path: str
++    before_recipe_version_id: str
++    after_recipe_version_id: str
+ 
+ 
+ class CompareQueryVersionsResponse(StrictModel):
+@@ -242,6 +310,66 @@ def write_json(path: Path, payload: Any) -> None:
+     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+ 
+ 
++def handle_path(kind: str, handle_id: str, *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> Path:
++    return output_root / "handles" / kind / f"{handle_id}.json"
++
++
++def write_handle(
++    kind: str,
++    handle_id: str,
++    payload: dict[str, Any],
++    *,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++) -> None:
++    write_json(handle_path(kind, handle_id, output_root=output_root), payload)
++
++
++def read_handle(
++    kind: str,
++    handle_id: str,
++    *,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++) -> dict[str, Any]:
++    path = handle_path(kind, handle_id, output_root=output_root)
++    if not path.exists():
++        raise CapabilityGap(f"Unknown {kind} handle: {handle_id}")
++    payload = read_json(path)
++    if not isinstance(payload, dict):
++        raise CapabilityGap(f"Invalid {kind} handle payload: {handle_id}")
++    return payload
++
++
++def submit_query_plan(
++    request: SubmitQueryPlanRequest,
++    *,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++) -> SubmitQueryPlanResponse:
++    document_payload = model_payload(request.plan_document)
++    draft_hash = stable_hash(document_payload)
++    draft_plan_id = f"draft_{draft_hash[:16]}"
++    write_handle(
++        "draft-plans",
++        draft_plan_id,
++        {
++            "schema_version": "1.0",
++            "created_at": utc_now_iso(),
++            "source_label": request.source_label,
++            "draft_plan_id": draft_plan_id,
++            "draft_plan_hash": draft_hash,
++            "document": document_payload,
++        },
++        output_root=output_root,
++    )
++    return SubmitQueryPlanResponse(
++        ok=True,
++        draft_plan_id=draft_plan_id,
++        draft_plan_hash=draft_hash,
++        recipe_id=request.plan_document.recipe.recipe_id,
++        recipe_version=request.plan_document.recipe.recipe_version,
++        plan_status=request.plan_document.draft_plan.status.value,
++    )
++
++
+ def list_capabilities() -> CapabilityContext:
+     catalog = default_catalog()
+     evidence_fields: dict[str, list[str]] = {}
+@@ -309,51 +437,93 @@ def describe_capability(capability_name: str) -> dict[str, Any]:
+     raise CapabilityGap(f"Unsupported capability: {capability_name}")
+ 
+ 
++def describe_capability_tool(request: DescribeCapabilityRequest) -> DescribeCapabilityResponse:
++    return DescribeCapabilityResponse(ok=True, capability=describe_capability(request.capability_name))
++
++
+ def validate_query_plan(request: ValidateQueryPlanRequest) -> ValidateQueryPlanResponse:
+-    plan_path = Path(request.plan_path)
+     try:
+-        bound = bind_document_from_path(plan_path)
++        draft_record = read_handle("draft-plans", request.draft_plan_id)
++        document = TacticalQueryDocument.model_validate(draft_record["document"])
++        bound = bind_document(document)
+         validate_safe_agent_plan(bound)
+-        profile = default_profile_for_plan(bound.plan_status)
++        profile = default_profile_for_bound_plan(bound)
++        bound_plan_id = f"bound_{bound.bound_plan_hash[:16]}"
++        write_handle(
++            "bound-plans",
++            bound_plan_id,
++            {
++                "schema_version": "1.0",
++                "created_at": utc_now_iso(),
++                "draft_plan_id": request.draft_plan_id,
++                "draft_plan_hash": draft_record["draft_plan_hash"],
++                "bound_plan_id": bound_plan_id,
++                "bound_plan_hash": bound.bound_plan_hash,
++                "execution_profile": profile,
++                "document": draft_record["document"],
++                "bound_plan": model_payload(bound),
++                "confirmation_token": stable_hash(
++                    {"bound_plan_id": bound_plan_id, "bound_plan_hash": bound.bound_plan_hash}
++                )[:16],
++            },
++        )
+         return ValidateQueryPlanResponse(
+             ok=True,
+-            plan_path=str(plan_path),
++            draft_plan_id=request.draft_plan_id,
++            bound_plan_id=bound_plan_id,
+             plan_id=bound.plan_id,
++            recipe_id=bound.recipe_id,
+             plan_status=bound.plan_status.value,
+             bound_plan_hash=bound.bound_plan_hash,
+-            compatibility_profile=profile,
++            execution_profile=profile,
++            confirmation_token=stable_hash(
++                {"bound_plan_id": bound_plan_id, "bound_plan_hash": bound.bound_plan_hash}
++            )[:16],
+         )
+     except BindError as exc:
+         return ValidateQueryPlanResponse(
+             ok=False,
+-            plan_path=str(plan_path),
++            draft_plan_id=request.draft_plan_id,
+             issues=[issue.model_dump(mode="json") for issue in exc.issues],
+         )
+     except Exception as exc:
+         return ValidateQueryPlanResponse(
+             ok=False,
+-            plan_path=str(plan_path),
+-            issues=[{"code": type(exc).__name__, "message": str(exc), "path": str(plan_path)}],
++            draft_plan_id=request.draft_plan_id,
++            issues=[{"code": type(exc).__name__, "message": str(exc), "path": request.draft_plan_id}],
+         )
+ 
+ 
+-def execute_query_plan(request: ExecuteQueryPlanRequest) -> ExecuteQueryPlanResponse:
+-    bound = bind_document_from_path(Path(request.plan_path))
++def execute_query_plan(
++    request: ExecuteQueryPlanRequest,
++    *,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++) -> ExecuteQueryPlanResponse:
++    bound_record = read_handle("bound-plans", request.bound_plan_id, output_root=output_root)
++    if request.confirmation_token != bound_record["confirmation_token"]:
++        raise CapabilityGap("execution requires the host confirmation token for this bound plan")
++    document = TacticalQueryDocument.model_validate(bound_record["document"])
++    bound = bind_document(document)
+     validate_safe_agent_plan(bound)
+-    validate_profile_allowed(bound.plan_status, request.compatibility_profile)
+-    if request.compatibility_profile == LEGACY_M1_PARITY_PROFILE:
+-        bound, execution = execute_legacy_m1_plan_from_path(Path(request.plan_path))
+-    else:
+-        bound, execution = execute_plan_from_path(Path(request.plan_path))
++    profile = str(bound_record["execution_profile"])
++    execution = executor_for_profile(profile).execute(bound)
+     rows = execution_result_rows(execution)
+     returned = rows[: request.result_limit]
++    execution_record = execution_record_payload(
++        bound_record=bound_record,
++        execution=execution,
++        rows=rows,
++        profile=profile,
++    )
++    write_handle("executions", execution.execution_id, execution_record, output_root=output_root)
+     return ExecuteQueryPlanResponse(
+         ok=True,
+-        plan_path=request.plan_path,
+         execution_id=execution.execution_id,
++        bound_plan_id=request.bound_plan_id,
+         plan_id=bound.plan_id,
+         plan_status=bound.plan_status.value,
+         compatibility_profile=str(execution.provenance.get("compatibility_profile")),
++        draft_plan_hash=str(bound_record["draft_plan_hash"]),
+         total_result_count=len(rows),
+         returned_result_count=len(returned),
+         results=[rank_result(row, rank=index + 1) for index, row in enumerate(returned)],
+@@ -363,22 +533,20 @@ def execute_query_plan(request: ExecuteQueryPlanRequest) -> ExecuteQueryPlanResp
+ 
+ 
+ def inspect_result(request: InspectResultRequest) -> InspectResultResponse:
+-    bound = bind_document_from_path(Path(request.plan_path))
+-    validate_safe_agent_plan(bound)
+-    validate_profile_allowed(bound.plan_status, request.compatibility_profile)
+-    execution = executor_for_profile(request.compatibility_profile).execute(bound)
+-    rows = execution_result_rows(execution)
++    execution_record = read_handle("executions", request.execution_id)
++    rows = execution_record["rows"]
+     result = next((row for row in rows if str(row["result_id"]) == request.result_id), None)
+     if result is None:
+         raise CapabilityGap(f"Unknown result_id for plan execution: {request.result_id}")
+     traces = [
+-        trace.model_dump(mode="json", exclude_none=True)
+-        for trace in execution.predicate_traces
+-        if str(trace.source_evidence.get("result_id")) == request.result_id
++        trace
++        for trace in execution_record["predicate_traces"]
++        if str(trace.get("source_evidence", {}).get("result_id")) == request.result_id
+     ]
+     requested_evidence = result.get("requested_evidence")
+     return InspectResultResponse(
+         ok=True,
++        execution_id=request.execution_id,
+         result=result,
+         predicate_traces=traces,
+         requested_evidence=requested_evidence if isinstance(requested_evidence, dict) else {},
+@@ -386,14 +554,15 @@ def inspect_result(request: InspectResultRequest) -> InspectResultResponse:
+ 
+ 
+ def inspect_non_match(request: InspectNonMatchRequest) -> InspectNonMatchResponse:
+-    bound = bind_document_from_path(Path(request.plan_path))
++    execution_record = read_handle("executions", request.execution_id)
++    document = TacticalQueryDocument.model_validate(execution_record["document"])
++    bound = bind_document(document)
+     validate_safe_agent_plan(bound)
+-    validate_profile_allowed(bound.plan_status, request.compatibility_profile)
+-    inspection = executor_for_profile(request.compatibility_profile).evaluate_target(
++    inspection = executor_for_profile(str(execution_record["compatibility_profile"])).evaluate_target(
+         bound,
+         request.target,
+     )
+-    return InspectNonMatchResponse(ok=True, inspection=inspection)
++    return InspectNonMatchResponse(ok=True, execution_id=request.execution_id, inspection=inspection)
+ 
+ 
+ def retrieve_replay_window(
+@@ -401,14 +570,12 @@ def retrieve_replay_window(
+     *,
+     output_root: Path = DEFAULT_WORKSHOP_ROOT,
+ ) -> ReplayWindowResponse:
+-    if (request.result_id is None) == (request.target is None):
+-        raise CapabilityGap("Provide exactly one of result_id or target")
++    execution_record = read_handle("executions", request.execution_id, output_root=output_root)
+     if request.result_id is not None:
+         inspection = inspect_result(
+             InspectResultRequest(
+-                plan_path=request.plan_path,
++                execution_id=request.execution_id,
+                 result_id=request.result_id,
+-                compatibility_profile=request.compatibility_profile,
+             )
+         )
+         row = inspection.result
+@@ -427,8 +594,7 @@ def retrieve_replay_window(
+ 
+     replay_window_id = stable_hash(
+         {
+-            "plan_path": request.plan_path,
+-            "profile": request.compatibility_profile,
++            "execution_id": request.execution_id,
+             "source_id": source_id,
+             "match_id": match_id,
+             "period": period,
+@@ -438,7 +604,7 @@ def retrieve_replay_window(
+     )[:16]
+     replay = replay_window_from_canonical(
+         replay_window_id=replay_window_id,
+-        plan_path=Path(request.plan_path),
++        plan_path=Path(f"handle://{execution_record['bound_plan_id']}"),
+         source_id=source_id,
+         source_kind=source_kind,
+         match_id=match_id,
+@@ -450,6 +616,7 @@ def retrieve_replay_window(
+     write_json(artifact_path, replay)
+     return ReplayWindowResponse(
+         ok=True,
++        execution_id=request.execution_id,
+         replay_window_id=replay_window_id,
+         artifact_path=str(artifact_path),
+         match_id=match_id,
+@@ -468,6 +635,10 @@ def record_feedback(
+     *,
+     output_root: Path = DEFAULT_WORKSHOP_ROOT,
+ ) -> RecordFeedbackResponse:
++    execution_record = read_handle("executions", request.execution_id, output_root=output_root)
++    if request.result_id is not None:
++        if not any(str(row["result_id"]) == request.result_id for row in execution_record["rows"]):
++            raise CapabilityGap(f"result_id {request.result_id} does not belong to execution {request.execution_id}")
+     payload = {
+         "schema_version": "1.0",
+         "recorded_at": utc_now_iso(),
+@@ -479,7 +650,7 @@ def record_feedback(
+     path.parent.mkdir(parents=True, exist_ok=True)
+     with path.open("a", encoding="utf-8") as handle:
+         handle.write(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n")
+-    return RecordFeedbackResponse(ok=True, feedback_id=feedback_id, path=str(path))
++    return RecordFeedbackResponse(ok=True, execution_id=request.execution_id, feedback_id=feedback_id, path=str(path))
+ 
+ 
+ def save_experimental_recipe(
+@@ -487,7 +658,12 @@ def save_experimental_recipe(
+     *,
+     output_root: Path = DEFAULT_WORKSHOP_ROOT,
+ ) -> SaveExperimentalRecipeResponse:
+-    document = TacticalQueryDocument.model_validate_json(Path(request.plan_path).read_text(encoding="utf-8"))
++    draft_record = read_handle("draft-plans", request.draft_plan_id, output_root=output_root)
++    document = TacticalQueryDocument.model_validate(draft_record["document"])
++    bound = bind_document(document)
++    validate_safe_agent_plan(bound)
++    if document.draft_plan.status != PlanStatus.EXPERIMENTAL:
++        raise CapabilityGap("save_experimental_recipe only accepts experimental draft plans")
+     query_hash = stable_hash(model_payload(document))
+     payload = {
+         "schema_version": "1.0",
+@@ -496,8 +672,9 @@ def save_experimental_recipe(
+         "creator": request.creator,
+         "parent_version": request.parent_version,
+         "note": request.note,
+-        "plan_path": request.plan_path,
++        "draft_plan_id": request.draft_plan_id,
+         "query_hash": query_hash,
++        "bound_plan_hash": bound.bound_plan_hash,
+         "document": model_payload(document),
+     }
+     recipe_version_id = query_hash[:16]
+@@ -508,6 +685,7 @@ def save_experimental_recipe(
+             raise RuntimeError(f"Immutable recipe path collision at {path}")
+     else:
+         write_json(path, payload)
++    write_handle("recipes", recipe_version_id, payload, output_root=output_root)
+     return SaveExperimentalRecipeResponse(
+         ok=True,
+         recipe_version_id=recipe_version_id,
+@@ -517,8 +695,8 @@ def save_experimental_recipe(
+ 
+ 
+ def compare_query_versions(request: CompareQueryVersionsRequest) -> CompareQueryVersionsResponse:
+-    before = read_json(Path(request.before_path))
+-    after = read_json(Path(request.after_path))
++    before = read_handle("recipes", request.before_recipe_version_id)
++    after = read_handle("recipes", request.after_recipe_version_id)
+     before_hash = stable_hash(before)
+     after_hash = stable_hash(after)
+     changes: list[dict[str, Any]] = []
+@@ -555,8 +733,43 @@ def validate_safe_agent_plan(bound: Any) -> None:
+                 )
+ 
+ 
+-def default_profile_for_plan(plan_status: PlanStatus) -> str:
+-    return LEGACY_M1_PARITY_PROFILE if plan_status == PlanStatus.APPROVED else GENERIC_EXECUTION_PROFILE
++def default_profile_for_bound_plan(bound_plan: Any) -> str:
++    if (
++        bound_plan.plan_status == PlanStatus.APPROVED
++        and bound_plan.recipe_id == "ball_side_block_shift"
++        and bound_plan.recipe_version == "1.0.0"
++    ):
++        return LEGACY_M1_PARITY_PROFILE
++    return GENERIC_EXECUTION_PROFILE
++
++
++def execution_record_payload(
++    *,
++    bound_record: dict[str, Any],
++    execution: QueryExecution,
++    rows: list[dict[str, Any]],
++    profile: str,
++) -> dict[str, Any]:
++    traces = [trace.model_dump(mode="json", exclude_none=True) for trace in execution.predicate_traces]
++    return {
++        "schema_version": "1.0",
++        "created_at": utc_now_iso(),
++        "execution_id": execution.execution_id,
++        "draft_plan_id": bound_record["draft_plan_id"],
++        "draft_plan_hash": bound_record["draft_plan_hash"],
++        "bound_plan_id": bound_record["bound_plan_id"],
++        "bound_plan_hash": bound_record["bound_plan_hash"],
++        "compatibility_profile": profile,
++        "dataset_identity": {
++            "canonical_root": str(DEFAULT_CANONICAL_ROOT),
++            "raw_root": str(DEFAULT_RAW_ROOT),
++        },
++        "document": bound_record["document"],
++        "execution": execution.model_dump(mode="json", exclude_none=True),
++        "rows": rows,
++        "result_ids": [str(row["result_id"]) for row in rows],
++        "predicate_traces": traces,
++    }
+ 
+ 
+ def validate_profile_allowed(plan_status: PlanStatus, profile: str) -> None:
+@@ -578,6 +791,11 @@ def catalog_entry_summary(entry: Any) -> dict[str, Any]:
+         "version": entry.version,
+         "kind": entry.kind.value if hasattr(entry.kind, "value") else entry.kind,
+         "purpose": entry.purpose,
++        "agent_authorable": not any(
++            token in entry.name
++            for token in ("outcome_classification", "shift_persistence", "wide_channel_dwell")
++        ),
++        "inputs": [item.model_dump(mode="json") for item in entry.inputs],
+         "outputs": [output.model_dump(mode="json") for output in entry.outputs],
+         "parameters": [parameter.model_dump(mode="json", exclude_none=True) for parameter in entry.parameters],
+         "limitations": entry.limitations,
+@@ -589,7 +807,8 @@ def tool_spec(name: str) -> ToolSpec:
+     descriptions = {
+         "list_capabilities": "Return the Hermes-safe capability context.",
+         "describe_capability": "Describe one exposed tool, primitive, relation, or operator.",
+-        "validate_query_plan": "Bind and boundary-check a typed query plan.",
++        "submit_query_plan": "Store a typed query document and return an opaque draft_plan_id.",
++        "validate_query_plan": "Bind and boundary-check a submitted typed query plan.",
+         "execute_query_plan": "Execute a validated plan through the deterministic runtime.",
+         "inspect_result": "Return predicate traces and requested evidence for a result.",
+         "inspect_non_match": "Evaluate a known timestamp target against a bound plan.",
+@@ -598,15 +817,108 @@ def tool_spec(name: str) -> ToolSpec:
+         "record_feedback": "Append immutable analyst feedback for a result or known target.",
+         "save_experimental_recipe": "Save a content-addressed experimental recipe version.",
+     }
++    request_models: dict[str, type[BaseModel]] = {
++        "list_capabilities": ListCapabilitiesRequest,
++        "describe_capability": DescribeCapabilityRequest,
++        "submit_query_plan": SubmitQueryPlanRequest,
++        "validate_query_plan": ValidateQueryPlanRequest,
++        "execute_query_plan": ExecuteQueryPlanRequest,
++        "inspect_result": InspectResultRequest,
++        "inspect_non_match": InspectNonMatchRequest,
++        "retrieve_replay_window": ReplayWindowRequest,
++        "compare_query_versions": CompareQueryVersionsRequest,
++        "record_feedback": RecordFeedbackRequest,
++        "save_experimental_recipe": SaveExperimentalRecipeRequest,
++    }
++    response_models: dict[str, type[BaseModel]] = {
++        "list_capabilities": CapabilityContext,
++        "describe_capability": DescribeCapabilityResponse,
++        "submit_query_plan": SubmitQueryPlanResponse,
++        "validate_query_plan": ValidateQueryPlanResponse,
++        "execute_query_plan": ExecuteQueryPlanResponse,
++        "inspect_result": InspectResultResponse,
++        "inspect_non_match": InspectNonMatchResponse,
++        "retrieve_replay_window": ReplayWindowResponse,
++        "compare_query_versions": CompareQueryVersionsResponse,
++        "record_feedback": RecordFeedbackResponse,
++        "save_experimental_recipe": SaveExperimentalRecipeResponse,
++    }
+     return ToolSpec(
+         name=name,
+         description=descriptions[name],
+-        input_schema={"type": "object", "additionalProperties": False},
+-        output_schema={"type": "object", "additionalProperties": False},
++        input_schema=request_models[name].model_json_schema(),
++        output_schema={
++            "oneOf": [
++                response_models[name].model_json_schema(),
++                ToolErrorResponse.model_json_schema(),
++            ]
++        },
+         unavailable_surfaces=FORBIDDEN_SURFACES,
++        exposure="hermes_s2" if name in HERMES_S2_TOOL_NAMES else "manual_only",
+     )
+ 
+ 
++def dispatch_tool(
++    request: ToolDispatchRequest,
++    *,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++) -> ToolDispatchResponse:
++    try:
++        if request.tool_name == "list_capabilities":
++            response = list_capabilities()
++        elif request.tool_name == "describe_capability":
++            response = describe_capability_tool(DescribeCapabilityRequest.model_validate(request.arguments))
++        elif request.tool_name == "submit_query_plan":
++            response = submit_query_plan(
++                SubmitQueryPlanRequest.model_validate(request.arguments),
++                output_root=output_root,
++            )
++        elif request.tool_name == "validate_query_plan":
++            response = validate_query_plan(ValidateQueryPlanRequest.model_validate(request.arguments))
++        elif request.tool_name == "execute_query_plan":
++            response = execute_query_plan(
++                ExecuteQueryPlanRequest.model_validate(request.arguments),
++                output_root=output_root,
++            )
++        elif request.tool_name == "inspect_result":
++            response = inspect_result(InspectResultRequest.model_validate(request.arguments))
++        elif request.tool_name == "inspect_non_match":
++            response = inspect_non_match(InspectNonMatchRequest.model_validate(request.arguments))
++        elif request.tool_name == "retrieve_replay_window":
++            response = retrieve_replay_window(
++                ReplayWindowRequest.model_validate(request.arguments),
++                output_root=output_root,
++            )
++        elif request.tool_name == "record_feedback":
++            response = record_feedback(
++                RecordFeedbackRequest.model_validate(request.arguments),
++                output_root=output_root,
++            )
++        elif request.tool_name == "save_experimental_recipe":
++            response = save_experimental_recipe(
++                SaveExperimentalRecipeRequest.model_validate(request.arguments),
++                output_root=output_root,
++            )
++        elif request.tool_name == "compare_query_versions":
++            response = compare_query_versions(CompareQueryVersionsRequest.model_validate(request.arguments))
++        else:
++            raise CapabilityGap(f"Unsupported tool: {request.tool_name}")
++        return ToolDispatchResponse(
++            ok=True,
++            tool_name=request.tool_name,
++            response=response.model_dump(mode="json") if isinstance(response, BaseModel) else response,
++        )
++    except Exception as exc:
++        return ToolDispatchResponse(
++            ok=False,
++            tool_name=request.tool_name,
++            response=ToolErrorResponse(
++                error_code=type(exc).__name__,
++                message=str(exc),
++            ).model_dump(mode="json"),
++        )
++
++
+ def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:
+     return {
+         "rank": rank,

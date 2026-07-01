@@ -1,0 +1,674 @@
+commit 4a351fbf38c6316febee17a5ba1c464e819ec98c
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Sat Jun 20 11:33:09 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Sat Jun 20 11:33:09 2026 -0700
+
+    Implement M1.1S S3R4 temporal correctness
+
+diff --git a/delivery/ledger.jsonl b/delivery/ledger.jsonl
+index 353242d..be3d635 100644
+--- a/delivery/ledger.jsonl
++++ b/delivery/ledger.jsonl
+@@ -40,3 +40,4 @@
+ {"timestamp":"2026-06-20T09:52:59-05:00","milestone":"M1.1S","slice":"Gate_S3R_explicit_anchor_contract_generic_temporal_semantics","from":"BLOCKING_EXTERNAL_REVIEW_REQUIRED_CHANGES_BEFORE_S4","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["docs/reviews/2026-06-20-m1-1s-gate-s3-external-review.md","delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md","delivery/m1.1/status.yaml","src/tqe/runtime/ir.py","src/tqe/runtime/binder.py","src/tqe/runtime/catalog.py","src/tqe/runtime/executor.py","src/tqe/runtime/values.py","src/tqe/verification/m1_1_gate_s3r.py","src/tqe/verification/m1_1_gate_r5.py","config/query-plans/ball_side_block_shift.ir.v1.json","config/query-plans/opposite_corridor_after_shift.experimental.v1.json","generated/tactical-query-plan.schema.json","generated/tactical-query-plan.types.ts","generated/capability-catalog.json","artifacts/m1.1/gate-s3r-verification-report.json","artifacts/m1.1/gate-s1-verification-report.json","artifacts/m1.1/gate-s2-verification-report.json","artifacts/m1.1/gate-s3-verification-report.json","artifacts/m1.1/parity-report.json","artifacts/m1.1/gate-c-verification-report.json","artifacts/m1.1/gate-r5-verification-report.json","delivery/m1.1/reviews/gate-s3r-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s3r-explicit-anchor-contract.md"],"notes":"Integrated external review decision APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4 and implemented S3R. Plans now designate anchor_source; binder requires episode_set<anchor_ref>; signed_lateral_shift and possession_segment emit typed anchor records with semantic IDs; runtime_anchors reads only the designated source and deduplicates; target evaluation supports non-M1 anchors without M1 fields; RuntimeValue.records holds sidecar records outside provenance; frame signal length mismatches fail; persists_for consumes generic tri-state Boolean truth series without shift-specific fields; and node execution returns NodeExecutionResult. make m1-1-gate-s3r-verify passes 9/0/0; regressions pass for S1 8/0/0, S2 4/0/0, S3 5/0/0, Gate B 14/0/0, Gate C 10/0/0, R5 10/0/0, make test 26 tests, and git diff --check. S4 is unblocked from the controller perspective."}
+ {"timestamp":"2026-06-20T10:02:42-07:00","milestone":"M1.1S","slice":"Gate_S3R2_external_rejection_correction","from":"REJECT_KEEP_S4_BLOCKED","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["/Users/luisrevilla/.codex/attachments/9330c866-5404-4fa3-a4c1-af06873e824c/pasted-text.txt","docs/reviews/2026-06-20-m1-1s-gate-s3r-external-review.md","delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md","delivery/m1.1/status.yaml","src/tqe/runtime/executor.py","src/tqe/runtime/values.py","src/tqe/verification/m1_1_gate_s3r.py","artifacts/m1.1/gate-s3r-verification-report.json","artifacts/m1.1/gate-s1-verification-report.json","artifacts/m1.1/parity-report.json","artifacts/m1.1/gate-c-verification-report.json","artifacts/m1.1/gate-r5-verification-report.json","delivery/m1.1/reviews/gate-s3r2-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s3r2-external-rejection-correction.md"],"notes":"Integrated external decision REJECT_KEEP_S4_BLOCKED for the first S3R packet. Strengthened S3R so runtime anchor discovery canonicalizes semantic identity, typed anchor outputs reject non-canonical IDs, frame-signal sequences require explicit frame IDs, predicate nodes execute through resolved input/parameter mappings, generic persists_for has one Boolean frame-signal path with no record inspection, M1 persistence behavior is isolated behind named legacy adapters, and non-M1 target inspection proves engine-derived PASS and FAIL traces from declared runtime outputs. make m1-1-gate-s3r-verify passes 11/0/0; regressions pass for S1 8/0/0, Gate B 14/0/0, Gate C 10/0/0, R5 10/0/0, and make test 26 tests. S4 remains pending external re-review or owner decision."}
+ {"timestamp":"2026-06-20T10:36:35-07:00","milestone":"M1.1S","slice":"Gate_S3R3_explicit_profile_single_temporal_unknown_trace","from":"APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["/Users/luisrevilla/.codex/attachments/446f59e8-9bb2-4f3e-a515-8112e6fcf4c9/pasted-text.txt","docs/reviews/2026-06-20-m1-1s-gate-s3r2-external-review.md","delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md","delivery/m1.1/status.yaml","src/tqe/runtime/executor.py","src/tqe/verification/m1_1_gate_s3r.py","artifacts/m1.1/gate-s3r-verification-report.json","artifacts/m1.1/parity-report.json","artifacts/m1.1/gate-c-verification-report.json","artifacts/m1.1/gate-r5-verification-report.json","delivery/m1.1/reviews/gate-s3r3-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s3r3-profile-temporal-correction.md"],"notes":"Integrated external decision APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4 for S3R2 and implemented focused S3R3. Added host-only compatibility profiles: generic execution cannot invoke legacy adapters and legacy trace fallback is only available to legacy_m1_parity. Generic target inspection ignores _runtime_result and _predicate_status. execute_persists_for is now the single shared generic temporal implementation and preserves UNKNOWN intervals alongside PASS episodes. The S3R verifier now executes actual non-M1 predicate nodes in generic mode, proves PASS/FAIL/UNKNOWN traces, verifies side-channel perturbation does not change generic target traces, and asserts generic node provenance has no adapter. make m1-1-gate-s3r-verify passes 12/0/0; regressions pass for Gate B 14/0/0, Gate C 10/0/0, R5 10/0/0, and make test 26 tests."}
++{"timestamp":"2026-06-20T11:18:54-07:00","milestone":"M1.1S","slice":"Gate_S3R4_temporal_correctness_default_generic","from":"APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["/Users/luisrevilla/.codex/attachments/da15d7c0-f47b-4bbb-9523-7221b5bd7c56/pasted-text.txt","docs/reviews/2026-06-20-m1-1s-gate-s3r3-external-review.md","delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md","delivery/m1.1/status.yaml","src/tqe/runtime/executor.py","src/tqe/runtime/values.py","src/tqe/verification/m1_1_gate_s3r.py","src/tqe/verification/m1_1_gate_c.py","src/tqe/verification/m1_1_gate_r5.py","tests/test_m1_1_runtime.py","artifacts/m1.1/gate-s3r-verification-report.json","artifacts/m1.1/parity-report.json","artifacts/m1.1/gate-c-verification-report.json","artifacts/m1.1/gate-r5-verification-report.json","delivery/m1.1/reviews/gate-s3r4-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s3r4-temporal-correctness.md"],"notes":"Integrated external decision APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4 for S3R3 and implemented S3R4 temporal-correctness patch. TacticalQueryExecutor now defaults to generic; frozen M1 parity call sites explicitly request legacy_m1_parity. duration_to_frames normalizes second, millisecond, and frame units with positive-duration validation and ceiling semantics. execute_persists_for now emits PASS, UNKNOWN, and FAIL intervals; target tracing returns UNKNOWN outside evaluated temporal coverage; FrameSignal asserts unknown_mask consistency; and generic target results no longer carry _predicate_status. S3R verifier now proves duration-unit equivalence, indeterminate TRUE/TRUE/UNKNOWN windows, definitive TRUE/TRUE/FALSE failure, outside-coverage UNKNOWN, and predicate_trace side-channel perturbation. make m1-1-gate-s3r-verify passes 13/0/0; regressions pass for Gate B 14/0/0, Gate C 10/0/0, R5 10/0/0, and make test 26 tests."}
+diff --git a/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md b/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+index 2d72611..e9cef29 100644
+--- a/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
++++ b/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+@@ -240,6 +240,16 @@ S3R2 external review conditionally approved the direction but required S3R3 befo
+ - a non-M1 proof executes actual predicate nodes and produces PASS, FAIL, and UNKNOWN traces;
+ - perturbing candidates, accepted results, predicate traces, `_runtime_result`, and `_predicate_status` does not change generic target traces.
+ 
++S3R3 external review conditionally approved the architecture but required S3R4 temporal correctness before S4. Additional acceptance:
++
++- generic execution is the default compatibility profile;
++- frozen M1 parity explicitly opts into legacy compatibility;
++- typed persistence durations normalize `second`, `millisecond`, and `frame` units to equivalent frame counts;
++- zero or negative persistence durations fail;
++- `persists_for` distinguishes PASS, FAIL, and UNKNOWN intervals;
++- anchors outside evaluated temporal coverage trace as UNKNOWN;
++- `FrameSignal.unknown_mask` must agree with `None` values.
++
+ ### Gate S4 - Rule-Driven Result Emission
+ 
+ Acceptance:
+diff --git a/delivery/m1.1/reviews/gate-s3r4-controller-review.md b/delivery/m1.1/reviews/gate-s3r4-controller-review.md
+new file mode 100644
+index 0000000..e57ae53
+--- /dev/null
++++ b/delivery/m1.1/reviews/gate-s3r4-controller-review.md
+@@ -0,0 +1,31 @@
++# M1.1S Gate S3R4 Controller Review
++
++Decision: `ACCEPTED_CONTROLLER_ONLY`
++
++S3R4 integrates the external `APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4` review of S3R3.
++
++Corrections implemented:
++
++- `TacticalQueryExecutor` now defaults to the `generic` compatibility profile.
++- Frozen M1 parity helpers and tests opt into `legacy_m1_parity` explicitly.
++- `duration_to_frames` normalizes `second`, `millisecond`, and `frame` units with positive-duration validation and ceiling semantics.
++- `execute_persists_for` now emits PASS, UNKNOWN, and FAIL temporal intervals.
++- Temporal target tracing returns UNKNOWN outside evaluated coverage.
++- The S3R verifier proves `0.4 second`, `400 millisecond`, and `2 frame` are equivalent at 5 Hz.
++- The verifier proves `TRUE, TRUE, UNKNOWN` with a three-frame requirement is UNKNOWN across the relevant window, while `TRUE, TRUE, FALSE` is definitive FAIL.
++- The side-channel proof now injects a contradictory `state.predicate_traces` record.
++- `FrameSignal` now asserts `unknown_mask` matches `None` values.
++- Generic target results no longer carry `_predicate_status`.
++
++Verification:
++
++- `make m1-1-gate-s3r-verify`: pass, 13/0/0.
++- `make m1-1-gate-b-verify`: pass, 14/0/0.
++- `make m1-1-gate-c-verify`: pass, 10/0/0.
++- `make m1-1-gate-r5-verify`: pass, 10/0/0.
++- `make test`: pass, 26 tests.
++
++Residual risk:
++
++S4 is still not implemented. From the controller perspective, S3R4 addresses the temporal-correctness blockers identified before S4.
++
+diff --git a/delivery/m1.1/status.yaml b/delivery/m1.1/status.yaml
+index 148fbc1..583ea1c 100644
+--- a/delivery/m1.1/status.yaml
++++ b/delivery/m1.1/status.yaml
+@@ -54,7 +54,7 @@ promotion_gates:
+   Gate_S1_runtime_value_result_type_hardening: ACCEPTED_CONTROLLER_ONLY
+   Gate_S2_node_execution_contract: ACCEPTED_CONTROLLER_ONLY
+   Gate_S3_anchor_predicate_trace_core: ACCEPTED_CONTROLLER_ONLY
+-  Gate_S3R_explicit_anchor_contract_generic_temporal_semantics: ACCEPTED_CONTROLLER_ONLY_AFTER_S3R3_EXTERNAL_REQUIRED_CHANGES
++  Gate_S3R_explicit_anchor_contract_generic_temporal_semantics: ACCEPTED_CONTROLLER_ONLY_AFTER_S3R4_TEMPORAL_CORRECTNESS
+   Gate_S4_rule_driven_result_emission: NOT_STARTED
+   Gate_S5_alias_based_evidence_projection: NOT_STARTED
+   Gate_S6_second_real_plan_relation_proof: NOT_STARTED
+@@ -62,7 +62,7 @@ promotion_gates:
+ verification:
+   automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_S1_GATE_S2_GATE_S3_GATE_S3R_PASS
+   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+-  independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19_REJECTED_M1_1R_GATE_R5_REVIEW_2026_06_20_S3_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R_REJECT_KEEP_S4_BLOCKED_2026_06_20_S3R2_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20
+-  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_GATE_S1_GATE_S2_GATE_S3_GATE_S3R3_ACCEPTED_CONTROLLER_ONLY
++  independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19_REJECTED_M1_1R_GATE_R5_REVIEW_2026_06_20_S3_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R_REJECT_KEEP_S4_BLOCKED_2026_06_20_S3R2_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R3_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20
++  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_GATE_S1_GATE_S2_GATE_S3_GATE_S3R4_ACCEPTED_CONTROLLER_ONLY
+   owner_acceptance: NOT_STARTED
+   m1_2_blocked_until: M1_1S_EXTERNAL_APPROVAL_OR_REQUIRED_CHANGES_INTEGRATED
+diff --git a/docs/learnings/2026-06-20-m1-1s-gate-s3r4-temporal-correctness.md b/docs/learnings/2026-06-20-m1-1s-gate-s3r4-temporal-correctness.md
+new file mode 100644
+index 0000000..1f9daa6
+--- /dev/null
++++ b/docs/learnings/2026-06-20-m1-1s-gate-s3r4-temporal-correctness.md
+@@ -0,0 +1,8 @@
++# Learning: Temporal Absence Is Not Necessarily Failure
++
++The S3R3 review identified an important distinction for agent-authored tactical plans: a missing qualifying persistence episode can mean definitive FAIL or indeterminate UNKNOWN.
++
++The runtime now treats temporal predicates as explicit PASS, UNKNOWN, and FAIL intervals. UNKNOWN covers windows where missing evidence could have completed the duration requirement, and target tracing returns UNKNOWN outside evaluated coverage.
++
++Typed duration values must be normalized before execution. Accepting seconds, milliseconds, and frames while interpreting every value as seconds is worse than rejecting units outright.
++
+diff --git a/docs/reviews/2026-06-20-m1-1s-gate-s3r3-external-review.md b/docs/reviews/2026-06-20-m1-1s-gate-s3r3-external-review.md
+new file mode 100644
+index 0000000..5c8316e
+--- /dev/null
++++ b/docs/reviews/2026-06-20-m1-1s-gate-s3r3-external-review.md
+@@ -0,0 +1,25 @@
++# M1.1S Gate S3R3 External Review
++
++Decision: `APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4`
++
++The reviewer accepted the S3R3 architecture but kept S4 blocked for a small temporal-correctness patch.
++
++Resolved:
++
++- generic versus legacy compatibility profile selection is mostly resolved;
++- one shared generic `persists_for` implementation is resolved;
++- non-M1 proof now executes real generic predicate nodes;
++- generic traces are independent of identified M1 side channels in code.
++
++Blocking before S4:
++
++- `TacticalQueryExecutor` defaulted to `legacy_m1_parity` instead of fail-closed `generic`;
++- duration units were accepted but raw values were interpreted as seconds;
++- persistence UNKNOWN was preserved only at missing frames, not across indeterminate windows;
++- anchors outside evaluated temporal coverage could become FAIL;
++- the side-channel proof did not actually perturb `state.predicate_traces`.
++
++Required correction:
++
++Create S3R4 so generic execution is the default, durations normalize to frame counts from typed units, persistence preserves PASS/FAIL/UNKNOWN semantics across windows and coverage, and the proof perturbs predicate-trace side channels.
++
+diff --git a/src/tqe/runtime/executor.py b/src/tqe/runtime/executor.py
+index 1aacf81..3258e9c 100644
+--- a/src/tqe/runtime/executor.py
++++ b/src/tqe/runtime/executor.py
+@@ -137,6 +137,7 @@ class NodeExecutionResult:
+ class TemporalPredicateResult:
+     episodes: list[dict[str, Any]]
+     unknown_intervals: list[dict[str, Any]]
++    fail_intervals: list[dict[str, Any]]
+     evaluated_frame_ids: list[int]
+ 
+     def output_records(self) -> list[dict[str, Any]]:
+@@ -149,6 +150,10 @@ class TemporalPredicateResult:
+                 {**interval, "temporal_status": "UNKNOWN"}
+                 for interval in self.unknown_intervals
+             ],
++            *[
++                {**interval, "temporal_status": "FAIL"}
++                for interval in self.fail_intervals
++            ],
+         ]
+ 
+ 
+@@ -171,7 +176,7 @@ class TacticalQueryExecutor:
+         *,
+         canonical_root: Path = DEFAULT_CANONICAL_ROOT,
+         raw_root: Path = DEFAULT_RAW_ROOT,
+-        compatibility_profile: str = LEGACY_M1_PARITY_PROFILE,
++        compatibility_profile: str = GENERIC_EXECUTION_PROFILE,
+     ) -> None:
+         self.canonical_root = canonical_root
+         self.raw_root = raw_root
+@@ -1111,7 +1116,7 @@ def execute_predicate_with_resolved_inputs(
+             raise RuntimeError(f"Unsupported persists_for source for {node.node_id}")
+         temporal = execute_persists_for(
+             signal=runtime_value.value,
+-            duration_seconds=float(duration.value),
++            duration=duration,
+             analysis_rate_hz=context.params.integer("analysis_rate_hz"),
+         )
+         return {
+@@ -1207,30 +1212,81 @@ def episode_records_from_frame_ids_and_mask(
+ def execute_persists_for(
+     *,
+     signal: FrameSignal,
+-    duration_seconds: float,
++    duration: TypedValue,
+     analysis_rate_hz: int,
+ ) -> TemporalPredicateResult:
+     values = signal.values
+     if not all(value is None or isinstance(value, bool) for value in values):
+         raise RuntimeError("persists_for requires a Boolean frame signal")
+-    minimum_frames = int(round(duration_seconds * analysis_rate_hz))
++    minimum_frames = duration_to_frames(duration, analysis_rate_hz)
+     pass_episodes = episode_records_from_frame_ids_and_mask(
+         frame_ids=signal.frame_ids,
+         mask=np.asarray([value is True for value in values], dtype=bool),
+         minimum_frames=minimum_frames,
+     )
++    pass_mask = np.zeros(len(values), dtype=bool)
++    for episode in pass_episodes:
++        pass_mask[int(episode["start_index"]) : int(episode["end_index"]) + 1] = True
++    unknown_mask = np.asarray(
++        [
++            not bool(pass_mask[index]) and persistence_status_at_index(values, index, minimum_frames) == "UNKNOWN"
++            for index in range(len(values))
++        ],
++        dtype=bool,
++    )
+     unknown_intervals = episode_records_from_frame_ids_and_mask(
+         frame_ids=signal.frame_ids,
+-        mask=np.asarray([value is None for value in values], dtype=bool),
++        mask=unknown_mask,
++        minimum_frames=1,
++    )
++    fail_intervals = episode_records_from_frame_ids_and_mask(
++        frame_ids=signal.frame_ids,
++        mask=~pass_mask & ~unknown_mask,
+         minimum_frames=1,
+     )
+     return TemporalPredicateResult(
+         episodes=pass_episodes,
+         unknown_intervals=unknown_intervals,
++        fail_intervals=fail_intervals,
+         evaluated_frame_ids=[int(frame_id) for frame_id in signal.frame_ids],
+     )
+ 
+ 
++def duration_to_frames(duration: TypedValue, analysis_rate_hz: int) -> int:
++    value = float(duration.value)
++    if value <= 0:
++        raise RuntimeError("persists_for duration must be positive")
++    if duration.unit == Unit.SECOND:
++        frames = math.ceil(value * analysis_rate_hz)
++    elif duration.unit == Unit.MILLISECOND:
++        frames = math.ceil(value / 1000.0 * analysis_rate_hz)
++    elif duration.unit == Unit.FRAME:
++        frames = math.ceil(value)
++    else:
++        raise RuntimeError(f"Unsupported persists_for duration unit {duration.unit.value}")
++    if frames <= 0:
++        raise RuntimeError("persists_for duration must cover at least one frame")
++    return frames
++
++
++def persistence_status_at_index(
++    values: list[Any],
++    index: int,
++    minimum_frames: int,
++) -> str:
++    start_min = max(0, index - minimum_frames + 1)
++    start_max = min(index, len(values) - minimum_frames)
++    for start in range(start_min, start_max + 1):
++        window = values[start : start + minimum_frames]
++        if all(value is True for value in window):
++            return "PASS"
++    for start in range(start_min, start_max + 1):
++        window = values[start : start + minimum_frames]
++        if all(value is not False for value in window) and any(value is None for value in window):
++            return "UNKNOWN"
++    return "FAIL"
++
++
+ def primitive_noop(state: PeriodState, node: BoundCatalogNode) -> None:
+     state.signals.setdefault(node.node_id, {})
+ 
+@@ -1862,7 +1918,7 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
+         raise RuntimeError(f"Unsupported persists_for source for {node.node_id}")
+     temporal = execute_persists_for(
+         signal=runtime_value.value,
+-        duration_seconds=duration_seconds,
++        duration=node.duration,
+         analysis_rate_hz=state.params.integer("analysis_rate_hz"),
+     )
+     state.signals[node.node_id] = {
+@@ -2141,7 +2197,6 @@ def generic_target_result(anchor_record: dict[str, Any]) -> dict[str, Any]:
+         "classification": anchor_record.get("classification"),
+         "accepted": False,
+         "anchor_frame_id": anchor_record.get("anchor_frame_id"),
+-        "_predicate_status": anchor_record.get("_predicate_status", {}),
+     }
+ 
+ 
+@@ -2408,25 +2463,32 @@ def predicate_trace_from_runtime_value(
+         )
+     if isinstance(runtime_value.value, list):
+         matched = None
+-        matched_unknown = None
++        has_temporal_status = False
+         for episode in runtime_value.value:
+             if not isinstance(episode, dict):
+                 continue
++            if "temporal_status" in episode:
++                has_temporal_status = True
+             start = optional_int(episode.get("start_frame_id"))
+             end = optional_int(episode.get("end_frame_id"))
+             if start is not None and end is not None and start <= anchor.anchor_frame_id <= end:
+-                if episode.get("temporal_status") == "UNKNOWN":
+-                    matched_unknown = episode
+-                    break
+                 matched = episode
+                 break
+-        status = "UNKNOWN" if matched_unknown is not None else "PASS" if matched is not None else "FAIL"
+-        matched_window = matched_unknown or matched
++        if has_temporal_status:
++            if matched is None:
++                status = "UNKNOWN"
++                matched_window = None
++            else:
++                status = str(matched.get("temporal_status") or "PASS")
++                matched_window = matched
++        else:
++            status = "PASS" if matched is not None else "FAIL"
++            matched_window = matched
+         return PredicateTrace(
+             predicate_id=node.node_id,
+             status=status,
+-            value=TypedValue(payload_type=PayloadType.BOOLEAN, value=matched is not None, unit=Unit.NONE)
+-            if status != "UNKNOWN"
++            value=TypedValue(payload_type=PayloadType.BOOLEAN, value=status == "PASS", unit=Unit.NONE)
++            if status in {"PASS", "FAIL"}
+             else None,
+             threshold=node.compare if isinstance(node.compare, TypedValue) else node.duration,
+             unit=node.output.unit,
+@@ -2697,7 +2759,11 @@ def execute_default_plan(
+     plan_path: Path = DEFAULT_PLAN_PATH,
+ ) -> tuple[BoundQueryPlan, QueryExecution]:
+     bound = bind_document_from_path(plan_path)
+-    execution = TacticalQueryExecutor(canonical_root=canonical_root, raw_root=raw_root).execute(bound)
++    execution = TacticalQueryExecutor(
++        canonical_root=canonical_root,
++        raw_root=raw_root,
++        compatibility_profile=LEGACY_M1_PARITY_PROFILE,
++    ).execute(bound)
+     return bound, execution
+ 
+ 
+@@ -2708,7 +2774,11 @@ def execute_plan_from_path(
+     raw_root: Path = DEFAULT_RAW_ROOT,
+ ) -> tuple[BoundQueryPlan, QueryExecution]:
+     bound = bind_document_from_path(plan_path)
+-    execution = TacticalQueryExecutor(canonical_root=canonical_root, raw_root=raw_root).execute(bound)
++    execution = TacticalQueryExecutor(
++        canonical_root=canonical_root,
++        raw_root=raw_root,
++        compatibility_profile=LEGACY_M1_PARITY_PROFILE,
++    ).execute(bound)
+     return bound, execution
+ 
+ 
+diff --git a/src/tqe/runtime/values.py b/src/tqe/runtime/values.py
+index a095d89..2911156 100644
+--- a/src/tqe/runtime/values.py
++++ b/src/tqe/runtime/values.py
+@@ -22,6 +22,9 @@ class FrameSignal:
+     def __post_init__(self) -> None:
+         if not (len(self.frame_ids) == len(self.values) == len(self.unknown_mask)):
+             raise RuntimeError("frame signal frame_ids, values, and unknown_mask lengths must match")
++        expected_unknown = [value is None for value in self.values]
++        if self.unknown_mask != expected_unknown:
++            raise RuntimeError("frame signal unknown_mask must match None-valued frames")
+ 
+ 
+ @dataclass(frozen=True)
+diff --git a/src/tqe/verification/m1_1_gate_c.py b/src/tqe/verification/m1_1_gate_c.py
+index b6b6caf..3578eab 100644
+--- a/src/tqe/verification/m1_1_gate_c.py
++++ b/src/tqe/verification/m1_1_gate_c.py
+@@ -14,6 +14,7 @@ from tqe.runtime.binder import BindError, bind_document
+ from tqe.runtime.executor import (
+     DEFAULT_CANONICAL_ROOT,
+     DEFAULT_PLAN_PATH,
++    LEGACY_M1_PARITY_PROFILE,
+     TacticalQueryExecutor,
+     execution_result_rows,
+     execute_default_plan,
+@@ -77,7 +78,7 @@ def build_report(gate_b_report: dict[str, Any] | None = None) -> dict[str, Any]:
+     }
+     write_json(PREDICATE_TRACE_REPORT, predicate_report)
+ 
+-    executor = TacticalQueryExecutor()
++    executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
+     targets = default_evaluation_targets()
+     evaluations = [executor.evaluate_target(bound, target) for target in targets]
+     non_match_report = {
+diff --git a/src/tqe/verification/m1_1_gate_r5.py b/src/tqe/verification/m1_1_gate_r5.py
+index 4bc00f6..7e316da 100644
+--- a/src/tqe/verification/m1_1_gate_r5.py
++++ b/src/tqe/verification/m1_1_gate_r5.py
+@@ -17,6 +17,7 @@ from tqe.runtime.binder import (
+ )
+ from tqe.runtime.catalog import default_catalog
+ from tqe.runtime.executor import (
++    LEGACY_M1_PARITY_PROFILE,
+     TacticalQueryExecutor,
+     apply_result_semantics,
+     execution_result_rows,
+@@ -55,7 +56,9 @@ def fail_check(check_id: str, message: str, details: dict[str, Any] | None = Non
+ def build_report() -> dict[str, Any]:
+     checks: list[dict[str, Any]] = []
+     approved_bound = bind_document_from_path(APPROVED_PLAN_PATH)
+-    approved_execution = TacticalQueryExecutor().execute(approved_bound)
++    approved_execution = TacticalQueryExecutor(
++        compatibility_profile=LEGACY_M1_PARITY_PROFILE
++    ).execute(approved_bound)
+     approved_rows = execution_result_rows(approved_execution)
+ 
+     checks.extend(validate_node_id_opacity(approved_rows))
+@@ -87,7 +90,9 @@ def build_report() -> dict[str, Any]:
+ def validate_node_id_opacity(approved_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+     payload = renamed_node_payload(clone_plan_payload(APPROVED_PLAN_PATH))
+     bound = bind_document(TacticalQueryDocument.model_validate(payload))
+-    execution = TacticalQueryExecutor().execute(bound)
++    execution = TacticalQueryExecutor(
++        compatibility_profile=LEGACY_M1_PARITY_PROFILE
++    ).execute(bound)
+     renamed_rows = execution_result_rows(execution)
+     original_normalized = [normalize_result_for_node_rename(row) for row in approved_rows]
+     renamed_normalized = [normalize_result_for_node_rename(row) for row in renamed_rows]
+@@ -149,7 +154,7 @@ def validate_capability_execution() -> list[dict[str, Any]]:
+     approved_bound = bind_document_from_path(APPROVED_PLAN_PATH)
+     experimental_bound = bind_document_from_path(EXPERIMENTAL_PLAN_PATH)
+     simple_bound = bind_document(TacticalQueryDocument.model_validate(simple_non_block_shift_payload()))
+-    executor = TacticalQueryExecutor()
++    executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
+     executions = {
+         "approved": executor.execute(approved_bound),
+         "experimental": executor.execute(experimental_bound),
+@@ -231,7 +236,7 @@ def validate_capability_execution() -> list[dict[str, Any]]:
+ 
+ 
+ def validate_plan_driven_semantics() -> list[dict[str, Any]]:
+-    executor = TacticalQueryExecutor()
++    executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
+     classification_payload = clone_plan_payload(APPROVED_PLAN_PATH)
+     switched_rule = next(
+         rule
+@@ -427,7 +432,9 @@ def validate_m1_parity() -> list[dict[str, Any]]:
+ 
+ def run_approved_plan() -> tuple[Any, Any]:
+     bound = bind_document_from_path(APPROVED_PLAN_PATH)
+-    execution = TacticalQueryExecutor().execute(bound)
++    execution = TacticalQueryExecutor(
++        compatibility_profile=LEGACY_M1_PARITY_PROFILE
++    ).execute(bound)
+     return bound, execution
+ 
+ 
+diff --git a/src/tqe/verification/m1_1_gate_s3r.py b/src/tqe/verification/m1_1_gate_s3r.py
+index 1f2debe..2ebed0e 100644
+--- a/src/tqe/verification/m1_1_gate_s3r.py
++++ b/src/tqe/verification/m1_1_gate_s3r.py
+@@ -16,15 +16,19 @@ from tqe.runtime.catalog import output
+ from tqe.runtime.executor import (
+     FRAME_RATE_HZ,
+     PeriodState,
++    RuntimeAnchor,
+     RuntimeParameters,
+     TacticalQueryExecutor,
+     GENERIC_EXECUTION_PROFILE,
++    LEGACY_M1_PARITY_PROFILE,
+     anchor_record_id,
++    duration_to_frames,
+     evaluate_target_in_state,
+     execute_persists_for,
+     execute_predicate_with_resolved_inputs,
+     execution_result_rows,
+     predicate_persists_for,
++    predicate_trace_from_runtime_value,
+     runtime_anchors,
+     runtime_parameters,
+     typed_number,
+@@ -35,6 +39,7 @@ from tqe.runtime.ir import (
+     EntityScope,
+     EvaluationTarget,
+     PayloadType,
++    PredicateTrace,
+     SignalRef,
+     TacticalQueryDocument,
+     TemporalContainer,
+@@ -67,7 +72,7 @@ def fail_check(check_id: str, message: str, details: dict[str, Any] | None = Non
+ def build_report() -> dict[str, Any]:
+     checks: list[dict[str, Any]] = []
+     bound = bind_document_from_path(APPROVED_PLAN_PATH)
+-    executor = TacticalQueryExecutor()
++    executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
+     state = executor._execute_period(  # noqa: SLF001 - verifier inspects runtime contract.
+         bound_plan=bound,
+         match_id="J03WOY",
+@@ -81,6 +86,7 @@ def build_report() -> dict[str, Any]:
+     checks.extend(validate_invalid_anchor_id_rejected())
+     checks.extend(validate_non_m1_anchor_target_and_trace(bound))
+     checks.extend(validate_generic_temporal_semantics(bound))
++    checks.extend(validate_duration_unit_equivalence())
+     checks.extend(validate_generic_profile_rejects_legacy_shape(bound))
+     checks.extend(validate_frame_length_mismatch_rejected())
+     checks.extend(validate_generic_source_no_forbidden_assumptions())
+@@ -303,7 +309,13 @@ def validate_non_m1_anchor_target_and_trace(bound: Any) -> list[dict[str, Any]]:
+     )
+     state.candidates = [{"_predicate_status": {"fake": {"status": "PASS"}}}]
+     state.accepted = [{"_runtime_result": {"accepted": True}}]
+-    state.predicate_traces = []
++    state.predicate_traces = [
++        PredicateTrace(
++            predicate_id=pass_node.node_id,
++            status="FAIL",
++            source_evidence={"result_id": "contradictory_side_channel"},
++        )
++    ]
+     record["_runtime_result"] = {"accepted": True, "classification": "SIDE_CHANNEL"}
+     record["_predicate_status"] = {"fake": {"status": "PASS"}}
+     perturbed = evaluate_target_in_state(
+@@ -374,6 +386,46 @@ def validate_generic_temporal_semantics(bound: Any) -> list[dict[str, Any]]:
+         (episode["temporal_status"], episode["start_frame_id"], episode["end_frame_id"])
+         for episode in episodes
+     ]
++    indeterminate = execute_persists_for(
++        signal=FrameSignal(
++            frame_ids=[200, 201, 202],
++            values=[True, True, None],
++            unknown_mask=[False, False, True],
++            unit=node.input_type.unit,
++            entity_scope=node.input_type.entity_scope,
++        ),
++        duration=typed_number(3, Unit.FRAME),
++        analysis_rate_hz=5,
++    ).output_records()
++    definitive_fail = execute_persists_for(
++        signal=FrameSignal(
++            frame_ids=[300, 301, 302],
++            values=[True, True, False],
++            unknown_mask=[False, False, False],
++            unit=node.input_type.unit,
++            entity_scope=node.input_type.entity_scope,
++        ),
++        duration=typed_number(3, Unit.FRAME),
++        analysis_rate_hz=5,
++    ).output_records()
++    outside_coverage_trace = predicate_trace_from_runtime_value(
++        node=node,
++        runtime_value=RuntimeValue(output=node.output, value=indeterminate),
++        anchor=RuntimeAnchor(
++            anchor_id="outside_coverage",
++            semantic_key="outside_coverage",
++            match_id="synthetic",
++            period="firstHalf",
++            anchor_frame_id=250,
++            source_node_id="anchor_node",
++            output_name="anchors",
++            start_frame_id=250,
++            end_frame_id=250,
++            attributes={},
++        ),
++        result_id="outside_coverage",
++        common_evidence={},
++    )
+     source = inspect.getsource(predicate_persists_for)
+     shared_source = inspect.getsource(execute_persists_for)
+     forbidden = ["wide_entry", "block_shift", "shift_gate", "persistence_series", "quality_status", "runtime_records", "_predicate_status", "truth_series"]
+@@ -382,9 +434,19 @@ def validate_generic_temporal_semantics(bound: Any) -> list[dict[str, Any]]:
+         pass_check(
+             "temporal.persists_for_generic_tri_state",
+             "persists_for uses one generic temporal implementation, ignores arbitrary records, and preserves UNKNOWN intervals",
+-            {"windows": windows, "provenance": result.provenance},
++            {
++                "windows": windows,
++                "indeterminate": indeterminate,
++                "definitive_fail": definitive_fail,
++                "outside_coverage": outside_coverage_trace.status if outside_coverage_trace else None,
++                "provenance": result.provenance,
++            },
+         )
+-        if windows == [("PASS", 100, 101), ("PASS", 103, 105), ("UNKNOWN", 102, 102)]
++        if windows == [("PASS", 100, 101), ("PASS", 103, 105), ("UNKNOWN", 102, 102), ("FAIL", 106, 107)]
++        and [(item["temporal_status"], item["start_frame_id"], item["end_frame_id"]) for item in indeterminate] == [("UNKNOWN", 200, 202)]
++        and [(item["temporal_status"], item["start_frame_id"], item["end_frame_id"]) for item in definitive_fail] == [("FAIL", 300, 302)]
++        and outside_coverage_trace is not None
++        and outside_coverage_trace.status == "UNKNOWN"
+         and result.provenance.get("adapter") is None
+         and not hits
+         else fail_check(
+@@ -395,6 +457,51 @@ def validate_generic_temporal_semantics(bound: Any) -> list[dict[str, Any]]:
+     ]
+ 
+ 
++def validate_duration_unit_equivalence() -> list[dict[str, Any]]:
++    signal = FrameSignal(
++        frame_ids=[10, 11, 12],
++        values=[True, True, False],
++        unknown_mask=[False, False, False],
++        unit=Unit.NONE,
++        entity_scope=EntityScope.FRAME,
++    )
++    durations = [
++        typed_number(0.4, Unit.SECOND),
++        typed_number(400, Unit.MILLISECOND),
++        typed_number(2, Unit.FRAME),
++    ]
++    outputs = [
++        execute_persists_for(
++            signal=signal,
++            duration=duration,
++            analysis_rate_hz=5,
++        ).output_records()
++        for duration in durations
++    ]
++    frame_counts = [duration_to_frames(duration, 5) for duration in durations]
++    try:
++        duration_to_frames(typed_number(0, Unit.SECOND), 5)
++    except RuntimeError as error:
++        non_positive_rejected = str(error)
++    else:
++        non_positive_rejected = ""
++    return [
++        pass_check(
++            "temporal.duration_units_equivalent_and_positive",
++            "seconds, milliseconds, and frames normalize to identical frame counts and temporal output",
++            {"frame_counts": frame_counts, "outputs": outputs, "non_positive_error": non_positive_rejected},
++        )
++        if frame_counts == [2, 2, 2]
++        and outputs[0] == outputs[1] == outputs[2]
++        and non_positive_rejected
++        else fail_check(
++            "temporal.duration_units_equivalent_and_positive",
++            "duration unit normalization failed",
++            {"frame_counts": frame_counts, "outputs": outputs, "non_positive_error": non_positive_rejected},
++        )
++    ]
++
++
+ def validate_generic_profile_rejects_legacy_shape(bound: Any) -> list[dict[str, Any]]:
+     node = next(
+         node
+@@ -433,6 +540,7 @@ def validate_generic_profile_rejects_legacy_shape(bound: Any) -> list[dict[str,
+             {"windows": windows, "provenance": result.provenance},
+         )
+         if windows == [("PASS", 100, 102)] and result.provenance.get("adapter") is None
++        and TacticalQueryExecutor().compatibility_profile == GENERIC_EXECUTION_PROFILE
+         else fail_check(
+             "temporal.generic_profile_never_shape_selects_legacy_adapter",
+             "generic execution changed under legacy-shaped records",
+diff --git a/tests/test_m1_1_runtime.py b/tests/test_m1_1_runtime.py
+index 3869116..bc6fbfc 100644
+--- a/tests/test_m1_1_runtime.py
++++ b/tests/test_m1_1_runtime.py
+@@ -6,6 +6,7 @@ import unittest
+ from pathlib import Path
+ 
+ from tqe.runtime.executor import (
++    LEGACY_M1_PARITY_PROFILE,
+     TacticalQueryExecutor,
+     execute_plan_from_path,
+     execution_result_rows,
+@@ -58,7 +59,7 @@ class M11RuntimeTests(unittest.TestCase):
+         self.assertEqual("dry_run", dry_run.provenance["execution_mode"])
+ 
+     def test_max_results_is_honored_deterministically(self) -> None:
+-        executor = TacticalQueryExecutor()
++        executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
+         limited_bound = self.bound.model_copy(update={"max_results": 1})
+         first = executor.execute(limited_bound)
+         second = executor.execute(limited_bound)
+@@ -96,7 +97,7 @@ class M11RuntimeTests(unittest.TestCase):
+             self.assertEqual(expected_predicates, predicates)
+ 
+     def test_evaluation_target_returns_failures_and_no_anchor(self) -> None:
+-        executor = TacticalQueryExecutor()
++        executor = TacticalQueryExecutor(compatibility_profile=LEGACY_M1_PARITY_PROFILE)
+         threshold = executor.evaluate_target(
+             self.bound,
+             EvaluationTarget(

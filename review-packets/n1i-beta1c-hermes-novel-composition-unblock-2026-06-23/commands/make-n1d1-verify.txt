@@ -1,0 +1,6 @@
+# make n1d1-verify
+cwd: /Users/luisrevilla/Documents/priori
+utc: 2026-06-23T08:18:41Z
+
+/Users/luisrevilla/Documents/priori/.venv/bin/python -m tqe.verification.n1d1
+{"attestation_status": "VERIFIED", "blocking_reasons": []}

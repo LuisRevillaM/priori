@@ -1,0 +1,13 @@
+ Makefile                                           |   5 +-
+ .../query-plans/ball_side_block_shift.ir.v1.json   |   2 +-
+ ...osite_corridor_after_shift.experimental.v1.json |   2 +-
+ ...sion_corridor_availability.experimental.v1.json |   2 +-
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md        |  14 +
+ delivery/m1.1/status.yaml                          |  12 +-
+ generated/capability-catalog.json                  |   2 +-
+ src/tqe/runtime/binder.py                          |  52 +++
+ src/tqe/runtime/catalog.py                         |  34 ++
+ src/tqe/runtime/executor.py                        | 347 ++++++++++++++++++++-
+ src/tqe/runtime/relations.py                       |  66 ++++
+ 12 files changed, 519 insertions(+), 20 deletions(-)

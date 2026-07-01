@@ -1,0 +1,18 @@
+commit 0ae27e1d014685a7b5516832b7eff1f4046e8b95
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Sat Jun 20 10:03:33 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Sat Jun 20 10:03:33 2026 -0700
+
+    Strengthen M1.1S S3R after external rejection
+
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md        |  10 +
+ .../m1.1/reviews/gate-s3r2-controller-review.md    |  31 ++
+ delivery/m1.1/status.yaml                          |   6 +-
+ ...1-1s-gate-s3r2-external-rejection-correction.md |  14 +
+ .../2026-06-20-m1-1s-gate-s3r-external-review.md   |  27 +
+ src/tqe/runtime/executor.py                        | 605 +++++++++++++++++----
+ src/tqe/runtime/values.py                          |  26 +-
+ src/tqe/verification/m1_1_gate_s3r.py              | 162 +++++-
+ 9 files changed, 758 insertions(+), 124 deletions(-)

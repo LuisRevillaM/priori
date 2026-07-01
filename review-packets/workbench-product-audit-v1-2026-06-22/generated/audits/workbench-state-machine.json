@@ -1,0 +1,232 @@
+{
+  "schema_version": "1.0",
+  "audit_id": "workbench_product_audit_v1",
+  "deployed_url": "https://priori-integrated-alpha.onrender.com",
+  "deployed_commit": "25f29a146e475ef573dbf59da1901bec4d9c8253",
+  "observed_at": "2026-06-22",
+  "intended_flow": [
+    "IDLE",
+    "INTERPRETING",
+    "NEEDS_CLARIFICATION | CAPABILITY_GAP | PLAN_READY",
+    "CONFIRMED",
+    "EXECUTING",
+    "RESULTS_READY",
+    "REPLAY_LOADING",
+    "MOMENT_READY"
+  ],
+  "implementation_summary": {
+    "state_model": "React state variables rather than an explicit finite-state machine",
+    "primary_status_sources": [
+      "busy",
+      "interpretation.status",
+      "validation.validation.ok",
+      "confirmation.confirmation.execution_authorization_id",
+      "execution.execution.results",
+      "inspection.inspection.result.result_id",
+      "timestampInspection"
+    ],
+    "strong_transitions": [
+      "scope changes clear validation, confirmation, execution, result selection, inspection, timestamp inspection, and loading result id",
+      "result inspection is generation-guarded and ignored when the returned result id no longer matches the requested result",
+      "zero selected matches disables validation and execution"
+    ],
+    "weak_transitions": [
+      "mode changes do not clear the prior interpreted plan",
+      "query edits do not clear prior interpreted plan",
+      "preset selection can coexist with unrelated natural-language text",
+      "Hermes readiness is shown in bootstrap but live model interpretation can still return HTTP 500"
+    ]
+  },
+  "required_source_provenance_states": [
+    {
+      "source": "REVIEWED_RECIPE",
+      "meaning": "A stored reviewed recipe was loaded as a trusted recipe artifact.",
+      "must_not_claim": "AI-authored plan"
+    },
+    {
+      "source": "MANUAL_PRESET",
+      "meaning": "The user selected a preset or Browse recipes path without model authorship.",
+      "must_not_claim": "Hermes interpreted or authored the plan"
+    },
+    {
+      "source": "HERMES_RECIPE_SELECTION",
+      "meaning": "Hermes selected a reviewed/saved recipe and the host loaded that recipe.",
+      "must_not_claim": "novel composition"
+    },
+    {
+      "source": "HERMES_NOVEL_COMPOSITION",
+      "meaning": "Hermes authored a new schema-valid plan from registered capabilities with a new plan hash.",
+      "must_not_claim": "reviewed recipe"
+    },
+    {
+      "source": "DETERMINISTIC_REPAIR",
+      "meaning": "Host deterministic fallback or repair produced the final safe decision.",
+      "must_not_claim": "model-authored decision"
+    },
+    {
+      "source": "CAPABILITY_GAP",
+      "meaning": "The request cannot be measured with the current capability boundary.",
+      "must_not_claim": "nearest available recipe"
+    }
+  ],
+  "states": [
+    {
+      "state": "IDLE",
+      "visible_copy": "Host tactical query workbench; no replay window selected",
+      "primary_action": "Interpret",
+      "recovery_path": "Choose Ask Hermes or Browse recipes, then interpret",
+      "screenshot_reference": "artifacts/workbench-alpha/review-proof/screenshots/approved-interpretation.png",
+      "risk": "Initial page defaults to Browse recipes/manual even while Ask Hermes is visually prominent."
+    },
+    {
+      "state": "INTERPRETING",
+      "visible_copy": "busy: interpret",
+      "primary_action": "wait",
+      "recovery_path": "No cancel control; wait for response or error banner",
+      "screenshot_reference": null,
+      "risk": "No elapsed time or source-specific explanation; model mode failures surface as a generic error."
+    },
+    {
+      "state": "NEEDS_CLARIFICATION",
+      "visible_copy": "I need clarification",
+      "primary_action": "answer clarification in query box and interpret again",
+      "recovery_path": "Manual edit only; no structured clarification controls",
+      "screenshot_reference": "artifacts/workbench-alpha/review-proof/screenshots/state-clarification.png",
+      "risk": "Clarification questions are shown but not connected to a guided answer flow."
+    },
+    {
+      "state": "CAPABILITY_GAP",
+      "visible_copy": "This cannot currently be measured",
+      "primary_action": "revise request",
+      "recovery_path": "Use supported recipe or measurable corridor language",
+      "screenshot_reference": "artifacts/workbench-alpha/review-proof/screenshots/state-capability-gap.png",
+      "risk": "Manual fallback misses some unsupported synonyms such as scanning/body angle and can silently select the preset."
+    },
+    {
+      "state": "PLAN_READY",
+      "visible_copy": "Interpreted as; PLAN_INTERPRETED",
+      "primary_action": "Confirm interpretation",
+      "recovery_path": "Change query, mode, preset, or scope and re-interpret",
+      "screenshot_reference": "artifacts/workbench-alpha/review-proof/screenshots/experimental-interpretation.png",
+      "risk": "Approved recipe, experimental template, and novel composition are not visually separated enough."
+    },
+    {
+      "state": "VALIDATED",
+      "visible_copy": "valid",
+      "primary_action": "Host confirm",
+      "recovery_path": "Change scope/query and revalidate",
+      "screenshot_reference": "artifacts/workbench-alpha/review-proof/screenshots/approved-confirmation.png",
+      "risk": "Two confirmation actions appear: Submit and validate plus Confirm interpretation."
+    },
+    {
+      "state": "CONFIRMED",
+      "visible_copy": "Host confirm enabled Run query",
+      "primary_action": "Run query",
+      "recovery_path": "Change scope/query to invalidate",
+      "screenshot_reference": "artifacts/workbench-alpha/review-proof/screenshots/approved-confirmation.png",
+      "risk": "Host confirmation is implementation language; client-facing copy should be approval/run authorization."
+    },
+    {
+      "state": "EXECUTING_MISS",
+      "visible_copy": "MISS deterministic runtime is running",
+      "primary_action": "wait",
+      "recovery_path": "No cancel control",
+      "screenshot_reference": null,
+      "risk": "Cold cloud runs observed at approximately 63s for approved and 171s for corridor; copy does not show elapsed time, selected matches, or cache promise."
+    },
+    {
+      "state": "EXECUTING_HIT",
+      "visible_copy": "HIT returned cached deterministic execution",
+      "primary_action": "open result",
+      "recovery_path": "Use result rail",
+      "screenshot_reference": null,
+      "risk": "Cache language is honest but too technical for primary UI."
+    },
+    {
+      "state": "RESULTS_READY",
+      "visible_copy": "Result Rail; N shown",
+      "primary_action": "select a result",
+      "recovery_path": "Change scope/query and rerun",
+      "screenshot_reference": "artifacts/workbench-alpha/review-proof/screenshots/experimental-result-replay.png",
+      "risk": "Result labels expose formal classifications instead of tactical summaries and principal measurements."
+    },
+    {
+      "state": "REPLAY_LOADING",
+      "visible_copy": "Loading selected result evidence",
+      "primary_action": "wait",
+      "recovery_path": "Select a different result after loading completes",
+      "screenshot_reference": null,
+      "risk": "Replay loading is tied to evidence panel, not to the replay surface itself."
+    },
+    {
+      "state": "MOMENT_READY",
+      "visible_copy": "Coordinate Replay",
+      "primary_action": "play, pause, scrub, inspect evidence",
+      "recovery_path": "Select another result or inspect timestamp",
+      "screenshot_reference": "artifacts/workbench-alpha/review-proof/screenshots/experimental-overlay-evidence-correlation.png",
+      "risk": "Corridor overlay lacks a legend and temporal validity."
+    },
+    {
+      "state": "EMPTY_RESULTS",
+      "visible_copy": "0 shown",
+      "primary_action": "revise parameters or scope",
+      "recovery_path": "No dedicated empty-results explanation found",
+      "screenshot_reference": null,
+      "risk": "Honest zero result state is structurally possible but not product-explained."
+    },
+    {
+      "state": "EXECUTION_FAILED",
+      "visible_copy": "error banner",
+      "primary_action": "retry or change scope/query",
+      "recovery_path": "No specific execution recovery copy",
+      "screenshot_reference": null,
+      "risk": "500 model failures are not translated into a user-safe model unavailable state."
+    },
+    {
+      "state": "MODEL_UNAVAILABLE",
+      "visible_copy": "Hermes frontier interpretation is not connected; Manual mode remains available",
+      "primary_action": "switch to Browse recipes",
+      "recovery_path": "manual fallback",
+      "screenshot_reference": "artifacts/workbench-alpha/review-proof/screenshots/state-model-unavailable-manual-recovery.png",
+      "risk": "Live bootstrap can say HERMES_FRONTIER_READY while model interpret calls fail."
+    },
+    {
+      "state": "SCOPE_CHANGED",
+      "visible_copy": "selected match count changes",
+      "primary_action": "validate again",
+      "recovery_path": "select at least one match",
+      "screenshot_reference": null,
+      "risk": "This is one of the stronger areas; tested transitions invalidate dependent artifacts."
+    },
+    {
+      "state": "MODE_CHANGED",
+      "visible_copy": "Ask Hermes / Browse recipes",
+      "primary_action": "Interpret",
+      "recovery_path": "manual re-interpret",
+      "screenshot_reference": null,
+      "risk": "Mode change should clear prior interpretation, validation, execution, and replay."
+    }
+  ],
+  "contradictions_and_fail_closed_rules": [
+    {
+      "contradiction": "corridor recipe selected while block-shift text remains in the query box",
+      "rule": "Changing preset must either update the query placeholder/display copy or show the plan source as recipe-selected and mark the text as advisory only."
+    },
+    {
+      "contradiction": "Hermes mode showing a manual interpretation",
+      "rule": "Changing mode must clear interpretation, validation, confirmation, execution, results, and replay until that mode produces a fresh interpretation; source must be MANUAL_PRESET, HERMES_RECIPE_SELECTION, HERMES_NOVEL_COMPOSITION, DETERMINISTIC_REPAIR, or CAPABILITY_GAP."
+    },
+    {
+      "contradiction": "bootstrap reports Hermes ready while /api/interpret model mode returns 500",
+      "rule": "Convert model invocation exceptions into MODEL_UNAVAILABLE with error id and manual recovery; never return raw 500 to the product surface."
+    },
+    {
+      "contradiction": "unsupported intent/body-angle language can fall through to selected preset in manual mode",
+      "rule": "Unsupported concept detection must run before preset fallback and include semantic gap codes for scanning, body angle, body shape, intent, optimality, and probability; final source must be CAPABILITY_GAP."
+    },
+    {
+      "contradiction": "plan ready while user has edited query after interpretation",
+      "rule": "Any query edit after interpretation marks the plan stale and disables validation until reinterpreted."
+    }
+  ]
+}

@@ -1,0 +1,339 @@
+{
+  "schema_version": "1.0",
+  "recipe": {
+    "schema_version": "1.0",
+    "recipe_id": "possession_corridor_availability_v1",
+    "recipe_version": "0.1.0",
+    "display_name": "Possession Corridor Availability",
+    "description": "Experimental composition that starts from ordinary possession anchors and detects whether a geometric progressive corridor appears without using the M1 wide-entry block-shift spine.",
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "allowed_claims": [
+      "The team had an active-ball possession anchor.",
+      "A geometric progressive corridor appeared under the configured relation thresholds.",
+      "The replay coordinates come from canonical 25 Hz source frames."
+    ],
+    "disallowed_claims": [
+      "The attack intentionally created the corridor.",
+      "A pass should have been played.",
+      "The corridor is optimal.",
+      "The result is a pass probability, decision-quality, causation, player-intent, or missed-opportunity claim.",
+      "The result is backed by licensed match video."
+    ],
+    "limitations": [
+      "Experimental plan; not an approved recipe.",
+      "No offside, receiver body orientation, pressure, pass probability, or optimality model is evaluated.",
+      "No match video is used."
+    ],
+    "output_classifications": [
+      "PROGRESSIVE_CORRIDOR_AVAILABLE"
+    ],
+    "parameters": [
+      {
+        "name": "analysis_rate_hz",
+        "payload_type": "number",
+        "unit": "hertz",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "hertz",
+          "value": 5
+        },
+        "description": "Analysis cadence."
+      },
+      {
+        "name": "minimum_possession_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 5.0
+        },
+        "description": "Minimum active-ball possession duration."
+      },
+      {
+        "name": "maximum_analysis_gap_ms",
+        "payload_type": "number",
+        "unit": "millisecond",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "millisecond",
+          "value": 250
+        },
+        "description": "Maximum permitted gap in the analysis stream."
+      },
+      {
+        "name": "minimum_outfield_players_per_team",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 9
+        },
+        "description": "Minimum outfield players required per team for quality checks."
+      },
+      {
+        "name": "corridor_max_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 5.0
+        },
+        "description": "Maximum post-anchor relation search window."
+      },
+      {
+        "name": "corridor_minimum_progression_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 5.0
+        },
+        "description": "Minimum forward progression for a corridor segment."
+      },
+      {
+        "name": "corridor_minimum_segment_length_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 6.0
+        },
+        "description": "Minimum source-target segment length."
+      },
+      {
+        "name": "corridor_maximum_segment_length_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 45.0
+        },
+        "description": "Maximum source-target segment length."
+      },
+      {
+        "name": "corridor_minimum_clearance_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 4.0
+        },
+        "description": "Minimum defender clearance from the corridor segment."
+      },
+      {
+        "name": "corridor_open_after_frames",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        },
+        "description": "Frames required before a corridor is considered open."
+      },
+      {
+        "name": "corridor_close_after_frames",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        },
+        "description": "Frames required before a corridor is considered closed."
+      },
+      {
+        "name": "corridor_minimum_duration_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.4
+        },
+        "description": "Minimum open duration retained in relation output."
+      }
+    ]
+  },
+  "default_invocation": {
+    "schema_version": "1.0",
+    "invocation_id": "m1_fortuna_experimental_possession_corridor",
+    "match_ids": [
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9"
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "parameters": {},
+    "max_results": 64,
+    "execution_mode": "execute"
+  },
+  "draft_plan": {
+    "schema_version": "1.0",
+    "plan_id": "possession_corridor_availability_experimental_v1",
+    "plan_version": "0.1.0",
+    "recipe_id": "possession_corridor_availability_v1",
+    "recipe_version": "0.1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate",
+    "classification_mode": "partial_declared",
+    "nodes": [
+      {
+        "kind": "primitive",
+        "node_id": "possession",
+        "catalog_ref": "possession_segment",
+        "version": "0.1.0"
+      },
+      {
+        "kind": "relation",
+        "node_id": "progressive_corridor",
+        "catalog_ref": "geometric_progressive_corridor_from_anchor_set",
+        "version": "0.1.0",
+        "inputs": {
+          "anchors": {
+            "source_node_id": "possession",
+            "output_name": "anchors"
+          }
+        },
+        "parameters": {
+          "max_window_seconds": {
+            "kind": "parameter",
+            "name": "corridor_max_window_seconds"
+          },
+          "minimum_progression_m": {
+            "kind": "parameter",
+            "name": "corridor_minimum_progression_m"
+          },
+          "minimum_segment_length_m": {
+            "kind": "parameter",
+            "name": "corridor_minimum_segment_length_m"
+          },
+          "maximum_segment_length_m": {
+            "kind": "parameter",
+            "name": "corridor_maximum_segment_length_m"
+          },
+          "minimum_clearance_m": {
+            "kind": "parameter",
+            "name": "corridor_minimum_clearance_m"
+          },
+          "open_after_frames": {
+            "kind": "parameter",
+            "name": "corridor_open_after_frames"
+          },
+          "close_after_frames": {
+            "kind": "parameter",
+            "name": "corridor_close_after_frames"
+          },
+          "minimum_duration_seconds": {
+            "kind": "parameter",
+            "name": "corridor_minimum_duration_seconds"
+          },
+          "side_filter": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "any"
+          }
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "has_progressive_corridor",
+        "input": {
+          "source_node_id": "progressive_corridor",
+          "output_name": "anchor_evaluations"
+        },
+        "operator": {
+          "name": "exists",
+          "version": "1.0.0"
+        }
+      }
+    ],
+    "classification_rules": [
+      {
+        "label": "PROGRESSIVE_CORRIDOR_AVAILABLE",
+        "predicate_ids": [
+          "has_progressive_corridor"
+        ],
+        "description": "A geometric progressive corridor appeared from a generic possession anchor."
+      }
+    ],
+    "requested_evidence": [
+      {
+        "source": {
+          "source_node_id": "progressive_corridor",
+          "output_name": "episodes"
+        },
+        "field": "relation_id",
+        "alias": "relation_id"
+      },
+      {
+        "source": {
+          "source_node_id": "progressive_corridor",
+          "output_name": "episodes"
+        },
+        "field": "target_player_id",
+        "alias": "target_player_id"
+      },
+      {
+        "source": {
+          "source_node_id": "progressive_corridor",
+          "output_name": "episodes"
+        },
+        "field": "destination_region",
+        "alias": "destination_region"
+      },
+      {
+        "source": {
+          "source_node_id": "progressive_corridor",
+          "output_name": "episodes"
+        },
+        "field": "duration_seconds",
+        "alias": "relation_duration_seconds"
+      },
+      {
+        "source": {
+          "source_node_id": "progressive_corridor",
+          "output_name": "episodes"
+        },
+        "field": "minimum_clearance_m",
+        "alias": "minimum_clearance_m"
+      }
+    ],
+    "anchor_source": {
+      "source_node_id": "possession",
+      "output_name": "anchors"
+    },
+    "complexity_limits": {
+      "max_plan_nodes": 20,
+      "max_nesting_depth": 4,
+      "max_temporal_horizon_seconds": 15.0,
+      "max_returned_moments": 100,
+      "max_relations_per_anchor": 1000,
+      "max_execution_cost": 100000
+    }
+  }
+}

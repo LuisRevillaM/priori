@@ -1,0 +1,177 @@
+# Decision: **APPROVE_WITH_REQUIRED_CHANGES_BEFORE_M1_2**
+
+The core architecture is now credible. Plan-driven result emission, evidence aliases, a second non-M1 execution topology, generic/legacy separation, and frozen M1 parity are all meaningfully demonstrated.
+
+I would not reopen the runtime design. One narrow semantic gap should be closed before Hermes begins authoring and explaining plans.
+
+## What passes
+
+* S4 emits 15 real generic results from rules and traces.
+* S5 projects declared evidence through stable aliases and fails visibly on missing required evidence.
+* S6 emits 64 results from possession anchors without the M1 block-shift spine or terminal `state.accepted`.
+* Generic execution is the default; M1 parity is explicit and isolated at 180 results and 900 traces.
+* Generic result IDs and ordering are deterministic.
+* Cache-independent reproduction is reported.
+* The second plan is adequate as an **architectural canary**, although it is not yet the meaningful second approved tactical family planned for M2.
+
+## Blocking issue: collection absence is not yet a definitive `FAIL`
+
+The S6 plan asks whether a progressive corridor exists for each possession anchor.
+
+Current `exists` execution creates positive predicate records only for relation episodes that exist (`executor.py:1423–1463`). It does not emit a negative value for an anchor that was successfully evaluated but produced zero corridors.
+
+Later, when an anchor is absent from the predicate signal, trace generation returns:
+
+```text
+UNKNOWN — anchor missing from predicate signal
+```
+
+rather than:
+
+```text
+FAIL — anchor evaluated; zero qualifying corridors found
+```
+
+This distinction is essential for M1.2.
+
+Hermes must be able to answer:
+
+> “Why did this possession not match?”
+
+with either:
+
+* “No qualifying corridor existed,” or
+* “The system lacked sufficient evidence to decide.”
+
+It cannot collapse both into `UNKNOWN`.
+
+This also affects threshold refinement. If Hermes raises corridor clearance until an anchor has no qualifying relation, the system currently risks interpreting that disappearance as unavailable evidence rather than a genuine failed predicate.
+
+## Required correction
+
+Add explicit **per-anchor relation evaluation coverage**.
+
+For each input anchor, the relation computation should make it possible to distinguish:
+
+```text
+PASS
+One or more qualifying relation episodes exist.
+
+FAIL
+The anchor was fully evaluated and zero qualifying episodes exist.
+
+UNKNOWN
+The relation could not be evaluated reliably for that anchor.
+```
+
+The exact representation can vary:
+
+* a declared anchor-evaluation output;
+* an anchor-indexed relation collection;
+* or a typed coverage record accompanying the relation episodes.
+
+But absence from an episode list alone cannot carry all three meanings.
+
+`count_at_least` needs the same treatment. Its current implementation counts the complete source list rather than producing an anchor-relative count, so it should either be corrected or withheld from the Hermes capability catalog.
+
+## Blocking issue: relation evidence needs an explicit witness
+
+A possession anchor can have multiple qualifying corridors.
+
+For S6, evidence projection currently falls back to the first matching relation record when no classification output provides a selected relation (`executor.py:937–969`). The ordering is deterministic, but the plan does not declare why that relation is the one presented.
+
+Before grounded explanations, the system should identify the **witness relation** that satisfied the predicate.
+
+For example:
+
+```text
+has_progressive_corridor: PASS
+witness_relation_id: relation_123
+```
+
+Evidence for:
+
+```text
+target player
+destination region
+duration
+clearance
+```
+
+should resolve against that witness.
+
+Alternatively, an evidence request may explicitly ask for:
+
+```text
+all relations
+longest-duration relation
+maximum-clearance relation
+first-opened relation
+```
+
+Do not let list order become an undocumented analytical decision.
+
+## Required proof tests
+
+Before M1.2:
+
+1. A possession anchor with at least one corridor produces `PASS`.
+2. A fully evaluated anchor with no corridor produces `FAIL`.
+3. An anchor with unavailable relation evidence produces `UNKNOWN`.
+4. Tightening a relation threshold can turn `PASS` into `FAIL`, not `UNKNOWN`.
+5. `EXCLUDE_CANDIDATE`, `INCLUDE_WITH_WARNING`, and `INVALIDATE_EXECUTION` behave correctly for those genuine states.
+6. `exists` records a deterministic witness relation.
+7. Reordering relation episodes does not change selected evidence.
+8. Multiple relations at one anchor produce evidence corresponding to the declared witness or aggregation.
+9. `count_at_least` is anchor-relative and tri-state, or it is removed from the agent-exposed catalog.
+10. Generic non-match inspection returns the same definitive `FAIL` and `UNKNOWN` distinctions.
+
+## Agent-safety correction
+
+The IR declares:
+
+```text
+max_relations_per_anchor
+max_execution_cost
+max_nesting_depth
+```
+
+but the binder excerpt only visibly enforces node count, result count, and temporal horizon.
+
+Before Hermes can author plans, either enforce the remaining applicable limits or remove them from the normative contract. At minimum, cap relation expansion per anchor and fail visibly when exceeded.
+
+Also expose to Hermes only capabilities with passing positive, negative, and `UNKNOWN` conformance tests. A small verified catalog is better than a broad inaccurate one.
+
+## Small correctness cleanup
+
+For `INCLUDE_WITH_WARNING`, the result may be emitted from an `UNKNOWN` rule, but `apply_result_semantics()` later recomputes `matched_classification_rules` using PASS-only matching. Preserve the actual rule decision explicitly, such as:
+
+```text
+rule_match_status: WARNING
+unknown_required_predicates: [...]
+```
+
+That will make Hermes’s explanation accurate.
+
+## Packet limitations
+
+I could not independently rerun the commands or canonical-data executions.
+
+The packet also omits:
+
+* the `tqe.runtime.relations` implementation used for corridor geometry;
+* the referenced Gate D relation report.
+
+Therefore I could not independently inspect the relation mathematics or its claimed positive/negative/UNKNOWN fixtures.
+
+## Final assessment
+
+M1.1S has crossed the architectural threshold:
+
+> **The plan now genuinely drives generic result production.**
+
+The remaining issue is narrower but directly relevant to the next milestone:
+
+> **The runtime must distinguish “no relation exists” from “we cannot determine whether one exists,” and must identify which relation grounds the evidence.**
+
+Close that focused gap, then unblock M1.2. Afterward, stop refining the runtime in isolation and build the Hermes draft–execute–inspect–revise loop.

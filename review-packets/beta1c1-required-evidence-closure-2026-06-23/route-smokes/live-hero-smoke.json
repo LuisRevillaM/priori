@@ -1,0 +1,72 @@
+{
+  "schema_version": "beta1c1.live_smoke.v1",
+  "base_url": "https://priori-integrated-alpha.onrender.com",
+  "deployed_commit": "630b2b81a1fbf679dbd413d2d8e466a627645050",
+  "corrective_commit": "cf5b058eb7e02ce4f7b22e9c56f85e64341d117b",
+  "deploy_id": "dep-d8t79k7lk1mc73apb9l0",
+  "health": {
+    "ok": true,
+    "service": "workbench_alpha_host",
+    "status": "ALIVE"
+  },
+  "ready": {
+    "status": "READY",
+    "failed_checks": []
+  },
+  "interpret": {
+    "status": "PLAN_INTERPRETED",
+    "provenance_source": "HERMES_NOVEL_COMPOSITION",
+    "source": "hermes_attested_origin_bundle",
+    "recipe_id": "possession_corridor_destination_entry_v1",
+    "fallback_reason": null
+  },
+  "scope": {
+    "match_ids": ["J03WOY"],
+    "periods": ["firstHalf"],
+    "perspective_team_role": "home",
+    "max_results": 64
+  },
+  "validation": {
+    "ok": true,
+    "bound_plan_id": "bound_68e7d1a7cd29d7bd",
+    "bound_plan_hash": "68e7d1a7cd29d7bd0490765694d8f4700c882046510e78a2579b8845358f1bb0",
+    "execution_profile": "generic"
+  },
+  "cache_before": {
+    "cache_key": "4d0fc2a5e843dd7eb69b355d3bed41c1aec5903432ca820df1a132bc3301443e",
+    "cache_status": "MISS",
+    "message": "Cache miss; deterministic runtime will execute on confirmation.",
+    "ok": true,
+    "stages": ["authorization_checked", "cache_miss", "deterministic_runtime_execution", "cache_record_written"]
+  },
+  "execute": {
+    "execution_id": "exec_c4feb86ed01eaa93",
+    "execution_status": "pass",
+    "execution_complete": true,
+    "requested_evidence_failure_count": 0,
+    "total_result_count": 14,
+    "returned_result_count": 14,
+    "trace_count": 49
+  },
+  "cache_after": {
+    "cache_key": "4d0fc2a5e843dd7eb69b355d3bed41c1aec5903432ca820df1a132bc3301443e",
+    "cache_status": "MISS",
+    "message": "Executed deterministic runtime and stored host-owned cache record.",
+    "ok": true,
+    "stages": ["authorization_checked", "cache_miss", "deterministic_runtime_execution", "cache_record_written"]
+  },
+  "required_missing_count": 0,
+  "required_missing_sample": [],
+  "first_requested_evidence": {
+    "corridor_duration_seconds": 3.8,
+    "corridor_open_frame_id": 11375,
+    "destination_entry_mode": "PRESENT_AT_OPEN",
+    "destination_entry_status": "PASS",
+    "destination_region": "left_half_space",
+    "destination_time_to_entry_seconds": 0.0,
+    "possession_start_frame_id": 11365,
+    "relation_id": "dd74570708cce6a3",
+    "target_player_id": "DFL-OBJ-00028V"
+  },
+  "inspection_replay_frames": 101
+}

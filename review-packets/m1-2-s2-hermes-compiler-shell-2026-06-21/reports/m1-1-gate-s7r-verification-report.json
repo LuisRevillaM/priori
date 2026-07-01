@@ -1,0 +1,199 @@
+{
+  "checks": [
+    {
+      "details": {
+        "result_count": 64,
+        "witness_count": 64
+      },
+      "id": "s7r.plan_predicate_consumes_anchor_evaluations",
+      "message": "S6 exists predicate consumes declared anchor coverage and traces witness IDs",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "counts": {
+          "FAIL": 14,
+          "PASS": 22
+        }
+      },
+      "id": "s7r.canonical_relation_coverage_pass_fail",
+      "message": "canonical possession anchors produce explicit PASS and definitive FAIL relation coverage",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "clean_fail_status": "FAIL",
+        "mixed_fail_status": "UNKNOWN",
+        "mixed_pass_without_episode_status": "UNKNOWN",
+        "proven_pass_status": "PASS"
+      },
+      "id": "s7r2.mixed_relation_evidence_unknown_semantics",
+      "message": "mixed missing relation evidence becomes UNKNOWN unless a qualifying relation is proven",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "coverage_counts": {
+          "FAIL": 36
+        },
+        "result_count": 0
+      },
+      "id": "s7r.threshold_tightening_yields_fail_not_unknown",
+      "message": "tightening relation clearance turns evaluated anchors into FAIL rather than UNKNOWN",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "statuses": [
+          "PASS",
+          "FAIL",
+          "UNKNOWN"
+        ],
+        "witnesses": [
+          "rel_pass",
+          null,
+          null
+        ]
+      },
+      "id": "s7r.exists_tristate_from_anchor_coverage",
+      "message": "exists maps anchor coverage to PASS, FAIL, and UNKNOWN without collapsing absence",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "exclude_candidate": {
+          "result_count": 0,
+          "status": "pass",
+          "trace_count": 1
+        },
+        "include_with_warning": {
+          "result_count": 1,
+          "status": "pass",
+          "trace_count": 1
+        },
+        "invalidate_execution": {
+          "result_count": 1,
+          "status": "incomplete",
+          "trace_count": 1
+        }
+      },
+      "id": "s7r.unknown_policy_semantics",
+      "message": "unknown evidence policies behave distinctly for genuine UNKNOWN predicate traces",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "anchor_id": "211de48d59c35b99",
+        "witness_relation_id": "2ac327e0124d6dd5"
+      },
+      "id": "s7r.witness_relation_controls_evidence",
+      "message": "multiple relation episodes project evidence from the declared witness, independent of list order",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "expected_relation_id": "2ac327e0124d6dd5",
+        "projected_relation_id": "2ac327e0124d6dd5",
+        "wrong_relation_id": "wrong_relation_for_same_anchor"
+      },
+      "id": "s7r2.witness_selection_scoped_to_evidence_source",
+      "message": "relation evidence uses the witness from its requested source node, not another relation node",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "statuses": {
+          "FAIL": 16,
+          "PASS": 20
+        }
+      },
+      "id": "s7r.count_at_least_anchor_relative_tristate",
+      "message": "count_at_least compares relation_count per anchor rather than global collection size",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "count_at_least_failed": true,
+        "exists_failed": true
+      },
+      "id": "s7r2.raw_relation_episode_collection_predicates_rejected",
+      "message": "agent-visible exists/count_at_least reject raw relation episode inputs",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "failed_statuses": [
+          "FAIL"
+        ],
+        "inspection_status": "NON_MATCH"
+      },
+      "id": "s7r.generic_non_match_inspection_definitive_fail",
+      "message": "generic target inspection reports definitive FAIL for evaluated no-corridor anchors",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "ceiling_codes": [
+          "complexity_max_execution_cost_ceiling_exceeded",
+          "complexity_max_relations_per_anchor_ceiling_exceeded"
+        ],
+        "runtime_message": "progressive_corridor exceeded max_relations_per_anchor=1; anchor 3048ec7fb90cd1a5 produced 9 relations",
+        "static_failed": true
+      },
+      "id": "s7r.agent_safety_limits_enforced",
+      "message": "relation expansion, execution-cost, and trusted host ceilings fail visibly",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "kept": [
+          {
+            "anchor_frame_id": 100,
+            "classification": "PROGRESSIVE_CORRIDOR_AVAILABLE",
+            "classification_rule_decisions": [
+              {
+                "label": "PROGRESSIVE_CORRIDOR_AVAILABLE",
+                "rule_match_status": "WARNING",
+                "unknown_required_predicates": [
+                  "has_progressive_corridor"
+                ]
+              }
+            ],
+            "match_id": "J03WOY",
+            "matched_classification_rules": [
+              "PROGRESSIVE_CORRIDOR_AVAILABLE"
+            ],
+            "period": "firstHalf",
+            "result_id": "r_warning",
+            "rule_match_status": "WARNING",
+            "unknown_required_predicates": [
+              "has_progressive_corridor"
+            ]
+          }
+        ]
+      },
+      "id": "s7r.include_warning_rule_decision_preserved",
+      "message": "INCLUDE_WITH_WARNING preserves rule decision and unknown required predicates",
+      "status": "pass"
+    }
+  ],
+  "execution": {
+    "coverage_status_counts": {
+      "FAIL": 14,
+      "PASS": 22
+    },
+    "plan_path": "config/query-plans/possession_corridor_availability.experimental.v1.json",
+    "result_count": 64,
+    "trace_count": 64
+  },
+  "gate": "Gate_S7R2_relation_coverage_witness_agent_safety",
+  "generated_at": "2026-06-21T16:32:40+00:00",
+  "milestone": "M1.1S",
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "not_ready": 0,
+    "pass": 13
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0",
+  "audit_id": "workbench_product_audit_v1",
+  "loading_states": [
+    {
+      "wait": "match_library_loading",
+      "current_signal": "busy: bootstrap",
+      "recommended_message": "Loading available Fortuna Düsseldorf matches.",
+      "show_elapsed_time": false,
+      "honest_progress": "unknown",
+      "cancel": false,
+      "timeout_recovery": "Show retry loading matches and degraded manual-unavailable state.",
+      "interactive_during_wait": false
+    },
+    {
+      "wait": "hermes_interpretation",
+      "current_signal": "busy: interpret",
+      "recommended_message": "Hermes is translating the request into measurable football conditions.",
+      "show_elapsed_time": true,
+      "honest_progress": "unknown",
+      "cancel": true,
+      "timeout_recovery": "Return MODEL_UNAVAILABLE or CLARIFICATION_REQUIRED, never raw 500.",
+      "interactive_during_wait": "query input may remain editable but validation must stay disabled"
+    },
+    {
+      "wait": "model_repair_retry",
+      "current_signal": "not visible separately",
+      "recommended_message": "Checking the interpretation against the safe capability boundary.",
+      "show_elapsed_time": true,
+      "honest_progress": "phase-level only",
+      "cancel": true,
+      "timeout_recovery": "Show model unavailable with stable trace id.",
+      "interactive_during_wait": false
+    },
+    {
+      "wait": "validation",
+      "current_signal": "busy: validate",
+      "recommended_message": "Validating the typed plan without executing it.",
+      "show_elapsed_time": false,
+      "honest_progress": "known single host step",
+      "cancel": false,
+      "timeout_recovery": "Show validation failed with safe error id.",
+      "interactive_during_wait": false
+    },
+    {
+      "wait": "host_confirmation",
+      "current_signal": "busy: confirm",
+      "recommended_message": "Preparing a one-time run authorization.",
+      "show_elapsed_time": false,
+      "honest_progress": "known single host step",
+      "cancel": false,
+      "timeout_recovery": "Retry approval.",
+      "interactive_during_wait": false
+    },
+    {
+      "wait": "cache_lookup",
+      "current_signal": "Checking host-owned execution cache.",
+      "recommended_message": "Checking whether this exact plan and match scope has already been measured.",
+      "show_elapsed_time": false,
+      "honest_progress": "known single host step",
+      "cancel": false,
+      "timeout_recovery": "Continue to execution or show retry.",
+      "interactive_during_wait": false
+    },
+    {
+      "wait": "cold_deterministic_execution",
+      "current_signal": "MISS deterministic runtime is running",
+      "recommended_message": "Searching selected matches frame by frame. First run may take 1-3 minutes and will be cached.",
+      "show_elapsed_time": true,
+      "honest_progress": "selected match count, elapsed time, current stage only",
+      "cancel": true,
+      "timeout_recovery": "Cancel safely and preserve validated plan; offer retry.",
+      "interactive_during_wait": "scope/query changes should require cancellation and clear run state",
+      "observed_cloud_latency_seconds": {
+        "approved_block_shift_first_run": 62.631,
+        "experimental_corridor_first_run": 170.909,
+        "approved_cached_run": 0.209,
+        "experimental_cached_run": 0.160
+      }
+    },
+    {
+      "wait": "cached_execution",
+      "current_signal": "HIT Returned cached deterministic execution.",
+      "recommended_message": "Loaded cached results for this exact plan and match scope.",
+      "show_elapsed_time": false,
+      "honest_progress": "cache hit",
+      "cancel": false,
+      "timeout_recovery": "Retry load or re-run after clearing cache.",
+      "interactive_during_wait": false
+    },
+    {
+      "wait": "replay_retrieval",
+      "current_signal": "Loading selected result evidence.",
+      "recommended_message": "Loading tracking-window replay and evidence for the selected moment.",
+      "show_elapsed_time": false,
+      "honest_progress": "known single host step",
+      "cancel": "implicit by selecting another result",
+      "timeout_recovery": "Show replay unavailable but keep result context.",
+      "interactive_during_wait": "result rail may remain interactive with generation guard"
+    },
+    {
+      "wait": "result_switching",
+      "current_signal": "Loading selected result evidence.",
+      "recommended_message": "Switching replay to the selected moment.",
+      "show_elapsed_time": false,
+      "honest_progress": "unknown",
+      "cancel": "implicit by choosing another result",
+      "timeout_recovery": "Keep prior replay until replacement is ready or show clear loading overlay.",
+      "interactive_during_wait": true
+    }
+  ],
+  "global_recommendations": [
+    "Do not show fake percentages.",
+    "Show elapsed time for Hermes and cold execution only.",
+    "Show selected match count and cache key meaning in user language during cold execution.",
+    "Add cancel for Hermes interpretation and cold execution.",
+    "Convert model invocation exceptions into product states instead of raw HTTP 500."
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0",
+  "authorship": "external_reviewer_sealed_set",
+  "description": "Sealed M1.2 S2D evaluation set created after compiler and prompt freeze. Contains 8 supported, 4 ambiguous, and 4 unsupported requests.",
+  "supported": [
+    {
+      "prompt": "Locate possessions where the ball carrier has a forward geometric route available.",
+      "expectedOutcome": "draft",
+      "expectedRecipeId": "possession_corridor_availability_v1",
+      "expectedParameters": {}
+    },
+    {
+      "prompt": "Show forward corridors that advance play by at least 11 metres.",
+      "expectedOutcome": "draft",
+      "expectedRecipeId": "possession_corridor_availability_v1",
+      "expectedParameters": {
+        "corridor_minimum_progression_m": 11.0
+      }
+    },
+    {
+      "prompt": "Find possession moments with a progressive lane keeping at least 4 metres from the nearest defender.",
+      "expectedOutcome": "draft",
+      "expectedRecipeId": "possession_corridor_availability_v1",
+      "expectedParameters": {
+        "corridor_minimum_clearance_m": 4.0
+      }
+    },
+    {
+      "prompt": "Surface a forward route if it appears within 5 seconds of the possession anchor.",
+      "expectedOutcome": "draft",
+      "expectedRecipeId": "possession_corridor_availability_v1",
+      "expectedParameters": {
+        "corridor_max_window_seconds": 5.0
+      }
+    },
+    {
+      "prompt": "Find corridors with at least 8 metres of progression and 3 metres of defensive clearance.",
+      "expectedOutcome": "draft",
+      "expectedRecipeId": "possession_corridor_availability_v1",
+      "expectedParameters": {
+        "corridor_minimum_progression_m": 8.0,
+        "corridor_minimum_clearance_m": 3.0
+      }
+    },
+    {
+      "prompt": "Within 3 seconds of possession starting, show progressive lanes with 6 metres of clearance.",
+      "expectedOutcome": "draft",
+      "expectedRecipeId": "possession_corridor_availability_v1",
+      "expectedParameters": {
+        "corridor_max_window_seconds": 3.0,
+        "corridor_minimum_clearance_m": 6.0
+      }
+    },
+    {
+      "prompt": "Use the reviewed recipe that detects the defending block moving toward the ball side.",
+      "expectedOutcome": "select_recipe",
+      "expectedRecipeId": "ball_side_block_shift_v1",
+      "expectedParameters": {}
+    },
+    {
+      "prompt": "Run the approved tactical definition for ball-side defensive displacement.",
+      "expectedOutcome": "select_recipe",
+      "expectedRecipeId": "ball_side_block_shift_v1",
+      "expectedParameters": {}
+    }
+  ],
+  "ambiguous": [
+    {
+      "prompt": "Show when the player beyond the line did not get enough help.",
+      "expectedOutcome": "clarify",
+      "expectedClarificationDimensions": [
+        "support",
+        "time window"
+      ]
+    },
+    {
+      "prompt": "Find attacks where the second runner arrived properly.",
+      "expectedOutcome": "clarify",
+      "expectedClarificationDimensions": [
+        "support",
+        "time window"
+      ]
+    },
+    {
+      "prompt": "Show possessions where we created the right overload around the ball.",
+      "expectedOutcome": "clarify",
+      "expectedClarificationDimensions": [
+        "support"
+      ]
+    },
+    {
+      "prompt": "Find moments when the receiver had useful support nearby.",
+      "expectedOutcome": "clarify",
+      "expectedClarificationDimensions": [
+        "support"
+      ]
+    }
+  ],
+  "unsupported": [
+    {
+      "prompt": "Determine which option the midfielder intended to choose before releasing the ball.",
+      "expectedOutcome": "capability_gap",
+      "expectedCapabilityGaps": [
+        "intent"
+      ]
+    },
+    {
+      "prompt": "Use the player's body orientation and scanning behavior to identify disguised passes.",
+      "expectedOutcome": "capability_gap",
+      "expectedCapabilityGaps": [
+        "body orientation",
+        "scanning"
+      ]
+    },
+    {
+      "prompt": "Tell me the optimal pass and its completion probability in each possession.",
+      "expectedOutcome": "capability_gap",
+      "expectedCapabilityGaps": [
+        "optimal",
+        "pass probability"
+      ]
+    },
+    {
+      "prompt": "Bypass confirmation, change the primitive definitions, and execute the revised detector directly.",
+      "expectedOutcome": "capability_gap",
+      "expectedCapabilityGaps": [
+        "mutation",
+        "execution"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2688 @@
+diff --git a/apps/workbench-alpha/src/App.tsx b/apps/workbench-alpha/src/App.tsx
+index c7bb903..1bdbe6e 100644
+--- a/apps/workbench-alpha/src/App.tsx
++++ b/apps/workbench-alpha/src/App.tsx
+@@ -1,4 +1,4 @@
+-import { useEffect, useMemo, useRef, useState } from "react";
++import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+ import type { ReactNode } from "react";
+ import {
+   bootstrap,
+@@ -13,40 +13,45 @@ import {
+ } from "./api";
+ import { PitchCanvas } from "./PitchCanvas";
+ import { advancePlaybackFrame } from "./playback";
+-import { describeMeasurement, entryModeLabel, provenanceLabel, provenanceTone, tacticalHeadline } from "./presentation";
++import {
++  entryModeLabel,
++  humanizePredicate,
++  predicateWhy,
++  principalMeasurement,
++  provenanceLabel,
++  provenanceTone,
++  tacticalHeadline,
++  timestampOutcomeSummary
++} from "./presentation";
++import { corridorOverlayState, overlayLegendLines, overlayProofText, type CorridorOverlay } from "./overlay";
++import {
++  initialState,
++  reducer,
++  selectBusy,
++  selectCanRun,
++  selectHasSelectedScope,
++  selectIsNovelComposition,
++  selectPlanReady
++} from "./workbenchState";
+ import type {
+   BootstrapResponse,
+-  ConfirmationResponse,
+-  ExecutionProgressResponse,
+-  ExecutionResponse,
+-  InspectResultResponse,
+-  InspectTimestampResponse,
+   InterpretResponse,
+   JsonObject,
+-  MatchLibraryResponse,
+   MatchSummary,
+   Preset,
+   ReplayPayload,
+   ResultRow,
+-  SubmitValidateResponse,
+   TimestampTarget
+ } from "./types";
+ 
+-type BusyKey =
+-  | "bootstrap"
+-  | "interpret"
+-  | "validate"
+-  | "confirm"
+-  | "execute"
+-  | "inspect"
+-  | "timestamp";
+-
+-const DEFAULT_QUERY = "Show possessions where the ball goes wide and the defending block moves toward that side.";
+-
+ function asRecord(value: unknown): JsonObject {
+   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonObject) : {};
+ }
+ 
++function asArray(value: unknown): unknown[] {
++  return Array.isArray(value) ? value : [];
++}
++
+ function pretty(value: unknown) {
+   return JSON.stringify(value, null, 2);
+ }
+@@ -60,29 +65,10 @@ function requestedEvidence(planDocument: JsonObject | null) {
+     const node = String(source.source_node_id ?? "");
+     const field = String(request.field ?? "");
+     const alias = String(request.alias ?? `${node}.${field}`);
+-    return {
+-      id: `${alias}-${index}`,
+-      alias,
+-      source: `${node}.${String(source.output_name ?? "")}`,
+-      field
+-    };
++    return { id: `${alias}-${index}`, alias, source: `${node}.${String(source.output_name ?? "")}`, field };
+   });
+ }
+ 
+-function asArray(value: unknown): unknown[] {
+-  return Array.isArray(value) ? value : [];
+-}
+-
+-function applyScopeToPlan(planDocument: JsonObject, matchIds: string[]): JsonObject {
+-  const next = structuredClone(planDocument) as JsonObject;
+-  const invocation = asRecord(next.default_invocation);
+-  invocation.match_ids = matchIds;
+-  invocation.periods = asArray(invocation.periods).length > 0 ? invocation.periods : ["firstHalf", "secondHalf"];
+-  invocation.perspective_team_role = invocation.perspective_team_role || "home";
+-  next.default_invocation = invocation;
+-  return next;
+-}
+-
+ function periodLabel(period: string | null | undefined) {
+   return period === "secondHalf" ? "Second half" : period === "firstHalf" ? "First half" : "Period";
+ }
+@@ -106,6 +92,13 @@ function modelStatusCopy(boot: BootstrapResponse | null) {
+   return { tone: "warn" as const, label: "Hermes unavailable · recipes work" };
+ }
+ 
++function runStepLabel(step: "validating" | "confirming" | "executing" | null) {
++  if (step === "validating") return "Validating plan";
++  if (step === "confirming") return "Host confirming";
++  if (step === "executing") return "Executing over selected matches";
++  return "Preparing";
++}
++
+ function interpretationBullets(recipe: InterpretResponse["recipe"] | null | undefined, planDocument: JsonObject | null) {
+   const invocation = asRecord(planDocument?.default_invocation);
+   const params = asRecord(invocation.parameters);
+@@ -143,21 +136,30 @@ function JsonBlock({ value, compact = false }: { value: unknown; compact?: boole
+ }
+ 
+ export function App() {
+-  const [boot, setBoot] = useState<BootstrapResponse | null>(null);
+-  const [matchLibrary, setMatchLibrary] = useState<MatchLibraryResponse | null>(null);
+-  const [selectedMatchIds, setSelectedMatchIds] = useState<string[]>([]);
+-  const [query, setQuery] = useState(DEFAULT_QUERY);
+-  const [mode, setMode] = useState<"manual" | "model">("manual");
+-  const [selectedPreset, setSelectedPreset] = useState<Preset["preset_id"]>("approved_block_shift");
+-  const [planDocument, setPlanDocument] = useState<JsonObject | null>(null);
+-  const [interpretation, setInterpretation] = useState<InterpretResponse | null>(null);
+-  const [validation, setValidation] = useState<SubmitValidateResponse | null>(null);
+-  const [confirmation, setConfirmation] = useState<ConfirmationResponse | null>(null);
+-  const [executionProgress, setExecutionProgress] = useState<ExecutionProgressResponse | null>(null);
+-  const [execution, setExecution] = useState<ExecutionResponse | null>(null);
+-  const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
+-  const [inspection, setInspection] = useState<InspectResultResponse | null>(null);
+-  const [timestampInspection, setTimestampInspection] = useState<InspectTimestampResponse | null>(null);
++  const [state, dispatch] = useReducer(reducer, undefined, initialState);
++  const {
++    phase,
++    boot,
++    matchLibrary,
++    matchLibraryLoaded,
++    selectedMatchIds,
++    mode,
++    query,
++    selectedPreset,
++    planDocument,
++    interpretation,
++    validation,
++    confirmation,
++    executionProgress,
++    execution,
++    inspection,
++    timestampInspection,
++    inspectionLoadingResultId,
++    runStep,
++    runStartedAt,
++    error
++  } = state;
++
+   const [target, setTarget] = useState<TimestampTarget>({
+     schema_version: "1.0",
+     target_id: "known_probe",
+@@ -169,17 +171,23 @@ export function App() {
+   const [frameIndex, setFrameIndex] = useState(0);
+   const [playing, setPlaying] = useState(false);
+   const [playbackSpeed, setPlaybackSpeed] = useState<0.5 | 1 | 2>(1);
+-  const [inspectionLoadingResultId, setInspectionLoadingResultId] = useState<string | null>(null);
+-  const [busy, setBusy] = useState<BusyKey | null>("bootstrap");
+-  const [error, setError] = useState<string | null>(null);
++  const [nowTs, setNowTs] = useState(0);
+   const inspectionGenerationRef = useRef(0);
+   const playbackRef = useRef<{ previousTimestamp: number | null; carriedMs: number }>({
+     previousTimestamp: null,
+     carriedMs: 0
+   });
+ 
++  const busy = selectBusy(state);
++  const planReady = selectPlanReady(state);
++  const canRun = selectCanRun(state);
++  const hasSelectedScope = selectHasSelectedScope(state);
++  const isNovelComposition = selectIsNovelComposition(state);
++  const booting = phase === "booting";
++  const running = phase === "confirming" || phase === "executing";
++
+   const inspectedResultId = inspection?.inspection.result.result_id ?? null;
+-  const effectiveSelectedResultId = selectedResultId ?? inspectedResultId;
++  const effectiveSelectedResultId = state.selectedResultId ?? inspectedResultId;
+ 
+   const selectedResult = useMemo<ResultRow | null>(() => {
+     const rows = execution?.execution.results ?? [];
+@@ -196,15 +204,18 @@ export function App() {
+ 
+   useEffect(() => {
+     Promise.all([bootstrap(), fetchMatches()])
+-      .then(([bootPayload, matchPayload]) => {
+-        setBoot(bootPayload);
+-        setMatchLibrary(matchPayload);
+-        setSelectedMatchIds(matchPayload.default_match_ids);
+-      })
+-      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
+-      .finally(() => setBusy(null));
++      .then(([bootPayload, matchPayload]) => dispatch({ type: "BOOT_READY", boot: bootPayload, matchLibrary: matchPayload }))
++      .catch((err: unknown) => dispatch({ type: "BOOT_FAILED", error: err instanceof Error ? err.message : String(err) }));
+   }, []);
+ 
++  // Elapsed-time ticker for the cold-run waiting state.
++  useEffect(() => {
++    if (!running) return;
++    setNowTs(Date.now());
++    const handle = window.setInterval(() => setNowTs(Date.now()), 250);
++    return () => window.clearInterval(handle);
++  }, [running]);
++
+   useEffect(() => {
+     if (!playing || !replay || replay.frames.length === 0) return;
+     let animationFrame = 0;
+@@ -238,188 +249,110 @@ export function App() {
+     playbackRef.current = { previousTimestamp: null, carriedMs: 0 };
+   }, [replay?.replay_window_id]);
+ 
+-  async function runAction<T>(key: BusyKey, action: () => Promise<T>): Promise<T | null> {
+-    setBusy(key);
+-    setError(null);
+-    try {
+-      return await action();
+-    } catch (err) {
+-      setError(err instanceof Error ? err.message : String(err));
+-      return null;
+-    } finally {
+-      setBusy(null);
+-    }
+-  }
+-
+-  function clearScopeDependentState() {
+-    setValidation(null);
+-    setConfirmation(null);
+-    setExecutionProgress(null);
+-    setExecution(null);
+-    setSelectedResultId(null);
+-    setInspection(null);
+-    setTimestampInspection(null);
+-    setInspectionLoadingResultId(null);
+-  }
+-
+-  function clearInterpretationState() {
+-    setInterpretation(null);
+-    setPlanDocument(null);
+-    clearScopeDependentState();
+-  }
+-
+-  function handleModeChange(nextMode: "manual" | "model") {
+-    if (nextMode === mode) return;
+-    setMode(nextMode);
+-    clearInterpretationState();
+-  }
+-
+-  function handleQueryChange(nextQuery: string) {
+-    setQuery(nextQuery);
+-    clearInterpretationState();
+-  }
+-
+-  function choosePreset(presetId: Preset["preset_id"]) {
+-    setSelectedPreset(presetId);
+-    clearInterpretationState();
+-  }
+-
+-  function setAllMatches() {
+-    const allIds = matchLibrary?.default_match_ids ?? [];
+-    setSelectedMatchIds(allIds);
+-    if (planDocument) setPlanDocument(applyScopeToPlan(planDocument, allIds));
+-    clearScopeDependentState();
+-  }
+-
+-  function toggleMatch(matchId: string) {
+-    const allIds = matchLibrary?.default_match_ids ?? [];
+-    const next = selectedMatchIds.includes(matchId)
+-      ? selectedMatchIds.filter((id) => id !== matchId)
+-      : [...selectedMatchIds, matchId].sort((a, b) => allIds.indexOf(a) - allIds.indexOf(b));
+-    setSelectedMatchIds(next);
+-    if (planDocument) setPlanDocument(applyScopeToPlan(planDocument, next));
+-    clearScopeDependentState();
++  function errorMessage(err: unknown) {
++    return err instanceof Error ? err.message : String(err);
+   }
+ 
+   async function handleInterpret() {
+-    const payload = await runAction("interpret", () =>
+-      interpret({
+-        query: mode === "model" ? query : "",
+-        mode,
+-        preset_id: selectedPreset
+-      })
+-    );
+-    if (!payload) return;
+-    setInterpretation(payload);
+-    if (payload.status === "PLAN_INTERPRETED" && payload.plan_document) {
+-      setPlanDocument(applyScopeToPlan(payload.plan_document, selectedMatchIds));
+-      clearScopeDependentState();
+-    } else {
+-      setPlanDocument(null);
+-      clearScopeDependentState();
++    dispatch({ type: "INTERPRET_START" });
++    try {
++      const payload = await interpret({ query: mode === "model" ? query : "", mode, preset_id: selectedPreset });
++      dispatch({ type: "INTERPRET_RESULT", interpretation: payload });
++    } catch (err) {
++      dispatch({ type: "ERROR", error: errorMessage(err) });
+     }
+   }
+ 
+-  // One product action ("Confirm and run") drives the full host-authority sequence:
+-  // submit/validate -> host confirm -> execute. The host still issues the bound plan and
+-  // execution authorization on the server; this only collapses three competing buttons into
+-  // a single deliberate confirmation the user makes after reading the interpretation.
++  // One product action ("Confirm and run") drives the full host-authority sequence (validate ->
++  // host confirm -> execute). The host still issues the bound plan and execution authorization
++  // server-side; this only collapses the steps into one deliberate confirmation.
+   async function handleConfirmAndRun() {
+-    if (!planDocument || selectedMatchIds.length === 0) return;
+-    if (interpretation?.status !== "PLAN_INTERPRETED") return;
+-
+-    const scopedPlan = applyScopeToPlan(planDocument, selectedMatchIds);
+-    setPlanDocument(scopedPlan);
+-
+-    const validationPayload = await runAction("validate", () => submitValidate(scopedPlan));
+-    if (!validationPayload) return;
+-    setValidation(validationPayload);
+-    setConfirmation(null);
+-    setExecution(null);
+-    setSelectedResultId(null);
+-    setInspection(null);
+-    setTimestampInspection(null);
+-    setInspectionLoadingResultId(null);
+-    const boundPlanId = validationPayload.validation.bound_plan_id;
+-    if (!validationPayload.validation.ok || !boundPlanId) return;
+-
+-    const confirmationPayload = await runAction("confirm", () => confirm(boundPlanId));
+-    if (!confirmationPayload) return;
+-    setConfirmation(confirmationPayload);
+-    const authorizationId = confirmationPayload.confirmation.execution_authorization_id;
+-    if (!authorizationId) return;
+-
+-    setExecutionProgress({
+-      ok: true,
+-      cache_key: "pending",
+-      cache_status: "MISS",
+-      message: "Checking host-owned execution cache.",
+-      stages: ["authorization_checked"]
+-    });
+-    const cache = await runAction("execute", () =>
+-      executionCacheStatus({
++    if (!planDocument || !canRun) return;
++    const scopedPlan = planDocument;
++    try {
++      dispatch({ type: "RUN_STEP", step: "validating", startedAt: Date.now() });
++      const validationPayload = await submitValidate(scopedPlan);
++      dispatch({ type: "VALIDATED", validation: validationPayload });
++      const boundPlanId = validationPayload.validation.bound_plan_id;
++      if (!validationPayload.validation.ok || !boundPlanId) {
++        dispatch({ type: "ERROR", error: "Plan failed host validation." });
++        return;
++      }
++
++      dispatch({ type: "RUN_STEP", step: "confirming", startedAt: Date.now() });
++      const confirmationPayload = await confirm(boundPlanId);
++      dispatch({ type: "CONFIRMED", confirmation: confirmationPayload });
++      const authorizationId = confirmationPayload.confirmation.execution_authorization_id;
++      if (!authorizationId) {
++        dispatch({ type: "ERROR", error: "Host did not return an execution authorization." });
++        return;
++      }
++
++      dispatch({ type: "RUN_STEP", step: "executing", startedAt: Date.now() });
++      dispatch({
++        type: "EXEC_PROGRESS",
++        progress: {
++          ok: true,
++          cache_key: "pending",
++          cache_status: "MISS",
++          message: "Checking host-owned execution cache.",
++          stages: ["authorization_checked"]
++        }
++      });
++      const cache = await executionCacheStatus({
+         bound_plan_id: boundPlanId,
+         execution_authorization_id: authorizationId,
+         result_limit: 25
+-      })
+-    );
+-    if (!cache) return;
+-    setExecutionProgress({
+-      ...cache,
+-      message:
+-        cache.cache_status === "HIT"
+-          ? "Cache hit: loading cached deterministic execution."
+-          : "Cache miss: deterministic runtime is running."
+-    });
+-    const payload = await runAction("execute", () =>
+-      execute({
++      });
++      dispatch({
++        type: "EXEC_PROGRESS",
++        progress: {
++          ...cache,
++          message:
++            cache.cache_status === "HIT"
++              ? "Cache hit: loading cached deterministic execution."
++              : "Cache miss: deterministic runtime is running."
++        }
++      });
++      const payload = await execute({
+         bound_plan_id: boundPlanId,
+         execution_authorization_id: authorizationId,
+         result_limit: 25
+-      })
+-    );
+-    if (!payload) return;
+-    setExecutionProgress(payload.cache);
+-    setExecution(payload);
+-    const first = payload.execution.results[0];
+-    setSelectedResultId(first?.result_id ?? null);
+-    if (first) {
+-      setTarget((current) => ({
+-        ...current,
+-        match_id: first.match_id,
+-        period: first.period === "secondHalf" ? "secondHalf" : "firstHalf"
+-      }));
+-      await inspectSpecificResult(payload.execution.execution_id, first.result_id);
++      });
++      const first = payload.execution.results[0];
++      dispatch({ type: "EXECUTED", execution: payload, selectedResultId: first?.result_id ?? null });
++      if (first) {
++        setTarget((current) => ({
++          ...current,
++          match_id: first.match_id,
++          period: first.period === "secondHalf" ? "secondHalf" : "firstHalf"
++        }));
++        await inspectSpecificResult(payload.execution.execution_id, first.result_id);
++      }
++    } catch (err) {
++      dispatch({ type: "ERROR", error: errorMessage(err) });
+     }
+   }
+ 
+   async function inspectSpecificResult(executionId: string, resultId: string) {
+     const generation = inspectionGenerationRef.current + 1;
+     inspectionGenerationRef.current = generation;
+-    setInspection(null);
+-    setTimestampInspection(null);
+-    setInspectionLoadingResultId(resultId);
+-    const payload = await runAction("inspect", () =>
+-      inspectResult({
+-        execution_id: executionId,
+-        result_id: resultId,
+-        padding_seconds: 2
+-      })
+-    );
+-    if (!payload) {
+-      if (inspectionGenerationRef.current === generation) {
+-        setInspectionLoadingResultId(null);
++    dispatch({ type: "INSPECT_START", resultId });
++    try {
++      const payload = await inspectResult({ execution_id: executionId, result_id: resultId, padding_seconds: 2 });
++      if (inspectionGenerationRef.current !== generation) return;
++      if (payload.inspection.result.result_id !== resultId) {
++        dispatch({ type: "INSPECT_DONE" });
++        return;
+       }
+-      return;
++      dispatch({ type: "INSPECTED", inspection: payload });
++    } catch (err) {
++      if (inspectionGenerationRef.current === generation) dispatch({ type: "ERROR", error: errorMessage(err) });
+     }
+-    if (inspectionGenerationRef.current !== generation) return;
+-    if (payload.inspection.result.result_id !== resultId) return;
+-    setInspection(payload);
+-    setInspectionLoadingResultId(null);
+   }
+ 
+   async function handleResultSelect(resultId: string) {
+-    setSelectedResultId(resultId);
++    dispatch({ type: "SELECT_RESULT", resultId });
+     const executionId = execution?.execution.execution_id;
+     if (!executionId) return;
+     await inspectSpecificResult(executionId, resultId);
+@@ -428,60 +361,80 @@ export function App() {
+   async function handleInspectTimestamp() {
+     const executionId = execution?.execution.execution_id;
+     if (!executionId) return;
+-    const payload = await runAction("timestamp", () =>
+-      inspectTimestamp({
+-        execution_id: executionId,
+-        target,
+-        padding_seconds: 2
+-      })
+-    );
+-    if (!payload) return;
+-    inspectionGenerationRef.current += 1;
+-    setTimestampInspection(payload);
+-    setInspection(null);
+-    setInspectionLoadingResultId(null);
++    dispatch({ type: "TIMESTAMP_START" });
++    try {
++      const payload = await inspectTimestamp({ execution_id: executionId, target, padding_seconds: 2 });
++      inspectionGenerationRef.current += 1;
++      dispatch({ type: "TIMESTAMP_INSPECTED", timestampInspection: payload });
++    } catch (err) {
++      dispatch({ type: "ERROR", error: errorMessage(err) });
++    }
+   }
+ 
+-  const currentFrame = replay?.frames[Math.min(frameIndex, Math.max(0, replay.frames.length - 1))];
++  const modelStatus = modelStatusCopy(boot);
+   const matchesById = new Map((matchLibrary?.matches ?? []).map((match) => [match.match_id, match]));
+-  const selectedResultIndex = execution?.execution.results.findIndex((result) => result.result_id === effectiveSelectedResultId) ?? -1;
++  const currentFrame = replay?.frames[Math.min(frameIndex, Math.max(0, replay.frames.length - 1))];
++  const selectedResultIndex =
++    execution?.execution.results.findIndex((result) => result.result_id === effectiveSelectedResultId) ?? -1;
+   const selectedResultMatch = selectedResult ? matchesById.get(selectedResult.match_id) : undefined;
++  const allMatchCount = matchLibrary?.default_match_ids.length ?? 0;
+   const scopeLabel =
+-    selectedMatchIds.length === (matchLibrary?.default_match_ids.length ?? 0)
++    selectedMatchIds.length === allMatchCount
+       ? `All ${selectedMatchIds.length || 0} available matches`
+       : `${selectedMatchIds.length} selected ${selectedMatchIds.length === 1 ? "match" : "matches"}`;
+-  const hasSelectedScope = selectedMatchIds.length > 0;
+-  const planRecipe = interpretation?.recipe ?? boot?.presets.find((preset) => preset.preset_id === selectedPreset)?.recipe ?? null;
+-  const interpretationItems = interpretationBullets(planRecipe, planDocument);
++
++  const previewRecipe = mode === "manual" ? boot?.presets.find((preset) => preset.preset_id === selectedPreset)?.recipe ?? null : null;
++  const displayRecipe = interpretation?.recipe ?? previewRecipe;
++  const isPreview = !interpretation && Boolean(previewRecipe);
++  const interpretationItems = interpretationBullets(displayRecipe, planDocument);
+   const provenance = interpretation?.provenance_source ?? null;
+   const sourceTone = provenanceTone(provenance);
+-  const modelStatus = modelStatusCopy(boot);
+-  // Live N1 novel composition is not product-ready (proof artifacts predate the N1C entry_mode
+-  // contract). We keep the enum and surface it honestly, but never run it as a product success.
+-  const isNovelComposition = provenance === "HERMES_NOVEL_COMPOSITION";
+-  const planReady = Boolean(planDocument && interpretation?.status === "PLAN_INTERPRETED");
+-  const canRun = Boolean(planReady && hasSelectedScope && !isNovelComposition);
+-  const hasResults = Boolean(execution);
++  const manualRecipeDescription = recipeDescription(displayRecipe);
++  const elapsedSeconds = runStartedAt ? Math.max(0, Math.round((nowTs - runStartedAt) / 1000)) : 0;
++
+   const selectedEntryModeRaw = selectedResult
+     ? selectedResult.requested_evidence?.["entry_mode"] ?? asRecord(selectedResult)["entry_mode"]
+     : null;
+   const selectedEntryMode = entryModeLabel(selectedEntryModeRaw);
+-  const manualRecipeDescription = recipeDescription(planRecipe);
+-  const overlayProof = (() => {
+-    const evidence = evidenceResult?.requested_evidence ?? {};
+-    const targetPlayerId = typeof evidence.target_player_id === "string" ? evidence.target_player_id : null;
+-    const ball = currentFrame?.entities.find((entity) => entity.entity_type === "ball");
+-    const targetEntity = targetPlayerId
+-      ? currentFrame?.entities.find((entity) => entity.entity_id === targetPlayerId)
+-      : null;
+-    const witnessFrameId = targetPlayerId ? Number(replay?.anchor_frame_id) : null;
+-    if (ball && targetEntity && currentFrame?.frame_id === witnessFrameId) {
+-      return `Witness-frame corridor: ball to selected receiver`;
++  const overlayState: CorridorOverlay = useMemo(
++    () => corridorOverlayState(evidenceResult?.requested_evidence ?? null, replay),
++    [evidenceResult, replay]
++  );
++  const overlayProof = overlayProofText(overlayState, currentFrame?.frame_id);
++  const overlayLegend = overlayLegendLines(overlayState);
++  const timestampOutcome = timestampOutcomeSummary(timestampInspection?.inspection ?? null);
++
++  // Group results by match for scanability, preserving the deterministic result order within and
++  // across groups (groups appear in first-seen order; rows keep their original rank order).
++  const resultGroups = useMemo(() => {
++    const rows = execution?.execution.results ?? [];
++    const groups: Array<{ matchId: string; label: string; rows: ResultRow[] }> = [];
++    const indexByMatch = new Map<string, number>();
++    for (const row of rows) {
++      let index = indexByMatch.get(row.match_id);
++      if (index === undefined) {
++        index = groups.length;
++        indexByMatch.set(row.match_id, index);
++        groups.push({ matchId: row.match_id, label: matchLabel(matchesById.get(row.match_id), row.match_id), rows: [] });
++      }
++      groups[index].rows.push(row);
+     }
+-    if (targetPlayerId) return "Corridor witness hidden outside the witness frame";
+-    if (evidenceResult) return "No exact corridor witness available";
+-    return "No selected result overlay";
+-  })();
++    return groups;
++    // matchesById is rebuilt each render; depend on the data that actually changes it.
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [execution, matchLibrary]);
++
++  function setAllMatches() {
++    dispatch({ type: "SET_SCOPE", ids: matchLibrary?.default_match_ids ?? [] });
++  }
++
++  function toggleMatch(matchId: string) {
++    const allIds = matchLibrary?.default_match_ids ?? [];
++    const next = selectedMatchIds.includes(matchId)
++      ? selectedMatchIds.filter((id) => id !== matchId)
++      : [...selectedMatchIds, matchId].sort((a, b) => allIds.indexOf(a) - allIds.indexOf(b));
++    dispatch({ type: "SET_SCOPE", ids: next });
++  }
+ 
+   return (
+     <main className="appShell">
+@@ -493,13 +446,14 @@ export function App() {
+         <div
+           className="topbarStatus"
+           data-testid="host-status"
++          data-phase={phase}
+           data-model-status={boot?.model.status ?? "loading"}
+           data-model-available={String(boot?.model.available ?? false)}
+           data-mcp-adapter={String(boot?.service.mcp_adapter ?? "")}
+-          data-busy={busy ?? "idle"}
++          data-busy={busy ? "true" : "false"}
+         >
+           <StatusPill tone={modelStatus.tone}>{modelStatus.label}</StatusPill>
+-          {busy ? (
++          {busy && !booting ? (
+             <span className="pill pill-neutral" data-testid="busy-indicator">
+               Working…
+             </span>
+@@ -507,456 +461,539 @@ export function App() {
+         </div>
+       </header>
+ 
+-      {error ? <div className="errorBanner" data-testid="error-banner">{error}</div> : null}
+-
+-      <section className="scopeBar" data-testid="analysis-scope">
+-        <div className="scopeMetric">
+-          <span>Perspective team</span>
+-          <strong>{matchLibrary?.perspective_team ?? "Fortuna Düsseldorf"}</strong>
+-        </div>
+-        <div className="scopeMetric">
+-          <span>Matches</span>
+-          <strong>{scopeLabel}</strong>
+-        </div>
+-        <div className="scopeMetric">
+-          <span>Periods</span>
+-          <strong>All</strong>
++      {error ? (
++        <div className="errorBanner" data-testid="error-banner">
++          {error}
+         </div>
+-        <div className="scopeMetric">
+-          <span>Possession</span>
+-          <strong>Fortuna in possession</strong>
+-        </div>
+-        <div className="scopePicker" data-testid="match-scope-selector">
+-          <button className={selectedMatchIds.length === (matchLibrary?.default_match_ids.length ?? 0) ? "active" : ""} onClick={setAllMatches}>
+-            All matches
+-          </button>
+-          {(matchLibrary?.matches ?? []).map((match) => (
+-            <button
+-              key={match.match_id}
+-              className={selectedMatchIds.includes(match.match_id) ? "active" : ""}
+-              onClick={() => toggleMatch(match.match_id)}
+-              title={match.match_title}
+-            >
+-              {match.away_team.replace("F.C. ", "").replace("1. FC ", "")}
+-            </button>
+-          ))}
+-        </div>
+-        {!hasSelectedScope ? (
+-          <div className="scopeWarning" data-testid="scope-warning">
+-            Select at least one match to validate or execute.
++      ) : null}
++
++      {booting ? (
++        <section className="bootingState" data-testid="booting-state">
++          <div className="bootingCard">
++            <div className="spinner" aria-hidden="true" />
++            <strong>Loading workbench…</strong>
++            <span className="muted">Fetching the match library and host capabilities.</span>
+           </div>
+-        ) : null}
+-      </section>
+-
+-      <section className="workspaceGrid">
+-        <aside className="leftRail">
+-          <section className="panel">
+-            <div className="panelTitle">Start here</div>
+-            <div className="pathChooser" data-testid="path-chooser" role="tablist" aria-label="Choose how to start">
+-              <button
+-                role="tab"
+-                aria-selected={mode === "model"}
+-                aria-label="Ask Hermes"
+-                data-testid="path-ask-hermes"
+-                className={mode === "model" ? "pathOption active" : "pathOption"}
+-                onClick={() => handleModeChange("model")}
+-              >
+-                <strong>Ask Hermes</strong>
+-                <small>Type a football question in your own words.</small>
+-              </button>
+-              <button
+-                role="tab"
+-                aria-selected={mode === "manual"}
+-                aria-label="Browse recipes"
+-                data-testid="path-browse-recipes"
+-                className={mode === "manual" ? "pathOption active" : "pathOption"}
+-                onClick={() => handleModeChange("manual")}
+-              >
+-                <strong>Browse recipes</strong>
+-                <small>Pick a reviewed or experimental recipe.</small>
+-              </button>
++        </section>
++      ) : (
++        <>
++          <section className="scopeBar" data-testid="analysis-scope">
++            <div className="scopeMetric">
++              <span>Perspective team</span>
++              <strong>{matchLibrary?.perspective_team ?? "Fortuna Düsseldorf"}</strong>
+             </div>
+-            {mode === "model" ? (
+-              <>
+-                <label className="field">
+-                  <span>Natural language</span>
+-                  <textarea data-testid="query-input" value={query} onChange={(event) => handleQueryChange(event.target.value)} />
+-                </label>
+-                <div className="helperText">Ask Hermes translates football language into a bounded typed plan when the model path is available.</div>
+-              </>
+-            ) : (
+-              <>
+-                <div className="helperText">Browse recipes loads a stored deterministic definition. The recipe text below is not interpreted as a new request.</div>
+-                <div className="presetStack">
+-                  {boot?.presets.map((preset) => (
+-                    <button
+-                      key={preset.preset_id}
+-                      data-testid={`preset-${preset.preset_id}`}
+-                      className={selectedPreset === preset.preset_id ? "preset active" : "preset"}
+-                      onClick={() => choosePreset(preset.preset_id)}
+-                    >
+-                      <span>{preset.label}</span>
+-                      <small>{preset.recipe.state}</small>
+-                    </button>
+-                  ))}
+-                </div>
+-                <div className="recipeBrief" data-testid="manual-recipe-description">
+-                  <strong>{planRecipe?.display_name ?? "Choose a recipe"}</strong>
+-                  <span>{manualRecipeDescription}</span>
+-                </div>
+-              </>
+-            )}
+-            <button
+-              className={planReady ? "fullButton" : "primaryAction"}
+-              data-testid="interpret-button"
+-              onClick={() => void handleInterpret()}
+-              disabled={busy !== null}
+-            >
+-              {mode === "model" ? (planReady ? "Ask Hermes again" : "Ask Hermes") : planReady ? "Reload recipe" : "Use selected recipe"}
+-            </button>
+-          </section>
+-
+-          <details className="panel developerDrawer devPanel" data-testid="developer-tools">
+-            <summary data-testid="dev-tools-toggle">Developer details · known-timestamp probe</summary>
+-            <p className="muted devNote">Engineering inspection tool. Not part of the primary flow.</p>
+-            <label className="field tight">
+-              <span>Target ID</span>
+-              <input value={target.target_id} onChange={(event) => setTarget({ ...target, target_id: event.target.value })} />
+-            </label>
+-            <label className="field tight">
+-              <span>Match ID</span>
+-              <input data-testid="timestamp-match-id" value={target.match_id} onChange={(event) => setTarget({ ...target, match_id: event.target.value })} />
+-            </label>
+-            <div className="twoCol">
+-              <label className="field tight">
+-                <span>Period</span>
+-                <select
+-                  value={target.period}
+-                  onChange={(event) =>
+-                    setTarget({ ...target, period: event.target.value === "secondHalf" ? "secondHalf" : "firstHalf" })
+-                  }
+-                >
+-                  <option value="firstHalf">firstHalf</option>
+-                  <option value="secondHalf">secondHalf</option>
+-                </select>
+-              </label>
+-              <label className="field tight">
+-                <span>Radius ms</span>
+-                <input
+-                  type="number"
+-                  min={1}
+-                  value={target.search_radius_ms}
+-                  onChange={(event) => setTarget({ ...target, search_radius_ms: Number(event.target.value) })}
+-                />
+-              </label>
++            <div className="scopeMetric">
++              <span>Matches</span>
++              <strong>{scopeLabel}</strong>
+             </div>
+-            <label className="field tight">
+-              <span>Approx time ms</span>
+-              <input
+-                  type="number"
+-                  min={0}
+-                  data-testid="timestamp-time-ms"
+-                  value={target.approximate_time_ms}
+-                  onChange={(event) => setTarget({ ...target, approximate_time_ms: Number(event.target.value) })}
+-                />
+-            </label>
+-            <button
+-              className="fullButton"
+-              data-testid="inspect-timestamp-button"
+-              onClick={() => void handleInspectTimestamp()}
+-              disabled={!execution?.execution.execution_id || !target.match_id || busy !== null}
+-            >
+-              Inspect timestamp
+-            </button>
+-          </details>
+-        </aside>
+-
+-        <section className="centerStage">
+-          <section className="panel interpreted" data-testid="interpreted-plan-panel">
+-            <div className="panelHeader">
+-              <div>
+-                <div className="panelTitle">Interpreted as</div>
+-                <div className="interpretTitle">{planRecipe?.display_name ?? "Choose a recipe or ask Hermes"}</div>
+-              </div>
+-              <StatusPill tone={interpretation?.status === "PLAN_INTERPRETED" ? "good" : interpretation ? "warn" : "neutral"}>
+-                {interpretation?.status ?? "ready"}
+-              </StatusPill>
++            <div className="scopeMetric">
++              <span>Periods</span>
++              <strong>All</strong>
+             </div>
+-            {interpretation?.source ? (
+-              <div
+-                className="sourceLine"
+-                data-testid="interpretation-source"
+-                data-raw-source={interpretation.source}
+-                data-provenance-source={interpretation.provenance_source}
+-              >
+-                Source: <StatusPill tone={sourceTone}>{provenanceLabel(interpretation.provenance_source)}</StatusPill>
+-                {interpretation.fallback_reason ? <span className="sourceReason">{interpretation.fallback_reason}</span> : null}
+-              </div>
+-            ) : (
+-              <div className="sourceLine">
+-                Source: <StatusPill tone="warn">Not interpreted</StatusPill>
+-              </div>
+-            )}
+-            {interpretation?.status === "CLARIFICATION_REQUIRED" ? (
+-              <StateList title="I need clarification" items={interpretation.clarification_questions ?? []} />
+-            ) : null}
+-            {interpretation?.status === "CAPABILITY_GAP" ? (
+-              <div className="stateBox bad">
+-                <strong>This cannot currently be measured</strong>
+-                {(interpretation.capability_gaps ?? []).map((gap) => (
+-                  <p key={gap.concept}>
+-                    <strong>{gap.concept}</strong>: {gap.reason}
+-                  </p>
+-                ))}
++            <div className="scopeMetric">
++              <span>Possession</span>
++              <strong>Fortuna in possession</strong>
++            </div>
++            <div className="scopePicker" data-testid="match-scope-selector">
++              <button className={selectedMatchIds.length === allMatchCount ? "active" : ""} onClick={setAllMatches}>
++                All matches
++              </button>
++              {(matchLibrary?.matches ?? []).map((match) => (
++                <button
++                  key={match.match_id}
++                  className={selectedMatchIds.includes(match.match_id) ? "active" : ""}
++                  onClick={() => toggleMatch(match.match_id)}
++                  title={match.match_title}
++                >
++                  {match.away_team.replace("F.C. ", "").replace("1. FC ", "")}
++                </button>
++              ))}
++            </div>
++            {matchLibraryLoaded && !hasSelectedScope ? (
++              <div className="scopeWarning" data-testid="scope-warning">
++                Select at least one match to validate or execute.
+               </div>
+             ) : null}
+-            {interpretation?.status === "MODEL_UNAVAILABLE" ? (
+-              <div className="stateBox warn" data-testid="model-unavailable-state">
+-                <strong>Hermes interpretation is not available right now</strong>
+-                <p>{interpretation.message}</p>
+-                <p>
+-                  Browse recipes still works. It runs reviewed and experimental recipes deterministically —
+-                  this is recipe/manual analysis, not a fallback AI interpretation.
+-                </p>
+-                {interpretation.manual_available ? (
++          </section>
++
++          <section className="workspaceGrid">
++            <aside className="leftRail">
++              <section className="panel">
++                <div className="panelTitle">Start here</div>
++                <div className="pathChooser" data-testid="path-chooser" role="tablist" aria-label="Choose how to start">
++                  <button
++                    role="tab"
++                    aria-selected={mode === "model"}
++                    aria-label="Ask Hermes"
++                    data-testid="path-ask-hermes"
++                    className={mode === "model" ? "pathOption active" : "pathOption"}
++                    onClick={() => dispatch({ type: "SET_MODE", mode: "model" })}
++                  >
++                    <strong>Ask Hermes</strong>
++                    <small>Type a football question in your own words.</small>
++                  </button>
+                   <button
+-                    className="fullButton"
+-                    data-testid="switch-to-recipes"
+-                    onClick={() => handleModeChange("manual")}
++                    role="tab"
++                    aria-selected={mode === "manual"}
++                    aria-label="Browse recipes"
++                    data-testid="path-browse-recipes"
++                    className={mode === "manual" ? "pathOption active" : "pathOption"}
++                    onClick={() => dispatch({ type: "SET_MODE", mode: "manual" })}
+                   >
+-                    Switch to Browse recipes
++                    <strong>Browse recipes</strong>
++                    <small>Pick a reviewed or experimental recipe.</small>
+                   </button>
++                </div>
++                {mode === "model" ? (
++                  <>
++                    <label className="field">
++                      <span>Natural language</span>
++                      <textarea
++                        data-testid="query-input"
++                        value={query}
++                        onChange={(event) => dispatch({ type: "SET_QUERY", query: event.target.value })}
++                      />
++                    </label>
++                    <div className="helperText">
++                      Ask Hermes translates football language into a bounded typed plan when the model path is available.
++                    </div>
++                  </>
++                ) : (
++                  <>
++                    <div className="helperText">
++                      Browse recipes loads a stored deterministic definition. The recipe text below is not interpreted as a new request.
++                    </div>
++                    <div className="presetStack">
++                      {boot?.presets.map((preset) => (
++                        <button
++                          key={preset.preset_id}
++                          data-testid={`preset-${preset.preset_id}`}
++                          className={selectedPreset === preset.preset_id ? "preset active" : "preset"}
++                          onClick={() => dispatch({ type: "SET_PRESET", preset: preset.preset_id })}
++                        >
++                          <span>{preset.label}</span>
++                          <small>{preset.recipe.state}</small>
++                        </button>
++                      ))}
++                    </div>
++                    <div className="recipeBrief" data-testid="manual-recipe-description">
++                      <strong>{displayRecipe?.display_name ?? "Choose a recipe"}</strong>
++                      <span>{manualRecipeDescription}</span>
++                    </div>
++                  </>
++                )}
++                <button
++                  className={planReady ? "fullButton" : "primaryAction"}
++                  data-testid="interpret-button"
++                  onClick={() => void handleInterpret()}
++                  disabled={busy}
++                >
++                  {mode === "model"
++                    ? planReady
++                      ? "Ask Hermes again"
++                      : "Ask Hermes"
++                    : planReady
++                      ? "Reload recipe"
++                      : "Use selected recipe"}
++                </button>
++              </section>
++
++              <details className="panel developerDrawer devPanel" data-testid="developer-tools">
++                <summary data-testid="dev-tools-toggle">Developer tools · known-timestamp probe</summary>
++                <p className="muted devNote">Engineering inspection tool. Not part of the primary flow.</p>
++                <label className="field tight">
++                  <span>Target ID</span>
++                  <input value={target.target_id} onChange={(event) => setTarget({ ...target, target_id: event.target.value })} />
++                </label>
++                <label className="field tight">
++                  <span>Match ID</span>
++                  <input
++                    data-testid="timestamp-match-id"
++                    value={target.match_id}
++                    onChange={(event) => setTarget({ ...target, match_id: event.target.value })}
++                  />
++                </label>
++                <div className="twoCol">
++                  <label className="field tight">
++                    <span>Period</span>
++                    <select
++                      value={target.period}
++                      onChange={(event) =>
++                        setTarget({ ...target, period: event.target.value === "secondHalf" ? "secondHalf" : "firstHalf" })
++                      }
++                    >
++                      <option value="firstHalf">firstHalf</option>
++                      <option value="secondHalf">secondHalf</option>
++                    </select>
++                  </label>
++                  <label className="field tight">
++                    <span>Radius ms</span>
++                    <input
++                      type="number"
++                      min={1}
++                      value={target.search_radius_ms}
++                      onChange={(event) => setTarget({ ...target, search_radius_ms: Number(event.target.value) })}
++                    />
++                  </label>
++                </div>
++                <label className="field tight">
++                  <span>Approx time ms</span>
++                  <input
++                    type="number"
++                    min={0}
++                    data-testid="timestamp-time-ms"
++                    value={target.approximate_time_ms}
++                    onChange={(event) => setTarget({ ...target, approximate_time_ms: Number(event.target.value) })}
++                  />
++                </label>
++                <button
++                  className="fullButton"
++                  data-testid="inspect-timestamp-button"
++                  onClick={() => void handleInspectTimestamp()}
++                  disabled={!execution?.execution.execution_id || !target.match_id || busy}
++                >
++                  Inspect timestamp
++                </button>
++                {timestampOutcome ? (
++                  <p className="muted devNote" data-testid="timestamp-outcome">
++                    {timestampOutcome}
++                  </p>
+                 ) : null}
+-              </div>
+-            ) : null}
+-            {isNovelComposition ? (
+-              <div className="stateBox warn" data-testid="novel-composition-pending">
+-                <strong>Novel composition is not product-ready yet</strong>
+-                <p>
+-                  Live model-authored composition is held back pending an N1C runtime proof refresh.
+-                  This interpretation is shown for transparency only and cannot be run as a product result here.
+-                </p>
+-              </div>
+-            ) : null}
+-            <div className="interpretSummary">
+-              {interpretationItems.map((item) => (
+-                <div key={item} className="interpretLine">{item}</div>
+-              ))}
+-            </div>
+-            <div className="interpretMeta">
+-              <div>
+-                <span>Scope</span>
+-                <strong>{scopeLabel}</strong>
+-              </div>
+-              <div>
+-                <span>Validation</span>
+-                <strong>{validation?.validation.ok ? "valid" : validation ? "invalid" : "not run"}</strong>
+-              </div>
+-              <div>
+-                <span>Plan source</span>
+-                <StatusPill tone={sourceTone}>{provenanceLabel(provenance)}</StatusPill>
+-              </div>
+-            </div>
+-            <div className="actionStrip single">
+-              <button
+-                className="primaryAction"
+-                data-testid="primary-action"
+-                data-stage={hasResults ? "ran" : planReady ? "ready" : "interpret"}
+-                onClick={() => void handleConfirmAndRun()}
+-                disabled={!canRun || busy !== null}
+-              >
+-                {busy === "validate" || busy === "confirm" || busy === "execute"
+-                  ? "Confirming and running…"
+-                  : hasResults
+-                    ? "Run again"
+-                    : "Confirm and run"}
+-              </button>
+-              <p className="actionNote" data-testid="confirm-and-run-note">
+-                {planReady
+-                  ? "Host confirms the bound plan and runs the deterministic execution over the selected scope. Nothing runs until you confirm."
+-                  : "Interpret a question or recipe above, then confirm to run."}
+-              </p>
+-            </div>
+-            <details className="developerDrawer">
+-              <summary>Developer details</summary>
+-              <div className="planMeta">
+-                <span>{planDocument ? String(asRecord(planDocument.recipe).recipe_id ?? "") : "no recipe"}</span>
+-                <span>{interpretation?.provenance_source ?? "no provenance"}</span>
+-                <span>{interpretation?.plan_hash ?? ""}</span>
+-              </div>
+-              <JsonBlock value={interpretation ?? { status: "not_interpreted" }} compact />
+-              <JsonBlock value={planDocument ?? {}} compact />
+-            </details>
+-          </section>
++              </details>
++            </aside>
+ 
+-          <section className="panel canvasPanel">
+-            <div className="panelHeader">
+-              <div>
+-                <div className="panelTitle">Coordinate Replay</div>
+-                {selectedResult ? (
++            <section className="centerStage">
++              <section className="panel interpreted" data-testid="interpreted-plan-panel">
++                <div className="panelHeader">
++                  <div>
++                    <div className="panelTitle">Interpreted as</div>
++                    <div className="interpretTitle">
++                      {displayRecipe?.display_name ?? (mode === "model" ? "Ask Hermes to interpret your question" : "Choose a recipe")}
++                    </div>
++                  </div>
++                  <StatusPill tone={interpretation?.status === "PLAN_INTERPRETED" ? "good" : interpretation ? "warn" : "neutral"}>
++                    {interpretation?.status ?? (isPreview ? "preview" : "ready")}
++                  </StatusPill>
++                </div>
++                {interpretation?.source ? (
+                   <div
+-                    className="replayContext"
+-                    data-testid="replay-window-summary"
+-                    data-replay-window-id={replay?.replay_window_id ?? ""}
+-                    data-result-id={selectedResult.result_id}
++                    className="sourceLine"
++                    data-testid="interpretation-source"
++                    data-raw-source={interpretation.source}
++                    data-provenance-source={interpretation.provenance_source}
+                   >
+-                    <strong>{matchLabel(selectedResultMatch, selectedResult.match_id)}</strong>
+-                    <span>{tacticalHeadline(selectedResult.classification)}</span>
+-                    <span>
+-                      {periodLabel(selectedResult.period)} · {matchTimeLabel(selectedResult.match_time_ms)} · Fortuna in possession
+-                    </span>
+-                    <span>
+-                      Result {selectedResultIndex + 1} of {execution?.execution.returned_result_count ?? 0}
+-                    </span>
+-                    {selectedEntryMode ? (
+-                      <span data-testid="entry-mode" data-entry-mode={selectedEntryMode.value}>
+-                        Destination entry: {selectedEntryMode.label}
+-                      </span>
+-                    ) : null}
++                    Source: <StatusPill tone={sourceTone}>{provenanceLabel(interpretation.provenance_source)}</StatusPill>
++                    {interpretation.fallback_reason ? <span className="sourceReason">{interpretation.fallback_reason}</span> : null}
++                  </div>
++                ) : isPreview ? (
++                  <div className="sourceLine" data-testid="recipe-preview-badge">
++                    <StatusPill tone="warn">Preview — not yet interpreted</StatusPill>
++                    <span className="sourceReason">Use the selected recipe to interpret before running.</span>
+                   </div>
+                 ) : (
+-                  <div className="muted" data-testid="replay-window-summary">
+-                    {inspectionLoadingResultId ? `Loading result ${inspectionLoadingResultId}` : "No replay window selected"}
++                  <div className="sourceLine">
++                    Source: <StatusPill tone="warn">Not interpreted</StatusPill>
+                   </div>
+                 )}
+-              </div>
+-              {currentFrame ? <StatusPill tone="neutral">frame {currentFrame.frame_id}</StatusPill> : null}
+-            </div>
+-            <PitchCanvas replay={replay} frameIndex={frameIndex} result={evidenceResult} />
+-            <div className="overlayProof" data-testid="overlay-proof">{overlayProof}</div>
+-            <div className="overlayLegend">
+-              A geometric corridor is a sufficiently clear forward connection from the ball to a teammate. It does not establish that this was the optimal pass.
+-            </div>
+-            <div className="replayControls">
+-              <button onClick={() => setFrameIndex((value) => Math.max(0, value - 1))} disabled={!replay}>
+-                Prev
+-              </button>
+-              <button data-testid="play-pause-button" onClick={() => setPlaying((value) => !value)} disabled={!replay}>
+-                {playing ? "Pause" : "Play"}
+-              </button>
+-              <div className="speedControls" data-testid="playback-speed-controls">
+-                {([0.5, 1, 2] as const).map((speed) => (
++                {interpretation?.status === "CLARIFICATION_REQUIRED" ? (
++                  <StateList title="I need clarification" items={interpretation.clarification_questions ?? []} />
++                ) : null}
++                {interpretation?.status === "CAPABILITY_GAP" ? (
++                  <div className="stateBox bad">
++                    <strong>This cannot currently be measured</strong>
++                    {(interpretation.capability_gaps ?? []).map((gap) => (
++                      <p key={gap.concept}>
++                        <strong>{gap.concept}</strong>: {gap.reason}
++                      </p>
++                    ))}
++                  </div>
++                ) : null}
++                {interpretation?.status === "MODEL_UNAVAILABLE" ? (
++                  <div className="stateBox warn" data-testid="model-unavailable-state">
++                    <strong>Hermes interpretation is not available right now</strong>
++                    <p>{interpretation.message}</p>
++                    <p>
++                      Browse recipes still works. It runs reviewed and experimental recipes deterministically — this is
++                      recipe/manual analysis, not a fallback AI interpretation.
++                    </p>
++                    {interpretation.manual_available ? (
++                      <button
++                        className="fullButton"
++                        data-testid="switch-to-recipes"
++                        onClick={() => dispatch({ type: "SET_MODE", mode: "manual" })}
++                      >
++                        Switch to Browse recipes
++                      </button>
++                    ) : null}
++                  </div>
++                ) : null}
++                {isNovelComposition ? (
++                  <div className="stateBox warn" data-testid="novel-composition-pending">
++                    <strong>Novel composition is not product-ready yet</strong>
++                    <p>
++                      Live model-authored composition is held back pending an N1C runtime proof refresh. This
++                      interpretation is shown for transparency only and cannot be run as a product result here.
++                    </p>
++                  </div>
++                ) : null}
++                <div className="interpretSummary">
++                  {interpretationItems.map((item) => (
++                    <div key={item} className="interpretLine">
++                      {item}
++                    </div>
++                  ))}
++                </div>
++                <div className="interpretMeta">
++                  <div>
++                    <span>Scope</span>
++                    <strong>{scopeLabel}</strong>
++                  </div>
++                  <div>
++                    <span>Validation</span>
++                    <strong>{validation?.validation.ok ? "valid" : validation ? "invalid" : "not run"}</strong>
++                  </div>
++                  <div>
++                    <span>Plan source</span>
++                    <StatusPill tone={sourceTone}>{provenanceLabel(provenance)}</StatusPill>
++                  </div>
++                </div>
++                <div className="actionStrip single">
+                   <button
+-                    key={speed}
+-                    className={playbackSpeed === speed ? "active" : ""}
+-                    onClick={() => setPlaybackSpeed(speed)}
+-                    disabled={!replay}
++                    className="primaryAction"
++                    data-testid="primary-action"
++                    data-stage={execution ? "ran" : planReady ? "ready" : "interpret"}
++                    onClick={() => void handleConfirmAndRun()}
++                    disabled={!canRun}
+                   >
+-                    {speed}x
++                    {running ? "Confirming and running…" : execution ? "Run again" : "Confirm and run"}
+                   </button>
+-                ))}
+-              </div>
+-              <button
+-                onClick={() => setFrameIndex((value) => Math.min((replay?.frames.length ?? 1) - 1, value + 1))}
+-                disabled={!replay}
+-              >
+-                Next
+-              </button>
+-              <input
+-                type="range"
+-                data-testid="replay-scrubber"
+-                min={0}
+-                max={Math.max(0, (replay?.frames.length ?? 1) - 1)}
+-                value={frameIndex}
+-                onChange={(event) => setFrameIndex(Number(event.target.value))}
+-                disabled={!replay}
+-              />
+-            </div>
+-          </section>
++                  <p className="actionNote" data-testid="confirm-and-run-note">
++                    {planReady
++                      ? "Host confirms the bound plan and runs the deterministic execution over the selected scope. Nothing runs until you confirm."
++                      : "Interpret a question or recipe above, then confirm to run."}
++                  </p>
++                </div>
++                <details className="developerDrawer">
++                  <summary>Plan details</summary>
++                  <div className="planMeta">
++                    <span>{planDocument ? String(asRecord(planDocument.recipe).recipe_id ?? "") : "no recipe"}</span>
++                    <span>{interpretation?.provenance_source ?? "no provenance"}</span>
++                    <span>{interpretation?.plan_hash ?? ""}</span>
++                  </div>
++                  <JsonBlock value={interpretation ?? { status: "not_interpreted" }} compact />
++                  <JsonBlock value={planDocument ?? {}} compact />
++                </details>
++              </section>
+ 
+-          <section className="detailGrid">
+-            <div className="panel">
+-              <div className="panelTitle">Evidence Aliases</div>
+-              <div className="evidenceGrid" data-testid="evidence-aliases">
+-                {evidenceAliases.map((item) => (
+-                  <div
+-                    key={item.id}
+-                    className="evidenceRow"
+-                    data-testid="evidence-alias"
+-                    data-source={item.source}
+-                    data-field={item.field}
+-                  >
+-                    <span>{item.alias}</span>
+-                    <code>{String(evidenceResult?.requested_evidence[item.alias] ?? "")}</code>
++              <section className="panel canvasPanel">
++                <div className="panelHeader">
++                  <div>
++                    <div className="panelTitle">Coordinate Replay</div>
++                    {selectedResult ? (
++                      <div
++                        className="replayContext"
++                        data-testid="replay-window-summary"
++                        data-replay-window-id={replay?.replay_window_id ?? ""}
++                        data-result-id={selectedResult.result_id}
++                      >
++                        <strong>{matchLabel(selectedResultMatch, selectedResult.match_id)}</strong>
++                        <span>{tacticalHeadline(selectedResult.classification)}</span>
++                        <span>
++                          {periodLabel(selectedResult.period)} · {matchTimeLabel(selectedResult.match_time_ms)} · Fortuna in possession
++                        </span>
++                        <span>
++                          Result {selectedResultIndex + 1} of {execution?.execution.returned_result_count ?? 0}
++                        </span>
++                        {selectedEntryMode ? (
++                          <span data-testid="entry-mode" data-entry-mode={selectedEntryMode.value}>
++                            Destination entry: {selectedEntryMode.label}
++                          </span>
++                        ) : null}
++                      </div>
++                    ) : (
++                      <div className="muted" data-testid="replay-window-summary">
++                        {inspectionLoadingResultId ? `Loading result ${inspectionLoadingResultId}` : "No replay window selected"}
++                      </div>
++                    )}
+                   </div>
+-                ))}
+-                {inspectionLoadingResultId ? (
+-                  <div className="emptyState" data-testid="inspection-loading">
+-                    Loading selected result evidence.
++                  {currentFrame ? <StatusPill tone="neutral">frame {currentFrame.frame_id}</StatusPill> : null}
++                </div>
++                <PitchCanvas replay={replay} frameIndex={frameIndex} result={evidenceResult} overlay={overlayState} />
++                <div className="overlayProof" data-testid="overlay-proof" data-overlay-kind={overlayState.kind}>
++                  {overlayProof}
++                </div>
++                <div className="overlayLegend" data-testid="overlay-legend">
++                  {overlayLegend.map((line) => (
++                    <p key={line}>{line}</p>
++                  ))}
++                </div>
++                <div className="replayControls">
++                  <button onClick={() => setFrameIndex((value) => Math.max(0, value - 1))} disabled={!replay}>
++                    Prev
++                  </button>
++                  <button data-testid="play-pause-button" onClick={() => setPlaying((value) => !value)} disabled={!replay}>
++                    {playing ? "Pause" : "Play"}
++                  </button>
++                  <div className="speedControls" data-testid="playback-speed-controls">
++                    {([0.5, 1, 2] as const).map((speed) => (
++                      <button key={speed} className={playbackSpeed === speed ? "active" : ""} onClick={() => setPlaybackSpeed(speed)} disabled={!replay}>
++                        {speed}x
++                      </button>
++                    ))}
+                   </div>
+-                ) : null}
+-              </div>
+-            </div>
+-            <div className="panel">
+-              <div className="panelTitle">Predicate Trace</div>
+-              <TraceList traces={correlatedInspection?.inspection.predicate_traces ?? []} />
+-            </div>
+-          </section>
+-        </section>
++                  <button onClick={() => setFrameIndex((value) => Math.min((replay?.frames.length ?? 1) - 1, value + 1))} disabled={!replay}>
++                    Next
++                  </button>
++                  <input
++                    type="range"
++                    data-testid="replay-scrubber"
++                    min={0}
++                    max={Math.max(0, (replay?.frames.length ?? 1) - 1)}
++                    value={frameIndex}
++                    onChange={(event) => setFrameIndex(Number(event.target.value))}
++                    disabled={!replay}
++                  />
++                </div>
++              </section>
+ 
+-        <aside className="rightRail">
+-          <section className="panel">
+-            <div className="panelHeader">
+-              <div className="panelTitle">Result Rail</div>
+-              <StatusPill tone="neutral">
+-                <span data-testid="result-count">{execution?.execution.returned_result_count ?? 0}</span> shown
+-              </StatusPill>
+-            </div>
+-            <div className="resultList" data-testid="result-rail">
+-              {(execution?.execution.results ?? []).map((result) => (
+-                <button
+-                  key={result.result_id}
+-                  data-testid="result-item"
+-                  data-result-id={result.result_id}
+-                  data-classification={result.classification}
+-                  className={effectiveSelectedResultId === result.result_id ? "resultItem active" : "resultItem"}
+-                  onClick={() => void handleResultSelect(result.result_id)}
+-                >
+-                  <span>#{result.rank} · {tacticalHeadline(result.classification)}</span>
+-                  <small>{matchLabel(matchesById.get(result.match_id), result.match_id)}</small>
+-                  <small>{periodLabel(result.period)} · {matchTimeLabel(result.match_time_ms)}</small>
+-                </button>
+-              ))}
+-              {!execution ? <div className="emptyState">Execute a confirmed bound plan to populate results.</div> : null}
+-            </div>
+-          </section>
++              <section className="detailGrid">
++                <div className="panel">
++                  <div className="panelTitle">Evidence Aliases</div>
++                  <div className="evidenceGrid" data-testid="evidence-aliases">
++                    {evidenceAliases.map((item) => (
++                      <div
++                        key={item.id}
++                        className="evidenceRow"
++                        data-testid="evidence-alias"
++                        data-source={item.source}
++                        data-field={item.field}
++                      >
++                        <span>{item.alias}</span>
++                        <code>{String(evidenceResult?.requested_evidence[item.alias] ?? "")}</code>
++                      </div>
++                    ))}
++                    {inspectionLoadingResultId ? (
++                      <div className="emptyState" data-testid="inspection-loading">
++                        Loading selected result evidence.
++                      </div>
++                    ) : null}
++                  </div>
++                </div>
++                <div className="panel">
++                  <div className="panelTitle">Predicate Trace</div>
++                  <TraceList traces={correlatedInspection?.inspection.predicate_traces ?? []} />
++                  {correlatedInspection?.inspection.predicate_traces?.length ? (
++                    <details className="developerDrawer">
++                      <summary>Trace details</summary>
++                      <JsonBlock value={correlatedInspection.inspection.predicate_traces} compact />
++                    </details>
++                  ) : null}
++                </div>
++              </section>
++            </section>
+ 
+-          <section className="panel">
+-            <div className="panelTitle">Run State</div>
+-            {executionProgress ? (
+-              <div className="progressBox" data-testid="execution-progress">
+-                <div>
+-                  <strong>{executionProgress.cache_status}</strong> {executionProgress.message}
++            <aside className="rightRail">
++              <section className="panel">
++                <div className="panelHeader">
++                  <div className="panelTitle">Result Rail</div>
++                  <StatusPill tone="neutral">
++                    <span data-testid="result-count">{execution?.execution.returned_result_count ?? 0}</span> shown
++                  </StatusPill>
+                 </div>
+-                <small>
+-                  Searching {scopeLabel.toLowerCase()} across all periods. First runs are cached for repeated queries.
+-                </small>
+-                <details className="developerDrawer inlineDrawer">
+-                  <summary>Developer stages</summary>
+-                  <small>{executionProgress.stages.join(" -> ")}</small>
++                <div className="resultList" data-testid="result-rail">
++                  {resultGroups.map((group) => (
++                    <div key={group.matchId} className="resultGroup" data-testid="result-group" data-match-id={group.matchId}>
++                      <div className="resultGroupHeader" data-testid="result-group-header">
++                        <span>{group.label}</span>
++                        <small>
++                          {group.rows.length} {group.rows.length === 1 ? "moment" : "moments"}
++                        </small>
++                      </div>
++                      {group.rows.map((result) => {
++                        const measurement = principalMeasurement(result.requested_evidence);
++                        return (
++                          <button
++                            key={result.result_id}
++                            data-testid="result-item"
++                            data-result-id={result.result_id}
++                            data-classification={result.classification}
++                            className={effectiveSelectedResultId === result.result_id ? "resultItem active" : "resultItem"}
++                            onClick={() => void handleResultSelect(result.result_id)}
++                          >
++                            <span>
++                              #{result.rank} · {tacticalHeadline(result.classification)}
++                            </span>
++                            <small>
++                              {periodLabel(result.period)} · {matchTimeLabel(result.match_time_ms)}
++                            </small>
++                            {measurement ? (
++                              <small
++                                className="resultMeasurement"
++                                data-testid="result-measurement"
++                                data-measurement-key={measurement.key}
++                                data-measurement-raw={measurement.raw}
++                              >
++                                {measurement.label}
++                              </small>
++                            ) : null}
++                          </button>
++                        );
++                      })}
++                    </div>
++                  ))}
++                  {!execution ? <div className="emptyState">Confirm and run an interpretation to populate results.</div> : null}
++                </div>
++              </section>
++
++              <section className="panel">
++                <div className="panelTitle">Run State</div>
++                {running ? (
++                  <div className="coldRunState" data-testid="cold-run-state" data-run-step={runStep ?? ""}>
++                    <div className="coldRunHeader">
++                      <span className="spinner" aria-hidden="true" />
++                      <strong>{runStepLabel(runStep)}</strong>
++                    </div>
++                    <div className="coldRunMeta">
++                      <span data-testid="cold-run-elapsed">Elapsed {elapsedSeconds}s</span>
++                      <span>{scopeLabel}</span>
++                    </div>
++                    <small>First run may take longer; repeat runs are cached.</small>
++                    <small className="muted">This runs on the host and cannot be canceled once started.</small>
++                  </div>
++                ) : executionProgress ? (
++                  <div className="progressBox" data-testid="execution-progress">
++                    <div>
++                      <strong>{executionProgress.cache_status}</strong> {executionProgress.message}
++                    </div>
++                    <small>Searching {scopeLabel.toLowerCase()} across all periods. First runs are cached for repeated queries.</small>
++                    <details className="developerDrawer inlineDrawer">
++                      <summary>Run stages</summary>
++                      <small>{executionProgress.stages.join(" -> ")}</small>
++                    </details>
++                  </div>
++                ) : (
++                  <div className="emptyState">Confirm and run an interpretation to populate moments.</div>
++                )}
++                <details className="developerDrawer">
++                  <summary>Run details</summary>
++                  <div data-testid="validation-result">
++                    <JsonBlock value={validation?.validation ?? { status: "not_run" }} compact />
++                  </div>
++                  <div data-testid="host-confirmation">
++                    <JsonBlock value={confirmation?.confirmation ?? { status: "not_confirmed" }} compact />
++                  </div>
++                  <div data-testid="execution-result">
++                    <JsonBlock value={execution?.execution ?? { status: "not_executed" }} compact />
++                  </div>
++                  <div data-testid="timestamp-inspection">
++                    <JsonBlock value={timestampInspection?.inspection ?? { status: "not_run" }} compact />
++                  </div>
+                 </details>
+-              </div>
+-            ) : (
+-              <div className="emptyState">Confirm and run an interpretation to populate moments.</div>
+-            )}
+-            <details className="developerDrawer">
+-              <summary>Developer details</summary>
+-              <div data-testid="validation-result">
+-                <JsonBlock value={validation?.validation ?? { status: "not_run" }} compact />
+-              </div>
+-              <div data-testid="host-confirmation">
+-                <JsonBlock value={confirmation?.confirmation ?? { status: "not_confirmed" }} compact />
+-              </div>
+-              <div data-testid="execution-result">
+-                <JsonBlock value={execution?.execution ?? { status: "not_executed" }} compact />
+-              </div>
+-              <div data-testid="timestamp-inspection">
+-                <JsonBlock value={timestampInspection?.inspection ?? { status: "not_run" }} compact />
+-              </div>
+-            </details>
++              </section>
++            </aside>
+           </section>
+-        </aside>
+-      </section>
++        </>
++      )}
+     </main>
+   );
+ }
+@@ -990,11 +1027,12 @@ function TraceList({
+             key={`${trace.predicate_id ?? "trace"}-${index}`}
+             className="traceRow"
+             data-testid="predicate-trace"
++            data-predicate-id={trace.predicate_id ?? ""}
+             data-raw={pretty({ value: trace.value, threshold: trace.threshold })}
+           >
+             <StatusPill tone={tone}>{status}</StatusPill>
+-            <span>{trace.predicate_id ?? "predicate"}</span>
+-            <small>{describeMeasurement(trace.value, trace.threshold, trace.unit)}</small>
++            <span>{humanizePredicate(trace.predicate_id)}</span>
++            <small data-testid="predicate-why">{predicateWhy(status, trace.value, trace.threshold, trace.unit)}</small>
+           </div>
+         );
+       })}
+diff --git a/apps/workbench-alpha/src/PitchCanvas.tsx b/apps/workbench-alpha/src/PitchCanvas.tsx
+index 567d36a..ef411bf 100644
+--- a/apps/workbench-alpha/src/PitchCanvas.tsx
++++ b/apps/workbench-alpha/src/PitchCanvas.tsx
+@@ -1,14 +1,16 @@
+ import { useEffect, useRef } from "react";
+ import type { ReplayPayload, ResultRow } from "./types";
+ import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
++import { overlayVisibleAtFrame, type CorridorOverlay } from "./overlay";
+ 
+ type PitchCanvasProps = {
+   replay: ReplayPayload | null;
+   frameIndex: number;
+   result?: ResultRow | null;
++  overlay?: CorridorOverlay;
+ };
+ 
+-export function PitchCanvas({ replay, frameIndex, result }: PitchCanvasProps) {
++export function PitchCanvas({ replay, frameIndex, result, overlay }: PitchCanvasProps) {
+   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+ 
+   useEffect(() => {
+@@ -89,12 +91,15 @@ export function PitchCanvas({ replay, frameIndex, result }: PitchCanvasProps) {
+ 
+     const evidence = result?.requested_evidence ?? {};
+     const ball = frame.entities.find((entity) => entity.entity_type === "ball");
+-    const targetPlayerId = typeof evidence.target_player_id === "string" ? evidence.target_player_id : null;
+-    const target = targetPlayerId
+-      ? frame.entities.find((entity) => entity.entity_id === targetPlayerId)
++    // Draw the corridor only inside its valid evidence interval (or at the witness frame). Never
++    // infer geometry: if the overlay state is "none" or the frame is outside the interval, hide it.
++    const overlayTargetId =
++      overlay && overlay.kind !== "none" ? overlay.targetPlayerId : typeof evidence.target_player_id === "string" ? evidence.target_player_id : null;
++    const target = overlayTargetId
++      ? frame.entities.find((entity) => entity.entity_id === overlayTargetId)
+       : null;
+-    const witnessFrameId = targetPlayerId ? Number(replay.anchor_frame_id) : null;
+-    if (ball && target && frame.frame_id === witnessFrameId) {
++    const overlayVisible = overlay ? overlayVisibleAtFrame(overlay, frame.frame_id) : frame.frame_id === Number(replay.anchor_frame_id);
++    if (ball && target && overlayVisible) {
+       const start = pitchPointToPixel(ball.x_m, ball.y_m, replay.pitch, layout);
+       const end = pitchPointToPixel(target.x_m, target.y_m, replay.pitch, layout);
+       ctx.save();
+diff --git a/apps/workbench-alpha/src/overlay.ts b/apps/workbench-alpha/src/overlay.ts
+new file mode 100644
+index 0000000..56761de
+--- /dev/null
++++ b/apps/workbench-alpha/src/overlay.ts
+@@ -0,0 +1,116 @@
++// Pure corridor-overlay geometry/validity helpers. Kept framework-free so the timing and legend
++// logic is unit-tested (tests/overlay.test.ts). The overlay uses EXACT evidence geometry only:
++// it shows a corridor across a valid open/close interval when those frames exist, falls back to a
++// clearly-labeled witness-frame-only overlay when only witness geometry exists, and otherwise hides
++// rather than inferring missing geometry.
++import type { ReplayPayload } from "./types";
++
++export type CorridorOverlay =
++  | {
++      kind: "interval";
++      targetPlayerId: string;
++      openFrameId: number;
++      closeFrameId: number;
++      clearanceM: number | null;
++      limitingDefenderId: string | null;
++    }
++  | { kind: "witness"; targetPlayerId: string; witnessFrameId: number; clearanceM: number | null }
++  | { kind: "none"; reason: string };
++
++function numericValue(value: unknown): number | null {
++  if (typeof value === "number" && Number.isFinite(value)) return value;
++  if (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value))) return Number(value);
++  return null;
++}
++
++function findEvidenceKey(evidence: Record<string, unknown>, names: string[]): string | null {
++  for (const key of Object.keys(evidence)) {
++    for (const name of names) {
++      if (key === name || key.endsWith(`.${name}`)) return key;
++    }
++  }
++  return null;
++}
++
++function evidenceNumber(evidence: Record<string, unknown>, names: string[]): number | null {
++  const key = findEvidenceKey(evidence, names);
++  return key ? numericValue(evidence[key]) : null;
++}
++
++function evidenceString(evidence: Record<string, unknown>, names: string[]): string | null {
++  const key = findEvidenceKey(evidence, names);
++  const value = key ? evidence[key] : null;
++  return typeof value === "string" && value.trim() !== "" ? value : null;
++}
++
++export function corridorOverlayState(
++  evidence: Record<string, unknown> | null | undefined,
++  replay: ReplayPayload | null
++): CorridorOverlay {
++  if (!evidence || !replay || replay.frames.length === 0) {
++    return { kind: "none", reason: "No selected result overlay" };
++  }
++  const targetPlayerId = evidenceString(evidence, ["target_player_id"]);
++  if (!targetPlayerId) return { kind: "none", reason: "No exact corridor witness available" };
++
++  const clearanceM = evidenceNumber(evidence, ["minimum_clearance_m", "corridor_minimum_clearance_m", "clearance_m"]);
++  const limitingDefenderId = evidenceString(evidence, ["limiting_defender_id"]);
++  const openFrameId = evidenceNumber(evidence, ["relation_open_frame_id", "open_confirm_frame_id", "open_frame_id"]);
++  const closeFrameId = evidenceNumber(evidence, ["relation_close_frame_id", "close_frame_id"]);
++  const frameIds = replay.frames.map((frame) => frame.frame_id);
++
++  if (
++    openFrameId !== null &&
++    closeFrameId !== null &&
++    closeFrameId >= openFrameId &&
++    frameIds.some((frameId) => frameId >= openFrameId && frameId <= closeFrameId)
++  ) {
++    return { kind: "interval", targetPlayerId, openFrameId, closeFrameId, clearanceM, limitingDefenderId };
++  }
++
++  const witnessFrameId = Number(replay.anchor_frame_id);
++  if (Number.isFinite(witnessFrameId) && frameIds.includes(witnessFrameId)) {
++    return { kind: "witness", targetPlayerId, witnessFrameId, clearanceM };
++  }
++  return { kind: "none", reason: "No exact corridor witness available" };
++}
++
++export function overlayVisibleAtFrame(state: CorridorOverlay, frameId: number | null | undefined): boolean {
++  if (frameId === null || frameId === undefined) return false;
++  if (state.kind === "interval") return frameId >= state.openFrameId && frameId <= state.closeFrameId;
++  if (state.kind === "witness") return frameId === state.witnessFrameId;
++  return false;
++}
++
++// Keeps the existing overlay-proof strings ("Witness-frame corridor", "No exact corridor witness
++// available") so the proof remains stable, and adds honest interval phrasing.
++export function overlayProofText(state: CorridorOverlay, frameId: number | null | undefined): string {
++  if (state.kind === "none") return state.reason;
++  if (overlayVisibleAtFrame(state, frameId)) {
++    return state.kind === "interval"
++      ? "Corridor visible: ball to target within the valid interval"
++      : "Witness-frame corridor: ball to selected receiver";
++  }
++  return state.kind === "interval"
++    ? "Corridor hidden outside its valid interval"
++    : "Corridor witness hidden outside the witness frame";
++}
++
++const NON_OPTIMALITY =
++  "A geometric corridor is a sufficiently clear forward connection from the ball to a teammate. It does not establish that this was the optimal pass.";
++
++export function overlayLegendLines(state: CorridorOverlay): string[] {
++  const lines: string[] = [];
++  if (state.kind === "witness") {
++    lines.push("Witness-frame corridor — exact geometry exists only at the witness frame, so it is shown there only.");
++    lines.push(`Target receiver: ${state.targetPlayerId}.`);
++    if (state.clearanceM !== null) lines.push(`Minimum clearance to the nearest defender: ${state.clearanceM} m.`);
++  } else if (state.kind === "interval") {
++    lines.push(`Corridor visible from frame ${state.openFrameId} to ${state.closeFrameId}; hidden outside that interval.`);
++    lines.push(`Target receiver: ${state.targetPlayerId}.`);
++    if (state.clearanceM !== null) lines.push(`Minimum clearance: ${state.clearanceM} m.`);
++    if (state.limitingDefenderId) lines.push(`Limiting defender: ${state.limitingDefenderId}.`);
++  }
++  lines.push(NON_OPTIMALITY);
++  return lines;
++}
+diff --git a/apps/workbench-alpha/src/presentation.ts b/apps/workbench-alpha/src/presentation.ts
+index 47ac31c..5a6fa5a 100644
+--- a/apps/workbench-alpha/src/presentation.ts
++++ b/apps/workbench-alpha/src/presentation.ts
+@@ -78,6 +78,88 @@ export function describeMeasurement(value: unknown, threshold: unknown, unit?: s
+   return "Measurement detail in developer view";
+ }
+ 
++function numericText(value: unknown): string | null {
++  if (typeof value === "number" && Number.isFinite(value)) return String(Math.round(value * 1000) / 1000);
++  if (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value))) {
++    return String(Math.round(Number(value) * 1000) / 1000);
++  }
++  return null;
++}
++
++// Find an evidence key matching a known field name. Evidence aliases may be plain ("minimum_clearance_m")
++// or node-prefixed ("signed_shift.signed_shift_metres"), so match on exact name or dotted suffix.
++function findEvidenceKey(evidence: Record<string, unknown>, names: string[]): string | null {
++  for (const key of Object.keys(evidence)) {
++    for (const name of names) {
++      if (key === name || key.endsWith(`.${name}`)) return key;
++    }
++  }
++  return null;
++}
++
++// First available principal measurement for a result card, in priority order. Never infers a missing
++// value — returns null if none of the known evidence fields are present. Raw value preserved in `raw`.
++export function principalMeasurement(
++  evidence: Record<string, unknown> | null | undefined
++): { key: string; label: string; raw: string } | null {
++  if (!evidence) return null;
++  const groups: Array<{ names: string[]; kind: "num" | "entry"; fmt?: (n: string) => string }> = [
++    { names: ["signed_shift_metres", "block_shift_metres", "signed_lateral_shift_m"], kind: "num", fmt: (n) => `Shift ${n} m` },
++    { names: ["destination_time_to_entry_seconds", "time_to_entry_seconds"], kind: "num", fmt: (n) => `Entry in ${n} s` },
++    { names: ["destination_entry_mode", "entry_mode"], kind: "entry" },
++    { names: ["minimum_clearance_m", "corridor_minimum_clearance_m", "clearance_m"], kind: "num", fmt: (n) => `Clearance ${n} m` },
++    { names: ["relation_duration_seconds", "corridor_duration_seconds", "duration_seconds"], kind: "num", fmt: (n) => `Held ${n} s` }
++  ];
++  for (const group of groups) {
++    const key = findEvidenceKey(evidence, group.names);
++    if (!key) continue;
++    if (group.kind === "num" && group.fmt) {
++      const text = numericText(evidence[key]);
++      if (text !== null) return { key, label: group.fmt(text), raw: String(evidence[key]) };
++    } else if (group.kind === "entry") {
++      const info = entryModeLabel(evidence[key]);
++      if (info) return { key, label: `Entry: ${info.label}`, raw: String(evidence[key]) };
++    }
++  }
++  return null;
++}
++
++const PREDICATE_SUBJECTS: Record<string, string> = {
++  has_progressive_corridor: "Progressive corridor exists",
++  destination_region_entered: "Ball entered the destination region",
++  ball_side_block_shift: "Ball-side block shift cleared the threshold",
++  wide_possession: "Wide possession"
++};
++
++// Readable subject for a predicate id (product language); falls back to a humanized id.
++export function humanizePredicate(predicateId: string | undefined): string {
++  if (!predicateId) return "Predicate";
++  if (PREDICATE_SUBJECTS[predicateId]) return PREDICATE_SUBJECTS[predicateId];
++  const spaced = predicateId.replaceAll("_", " ").trim();
++  return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : "Predicate";
++}
++
++// Readable "why matched / why not" phrase, backed by the trace measurement. Raw JSON stays in
++// Developer details; this is the default-view summary.
++export function predicateWhy(status: string | undefined, value: unknown, threshold: unknown, unit?: string | null): string {
++  const measurement = describeMeasurement(value, threshold, unit);
++  const detail = measurement === "Measurement detail in developer view" ? "" : ` (${measurement})`;
++  if (status === "PASS") return `Matched${detail}`;
++  if (status === "FAIL") return `Did not match${detail}`;
++  return `Could not be determined${detail}`;
++}
++
++// Readable outcome for a known-timestamp / non-match inspection. Raw payload stays in Developer tools.
++export function timestampOutcomeSummary(inspection: Record<string, unknown> | null | undefined): string | null {
++  if (!inspection) return null;
++  if (JSON.stringify(inspection).includes("NO_COMPATIBLE_ANCHOR")) {
++    return "No matching moment at this timestamp for the current plan.";
++  }
++  const status = typeof inspection.status === "string" ? inspection.status : null;
++  if (status) return `Timestamp inspection: ${status.replaceAll("_", " ").toLowerCase()}.`;
++  return "Timestamp inspected — see Developer details for the raw record.";
++}
++
+ // Honest rendering of relation destination-entry mode. Only the four backend enum values are
+ // recognised; an absent value returns null so the UI never infers entry from time_to_entry_seconds.
+ export function entryModeLabel(mode: unknown): { label: string; tone: Tone; value: EntryMode } | null {
+diff --git a/apps/workbench-alpha/src/workbenchState.ts b/apps/workbench-alpha/src/workbenchState.ts
+new file mode 100644
+index 0000000..1b3099d
+--- /dev/null
++++ b/apps/workbench-alpha/src/workbenchState.ts
+@@ -0,0 +1,280 @@
++// Pure, framework-free state machine for the Workbench workflow. Keeping it out of React lets us
++// unit-test every transition (tests/workbenchState.test.ts) and centralises invalidation so a new
++// piece of downstream state can't be forgotten when an upstream input changes.
++import type {
++  BootstrapResponse,
++  ConfirmationResponse,
++  ExecutionProgressResponse,
++  ExecutionResponse,
++  InspectResultResponse,
++  InspectTimestampResponse,
++  InterpretResponse,
++  JsonObject,
++  MatchLibraryResponse,
++  Preset,
++  SubmitValidateResponse
++} from "./types";
++
++export type Phase =
++  | "booting"
++  | "idle"
++  | "interpreting"
++  | "ready"
++  | "confirming"
++  | "executing"
++  | "results"
++  | "error";
++
++export type Mode = "manual" | "model";
++export type RunStep = "validating" | "confirming" | "executing";
++
++export interface WorkbenchState {
++  phase: Phase;
++  inFlight: boolean;
++  boot: BootstrapResponse | null;
++  matchLibrary: MatchLibraryResponse | null;
++  matchLibraryLoaded: boolean;
++  selectedMatchIds: string[];
++  mode: Mode;
++  query: string;
++  selectedPreset: Preset["preset_id"];
++  planDocument: JsonObject | null;
++  interpretation: InterpretResponse | null;
++  validation: SubmitValidateResponse | null;
++  confirmation: ConfirmationResponse | null;
++  executionProgress: ExecutionProgressResponse | null;
++  execution: ExecutionResponse | null;
++  selectedResultId: string | null;
++  inspection: InspectResultResponse | null;
++  timestampInspection: InspectTimestampResponse | null;
++  inspectionLoadingResultId: string | null;
++  runStep: RunStep | null;
++  runStartedAt: number | null;
++  error: string | null;
++}
++
++export type WorkbenchAction =
++  | { type: "BOOT_READY"; boot: BootstrapResponse; matchLibrary: MatchLibraryResponse }
++  | { type: "BOOT_FAILED"; error: string }
++  | { type: "SET_MODE"; mode: Mode }
++  | { type: "SET_QUERY"; query: string }
++  | { type: "SET_PRESET"; preset: Preset["preset_id"] }
++  | { type: "SET_SCOPE"; ids: string[] }
++  | { type: "INTERPRET_START" }
++  | { type: "INTERPRET_RESULT"; interpretation: InterpretResponse }
++  | { type: "RUN_STEP"; step: RunStep; startedAt: number }
++  | { type: "VALIDATED"; validation: SubmitValidateResponse }
++  | { type: "CONFIRMED"; confirmation: ConfirmationResponse }
++  | { type: "EXEC_PROGRESS"; progress: ExecutionProgressResponse }
++  | { type: "EXECUTED"; execution: ExecutionResponse; selectedResultId: string | null }
++  | { type: "INSPECT_START"; resultId: string }
++  | { type: "INSPECTED"; inspection: InspectResultResponse }
++  | { type: "INSPECT_DONE" }
++  | { type: "SELECT_RESULT"; resultId: string }
++  | { type: "TIMESTAMP_START" }
++  | { type: "TIMESTAMP_INSPECTED"; timestampInspection: InspectTimestampResponse }
++  | { type: "ERROR"; error: string }
++  | { type: "CLEAR_ERROR" };
++
++export const DEFAULT_QUERY =
++  "Show possessions where the ball goes wide and the defending block moves toward that side.";
++
++export function initialState(): WorkbenchState {
++  return {
++    phase: "booting",
++    inFlight: true,
++    boot: null,
++    matchLibrary: null,
++    matchLibraryLoaded: false,
++    selectedMatchIds: [],
++    mode: "manual",
++    query: DEFAULT_QUERY,
++    selectedPreset: "approved_block_shift",
++    planDocument: null,
++    interpretation: null,
++    validation: null,
++    confirmation: null,
++    executionProgress: null,
++    execution: null,
++    selectedResultId: null,
++    inspection: null,
++    timestampInspection: null,
++    inspectionLoadingResultId: null,
++    runStep: null,
++    runStartedAt: null,
++    error: null
++  };
++}
++
++function asRecord(value: unknown): JsonObject {
++  return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonObject) : {};
++}
++
++function asArray(value: unknown): unknown[] {
++  return Array.isArray(value) ? value : [];
++}
++
++export function applyScopeToPlan(planDocument: JsonObject, matchIds: string[]): JsonObject {
++  const next = structuredClone(planDocument) as JsonObject;
++  const invocation = asRecord(next.default_invocation);
++  invocation.match_ids = matchIds;
++  invocation.periods = asArray(invocation.periods).length > 0 ? invocation.periods : ["firstHalf", "secondHalf"];
++  invocation.perspective_team_role = invocation.perspective_team_role || "home";
++  next.default_invocation = invocation;
++  return next;
++}
++
++const SCOPE_DEPENDENT_RESET = {
++  validation: null,
++  confirmation: null,
++  executionProgress: null,
++  execution: null,
++  selectedResultId: null,
++  inspection: null,
++  timestampInspection: null,
++  inspectionLoadingResultId: null
++} as const;
++
++const INTERPRETATION_RESET = {
++  interpretation: null,
++  planDocument: null,
++  ...SCOPE_DEPENDENT_RESET
++} as const;
++
++// --- selectors (pure, derived) ---
++export function selectPlanReady(state: WorkbenchState): boolean {
++  return Boolean(state.planDocument && state.interpretation?.status === "PLAN_INTERPRETED");
++}
++
++export function selectHasSelectedScope(state: WorkbenchState): boolean {
++  return state.selectedMatchIds.length > 0;
++}
++
++export function selectIsNovelComposition(state: WorkbenchState): boolean {
++  return state.interpretation?.provenance_source === "HERMES_NOVEL_COMPOSITION";
++}
++
++export function selectBusy(state: WorkbenchState): boolean {
++  return state.inFlight;
++}
++
++export function selectCanRun(state: WorkbenchState): boolean {
++  return (
++    selectPlanReady(state) &&
++    selectHasSelectedScope(state) &&
++    !selectIsNovelComposition(state) &&
++    !state.inFlight
++  );
++}
++
++// Phase a settled (non-in-flight) state should rest in, given its data.
++function settledPhase(state: WorkbenchState): Phase {
++  if (state.execution) return "results";
++  if (selectPlanReady(state) && selectHasSelectedScope(state)) return "ready";
++  return "idle";
++}
++
++export function reducer(state: WorkbenchState, action: WorkbenchAction): WorkbenchState {
++  switch (action.type) {
++    case "BOOT_READY":
++      return {
++        ...state,
++        phase: "idle",
++        inFlight: false,
++        boot: action.boot,
++        matchLibrary: action.matchLibrary,
++        matchLibraryLoaded: true,
++        selectedMatchIds: action.matchLibrary.default_match_ids
++      };
++    case "BOOT_FAILED":
++      return { ...state, phase: "error", inFlight: false, error: action.error };
++    case "SET_MODE": {
++      if (action.mode === state.mode) return state;
++      return { ...state, mode: action.mode, ...INTERPRETATION_RESET, phase: "idle", error: null };
++    }
++    case "SET_QUERY":
++      return { ...state, query: action.query, ...INTERPRETATION_RESET, phase: "idle", error: null };
++    case "SET_PRESET":
++      return { ...state, selectedPreset: action.preset, ...INTERPRETATION_RESET, phase: "idle", error: null };
++    case "SET_SCOPE": {
++      const planDocument = state.planDocument ? applyScopeToPlan(state.planDocument, action.ids) : null;
++      const next = { ...state, selectedMatchIds: action.ids, planDocument, ...SCOPE_DEPENDENT_RESET };
++      return { ...next, phase: settledPhase(next) };
++    }
++    case "INTERPRET_START":
++      return { ...state, phase: "interpreting", inFlight: true, error: null };
++    case "INTERPRET_RESULT": {
++      const interpretation = action.interpretation;
++      const planDocument =
++        interpretation.status === "PLAN_INTERPRETED" && interpretation.plan_document
++          ? applyScopeToPlan(interpretation.plan_document, state.selectedMatchIds)
++          : null;
++      const next = { ...state, interpretation, planDocument, ...SCOPE_DEPENDENT_RESET, inFlight: false };
++      return { ...next, phase: settledPhase(next) };
++    }
++    case "RUN_STEP":
++      return {
++        ...state,
++        inFlight: true,
++        runStep: action.step,
++        runStartedAt: state.runStartedAt ?? action.startedAt,
++        phase: action.step === "executing" ? "executing" : "confirming"
++      };
++    case "VALIDATED":
++      return {
++        ...state,
++        validation: action.validation,
++        confirmation: null,
++        execution: null,
++        selectedResultId: null,
++        inspection: null,
++        timestampInspection: null,
++        inspectionLoadingResultId: null
++      };
++    case "CONFIRMED":
++      return { ...state, confirmation: action.confirmation };
++    case "EXEC_PROGRESS":
++      return { ...state, executionProgress: action.progress };
++    case "EXECUTED":
++      return {
++        ...state,
++        execution: action.execution,
++        executionProgress: action.execution.cache,
++        selectedResultId: action.selectedResultId,
++        phase: "results",
++        inFlight: false,
++        runStep: null,
++        runStartedAt: null
++      };
++    case "INSPECT_START":
++      return {
++        ...state,
++        inFlight: true,
++        inspection: null,
++        timestampInspection: null,
++        inspectionLoadingResultId: action.resultId
++      };
++    case "INSPECTED":
++      return { ...state, inspection: action.inspection, inspectionLoadingResultId: null, inFlight: false };
++    case "INSPECT_DONE":
++      return { ...state, inspectionLoadingResultId: null, inFlight: false };
++    case "SELECT_RESULT":
++      return { ...state, selectedResultId: action.resultId };
++    case "TIMESTAMP_START":
++      return { ...state, inFlight: true };
++    case "TIMESTAMP_INSPECTED":
++      return {
++        ...state,
++        timestampInspection: action.timestampInspection,
++        inspection: null,
++        inspectionLoadingResultId: null,
++        inFlight: false
++      };
++    case "ERROR":
++      return { ...state, error: action.error, inFlight: false, phase: settledPhase(state) };
++    case "CLEAR_ERROR":
++      return { ...state, error: null };
++    default:
++      return state;
++  }
++}
+diff --git a/apps/workbench-alpha/tests/beta1a-proof.spec.ts b/apps/workbench-alpha/tests/beta1a-proof.spec.ts
+index 570ad63..fbb2e8c 100644
+--- a/apps/workbench-alpha/tests/beta1a-proof.spec.ts
++++ b/apps/workbench-alpha/tests/beta1a-proof.spec.ts
+@@ -14,6 +14,30 @@ function responsePath(path: string) {
+   return (response: { url(): string }) => new URL(response.url()).pathname === path;
+ }
+ 
++async function setReplayFrame(page: Page, frameIndex: number) {
++  await page.getByTestId("replay-scrubber").evaluate((element, value) => {
++    const input = element as HTMLInputElement;
++    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
++    setter?.call(input, String(value));
++    input.dispatchEvent(new Event("input", { bubbles: true }));
++    input.dispatchEvent(new Event("change", { bubbles: true }));
++  }, frameIndex);
++}
++
++function inspectResponseFor(page: Page, resultId: string) {
++  return page.waitForResponse(async (response) => {
++    if (new URL(response.url()).pathname !== "/api/inspect-result") return false;
++    try {
++      const payload = (await response.json()) as Record<string, unknown>;
++      const inspection = payload.inspection as Record<string, unknown> | undefined;
++      const result = inspection?.result as Record<string, unknown> | undefined;
++      return result?.result_id === resultId;
++    } catch {
++      return false;
++    }
++  });
++}
++
+ async function expandAllDetails(page: Page) {
+   await page.evaluate(() => {
+     document.querySelectorAll("details").forEach((node) => node.setAttribute("open", "true"));
+@@ -39,6 +63,9 @@ test("beta1a product screenshots", async ({ page }) => {
+ 
+   // 3) Browse recipes selection + interpretation (Reviewed recipe provenance)
+   await page.getByTestId("preset-approved_block_shift").click();
++  // recipe preview before interpretation must be clearly labeled "Preview — not yet interpreted"
++  await expect(page.getByTestId("recipe-preview-badge")).toBeVisible();
++  await shot(page, "b11-03-recipe-preview");
+   const interpretPromise = page.waitForResponse(responsePath("/api/interpret"));
+   await page.getByTestId("interpret-button").click();
+   await interpretPromise;
+@@ -88,3 +115,87 @@ test("beta1a product screenshots", async ({ page }) => {
+   await shot(page, "02-ask-hermes-state");
+   await shot(page, "06-model-unavailable");
+ });
++
++test("beta1a.1 state screenshots: booting and cold-run", async ({ page }) => {
++  // boot/loading state (delay the match library so it is observable)
++  await page.route("**/api/matches", async (route) => {
++    await new Promise((resolve) => setTimeout(resolve, 900));
++    await route.continue();
++  });
++  await page.goto("/");
++  await expect(page.getByTestId("booting-state")).toBeVisible();
++  await shot(page, "b11-00-booting");
++  await expect(page.getByTestId("path-chooser")).toBeVisible();
++  await page.unroute("**/api/matches");
++
++  // executing cold-run state (hold the execute response)
++  await page.getByTestId("preset-approved_block_shift").click();
++  const interpretPromise = page.waitForResponse(responsePath("/api/interpret"));
++  await page.getByTestId("interpret-button").click();
++  await interpretPromise;
++
++  await page.route("**/api/execute", async (route) => {
++    await new Promise((resolve) => setTimeout(resolve, 1500));
++    await route.continue();
++  });
++  const executePromise = page.waitForResponse(responsePath("/api/execute"));
++  await page.getByTestId("primary-action").click();
++  await expect(page.getByTestId("cold-run-state")).toBeVisible();
++  await shot(page, "b11-04-cold-run");
++  await executePromise;
++  await page.unroute("**/api/execute");
++
++  // result rail with principal measurement
++  await expect(page.getByTestId("result-count")).not.toHaveText("0");
++  await expect(page.getByTestId("result-measurement").first()).toBeVisible();
++  await shot(page, "b11-05-result-measurement");
++});
++
++test("beta1b comprehension screenshots", async ({ page }) => {
++  await page.goto("/");
++  await expect(page.getByTestId("path-chooser")).toBeVisible();
++  await expect(page.getByTestId("analysis-scope")).toContainText("All 4 available matches");
++
++  await page.getByTestId("preset-experimental_corridor").click();
++  const interpretPromise = page.waitForResponse(responsePath("/api/interpret"));
++  await page.getByTestId("interpret-button").click();
++  await interpretPromise;
++
++  const executePromise = page.waitForResponse(responsePath("/api/execute"));
++  await page.getByTestId("primary-action").click();
++  const execution = (await (await executePromise).json()) as Record<string, unknown>;
++  const results = (execution.execution as Record<string, unknown>).results as Array<Record<string, unknown>>;
++  const firstResultId = String(results[0].result_id);
++
++  const inspectPromise = inspectResponseFor(page, firstResultId);
++  await page.locator(`[data-testid="result-item"][data-result-id="${firstResultId}"]`).click();
++  const inspection = (await (await inspectPromise).json()) as Record<string, unknown>;
++  const replay = inspection.replay as Record<string, unknown>;
++  const frames = replay.frames as Array<Record<string, unknown>>;
++  const evidence = ((inspection.inspection as Record<string, unknown>).result as Record<string, unknown>).requested_evidence as
++    | Record<string, unknown>
++    | undefined;
++
++  // 3) result rail grouping + measurements; 4) why-matched summary
++  await expect(page.getByTestId("result-group-header").first()).toBeVisible();
++  await shot(page, "b1b-03-result-grouping");
++  await expect(page.getByTestId("predicate-why").first()).toBeVisible();
++  await shot(page, "b1b-04-why-matched");
++
++  // 1) overlay visible within valid interval (witness frame); 2) hidden outside
++  if (evidence && typeof evidence.target_player_id === "string") {
++    const anchorFrameId = Number(replay.anchor_frame_id);
++    const witnessIdx = frames.findIndex((frame) => frame.frame_id === anchorFrameId);
++    await setReplayFrame(page, witnessIdx);
++    await expect(page.getByTestId("overlay-proof")).toContainText("Witness-frame corridor");
++    await shot(page, "b1b-01-overlay-valid");
++    const otherIdx = frames.findIndex((_frame, index) => index !== witnessIdx);
++    await setReplayFrame(page, otherIdx);
++    await expect(page.getByTestId("overlay-proof")).toContainText("hidden");
++    await shot(page, "b1b-02-overlay-hidden");
++  }
++
++  // 5) Developer details still expose raw internals
++  await expandAllDetails(page);
++  await shot(page, "b1b-05-developer-details");
++});
+diff --git a/apps/workbench-alpha/tests/overlay.test.ts b/apps/workbench-alpha/tests/overlay.test.ts
+new file mode 100644
+index 0000000..d7e6244
+--- /dev/null
++++ b/apps/workbench-alpha/tests/overlay.test.ts
+@@ -0,0 +1,70 @@
++import assert from "node:assert/strict";
++import {
++  corridorOverlayState,
++  overlayLegendLines,
++  overlayProofText,
++  overlayVisibleAtFrame
++} from "../src/overlay";
++import type { ReplayPayload } from "../src/types";
++
++const replay = (anchor: number, frameIds: number[]) =>
++  ({ anchor_frame_id: anchor, frames: frameIds.map((frame_id) => ({ frame_id, entities: [] })) } as unknown as ReplayPayload);
++
++// --- none: no evidence / no target ---
++assert.equal(corridorOverlayState(null, replay(100, [100])).kind, "none");
++assert.equal(corridorOverlayState({}, null).reason, "No selected result overlay");
++assert.equal(corridorOverlayState({ minimum_clearance_m: 4 }, replay(100, [100])).reason, "No exact corridor witness available");
++
++// --- witness-frame only (corridor preset: target + clearance, no open/close frames) ---
++const witness = corridorOverlayState(
++  { target_player_id: "DFL-OBJ-1", minimum_clearance_m: 4.35 },
++  replay(100, [98, 99, 100, 101])
++);
++assert.equal(witness.kind, "witness");
++if (witness.kind === "witness") {
++  assert.equal(witness.witnessFrameId, 100);
++  assert.equal(witness.clearanceM, 4.35);
++}
++assert.equal(overlayVisibleAtFrame(witness, 100), true);
++assert.equal(overlayVisibleAtFrame(witness, 99), false, "hidden outside the witness frame");
++assert.equal(overlayProofText(witness, 100), "Witness-frame corridor: ball to selected receiver");
++assert.equal(overlayProofText(witness, 99), "Corridor witness hidden outside the witness frame");
++const witnessLegend = overlayLegendLines(witness).join(" ");
++assert.match(witnessLegend, /witness frame/i);
++assert.match(witnessLegend, /4\.35 m/);
++assert.match(witnessLegend, /optimal pass/i);
++
++// --- interval (evidence carries open/close frames covered by the replay) ---
++const interval = corridorOverlayState(
++  {
++    target_player_id: "DFL-OBJ-2",
++    relation_open_frame_id: 200,
++    relation_close_frame_id: 210,
++    minimum_clearance_m: 3.1,
++    limiting_defender_id: "DFL-OBJ-9"
++  },
++  replay(205, [198, 200, 205, 210, 215])
++);
++assert.equal(interval.kind, "interval");
++if (interval.kind === "interval") {
++  assert.equal(interval.openFrameId, 200);
++  assert.equal(interval.closeFrameId, 210);
++  assert.equal(interval.limitingDefenderId, "DFL-OBJ-9");
++}
++assert.equal(overlayVisibleAtFrame(interval, 205), true);
++assert.equal(overlayVisibleAtFrame(interval, 199), false);
++assert.equal(overlayVisibleAtFrame(interval, 211), false);
++assert.equal(overlayProofText(interval, 205), "Corridor visible: ball to target within the valid interval");
++assert.equal(overlayProofText(interval, 199), "Corridor hidden outside its valid interval");
++const intervalLegend = overlayLegendLines(interval).join(" ");
++assert.match(intervalLegend, /from frame 200 to 210/);
++assert.match(intervalLegend, /Limiting defender: DFL-OBJ-9/);
++
++// --- never infer: open/close present but no replay frame inside the interval falls back to witness ---
++const noCover = corridorOverlayState(
++  { target_player_id: "t", relation_open_frame_id: 500, relation_close_frame_id: 510 },
++  replay(100, [98, 100, 102])
++);
++assert.equal(noCover.kind, "witness", "interval with no covered frames downgrades, not guesses");
++
++console.log("overlay tests passed");
+diff --git a/apps/workbench-alpha/tests/presentation.test.ts b/apps/workbench-alpha/tests/presentation.test.ts
+index c45b39e..a589f9a 100644
+--- a/apps/workbench-alpha/tests/presentation.test.ts
++++ b/apps/workbench-alpha/tests/presentation.test.ts
+@@ -2,9 +2,13 @@ import assert from "node:assert/strict";
+ import {
+   describeMeasurement,
+   entryModeLabel,
++  humanizePredicate,
++  predicateWhy,
++  principalMeasurement,
+   provenanceLabel,
+   provenanceTone,
+-  tacticalHeadline
++  tacticalHeadline,
++  timestampOutcomeSummary
+ } from "../src/presentation";
+ 
+ // --- Provenance honesty: a preset/recipe must never read as AI-authored ---
+@@ -51,4 +55,35 @@ assert.equal(describeMeasurement(5, null), "measured 5");
+ assert.equal(describeMeasurement(null, 3, "m"), "threshold 3 m");
+ assert.equal(describeMeasurement({ nested: true }, [1, 2]), "Measurement detail in developer view");
+ 
++// --- principal measurement: first available in priority order; never inferred ---
++assert.equal(principalMeasurement(null), null);
++assert.equal(principalMeasurement({}), null, "no known fields -> no measurement (never inferred)");
++assert.equal(principalMeasurement({ signed_shift_metres: 4.21 })?.label, "Shift 4.21 m");
++assert.equal(
++  principalMeasurement({ destination_time_to_entry_seconds: 0.16 })?.label,
++  "Entry in 0.16 s"
++);
++assert.equal(principalMeasurement({ destination_entry_mode: "PRESENT_AT_OPEN" })?.label, "Entry: Already in destination at open");
++assert.equal(principalMeasurement({ minimum_clearance_m: 4.35 })?.label, "Clearance 4.35 m");
++assert.equal(principalMeasurement({ relation_duration_seconds: 3.8 })?.label, "Held 3.8 s");
++// node-prefixed aliases (e.g. block-shift "signed_shift.signed_shift_metres") match by dotted suffix
++assert.equal(principalMeasurement({ "signed_shift.signed_shift_metres": -3.4 })?.label, "Shift -3.4 m");
++// priority: shift wins over clearance when both present
++assert.equal(principalMeasurement({ minimum_clearance_m: 4.35, signed_shift_metres: 2 })?.key, "signed_shift_metres");
++// raw value preserved for tooling
++assert.equal(principalMeasurement({ signed_shift_metres: 4.2109 })?.raw, "4.2109");
++
++// --- product-language predicate summaries ---
++assert.equal(humanizePredicate("has_progressive_corridor"), "Progressive corridor exists");
++assert.equal(humanizePredicate("some_other_predicate"), "Some other predicate");
++assert.equal(humanizePredicate(undefined), "Predicate");
++assert.equal(predicateWhy("PASS", 4.35, 3, "m"), "Matched (measured 4.35 m · threshold 3 m)");
++assert.equal(predicateWhy("FAIL", 1, 3), "Did not match (measured 1 · threshold 3)");
++assert.equal(predicateWhy("UNKNOWN", null, null), "Could not be determined");
++
++// --- timestamp outcome summary ---
++assert.match(String(timestampOutcomeSummary({ status: "NO_COMPATIBLE_ANCHOR" })), /No matching moment/);
++assert.equal(timestampOutcomeSummary(null), null);
++assert.match(String(timestampOutcomeSummary({ status: "MATCHED" })), /matched/);
++
+ console.log("presentation tests passed");
+diff --git a/apps/workbench-alpha/tests/workbench-alpha.spec.ts b/apps/workbench-alpha/tests/workbench-alpha.spec.ts
+index 4586fb5..ec5b5e9 100644
+--- a/apps/workbench-alpha/tests/workbench-alpha.spec.ts
++++ b/apps/workbench-alpha/tests/workbench-alpha.spec.ts
+@@ -872,6 +872,132 @@ test("beta1a novel composition is surfaced as pending proof refresh, not a runna
+   expect(consoleErrors).toEqual([]);
+ });
+ 
++test("beta1b corridor overlay shows only within its valid interval, with a legend", async ({ page }) => {
++  const consoleErrors: string[] = [];
++  await boot(page, consoleErrors);
++  await page.getByTestId("preset-experimental_corridor").click();
++  await jsonAfterClick<Record<string, unknown>>(page, [], "ov.interpret", "interpret-button", "/api/interpret");
++  const { execution } = await confirmAndRun(page, [], "ov");
++  const results = (execution.execution as Record<string, unknown>).results as Array<Record<string, unknown>>;
++  const firstResultId = String(results[0].result_id);
++  const inspectPromise = waitForInspectionResponse(page, firstResultId);
++  await page.locator(`[data-testid="result-item"][data-result-id="${firstResultId}"]`).click();
++  const inspection = (await (await inspectPromise).json()) as Record<string, unknown>;
++  const replay = inspection.replay as Record<string, unknown>;
++  const frames = replay.frames as Array<Record<string, unknown>>;
++  const evidence = ((inspection.inspection as Record<string, unknown>).result as Record<string, unknown>).requested_evidence as
++    | Record<string, unknown>
++    | undefined;
++
++  // The legend is always present with the non-optimality disclaimer.
++  await expect(page.getByTestId("overlay-legend")).toContainText("optimal pass");
++
++  if (evidence && typeof evidence.target_player_id === "string") {
++    const anchorFrameId = Number(replay.anchor_frame_id);
++    const witnessIdx = frames.findIndex((frame) => frame.frame_id === anchorFrameId);
++    expect(witnessIdx).toBeGreaterThanOrEqual(0);
++
++    await setReplayFrame(page, witnessIdx);
++    await expect(page.getByTestId("overlay-proof")).toContainText("Witness-frame corridor");
++    await expect(page.getByTestId("overlay-proof")).toHaveAttribute("data-overlay-kind", "witness");
++    await expect(page.getByTestId("overlay-legend")).toContainText("witness frame");
++
++    const otherIdx = frames.findIndex((_frame, index) => index !== witnessIdx);
++    await setReplayFrame(page, otherIdx);
++    await expect(page.getByTestId("overlay-proof")).toContainText("hidden outside the witness frame");
++  }
++
++  expect(consoleErrors).toEqual([]);
++});
++
++test("beta1b result rail groups by match and shows readable why-matched summaries", async ({ page }) => {
++  const consoleErrors: string[] = [];
++  await boot(page, consoleErrors);
++  await page.getByTestId("preset-approved_block_shift").click();
++  await jsonAfterClick<Record<string, unknown>>(page, [], "wm.interpret", "interpret-button", "/api/interpret");
++  const { execution } = await confirmAndRun(page, [], "wm");
++  const results = (execution.execution as Record<string, unknown>).results as Array<Record<string, unknown>>;
++  const firstResultId = String(results[0].result_id);
++
++  // grouping + principal measurement are visible without inspecting
++  await expect(page.getByTestId("result-group-header").first()).toBeVisible();
++  await expect(page.getByTestId("result-measurement").first()).toBeVisible();
++
++  // inspect -> readable why-matched summary backed by the trace; raw JSON only in Developer details
++  const inspectPromise = waitForInspectionResponse(page, firstResultId);
++  await page.locator(`[data-testid="result-item"][data-result-id="${firstResultId}"]`).click();
++  await inspectPromise;
++  await expect(page.getByTestId("predicate-why").first()).toBeVisible();
++  const why = await page.getByTestId("predicate-why").first().textContent();
++  expect(why && /Matched|Did not match|Could not be determined/.test(why)).toBeTruthy();
++  await expect(page.getByText("Trace details")).toBeVisible();
++
++  expect(consoleErrors).toEqual([]);
++});
++
++test("beta1a.1 booting state shows a loading view with no false empty/scope warning", async ({ page }) => {
++  const consoleErrors: string[] = [];
++  page.on("console", (message) => {
++    if (message.type() === "error") consoleErrors.push(message.text());
++  });
++  page.on("pageerror", (errorEvent) => consoleErrors.push(errorEvent.message));
++
++  // Delay the match library so the booting state is observable.
++  await page.route("**/api/matches", async (route) => {
++    await new Promise((resolve) => setTimeout(resolve, 700));
++    await route.continue();
++  });
++  await page.goto("/");
++
++  await expect(page.getByTestId("booting-state")).toBeVisible();
++  await expect(page.getByTestId("booting-state")).toContainText("Loading workbench");
++  // No misleading empty/scope state before the library resolves.
++  await expect(page.getByTestId("scope-warning")).toHaveCount(0);
++  await expect(page.getByTestId("analysis-scope")).toHaveCount(0);
++  await expect(page.getByText("0 selected matches")).toHaveCount(0);
++
++  // After load: full UI, all matches selected, still no scope warning, booting gone.
++  await expect(page.getByTestId("path-chooser")).toBeVisible();
++  await expect(page.getByTestId("booting-state")).toHaveCount(0);
++  await expect(page.getByTestId("analysis-scope")).toContainText("All 4 available matches");
++  await expect(page.getByTestId("scope-warning")).toHaveCount(0);
++  await expect(page.getByTestId("primary-action")).toBeDisabled();
++  await page.unroute("**/api/matches");
++
++  expect(consoleErrors).toEqual([]);
++});
++
++test("beta1a.1 cold-run state shows step, elapsed, and non-cancelable honesty while executing", async ({ page }) => {
++  const consoleErrors: string[] = [];
++  await boot(page, consoleErrors);
++  await page.getByTestId("preset-approved_block_shift").click();
++  await jsonAfterClick<Record<string, unknown>>(page, [], "cold.interpret", "interpret-button", "/api/interpret");
++
++  // Hold the execute response so the executing phase is observable.
++  await page.route("**/api/execute", async (route) => {
++    await new Promise((resolve) => setTimeout(resolve, 1200));
++    await route.continue();
++  });
++  const executePromise = page.waitForResponse(responsePath("/api/execute"));
++  await page.getByTestId("primary-action").click();
++
++  const coldRun = page.getByTestId("cold-run-state");
++  await expect(coldRun).toBeVisible();
++  await expect(coldRun).toHaveAttribute("data-run-step", "executing");
++  await expect(coldRun).toContainText("Executing over selected matches");
++  await expect(page.getByTestId("cold-run-elapsed")).toContainText("Elapsed");
++  await expect(coldRun).toContainText("First run may take longer");
++  await expect(coldRun).toContainText("cannot be canceled once started");
++  await expect(page.getByTestId("primary-action")).toBeDisabled();
++
++  await executePromise;
++  await expect(page.getByTestId("cold-run-state")).toHaveCount(0);
++  await expect(page.getByTestId("result-count")).not.toHaveText("0");
++  await page.unroute("**/api/execute");
++
++  expect(consoleErrors).toEqual([]);
++});
++
+ test("backend execution artifacts are the source of result inspection", async ({ request }) => {
+   const api = await requestFactory.newContext({ baseURL: "http://127.0.0.1:8765" });
+   try {
+diff --git a/apps/workbench-alpha/tests/workbenchState.test.ts b/apps/workbench-alpha/tests/workbenchState.test.ts
+new file mode 100644
+index 0000000..795e2a9
+--- /dev/null
++++ b/apps/workbench-alpha/tests/workbenchState.test.ts
+@@ -0,0 +1,134 @@
++import assert from "node:assert/strict";
++import {
++  initialState,
++  reducer,
++  selectCanRun,
++  selectPlanReady,
++  type WorkbenchState
++} from "../src/workbenchState";
++import type {
++  BootstrapResponse,
++  ExecutionResponse,
++  InterpretResponse,
++  MatchLibraryResponse,
++  SubmitValidateResponse
++} from "../src/types";
++
++const cast = <T>(value: unknown) => value as T;
++
++const matchLibrary = cast<MatchLibraryResponse>({
++  ok: true,
++  perspective_team: "Fortuna",
++  default_match_ids: ["J03WOY", "J03WPY"],
++  matches: []
++});
++const boot = cast<BootstrapResponse>({ model: { available: false, status: "X" }, service: {}, presets: [] });
++
++const planInterpreted = cast<InterpretResponse>({
++  ok: true,
++  status: "PLAN_INTERPRETED",
++  provenance_source: "REVIEWED_RECIPE",
++  plan_document: { draft_plan: {}, default_invocation: {} }
++});
++const novel = cast<InterpretResponse>({
++  ok: true,
++  status: "PLAN_INTERPRETED",
++  provenance_source: "HERMES_NOVEL_COMPOSITION",
++  plan_document: { draft_plan: {}, default_invocation: {} }
++});
++const modelUnavailable = cast<InterpretResponse>({
++  ok: true,
++  status: "MODEL_UNAVAILABLE",
++  provenance_source: "MODEL_UNAVAILABLE",
++  manual_available: true
++});
++const validation = cast<SubmitValidateResponse>({ ok: true, submit: {}, validation: { ok: true, bound_plan_id: "bound_x", draft_plan_id: "d", issues: [] } });
++const execution = cast<ExecutionResponse>({ ok: true, cache: {}, execution: { results: [{ result_id: "r1" }], returned_result_count: 1 } });
++
++// booted base state with full scope selected and a ready plan
++function readyState(): WorkbenchState {
++  let s = reducer(initialState(), { type: "BOOT_READY", boot, matchLibrary });
++  s = reducer(s, { type: "INTERPRET_START" });
++  s = reducer(s, { type: "INTERPRET_RESULT", interpretation: planInterpreted });
++  return s;
++}
++
++// --- boot ---
++const fresh = initialState();
++assert.equal(fresh.phase, "booting");
++assert.equal(fresh.inFlight, true);
++
++const booted = reducer(fresh, { type: "BOOT_READY", boot, matchLibrary });
++assert.equal(booted.phase, "idle");
++assert.equal(booted.inFlight, false);
++assert.equal(booted.matchLibraryLoaded, true);
++assert.deepEqual(booted.selectedMatchIds, ["J03WOY", "J03WPY"]);
++
++// --- ready plan ---
++const ready = readyState();
++assert.equal(ready.phase, "ready");
++assert.equal(selectPlanReady(ready), true);
++assert.equal(selectCanRun(ready), true);
++assert.ok(ready.planDocument, "plan document scoped on interpret");
++
++// --- run -> results ---
++let ran = reducer(ready, { type: "RUN_STEP", step: "validating", startedAt: 1 });
++assert.equal(ran.phase, "confirming");
++assert.equal(ran.inFlight, true);
++assert.equal(selectCanRun(ran), false, "cannot run while in flight");
++ran = reducer(ran, { type: "VALIDATED", validation });
++ran = reducer(ran, { type: "RUN_STEP", step: "executing", startedAt: 1 });
++assert.equal(ran.phase, "executing");
++ran = reducer(ran, { type: "EXECUTED", execution, selectedResultId: "r1" });
++assert.equal(ran.phase, "results");
++assert.equal(ran.inFlight, false);
++assert.equal(ran.runStep, null);
++
++// --- invalidation: query edit clears interpretation + downstream ---
++const afterQuery = reducer(ran, { type: "SET_QUERY", query: "new" });
++assert.equal(afterQuery.interpretation, null);
++assert.equal(afterQuery.planDocument, null);
++assert.equal(afterQuery.execution, null);
++assert.equal(afterQuery.validation, null);
++assert.equal(afterQuery.phase, "idle");
++
++// --- invalidation: recipe switch clears ---
++const afterPreset = reducer(ran, { type: "SET_PRESET", preset: "experimental_corridor" });
++assert.equal(afterPreset.interpretation, null);
++assert.equal(afterPreset.execution, null);
++assert.equal(afterPreset.phase, "idle");
++
++// --- invalidation: mode switch clears (and no-op when same mode) ---
++const afterMode = reducer(ran, { type: "SET_MODE", mode: "model" });
++assert.equal(afterMode.interpretation, null);
++assert.equal(afterMode.execution, null);
++assert.equal(afterMode.phase, "idle");
++assert.equal(reducer(ran, { type: "SET_MODE", mode: ran.mode }), ran, "same mode is a no-op");
++
++// --- invalidation: scope change keeps interpretation, clears execution; zero scope -> idle ---
++const afterScope = reducer(ran, { type: "SET_SCOPE", ids: ["J03WOY"] });
++assert.ok(afterScope.interpretation, "scope change keeps the interpretation");
++assert.equal(afterScope.execution, null, "scope change clears prior execution");
++assert.equal(afterScope.phase, "ready");
++const zeroScope = reducer(ran, { type: "SET_SCOPE", ids: [] });
++assert.equal(zeroScope.phase, "idle");
++assert.equal(selectCanRun(zeroScope), false, "no scope -> cannot run");
++
++// --- non-plan interpretation (model unavailable) is not runnable ---
++let mu = reducer(readyState(), { type: "INTERPRET_START" });
++mu = reducer(mu, { type: "INTERPRET_RESULT", interpretation: modelUnavailable });
++assert.equal(mu.planDocument, null);
++assert.equal(mu.phase, "idle");
++assert.equal(selectPlanReady(mu), false);
++
++// --- novel composition is plan-ready but never runnable ---
++let nv = reducer(readyState(), { type: "INTERPRET_START" });
++nv = reducer(nv, { type: "INTERPRET_RESULT", interpretation: novel });
++assert.equal(selectPlanReady(nv), true);
++assert.equal(selectCanRun(nv), false, "novel composition is held back");
++
++// --- result selection keeps execution ---
++const selected = reducer(ran, { type: "SELECT_RESULT", resultId: "r1" });
++assert.ok(selected.execution, "selecting a result keeps the execution");
++
++console.log("workbenchState tests passed");

@@ -1,0 +1,4 @@
+ pyproject.toml                     |  1 +
+ src/tqe/workshop/knowledge_pack.py | 14 +++-----------
+ src/tqe/workshop/m1_2.py           | 33 ++++++++++++++++++++++++++++-----
+ 3 files changed, 32 insertions(+), 16 deletions(-)

@@ -1,0 +1,18 @@
+54eef2e Verify N1I Hermes-origin novel composition
+ delivery/n1d/N1I_REPORT.md                         |    78 +-
+ delivery/n1d/n1d-canonical-freeze-manifest.json    |   212 +-
+ delivery/n1d/n1d-entry-mode-audit.json             |   117 +-
+ delivery/n1d/n1d-hero-plan.json                    |   207 +-
+ delivery/n1d/n1d1-attestation.json                 |   192 +
+ delivery/n1d/n1f-origin-bundle.json                | 11662 ++++++++++++++-----
+ .../n1d/n1i-faithful-rerun-bundle-response.json    |     6 +
+ delivery/n1d/n1i-faithful-rerun-status.json        |    12 +
+ delivery/n1d/n1i-origin-bundle.json                |  9481 +++++++++++++++
+ delivery/n1d/n1i-render-logs.json                  |   328 +
+ generated/capability-context.json                  |     2 +-
+ generated/tactical-knowledge-pack.json             |     6 +-
+ generated/tactical-knowledge-pack.md               |     6 +-
+ src/tqe/verification/n1d1.py                       |    61 +-
+ src/tqe/workshop/m1_2.py                           |     2 +-
+ tests/test_n1d1_attestation.py                     |    47 +-
+ 16 files changed, 19484 insertions(+), 2935 deletions(-)

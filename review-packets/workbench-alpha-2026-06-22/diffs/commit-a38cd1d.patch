@@ -1,0 +1,4866 @@
+commit a38cd1d9d95cdf7e0eb2c07e357a3f233ec197d6
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Mon Jun 22 00:46:26 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Mon Jun 22 00:49:00 2026 -0700
+
+    Add Workbench Alpha host UI
+
+diff --git a/.gitignore b/.gitignore
+index efa8eab..098e518 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -6,6 +6,7 @@ __pycache__/
+ .ruff_cache/
+ *.egg-info/
+ node_modules/
++*.tsbuildinfo
+ .DS_Store
+ 
+ # Generated evidence and large local data.
+@@ -13,3 +14,6 @@ artifacts/
+ data/raw/
+ data/canonical/
+ data/features/
++apps/workbench-alpha/dist/
++apps/workbench-alpha/vite.config.js
++apps/workbench-alpha/vite.config.d.ts
+diff --git a/Makefile b/Makefile
+index fb61701..04c9df8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,13 +2,14 @@ PYTHON ?= $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python
+ PYTHONPATH := $(CURDIR)/src
+ export PYTHONPATH
+ 
+-.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify m1-2-gate-s0-verify m1-2-gate-s1-verify m1-2-gate-s2-verify m1-2-gate-s2-sealed-verify m1-2-gate-s2i-verify m1-2-gate-s2ib-verify m1-2-gate-s2ic-verify m1-2-verify test
++.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify m1-2-gate-s0-verify m1-2-gate-s1-verify m1-2-gate-s2-verify m1-2-gate-s2-sealed-verify m1-2-gate-s2i-verify m1-2-gate-s2ib-verify m1-2-gate-s2ic-verify workbench-alpha-install workbench-alpha-build workbench-alpha-serve workbench-alpha-verify m1-2-verify test
+ 
+ setup:
+ 	python3.12 -m venv .venv
+ 	$(CURDIR)/.venv/bin/python -m pip install --upgrade pip
+ 	$(CURDIR)/.venv/bin/python -m pip install -e .
+ 	npm --prefix apps/replay-proof install
++	npm --prefix apps/workbench-alpha install
+ 
+ provision-j03woh:
+ 	$(PYTHON) scripts/data/source_lock_idsse.py --match-id J03WOH --download
+@@ -132,6 +133,18 @@ m1-2-gate-s2ib-verify:
+ m1-2-gate-s2ic-verify:
+ 	$(PYTHON) -m tqe.verification.m1_2_gate_s2ic
+ 
++workbench-alpha-install:
++	npm --prefix apps/workbench-alpha install
++
++workbench-alpha-build:
++	npm --prefix apps/workbench-alpha run build
++
++workbench-alpha-serve: workbench-alpha-build
++	$(PYTHON) -m tqe.workshop.app_service --host 127.0.0.1 --port 8765
++
++workbench-alpha-verify:
++	npm --prefix apps/workbench-alpha run test:acceptance
++
+ m1-2-verify:
+ 	$(PYTHON) -m tqe.verification.m1_2
+ 
+diff --git a/apps/workbench-alpha/ACCEPTANCE.md b/apps/workbench-alpha/ACCEPTANCE.md
+new file mode 100644
+index 0000000..afb278b
+--- /dev/null
++++ b/apps/workbench-alpha/ACCEPTANCE.md
+@@ -0,0 +1,78 @@
++# Workbench Alpha Acceptance
++
++Workbench Alpha is implemented and locally verified as a host-owned query-to-replay
++surface. The browser talks only to the host `/api` service in
++`src/tqe/workshop/app_service.py`; it does not call MCP, Hermes, the model, or
++the analytical runtime directly.
++
++## Boundary
++
++`app_service.py` is an HTTP/orchestration boundary. It serves the built React
++app, translates public `/api` requests, reloads the approved recipe from
++host-owned config before validation, calls existing workshop/runtime functions,
++and returns DTOs for plans, validation, confirmation, execution, inspection, and
++replay.
++
++It does not calculate tactical primitives, reconstruct predicate traces, parse
++raw tracking data, or mint browser-provided execution authorization IDs.
++
++## Verification
++
++Run:
++
++```bash
++make workbench-alpha-verify
++```
++
++This runs:
++
++```bash
++npm --prefix apps/workbench-alpha run test:fixtures
++npm --prefix apps/workbench-alpha run test:e2e
++```
++
++The acceptance suite covers:
++
++- approved recipe query to interpretation, host confirmation, execution, result,
++  evidence, predicate trace, coordinate replay, scrub/playback, and known
++  timestamp inspection;
++- experimental corridor query through the same path;
++- clarification, capability-gap, model-unavailable, and manual fallback states;
++- public API denial checks for forged authorization, compatibility-profile
++  override, unconfirmed execution, local artifact paths, and host-only routes;
++- frontend source scanning for hardcoded result IDs, match timestamps,
++  coordinates, replay frames, and fallback tactical moments.
++
++## Proof Artifacts
++
++Playwright writes local review evidence under:
++
++```text
++artifacts/workbench-alpha/
++```
++
++Relevant subdirectories:
++
++- `review-proof/` for API traces, screenshots, source hashes, build hashes,
++  replay payload hashes, and performance baselines;
++- `playwright-report/` for the HTML/JSON report;
++- `playwright-output/` for videos, traces, and failure artifacts.
++
++## Performance Baseline
++
++The Playwright proof JSON records API durations for interpretation, validation,
++confirmation, execution, result inspection, replay loading, and result selection.
++Replay frame count, frame cadence, payload byte size, and replay payload hash are
++recorded per real query path.
++
++## Dependency Advisory
++
++`npm audit --json` currently reports one low-severity transitive `esbuild`
++advisory (`GHSA-g7r4-m6w7-qqqr`) through the browser build toolchain. It is
++recorded but not broadly upgraded in this slice.
++
++## Non-Goals
++
++This slice does not add final visual polish, S3 feedback/revision behavior, a
++second tactical family, model-backed interpretation, browser-to-MCP calls, or
++new tactical primitives.
+diff --git a/apps/workbench-alpha/index.html b/apps/workbench-alpha/index.html
+new file mode 100644
+index 0000000..8adb647
+--- /dev/null
++++ b/apps/workbench-alpha/index.html
+@@ -0,0 +1,12 @@
++<!doctype html>
++<html lang="en">
++  <head>
++    <meta charset="UTF-8" />
++    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
++    <title>Priori Workbench Alpha</title>
++  </head>
++  <body>
++    <div id="root"></div>
++    <script type="module" src="/src/main.tsx"></script>
++  </body>
++</html>
+diff --git a/apps/workbench-alpha/package-lock.json b/apps/workbench-alpha/package-lock.json
+new file mode 100644
+index 0000000..4fac6e4
+--- /dev/null
++++ b/apps/workbench-alpha/package-lock.json
+@@ -0,0 +1,1887 @@
++{
++  "name": "priori-workbench-alpha",
++  "version": "0.1.0",
++  "lockfileVersion": 3,
++  "requires": true,
++  "packages": {
++    "": {
++      "name": "priori-workbench-alpha",
++      "version": "0.1.0",
++      "dependencies": {
++        "react": "^19.2.3",
++        "react-dom": "^19.2.3"
++      },
++      "devDependencies": {
++        "@playwright/test": "^1.57.0",
++        "@types/react": "^19.2.7",
++        "@types/react-dom": "^19.2.3",
++        "@vitejs/plugin-react": "^5.1.2",
++        "typescript": "^5.9.3",
++        "vite": "^7.3.0"
++      }
++    },
++    "node_modules/@babel/code-frame": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.29.7.tgz",
++      "integrity": "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/helper-validator-identifier": "^7.29.7",
++        "js-tokens": "^4.0.0",
++        "picocolors": "^1.1.1"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/compat-data": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/compat-data/-/compat-data-7.29.7.tgz",
++      "integrity": "sha512-locTkQyKvwIEgBzVrn8693ebc97F2U8ZHjbXwDXJ5Fn2TCpNwTlKcaKLkdHop5c/icOFE7qt7Q9JC5hnKNa6Gg==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/core": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/core/-/core-7.29.7.tgz",
++      "integrity": "sha512-RgHBCvtjbOK2gXSNBNIkNoEc9qoVEtau3hj8gEqKQuL3HZAibKarWFEI3Lfm6EYKkLalOh8eSrj9b+ch9H/VBA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/code-frame": "^7.29.7",
++        "@babel/generator": "^7.29.7",
++        "@babel/helper-compilation-targets": "^7.29.7",
++        "@babel/helper-module-transforms": "^7.29.7",
++        "@babel/helpers": "^7.29.7",
++        "@babel/parser": "^7.29.7",
++        "@babel/template": "^7.29.7",
++        "@babel/traverse": "^7.29.7",
++        "@babel/types": "^7.29.7",
++        "@jridgewell/remapping": "^2.3.5",
++        "convert-source-map": "^2.0.0",
++        "debug": "^4.1.0",
++        "gensync": "^1.0.0-beta.2",
++        "json5": "^2.2.3",
++        "semver": "^6.3.1"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      },
++      "funding": {
++        "type": "opencollective",
++        "url": "https://opencollective.com/babel"
++      }
++    },
++    "node_modules/@babel/generator": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/generator/-/generator-7.29.7.tgz",
++      "integrity": "sha512-DkXD5OJQaAQIdZ1bt3UZdEnHAn9Imd3IVBdX03UFe+ony9Ojw5pzr9YVKGDY1jt+Gcn/FnGkNf8r+Vj5NOJWtQ==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/parser": "^7.29.7",
++        "@babel/types": "^7.29.7",
++        "@jridgewell/gen-mapping": "^0.3.12",
++        "@jridgewell/trace-mapping": "^0.3.28",
++        "jsesc": "^3.0.2"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/helper-compilation-targets": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/helper-compilation-targets/-/helper-compilation-targets-7.29.7.tgz",
++      "integrity": "sha512-wem6WaBj4NaVYVdNhLPPVacES6ZJ+KBBfSkTMD3YZxbP3rm3Di85tJU5ljaUNhaOynt+Aj0xruhYuzQBt8n71g==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/compat-data": "^7.29.7",
++        "@babel/helper-validator-option": "^7.29.7",
++        "browserslist": "^4.24.0",
++        "lru-cache": "^5.1.1",
++        "semver": "^6.3.1"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/helper-globals": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/helper-globals/-/helper-globals-7.29.7.tgz",
++      "integrity": "sha512-3nQVUAtvkKH9zahfWgw96Jc/uFOmjACE1kQz82E2lqWmHBgjzbNlsC22nuQTfahmWeQtTq5nQ/4Nnd2A1wj4zA==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/helper-module-imports": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/helper-module-imports/-/helper-module-imports-7.29.7.tgz",
++      "integrity": "sha512-ejHwrQQYcm9xnTivShn2IDOlIzInN34AXskvq9QicvCtEzq1Vzclu/tKF8Jq1Cg8JG2GL6/EmjgsCT7lXepE3g==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/traverse": "^7.29.7",
++        "@babel/types": "^7.29.7"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/helper-module-transforms": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/helper-module-transforms/-/helper-module-transforms-7.29.7.tgz",
++      "integrity": "sha512-UPUVSyXbOh627KiCIGQSgwWzGeBKLkaJ9PJEdrngIwMSzxLR4jS4+f1f1jb7VzBbg8nFLaYotvVPFCTqdrmTAg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/helper-module-imports": "^7.29.7",
++        "@babel/helper-validator-identifier": "^7.29.7",
++        "@babel/traverse": "^7.29.7"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      },
++      "peerDependencies": {
++        "@babel/core": "^7.0.0"
++      }
++    },
++    "node_modules/@babel/helper-plugin-utils": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/helper-plugin-utils/-/helper-plugin-utils-7.29.7.tgz",
++      "integrity": "sha512-G7sHYigPY17oO5SYWnfD/0MTBwVR781S/JI643e/JhUYgVgWE/61SoW3NH9KWUKyKq5LVh3npif99Wkt6j86Jw==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/helper-string-parser": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.29.7.tgz",
++      "integrity": "sha512-Pb5ijPrZ89GDH8223L4UP8i6QApWxs04RbPQJTeWDV0/keR2E36MeKnyr6LYmUUvqRRI+Iv87SuF1W6ErINzYw==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/helper-validator-identifier": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.29.7.tgz",
++      "integrity": "sha512-qehxGkRj55h/ff8EMaJ+cYhyaKlHIxqYDn682wQD7RNp9UujOQsHog2uS0r2vzr4pW+sXf90NeeayjcNaX3fFg==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/helper-validator-option": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/helper-validator-option/-/helper-validator-option-7.29.7.tgz",
++      "integrity": "sha512-N9ZErrD+yW5geCDtBqnOoxmR8+tNKiGuxKlDpuJxfsqpa2dFcexaziGAE/qoHLiDDreVNMupxGmSoNlyvsA3gw==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/helpers": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/helpers/-/helpers-7.29.7.tgz",
++      "integrity": "sha512-1k2lAGRMfHTcwuNYcCNUmaUffmQv8KWMfh2iJUUeRlwlwH4FdNG7mfPI10NPfLHJFThE4Tyr4mv7kTNZOiPuBg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/template": "^7.29.7",
++        "@babel/types": "^7.29.7"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/parser": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/parser/-/parser-7.29.7.tgz",
++      "integrity": "sha512-hnORnjP/1P/zFEndoeX+n+t1RwWRJiJpM/jO7FW32Kn9r5+sJB2JWOdYo4L6k78j15eCwY3Gm/7364B1EMwtNg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/types": "^7.29.7"
++      },
++      "bin": {
++        "parser": "bin/babel-parser.js"
++      },
++      "engines": {
++        "node": ">=6.0.0"
++      }
++    },
++    "node_modules/@babel/plugin-transform-react-jsx-self": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/plugin-transform-react-jsx-self/-/plugin-transform-react-jsx-self-7.29.7.tgz",
++      "integrity": "sha512-TL0hMc9xzy86VD31nUiwzd5otRAcyEPcsegCxolO0PvcXuH1v0kECe/UIznYFihpkvU5wg/jk4v0TTEFfm53fw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/helper-plugin-utils": "^7.29.7"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      },
++      "peerDependencies": {
++        "@babel/core": "^7.0.0-0"
++      }
++    },
++    "node_modules/@babel/plugin-transform-react-jsx-source": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/plugin-transform-react-jsx-source/-/plugin-transform-react-jsx-source-7.29.7.tgz",
++      "integrity": "sha512-06IyK09H3wi4cGbhDBwp5gUGo0IKtnYa8tyTiephirPCK6fbobVGiXMMI5zLQ4aKEYP3wZ3ArU44o+8KMrSG/Q==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/helper-plugin-utils": "^7.29.7"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      },
++      "peerDependencies": {
++        "@babel/core": "^7.0.0-0"
++      }
++    },
++    "node_modules/@babel/template": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/template/-/template-7.29.7.tgz",
++      "integrity": "sha512-puq+Gf35oI24FeN11LkoUQFqv9uwNeWpxXZi/Ji3rRIoKAzKnxRaZ+Gkj0vKS9ZCiTESfng1N9LyOyXvo+m+Gg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/code-frame": "^7.29.7",
++        "@babel/parser": "^7.29.7",
++        "@babel/types": "^7.29.7"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/traverse": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/traverse/-/traverse-7.29.7.tgz",
++      "integrity": "sha512-EhlfNQtZ+NK22w5BM61ciuiq1m58ed33Wr1Xan//ZRTy6hgjnwyCffRYwzsGXdASJSUJ1guZILsErh1eQcl+zw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/code-frame": "^7.29.7",
++        "@babel/generator": "^7.29.7",
++        "@babel/helper-globals": "^7.29.7",
++        "@babel/parser": "^7.29.7",
++        "@babel/template": "^7.29.7",
++        "@babel/types": "^7.29.7",
++        "debug": "^4.3.1"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@babel/types": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/types/-/types-7.29.7.tgz",
++      "integrity": "sha512-4zBIxpPzowiZpusoFkyGVwakdRJUyuH5PxQ/PrqghfdFWWasvnCdPfQXHrenDai+gyLARulZjZowCOj6fjT4pA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/helper-string-parser": "^7.29.7",
++        "@babel/helper-validator-identifier": "^7.29.7"
++      },
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/@esbuild/aix-ppc64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/aix-ppc64/-/aix-ppc64-0.27.7.tgz",
++      "integrity": "sha512-EKX3Qwmhz1eMdEJokhALr0YiD0lhQNwDqkPYyPhiSwKrh7/4KRjQc04sZ8db+5DVVnZ1LmbNDI1uAMPEUBnQPg==",
++      "cpu": [
++        "ppc64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "aix"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/android-arm": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/android-arm/-/android-arm-0.27.7.tgz",
++      "integrity": "sha512-jbPXvB4Yj2yBV7HUfE2KHe4GJX51QplCN1pGbYjvsyCZbQmies29EoJbkEc+vYuU5o45AfQn37vZlyXy4YJ8RQ==",
++      "cpu": [
++        "arm"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/android-arm64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/android-arm64/-/android-arm64-0.27.7.tgz",
++      "integrity": "sha512-62dPZHpIXzvChfvfLJow3q5dDtiNMkwiRzPylSCfriLvZeq0a1bWChrGx/BbUbPwOrsWKMn8idSllklzBy+dgQ==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/android-x64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/android-x64/-/android-x64-0.27.7.tgz",
++      "integrity": "sha512-x5VpMODneVDb70PYV2VQOmIUUiBtY3D3mPBG8NxVk5CogneYhkR7MmM3yR/uMdITLrC1ml/NV1rj4bMJuy9MCg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/darwin-arm64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.27.7.tgz",
++      "integrity": "sha512-5lckdqeuBPlKUwvoCXIgI2D9/ABmPq3Rdp7IfL70393YgaASt7tbju3Ac+ePVi3KDH6N2RqePfHnXkaDtY9fkw==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/darwin-x64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/darwin-x64/-/darwin-x64-0.27.7.tgz",
++      "integrity": "sha512-rYnXrKcXuT7Z+WL5K980jVFdvVKhCHhUwid+dDYQpH+qu+TefcomiMAJpIiC2EM3Rjtq0sO3StMV/+3w3MyyqQ==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/freebsd-arm64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/freebsd-arm64/-/freebsd-arm64-0.27.7.tgz",
++      "integrity": "sha512-B48PqeCsEgOtzME2GbNM2roU29AMTuOIN91dsMO30t+Ydis3z/3Ngoj5hhnsOSSwNzS+6JppqWsuhTp6E82l2w==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "freebsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/freebsd-x64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/freebsd-x64/-/freebsd-x64-0.27.7.tgz",
++      "integrity": "sha512-jOBDK5XEjA4m5IJK3bpAQF9/Lelu/Z9ZcdhTRLf4cajlB+8VEhFFRjWgfy3M1O4rO2GQ/b2dLwCUGpiF/eATNQ==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "freebsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-arm": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-arm/-/linux-arm-0.27.7.tgz",
++      "integrity": "sha512-RkT/YXYBTSULo3+af8Ib0ykH8u2MBh57o7q/DAs3lTJlyVQkgQvlrPTnjIzzRPQyavxtPtfg0EopvDyIt0j1rA==",
++      "cpu": [
++        "arm"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-arm64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.27.7.tgz",
++      "integrity": "sha512-RZPHBoxXuNnPQO9rvjh5jdkRmVizktkT7TCDkDmQ0W2SwHInKCAV95GRuvdSvA7w4VMwfCjUiPwDi0ZO6Nfe9A==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-ia32": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-ia32/-/linux-ia32-0.27.7.tgz",
++      "integrity": "sha512-GA48aKNkyQDbd3KtkplYWT102C5sn/EZTY4XROkxONgruHPU72l+gW+FfF8tf2cFjeHaRbWpOYa/uRBz/Xq1Pg==",
++      "cpu": [
++        "ia32"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-loong64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-loong64/-/linux-loong64-0.27.7.tgz",
++      "integrity": "sha512-a4POruNM2oWsD4WKvBSEKGIiWQF8fZOAsycHOt6JBpZ+JN2n2JH9WAv56SOyu9X5IqAjqSIPTaJkqN8F7XOQ5Q==",
++      "cpu": [
++        "loong64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-mips64el": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-mips64el/-/linux-mips64el-0.27.7.tgz",
++      "integrity": "sha512-KabT5I6StirGfIz0FMgl1I+R1H73Gp0ofL9A3nG3i/cYFJzKHhouBV5VWK1CSgKvVaG4q1RNpCTR2LuTVB3fIw==",
++      "cpu": [
++        "mips64el"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-ppc64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-ppc64/-/linux-ppc64-0.27.7.tgz",
++      "integrity": "sha512-gRsL4x6wsGHGRqhtI+ifpN/vpOFTQtnbsupUF5R5YTAg+y/lKelYR1hXbnBdzDjGbMYjVJLJTd2OFmMewAgwlQ==",
++      "cpu": [
++        "ppc64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-riscv64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-riscv64/-/linux-riscv64-0.27.7.tgz",
++      "integrity": "sha512-hL25LbxO1QOngGzu2U5xeXtxXcW+/GvMN3ejANqXkxZ/opySAZMrc+9LY/WyjAan41unrR3YrmtTsUpwT66InQ==",
++      "cpu": [
++        "riscv64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-s390x": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-s390x/-/linux-s390x-0.27.7.tgz",
++      "integrity": "sha512-2k8go8Ycu1Kb46vEelhu1vqEP+UeRVj2zY1pSuPdgvbd5ykAw82Lrro28vXUrRmzEsUV0NzCf54yARIK8r0fdw==",
++      "cpu": [
++        "s390x"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-x64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.27.7.tgz",
++      "integrity": "sha512-hzznmADPt+OmsYzw1EE33ccA+HPdIqiCRq7cQeL1Jlq2gb1+OyWBkMCrYGBJ+sxVzve2ZJEVeePbLM2iEIZSxA==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/netbsd-arm64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/netbsd-arm64/-/netbsd-arm64-0.27.7.tgz",
++      "integrity": "sha512-b6pqtrQdigZBwZxAn1UpazEisvwaIDvdbMbmrly7cDTMFnw/+3lVxxCTGOrkPVnsYIosJJXAsILG9XcQS+Yu6w==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "netbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/netbsd-x64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/netbsd-x64/-/netbsd-x64-0.27.7.tgz",
++      "integrity": "sha512-OfatkLojr6U+WN5EDYuoQhtM+1xco+/6FSzJJnuWiUw5eVcicbyK3dq5EeV/QHT1uy6GoDhGbFpprUiHUYggrw==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "netbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/openbsd-arm64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/openbsd-arm64/-/openbsd-arm64-0.27.7.tgz",
++      "integrity": "sha512-AFuojMQTxAz75Fo8idVcqoQWEHIXFRbOc1TrVcFSgCZtQfSdc1RXgB3tjOn/krRHENUB4j00bfGjyl2mJrU37A==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/openbsd-x64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/openbsd-x64/-/openbsd-x64-0.27.7.tgz",
++      "integrity": "sha512-+A1NJmfM8WNDv5CLVQYJ5PshuRm/4cI6WMZRg1by1GwPIQPCTs1GLEUHwiiQGT5zDdyLiRM/l1G0Pv54gvtKIg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/openharmony-arm64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/openharmony-arm64/-/openharmony-arm64-0.27.7.tgz",
++      "integrity": "sha512-+KrvYb/C8zA9CU/g0sR6w2RBw7IGc5J2BPnc3dYc5VJxHCSF1yNMxTV5LQ7GuKteQXZtspjFbiuW5/dOj7H4Yw==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openharmony"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/sunos-x64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/sunos-x64/-/sunos-x64-0.27.7.tgz",
++      "integrity": "sha512-ikktIhFBzQNt/QDyOL580ti9+5mL/YZeUPKU2ivGtGjdTYoqz6jObj6nOMfhASpS4GU4Q/Clh1QtxWAvcYKamA==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "sunos"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/win32-arm64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/win32-arm64/-/win32-arm64-0.27.7.tgz",
++      "integrity": "sha512-7yRhbHvPqSpRUV7Q20VuDwbjW5kIMwTHpptuUzV+AA46kiPze5Z7qgt6CLCK3pWFrHeNfDd1VKgyP4O+ng17CA==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/win32-ia32": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/win32-ia32/-/win32-ia32-0.27.7.tgz",
++      "integrity": "sha512-SmwKXe6VHIyZYbBLJrhOoCJRB/Z1tckzmgTLfFYOfpMAx63BJEaL9ExI8x7v0oAO3Zh6D/Oi1gVxEYr5oUCFhw==",
++      "cpu": [
++        "ia32"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/win32-x64": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.27.7.tgz",
++      "integrity": "sha512-56hiAJPhwQ1R4i+21FVF7V8kSD5zZTdHcVuRFMW0hn753vVfQN8xlx4uOPT4xoGH0Z/oVATuR82AiqSTDIpaHg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@jridgewell/gen-mapping": {
++      "version": "0.3.13",
++      "resolved": "https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz",
++      "integrity": "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@jridgewell/sourcemap-codec": "^1.5.0",
++        "@jridgewell/trace-mapping": "^0.3.24"
++      }
++    },
++    "node_modules/@jridgewell/remapping": {
++      "version": "2.3.5",
++      "resolved": "https://registry.npmjs.org/@jridgewell/remapping/-/remapping-2.3.5.tgz",
++      "integrity": "sha512-LI9u/+laYG4Ds1TDKSJW2YPrIlcVYOwi2fUC6xB43lueCjgxV4lffOCZCtYFiH6TNOX+tQKXx97T4IKHbhyHEQ==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@jridgewell/gen-mapping": "^0.3.5",
++        "@jridgewell/trace-mapping": "^0.3.24"
++      }
++    },
++    "node_modules/@jridgewell/resolve-uri": {
++      "version": "3.1.2",
++      "resolved": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
++      "integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6.0.0"
++      }
++    },
++    "node_modules/@jridgewell/sourcemap-codec": {
++      "version": "1.5.5",
++      "resolved": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz",
++      "integrity": "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/@jridgewell/trace-mapping": {
++      "version": "0.3.31",
++      "resolved": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz",
++      "integrity": "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@jridgewell/resolve-uri": "^3.1.0",
++        "@jridgewell/sourcemap-codec": "^1.4.14"
++      }
++    },
++    "node_modules/@playwright/test": {
++      "version": "1.61.0",
++      "resolved": "https://registry.npmjs.org/@playwright/test/-/test-1.61.0.tgz",
++      "integrity": "sha512-cKA5B6lpFEMyMGjxF54QihfYpB4FkEGH+qZhtArDEG+wezQAJY8Pq6C7T1SjWz+FFzt3TbyoXBQYk/0292TdJA==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "playwright": "1.61.0"
++      },
++      "bin": {
++        "playwright": "cli.js"
++      },
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@rolldown/pluginutils": {
++      "version": "1.0.0-rc.3",
++      "resolved": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.0-rc.3.tgz",
++      "integrity": "sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/@rollup/rollup-android-arm-eabi": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.62.2.tgz",
++      "integrity": "sha512-6o7ZLZK+BeenkZCFNDXqpbjw9bD6nuWonvS/lwQJp7NoVVxm6p3qE7qQ5jGuBjiFsgvqjD8mZAU5oWxTmbOeOg==",
++      "cpu": [
++        "arm"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ]
++    },
++    "node_modules/@rollup/rollup-android-arm64": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-android-arm64/-/rollup-android-arm64-4.62.2.tgz",
++      "integrity": "sha512-BaH7BllCACHoH1LguOU56UItGfUWjujlO65kS9LAodViaN4bwIKd7oeW/ZHJ/4ljr/7MIiENnNy3HJ0zXv8Zkw==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ]
++    },
++    "node_modules/@rollup/rollup-darwin-arm64": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.62.2.tgz",
++      "integrity": "sha512-v39RCCvj4He82I9sFmk+M1VZ0PLM9sfsLVikjfx2hYBNALhrrOR2D3JjQA6AhlaSOgcR+RzrKY7e1+bT6SUO/A==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ]
++    },
++    "node_modules/@rollup/rollup-darwin-x64": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-darwin-x64/-/rollup-darwin-x64-4.62.2.tgz",
++      "integrity": "sha512-yl0y2vq3S3lHeuXhEdss6TWfKW8vkujImO12tn4ZkG/4oghr09LvdYm2RElVjokTQiUvDUGXLGsYeLqUMCKpGA==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ]
++    },
++    "node_modules/@rollup/rollup-freebsd-arm64": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-freebsd-arm64/-/rollup-freebsd-arm64-4.62.2.tgz",
++      "integrity": "sha512-tT4pvt4qXD+vEoezupCWi+a1F0vvDiksiHc+PxRlYTOH1I6/X4id9jPxTP+Fg+545euaFT1jJVs4CEdHZAU1vw==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "freebsd"
++      ]
++    },
++    "node_modules/@rollup/rollup-freebsd-x64": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-freebsd-x64/-/rollup-freebsd-x64-4.62.2.tgz",
++      "integrity": "sha512-6nU5F2wCW+qvCBhTn1pdIU3bzsIoF7EUwsCDRxilWGprQR6yd508YnH9+OKFCwpfS8pjZqDUmnCAr7exax0XCg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "freebsd"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-arm-gnueabihf": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm-gnueabihf/-/rollup-linux-arm-gnueabihf-4.62.2.tgz",
++      "integrity": "sha512-n1GJHPOvpIfhi3TmrCeh6S6URt9BFCt0KQE3qvexyGCTAKpR4Lg+eWvNZEqu7epxwus/8ElT3hacYEucm49SZg==",
++      "cpu": [
++        "arm"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-arm-musleabihf": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm-musleabihf/-/rollup-linux-arm-musleabihf-4.62.2.tgz",
++      "integrity": "sha512-JqgflS8wEB+UXV/vS1RpRbifGBeN4D5lz8D8oOFbFZw4vedvdOgCFAjfBmIMdW3yL10XpQQ0Ambepw6MXrhOnA==",
++      "cpu": [
++        "arm"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-arm64-gnu": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.62.2.tgz",
++      "integrity": "sha512-wnFJkogWvN4jm/hQRF2UBaeUmk20j5+DmHvoyWii2b8HJDyvz1MF2OU/6ynXt2KR63rbZLWkFpoytpdc/yBuSA==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-arm64-musl": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm64-musl/-/rollup-linux-arm64-musl-4.62.2.tgz",
++      "integrity": "sha512-HVu2bp0zhvJ8xHEV9+UUs7S90VadmBSY3LcIMvozbPo4AuMGDWlz3ymHLHZPX4hR67TKTt8Qp5PJ5RBg/i+RMQ==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-loong64-gnu": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-loong64-gnu/-/rollup-linux-loong64-gnu-4.62.2.tgz",
++      "integrity": "sha512-mQqqAV8QaoSgr9I2fKDLY2BAVvmKjWoGiu/cSYQonsLvtqwEn1E4QYfnCOcp5zoEqNhsDYin1s6jx/VJmrxlZg==",
++      "cpu": [
++        "loong64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-loong64-musl": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-loong64-musl/-/rollup-linux-loong64-musl-4.62.2.tgz",
++      "integrity": "sha512-IxKLoxCQ2IWi6bT2akyDUBGsOImDKB+sPp4EsTmwFQ/fMwpCKm8uLSSgP/Kx/QYUgKis6SEZ5/Nlhup0DIA0PQ==",
++      "cpu": [
++        "loong64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-ppc64-gnu": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-ppc64-gnu/-/rollup-linux-ppc64-gnu-4.62.2.tgz",
++      "integrity": "sha512-Mk5ha2RQSgyFfmYYLkBpPnUk8D8FriBxesO1u9O75X0mHgXL1UQcH5Itl2lurWL2tj0RxV9b9tJgipac0hRY9A==",
++      "cpu": [
++        "ppc64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-ppc64-musl": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-ppc64-musl/-/rollup-linux-ppc64-musl-4.62.2.tgz",
++      "integrity": "sha512-CjvEnqJL/0/TQ3TXX3OPIJ/kmBellrWd4heXUmHeJlTnmwjKpSJzoehLaL6Xk0ZnMHBu9dZuFADNOrtjF4v+2w==",
++      "cpu": [
++        "ppc64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-riscv64-gnu": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-riscv64-gnu/-/rollup-linux-riscv64-gnu-4.62.2.tgz",
++      "integrity": "sha512-1SiZbzwdkaDURsew/tSOrooKiYy7EQGT6m8ufavAi9NEyQb/6VuIxFXAL1fqa4iZe3g4NbNk4P7J32z2tw5Mgg==",
++      "cpu": [
++        "riscv64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-riscv64-musl": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-riscv64-musl/-/rollup-linux-riscv64-musl-4.62.2.tgz",
++      "integrity": "sha512-nQts12zJ3NQRoE6uYljOH89v7szzLDvG2JD/vsX+vGXU8w/At1GowTZ5/7qeFQ8m7L55rpR8Okugnuo5bgjy2Q==",
++      "cpu": [
++        "riscv64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-s390x-gnu": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-s390x-gnu/-/rollup-linux-s390x-gnu-4.62.2.tgz",
++      "integrity": "sha512-E9/ll019jhPIJgpzfZoIkBGhcz+kKNgVWYRY0zr9srBdPPFVpvOKW8VaJKUbeK+eZXyQF9ltME+Kk6affeaPgg==",
++      "cpu": [
++        "s390x"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-x64-gnu": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.62.2.tgz",
++      "integrity": "sha512-5BqxR/pshjey51iliyzTD5Xi3EN0aLmQ2lZ3lvefVV9c82BvrLo2/6OT55iifpWBufs6kdwWbuOKS841DrmK9A==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-linux-x64-musl": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-x64-musl/-/rollup-linux-x64-musl-4.62.2.tgz",
++      "integrity": "sha512-uNN83XxQrRAh/w0/pmAfibcwyb6YWt4gP+dpnQKPVJshAloQ785ii8CT8ZCIxkGg9opVsvAlGhFitSm6D1Jjpg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ]
++    },
++    "node_modules/@rollup/rollup-openbsd-x64": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-openbsd-x64/-/rollup-openbsd-x64-4.62.2.tgz",
++      "integrity": "sha512-srjEIxSH3LRnJN6THczDHWQplqEMFiAJrTab0msUryh9kwNpkICf3Ea6q6MN/2cZwRFUNx5w+h6Hpi4QuHS6Zg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openbsd"
++      ]
++    },
++    "node_modules/@rollup/rollup-openharmony-arm64": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-openharmony-arm64/-/rollup-openharmony-arm64-4.62.2.tgz",
++      "integrity": "sha512-8hOJnxgbyObnCm5AlRA3A931xX19xq80RjVTKgJOvEKWqJruP/Uf12IbAOaDjjEXYRewwHLfmF0YRIdK3OwKWA==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openharmony"
++      ]
++    },
++    "node_modules/@rollup/rollup-win32-arm64-msvc": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-arm64-msvc/-/rollup-win32-arm64-msvc-4.62.2.tgz",
++      "integrity": "sha512-mmF4AY1i0hG/bLWUctUq59gtmgaSIRa3cu/A3JFRp/sCNEme2bgDEiDS22P9FbnJB8NJNF4jPJiSP5RHQpUTDg==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ]
++    },
++    "node_modules/@rollup/rollup-win32-ia32-msvc": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-ia32-msvc/-/rollup-win32-ia32-msvc-4.62.2.tgz",
++      "integrity": "sha512-DZgkknc6jhHrk46V25vbAM0zZkyP0nSDkJB8/dRkLTxv470dOmWDqGoEJl/9A0dFfS7yE3REOwNDxpHwSLSt0Q==",
++      "cpu": [
++        "ia32"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ]
++    },
++    "node_modules/@rollup/rollup-win32-x64-gnu": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.62.2.tgz",
++      "integrity": "sha512-T6xr6ucWSFto+VGajA8YH26LdpHRuP4YLHEKAtCWvJDOlnmWcDZVCI2Jmjr+IFHDlt2zRaTAKE4tfjTaWLgJBg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ]
++    },
++    "node_modules/@rollup/rollup-win32-x64-msvc": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.62.2.tgz",
++      "integrity": "sha512-BfzEnDJOt9T8M989/lA37EcJgat01wLRnoi5dQf3QzOH7jzpqTAzdDbVfRljVr5r+jzKqpbHeyOfAaXxAd0PAA==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ]
++    },
++    "node_modules/@types/babel__core": {
++      "version": "7.20.5",
++      "resolved": "https://registry.npmjs.org/@types/babel__core/-/babel__core-7.20.5.tgz",
++      "integrity": "sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/parser": "^7.20.7",
++        "@babel/types": "^7.20.7",
++        "@types/babel__generator": "*",
++        "@types/babel__template": "*",
++        "@types/babel__traverse": "*"
++      }
++    },
++    "node_modules/@types/babel__generator": {
++      "version": "7.27.0",
++      "resolved": "https://registry.npmjs.org/@types/babel__generator/-/babel__generator-7.27.0.tgz",
++      "integrity": "sha512-ufFd2Xi92OAVPYsy+P4n7/U7e68fex0+Ee8gSG9KX7eo084CWiQ4sdxktvdl0bOPupXtVJPY19zk6EwWqUQ8lg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/types": "^7.0.0"
++      }
++    },
++    "node_modules/@types/babel__template": {
++      "version": "7.4.4",
++      "resolved": "https://registry.npmjs.org/@types/babel__template/-/babel__template-7.4.4.tgz",
++      "integrity": "sha512-h/NUaSyG5EyxBIp8YRxo4RMe2/qQgvyowRwVMzhYhBCONbW8PUsg4lkFMrhgZhUe5z3L3MiLDuvyJ/CaPa2A8A==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/parser": "^7.1.0",
++        "@babel/types": "^7.0.0"
++      }
++    },
++    "node_modules/@types/babel__traverse": {
++      "version": "7.28.0",
++      "resolved": "https://registry.npmjs.org/@types/babel__traverse/-/babel__traverse-7.28.0.tgz",
++      "integrity": "sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/types": "^7.28.2"
++      }
++    },
++    "node_modules/@types/estree": {
++      "version": "1.0.9",
++      "resolved": "https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz",
++      "integrity": "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/@types/react": {
++      "version": "19.2.17",
++      "resolved": "https://registry.npmjs.org/@types/react/-/react-19.2.17.tgz",
++      "integrity": "sha512-MXfmqaVPEVgkBT/aY0aGCkRWWtByiYQXo3xdQ8r5RzuFrPiRn8Gar2tQdXSUQ2GKV3bkXckek89V8wQBY2Q/Aw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "csstype": "^3.2.2"
++      }
++    },
++    "node_modules/@types/react-dom": {
++      "version": "19.2.3",
++      "resolved": "https://registry.npmjs.org/@types/react-dom/-/react-dom-19.2.3.tgz",
++      "integrity": "sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==",
++      "dev": true,
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "^19.2.0"
++      }
++    },
++    "node_modules/@vitejs/plugin-react": {
++      "version": "5.2.0",
++      "resolved": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-5.2.0.tgz",
++      "integrity": "sha512-YmKkfhOAi3wsB1PhJq5Scj3GXMn3WvtQ/JC0xoopuHoXSdmtdStOpFrYaT1kie2YgFBcIe64ROzMYRjCrYOdYw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/core": "^7.29.0",
++        "@babel/plugin-transform-react-jsx-self": "^7.27.1",
++        "@babel/plugin-transform-react-jsx-source": "^7.27.1",
++        "@rolldown/pluginutils": "1.0.0-rc.3",
++        "@types/babel__core": "^7.20.5",
++        "react-refresh": "^0.18.0"
++      },
++      "engines": {
++        "node": "^20.19.0 || >=22.12.0"
++      },
++      "peerDependencies": {
++        "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0"
++      }
++    },
++    "node_modules/baseline-browser-mapping": {
++      "version": "2.10.38",
++      "resolved": "https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.10.38.tgz",
++      "integrity": "sha512-31/02mVB4yuQU6adKk5SlY6m+mxDwUq5KZkyYgnLrrKl7TEm1+3PyDtDBz2kOv/wxZz41GHsvV1A/u6RmiyBvw==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "bin": {
++        "baseline-browser-mapping": "dist/cli.cjs"
++      },
++      "engines": {
++        "node": ">=6.0.0"
++      }
++    },
++    "node_modules/browserslist": {
++      "version": "4.28.2",
++      "resolved": "https://registry.npmjs.org/browserslist/-/browserslist-4.28.2.tgz",
++      "integrity": "sha512-48xSriZYYg+8qXna9kwqjIVzuQxi+KYWp2+5nCYnYKPTr0LvD89Jqk2Or5ogxz0NUMfIjhh2lIUX/LyX9B4oIg==",
++      "dev": true,
++      "funding": [
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/browserslist"
++        },
++        {
++          "type": "tidelift",
++          "url": "https://tidelift.com/funding/github/npm/browserslist"
++        },
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/ai"
++        }
++      ],
++      "license": "MIT",
++      "dependencies": {
++        "baseline-browser-mapping": "^2.10.12",
++        "caniuse-lite": "^1.0.30001782",
++        "electron-to-chromium": "^1.5.328",
++        "node-releases": "^2.0.36",
++        "update-browserslist-db": "^1.2.3"
++      },
++      "bin": {
++        "browserslist": "cli.js"
++      },
++      "engines": {
++        "node": "^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7"
++      }
++    },
++    "node_modules/caniuse-lite": {
++      "version": "1.0.30001799",
++      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001799.tgz",
++      "integrity": "sha512-hG1bReV+OUU+MOqK4t/ZWI0tZOyz3rqS9XuhOUz1cIcbwBKjOyJEJuw9ER5JuNyqxNk8u/JUVbGibBOL1yrjFw==",
++      "dev": true,
++      "funding": [
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/browserslist"
++        },
++        {
++          "type": "tidelift",
++          "url": "https://tidelift.com/funding/github/npm/caniuse-lite"
++        },
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/ai"
++        }
++      ],
++      "license": "CC-BY-4.0"
++    },
++    "node_modules/convert-source-map": {
++      "version": "2.0.0",
++      "resolved": "https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz",
++      "integrity": "sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/csstype": {
++      "version": "3.2.3",
++      "resolved": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
++      "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/debug": {
++      "version": "4.4.3",
++      "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
++      "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "ms": "^2.1.3"
++      },
++      "engines": {
++        "node": ">=6.0"
++      },
++      "peerDependenciesMeta": {
++        "supports-color": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/electron-to-chromium": {
++      "version": "1.5.376",
++      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.376.tgz",
++      "integrity": "sha512-cUVA7/RvbFTEuw/i3obUwDTRIXojaxkResf+ibByPFxjc6XK3VNtcQXV0NSbAlJ0FMjcJGgftVVB4Qo184EXvA==",
++      "dev": true,
++      "license": "ISC"
++    },
++    "node_modules/esbuild": {
++      "version": "0.27.7",
++      "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.27.7.tgz",
++      "integrity": "sha512-IxpibTjyVnmrIQo5aqNpCgoACA/dTKLTlhMHihVHhdkxKyPO1uBBthumT0rdHmcsk9uMonIWS0m4FljWzILh3w==",
++      "dev": true,
++      "hasInstallScript": true,
++      "license": "MIT",
++      "bin": {
++        "esbuild": "bin/esbuild"
++      },
++      "engines": {
++        "node": ">=18"
++      },
++      "optionalDependencies": {
++        "@esbuild/aix-ppc64": "0.27.7",
++        "@esbuild/android-arm": "0.27.7",
++        "@esbuild/android-arm64": "0.27.7",
++        "@esbuild/android-x64": "0.27.7",
++        "@esbuild/darwin-arm64": "0.27.7",
++        "@esbuild/darwin-x64": "0.27.7",
++        "@esbuild/freebsd-arm64": "0.27.7",
++        "@esbuild/freebsd-x64": "0.27.7",
++        "@esbuild/linux-arm": "0.27.7",
++        "@esbuild/linux-arm64": "0.27.7",
++        "@esbuild/linux-ia32": "0.27.7",
++        "@esbuild/linux-loong64": "0.27.7",
++        "@esbuild/linux-mips64el": "0.27.7",
++        "@esbuild/linux-ppc64": "0.27.7",
++        "@esbuild/linux-riscv64": "0.27.7",
++        "@esbuild/linux-s390x": "0.27.7",
++        "@esbuild/linux-x64": "0.27.7",
++        "@esbuild/netbsd-arm64": "0.27.7",
++        "@esbuild/netbsd-x64": "0.27.7",
++        "@esbuild/openbsd-arm64": "0.27.7",
++        "@esbuild/openbsd-x64": "0.27.7",
++        "@esbuild/openharmony-arm64": "0.27.7",
++        "@esbuild/sunos-x64": "0.27.7",
++        "@esbuild/win32-arm64": "0.27.7",
++        "@esbuild/win32-ia32": "0.27.7",
++        "@esbuild/win32-x64": "0.27.7"
++      }
++    },
++    "node_modules/escalade": {
++      "version": "3.2.0",
++      "resolved": "https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz",
++      "integrity": "sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6"
++      }
++    },
++    "node_modules/fdir": {
++      "version": "6.5.0",
++      "resolved": "https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz",
++      "integrity": "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=12.0.0"
++      },
++      "peerDependencies": {
++        "picomatch": "^3 || ^4"
++      },
++      "peerDependenciesMeta": {
++        "picomatch": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/fsevents": {
++      "version": "2.3.3",
++      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz",
++      "integrity": "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==",
++      "dev": true,
++      "hasInstallScript": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": "^8.16.0 || ^10.6.0 || >=11.0.0"
++      }
++    },
++    "node_modules/gensync": {
++      "version": "1.0.0-beta.2",
++      "resolved": "https://registry.npmjs.org/gensync/-/gensync-1.0.0-beta.2.tgz",
++      "integrity": "sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
++    "node_modules/js-tokens": {
++      "version": "4.0.0",
++      "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz",
++      "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/jsesc": {
++      "version": "3.1.0",
++      "resolved": "https://registry.npmjs.org/jsesc/-/jsesc-3.1.0.tgz",
++      "integrity": "sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==",
++      "dev": true,
++      "license": "MIT",
++      "bin": {
++        "jsesc": "bin/jsesc"
++      },
++      "engines": {
++        "node": ">=6"
++      }
++    },
++    "node_modules/json5": {
++      "version": "2.2.3",
++      "resolved": "https://registry.npmjs.org/json5/-/json5-2.2.3.tgz",
++      "integrity": "sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==",
++      "dev": true,
++      "license": "MIT",
++      "bin": {
++        "json5": "lib/cli.js"
++      },
++      "engines": {
++        "node": ">=6"
++      }
++    },
++    "node_modules/lru-cache": {
++      "version": "5.1.1",
++      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-5.1.1.tgz",
++      "integrity": "sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==",
++      "dev": true,
++      "license": "ISC",
++      "dependencies": {
++        "yallist": "^3.0.2"
++      }
++    },
++    "node_modules/ms": {
++      "version": "2.1.3",
++      "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
++      "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/nanoid": {
++      "version": "3.3.15",
++      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.15.tgz",
++      "integrity": "sha512-y7Wygv/7mEOvxTuEQDB8StXdMRBWf1kR/tlhAzBRUFkB2jfcLOAxO/SHmOO2zgz1pVgK29/kyupn059/bCHdjA==",
++      "dev": true,
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/ai"
++        }
++      ],
++      "license": "MIT",
++      "bin": {
++        "nanoid": "bin/nanoid.cjs"
++      },
++      "engines": {
++        "node": "^10 || ^12 || ^13.7 || ^14 || >=15.0.1"
++      }
++    },
++    "node_modules/node-releases": {
++      "version": "2.0.48",
++      "resolved": "https://registry.npmjs.org/node-releases/-/node-releases-2.0.48.tgz",
++      "integrity": "sha512-1uz8041X6LoI6ZSdZacM9lVY28vuzDlSKitnpbSNK0RfKoIJkX29NBPVEFXhnuSuEOA9Ww0xnPJ+ILWbGAv8DA==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/picocolors": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
++      "integrity": "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==",
++      "dev": true,
++      "license": "ISC"
++    },
++    "node_modules/picomatch": {
++      "version": "4.0.4",
++      "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.4.tgz",
++      "integrity": "sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=12"
++      },
++      "funding": {
++        "url": "https://github.com/sponsors/jonschlinkert"
++      }
++    },
++    "node_modules/playwright": {
++      "version": "1.61.0",
++      "resolved": "https://registry.npmjs.org/playwright/-/playwright-1.61.0.tgz",
++      "integrity": "sha512-Z+7BeeqQPRRzklHsVFP4KTGIyMxKUmfeRA4WisM6G3/XW6nwGeX6fX9qYaDa+CiUqpOkb2f6X3nar05R3kSuJQ==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "playwright-core": "1.61.0"
++      },
++      "bin": {
++        "playwright": "cli.js"
++      },
++      "engines": {
++        "node": ">=18"
++      },
++      "optionalDependencies": {
++        "fsevents": "2.3.2"
++      }
++    },
++    "node_modules/playwright-core": {
++      "version": "1.61.0",
++      "resolved": "https://registry.npmjs.org/playwright-core/-/playwright-core-1.61.0.tgz",
++      "integrity": "sha512-caX7TrY3Ml6egyDX0WUcTHDxodl/b51y5wJOdCEA36QviK/s2g081hvmGs8eaE3DWb6NYZQ6BjO/QkNRPenoPA==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "bin": {
++        "playwright-core": "cli.js"
++      },
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/playwright/node_modules/fsevents": {
++      "version": "2.3.2",
++      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz",
++      "integrity": "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==",
++      "dev": true,
++      "hasInstallScript": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": "^8.16.0 || ^10.6.0 || >=11.0.0"
++      }
++    },
++    "node_modules/postcss": {
++      "version": "8.5.15",
++      "resolved": "https://registry.npmjs.org/postcss/-/postcss-8.5.15.tgz",
++      "integrity": "sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A==",
++      "dev": true,
++      "funding": [
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/postcss/"
++        },
++        {
++          "type": "tidelift",
++          "url": "https://tidelift.com/funding/github/npm/postcss"
++        },
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/ai"
++        }
++      ],
++      "license": "MIT",
++      "dependencies": {
++        "nanoid": "^3.3.12",
++        "picocolors": "^1.1.1",
++        "source-map-js": "^1.2.1"
++      },
++      "engines": {
++        "node": "^10 || ^12 || >=14"
++      }
++    },
++    "node_modules/react": {
++      "version": "19.2.7",
++      "resolved": "https://registry.npmjs.org/react/-/react-19.2.7.tgz",
++      "integrity": "sha512-HNe9WslTbXmFK8o8cmwgAeJFSBvt1bPdHCVKtaaV+WlAN36mpT4hcRpwbf3fY56ar2oIXzsBpOAiIRHAdY0OlQ==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=0.10.0"
++      }
++    },
++    "node_modules/react-dom": {
++      "version": "19.2.7",
++      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-19.2.7.tgz",
++      "integrity": "sha512-t0BRVXvbiE/o20Hfw669rLbMCDWtYZLvmJigy2f0MxsXF+71pxhR3xOkspmsO8h3ZlNzyibAmtCa3l4lYKk6gQ==",
++      "license": "MIT",
++      "dependencies": {
++        "scheduler": "^0.27.0"
++      },
++      "peerDependencies": {
++        "react": "^19.2.7"
++      }
++    },
++    "node_modules/react-refresh": {
++      "version": "0.18.0",
++      "resolved": "https://registry.npmjs.org/react-refresh/-/react-refresh-0.18.0.tgz",
++      "integrity": "sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=0.10.0"
++      }
++    },
++    "node_modules/rollup": {
++      "version": "4.62.2",
++      "resolved": "https://registry.npmjs.org/rollup/-/rollup-4.62.2.tgz",
++      "integrity": "sha512-RFnrW4lhXA3s3eqHDZvN654g8OTjzRfqpIRJYczCGB6HzphckVAi/Qh4tbPUbRuDi7s1Llv8g/NspLkttY3gTA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@types/estree": "1.0.9"
++      },
++      "bin": {
++        "rollup": "dist/bin/rollup"
++      },
++      "engines": {
++        "node": ">=18.0.0",
++        "npm": ">=8.0.0"
++      },
++      "optionalDependencies": {
++        "@rollup/rollup-android-arm-eabi": "4.62.2",
++        "@rollup/rollup-android-arm64": "4.62.2",
++        "@rollup/rollup-darwin-arm64": "4.62.2",
++        "@rollup/rollup-darwin-x64": "4.62.2",
++        "@rollup/rollup-freebsd-arm64": "4.62.2",
++        "@rollup/rollup-freebsd-x64": "4.62.2",
++        "@rollup/rollup-linux-arm-gnueabihf": "4.62.2",
++        "@rollup/rollup-linux-arm-musleabihf": "4.62.2",
++        "@rollup/rollup-linux-arm64-gnu": "4.62.2",
++        "@rollup/rollup-linux-arm64-musl": "4.62.2",
++        "@rollup/rollup-linux-loong64-gnu": "4.62.2",
++        "@rollup/rollup-linux-loong64-musl": "4.62.2",
++        "@rollup/rollup-linux-ppc64-gnu": "4.62.2",
++        "@rollup/rollup-linux-ppc64-musl": "4.62.2",
++        "@rollup/rollup-linux-riscv64-gnu": "4.62.2",
++        "@rollup/rollup-linux-riscv64-musl": "4.62.2",
++        "@rollup/rollup-linux-s390x-gnu": "4.62.2",
++        "@rollup/rollup-linux-x64-gnu": "4.62.2",
++        "@rollup/rollup-linux-x64-musl": "4.62.2",
++        "@rollup/rollup-openbsd-x64": "4.62.2",
++        "@rollup/rollup-openharmony-arm64": "4.62.2",
++        "@rollup/rollup-win32-arm64-msvc": "4.62.2",
++        "@rollup/rollup-win32-ia32-msvc": "4.62.2",
++        "@rollup/rollup-win32-x64-gnu": "4.62.2",
++        "@rollup/rollup-win32-x64-msvc": "4.62.2",
++        "fsevents": "~2.3.2"
++      }
++    },
++    "node_modules/scheduler": {
++      "version": "0.27.0",
++      "resolved": "https://registry.npmjs.org/scheduler/-/scheduler-0.27.0.tgz",
++      "integrity": "sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==",
++      "license": "MIT"
++    },
++    "node_modules/semver": {
++      "version": "6.3.1",
++      "resolved": "https://registry.npmjs.org/semver/-/semver-6.3.1.tgz",
++      "integrity": "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==",
++      "dev": true,
++      "license": "ISC",
++      "bin": {
++        "semver": "bin/semver.js"
++      }
++    },
++    "node_modules/source-map-js": {
++      "version": "1.2.1",
++      "resolved": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz",
++      "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==",
++      "dev": true,
++      "license": "BSD-3-Clause",
++      "engines": {
++        "node": ">=0.10.0"
++      }
++    },
++    "node_modules/tinyglobby": {
++      "version": "0.2.17",
++      "resolved": "https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.17.tgz",
++      "integrity": "sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "fdir": "^6.5.0",
++        "picomatch": "^4.0.4"
++      },
++      "engines": {
++        "node": ">=12.0.0"
++      },
++      "funding": {
++        "url": "https://github.com/sponsors/SuperchupuDev"
++      }
++    },
++    "node_modules/typescript": {
++      "version": "5.9.3",
++      "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
++      "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "bin": {
++        "tsc": "bin/tsc",
++        "tsserver": "bin/tsserver"
++      },
++      "engines": {
++        "node": ">=14.17"
++      }
++    },
++    "node_modules/update-browserslist-db": {
++      "version": "1.2.3",
++      "resolved": "https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.2.3.tgz",
++      "integrity": "sha512-Js0m9cx+qOgDxo0eMiFGEueWztz+d4+M3rGlmKPT+T4IS/jP4ylw3Nwpu6cpTTP8R1MAC1kF4VbdLt3ARf209w==",
++      "dev": true,
++      "funding": [
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/browserslist"
++        },
++        {
++          "type": "tidelift",
++          "url": "https://tidelift.com/funding/github/npm/browserslist"
++        },
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/ai"
++        }
++      ],
++      "license": "MIT",
++      "dependencies": {
++        "escalade": "^3.2.0",
++        "picocolors": "^1.1.1"
++      },
++      "bin": {
++        "update-browserslist-db": "cli.js"
++      },
++      "peerDependencies": {
++        "browserslist": ">= 4.21.0"
++      }
++    },
++    "node_modules/vite": {
++      "version": "7.3.5",
++      "resolved": "https://registry.npmjs.org/vite/-/vite-7.3.5.tgz",
++      "integrity": "sha512-KuOaNhcnGFN2zIPGA7wRmzF+lJA1sea7rHq17aiJ++9lzY1WWG6Jpwqwe1KNbRVPIqHmr8GLYx7jbrQcN/7/ww==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "esbuild": "^0.27.0",
++        "fdir": "^6.5.0",
++        "picomatch": "^4.0.3",
++        "postcss": "^8.5.6",
++        "rollup": "^4.43.0",
++        "tinyglobby": "^0.2.15"
++      },
++      "bin": {
++        "vite": "bin/vite.js"
++      },
++      "engines": {
++        "node": "^20.19.0 || >=22.12.0"
++      },
++      "funding": {
++        "url": "https://github.com/vitejs/vite?sponsor=1"
++      },
++      "optionalDependencies": {
++        "fsevents": "~2.3.3"
++      },
++      "peerDependencies": {
++        "@types/node": "^20.19.0 || >=22.12.0",
++        "jiti": ">=1.21.0",
++        "less": "^4.0.0",
++        "lightningcss": "^1.21.0",
++        "sass": "^1.70.0",
++        "sass-embedded": "^1.70.0",
++        "stylus": ">=0.54.8",
++        "sugarss": "^5.0.0",
++        "terser": "^5.16.0",
++        "tsx": "^4.8.1",
++        "yaml": "^2.4.2"
++      },
++      "peerDependenciesMeta": {
++        "@types/node": {
++          "optional": true
++        },
++        "jiti": {
++          "optional": true
++        },
++        "less": {
++          "optional": true
++        },
++        "lightningcss": {
++          "optional": true
++        },
++        "sass": {
++          "optional": true
++        },
++        "sass-embedded": {
++          "optional": true
++        },
++        "stylus": {
++          "optional": true
++        },
++        "sugarss": {
++          "optional": true
++        },
++        "terser": {
++          "optional": true
++        },
++        "tsx": {
++          "optional": true
++        },
++        "yaml": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/yallist": {
++      "version": "3.1.1",
++      "resolved": "https://registry.npmjs.org/yallist/-/yallist-3.1.1.tgz",
++      "integrity": "sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==",
++      "dev": true,
++      "license": "ISC"
++    }
++  }
++}
+diff --git a/apps/workbench-alpha/package.json b/apps/workbench-alpha/package.json
+new file mode 100644
+index 0000000..c845d58
+--- /dev/null
++++ b/apps/workbench-alpha/package.json
+@@ -0,0 +1,26 @@
++{
++  "name": "priori-workbench-alpha",
++  "version": "0.1.0",
++  "private": true,
++  "type": "module",
++  "scripts": {
++    "dev": "vite --host 127.0.0.1 --port 5174",
++    "build": "tsc --noEmit -p tsconfig.json && vite build",
++    "preview": "vite preview --host 127.0.0.1 --port 4174",
++    "test:fixtures": "node tests/check-no-tactical-fixtures.mjs",
++    "test:e2e": "npm run build && playwright test",
++    "test:acceptance": "npm run test:fixtures && npm run test:e2e"
++  },
++  "dependencies": {
++    "react": "^19.2.3",
++    "react-dom": "^19.2.3"
++  },
++  "devDependencies": {
++    "@vitejs/plugin-react": "^5.1.2",
++    "@playwright/test": "^1.57.0",
++    "@types/react": "^19.2.7",
++    "@types/react-dom": "^19.2.3",
++    "typescript": "^5.9.3",
++    "vite": "^7.3.0"
++  }
++}
+diff --git a/apps/workbench-alpha/playwright.config.ts b/apps/workbench-alpha/playwright.config.ts
+new file mode 100644
+index 0000000..ad25a5c
+--- /dev/null
++++ b/apps/workbench-alpha/playwright.config.ts
+@@ -0,0 +1,34 @@
++import { defineConfig, devices } from "@playwright/test";
++
++export default defineConfig({
++  testDir: "./tests",
++  timeout: 300_000,
++  expect: {
++    timeout: 20_000
++  },
++  outputDir: "../../artifacts/workbench-alpha/playwright-output",
++  reporter: [
++    ["list"],
++    ["json", { outputFile: "../../artifacts/workbench-alpha/playwright-report/results.json" }],
++    ["html", { outputFolder: "../../artifacts/workbench-alpha/playwright-report", open: "never" }]
++  ],
++  use: {
++    baseURL: "http://127.0.0.1:8765",
++    trace: "retain-on-failure",
++    screenshot: "only-on-failure",
++    video: "on"
++  },
++  projects: [
++    {
++      name: "chromium",
++      use: { ...devices["Desktop Chrome"] }
++    }
++  ],
++  webServer: {
++    command:
++      "cd ../.. && PYTHONPATH=src .venv/bin/python -m tqe.workshop.app_service --host 127.0.0.1 --port 8765 --output-root artifacts/workbench-alpha/e2e-workshop",
++    url: "http://127.0.0.1:8765/api/health",
++    reuseExistingServer: !process.env.CI,
++    timeout: 120_000
++  }
++});
+diff --git a/apps/workbench-alpha/src/App.tsx b/apps/workbench-alpha/src/App.tsx
+new file mode 100644
+index 0000000..890bf35
+--- /dev/null
++++ b/apps/workbench-alpha/src/App.tsx
+@@ -0,0 +1,578 @@
++import { useEffect, useMemo, useState } from "react";
++import type { ReactNode } from "react";
++import {
++  bootstrap,
++  confirm,
++  execute,
++  fetchPlan,
++  inspectResult,
++  inspectTimestamp,
++  interpret,
++  submitValidate
++} from "./api";
++import { PitchCanvas } from "./PitchCanvas";
++import type {
++  BootstrapResponse,
++  ConfirmationResponse,
++  ExecutionResponse,
++  InspectResultResponse,
++  InspectTimestampResponse,
++  InterpretResponse,
++  JsonObject,
++  Preset,
++  ReplayPayload,
++  ResultRow,
++  SubmitValidateResponse,
++  TimestampTarget
++} from "./types";
++
++type BusyKey =
++  | "bootstrap"
++  | "interpret"
++  | "validate"
++  | "confirm"
++  | "execute"
++  | "inspect"
++  | "timestamp";
++
++const DEFAULT_QUERY = "Show possessions where the ball goes wide and the defending block moves toward that side.";
++
++function asRecord(value: unknown): JsonObject {
++  return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonObject) : {};
++}
++
++function pretty(value: unknown) {
++  return JSON.stringify(value, null, 2);
++}
++
++function requestedEvidence(planDocument: JsonObject | null) {
++  const draft = asRecord(planDocument?.draft_plan);
++  const evidence = Array.isArray(draft.requested_evidence) ? draft.requested_evidence : [];
++  return evidence.map((item, index) => {
++    const request = asRecord(item);
++    const source = asRecord(request.source);
++    const node = String(source.source_node_id ?? "");
++    const field = String(request.field ?? "");
++    const alias = String(request.alias ?? `${node}.${field}`);
++    return {
++      id: `${alias}-${index}`,
++      alias,
++      source: `${node}.${String(source.output_name ?? "")}`,
++      field
++    };
++  });
++}
++
++function StatusPill({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "good" | "warn" | "bad" }) {
++  return <span className={`pill pill-${tone}`}>{children}</span>;
++}
++
++function JsonBlock({ value, compact = false }: { value: unknown; compact?: boolean }) {
++  return <pre className={compact ? "jsonBlock compact" : "jsonBlock"}>{pretty(value)}</pre>;
++}
++
++export function App() {
++  const [boot, setBoot] = useState<BootstrapResponse | null>(null);
++  const [query, setQuery] = useState(DEFAULT_QUERY);
++  const [mode, setMode] = useState<"manual" | "model">("manual");
++  const [selectedPreset, setSelectedPreset] = useState<Preset["preset_id"]>("approved_block_shift");
++  const [planDocument, setPlanDocument] = useState<JsonObject | null>(null);
++  const [interpretation, setInterpretation] = useState<InterpretResponse | null>(null);
++  const [validation, setValidation] = useState<SubmitValidateResponse | null>(null);
++  const [confirmation, setConfirmation] = useState<ConfirmationResponse | null>(null);
++  const [execution, setExecution] = useState<ExecutionResponse | null>(null);
++  const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
++  const [inspection, setInspection] = useState<InspectResultResponse | null>(null);
++  const [timestampInspection, setTimestampInspection] = useState<InspectTimestampResponse | null>(null);
++  const [target, setTarget] = useState<TimestampTarget>({
++    schema_version: "1.0",
++    target_id: "known_probe",
++    match_id: "",
++    period: "firstHalf",
++    approximate_time_ms: 0,
++    search_radius_ms: 500
++  });
++  const [frameIndex, setFrameIndex] = useState(0);
++  const [playing, setPlaying] = useState(false);
++  const [busy, setBusy] = useState<BusyKey | null>("bootstrap");
++  const [error, setError] = useState<string | null>(null);
++
++  const selectedResult = useMemo<ResultRow | null>(() => {
++    const rows = execution?.execution.results ?? [];
++    return rows.find((item) => item.result_id === selectedResultId) ?? rows[0] ?? null;
++  }, [execution, selectedResultId]);
++
++  const replay: ReplayPayload | null = inspection?.replay ?? timestampInspection?.replay ?? null;
++  const evidenceAliases = useMemo(() => requestedEvidence(planDocument), [planDocument]);
++
++  useEffect(() => {
++    bootstrap()
++      .then((payload) => {
++        setBoot(payload);
++        return fetchPlan("ball_side_block_shift_v1");
++      })
++      .then((payload) => {
++        setPlanDocument(payload.plan_document);
++      })
++      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
++      .finally(() => setBusy(null));
++  }, []);
++
++  useEffect(() => {
++    if (!playing || !replay || replay.frames.length === 0) return;
++    const timer = window.setInterval(() => {
++      setFrameIndex((current) => (current + 1) % replay.frames.length);
++    }, 120);
++    return () => window.clearInterval(timer);
++  }, [playing, replay]);
++
++  useEffect(() => {
++    setFrameIndex(0);
++    setPlaying(false);
++  }, [inspection?.replay?.replay_window_id, timestampInspection?.replay?.replay_window_id]);
++
++  async function runAction<T>(key: BusyKey, action: () => Promise<T>): Promise<T | null> {
++    setBusy(key);
++    setError(null);
++    try {
++      return await action();
++    } catch (err) {
++      setError(err instanceof Error ? err.message : String(err));
++      return null;
++    } finally {
++      setBusy(null);
++    }
++  }
++
++  async function choosePreset(presetId: Preset["preset_id"]) {
++    setSelectedPreset(presetId);
++    const recipeId = presetId === "approved_block_shift" ? "ball_side_block_shift_v1" : "possession_corridor_availability_v1";
++    const payload = await runAction("interpret", () => fetchPlan(recipeId));
++    if (!payload) return;
++    setPlanDocument(payload.plan_document);
++    setInterpretation({
++      ok: true,
++      status: "PLAN_INTERPRETED",
++      recipe: payload.recipe,
++      plan_document: payload.plan_document,
++      plan_hash: payload.plan_hash
++    });
++    setValidation(null);
++    setConfirmation(null);
++    setExecution(null);
++    setInspection(null);
++    setTimestampInspection(null);
++  }
++
++  async function handleInterpret() {
++    const payload = await runAction("interpret", () =>
++      interpret({
++        query,
++        mode,
++        preset_id: selectedPreset
++      })
++    );
++    if (!payload) return;
++    setInterpretation(payload);
++    if (payload.status === "PLAN_INTERPRETED" && payload.plan_document) {
++      setPlanDocument(payload.plan_document);
++      setValidation(null);
++      setConfirmation(null);
++      setExecution(null);
++      setInspection(null);
++      setTimestampInspection(null);
++    }
++  }
++
++  async function handleValidate() {
++    if (!planDocument) return;
++    const payload = await runAction("validate", () => submitValidate(planDocument));
++    if (!payload) return;
++    setValidation(payload);
++    setConfirmation(null);
++    setExecution(null);
++    setInspection(null);
++    setTimestampInspection(null);
++  }
++
++  async function handleConfirm() {
++    const boundPlanId = validation?.validation.bound_plan_id;
++    if (!boundPlanId) return;
++    const payload = await runAction("confirm", () => confirm(boundPlanId));
++    if (!payload) return;
++    setConfirmation(payload);
++  }
++
++  async function handleExecute() {
++    const boundPlanId = confirmation?.confirmation.bound_plan_id;
++    const authorizationId = confirmation?.confirmation.execution_authorization_id;
++    if (!boundPlanId || !authorizationId) return;
++    const payload = await runAction("execute", () =>
++      execute({
++        bound_plan_id: boundPlanId,
++        execution_authorization_id: authorizationId,
++        result_limit: 25
++      })
++    );
++    if (!payload) return;
++    setExecution(payload);
++    const first = payload.execution.results[0];
++    setSelectedResultId(first?.result_id ?? null);
++    if (first) {
++      setTarget((current) => ({
++        ...current,
++        match_id: first.match_id,
++        period: first.period === "secondHalf" ? "secondHalf" : "firstHalf"
++      }));
++      await inspectSpecificResult(payload.execution.execution_id, first.result_id);
++    }
++  }
++
++  async function inspectSpecificResult(executionId: string, resultId: string) {
++    const payload = await runAction("inspect", () =>
++      inspectResult({
++        execution_id: executionId,
++        result_id: resultId,
++        padding_seconds: 2
++      })
++    );
++    if (!payload) return;
++    setInspection(payload);
++    setTimestampInspection(null);
++  }
++
++  async function handleResultSelect(resultId: string) {
++    setSelectedResultId(resultId);
++    const executionId = execution?.execution.execution_id;
++    if (!executionId) return;
++    await inspectSpecificResult(executionId, resultId);
++  }
++
++  async function handleInspectTimestamp() {
++    const executionId = execution?.execution.execution_id;
++    if (!executionId) return;
++    const payload = await runAction("timestamp", () =>
++      inspectTimestamp({
++        execution_id: executionId,
++        target,
++        padding_seconds: 2
++      })
++    );
++    if (!payload) return;
++    setTimestampInspection(payload);
++    setInspection(null);
++  }
++
++  const validationTone = validation?.validation.ok ? "good" : validation ? "bad" : "neutral";
++  const currentFrame = replay?.frames[Math.min(frameIndex, Math.max(0, replay.frames.length - 1))];
++
++  return (
++    <main className="appShell">
++      <header className="topbar">
++        <div>
++          <div className="eyebrow">Workbench Alpha</div>
++          <h1>Host tactical query workbench</h1>
++        </div>
++        <div className="topbarStatus">
++          <StatusPill tone={boot?.service.mcp_adapter === false ? "good" : "warn"}>browser to host API</StatusPill>
++          <StatusPill tone={boot?.model.available ? "good" : "warn"}>{boot?.model.status ?? "loading"}</StatusPill>
++          <StatusPill tone="neutral">{busy ? `busy: ${busy}` : "idle"}</StatusPill>
++        </div>
++      </header>
++
++      {error ? <div className="errorBanner" data-testid="error-banner">{error}</div> : null}
++
++      <section className="workspaceGrid">
++        <aside className="leftRail">
++          <section className="panel">
++            <div className="panelTitle">Query</div>
++            <label className="field">
++              <span>Natural language</span>
++              <textarea data-testid="query-input" value={query} onChange={(event) => setQuery(event.target.value)} />
++            </label>
++            <div className="segmented">
++              <button className={mode === "manual" ? "active" : ""} onClick={() => setMode("manual")}>
++                Manual
++              </button>
++              <button className={mode === "model" ? "active" : ""} onClick={() => setMode("model")}>
++                Model
++              </button>
++            </div>
++            <div className="presetStack">
++              {boot?.presets.map((preset) => (
++                <button
++                  key={preset.preset_id}
++                  data-testid={`preset-${preset.preset_id}`}
++                  className={selectedPreset === preset.preset_id ? "preset active" : "preset"}
++                  onClick={() => void choosePreset(preset.preset_id)}
++                >
++                  <span>{preset.label}</span>
++                  <small>{preset.recipe.state}</small>
++                </button>
++              ))}
++            </div>
++            <button className="primaryAction" data-testid="interpret-button" onClick={() => void handleInterpret()} disabled={busy !== null}>
++              Interpret
++            </button>
++          </section>
++
++          <section className="panel">
++            <div className="panelHeader">
++              <div className="panelTitle">Validation</div>
++              <StatusPill tone={validationTone}>{validation?.validation.ok ? "valid" : validation ? "invalid" : "not run"}</StatusPill>
++            </div>
++            <button className="fullButton" data-testid="validate-button" onClick={() => void handleValidate()} disabled={!planDocument || busy !== null}>
++              Submit and validate
++            </button>
++            <button
++              className="fullButton"
++              data-testid="confirm-button"
++              onClick={() => void handleConfirm()}
++              disabled={!validation?.validation.bound_plan_id || busy !== null}
++            >
++              Host confirm
++            </button>
++            <button
++              className="primaryAction"
++              data-testid="execute-button"
++              onClick={() => void handleExecute()}
++              disabled={!confirmation?.confirmation.execution_authorization_id || busy !== null}
++            >
++              Execute
++            </button>
++          </section>
++
++          <section className="panel">
++            <div className="panelTitle">Known Timestamp</div>
++            <label className="field tight">
++              <span>Target ID</span>
++              <input value={target.target_id} onChange={(event) => setTarget({ ...target, target_id: event.target.value })} />
++            </label>
++            <label className="field tight">
++              <span>Match ID</span>
++              <input data-testid="timestamp-match-id" value={target.match_id} onChange={(event) => setTarget({ ...target, match_id: event.target.value })} />
++            </label>
++            <div className="twoCol">
++              <label className="field tight">
++                <span>Period</span>
++                <select
++                  value={target.period}
++                  onChange={(event) =>
++                    setTarget({ ...target, period: event.target.value === "secondHalf" ? "secondHalf" : "firstHalf" })
++                  }
++                >
++                  <option value="firstHalf">firstHalf</option>
++                  <option value="secondHalf">secondHalf</option>
++                </select>
++              </label>
++              <label className="field tight">
++                <span>Radius ms</span>
++                <input
++                  type="number"
++                  min={1}
++                  value={target.search_radius_ms}
++                  onChange={(event) => setTarget({ ...target, search_radius_ms: Number(event.target.value) })}
++                />
++              </label>
++            </div>
++            <label className="field tight">
++              <span>Approx time ms</span>
++              <input
++                  type="number"
++                  min={0}
++                  data-testid="timestamp-time-ms"
++                  value={target.approximate_time_ms}
++                  onChange={(event) => setTarget({ ...target, approximate_time_ms: Number(event.target.value) })}
++                />
++            </label>
++            <button
++              className="fullButton"
++              data-testid="inspect-timestamp-button"
++              onClick={() => void handleInspectTimestamp()}
++              disabled={!execution?.execution.execution_id || !target.match_id || busy !== null}
++            >
++              Inspect timestamp
++            </button>
++          </section>
++        </aside>
++
++        <section className="centerStage">
++          <section className="panel interpreted" data-testid="interpreted-plan-panel">
++            <div className="panelHeader">
++              <div>
++                <div className="panelTitle">Interpreted Plan</div>
++                <div className="muted">{interpretation?.recipe?.display_name ?? "No interpreted plan loaded"}</div>
++              </div>
++              {interpretation ? <StatusPill tone={interpretation.status === "PLAN_INTERPRETED" ? "good" : "warn"}>{interpretation.status}</StatusPill> : null}
++            </div>
++            {interpretation?.status === "CLARIFICATION_REQUIRED" ? (
++              <StateList title="Clarification" items={interpretation.clarification_questions ?? []} />
++            ) : null}
++            {interpretation?.status === "CAPABILITY_GAP" ? (
++              <div className="stateBox bad">
++                {(interpretation.capability_gaps ?? []).map((gap) => (
++                  <p key={gap.concept}>
++                    <strong>{gap.concept}</strong>: {gap.reason}
++                  </p>
++                ))}
++              </div>
++            ) : null}
++            {interpretation?.status === "MODEL_UNAVAILABLE" ? (
++              <div className="stateBox warn">{interpretation.message}</div>
++            ) : null}
++            <div className="planMeta">
++              <span>{planDocument ? String(asRecord(planDocument.recipe).recipe_id ?? "") : "no recipe"}</span>
++              <span>{planDocument ? String(asRecord(planDocument.draft_plan).status ?? "") : "no status"}</span>
++              <span>{interpretation?.plan_hash ?? ""}</span>
++            </div>
++            <JsonBlock value={planDocument ?? {}} compact />
++          </section>
++
++          <section className="panel canvasPanel">
++            <div className="panelHeader">
++              <div>
++                <div className="panelTitle">Coordinate Replay</div>
++                <div className="muted" data-testid="replay-window-summary">
++                  {replay
++                    ? `${replay.replay_window_id} ${replay.source_id} ${replay.match_id} ${replay.period} ${replay.start_frame_id}-${replay.end_frame_id}`
++                    : "No replay window selected"}
++                </div>
++              </div>
++              {currentFrame ? <StatusPill tone="neutral">frame {currentFrame.frame_id}</StatusPill> : null}
++            </div>
++            <PitchCanvas replay={replay} frameIndex={frameIndex} />
++            <div className="replayControls">
++              <button onClick={() => setFrameIndex((value) => Math.max(0, value - 1))} disabled={!replay}>
++                Prev
++              </button>
++              <button data-testid="play-pause-button" onClick={() => setPlaying((value) => !value)} disabled={!replay}>
++                {playing ? "Pause" : "Play"}
++              </button>
++              <button
++                onClick={() => setFrameIndex((value) => Math.min((replay?.frames.length ?? 1) - 1, value + 1))}
++                disabled={!replay}
++              >
++                Next
++              </button>
++              <input
++                type="range"
++                data-testid="replay-scrubber"
++                min={0}
++                max={Math.max(0, (replay?.frames.length ?? 1) - 1)}
++                value={frameIndex}
++                onChange={(event) => setFrameIndex(Number(event.target.value))}
++                disabled={!replay}
++              />
++            </div>
++          </section>
++
++          <section className="detailGrid">
++            <div className="panel">
++              <div className="panelTitle">Evidence Aliases</div>
++              <div className="evidenceGrid" data-testid="evidence-aliases">
++                {evidenceAliases.map((item) => (
++                  <div key={item.id} className="evidenceRow" data-testid="evidence-alias">
++                    <span>{item.alias}</span>
++                    <small>{item.source} / {item.field}</small>
++                    <code>{String(selectedResult?.requested_evidence[item.alias] ?? "")}</code>
++                  </div>
++                ))}
++              </div>
++            </div>
++            <div className="panel">
++              <div className="panelTitle">Predicate Trace</div>
++              <TraceList traces={inspection?.inspection.predicate_traces ?? []} />
++            </div>
++          </section>
++        </section>
++
++        <aside className="rightRail">
++          <section className="panel">
++            <div className="panelHeader">
++              <div className="panelTitle">Result Rail</div>
++              <StatusPill tone="neutral">
++                <span data-testid="result-count">{execution?.execution.returned_result_count ?? 0}</span> shown
++              </StatusPill>
++            </div>
++            <div className="resultList" data-testid="result-rail">
++              {(execution?.execution.results ?? []).map((result) => (
++                <button
++                  key={result.result_id}
++                  data-testid="result-item"
++                  data-result-id={result.result_id}
++                  className={selectedResultId === result.result_id ? "resultItem active" : "resultItem"}
++                  onClick={() => void handleResultSelect(result.result_id)}
++                >
++                  <span>#{result.rank} {result.classification}</span>
++                  <small>{result.result_id}</small>
++                  <small>{result.match_id} / {result.period} / frame {result.anchor_frame_id}</small>
++                </button>
++              ))}
++              {!execution ? <div className="emptyState">Execute a confirmed bound plan to populate results.</div> : null}
++            </div>
++          </section>
++
++          <section className="panel">
++            <div className="panelTitle">Validation Result</div>
++            <div data-testid="validation-result">
++              <JsonBlock value={validation?.validation ?? { status: "not_run" }} compact />
++            </div>
++          </section>
++
++          <section className="panel">
++            <div className="panelTitle">Host Confirmation</div>
++            <div data-testid="host-confirmation">
++              <JsonBlock value={confirmation?.confirmation ?? { status: "not_confirmed" }} compact />
++            </div>
++          </section>
++
++          <section className="panel">
++            <div className="panelTitle">Execution</div>
++            <div data-testid="execution-result">
++              <JsonBlock value={execution?.execution ?? { status: "not_executed" }} compact />
++            </div>
++          </section>
++
++          <section className="panel">
++            <div className="panelTitle">Timestamp Inspection</div>
++            <div data-testid="timestamp-inspection">
++              <JsonBlock value={timestampInspection?.inspection ?? { status: "not_run" }} compact />
++            </div>
++          </section>
++        </aside>
++      </section>
++    </main>
++  );
++}
++
++function StateList({ title, items }: { title: string; items: string[] }) {
++  return (
++    <div className="stateBox warn">
++      <strong>{title}</strong>
++      {items.map((item) => (
++        <p key={item}>{item}</p>
++      ))}
++    </div>
++  );
++}
++
++function TraceList({ traces }: { traces: Array<{ predicate_id?: string; status?: string; value?: unknown; threshold?: unknown }> }) {
++  if (traces.length === 0) {
++    return <div className="emptyState">No predicate trace selected.</div>;
++  }
++  return (
++    <div className="traceList">
++      {traces.map((trace, index) => {
++        const status = trace.status ?? "UNKNOWN";
++        const tone = status === "PASS" ? "good" : status === "FAIL" ? "bad" : "warn";
++        return (
++          <div key={`${trace.predicate_id ?? "trace"}-${index}`} className="traceRow" data-testid="predicate-trace">
++            <StatusPill tone={tone}>{status}</StatusPill>
++            <span>{trace.predicate_id ?? "predicate"}</span>
++            <small>{pretty({ value: trace.value, threshold: trace.threshold })}</small>
++          </div>
++        );
++      })}
++    </div>
++  );
++}
+diff --git a/apps/workbench-alpha/src/PitchCanvas.tsx b/apps/workbench-alpha/src/PitchCanvas.tsx
+new file mode 100644
+index 0000000..c371692
+--- /dev/null
++++ b/apps/workbench-alpha/src/PitchCanvas.tsx
+@@ -0,0 +1,110 @@
++import { useEffect, useRef } from "react";
++import type { ReplayPayload } from "./types";
++
++type PitchCanvasProps = {
++  replay: ReplayPayload | null;
++  frameIndex: number;
++};
++
++function transformPoint(x: number, y: number, replay: ReplayPayload, width: number, height: number) {
++  const marginX = width * 0.035;
++  const marginY = height * 0.055;
++  const fieldW = width - marginX * 2;
++  const fieldH = height - marginY * 2;
++  return {
++    x: marginX + ((x + replay.pitch.length_m / 2) / replay.pitch.length_m) * fieldW,
++    y: marginY + ((replay.pitch.width_m / 2 - y) / replay.pitch.width_m) * fieldH
++  };
++}
++
++export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
++  const canvasRef = useRef<HTMLCanvasElement | null>(null);
++
++  useEffect(() => {
++    const canvas = canvasRef.current;
++    if (!canvas) return;
++
++    const parent = canvas.parentElement;
++    const width = parent?.clientWidth ? Math.max(parent.clientWidth, 720) : 960;
++    const height = Math.round(width * 0.58);
++    const ratio = window.devicePixelRatio || 1;
++    canvas.width = Math.round(width * ratio);
++    canvas.height = Math.round(height * ratio);
++    canvas.style.width = `${width}px`;
++    canvas.style.height = `${height}px`;
++
++    const ctx = canvas.getContext("2d");
++    if (!ctx) return;
++    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
++    ctx.clearRect(0, 0, width, height);
++
++    ctx.fillStyle = "#477556";
++    ctx.fillRect(0, 0, width, height);
++
++    const marginX = width * 0.035;
++    const marginY = height * 0.055;
++    const fieldW = width - marginX * 2;
++    const fieldH = height - marginY * 2;
++
++    ctx.strokeStyle = "rgba(255,255,255,0.84)";
++    ctx.lineWidth = 1.6;
++    ctx.strokeRect(marginX, marginY, fieldW, fieldH);
++    ctx.beginPath();
++    ctx.moveTo(width / 2, marginY);
++    ctx.lineTo(width / 2, height - marginY);
++    ctx.stroke();
++    ctx.beginPath();
++    ctx.arc(width / 2, height / 2, Math.min(fieldW, fieldH) * 0.12, 0, Math.PI * 2);
++    ctx.stroke();
++
++    if (!replay || replay.frames.length === 0) {
++      ctx.fillStyle = "rgba(245,245,240,0.78)";
++      ctx.font = "14px ui-monospace, SFMono-Regular, Menlo, monospace";
++      ctx.fillText("No replay window loaded", marginX + 16, marginY + 28);
++      return;
++    }
++
++    const frame = replay.frames[Math.min(Math.max(frameIndex, 0), replay.frames.length - 1)];
++    ctx.fillStyle = "rgba(245,245,240,0.82)";
++    ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, monospace";
++    ctx.fillText(
++      `${replay.replay_window_id} / frame ${frame.frame_id} / ${frameIndex + 1} of ${replay.frames.length}`,
++      marginX + 14,
++      marginY + 24
++    );
++
++    for (const entity of frame.entities) {
++      const point = transformPoint(entity.x_m, entity.y_m, replay, width, height);
++      const isBall = entity.entity_type === "ball";
++      const radius = isBall ? 4.4 : 7.5;
++      ctx.beginPath();
++      ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
++      if (isBall) {
++        ctx.fillStyle = "#f4f1e8";
++        ctx.strokeStyle = "#2b2f2b";
++      } else if (entity.team_role === "home") {
++        ctx.fillStyle = "#1e4f7a";
++        ctx.strokeStyle = "#e7edf2";
++      } else {
++        ctx.fillStyle = "#a9473f";
++        ctx.strokeStyle = "#f3e8df";
++      }
++      ctx.lineWidth = isBall ? 1.2 : 1.5;
++      ctx.fill();
++      ctx.stroke();
++    }
++
++    const anchorX = replay.frames.findIndex((item) => item.frame_id === replay.anchor_frame_id);
++    if (anchorX >= 0 && anchorX === frameIndex) {
++      ctx.strokeStyle = "#d6b35a";
++      ctx.lineWidth = 2;
++      ctx.strokeRect(marginX + 6, marginY + 6, fieldW - 12, fieldH - 12);
++    }
++  }, [frameIndex, replay]);
++
++  return (
++    <div className="canvasShell">
++      <canvas ref={canvasRef} aria-label="Coordinate replay canvas" />
++    </div>
++  );
++}
+diff --git a/apps/workbench-alpha/src/api.ts b/apps/workbench-alpha/src/api.ts
+new file mode 100644
+index 0000000..570681a
+--- /dev/null
++++ b/apps/workbench-alpha/src/api.ts
+@@ -0,0 +1,96 @@
++import type {
++  BootstrapResponse,
++  ConfirmationResponse,
++  ExecutionResponse,
++  InspectResultResponse,
++  InspectTimestampResponse,
++  InterpretResponse,
++  JsonObject,
++  RecipeSummary,
++  SubmitValidateResponse,
++  TimestampTarget
++} from "./types";
++
++async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
++  const response = await fetch(path, {
++    ...options,
++    headers: {
++      "Content-Type": "application/json",
++      ...(options.headers ?? {})
++    }
++  });
++  const payload = (await response.json()) as T & { ok?: boolean; message?: string; error_code?: string };
++  if (!response.ok || payload.ok === false) {
++    const message = payload.message ?? payload.error_code ?? `Request failed: ${path}`;
++    throw new Error(message);
++  }
++  return payload;
++}
++
++export function bootstrap(): Promise<BootstrapResponse> {
++  return request<BootstrapResponse>("/api/bootstrap");
++}
++
++export function fetchPlan(recipeId: string): Promise<{ ok: boolean; recipe: RecipeSummary; plan_document: JsonObject; plan_hash: string }> {
++  return request(`/api/plan?recipe_id=${encodeURIComponent(recipeId)}`);
++}
++
++export function interpret(input: {
++  query: string;
++  mode: "manual" | "model";
++  selected_recipe_id?: string;
++  preset_id?: string;
++  clarifications?: string[];
++}): Promise<InterpretResponse> {
++  return request<InterpretResponse>("/api/interpret", {
++    method: "POST",
++    body: JSON.stringify(input)
++  });
++}
++
++export function submitValidate(planDocument: JsonObject): Promise<SubmitValidateResponse> {
++  return request<SubmitValidateResponse>("/api/submit-validate", {
++    method: "POST",
++    body: JSON.stringify({ plan_document: planDocument })
++  });
++}
++
++export function confirm(boundPlanId: string): Promise<ConfirmationResponse> {
++  return request<ConfirmationResponse>("/api/confirm", {
++    method: "POST",
++    body: JSON.stringify({ bound_plan_id: boundPlanId, reviewer: "workbench_alpha_host" })
++  });
++}
++
++export function execute(input: {
++  bound_plan_id: string;
++  execution_authorization_id: string;
++  result_limit: number;
++}): Promise<ExecutionResponse> {
++  return request<ExecutionResponse>("/api/execute", {
++    method: "POST",
++    body: JSON.stringify(input)
++  });
++}
++
++export function inspectResult(input: {
++  execution_id: string;
++  result_id: string;
++  padding_seconds?: number;
++}): Promise<InspectResultResponse> {
++  return request<InspectResultResponse>("/api/inspect-result", {
++    method: "POST",
++    body: JSON.stringify(input)
++  });
++}
++
++export function inspectTimestamp(input: {
++  execution_id: string;
++  target: TimestampTarget;
++  padding_seconds?: number;
++}): Promise<InspectTimestampResponse> {
++  return request<InspectTimestampResponse>("/api/inspect-timestamp", {
++    method: "POST",
++    body: JSON.stringify(input)
++  });
++}
+diff --git a/apps/workbench-alpha/src/main.tsx b/apps/workbench-alpha/src/main.tsx
+new file mode 100644
+index 0000000..be209a7
+--- /dev/null
++++ b/apps/workbench-alpha/src/main.tsx
+@@ -0,0 +1,16 @@
++import React from "react";
++import ReactDOM from "react-dom/client";
++import { App } from "./App";
++import "./styles.css";
++
++const root = document.getElementById("root");
++
++if (!root) {
++  throw new Error("Root element not found");
++}
++
++ReactDOM.createRoot(root).render(
++  <React.StrictMode>
++    <App />
++  </React.StrictMode>
++);
+diff --git a/apps/workbench-alpha/src/styles.css b/apps/workbench-alpha/src/styles.css
+new file mode 100644
+index 0000000..4955623
+--- /dev/null
++++ b/apps/workbench-alpha/src/styles.css
+@@ -0,0 +1,503 @@
++:root {
++  font-family: "Geist", "Satoshi", "Avenir Next", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++  color: #1e2320;
++  background: #f4f5f1;
++  font-synthesis: none;
++  text-rendering: optimizeLegibility;
++  -webkit-font-smoothing: antialiased;
++  --line: #d7d8d1;
++  --ink: #1e2320;
++  --muted: #666d65;
++  --surface: #ffffff;
++  --surface-2: #edefe8;
++  --accent: #44745a;
++  --accent-dark: #2f5c43;
++  --warn: #9b6b27;
++  --bad: #9a443a;
++}
++
++* {
++  box-sizing: border-box;
++}
++
++body {
++  margin: 0;
++  min-width: 320px;
++  min-height: 100dvh;
++}
++
++button,
++input,
++textarea,
++select {
++  font: inherit;
++}
++
++button {
++  border: 1px solid var(--line);
++  background: var(--surface);
++  color: var(--ink);
++  cursor: pointer;
++  transition:
++    transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
++    border-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
++    background 160ms cubic-bezier(0.16, 1, 0.3, 1);
++}
++
++button:hover:not(:disabled) {
++  border-color: #9da59c;
++}
++
++button:active:not(:disabled) {
++  transform: translateY(1px) scale(0.99);
++}
++
++button:disabled {
++  color: #9ca29a;
++  cursor: not-allowed;
++  background: #f6f7f3;
++}
++
++.appShell {
++  min-height: 100dvh;
++  padding: 14px;
++}
++
++.topbar {
++  display: flex;
++  align-items: end;
++  justify-content: space-between;
++  gap: 18px;
++  padding: 8px 2px 14px;
++  border-bottom: 1px solid var(--line);
++}
++
++.topbar h1 {
++  margin: 0;
++  font-size: clamp(22px, 3vw, 34px);
++  line-height: 1.05;
++  letter-spacing: 0;
++  font-weight: 650;
++}
++
++.eyebrow {
++  margin-bottom: 5px;
++  font-size: 11px;
++  line-height: 1;
++  text-transform: uppercase;
++  color: var(--muted);
++  font-weight: 700;
++}
++
++.topbarStatus {
++  display: flex;
++  align-items: center;
++  justify-content: flex-end;
++  flex-wrap: wrap;
++  gap: 6px;
++}
++
++.workspaceGrid {
++  display: grid;
++  grid-template-columns: minmax(290px, 360px) minmax(520px, 1fr) minmax(300px, 390px);
++  gap: 12px;
++  padding-top: 12px;
++}
++
++.leftRail,
++.rightRail,
++.centerStage {
++  display: flex;
++  min-width: 0;
++  flex-direction: column;
++  gap: 12px;
++}
++
++.panel {
++  border: 1px solid var(--line);
++  border-radius: 8px;
++  background: var(--surface);
++  padding: 12px;
++  min-width: 0;
++}
++
++.panelHeader {
++  display: flex;
++  align-items: start;
++  justify-content: space-between;
++  gap: 10px;
++  margin-bottom: 10px;
++}
++
++.panelTitle {
++  margin-bottom: 8px;
++  color: #252b27;
++  font-size: 12px;
++  font-weight: 750;
++  text-transform: uppercase;
++}
++
++.muted {
++  color: var(--muted);
++  font-size: 12px;
++  line-height: 1.35;
++}
++
++.field {
++  display: grid;
++  gap: 6px;
++  margin-bottom: 10px;
++}
++
++.field span {
++  color: var(--muted);
++  font-size: 12px;
++  font-weight: 650;
++}
++
++.field textarea,
++.field input,
++.field select {
++  width: 100%;
++  border: 1px solid var(--line);
++  border-radius: 6px;
++  background: #fbfcf8;
++  color: var(--ink);
++  outline: none;
++}
++
++.field textarea {
++  min-height: 136px;
++  resize: vertical;
++  padding: 10px;
++  line-height: 1.42;
++}
++
++.field input,
++.field select {
++  height: 34px;
++  padding: 0 9px;
++}
++
++.field textarea:focus,
++.field input:focus,
++.field select:focus {
++  border-color: var(--accent);
++}
++
++.field.tight {
++  margin-bottom: 8px;
++}
++
++.segmented {
++  display: grid;
++  grid-template-columns: 1fr 1fr;
++  gap: 4px;
++  margin-bottom: 10px;
++  padding: 3px;
++  border: 1px solid var(--line);
++  border-radius: 8px;
++  background: var(--surface-2);
++}
++
++.segmented button {
++  height: 32px;
++  border-radius: 6px;
++  border-color: transparent;
++  background: transparent;
++}
++
++.segmented button.active {
++  background: var(--surface);
++  border-color: var(--line);
++}
++
++.presetStack {
++  display: grid;
++  gap: 6px;
++  margin-bottom: 10px;
++}
++
++.preset,
++.resultItem {
++  display: grid;
++  width: 100%;
++  gap: 4px;
++  padding: 9px;
++  border-radius: 8px;
++  text-align: left;
++}
++
++.preset.active,
++.resultItem.active {
++  border-color: var(--accent);
++  background: #edf4ee;
++}
++
++.preset small,
++.resultItem small {
++  color: var(--muted);
++  font-size: 11px;
++}
++
++.primaryAction,
++.fullButton {
++  width: 100%;
++  height: 36px;
++  border-radius: 7px;
++  font-weight: 700;
++}
++
++.primaryAction {
++  border-color: var(--accent-dark);
++  background: var(--accent);
++  color: #fbfcf8;
++}
++
++.fullButton {
++  margin-bottom: 7px;
++}
++
++.twoCol {
++  display: grid;
++  grid-template-columns: 1fr 1fr;
++  gap: 8px;
++}
++
++.pill {
++  display: inline-flex;
++  align-items: center;
++  min-height: 24px;
++  max-width: 100%;
++  padding: 3px 7px;
++  border: 1px solid var(--line);
++  border-radius: 999px;
++  background: #f7f8f4;
++  color: #424940;
++  font-size: 11px;
++  font-weight: 750;
++  white-space: nowrap;
++}
++
++.pill-good {
++  border-color: #9eb8a5;
++  background: #eef5ef;
++  color: #2c6040;
++}
++
++.pill-warn {
++  border-color: #d5bc83;
++  background: #fbf5e8;
++  color: var(--warn);
++}
++
++.pill-bad {
++  border-color: #d2a29b;
++  background: #fbefed;
++  color: var(--bad);
++}
++
++.interpreted {
++  min-height: 360px;
++}
++
++.planMeta {
++  display: grid;
++  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
++  gap: 8px;
++  margin-bottom: 8px;
++  color: var(--muted);
++  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
++  font-size: 11px;
++}
++
++.planMeta span {
++  overflow: hidden;
++  text-overflow: ellipsis;
++  white-space: nowrap;
++}
++
++.jsonBlock {
++  margin: 0;
++  max-height: 360px;
++  overflow: auto;
++  border: 1px solid var(--line);
++  border-radius: 7px;
++  background: #fbfcf8;
++  padding: 10px;
++  color: #252b27;
++  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
++  font-size: 11px;
++  line-height: 1.42;
++}
++
++.jsonBlock.compact {
++  max-height: 236px;
++}
++
++.canvasPanel {
++  overflow: hidden;
++}
++
++.canvasShell {
++  width: 100%;
++  overflow: auto;
++  border: 1px solid #bdc6ba;
++  border-radius: 8px;
++  background: #477556;
++}
++
++.canvasShell canvas {
++  display: block;
++  max-width: 100%;
++}
++
++.replayControls {
++  display: grid;
++  grid-template-columns: 74px 74px 74px minmax(160px, 1fr);
++  gap: 8px;
++  align-items: center;
++  margin-top: 10px;
++}
++
++.replayControls button {
++  height: 32px;
++  border-radius: 7px;
++}
++
++.replayControls input {
++  width: 100%;
++}
++
++.detailGrid {
++  display: grid;
++  grid-template-columns: 1fr 1fr;
++  gap: 12px;
++}
++
++.evidenceGrid,
++.traceList,
++.resultList {
++  display: grid;
++  gap: 7px;
++}
++
++.evidenceRow,
++.traceRow {
++  display: grid;
++  gap: 4px;
++  padding: 8px 0;
++  border-top: 1px solid var(--line);
++}
++
++.evidenceRow span,
++.traceRow span {
++  font-size: 12px;
++  font-weight: 700;
++}
++
++.evidenceRow small,
++.traceRow small {
++  overflow: auto;
++  color: var(--muted);
++  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
++  font-size: 11px;
++  line-height: 1.35;
++}
++
++.evidenceRow code {
++  display: block;
++  overflow: hidden;
++  text-overflow: ellipsis;
++  color: #28332b;
++  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
++  font-size: 12px;
++  white-space: nowrap;
++}
++
++.resultItem {
++  min-height: 68px;
++}
++
++.emptyState {
++  min-height: 60px;
++  display: grid;
++  place-items: center;
++  border: 1px dashed #c7c9c2;
++  border-radius: 8px;
++  color: var(--muted);
++  font-size: 12px;
++  text-align: center;
++  padding: 12px;
++}
++
++.stateBox {
++  margin-bottom: 10px;
++  border: 1px solid var(--line);
++  border-radius: 8px;
++  padding: 10px;
++  font-size: 12px;
++  line-height: 1.45;
++}
++
++.stateBox p {
++  margin: 7px 0 0;
++}
++
++.stateBox.warn {
++  border-color: #d5bc83;
++  background: #fbf5e8;
++}
++
++.stateBox.bad,
++.errorBanner {
++  border-color: #d2a29b;
++  background: #fbefed;
++}
++
++.errorBanner {
++  margin-top: 12px;
++  border: 1px solid #d2a29b;
++  border-radius: 8px;
++  padding: 10px 12px;
++  color: var(--bad);
++  font-size: 13px;
++  font-weight: 650;
++}
++
++@media (max-width: 1180px) {
++  .workspaceGrid {
++    grid-template-columns: 320px minmax(0, 1fr);
++  }
++
++  .rightRail {
++    grid-column: 1 / -1;
++    display: grid;
++    grid-template-columns: repeat(2, minmax(0, 1fr));
++  }
++}
++
++@media (max-width: 820px) {
++  .appShell {
++    padding: 10px;
++  }
++
++  .topbar {
++    align-items: start;
++    flex-direction: column;
++  }
++
++  .workspaceGrid,
++  .detailGrid,
++  .rightRail {
++    grid-template-columns: 1fr;
++  }
++
++  .replayControls {
++    grid-template-columns: repeat(3, 1fr);
++  }
++
++  .replayControls input {
++    grid-column: 1 / -1;
++  }
++}
+diff --git a/apps/workbench-alpha/src/types.ts b/apps/workbench-alpha/src/types.ts
+new file mode 100644
+index 0000000..e22ffe8
+--- /dev/null
++++ b/apps/workbench-alpha/src/types.ts
+@@ -0,0 +1,205 @@
++export type JsonValue =
++  | string
++  | number
++  | boolean
++  | null
++  | JsonValue[]
++  | { [key: string]: JsonValue };
++
++export type JsonObject = { [key: string]: JsonValue };
++
++export type RecipeSummary = {
++  recipe_id: string;
++  recipe_version: string;
++  state: "APPROVED" | "EXPERIMENTAL" | "USER_SAVED" | "DEPRECATED";
++  display_name: string;
++  description: string;
++  allowed_claims: string[];
++  disallowed_claims: string[];
++  limitations: string[];
++  output_classifications: string[];
++};
++
++export type Preset = {
++  preset_id: "approved_block_shift" | "experimental_corridor";
++  label: string;
++  recipe: RecipeSummary;
++  plan_hash: string;
++};
++
++export type BootstrapResponse = {
++  ok: boolean;
++  service: {
++    name: string;
++    mcp_adapter: boolean;
++    output_root: string;
++  };
++  model: {
++    available: boolean;
++    status: string;
++    message: string;
++  };
++  presets: Preset[];
++  capabilities: {
++    primitive_count: number;
++    relation_count: number;
++    operator_count: number;
++    tools: string[];
++    execute_tool_description: JsonObject;
++  };
++};
++
++export type InterpretStatus =
++  | "PLAN_INTERPRETED"
++  | "CLARIFICATION_REQUIRED"
++  | "CAPABILITY_GAP"
++  | "MODEL_UNAVAILABLE";
++
++export type InterpretResponse = {
++  ok: boolean;
++  status: InterpretStatus;
++  query?: string;
++  message?: string;
++  source?: string;
++  recipe?: RecipeSummary;
++  plan_document?: JsonObject;
++  plan_hash?: string;
++  clarification_questions?: string[];
++  clarification_codes?: string[];
++  capability_gaps?: Array<{ concept: string; reason: string }>;
++  manual_available?: boolean;
++};
++
++export type SubmitValidateResponse = {
++  ok: boolean;
++  submit: JsonObject;
++  validation: {
++    ok: boolean;
++    draft_plan_id: string;
++    bound_plan_id?: string;
++    plan_id?: string;
++    recipe_id?: string;
++    plan_status?: string;
++    bound_plan_hash?: string;
++    execution_profile?: string;
++    issues: JsonObject[];
++  };
++};
++
++export type ConfirmationResponse = {
++  ok: boolean;
++  confirmation: {
++    ok: boolean;
++    bound_plan_id: string;
++    execution_authorization_id: string;
++  };
++};
++
++export type ResultRow = {
++  rank: number;
++  result_id: string;
++  classification: string;
++  match_id: string;
++  period: string;
++  anchor_frame_id: number;
++  requested_evidence: Record<string, JsonValue>;
++};
++
++export type ExecutionResponse = {
++  ok: boolean;
++  execution: {
++    ok: boolean;
++    execution_id: string;
++    bound_plan_id: string;
++    plan_id: string;
++    plan_status: string;
++    compatibility_profile: string;
++    draft_plan_hash: string;
++    total_result_count: number;
++    returned_result_count: number;
++    results: ResultRow[];
++    trace_count: number;
++    bound_plan_hash: string;
++  };
++};
++
++export type ReplayEntity = {
++  team_id: string;
++  team_role: string;
++  entity_id: string;
++  entity_type: string;
++  x_m: number;
++  y_m: number;
++};
++
++export type ReplayFrame = {
++  frame_id: number;
++  timestamp_utc?: string;
++  entities: ReplayEntity[];
++};
++
++export type ReplayPayload = {
++  schema_version: string;
++  replay_window_id: string;
++  source_kind: "result" | "target";
++  source_id: string;
++  match_id: string;
++  period: string;
++  frame_rate_hz: number;
++  start_frame_id: number;
++  end_frame_id: number;
++  anchor_frame_id: number;
++  pitch: {
++    length_m: number;
++    width_m: number;
++    coordinate_contract: string;
++  };
++  frames: ReplayFrame[];
++};
++
++export type PredicateTrace = {
++  predicate_id?: string;
++  status?: "PASS" | "FAIL" | "UNKNOWN" | string;
++  frame_id?: number;
++  source_evidence?: JsonObject;
++  value?: JsonValue;
++  threshold?: JsonValue;
++  unit?: string;
++  window?: JsonObject;
++};
++
++export type InspectResultResponse = {
++  ok: boolean;
++  inspection: {
++    ok: boolean;
++    execution_id: string;
++    result: ResultRow & JsonObject;
++    predicate_traces: PredicateTrace[];
++    requested_evidence: Record<string, JsonValue>;
++  };
++  replay_window: JsonObject;
++  replay: ReplayPayload;
++};
++
++export type TimestampTarget = {
++  schema_version: "1.0";
++  target_id: string;
++  match_id: string;
++  period: "firstHalf" | "secondHalf";
++  approximate_time_ms: number;
++  search_radius_ms: number;
++};
++
++export type InspectTimestampResponse = {
++  ok: boolean;
++  inspection: JsonObject;
++  replay_window: JsonObject;
++  replay: ReplayPayload;
++};
++
++export type ApiError = {
++  ok: false;
++  error_code: string;
++  message: string;
++  details?: JsonObject;
++};
+diff --git a/apps/workbench-alpha/tests/check-no-tactical-fixtures.mjs b/apps/workbench-alpha/tests/check-no-tactical-fixtures.mjs
+new file mode 100644
+index 0000000..fa04206
+--- /dev/null
++++ b/apps/workbench-alpha/tests/check-no-tactical-fixtures.mjs
+@@ -0,0 +1,84 @@
++import { createHash } from "node:crypto";
++import { readdirSync, readFileSync, statSync } from "node:fs";
++import { join, relative, resolve } from "node:path";
++
++const appRoot = resolve(new URL("..", import.meta.url).pathname);
++const sourceRoot = join(appRoot, "src");
++
++function walk(dir) {
++  const entries = [];
++  for (const name of readdirSync(dir)) {
++    const path = join(dir, name);
++    const stat = statSync(path);
++    if (stat.isDirectory()) {
++      entries.push(...walk(path));
++    } else if (/\.(ts|tsx|js|jsx|css|html)$/.test(name)) {
++      entries.push(path);
++    }
++  }
++  return entries;
++}
++
++const checks = [
++  {
++    name: "hardcoded runtime handles",
++    pattern: /\b(?:result|exec|replay|bound|draft|auth)_[0-9a-f]{16}\b/g
++  },
++  {
++    name: "hardcoded IDSSE match IDs",
++    pattern: /["'`][A-Z0-9]{6}["'`]/g
++  },
++  {
++    name: "hardcoded match timestamps",
++    pattern: /\b(?:approximate_time_ms|resolved_match_time_ms|absolute_frame_time_ms)\s*:\s*(?!0\b)\d{4,}/g
++  },
++  {
++    name: "hardcoded player coordinates",
++    pattern: /\b[xy]_m\s*:\s*-?\d+(?:\.\d+)?/g
++  },
++  {
++    name: "canned replay frames",
++    pattern: /\bframes\s*:\s*\[[\s\S]*?\bentities\s*:/g
++  },
++  {
++    name: "hidden fallback tactical moments",
++    pattern: /\b(?:anchor_frame_id|frame_id|match_time_ms)\s*:\s*\d{2,}/g
++  }
++];
++
++const files = walk(sourceRoot);
++const violations = [];
++const sourceHashes = {};
++
++for (const file of files) {
++  const content = readFileSync(file, "utf8");
++  const rel = relative(appRoot, file);
++  sourceHashes[rel] = createHash("sha256").update(content).digest("hex");
++  for (const check of checks) {
++    const matches = [...content.matchAll(check.pattern)];
++    for (const match of matches) {
++      const prefix = content.slice(0, match.index ?? 0);
++      const line = prefix.split("\n").length;
++      violations.push({
++        check: check.name,
++        file: rel,
++        line,
++        match: match[0]
++      });
++    }
++  }
++}
++
++const report = {
++  ok: violations.length === 0,
++  scanned_files: files.map((file) => relative(appRoot, file)).sort(),
++  source_hashes: sourceHashes,
++  checks: checks.map((check) => check.name),
++  violations
++};
++
++console.log(JSON.stringify(report, null, 2));
++
++if (violations.length > 0) {
++  process.exitCode = 1;
++}
+diff --git a/apps/workbench-alpha/tests/workbench-alpha.spec.ts b/apps/workbench-alpha/tests/workbench-alpha.spec.ts
+new file mode 100644
+index 0000000..b55614c
+--- /dev/null
++++ b/apps/workbench-alpha/tests/workbench-alpha.spec.ts
+@@ -0,0 +1,523 @@
++import { expect, request as requestFactory, test, type APIRequestContext, type Page } from "@playwright/test";
++import { createHash } from "node:crypto";
++import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
++import { join, relative, resolve } from "node:path";
++import { spawnSync } from "node:child_process";
++
++type ApiTraceEntry = {
++  label: string;
++  path: string;
++  status: number;
++  duration_ms: number;
++  summary: Record<string, unknown>;
++};
++
++const appRoot = resolve(process.cwd());
++const repoRoot = resolve(appRoot, "../..");
++const proofRoot = resolve(repoRoot, "artifacts/workbench-alpha/review-proof");
++
++function ensureProofDirs() {
++  mkdirSync(join(proofRoot, "screenshots"), { recursive: true });
++  mkdirSync(join(proofRoot, "api-traces"), { recursive: true });
++}
++
++function stableStringify(value: unknown): string {
++  if (Array.isArray(value)) {
++    return `[${value.map((item) => stableStringify(item)).join(",")}]`;
++  }
++  if (value && typeof value === "object") {
++    const record = value as Record<string, unknown>;
++    return `{${Object.keys(record)
++      .sort()
++      .map((key) => `${JSON.stringify(key)}:${stableStringify(record[key])}`)
++      .join(",")}}`;
++  }
++  return JSON.stringify(value);
++}
++
++function sha256(value: string | Buffer): string {
++  return createHash("sha256").update(value).digest("hex");
++}
++
++function hashFile(path: string): string {
++  return sha256(readFileSync(path));
++}
++
++function hashDirectory(root: string): Record<string, string> {
++  if (!existsSync(root)) return {};
++  const hashes: Record<string, string> = {};
++  const walk = (dir: string) => {
++    for (const entry of readdirSync(dir)) {
++      const path = join(dir, entry);
++      const stat = statSync(path);
++      if (stat.isDirectory()) {
++        walk(path);
++      } else {
++        hashes[relative(root, path)] = hashFile(path);
++      }
++    }
++  };
++  walk(root);
++  return hashes;
++}
++
++function git(args: string[]): string {
++  const result = spawnSync("git", args, { cwd: repoRoot, encoding: "utf8" });
++  if (result.status !== 0) return "";
++  return result.stdout.trim();
++}
++
++function responsePath(path: string) {
++  return (response: { url(): string }) => new URL(response.url()).pathname === path;
++}
++
++async function jsonAfterClick<T>(
++  page: Page,
++  trace: ApiTraceEntry[],
++  label: string,
++  testId: string,
++  path: string
++): Promise<T> {
++  const start = Date.now();
++  const responsePromise = page.waitForResponse(responsePath(path));
++  await page.getByTestId(testId).click();
++  const response = await responsePromise;
++  const payload = (await response.json()) as T;
++  trace.push({
++    label,
++    path,
++    status: response.status(),
++    duration_ms: Date.now() - start,
++    summary: summarizePayload(payload)
++  });
++  return payload;
++}
++
++async function capture(page: Page, name: string) {
++  await page.screenshot({
++    path: join(proofRoot, "screenshots", `${name}.png`),
++    fullPage: true
++  });
++}
++
++function summarizePayload(payload: unknown): Record<string, unknown> {
++  const record = payload as Record<string, unknown>;
++  const execution = record.execution as Record<string, unknown> | undefined;
++  const inspection = record.inspection as Record<string, unknown> | undefined;
++  const replay = record.replay as Record<string, unknown> | undefined;
++  const validation = record.validation as Record<string, unknown> | undefined;
++  const confirmation = record.confirmation as Record<string, unknown> | undefined;
++  return {
++    ok: record.ok,
++    status: record.status,
++    plan_hash: record.plan_hash,
++    draft_plan_id: validation?.draft_plan_id,
++    bound_plan_id: validation?.bound_plan_id ?? confirmation?.bound_plan_id ?? execution?.bound_plan_id,
++    authorization_id: confirmation?.execution_authorization_id,
++    execution_id: execution?.execution_id ?? inspection?.execution_id,
++    total_result_count: execution?.total_result_count,
++    returned_result_count: execution?.returned_result_count,
++    result_ids: Array.isArray(execution?.results)
++      ? (execution.results as Array<Record<string, unknown>>).map((item) => item.result_id)
++      : undefined,
++    selected_result_id: (inspection?.result as Record<string, unknown> | undefined)?.result_id,
++    replay_window_id: replay?.replay_window_id,
++    replay_source_id: replay?.source_id,
++    replay_frame_count: Array.isArray(replay?.frames) ? replay.frames.length : undefined,
++    trace_statuses: Array.isArray(inspection?.predicate_traces)
++      ? (inspection.predicate_traces as Array<Record<string, unknown>>).map((item) => item.status)
++      : undefined
++  };
++}
++
++async function boot(page: Page, consoleErrors: string[]) {
++  page.on("console", (message) => {
++    if (message.type() === "error") consoleErrors.push(message.text());
++  });
++  page.on("pageerror", (error) => consoleErrors.push(error.message));
++  await page.goto("/");
++  await expect(page.getByRole("heading", { name: "Host tactical query workbench" })).toBeVisible();
++  await expect(page.getByText("browser to host API")).toBeVisible();
++  await expect(page.getByTestId("interpret-button")).toBeEnabled();
++  await expect(page.getByTestId("confirm-button")).toBeDisabled();
++  await expect(page.getByTestId("execute-button")).toBeDisabled();
++}
++
++async function runRealQueryJourney(
++  page: Page,
++  label: "approved" | "experimental",
++  input: { query: string; presetTestId: string },
++  consoleErrors: string[]
++) {
++  ensureProofDirs();
++  const trace: ApiTraceEntry[] = [];
++
++  await boot(page, consoleErrors);
++  await page.getByTestId(input.presetTestId).click();
++  await page.getByTestId("query-input").fill(input.query);
++
++  const interpretation = await jsonAfterClick<Record<string, unknown>>(
++    page,
++    trace,
++    `${label}.interpret`,
++    "interpret-button",
++    "/api/interpret"
++  );
++  expect(interpretation.status).toBe("PLAN_INTERPRETED");
++  await expect(page.getByTestId("interpreted-plan-panel")).toContainText("PLAN_INTERPRETED");
++  await expect(page.getByTestId("confirm-button")).toBeDisabled();
++  await expect(page.getByTestId("execute-button")).toBeDisabled();
++  await capture(page, `${label}-interpretation`);
++
++  const validation = await jsonAfterClick<Record<string, unknown>>(
++    page,
++    trace,
++    `${label}.validate`,
++    "validate-button",
++    "/api/submit-validate"
++  );
++  const validationBody = validation.validation as Record<string, unknown>;
++  expect(validationBody.ok).toBe(true);
++  expect(String(validationBody.bound_plan_id)).toMatch(/^bound_[0-9a-f]{16}$/);
++  await expect(page.getByTestId("validation-result")).toContainText(String(validationBody.bound_plan_id));
++  await expect(page.getByTestId("confirm-button")).toBeEnabled();
++  await expect(page.getByTestId("execute-button")).toBeDisabled();
++
++  const confirmation = await jsonAfterClick<Record<string, unknown>>(
++    page,
++    trace,
++    `${label}.confirm`,
++    "confirm-button",
++    "/api/confirm"
++  );
++  const confirmationBody = confirmation.confirmation as Record<string, unknown>;
++  expect(String(confirmationBody.execution_authorization_id)).toMatch(/^auth_[0-9a-f]{16}$/);
++  await expect(page.getByTestId("host-confirmation")).toContainText(String(confirmationBody.execution_authorization_id));
++  await expect(page.getByTestId("execute-button")).toBeEnabled();
++  await capture(page, `${label}-confirmation`);
++
++  const executeStart = Date.now();
++  const executeResponsePromise = page.waitForResponse(responsePath("/api/execute"));
++  const inspectResponsePromise = page.waitForResponse(responsePath("/api/inspect-result"));
++  await page.getByTestId("execute-button").click();
++  const executeResponse = await executeResponsePromise;
++  const execution = (await executeResponse.json()) as Record<string, unknown>;
++  const inspectResponse = await inspectResponsePromise;
++  const inspection = (await inspectResponse.json()) as Record<string, unknown>;
++
++  trace.push({
++    label: `${label}.execute`,
++    path: "/api/execute",
++    status: executeResponse.status(),
++    duration_ms: Date.now() - executeStart,
++    summary: summarizePayload(execution)
++  });
++  trace.push({
++    label: `${label}.inspect_initial_result`,
++    path: "/api/inspect-result",
++    status: inspectResponse.status(),
++    duration_ms: Date.now() - executeStart,
++    summary: summarizePayload(inspection)
++  });
++
++  const executionBody = execution.execution as Record<string, unknown>;
++  const results = executionBody.results as Array<Record<string, unknown>>;
++  expect(executionBody.ok).toBe(true);
++  expect(Number(executionBody.total_result_count)).toBeGreaterThan(0);
++  expect(Number(executionBody.returned_result_count)).toBe(results.length);
++  await expect(page.getByTestId("result-count")).toHaveText(String(results.length));
++  await expect(page.getByTestId("execution-result")).toContainText(String(executionBody.execution_id));
++
++  const inspectionBody = inspection.inspection as Record<string, unknown>;
++  const replay = inspection.replay as Record<string, unknown>;
++  const replayFrames = replay.frames as unknown[];
++  const selectedResult = inspectionBody.result as Record<string, unknown>;
++  expect(replayFrames.length).toBeGreaterThan(0);
++  expect(selectedResult.result_id).toBe(results[0].result_id);
++  await expect(page.getByTestId("replay-window-summary")).toContainText(String(replay.replay_window_id));
++  await expect(page.getByTestId("replay-window-summary")).toContainText(String(selectedResult.result_id));
++  await expect(page.locator(`[data-testid="result-item"][data-result-id="${selectedResult.result_id}"]`)).toHaveClass(/active/);
++  await expect(page.getByTestId("evidence-alias").first()).toBeVisible();
++
++  const traces = inspectionBody.predicate_traces as Array<Record<string, unknown>>;
++  expect(traces.length).toBeGreaterThan(0);
++  for (const status of new Set(traces.map((item) => String(item.status ?? "UNKNOWN")))) {
++    await expect(page.getByTestId("predicate-trace").filter({ hasText: status }).first()).toBeVisible();
++  }
++
++  await capture(page, `${label}-result-replay`);
++
++  await page.getByTestId("play-pause-button").click();
++  await expect(page.getByTestId("play-pause-button")).toHaveText("Pause");
++  await page.getByTestId("play-pause-button").click();
++  await expect(page.getByTestId("play-pause-button")).toHaveText("Play");
++  await page.getByTestId("replay-scrubber").evaluate((element, value) => {
++    const input = element as HTMLInputElement;
++    input.value = String(value);
++    input.dispatchEvent(new Event("input", { bubbles: true }));
++    input.dispatchEvent(new Event("change", { bubbles: true }));
++  }, Math.min(3, replayFrames.length - 1));
++
++  const alternateResult = results[1];
++  let selectedInspection = inspection;
++  if (alternateResult) {
++    const selectStart = Date.now();
++    const selectedInspectPromise = page.waitForResponse(responsePath("/api/inspect-result"));
++    await page.locator(`[data-testid="result-item"][data-result-id="${alternateResult.result_id}"]`).click();
++    const selectedInspectResponse = await selectedInspectPromise;
++    selectedInspection = (await selectedInspectResponse.json()) as Record<string, unknown>;
++    trace.push({
++      label: `${label}.inspect_selected_result`,
++      path: "/api/inspect-result",
++      status: selectedInspectResponse.status(),
++      duration_ms: Date.now() - selectStart,
++      summary: summarizePayload(selectedInspection)
++    });
++    await expect(page.getByTestId("replay-window-summary")).toContainText(String(alternateResult.result_id));
++  }
++
++  const selectedReplay = selectedInspection.replay as Record<string, unknown>;
++  const proof = {
++    label,
++    sourceCommit: git(["rev-parse", "HEAD"]),
++    hostServiceCommit: git(["rev-parse", "HEAD"]),
++    trackedDirtyStatus: git(["status", "--short", "--untracked-files=no"]),
++    appSourceHashes: hashDirectory(join(appRoot, "src")),
++    browserBuildHashes: hashDirectory(join(appRoot, "dist")),
++    apiTracePath: relative(repoRoot, join(proofRoot, "api-traces", `${label}.json`)),
++    executionId: executionBody.execution_id,
++    resultIds: results.map((item) => item.result_id),
++    selectedResultId: (selectedInspection.inspection as Record<string, unknown>).result
++      ? ((selectedInspection.inspection as Record<string, unknown>).result as Record<string, unknown>).result_id
++      : undefined,
++    replayWindowId: selectedReplay.replay_window_id,
++    replayFrameCount: Array.isArray(selectedReplay.frames) ? selectedReplay.frames.length : 0,
++    replayPayloadHash: sha256(stableStringify(selectedReplay)),
++    replayPayloadBytes: Buffer.byteLength(stableStringify(selectedReplay), "utf8"),
++    performanceBaseline: {
++      pageLoadReady: "asserted by visible heading and enabled interpret button",
++      replayFrameCadenceHz: selectedReplay.frame_rate_hz,
++      apiDurations: trace.map((item) => ({
++        label: item.label,
++        path: item.path,
++        duration_ms: item.duration_ms
++      }))
++    }
++  };
++
++  writeFileSync(join(proofRoot, "api-traces", `${label}.json`), JSON.stringify(trace, null, 2) + "\n");
++  writeFileSync(join(proofRoot, `${label}-proof.json`), JSON.stringify(proof, null, 2) + "\n");
++
++  return { execution, inspection: selectedInspection, trace };
++}
++
++test("approved recipe runs from query to replay with evidence and predicate trace", async ({ page }) => {
++  const consoleErrors: string[] = [];
++  await runRealQueryJourney(
++    page,
++    "approved",
++    {
++      presetTestId: "preset-approved_block_shift",
++      query: "Show possessions where the ball goes wide and the defending block moves toward that side."
++    },
++    consoleErrors
++  );
++
++  const timestampResponsePromise = page.waitForResponse(responsePath("/api/inspect-timestamp"));
++  await page.getByTestId("inspect-timestamp-button").click();
++  const timestampResponse = await timestampResponsePromise;
++  const timestampInspection = (await timestampResponse.json()) as Record<string, unknown>;
++  const replay = timestampInspection.replay as Record<string, unknown>;
++  expect(Array.isArray(replay.frames) ? replay.frames.length : 0).toBeGreaterThan(0);
++  await expect(page.getByTestId("timestamp-inspection")).toContainText("NO_COMPATIBLE_ANCHOR");
++  await expect(page.getByTestId("replay-window-summary")).toContainText(String(replay.replay_window_id));
++  await capture(page, "approved-known-timestamp");
++
++  expect(consoleErrors).toEqual([]);
++});
++
++test("experimental corridor runs from query to replay with real result rail", async ({ page }) => {
++  const consoleErrors: string[] = [];
++  await runRealQueryJourney(
++    page,
++    "experimental",
++    {
++      presetTestId: "preset-experimental_corridor",
++      query: "Find possessions where a progressive corridor is available after the ball-side shift."
++    },
++    consoleErrors
++  );
++  expect(consoleErrors).toEqual([]);
++});
++
++test("clarification, capability-gap, and model-unavailable states remain explicit", async ({ page }) => {
++  const consoleErrors: string[] = [];
++  await boot(page, consoleErrors);
++
++  await page.getByTestId("query-input").fill("Find moments where a teammate provides support after the ball carrier receives.");
++  const clarification = await jsonAfterClick<Record<string, unknown>>(
++    page,
++    [],
++    "state.clarification",
++    "interpret-button",
++    "/api/interpret"
++  );
++  expect(clarification.status).toBe("CLARIFICATION_REQUIRED");
++  await expect(page.getByTestId("interpreted-plan-panel")).toContainText("CLARIFICATION_REQUIRED");
++  await capture(page, "state-clarification");
++
++  await page.getByTestId("query-input").fill("Show pass probability changes under pressure against the defensive line.");
++  const gap = await jsonAfterClick<Record<string, unknown>>(
++    page,
++    [],
++    "state.capability_gap",
++    "interpret-button",
++    "/api/interpret"
++  );
++  expect(gap.status).toBe("CAPABILITY_GAP");
++  await expect(page.getByTestId("interpreted-plan-panel")).toContainText("CAPABILITY_GAP");
++  await expect(page.getByTestId("interpreted-plan-panel")).toContainText("pressure_change");
++  await capture(page, "state-capability-gap");
++
++  await page.getByRole("button", { name: "Model" }).click();
++  const modelUnavailable = await jsonAfterClick<Record<string, unknown>>(
++    page,
++    [],
++    "state.model_unavailable",
++    "interpret-button",
++    "/api/interpret"
++  );
++  expect(modelUnavailable.status).toBe("MODEL_UNAVAILABLE");
++  expect(modelUnavailable.manual_available).toBe(true);
++  await expect(page.getByTestId("interpreted-plan-panel")).toContainText("MODEL_UNAVAILABLE");
++
++  await page.getByRole("button", { name: "Manual" }).click();
++  await page.getByTestId("query-input").fill("Show possessions where the ball goes wide and the defending block shifts.");
++  const manualInterpretation = await jsonAfterClick<Record<string, unknown>>(
++    page,
++    [],
++    "state.manual_after_model_unavailable",
++    "interpret-button",
++    "/api/interpret"
++  );
++  expect(manualInterpretation.status).toBe("PLAN_INTERPRETED");
++  await expect(page.getByTestId("validate-button")).toBeEnabled();
++  await capture(page, "state-model-unavailable-manual-recovery");
++
++  expect(consoleErrors).toEqual([]);
++});
++
++test("host authority is enforced through public API routes", async ({ request }) => {
++  const planResponse = await request.get("/api/plan?recipe_id=ball_side_block_shift_v1");
++  expect(planResponse.ok()).toBe(true);
++  const planPayload = (await planResponse.json()) as Record<string, unknown>;
++
++  const validationResponse = await request.post("/api/submit-validate", {
++    data: { plan_document: planPayload.plan_document }
++  });
++  expect(validationResponse.ok()).toBe(true);
++  const validationPayload = (await validationResponse.json()) as Record<string, unknown>;
++  const boundPlanId = String((validationPayload.validation as Record<string, unknown>).bound_plan_id);
++
++  const unconfirmedExecution = await request.post("/api/execute", {
++    data: {
++      bound_plan_id: boundPlanId,
++      execution_authorization_id: "auth_deadbeefdeadbeef",
++      result_limit: 1
++    }
++  });
++  expect(unconfirmedExecution.status()).toBe(403);
++  expect(await unconfirmedExecution.json()).toMatchObject({ ok: false });
++
++  const forgedConfirmation = await request.post("/api/confirm", {
++    data: {
++      bound_plan_id: boundPlanId,
++      reviewer: "workbench_authority_test",
++      execution_authorization_id: "auth_deadbeefdeadbeef"
++    }
++  });
++  expect(forgedConfirmation.ok()).toBe(true);
++  const confirmationPayload = (await forgedConfirmation.json()) as Record<string, unknown>;
++  const authorizationId = String((confirmationPayload.confirmation as Record<string, unknown>).execution_authorization_id);
++  expect(authorizationId).toMatch(/^auth_[0-9a-f]{16}$/);
++  expect(authorizationId).not.toBe("auth_deadbeefdeadbeef");
++
++  const profileOverride = await request.post("/api/execute", {
++    data: {
++      bound_plan_id: boundPlanId,
++      execution_authorization_id: authorizationId,
++      result_limit: 1,
++      compatibility_profile: "legacy_m1_parity"
++    }
++  });
++  expect(profileOverride.status()).toBe(400);
++  expect(await profileOverride.json()).toMatchObject({ ok: false, error_code: "REQUEST_SCHEMA_INVALID" });
++
++  const localArtifact = await request.get("/artifacts/m1.2/workshop/handles/executions/exec_deadbeefdeadbeef.json");
++  expect(localArtifact.status()).toBe(404);
++  expect(await localArtifact.json()).toMatchObject({ ok: false, error_code: "STATIC_NOT_FOUND" });
++
++  for (const path of ["/api/record_feedback", "/api/dispatch_tool", "/api/retrieve_replay_window"]) {
++    const unavailable = await request.post(path, { data: {} });
++    expect(unavailable.status()).toBe(404);
++    expect(await unavailable.json()).toMatchObject({ ok: false, error_code: "NOT_FOUND" });
++  }
++});
++
++test("backend execution artifacts are the source of result inspection", async ({ request }) => {
++  const api = await requestFactory.newContext({ baseURL: "http://127.0.0.1:8765" });
++  try {
++    const execution = await executeOneResult(api);
++    const resultId = String(execution.result_id);
++    const executionId = String(execution.execution_id);
++    const firstInspection = await api.post("/api/inspect-result", {
++      data: { execution_id: executionId, result_id: resultId, padding_seconds: 1 }
++    });
++    expect(firstInspection.ok()).toBe(true);
++
++    const executionPath = join(
++      repoRoot,
++      "artifacts/workbench-alpha/e2e-workshop/handles/executions",
++      `${executionId}.json`
++    );
++    expect(existsSync(executionPath)).toBe(true);
++    const backup = readFileSync(executionPath, "utf8");
++    writeFileSync(executionPath, "");
++    const brokenInspection = await api.post("/api/inspect-result", {
++      data: { execution_id: executionId, result_id: resultId, padding_seconds: 1 }
++    });
++    expect(brokenInspection.ok()).toBe(false);
++    writeFileSync(executionPath, backup);
++  } finally {
++    await api.dispose();
++  }
++});
++
++async function executeOneResult(api: APIRequestContext): Promise<Record<string, unknown>> {
++  const planResponse = await api.get("/api/plan?recipe_id=ball_side_block_shift_v1");
++  const planPayload = (await planResponse.json()) as Record<string, unknown>;
++  const validationResponse = await api.post("/api/submit-validate", {
++    data: { plan_document: planPayload.plan_document }
++  });
++  const validationPayload = (await validationResponse.json()) as Record<string, unknown>;
++  const boundPlanId = String((validationPayload.validation as Record<string, unknown>).bound_plan_id);
++  const confirmationResponse = await api.post("/api/confirm", {
++    data: { bound_plan_id: boundPlanId, reviewer: "workbench_fixture_source_test" }
++  });
++  const confirmationPayload = (await confirmationResponse.json()) as Record<string, unknown>;
++  const authorizationId = String((confirmationPayload.confirmation as Record<string, unknown>).execution_authorization_id);
++  const executionResponse = await api.post("/api/execute", {
++    data: {
++      bound_plan_id: boundPlanId,
++      execution_authorization_id: authorizationId,
++      result_limit: 1
++    }
++  });
++  const executionPayload = (await executionResponse.json()) as Record<string, unknown>;
++  const execution = executionPayload.execution as Record<string, unknown>;
++  const first = (execution.results as Array<Record<string, unknown>>)[0];
++  return {
++    execution_id: execution.execution_id,
++    result_id: first.result_id
++  };
++}
+diff --git a/apps/workbench-alpha/tsconfig.json b/apps/workbench-alpha/tsconfig.json
+new file mode 100644
+index 0000000..a3d0976
+--- /dev/null
++++ b/apps/workbench-alpha/tsconfig.json
+@@ -0,0 +1,20 @@
++{
++  "compilerOptions": {
++    "target": "ES2022",
++    "useDefineForClassFields": true,
++    "lib": ["DOM", "DOM.Iterable", "ES2022"],
++    "allowJs": false,
++    "skipLibCheck": true,
++    "esModuleInterop": true,
++    "allowSyntheticDefaultImports": true,
++    "strict": true,
++    "forceConsistentCasingInFileNames": true,
++    "module": "ESNext",
++    "moduleResolution": "Bundler",
++    "resolveJsonModule": true,
++    "isolatedModules": true,
++    "noEmit": true,
++    "jsx": "react-jsx"
++  },
++  "include": ["src", "vite.config.ts"]
++}
+diff --git a/apps/workbench-alpha/vite.config.ts b/apps/workbench-alpha/vite.config.ts
+new file mode 100644
+index 0000000..a0cbf9c
+--- /dev/null
++++ b/apps/workbench-alpha/vite.config.ts
+@@ -0,0 +1,11 @@
++import { defineConfig } from "vite";
++import react from "@vitejs/plugin-react";
++
++export default defineConfig({
++  plugins: [react()],
++  server: {
++    proxy: {
++      "/api": "http://127.0.0.1:8765"
++    }
++  }
++});
+diff --git a/src/tqe/workshop/app_service.py b/src/tqe/workshop/app_service.py
+new file mode 100644
+index 0000000..452a716
+--- /dev/null
++++ b/src/tqe/workshop/app_service.py
+@@ -0,0 +1,521 @@
++"""Workbench Alpha host application service.
++
++The browser talks to this HTTP service. This service calls the host-owned
++workshop dispatcher directly; it is not an MCP server and does not expose the
++Hermes adapter boundary to the browser.
++"""
++
++from __future__ import annotations
++
++import argparse
++import json
++import mimetypes
++from http import HTTPStatus
++from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
++from pathlib import Path
++from typing import Any
++from urllib.parse import parse_qs, urlparse
++
++from pydantic import ValidationError
++
++from tqe.runtime.ir import TacticalQueryDocument, stable_hash
++from tqe.workshop.m1_2 import (
++    CallerProfile,
++    CapabilityGap,
++    DEFAULT_WORKSHOP_ROOT,
++    ExecuteQueryPlanRequest,
++    HostConfirmationResponse,
++    InspectNonMatchRequest,
++    InspectResultRequest,
++    ReplayWindowRequest,
++    SubmitQueryPlanRequest,
++    ValidateQueryPlanRequest,
++    describe_capability,
++    execute_query_plan,
++    host_confirm_bound_plan,
++    inspect_non_match,
++    inspect_result,
++    list_capabilities,
++    read_json,
++    replay_artifact_path,
++    retrieve_replay_window,
++    submit_query_plan,
++    stable_tool_error_code,
++    validate_query_plan,
++)
++
++APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
++CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
++DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
++
++UNSUPPORTED_CONCEPTS = {
++    "body orientation": "No body-orientation primitive is exposed.",
++    "orientation": "No body-orientation primitive is exposed.",
++    "intent": "Intent is not observable in the current deterministic vocabulary.",
++    "optimal": "Optimal-action claims are outside the approved claims.",
++    "should": "Normative decision-quality claims are outside the approved claims.",
++    "communication": "Communication is not represented in the tracking data.",
++    "pass probability": "Pass-probability modelling is not available.",
++    "video": "Video is outside the current dataset/tool boundary.",
++}
++
++PLANNED_GAPS = {
++    "pressure": ("pressure_change", "Pressure change is not in the current deterministic vocabulary."),
++    "counterpress": ("pressure_change", "Counterpress queries need a future pressure-change capability."),
++    "pressing": ("pressure_change", "Pressing queries need a future pressure-change capability."),
++    "defensive line": (
++        "defensive_line_model",
++        "Defensive-line modelling is planned for the second tactical family.",
++    ),
++    "line break": (
++        "controlled_line_break_episode",
++        "Controlled line-break episodes are planned but not implemented.",
++    ),
++    "third man": ("support_arrival_relation", "Third-player support needs a support-arrival relation."),
++    "third-man": ("support_arrival_relation", "Third-player support needs a support-arrival relation."),
++    "lane occupancy": ("lane_occupancy", "General lane occupancy is planned but not implemented."),
++    "overload": (
++        "local_numerical_difference",
++        "Local numerical difference is planned or may be folded into support arrival.",
++    ),
++}
++
++
++def json_response(payload: Any) -> bytes:
++    return json.dumps(payload, indent=2, sort_keys=True, default=str).encode("utf-8")
++
++
++def ok(payload: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"ok": True, **(payload or {})}
++
++
++def error_response(code: str, message: str, *, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"ok": False, "error_code": code, "message": message, "details": details or {}}
++
++
++def plan_for_recipe(recipe_id: str) -> dict[str, Any]:
++    if recipe_id == "ball_side_block_shift_v1":
++        return read_json(APPROVED_PLAN_PATH)
++    if recipe_id == "possession_corridor_availability_v1":
++        return read_json(CORRIDOR_PLAN_PATH)
++    raise ValueError(f"Unsupported recipe_id: {recipe_id}")
++
++
++def plan_path_for_preset(preset_id: str | None, selected_recipe_id: str | None) -> Path | None:
++    key = (preset_id or selected_recipe_id or "").strip()
++    if key in {"approved_block_shift", "ball_side_block_shift_v1"}:
++        return APPROVED_PLAN_PATH
++    if key in {"experimental_corridor", "possession_corridor_availability_v1"}:
++        return CORRIDOR_PLAN_PATH
++    return None
++
++
++def load_plan_from_path(path: Path) -> dict[str, Any]:
++    payload = read_json(path)
++    TacticalQueryDocument.model_validate(payload)
++    return payload
++
++
++def host_owned_plan_document(plan_document: dict[str, Any]) -> TacticalQueryDocument:
++    candidate = TacticalQueryDocument.model_validate(plan_document)
++    if (
++        candidate.recipe.recipe_id == "ball_side_block_shift_v1"
++        and candidate.draft_plan.status == "approved"
++    ):
++        return TacticalQueryDocument.model_validate(load_plan_from_path(APPROVED_PLAN_PATH))
++    return candidate
++
++
++def normalized(text: str) -> str:
++    return " ".join(text.lower().strip().split())
++
++
++def unsupported_gaps(text: str) -> list[dict[str, str]]:
++    gaps = []
++    for token, reason in UNSUPPORTED_CONCEPTS.items():
++        if token in text:
++            gaps.append({"concept": token, "reason": reason})
++    seen_codes = set()
++    for token, (code, reason) in PLANNED_GAPS.items():
++        if token in text and code not in seen_codes:
++            gaps.append({"concept": code, "reason": reason})
++            seen_codes.add(code)
++    return gaps
++
++
++def needs_support_clarification(text: str, clarifications: list[str]) -> bool:
++    if clarifications:
++        return False
++    if "support" not in text and "second runner" not in text and "teammate" not in text:
++        return False
++    return "corridor" not in text and "progressive lane" not in text and "passing lane" not in text
++
++
++def infer_plan_path(query: str) -> Path | None:
++    text = normalized(query)
++    if "corridor" in text or "progressive lane" in text or "passing lane" in text:
++        return CORRIDOR_PLAN_PATH
++    if "block shift" in text:
++        return APPROVED_PLAN_PATH
++    if "ball side" in text and ("shift" in text or "defending block" in text or "block" in text):
++        return APPROVED_PLAN_PATH
++    if "wide" in text and "defending" in text and "shift" in text:
++        return APPROVED_PLAN_PATH
++    return None
++
++
++def recipe_card(plan_document: dict[str, Any], state: str) -> dict[str, Any]:
++    recipe = plan_document["recipe"]
++    return {
++        "recipe_id": recipe["recipe_id"],
++        "recipe_version": recipe["recipe_version"],
++        "state": state,
++        "display_name": recipe["display_name"],
++        "description": recipe["description"],
++        "allowed_claims": recipe.get("allowed_claims", []),
++        "disallowed_claims": recipe.get("disallowed_claims", []),
++        "limitations": recipe.get("limitations", []),
++        "output_classifications": recipe.get("output_classifications", []),
++    }
++
++
++def interpret_request(payload: dict[str, Any]) -> dict[str, Any]:
++    query = str(payload.get("query") or "").strip()
++    mode = str(payload.get("mode") or "manual")
++    clarifications = [str(item) for item in payload.get("clarifications") or [] if str(item).strip()]
++    selected_recipe_id = payload.get("selected_recipe_id")
++    preset_id = payload.get("preset_id")
++    if mode == "model":
++        return ok(
++            {
++                "status": "MODEL_UNAVAILABLE",
++                "query": query,
++                "message": "Model-backed interpretation is not connected in Workbench Alpha. Manual mode remains available.",
++                "manual_available": True,
++            }
++        )
++
++    text = normalized(query)
++    gaps = unsupported_gaps(text)
++    if gaps:
++        return ok(
++            {
++                "status": "CAPABILITY_GAP",
++                "query": query,
++                "capability_gaps": gaps,
++                "message": "The request contains concepts outside the current deterministic capability set.",
++            }
++        )
++    if needs_support_clarification(text, clarifications):
++        return ok(
++            {
++                "status": "CLARIFICATION_REQUIRED",
++                "query": query,
++                "clarification_questions": [
++                    "Should support mean a progressive corridor, a nearby teammate, or a distinct lane option?",
++                    "What time window should count as support arriving after the anchor?",
++                ],
++                "clarification_codes": ["SUPPORT_DEFINITION", "TIME_WINDOW"],
++            }
++        )
++
++    path = plan_path_for_preset(
++        str(preset_id) if preset_id is not None else None,
++        str(selected_recipe_id) if selected_recipe_id is not None else None,
++    )
++    if path is None:
++        path = infer_plan_path(query)
++    if path is None:
++        return ok(
++            {
++                "status": "CLARIFICATION_REQUIRED",
++                "query": query,
++                "clarification_questions": [
++                    "Select the approved block-shift recipe or the experimental corridor preset.",
++                ],
++                "clarification_codes": ["RECIPE_SELECTION"],
++            }
++        )
++
++    plan_document = load_plan_from_path(path)
++    state = "APPROVED" if path == APPROVED_PLAN_PATH else "EXPERIMENTAL"
++    return ok(
++        {
++            "status": "PLAN_INTERPRETED",
++            "query": query,
++            "source": "manual_host_interpreter",
++            "recipe": recipe_card(plan_document, state),
++            "plan_document": plan_document,
++            "plan_hash": stable_hash(plan_document),
++        }
++    )
++
++
++def replay_payload(replay_window_id: str, *, output_root: Path) -> dict[str, Any]:
++    return read_json(replay_artifact_path(replay_window_id, output_root=output_root))
++
++
++def result_with_replay(payload: dict[str, Any], *, output_root: Path) -> dict[str, Any]:
++    padding_seconds = float(payload.get("padding_seconds", 2.0))
++    inspected = inspect_result(
++        InspectResultRequest.model_validate(
++            {
++                "execution_id": payload.get("execution_id"),
++                "result_id": payload.get("result_id"),
++            }
++        ),
++        output_root=output_root,
++    )
++    replay_summary = retrieve_replay_window(
++        ReplayWindowRequest(
++            execution_id=inspected.execution_id,
++            result_id=payload["result_id"],
++            padding_seconds=padding_seconds,
++        ),
++        output_root=output_root,
++    )
++    return ok(
++        {
++            "inspection": inspected.model_dump(mode="json"),
++            "replay_window": replay_summary.model_dump(mode="json"),
++            "replay": replay_payload(replay_summary.replay_window_id, output_root=output_root),
++        }
++    )
++
++
++def timestamp_inspection(payload: dict[str, Any], *, output_root: Path) -> dict[str, Any]:
++    padding_seconds = float(payload.get("padding_seconds", 2.0))
++    request = InspectNonMatchRequest.model_validate(
++        {
++            "execution_id": payload.get("execution_id"),
++            "target": payload.get("target"),
++        }
++    )
++    inspection = inspect_non_match(request, output_root=output_root)
++    replay_summary = retrieve_replay_window(
++        ReplayWindowRequest(
++            execution_id=request.execution_id,
++            target=request.target,
++            padding_seconds=padding_seconds,
++        ),
++        output_root=output_root,
++    )
++    return ok(
++        {
++            "inspection": inspection.model_dump(mode="json"),
++            "replay_window": replay_summary.model_dump(mode="json"),
++            "replay": replay_payload(replay_summary.replay_window_id, output_root=output_root),
++        }
++    )
++
++
++class WorkbenchServer(ThreadingHTTPServer):
++    def __init__(
++        self,
++        server_address: tuple[str, int],
++        request_handler: type[BaseHTTPRequestHandler],
++        *,
++        static_root: Path,
++        output_root: Path,
++    ) -> None:
++        super().__init__(server_address, request_handler)
++        self.static_root = static_root.resolve()
++        self.output_root = output_root
++
++
++class WorkbenchHandler(BaseHTTPRequestHandler):
++    server: WorkbenchServer
++
++    def log_message(self, format: str, *args: Any) -> None:
++        return
++
++    def send_json(self, payload: dict[str, Any], status: HTTPStatus = HTTPStatus.OK) -> None:
++        body = json_response(payload)
++        self.send_response(status)
++        self.send_header("Content-Type", "application/json; charset=utf-8")
++        self.send_header("Cache-Control", "no-store")
++        self.send_header("Content-Length", str(len(body)))
++        self.end_headers()
++        self.wfile.write(body)
++
++    def send_static(self, path: str) -> None:
++        route = path if path != "/" else "/index.html"
++        relative = route.lstrip("/")
++        target = (self.server.static_root / relative).resolve()
++        if self.server.static_root not in target.parents and target != self.server.static_root:
++            self.send_json(error_response("PATH_ESCAPE", "Static path escapes root."), HTTPStatus.BAD_REQUEST)
++            return
++        if not target.exists() or target.is_dir():
++            if route != "/" and Path(relative).suffix:
++                self.send_json(error_response("STATIC_NOT_FOUND", "Static asset was not found."), HTTPStatus.NOT_FOUND)
++                return
++            target = self.server.static_root / "index.html"
++        if not target.exists():
++            self.send_json(
++                error_response(
++                    "STATIC_BUILD_MISSING",
++                    "Workbench static build is missing. Run npm --prefix apps/workbench-alpha run build.",
++                ),
++                HTTPStatus.NOT_FOUND,
++            )
++            return
++        content_type = mimetypes.guess_type(str(target))[0] or "application/octet-stream"
++        body = target.read_bytes()
++        self.send_response(HTTPStatus.OK)
++        self.send_header("Content-Type", content_type)
++        self.send_header("Content-Length", str(len(body)))
++        self.end_headers()
++        self.wfile.write(body)
++
++    def read_body(self) -> dict[str, Any]:
++        length = int(self.headers.get("Content-Length", "0"))
++        if length <= 0:
++            return {}
++        return json.loads(self.rfile.read(length).decode("utf-8"))
++
++    def do_GET(self) -> None:
++        parsed = urlparse(self.path)
++        if parsed.path == "/api/health":
++            self.send_json(ok({"service": "workbench_alpha_host", "mcp_adapter": False}))
++            return
++        if parsed.path == "/api/bootstrap":
++            self.send_json(self.bootstrap())
++            return
++        if parsed.path == "/api/plan":
++            query = parse_qs(parsed.query)
++            recipe_id = (query.get("recipe_id") or [""])[0]
++            try:
++                plan = plan_for_recipe(recipe_id)
++                state = "APPROVED" if recipe_id == "ball_side_block_shift_v1" else "EXPERIMENTAL"
++                self.send_json(ok({"recipe": recipe_card(plan, state), "plan_document": plan, "plan_hash": stable_hash(plan)}))
++            except Exception as exc:
++                self.send_json(error_response("PLAN_NOT_FOUND", str(exc)), HTTPStatus.NOT_FOUND)
++            return
++        if parsed.path.startswith("/api/"):
++            self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
++            return
++        self.send_static(parsed.path)
++
++    def do_POST(self) -> None:
++        parsed = urlparse(self.path)
++        try:
++            payload = self.read_body()
++            if parsed.path == "/api/interpret":
++                self.send_json(interpret_request(payload))
++            elif parsed.path == "/api/submit-validate":
++                plan_document = host_owned_plan_document(payload["plan_document"])
++                submitted = submit_query_plan(
++                    SubmitQueryPlanRequest(plan_document=plan_document, source_label="workbench_alpha"),
++                    output_root=self.server.output_root,
++                    caller_profile=CallerProfile.HOST_MANUAL,
++                )
++                validation = validate_query_plan(
++                    ValidateQueryPlanRequest(draft_plan_id=submitted.draft_plan_id),
++                    output_root=self.server.output_root,
++                    caller_profile=CallerProfile.HOST_MANUAL,
++                )
++                self.send_json(
++                    ok(
++                        {
++                            "submit": submitted.model_dump(mode="json"),
++                            "validation": validation.model_dump(mode="json"),
++                        }
++                    )
++                )
++            elif parsed.path == "/api/confirm":
++                confirmation: HostConfirmationResponse = host_confirm_bound_plan(
++                    str(payload["bound_plan_id"]),
++                    reviewer=str(payload.get("reviewer") or "workbench_alpha_host"),
++                    output_root=self.server.output_root,
++                )
++                self.send_json(ok({"confirmation": confirmation.model_dump(mode="json")}))
++            elif parsed.path == "/api/execute":
++                execution = execute_query_plan(
++                    ExecuteQueryPlanRequest.model_validate(payload),
++                    output_root=self.server.output_root,
++                )
++                self.send_json(ok({"execution": execution.model_dump(mode="json")}))
++            elif parsed.path == "/api/inspect-result":
++                self.send_json(result_with_replay(payload, output_root=self.server.output_root))
++            elif parsed.path == "/api/inspect-timestamp":
++                self.send_json(timestamp_inspection(payload, output_root=self.server.output_root))
++            else:
++                self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
++        except (KeyError, ValueError, ValidationError) as exc:
++            self.send_json(error_response("REQUEST_SCHEMA_INVALID", str(exc)), HTTPStatus.BAD_REQUEST)
++        except CapabilityGap as exc:
++            self.send_json(
++                error_response(stable_tool_error_code(exc), str(exc)),
++                HTTPStatus.FORBIDDEN,
++            )
++        except Exception as exc:
++            self.send_json(
++                error_response(type(exc).__name__.upper(), str(exc)),
++                HTTPStatus.INTERNAL_SERVER_ERROR,
++            )
++
++    def bootstrap(self) -> dict[str, Any]:
++        approved_plan = load_plan_from_path(APPROVED_PLAN_PATH)
++        corridor_plan = load_plan_from_path(CORRIDOR_PLAN_PATH)
++        context = list_capabilities(CallerProfile.HOST_MANUAL)
++        return ok(
++            {
++                "service": {
++                    "name": "workbench_alpha_host",
++                    "mcp_adapter": False,
++                    "output_root": str(self.server.output_root),
++                },
++                "model": {
++                    "available": False,
++                    "status": "MODEL_UNAVAILABLE",
++                    "message": "Manual mode is active; model-backed compilation is not connected in Workbench Alpha.",
++                },
++                "presets": [
++                    {
++                        "preset_id": "approved_block_shift",
++                        "label": "Approved block shift",
++                        "recipe": recipe_card(approved_plan, "APPROVED"),
++                        "plan_hash": stable_hash(approved_plan),
++                    },
++                    {
++                        "preset_id": "experimental_corridor",
++                        "label": "Experimental corridor",
++                        "recipe": recipe_card(corridor_plan, "EXPERIMENTAL"),
++                        "plan_hash": stable_hash(corridor_plan),
++                    },
++                ],
++                "capabilities": {
++                    "primitive_count": len(context.primitives),
++                    "relation_count": len(context.relations),
++                    "operator_count": len(context.operators),
++                    "tools": [tool.name for tool in context.tools],
++                    "execute_tool_description": describe_capability(
++                        "execute_query_plan",
++                        CallerProfile.HOST_MANUAL,
++                    ),
++                },
++            }
++        )
++
++
++def main() -> None:
++    parser = argparse.ArgumentParser(description="Serve Workbench Alpha host app.")
++    parser.add_argument("--host", default="127.0.0.1")
++    parser.add_argument("--port", type=int, default=8765)
++    parser.add_argument("--static-root", type=Path, default=DEFAULT_STATIC_ROOT)
++    parser.add_argument("--output-root", type=Path, default=DEFAULT_WORKSHOP_ROOT)
++    args = parser.parse_args()
++    server = WorkbenchServer(
++        (args.host, args.port),
++        WorkbenchHandler,
++        static_root=args.static_root,
++        output_root=args.output_root,
++    )
++    print(f"Workbench Alpha host service: http://{args.host}:{args.port}")
++    print(f"Static root: {args.static_root}")
++    print(f"Output root: {args.output_root}")
++    server.serve_forever()
++
++
++if __name__ == "__main__":
++    main()

@@ -1,0 +1,15 @@
+python -m py_compile src/tqe/workshop/hermes_s2.py src/tqe/verification/m1_2_gate_s2.py src/tqe/verification/m1_2.py
+PASS
+
+make m1-2-gate-s2-verify
+{"status": "pass", "summary": {"fail": 0, "pass": 12}}
+
+make m1-2-verify
+{"status": "pass", "summary": {"fail": 0, "pass": 3}}
+
+make test
+Ran 27 tests in 190.982s
+OK
+
+make m1-1-gate-s7r-verify
+{"status": "pass", "summary": {"fail": 0, "not_ready": 0, "pass": 13}}

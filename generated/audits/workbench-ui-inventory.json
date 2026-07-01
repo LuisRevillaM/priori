@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.0",
+  "audit_id": "workbench_product_audit_v1",
+  "deployed_commit": "25f29a146e475ef573dbf59da1901bec4d9c8253",
+  "screens": [
+    {
+      "screen": "global_topbar",
+      "visible_controls": [],
+      "visible_status": ["browser to host API", "HERMES_FRONTIER_READY", "busy/idle"],
+      "developer_only_candidates": ["browser to host API", "busy key", "raw model status code"],
+      "recommendation": "Replace with client-facing status only when degraded; move API/model internals to Developer details."
+    },
+    {
+      "screen": "match_scope_bar",
+      "visible_controls": ["All matches", "per-match buttons"],
+      "visible_status": ["Perspective team", "Matches", "Periods", "Possession"],
+      "developer_only_candidates": [],
+      "recommendation": "Keep visible. Add match day/result to button tooltip or label. Make selected scope part of interpretation summary."
+    },
+    {
+      "screen": "query_panel",
+      "visible_controls": ["natural-language textarea", "Ask Hermes", "Browse recipes", "preset buttons", "Interpret"],
+      "visible_status": ["helper text"],
+      "developer_only_candidates": [],
+      "recommendation": "Separate Ask from Choose Recipe. Hide recipe buttons when Ask Hermes is active unless used as examples."
+    },
+    {
+      "screen": "validation_panel",
+      "visible_controls": ["Submit and validate", "Host confirm", "Execute"],
+      "visible_status": ["valid/invalid/not run"],
+      "developer_only_candidates": ["Host confirm wording", "Submit and validate wording"],
+      "recommendation": "Collapse into one stage-aware primary action: Validate interpretation, then Approve and run."
+    },
+    {
+      "screen": "known_timestamp_panel",
+      "visible_controls": ["Target ID", "Match ID", "Period", "Radius ms", "Approx time ms", "Inspect timestamp"],
+      "visible_status": [],
+      "developer_only_candidates": ["entire panel"],
+      "recommendation": "Move to Developer details or an explicit Non-match inspection drawer."
+    },
+    {
+      "screen": "interpreted_plan_panel",
+      "visible_controls": ["Confirm interpretation", "Host confirm", "Run query", "Developer details"],
+      "visible_status": ["status pill", "source line", "interpretation bullets", "scope/status/source"],
+      "developer_only_candidates": ["raw plan hash", "draft status", "typed plan JSON"],
+      "recommendation": "Use lowering summary: User asked, Interpreted tactically, Measured as, Does not establish."
+    },
+    {
+      "screen": "coordinate_replay",
+      "visible_controls": ["Prev", "Play/Pause", "0.5x", "1x", "2x", "Next", "scrubber"],
+      "visible_status": ["match", "period", "canonical match time", "result index", "replay id", "result id", "frame id", "overlay proof"],
+      "developer_only_candidates": ["replay id", "result id", "raw frame id"],
+      "recommendation": "Keep replay controls. Move IDs to Developer details. Add legend, tactical overlay explanation, and selected evidence measurements."
+    },
+    {
+      "screen": "evidence_aliases",
+      "visible_controls": [],
+      "visible_status": ["alias", "source node/output", "field", "value"],
+      "developer_only_candidates": ["source node/output", "raw field names"],
+      "recommendation": "Default to 2-3 human measurements; move alias table to Developer details."
+    },
+    {
+      "screen": "predicate_trace",
+      "visible_controls": [],
+      "visible_status": ["PASS/FAIL/UNKNOWN", "predicate id", "raw value/threshold JSON"],
+      "developer_only_candidates": ["predicate id", "raw value/threshold JSON"],
+      "recommendation": "Show compact why matched/why not in product language; preserve full trace in Developer details."
+    },
+    {
+      "screen": "result_rail",
+      "visible_controls": ["result item buttons"],
+      "visible_status": ["shown count", "rank", "classification", "match", "period/time", "result id"],
+      "developer_only_candidates": ["result id", "formal classification as primary copy"],
+      "recommendation": "Use tactical headline plus match/time and principal measurements. Move formal classification to Developer details."
+    },
+    {
+      "screen": "run_state",
+      "visible_controls": ["Developer details"],
+      "visible_status": ["cache HIT/MISS", "execution message", "stage list"],
+      "developer_only_candidates": ["cache key", "stage tokens", "validation JSON", "confirmation JSON", "execution JSON"],
+      "recommendation": "Keep cache hit/miss in friendly language; hide raw responses by default."
+    }
+  ],
+  "primary_action_sequence_recommended": [
+    "Ask or choose",
+    "Understand interpretation",
+    "Approve and run",
+    "Explore moments"
+  ],
+  "required_provenance_labels": [
+    {
+      "label": "REVIEWED_RECIPE",
+      "default_copy": "Reviewed recipe",
+      "developer_copy": "Loaded from approved recipe artifact"
+    },
+    {
+      "label": "MANUAL_PRESET",
+      "default_copy": "Manual preset",
+      "developer_copy": "No model authorship"
+    },
+    {
+      "label": "HERMES_RECIPE_SELECTION",
+      "default_copy": "Hermes selected reviewed recipe",
+      "developer_copy": "Model selected recipe; host loaded stored recipe"
+    },
+    {
+      "label": "HERMES_NOVEL_COMPOSITION",
+      "default_copy": "Hermes authored new composition",
+      "developer_copy": "Model-authored typed plan with new plan hash"
+    },
+    {
+      "label": "DETERMINISTIC_REPAIR",
+      "default_copy": "Safety repair applied",
+      "developer_copy": "Host deterministic fallback or repair decided final state"
+    },
+    {
+      "label": "CAPABILITY_GAP",
+      "default_copy": "Cannot currently measure",
+      "developer_copy": "No safe measurable plan returned"
+    }
+  ],
+  "controls_to_remove_or_hide_by_default": [
+    "Known Timestamp form",
+    "browser to host API badge",
+    "busy key badge",
+    "Host confirm wording",
+    "raw result ids",
+    "raw replay ids",
+    "raw predicate JSON",
+    "raw typed-plan JSON",
+    "source node/output strings"
+  ],
+  "accessibility_findings": [
+    "Canvas has an aria label but overlay elements inside canvas are not independently accessible.",
+    "Pill color states should not be the only status signal; labels exist but warnings need stronger text.",
+    "Match selector buttons use shortened away-team names that may be ambiguous without tooltip access.",
+    "The result rail uses buttons with dense technical text; screen-reader summaries should use tactical labels."
+  ]
+}

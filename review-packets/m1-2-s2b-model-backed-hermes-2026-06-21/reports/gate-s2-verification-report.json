@@ -1,0 +1,1312 @@
+{
+  "artifacts": {
+    "corpus": "artifacts/m1.2/agent-evaluation-corpus.json",
+    "evaluation_report": "artifacts/m1.2/agent-evaluation-report.json",
+    "trace_report": "artifacts/m1.2/hermes-s2-trace-report.json"
+  },
+  "checks": [
+    {
+      "details": {
+        "agent_kind": "model_backed",
+        "bound_plan_hash": "e101c5299f2305fcfc31113c661e6520572916b00eadd0a925a2799b91513758",
+        "bound_plan_id": "bound_e101c5299f2305fc",
+        "capability_context_hash": "a71a60ef83f0bf2cfa13cbd9748ba72a17bec8cc9e0a9fae60b8a20640ecf56b",
+        "capability_gaps": [],
+        "clarification_questions": [],
+        "draft_plan_hash": "d4526d024b685b8a11163304ded7c8921d1b14cbc6d311929ef07ca74fd80c96",
+        "draft_plan_id": "draft_d4526d024b685b8a",
+        "interpretation": {
+          "allowed_claims": [
+            "The team had an active-ball possession anchor.",
+            "A geometric progressive corridor appeared under configured thresholds.",
+            "Replay coordinates come from canonical tracking frames."
+          ],
+          "automatic_execution": false,
+          "corridor_parameters": {
+            "corridor_max_window_seconds": null,
+            "corridor_minimum_clearance_m": null,
+            "corridor_minimum_duration_seconds": null,
+            "corridor_minimum_progression_m": null
+          },
+          "disallowed_claims": [
+            "Intent, optimality, pass probability, or video-backed claims."
+          ],
+          "intent": "draft_experimental_progressive_corridor_query",
+          "recipe_state": "EXPERIMENTAL",
+          "summary": "Drafting a plan to identify moments with an open progressive corridor from possession."
+        },
+        "model_name": "gpt-4o-mini-2024-07-18",
+        "model_provider": "openai",
+        "model_response_id": "chatcmpl-DtGEnR9YflRQBALS3OfkVwAhXGA6b",
+        "ok": true,
+        "original_language": "Find moments where an open progressive corridor appears from possession.",
+        "raw_model_output": {
+          "action": "draft_corridor",
+          "capability_gaps": [],
+          "clarification_questions": [],
+          "corridor_parameters": {
+            "corridor_max_window_seconds": null,
+            "corridor_minimum_clearance_m": null,
+            "corridor_minimum_duration_seconds": null,
+            "corridor_minimum_progression_m": null
+          },
+          "interpretation": "Drafting a plan to identify moments with an open progressive corridor from possession.",
+          "recipe_id": "possession_corridor_availability_v1",
+          "requested_evidence": []
+        },
+        "selected_recipe": {
+          "allowed_claims": [
+            "The team had an active-ball possession anchor.",
+            "A geometric progressive corridor appeared under the configured relation thresholds.",
+            "The replay coordinates come from canonical 25 Hz source frames."
+          ],
+          "display_name": "Possession Corridor Availability",
+          "limitations": [
+            "Experimental plan; not an approved recipe.",
+            "No offside, receiver body orientation, pressure, pass probability, or optimality model is evaluated.",
+            "No match video is used."
+          ],
+          "output_classifications": [
+            "PROGRESSIVE_CORRIDOR_AVAILABLE"
+          ],
+          "recipe_id": "possession_corridor_availability_v1",
+          "recipe_version": "0.1.0",
+          "state": "EXPERIMENTAL"
+        },
+        "status": "DRAFT_VALIDATED",
+        "system_prompt_hash": "fa46f2fa146cd6046f1c2890372532cb25538fe4dcb6f36e83bfc4464b367445",
+        "tool_calls": [
+          {
+            "arguments_summary": {},
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 1,
+            "ok": true,
+            "request_hash": "aacdd33c34a78bf3f4894f94a83e27c4b05772423e6ae8c6c079b3de32a495e4",
+            "response_hash": "a2966e686f0e42a932159a55685425a5599d7ac3b36b19e7a66a4ddf8ce82b9a",
+            "response_keys": [
+              "default_complexity_limits",
+              "evidence_fields",
+              "forbidden_surfaces",
+              "generated_at",
+              "host_owned_complexity_ceilings",
+              "limitations",
+              "milestone",
+              "operators",
+              "primitives",
+              "recipe_states",
+              "relations",
+              "safe_operator_source_rules",
+              "schema_version",
+              "tools"
+            ],
+            "tool_name": "list_capabilities"
+          },
+          {
+            "arguments_summary": {
+              "capability_name": "geometric_progressive_corridor_from_anchor_set"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 2,
+            "ok": true,
+            "request_hash": "5e2ddedc7ee08ae354471f4d607f4eec347d07c393896fdecbf8ca9d2bcf643a",
+            "response_hash": "a64771d290b72ee7cb06fd2207ea2c5d724411aea2e128b423ff863e1057e7c6",
+            "response_keys": [
+              "capability",
+              "ok"
+            ],
+            "tool_name": "describe_capability"
+          },
+          {
+            "arguments_summary": {
+              "plan_document": {
+                "plan_id": "hermes_s2_progressive_corridor_experimental",
+                "recipe_id": "possession_corridor_availability_v1",
+                "status": "experimental"
+              },
+              "source_label": "hermes_s2_model"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 3,
+            "ok": true,
+            "request_hash": "6d831c853dc5fe4ebbc39a701fa68c6c1a2174a89ae6b90d224293889dc8b257",
+            "response_hash": "5937ba13095f6804fd0f6b5b5d50d784491041c9286e1c458b4f55c37e12d5d9",
+            "response_keys": [
+              "draft_plan_hash",
+              "draft_plan_id",
+              "ok",
+              "plan_status",
+              "recipe_id",
+              "recipe_version"
+            ],
+            "tool_name": "submit_query_plan"
+          },
+          {
+            "arguments_summary": {
+              "draft_plan_id": "draft_d4526d024b685b8a"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 4,
+            "ok": true,
+            "request_hash": "5862550299e6d565f367be5caae990705f0e990a0da2a0bd94a21459f8570c78",
+            "response_hash": "f32e3f167db330d4d2072299d2dd625003f1684861397fdfaed95961a1dd8ff6",
+            "response_keys": [
+              "bound_plan_hash",
+              "bound_plan_id",
+              "draft_plan_id",
+              "execution_profile",
+              "issues",
+              "ok",
+              "plan_id",
+              "plan_status",
+              "recipe_id"
+            ],
+            "tool_name": "validate_query_plan"
+          }
+        ],
+        "tool_schema_hash": "c7153cca5b1172b082dbb5ca434422f4af330d3f20661bd91da389745d027a74",
+        "trace_id": "hermes_0e5ff54edd969909",
+        "validation_result": {
+          "bound_plan_hash": "e101c5299f2305fcfc31113c661e6520572916b00eadd0a925a2799b91513758",
+          "bound_plan_id": "bound_e101c5299f2305fc",
+          "draft_plan_id": "draft_d4526d024b685b8a",
+          "execution_profile": "generic",
+          "issues": [],
+          "ok": true,
+          "plan_id": "hermes_s2_progressive_corridor_experimental",
+          "plan_status": "experimental",
+          "recipe_id": "possession_corridor_availability_v1"
+        }
+      },
+      "id": "s2.hermes_experimental_draft_validated",
+      "message": "Hermes compiles a supported prompt into a validated experimental draft through the Hermes caller profile.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "execution_id": "exec_98fc75f11c2fd4fa",
+        "replay_window_id": "replay_8e478d7548c94514",
+        "result_count": 64,
+        "trace_id": "hermes_exec_08b16faac25c113d"
+      },
+      "id": "s2.hermes_confirmed_execution_grounded",
+      "message": "After host confirmation, Hermes executes, inspects, and retrieves replay through the model-visible boundary.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "tool_calls": [
+          {
+            "arguments_summary": {},
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 1,
+            "ok": true,
+            "request_hash": "aacdd33c34a78bf3f4894f94a83e27c4b05772423e6ae8c6c079b3de32a495e4",
+            "response_hash": "a2966e686f0e42a932159a55685425a5599d7ac3b36b19e7a66a4ddf8ce82b9a",
+            "response_keys": [
+              "default_complexity_limits",
+              "evidence_fields",
+              "forbidden_surfaces",
+              "generated_at",
+              "host_owned_complexity_ceilings",
+              "limitations",
+              "milestone",
+              "operators",
+              "primitives",
+              "recipe_states",
+              "relations",
+              "safe_operator_source_rules",
+              "schema_version",
+              "tools"
+            ],
+            "tool_name": "list_capabilities"
+          },
+          {
+            "arguments_summary": {
+              "capability_name": "geometric_progressive_corridor_from_anchor_set"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 2,
+            "ok": true,
+            "request_hash": "5e2ddedc7ee08ae354471f4d607f4eec347d07c393896fdecbf8ca9d2bcf643a",
+            "response_hash": "a64771d290b72ee7cb06fd2207ea2c5d724411aea2e128b423ff863e1057e7c6",
+            "response_keys": [
+              "capability",
+              "ok"
+            ],
+            "tool_name": "describe_capability"
+          },
+          {
+            "arguments_summary": {
+              "plan_document": {
+                "plan_id": "hermes_s2_progressive_corridor_experimental",
+                "recipe_id": "possession_corridor_availability_v1",
+                "status": "experimental"
+              },
+              "source_label": "hermes_s2_model"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 3,
+            "ok": true,
+            "request_hash": "6d831c853dc5fe4ebbc39a701fa68c6c1a2174a89ae6b90d224293889dc8b257",
+            "response_hash": "5937ba13095f6804fd0f6b5b5d50d784491041c9286e1c458b4f55c37e12d5d9",
+            "response_keys": [
+              "draft_plan_hash",
+              "draft_plan_id",
+              "ok",
+              "plan_status",
+              "recipe_id",
+              "recipe_version"
+            ],
+            "tool_name": "submit_query_plan"
+          },
+          {
+            "arguments_summary": {
+              "draft_plan_id": "draft_d4526d024b685b8a"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 4,
+            "ok": true,
+            "request_hash": "5862550299e6d565f367be5caae990705f0e990a0da2a0bd94a21459f8570c78",
+            "response_hash": "f32e3f167db330d4d2072299d2dd625003f1684861397fdfaed95961a1dd8ff6",
+            "response_keys": [
+              "bound_plan_hash",
+              "bound_plan_id",
+              "draft_plan_id",
+              "execution_profile",
+              "issues",
+              "ok",
+              "plan_id",
+              "plan_status",
+              "recipe_id"
+            ],
+            "tool_name": "validate_query_plan"
+          },
+          {
+            "arguments_summary": {
+              "bound_plan_id": "bound_e101c5299f2305fc",
+              "execution_authorization_id": "auth_b36893d5358c7607",
+              "result_limit": 3
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 1,
+            "ok": true,
+            "request_hash": "c145784ea959c42627edb6b6382a19f1e0c4105b1d9a031b5539ae592049e51f",
+            "response_hash": "0583c3199606010d3c848c39fdf5ed51dcfb64fc7edf77385b902eb8600b85fc",
+            "response_keys": [
+              "bound_plan_hash",
+              "bound_plan_id",
+              "compatibility_profile",
+              "draft_plan_hash",
+              "execution_id",
+              "ok",
+              "plan_id",
+              "plan_status",
+              "results",
+              "returned_result_count",
+              "total_result_count",
+              "trace_count"
+            ],
+            "tool_name": "execute_query_plan"
+          },
+          {
+            "arguments_summary": {
+              "execution_id": "exec_98fc75f11c2fd4fa",
+              "result_id": "9d8a9abd097dfd7f"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 2,
+            "ok": true,
+            "request_hash": "a6a3afcdc6321bb4750765dc9768fa01fce1d21657d5e69e298ae4571cef822b",
+            "response_hash": "6c8f609406cb5fdee9ed5a9ddbf07f0805ae03e383a5bf09eb491d2e7b95e350",
+            "response_keys": [
+              "execution_id",
+              "ok",
+              "predicate_traces",
+              "requested_evidence",
+              "result"
+            ],
+            "tool_name": "inspect_result"
+          },
+          {
+            "arguments_summary": {
+              "execution_id": "exec_98fc75f11c2fd4fa",
+              "result_id": "9d8a9abd097dfd7f"
+            },
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 3,
+            "ok": true,
+            "request_hash": "70305b503ff14997445688b637b96299a188cf4ad5622ff93092a6bb6de67684",
+            "response_hash": "f130dd0944420b34bb4a1969541937d2199d2f0bfe8c46eeff0b651d23ed68b0",
+            "response_keys": [
+              "anchor_frame_id",
+              "end_frame_id",
+              "entity_observation_count",
+              "execution_id",
+              "frame_count",
+              "match_id",
+              "ok",
+              "period",
+              "replay_window_id",
+              "source_kind",
+              "start_frame_id"
+            ],
+            "tool_name": "retrieve_replay_window"
+          }
+        ],
+        "trace_id": "hermes_exec_08b16faac25c113d"
+      },
+      "id": "s2.complete_session_tool_trace_recorded",
+      "message": "Confirmed execution trace records ordered model-visible compile, execute, inspect, and replay calls.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "compile_trace_id": "hermes_0e5ff54edd969909"
+      },
+      "id": "s2.confirmation_boundary_preserved",
+      "message": "Hermes compile output does not mint or receive execution authorization before host confirmation.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "agent_kind": "model_backed",
+        "bound_plan_hash": null,
+        "bound_plan_id": null,
+        "capability_context_hash": "a71a60ef83f0bf2cfa13cbd9748ba72a17bec8cc9e0a9fae60b8a20640ecf56b",
+        "capability_gaps": [],
+        "clarification_questions": [
+          "What does 'support' mean in this context? Are you referring to a progressive corridor?",
+          "What time window should apply for the support after breaking the line?"
+        ],
+        "draft_plan_hash": null,
+        "draft_plan_id": null,
+        "interpretation": {
+          "automatic_execution": false,
+          "intent": "clarify_tactical_request",
+          "summary": "The request is ambiguous regarding what 'support' means in the context of a progressive corridor."
+        },
+        "model_name": "gpt-4o-mini-2024-07-18",
+        "model_provider": "openai",
+        "model_response_id": "chatcmpl-DtGFfDbvYfBYcVt0HPoqFx8bBrief",
+        "ok": false,
+        "original_language": "Find when the receiver has support after we break the line.",
+        "raw_model_output": {
+          "action": "clarify",
+          "capability_gaps": [],
+          "clarification_questions": [
+            "What does 'support' mean in this context? Are you referring to a progressive corridor?",
+            "What time window should apply for the support after breaking the line?"
+          ],
+          "corridor_parameters": {
+            "corridor_max_window_seconds": null,
+            "corridor_minimum_clearance_m": null,
+            "corridor_minimum_duration_seconds": null,
+            "corridor_minimum_progression_m": null
+          },
+          "interpretation": "The request is ambiguous regarding what 'support' means in the context of a progressive corridor.",
+          "recipe_id": null,
+          "requested_evidence": []
+        },
+        "selected_recipe": null,
+        "status": "CLARIFICATION_REQUIRED",
+        "system_prompt_hash": "fa46f2fa146cd6046f1c2890372532cb25538fe4dcb6f36e83bfc4464b367445",
+        "tool_calls": [
+          {
+            "arguments_summary": {},
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 1,
+            "ok": true,
+            "request_hash": "aacdd33c34a78bf3f4894f94a83e27c4b05772423e6ae8c6c079b3de32a495e4",
+            "response_hash": "36c45629eae151dda9c36bceb431dae4d9d32ee3e6102879a923756ec56b37dd",
+            "response_keys": [
+              "default_complexity_limits",
+              "evidence_fields",
+              "forbidden_surfaces",
+              "generated_at",
+              "host_owned_complexity_ceilings",
+              "limitations",
+              "milestone",
+              "operators",
+              "primitives",
+              "recipe_states",
+              "relations",
+              "safe_operator_source_rules",
+              "schema_version",
+              "tools"
+            ],
+            "tool_name": "list_capabilities"
+          }
+        ],
+        "tool_schema_hash": "c7153cca5b1172b082dbb5ca434422f4af330d3f20661bd91da389745d027a74",
+        "trace_id": "hermes_4fc62e0ec99b77a2",
+        "validation_result": null
+      },
+      "id": "s2.ambiguous_prompt_requests_clarification",
+      "message": "Ambiguous support language asks clarification instead of silently approximating.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "agent_kind": "model_backed",
+        "bound_plan_hash": null,
+        "bound_plan_id": null,
+        "capability_context_hash": "a71a60ef83f0bf2cfa13cbd9748ba72a17bec8cc9e0a9fae60b8a20640ecf56b",
+        "capability_gaps": [
+          {
+            "concept": "body orientation",
+            "reason": "Unsupported concept."
+          },
+          {
+            "concept": "intent",
+            "reason": "Unsupported concept."
+          },
+          {
+            "concept": "communication",
+            "reason": "Unsupported concept."
+          }
+        ],
+        "clarification_questions": [],
+        "draft_plan_hash": null,
+        "draft_plan_id": null,
+        "interpretation": {
+          "automatic_execution": false,
+          "intent": "unsupported_tactical_request",
+          "summary": "The request involves unsupported concepts such as body orientation, intent, and communication."
+        },
+        "model_name": "gpt-4o-mini-2024-07-18",
+        "model_provider": "openai",
+        "model_response_id": "chatcmpl-DtGFiVjPlgmSECmly2c2p1ysYs802",
+        "ok": false,
+        "original_language": "Show optimal actions using body orientation, intent, and communication.",
+        "raw_model_output": {
+          "action": "capability_gap",
+          "capability_gaps": [
+            {
+              "concept": "body orientation",
+              "reason": "Unsupported concept."
+            },
+            {
+              "concept": "intent",
+              "reason": "Unsupported concept."
+            },
+            {
+              "concept": "communication",
+              "reason": "Unsupported concept."
+            }
+          ],
+          "clarification_questions": [],
+          "corridor_parameters": {
+            "corridor_max_window_seconds": null,
+            "corridor_minimum_clearance_m": null,
+            "corridor_minimum_duration_seconds": null,
+            "corridor_minimum_progression_m": null
+          },
+          "interpretation": "The request involves unsupported concepts such as body orientation, intent, and communication.",
+          "recipe_id": null,
+          "requested_evidence": []
+        },
+        "selected_recipe": null,
+        "status": "CAPABILITY_GAP",
+        "system_prompt_hash": "fa46f2fa146cd6046f1c2890372532cb25538fe4dcb6f36e83bfc4464b367445",
+        "tool_calls": [
+          {
+            "arguments_summary": {},
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 1,
+            "ok": true,
+            "request_hash": "aacdd33c34a78bf3f4894f94a83e27c4b05772423e6ae8c6c079b3de32a495e4",
+            "response_hash": "186c0e32b131742b8893b693f5ccb84fb1891f57604029136a57d2ba36dfe02a",
+            "response_keys": [
+              "default_complexity_limits",
+              "evidence_fields",
+              "forbidden_surfaces",
+              "generated_at",
+              "host_owned_complexity_ceilings",
+              "limitations",
+              "milestone",
+              "operators",
+              "primitives",
+              "recipe_states",
+              "relations",
+              "safe_operator_source_rules",
+              "schema_version",
+              "tools"
+            ],
+            "tool_name": "list_capabilities"
+          }
+        ],
+        "tool_schema_hash": "c7153cca5b1172b082dbb5ca434422f4af330d3f20661bd91da389745d027a74",
+        "trace_id": "hermes_5a0cbfb90063e2cc",
+        "validation_result": null
+      },
+      "id": "s2.unsupported_prompt_capability_gap",
+      "message": "Unsupported concepts return explicit capability gaps.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "agent_kind": "model_backed",
+        "bound_plan_hash": null,
+        "bound_plan_id": null,
+        "capability_context_hash": "a71a60ef83f0bf2cfa13cbd9748ba72a17bec8cc9e0a9fae60b8a20640ecf56b",
+        "capability_gaps": [],
+        "clarification_questions": [],
+        "draft_plan_hash": null,
+        "draft_plan_id": null,
+        "interpretation": {
+          "automatic_execution": false,
+          "intent": "reuse_trusted_recipe",
+          "requires_host_recipe_load": true,
+          "summary": "The user requested to use the approved ball-side block shift recipe."
+        },
+        "model_name": "gpt-4o-mini-2024-07-18",
+        "model_provider": "openai",
+        "model_response_id": "chatcmpl-DtGFleOwRCYGKatY8vLjSa1qeoQ6j",
+        "ok": true,
+        "original_language": "Use the approved ball-side block shift recipe.",
+        "raw_model_output": {
+          "action": "select_recipe",
+          "capability_gaps": [],
+          "clarification_questions": [],
+          "corridor_parameters": {
+            "corridor_max_window_seconds": null,
+            "corridor_minimum_clearance_m": null,
+            "corridor_minimum_duration_seconds": null,
+            "corridor_minimum_progression_m": null
+          },
+          "interpretation": "The user requested to use the approved ball-side block shift recipe.",
+          "recipe_id": "ball_side_block_shift_v1",
+          "requested_evidence": []
+        },
+        "selected_recipe": {
+          "allowed_claims": [
+            "The ball entered a configured wide area.",
+            "The defending outfield centroid shifted toward the ball side by the configured threshold.",
+            "The subsequent outcome was SWITCHED, RETAINED_NO_SWITCH, LOST_BEFORE_SWITCH, or excluded STOPPAGE under the frozen predicates.",
+            "The replay coordinates come from canonical 25 Hz source frames."
+          ],
+          "display_name": "Ball-Side Block Shift",
+          "limitations": [
+            "M1.1 Gate A binds this plan only; execution and parity are Gate B.",
+            "The legacy M1 detector remains the read-only oracle through the demo.",
+            "No pass probability, optimality, or player-intent claim is allowed."
+          ],
+          "output_classifications": [
+            "SWITCHED",
+            "RETAINED_NO_SWITCH",
+            "LOST_BEFORE_SWITCH",
+            "STOPPAGE"
+          ],
+          "recipe_id": "ball_side_block_shift_v1",
+          "recipe_version": "1.0.0",
+          "state": "APPROVED"
+        },
+        "status": "EXISTING_RECIPE_SELECTED",
+        "system_prompt_hash": "fa46f2fa146cd6046f1c2890372532cb25538fe4dcb6f36e83bfc4464b367445",
+        "tool_calls": [
+          {
+            "arguments_summary": {},
+            "caller_profile": "HERMES_S2",
+            "error_code": null,
+            "index": 1,
+            "ok": true,
+            "request_hash": "aacdd33c34a78bf3f4894f94a83e27c4b05772423e6ae8c6c079b3de32a495e4",
+            "response_hash": "cfefa643257cc737722e8b31630077da8c045c032e626ad32723c994f993dfaa",
+            "response_keys": [
+              "default_complexity_limits",
+              "evidence_fields",
+              "forbidden_surfaces",
+              "generated_at",
+              "host_owned_complexity_ceilings",
+              "limitations",
+              "milestone",
+              "operators",
+              "primitives",
+              "recipe_states",
+              "relations",
+              "safe_operator_source_rules",
+              "schema_version",
+              "tools"
+            ],
+            "tool_name": "list_capabilities"
+          }
+        ],
+        "tool_schema_hash": "c7153cca5b1172b082dbb5ca434422f4af330d3f20661bd91da389745d027a74",
+        "trace_id": "hermes_b5a6f8565e785608",
+        "validation_result": null
+      },
+      "id": "s2.approved_recipe_selected_not_authored",
+      "message": "Approved recipes are selected as trusted host records rather than submitted as Hermes-authored approved documents.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "first_trace_id": "hermes_0e5ff54edd969909",
+        "second_trace_id": "hermes_9c82def12f6ae9b8",
+        "shared_bound_plan_id": "bound_e101c5299f2305fc",
+        "shared_draft_plan_id": "draft_d4526d024b685b8a"
+      },
+      "id": "s2.language_trace_survives_shared_plan_handles",
+      "message": "Semantically identical drafts can share content handles while each language request keeps its own trace.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "clearance": {
+          "agent_kind": "model_backed",
+          "bound_plan_hash": "7a41ecf6c4eb997ff7292f28bfb7bbf02bfeb393490beba338ebc7878f606c2c",
+          "bound_plan_id": "bound_7a41ecf6c4eb997f",
+          "capability_context_hash": "a71a60ef83f0bf2cfa13cbd9748ba72a17bec8cc9e0a9fae60b8a20640ecf56b",
+          "capability_gaps": [],
+          "clarification_questions": [],
+          "draft_plan_hash": "2ff11ab2dfab3f2e47565c70cf0890c02f63f2df350981956a52b8e53a92247d",
+          "draft_plan_id": "draft_2ff11ab2dfab3f2e",
+          "interpretation": {
+            "allowed_claims": [
+              "The team had an active-ball possession anchor.",
+              "A geometric progressive corridor appeared under configured thresholds.",
+              "Replay coordinates come from canonical tracking frames."
+            ],
+            "automatic_execution": false,
+            "corridor_parameters": {
+              "corridor_max_window_seconds": null,
+              "corridor_minimum_clearance_m": 6.0,
+              "corridor_minimum_duration_seconds": null,
+              "corridor_minimum_progression_m": null
+            },
+            "disallowed_claims": [
+              "Intent, optimality, pass probability, or video-backed claims."
+            ],
+            "intent": "draft_experimental_progressive_corridor_query",
+            "recipe_state": "EXPERIMENTAL",
+            "summary": "Drafting a progressive corridor plan with a minimum of 6 metres defender clearance."
+          },
+          "model_name": "gpt-4o-mini-2024-07-18",
+          "model_provider": "openai",
+          "model_response_id": "chatcmpl-DtGFrxhYWt1pTsuxUIky7lJQubsxT",
+          "ok": true,
+          "original_language": "Find progressive corridors with at least 6 metres defender clearance from possession.",
+          "raw_model_output": {
+            "action": "draft_corridor",
+            "capability_gaps": [],
+            "clarification_questions": [],
+            "corridor_parameters": {
+              "corridor_max_window_seconds": null,
+              "corridor_minimum_clearance_m": 6.0,
+              "corridor_minimum_duration_seconds": null,
+              "corridor_minimum_progression_m": null
+            },
+            "interpretation": "Drafting a progressive corridor plan with a minimum of 6 metres defender clearance.",
+            "recipe_id": "possession_corridor_availability_v1",
+            "requested_evidence": []
+          },
+          "selected_recipe": {
+            "allowed_claims": [
+              "The team had an active-ball possession anchor.",
+              "A geometric progressive corridor appeared under the configured relation thresholds.",
+              "The replay coordinates come from canonical 25 Hz source frames."
+            ],
+            "display_name": "Possession Corridor Availability",
+            "limitations": [
+              "Experimental plan; not an approved recipe.",
+              "No offside, receiver body orientation, pressure, pass probability, or optimality model is evaluated.",
+              "No match video is used."
+            ],
+            "output_classifications": [
+              "PROGRESSIVE_CORRIDOR_AVAILABLE"
+            ],
+            "recipe_id": "possession_corridor_availability_v1",
+            "recipe_version": "0.1.0",
+            "state": "EXPERIMENTAL"
+          },
+          "status": "DRAFT_VALIDATED",
+          "system_prompt_hash": "fa46f2fa146cd6046f1c2890372532cb25538fe4dcb6f36e83bfc4464b367445",
+          "tool_calls": [
+            {
+              "arguments_summary": {},
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 1,
+              "ok": true,
+              "request_hash": "aacdd33c34a78bf3f4894f94a83e27c4b05772423e6ae8c6c079b3de32a495e4",
+              "response_hash": "8fa6b2bd3c85e5c3cc6a903c30d0dbb9e60a6c64f348b97b066e2eaa14b20c3d",
+              "response_keys": [
+                "default_complexity_limits",
+                "evidence_fields",
+                "forbidden_surfaces",
+                "generated_at",
+                "host_owned_complexity_ceilings",
+                "limitations",
+                "milestone",
+                "operators",
+                "primitives",
+                "recipe_states",
+                "relations",
+                "safe_operator_source_rules",
+                "schema_version",
+                "tools"
+              ],
+              "tool_name": "list_capabilities"
+            },
+            {
+              "arguments_summary": {
+                "capability_name": "geometric_progressive_corridor_from_anchor_set"
+              },
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 2,
+              "ok": true,
+              "request_hash": "5e2ddedc7ee08ae354471f4d607f4eec347d07c393896fdecbf8ca9d2bcf643a",
+              "response_hash": "a64771d290b72ee7cb06fd2207ea2c5d724411aea2e128b423ff863e1057e7c6",
+              "response_keys": [
+                "capability",
+                "ok"
+              ],
+              "tool_name": "describe_capability"
+            },
+            {
+              "arguments_summary": {
+                "plan_document": {
+                  "plan_id": "hermes_s2_progressive_corridor_experimental",
+                  "recipe_id": "possession_corridor_availability_v1",
+                  "status": "experimental"
+                },
+                "source_label": "hermes_s2_model"
+              },
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 3,
+              "ok": true,
+              "request_hash": "6d831c853dc5fe4ebbc39a701fa68c6c1a2174a89ae6b90d224293889dc8b257",
+              "response_hash": "ad10d430dec56203161f43e8867f5552ea19218dd83e1818f8db29c95c00501f",
+              "response_keys": [
+                "draft_plan_hash",
+                "draft_plan_id",
+                "ok",
+                "plan_status",
+                "recipe_id",
+                "recipe_version"
+              ],
+              "tool_name": "submit_query_plan"
+            },
+            {
+              "arguments_summary": {
+                "draft_plan_id": "draft_2ff11ab2dfab3f2e"
+              },
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 4,
+              "ok": true,
+              "request_hash": "5d2b97e6e281c31ae882e83838dd276de17085990209dfe06fc86dcd2457bf56",
+              "response_hash": "15246c6aa292d1c6a1615a00ebf56ee3164c3dd2bd310249274294c1a5e83ec6",
+              "response_keys": [
+                "bound_plan_hash",
+                "bound_plan_id",
+                "draft_plan_id",
+                "execution_profile",
+                "issues",
+                "ok",
+                "plan_id",
+                "plan_status",
+                "recipe_id"
+              ],
+              "tool_name": "validate_query_plan"
+            }
+          ],
+          "tool_schema_hash": "c7153cca5b1172b082dbb5ca434422f4af330d3f20661bd91da389745d027a74",
+          "trace_id": "hermes_5eeea31861244ac2",
+          "validation_result": {
+            "bound_plan_hash": "7a41ecf6c4eb997ff7292f28bfb7bbf02bfeb393490beba338ebc7878f606c2c",
+            "bound_plan_id": "bound_7a41ecf6c4eb997f",
+            "draft_plan_id": "draft_2ff11ab2dfab3f2e",
+            "execution_profile": "generic",
+            "issues": [],
+            "ok": true,
+            "plan_id": "hermes_s2_progressive_corridor_experimental",
+            "plan_status": "experimental",
+            "recipe_id": "possession_corridor_availability_v1"
+          }
+        },
+        "progression": {
+          "agent_kind": "model_backed",
+          "bound_plan_hash": "55a3bf8d2074edaa5b477c20dab446a464cd913893dee6417f23e5b0e0004496",
+          "bound_plan_id": "bound_55a3bf8d2074edaa",
+          "capability_context_hash": "a71a60ef83f0bf2cfa13cbd9748ba72a17bec8cc9e0a9fae60b8a20640ecf56b",
+          "capability_gaps": [],
+          "clarification_questions": [],
+          "draft_plan_hash": "ecc33b8cf4ea88db6f23989347197dcbba689db8cb6e80f34af6a19f2dfe0ca6",
+          "draft_plan_id": "draft_ecc33b8cf4ea88db",
+          "interpretation": {
+            "allowed_claims": [
+              "The team had an active-ball possession anchor.",
+              "A geometric progressive corridor appeared under configured thresholds.",
+              "Replay coordinates come from canonical tracking frames."
+            ],
+            "automatic_execution": false,
+            "corridor_parameters": {
+              "corridor_max_window_seconds": null,
+              "corridor_minimum_clearance_m": null,
+              "corridor_minimum_duration_seconds": null,
+              "corridor_minimum_progression_m": 10.0
+            },
+            "disallowed_claims": [
+              "Intent, optimality, pass probability, or video-backed claims."
+            ],
+            "intent": "draft_experimental_progressive_corridor_query",
+            "recipe_state": "EXPERIMENTAL",
+            "summary": "Drafting a progressive corridor plan that requires at least 10 metres of advancement from possession."
+          },
+          "model_name": "gpt-4o-mini-2024-07-18",
+          "model_provider": "openai",
+          "model_response_id": "chatcmpl-DtGFpakzz1dFX620VislNaKNHjMfP",
+          "ok": true,
+          "original_language": "Find progressive corridors that advance at least 10 metres from possession.",
+          "raw_model_output": {
+            "action": "draft_corridor",
+            "capability_gaps": [],
+            "clarification_questions": [],
+            "corridor_parameters": {
+              "corridor_max_window_seconds": null,
+              "corridor_minimum_clearance_m": null,
+              "corridor_minimum_duration_seconds": null,
+              "corridor_minimum_progression_m": 10.0
+            },
+            "interpretation": "Drafting a progressive corridor plan that requires at least 10 metres of advancement from possession.",
+            "recipe_id": "possession_corridor_availability_v1",
+            "requested_evidence": []
+          },
+          "selected_recipe": {
+            "allowed_claims": [
+              "The team had an active-ball possession anchor.",
+              "A geometric progressive corridor appeared under the configured relation thresholds.",
+              "The replay coordinates come from canonical 25 Hz source frames."
+            ],
+            "display_name": "Possession Corridor Availability",
+            "limitations": [
+              "Experimental plan; not an approved recipe.",
+              "No offside, receiver body orientation, pressure, pass probability, or optimality model is evaluated.",
+              "No match video is used."
+            ],
+            "output_classifications": [
+              "PROGRESSIVE_CORRIDOR_AVAILABLE"
+            ],
+            "recipe_id": "possession_corridor_availability_v1",
+            "recipe_version": "0.1.0",
+            "state": "EXPERIMENTAL"
+          },
+          "status": "DRAFT_VALIDATED",
+          "system_prompt_hash": "fa46f2fa146cd6046f1c2890372532cb25538fe4dcb6f36e83bfc4464b367445",
+          "tool_calls": [
+            {
+              "arguments_summary": {},
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 1,
+              "ok": true,
+              "request_hash": "aacdd33c34a78bf3f4894f94a83e27c4b05772423e6ae8c6c079b3de32a495e4",
+              "response_hash": "0975d4cd598ad1fa79bf03a75aefcf4aab3c87206edae90c8ef7d0d93365f1c7",
+              "response_keys": [
+                "default_complexity_limits",
+                "evidence_fields",
+                "forbidden_surfaces",
+                "generated_at",
+                "host_owned_complexity_ceilings",
+                "limitations",
+                "milestone",
+                "operators",
+                "primitives",
+                "recipe_states",
+                "relations",
+                "safe_operator_source_rules",
+                "schema_version",
+                "tools"
+              ],
+              "tool_name": "list_capabilities"
+            },
+            {
+              "arguments_summary": {
+                "capability_name": "geometric_progressive_corridor_from_anchor_set"
+              },
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 2,
+              "ok": true,
+              "request_hash": "5e2ddedc7ee08ae354471f4d607f4eec347d07c393896fdecbf8ca9d2bcf643a",
+              "response_hash": "a64771d290b72ee7cb06fd2207ea2c5d724411aea2e128b423ff863e1057e7c6",
+              "response_keys": [
+                "capability",
+                "ok"
+              ],
+              "tool_name": "describe_capability"
+            },
+            {
+              "arguments_summary": {
+                "plan_document": {
+                  "plan_id": "hermes_s2_progressive_corridor_experimental",
+                  "recipe_id": "possession_corridor_availability_v1",
+                  "status": "experimental"
+                },
+                "source_label": "hermes_s2_model"
+              },
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 3,
+              "ok": true,
+              "request_hash": "6d831c853dc5fe4ebbc39a701fa68c6c1a2174a89ae6b90d224293889dc8b257",
+              "response_hash": "a348b97625c5bd66282432f17c2713d4c7a85d420525b6229b497061e694ce8d",
+              "response_keys": [
+                "draft_plan_hash",
+                "draft_plan_id",
+                "ok",
+                "plan_status",
+                "recipe_id",
+                "recipe_version"
+              ],
+              "tool_name": "submit_query_plan"
+            },
+            {
+              "arguments_summary": {
+                "draft_plan_id": "draft_ecc33b8cf4ea88db"
+              },
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 4,
+              "ok": true,
+              "request_hash": "d880f8456463e186a78099247f52620544fd8fd735c3ede8cad47eeef85fa94c",
+              "response_hash": "0cbf325f83741b69c6ad4b5792cd8976f9723e087472c038293388dba251cef7",
+              "response_keys": [
+                "bound_plan_hash",
+                "bound_plan_id",
+                "draft_plan_id",
+                "execution_profile",
+                "issues",
+                "ok",
+                "plan_id",
+                "plan_status",
+                "recipe_id"
+              ],
+              "tool_name": "validate_query_plan"
+            }
+          ],
+          "tool_schema_hash": "c7153cca5b1172b082dbb5ca434422f4af330d3f20661bd91da389745d027a74",
+          "trace_id": "hermes_862054e4307d9cfd",
+          "validation_result": {
+            "bound_plan_hash": "55a3bf8d2074edaa5b477c20dab446a464cd913893dee6417f23e5b0e0004496",
+            "bound_plan_id": "bound_55a3bf8d2074edaa",
+            "draft_plan_id": "draft_ecc33b8cf4ea88db",
+            "execution_profile": "generic",
+            "issues": [],
+            "ok": true,
+            "plan_id": "hermes_s2_progressive_corridor_experimental",
+            "plan_status": "experimental",
+            "recipe_id": "possession_corridor_availability_v1"
+          }
+        }
+      },
+      "id": "s2.language_sensitive_compilation_changes_plan_hash",
+      "message": "Two semantically different supported requests produce materially different validated plans.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "answered": {
+          "agent_kind": "model_backed",
+          "bound_plan_hash": "295fa06fc2bf843a8e4b44ab227981db11c0dafcc61f0233e9aaece658911372",
+          "bound_plan_id": "bound_295fa06fc2bf843a",
+          "capability_context_hash": "a71a60ef83f0bf2cfa13cbd9748ba72a17bec8cc9e0a9fae60b8a20640ecf56b",
+          "capability_gaps": [],
+          "clarification_questions": [],
+          "draft_plan_hash": "f2292760933ad7864dc13d86091bac570fad6ec7d1d861d8db4fce84b4a6ef29",
+          "draft_plan_id": "draft_f2292760933ad786",
+          "interpretation": {
+            "allowed_claims": [
+              "The team had an active-ball possession anchor.",
+              "A geometric progressive corridor appeared under configured thresholds.",
+              "Replay coordinates come from canonical tracking frames."
+            ],
+            "automatic_execution": false,
+            "corridor_parameters": {
+              "corridor_max_window_seconds": 2.0,
+              "corridor_minimum_clearance_m": null,
+              "corridor_minimum_duration_seconds": null,
+              "corridor_minimum_progression_m": null
+            },
+            "disallowed_claims": [
+              "Intent, optimality, pass probability, or video-backed claims."
+            ],
+            "intent": "draft_experimental_progressive_corridor_query",
+            "recipe_state": "EXPERIMENTAL",
+            "summary": "Drafting a progressive corridor plan based on the clarification about support after the line break."
+          },
+          "model_name": "gpt-4o-mini-2024-07-18",
+          "model_provider": "openai",
+          "model_response_id": "chatcmpl-DtGFwiWxAQROxlnM8Tm0JbOHUdkTV",
+          "ok": true,
+          "original_language": "Show support after the line break.",
+          "raw_model_output": {
+            "action": "draft_corridor",
+            "capability_gaps": [],
+            "clarification_questions": [],
+            "corridor_parameters": {
+              "corridor_max_window_seconds": 2.0,
+              "corridor_minimum_clearance_m": null,
+              "corridor_minimum_duration_seconds": null,
+              "corridor_minimum_progression_m": null
+            },
+            "interpretation": "Drafting a progressive corridor plan based on the clarification about support after the line break.",
+            "recipe_id": "possession_corridor_availability_v1",
+            "requested_evidence": []
+          },
+          "selected_recipe": {
+            "allowed_claims": [
+              "The team had an active-ball possession anchor.",
+              "A geometric progressive corridor appeared under the configured relation thresholds.",
+              "The replay coordinates come from canonical 25 Hz source frames."
+            ],
+            "display_name": "Possession Corridor Availability",
+            "limitations": [
+              "Experimental plan; not an approved recipe.",
+              "No offside, receiver body orientation, pressure, pass probability, or optimality model is evaluated.",
+              "No match video is used."
+            ],
+            "output_classifications": [
+              "PROGRESSIVE_CORRIDOR_AVAILABLE"
+            ],
+            "recipe_id": "possession_corridor_availability_v1",
+            "recipe_version": "0.1.0",
+            "state": "EXPERIMENTAL"
+          },
+          "status": "DRAFT_VALIDATED",
+          "system_prompt_hash": "fa46f2fa146cd6046f1c2890372532cb25538fe4dcb6f36e83bfc4464b367445",
+          "tool_calls": [
+            {
+              "arguments_summary": {},
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 1,
+              "ok": true,
+              "request_hash": "aacdd33c34a78bf3f4894f94a83e27c4b05772423e6ae8c6c079b3de32a495e4",
+              "response_hash": "bd67c02a4507be96dc6cec7e16950fbf7633a25b7efd71459926f3b22b92500c",
+              "response_keys": [
+                "default_complexity_limits",
+                "evidence_fields",
+                "forbidden_surfaces",
+                "generated_at",
+                "host_owned_complexity_ceilings",
+                "limitations",
+                "milestone",
+                "operators",
+                "primitives",
+                "recipe_states",
+                "relations",
+                "safe_operator_source_rules",
+                "schema_version",
+                "tools"
+              ],
+              "tool_name": "list_capabilities"
+            },
+            {
+              "arguments_summary": {
+                "capability_name": "geometric_progressive_corridor_from_anchor_set"
+              },
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 2,
+              "ok": true,
+              "request_hash": "5e2ddedc7ee08ae354471f4d607f4eec347d07c393896fdecbf8ca9d2bcf643a",
+              "response_hash": "a64771d290b72ee7cb06fd2207ea2c5d724411aea2e128b423ff863e1057e7c6",
+              "response_keys": [
+                "capability",
+                "ok"
+              ],
+              "tool_name": "describe_capability"
+            },
+            {
+              "arguments_summary": {
+                "plan_document": {
+                  "plan_id": "hermes_s2_progressive_corridor_experimental",
+                  "recipe_id": "possession_corridor_availability_v1",
+                  "status": "experimental"
+                },
+                "source_label": "hermes_s2_model"
+              },
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 3,
+              "ok": true,
+              "request_hash": "6d831c853dc5fe4ebbc39a701fa68c6c1a2174a89ae6b90d224293889dc8b257",
+              "response_hash": "6208a8eb88baed24f8305d729190bca74434171475955510e3bfa5b994785ae4",
+              "response_keys": [
+                "draft_plan_hash",
+                "draft_plan_id",
+                "ok",
+                "plan_status",
+                "recipe_id",
+                "recipe_version"
+              ],
+              "tool_name": "submit_query_plan"
+            },
+            {
+              "arguments_summary": {
+                "draft_plan_id": "draft_f2292760933ad786"
+              },
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 4,
+              "ok": true,
+              "request_hash": "964e706694392f2141e08ea49aaead68a1ec84834968b4588357b5f786f7b1de",
+              "response_hash": "f60bd30f729857b8bd9b4fc7e76f1ec7efc8afe64498086792b3261525e4be25",
+              "response_keys": [
+                "bound_plan_hash",
+                "bound_plan_id",
+                "draft_plan_id",
+                "execution_profile",
+                "issues",
+                "ok",
+                "plan_id",
+                "plan_status",
+                "recipe_id"
+              ],
+              "tool_name": "validate_query_plan"
+            }
+          ],
+          "tool_schema_hash": "c7153cca5b1172b082dbb5ca434422f4af330d3f20661bd91da389745d027a74",
+          "trace_id": "hermes_472e33928a94804c",
+          "validation_result": {
+            "bound_plan_hash": "295fa06fc2bf843a8e4b44ab227981db11c0dafcc61f0233e9aaece658911372",
+            "bound_plan_id": "bound_295fa06fc2bf843a",
+            "draft_plan_id": "draft_f2292760933ad786",
+            "execution_profile": "generic",
+            "issues": [],
+            "ok": true,
+            "plan_id": "hermes_s2_progressive_corridor_experimental",
+            "plan_status": "experimental",
+            "recipe_id": "possession_corridor_availability_v1"
+          }
+        },
+        "initial": {
+          "agent_kind": "model_backed",
+          "bound_plan_hash": null,
+          "bound_plan_id": null,
+          "capability_context_hash": "a71a60ef83f0bf2cfa13cbd9748ba72a17bec8cc9e0a9fae60b8a20640ecf56b",
+          "capability_gaps": [],
+          "clarification_questions": [
+            "What does 'support' refer to in this context? Are you looking for a progressive corridor, passing lane, or something else?",
+            "What time window should apply for the support you are requesting?"
+          ],
+          "draft_plan_hash": null,
+          "draft_plan_id": null,
+          "interpretation": {
+            "automatic_execution": false,
+            "intent": "clarify_tactical_request",
+            "summary": "The request is ambiguous regarding what 'support' means in this context."
+          },
+          "model_name": "gpt-4o-mini-2024-07-18",
+          "model_provider": "openai",
+          "model_response_id": "chatcmpl-DtGFu4eHntsXNGI3zomr54SKvoSv1",
+          "ok": false,
+          "original_language": "Show support after the line break.",
+          "raw_model_output": {
+            "action": "clarify",
+            "capability_gaps": [],
+            "clarification_questions": [
+              "What does 'support' refer to in this context? Are you looking for a progressive corridor, passing lane, or something else?",
+              "What time window should apply for the support you are requesting?"
+            ],
+            "corridor_parameters": {
+              "corridor_max_window_seconds": null,
+              "corridor_minimum_clearance_m": null,
+              "corridor_minimum_duration_seconds": null,
+              "corridor_minimum_progression_m": null
+            },
+            "interpretation": "The request is ambiguous regarding what 'support' means in this context.",
+            "recipe_id": null,
+            "requested_evidence": []
+          },
+          "selected_recipe": null,
+          "status": "CLARIFICATION_REQUIRED",
+          "system_prompt_hash": "fa46f2fa146cd6046f1c2890372532cb25538fe4dcb6f36e83bfc4464b367445",
+          "tool_calls": [
+            {
+              "arguments_summary": {},
+              "caller_profile": "HERMES_S2",
+              "error_code": null,
+              "index": 1,
+              "ok": true,
+              "request_hash": "aacdd33c34a78bf3f4894f94a83e27c4b05772423e6ae8c6c079b3de32a495e4",
+              "response_hash": "9c57e28382e45b7404ca99c25f80edacd2f206111cd6669ae4cd27a710e1d382",
+              "response_keys": [
+                "default_complexity_limits",
+                "evidence_fields",
+                "forbidden_surfaces",
+                "generated_at",
+                "host_owned_complexity_ceilings",
+                "limitations",
+                "milestone",
+                "operators",
+                "primitives",
+                "recipe_states",
+                "relations",
+                "safe_operator_source_rules",
+                "schema_version",
+                "tools"
+              ],
+              "tool_name": "list_capabilities"
+            }
+          ],
+          "tool_schema_hash": "c7153cca5b1172b082dbb5ca434422f4af330d3f20661bd91da389745d027a74",
+          "trace_id": "hermes_d67ff3342a26fbec",
+          "validation_result": null
+        }
+      },
+      "id": "s2.clarification_round_trip_to_validated_plan",
+      "message": "A clarification answer changes an ambiguous support request into a validated supported plan.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "path": "artifacts/m1.2/agent-evaluation-corpus.json"
+      },
+      "id": "s2.initial_evaluation_corpus_frozen",
+      "message": "Initial S2 evaluation corpus exists with supported, ambiguous, and unsupported prompts.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "ambiguous_accuracy": 0.9,
+        "invented_identifier_count": 0,
+        "schema_valid_or_refusal_rate": 1.0,
+        "supported_accuracy": 0.9615384615384616,
+        "total": 46,
+        "unauthorized_tool_call_count": 0,
+        "unconfirmed_execution_count": 0,
+        "unsupported_accuracy": 1.0
+      },
+      "id": "s2.model_backed_corpus_scores_pass",
+      "message": "Frozen corpus is executed and scored against S2 model-backed acceptance thresholds.",
+      "status": "pass"
+    }
+  ],
+  "gate": "S2_hermes_drafting_and_clarification",
+  "generated_at": "2026-06-21T17:30:03+00:00",
+  "milestone": "M1.2",
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "pass": 12
+  }
+}

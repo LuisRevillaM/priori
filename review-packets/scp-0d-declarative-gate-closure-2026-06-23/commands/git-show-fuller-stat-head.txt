@@ -1,0 +1,28 @@
+commit 6ae85300e80909dc8060c078e58441eccdf1c0bc
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Tue Jun 23 16:47:01 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Tue Jun 23 16:47:01 2026 -0700
+
+    Close SCP-0 declarative gates
+
+ artifacts/scp-0/verification-report.json           | 803 +++++++++++++++++++++
+ delivery/ledger.jsonl                              |   1 +
+ delivery/scp-0/SPEC.md                             |  37 +-
+ delivery/scp-0/progress.md                         |   3 +-
+ delivery/scp-0/status.yaml                         |  31 +-
+ .../2026-06-23-scp-0-semantic-registry.md          |  30 +
+ generated/semantic-registry/ai-projection.json     |  36 +-
+ .../semantic-registry/plan-artifact-index.json     |  12 +-
+ .../semantic-registry/product-projection.json      |  36 +-
+ .../recipe-library-projection.json                 |  36 +-
+ .../research-atlas-projection.json                 |   7 +-
+ .../semantic-registry/semantic-parity-report.json  |  73 +-
+ .../unsupported-capability-projection.json         |   7 +-
+ semantic-registry/registry.lock.json               |   7 +-
+ semantic-registry/registry.yaml                    |  86 ++-
+ .../schemas/semantic-registry.schema.json          |  48 ++
+ src/tqe/semantic_registry/generate.py              | 719 +++++++++++++++---
+ src/tqe/semantic_registry/models.py                |   8 +
+ tests/test_scp0_semantic_registry.py               | 223 ++++++
+ 19 files changed, 2040 insertions(+), 163 deletions(-)

@@ -1,0 +1,826 @@
+diff --git a/Makefile b/Makefile
+index 84922b0..a7541ee 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ PYTHON ?= $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python
+ PYTHONPATH := $(CURDIR)/src
+ export PYTHONPATH
+ 
+-.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-verify test
++.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify test
+ 
+ setup:
+ 	python3.12 -m venv .venv
+@@ -105,6 +105,9 @@ m1-1-gate-s6-verify:
+ m1-1-gate-s7-verify:
+ 	$(PYTHON) -m tqe.verification.m1_1_gate_s7
+ 
++m1-1-gate-s7r-verify:
++	$(PYTHON) -m tqe.verification.m1_1_gate_s7r
++
+ m1-1-verify:
+ 	$(PYTHON) -m tqe.verification.m1_1
+ 
+diff --git a/config/query-plans/ball_side_block_shift.ir.v1.json b/config/query-plans/ball_side_block_shift.ir.v1.json
+index 29eaaeb..76a3bda 100644
+--- a/config/query-plans/ball_side_block_shift.ir.v1.json
++++ b/config/query-plans/ball_side_block_shift.ir.v1.json
+@@ -291,7 +291,7 @@
+     "classification_mode": "exhaustive",
+     "complexity_limits": {
+       "max_plan_nodes": 32,
+-      "max_nesting_depth": 6,
++      "max_nesting_depth": 8,
+       "max_temporal_horizon_seconds": 12.0,
+       "max_returned_moments": 200,
+       "max_relations_per_anchor": 1,
+diff --git a/config/query-plans/opposite_corridor_after_shift.experimental.v1.json b/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
+index cfc6a9c..fc89f1a 100644
+--- a/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
++++ b/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
+@@ -363,7 +363,7 @@
+     "classification_mode": "partial_declared",
+     "complexity_limits": {
+       "max_plan_nodes": 40,
+-      "max_nesting_depth": 6,
++      "max_nesting_depth": 10,
+       "max_temporal_horizon_seconds": 12.0,
+       "max_returned_moments": 64,
+       "max_relations_per_anchor": 20,
+diff --git a/config/query-plans/possession_corridor_availability.experimental.v1.json b/config/query-plans/possession_corridor_availability.experimental.v1.json
+index 551e064..2c133b2 100644
+--- a/config/query-plans/possession_corridor_availability.experimental.v1.json
++++ b/config/query-plans/possession_corridor_availability.experimental.v1.json
+@@ -264,7 +264,7 @@
+         "node_id": "has_progressive_corridor",
+         "input": {
+           "source_node_id": "progressive_corridor",
+-          "output_name": "episodes"
++          "output_name": "anchor_evaluations"
+         },
+         "operator": {
+           "name": "exists",
+diff --git a/delivery/ledger.jsonl b/delivery/ledger.jsonl
+index b340cc3..cfdce2b 100644
+--- a/delivery/ledger.jsonl
++++ b/delivery/ledger.jsonl
+@@ -47,3 +47,4 @@
+ {"timestamp":"2026-06-20T16:12:47-07:00","milestone":"M1.1S","slice":"Gate_S6_second_real_plan_relation_proof","from":"NOT_STARTED","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["config/query-plans/possession_corridor_availability.experimental.v1.json","src/tqe/runtime/catalog.py","src/tqe/runtime/executor.py","src/tqe/verification/m1_1_gate_s6.py","Makefile","generated/capability-catalog.json","artifacts/m1.1/gate-s6-verification-report.json","artifacts/m1.1/gate-s4-verification-report.json","artifacts/m1.1/gate-s3r-verification-report.json","artifacts/m1.1/binder-validation-report.json","artifacts/m1.1/gate-d-verification-report.json","artifacts/m1.1/gate-e-verification-report.json","delivery/m1.1/reviews/gate-s6-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s6-second-pattern.md"],"notes":"Implemented and controller-accepted M1.1S Gate S6. Added a second real generic plan, possession_corridor_availability_experimental_v1, which starts from possession_segment anchors, runs geometric_progressive_corridor_from_anchor_set, evaluates has_progressive_corridor, and emits PROGRESSIVE_CORRIDOR_AVAILABLE rows through generic rule-driven result emission. The plan emits 64 generic rows from canonical data without wide-entry, defensive-shift, outcome, or destination-entry nodes. Runtime relation episodes are declared outputs and state.accepted remains empty. make m1-1-gate-s6-verify passes 8/0/0; regressions pass for S4 16/0/0, S3R 13/0/0, Gate A 78/0/0, Gate D 11/0/0, Gate E 21/0/0, make test 27 tests, and git diff --check."}
+ {"timestamp":"2026-06-20T17:23:47-07:00","milestone":"M1.1S","slice":"Gate_S5_alias_based_evidence_projection","from":"NOT_STARTED","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["src/tqe/runtime/ir.py","src/tqe/runtime/executor.py","src/tqe/verification/m1_1_gate_s5.py","Makefile","config/query-plans/opposite_corridor_after_shift.experimental.v1.json","generated/tactical-query-plan.schema.json","generated/tactical-query-plan.types.ts","artifacts/m1.1/gate-s5-verification-report.json","artifacts/m1.1/gate-s4-verification-report.json","artifacts/m1.1/gate-s6-verification-report.json","artifacts/m1.1/binder-validation-report.json","delivery/m1.1/reviews/gate-s5-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s5-evidence-aliases.md"],"notes":"Implemented and controller-accepted M1.1S Gate S5. Evidence requests now support explicit required/optional semantics; missing required evidence yields INCOMPLETE execution with requested_evidence_failures provenance, while optional destination-entry evidence can be null by contract. The S5 verifier proves stable aliases, node-renaming public-shape preservation, evidence rewiring changes projected values, unsupported evidence fields fail at bind time, missing required evidence fails visibly, and second-plan rows do not leak hardcoded M1 evidence. make m1-1-gate-s5-verify passes 6/0/0; regressions pass for S4 16/0/0, S6 8/0/0, Gate A 78/0/0, make test 27 tests, and git diff --check."}
+ {"timestamp":"2026-06-20T17:42:40-07:00","milestone":"M1.1S","slice":"Gate_S7_parity_adapter_final_architecture_proof","from":"NOT_STARTED","to":"ACCEPTED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW","actor":"controller","evidence":["src/tqe/verification/m1_1_gate_s7.py","Makefile","artifacts/m1.1/gate-s7-verification-report.json","artifacts/m1.1/gate-s5-verification-report.json","artifacts/m1.1/gate-s6-verification-report.json","artifacts/m1.1/gate-b-verification-report.json","delivery/m1.1/reviews/gate-s7-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s7-final-proof.md","delivery/m1.1/status.yaml"],"notes":"Implemented and controller-accepted M1.1S Gate S7 pending external review. The final architecture verifier proves prior S-gates are passing, M1 exact parity remains isolated behind explicit legacy_m1_parity with 180 rows and 900 traces, S4 and S6 generic plans reproduce expected row counts, generic reproduction does not depend on generated/artifact caches, generic result emission and declared-output trace construction contain no approved or experimental predicate IDs, and packet source inputs are present. make m1-1-gate-s7-verify passes 7/0/0; regressions pass for S5 6/0/0, S6 8/0/0, make test 27 tests, and git diff --check. M1.2 remains blocked until external approval or required changes are integrated and reviewed."}
++{"timestamp":"2026-06-20T18:31:41-07:00","milestone":"M1.1S","slice":"Gate_S7R_relation_coverage_witness_semantics","from":"APPROVE_WITH_REQUIRED_CHANGES_BEFORE_M1_2","to":"ACCEPTED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW","actor":"controller","evidence":["/Users/luisrevilla/.codex/attachments/af23321f-d426-49e0-8e07-a2cfd8ffadc4/pasted-text.txt","docs/reviews/2026-06-20-m1-1s-gate-s7-external-review.md","delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md","delivery/m1.1/status.yaml","src/tqe/runtime/relations.py","src/tqe/runtime/executor.py","src/tqe/runtime/catalog.py","src/tqe/runtime/binder.py","config/query-plans/possession_corridor_availability.experimental.v1.json","src/tqe/verification/m1_1_gate_s7r.py","Makefile","artifacts/m1.1/gate-s7r-verification-report.json","artifacts/m1.1/gate-s6-verification-report.json","delivery/m1.1/reviews/gate-s7r-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s7r-relation-coverage.md"],"notes":"Integrated external decision APPROVE_WITH_REQUIRED_CHANGES_BEFORE_M1_2 and implemented S7R. Relation execution now emits per-anchor anchor_evaluations with PASS/FAIL/UNKNOWN coverage; S6 exists consumes anchor_evaluations instead of raw episodes; predicate traces carry witness_relation_id; evidence projection resolves relation fields against the witness and remains stable under episode reordering; count_at_least is anchor-relative and tri-state for relation coverage; generic non-match inspection preserves definitive FAIL; relation expansion is capped by max_relations_per_anchor and binder enforces max_execution_cost and max_nesting_depth; INCLUDE_WITH_WARNING preserves warning rule decisions and unknown predicates. make m1-1-gate-s7r-verify passes 10/0/0 and make m1-1-gate-s6-verify passes 8/0/0. M1.2 remains blocked pending external S7R review."}
+diff --git a/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md b/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+index 9d4e671..5b10afa 100644
+--- a/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
++++ b/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+@@ -315,6 +315,20 @@ Acceptance:
+ - deleting generated caches still reproduces results from canonical data;
+ - M1.1S external review packet is prepared and independently reviewed.
+ 
++### Gate S7R - Relation Coverage And Witness Semantics
++
++Acceptance:
++
++- relation nodes expose per-anchor evaluation coverage, not only positive relation episodes;
++- `exists` over relation coverage produces `PASS`, `FAIL`, and `UNKNOWN`;
++- tightening a relation threshold can turn `PASS` into definitive `FAIL`, not `UNKNOWN`;
++- relation predicate traces carry a deterministic witness relation ID when they pass;
++- requested relation evidence resolves against the witness relation and is stable under relation episode reordering;
++- `count_at_least` is anchor-relative and tri-state for relation coverage;
++- generic non-match inspection preserves definitive `FAIL` versus `UNKNOWN`;
++- `max_relations_per_anchor`, `max_execution_cost`, and `max_nesting_depth` are enforced or explicitly removed from the IR contract;
++- `INCLUDE_WITH_WARNING` preserves warning rule decisions and unknown required predicates.
++
+ ## Replacement Acceptance Tests
+ 
+ Before M1.2 begins, all of the following must pass:
+diff --git a/delivery/m1.1/status.yaml b/delivery/m1.1/status.yaml
+index 63791a2..09fd5f7 100644
+--- a/delivery/m1.1/status.yaml
++++ b/delivery/m1.1/status.yaml
+@@ -1,6 +1,6 @@
+ milestone: M1.1
+ name: "Composable Tactical Query Runtime"
+-state: M1_1S_S7_ACCEPTED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
++state: M1_1S_S7R_ACCEPTED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
+ source_of_truth: delivery/m1.1/SPEC.md
+ corrective_source_of_truth: delivery/m1.1/CORRECTIVE_SPEC.md
+ structural_corrective_source_of_truth: delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+@@ -38,6 +38,7 @@ slices:
+   S18_m1_1s_alias_based_evidence_projection: DONE
+   S19_m1_1s_second_real_plan_relation_proof: DONE
+   S20_m1_1s_parity_adapter_final_architecture_proof: DONE
++  S20R_m1_1s_relation_coverage_witness_semantics: DONE
+ promotion_gates:
+   Gate_0_M1_baseline_and_gold_set: DONE
+   Gate_A_type_system_and_binder: ACCEPTED_CONTROLLER_ONLY
+@@ -63,10 +64,11 @@ promotion_gates:
+   Gate_S5_alias_based_evidence_projection: ACCEPTED_CONTROLLER_ONLY
+   Gate_S6_second_real_plan_relation_proof: ACCEPTED_CONTROLLER_ONLY
+   Gate_S7_parity_adapter_final_architecture_proof: ACCEPTED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
++  Gate_S7R_relation_coverage_witness_semantics: ACCEPTED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
+ verification:
+-  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_S1_GATE_S2_GATE_S3_GATE_S3R_GATE_S4_GATE_S4R_GATE_S5_GATE_S6_GATE_S7_PASS
++  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_S1_GATE_S2_GATE_S3_GATE_S3R_GATE_S4_GATE_S4R_GATE_S5_GATE_S6_GATE_S7_GATE_S7R_PASS
+   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+-  independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19_REJECTED_M1_1R_GATE_R5_REVIEW_2026_06_20_S3_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R_REJECT_KEEP_S4_BLOCKED_2026_06_20_S3R2_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R3_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R4_APPROVE_S4_UNBLOCKED_2026_06_20_S4_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_SECOND_PATTERN_2026_06_20
+-  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_GATE_S1_GATE_S2_GATE_S3_GATE_S3R4_ACCEPTED_CONTROLLER_ONLY_S4_HELPER_SPLIT_ACCEPTED_CONTROLLER_ONLY_GATE_S4_ACCEPTED_CONTROLLER_ONLY_GATE_S4R_ACCEPTED_CONTROLLER_ONLY_GATE_S5_ACCEPTED_CONTROLLER_ONLY_GATE_S6_ACCEPTED_CONTROLLER_ONLY_GATE_S7_ACCEPTED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
++  independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19_REJECTED_M1_1R_GATE_R5_REVIEW_2026_06_20_S3_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R_REJECT_KEEP_S4_BLOCKED_2026_06_20_S3R2_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R3_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20_S3R4_APPROVE_S4_UNBLOCKED_2026_06_20_S4_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_SECOND_PATTERN_2026_06_20_S7_APPROVE_WITH_REQUIRED_CHANGES_BEFORE_M1_2_2026_06_20
++  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_GATE_S1_GATE_S2_GATE_S3_GATE_S3R4_ACCEPTED_CONTROLLER_ONLY_S4_HELPER_SPLIT_ACCEPTED_CONTROLLER_ONLY_GATE_S4_ACCEPTED_CONTROLLER_ONLY_GATE_S4R_ACCEPTED_CONTROLLER_ONLY_GATE_S5_ACCEPTED_CONTROLLER_ONLY_GATE_S6_ACCEPTED_CONTROLLER_ONLY_GATE_S7_ACCEPTED_CONTROLLER_ONLY_GATE_S7R_ACCEPTED_CONTROLLER_ONLY_PENDING_EXTERNAL_REVIEW
+   owner_acceptance: NOT_STARTED
+-  m1_2_blocked_until: M1_1S_EXTERNAL_REVIEW_APPROVAL_OR_REQUIRED_CHANGES_REVIEWED
++  m1_2_blocked_until: M1_1S_S7R_EXTERNAL_REVIEW_APPROVAL_OR_REQUIRED_CHANGES_REVIEWED
+diff --git a/generated/capability-catalog.json b/generated/capability-catalog.json
+index c7cfa04..477f799 100644
+--- a/generated/capability-catalog.json
++++ b/generated/capability-catalog.json
+@@ -1 +1 @@
+-{"default_complexity_limits":{"max_execution_cost":100000,"max_nesting_depth":8,"max_plan_nodes":40,"max_relations_per_anchor":1000,"max_returned_moments":100,"max_temporal_horizon_seconds":15.0},"operators":[{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gt","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a strict lower numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"lte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to an upper numeric threshold.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"eq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to an equal typed value.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"neq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to a non-equal typed value.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":true,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean"],"input_temporal_types":["frame_signal"],"limitations":["UNKNOWN remains UNKNOWN; absence is not converted to FALSE."],"name":"persists_for","output_cardinality":"collection","output_payload_type":"boolean","output_temporal_type":"episode_set","output_unit":"none","purpose":"Promote a boolean frame signal to intervals after minimum duration.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["boolean","relation_ref"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"exists","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Test whether an episode or relation collection contains any episode.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["entity_set","relation_ref","boolean"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"count_at_least","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Count a collection and compare to a count threshold.","version":"1.0.0"}],"primitives":[{"evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"executable":true,"inputs":[],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"possession_segment","outputs":[{"cardinality":"collection","entity_scope":"possession","evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"boolean","temporal_type":"episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","start_frame_id","end_frame_id"],"missing_data_semantics":"unknown","name":"anchors","payload_type":"anchor_ref","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Identify active-ball possession intervals for the perspective team.","version":"0.1.0"},{"evidence_fields":["wide_entry_y_m","ball_side"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Depends on canonical pitch coordinates and known pitch width."],"missing_data_semantics":"unknown","name":"ball_lateral_fraction","outputs":[{"cardinality":"single","entity_scope":"ball","evidence_fields":["wide_entry_y_m","ball_side"],"missing_data_semantics":"unknown","name":"fraction","payload_type":"number","temporal_type":"frame_signal","unit":"fraction"}],"parameters":[],"purpose":"Normalize ball distance from pitch centerline toward either touchline.","version":"0.1.0"},{"evidence_fields":["baseline_defensive_centroid_y_m","defending_team_id"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Goalkeepers are excluded from the outfield centroid."],"missing_data_semantics":"unknown","name":"defensive_outfield_centroid","outputs":[{"cardinality":"per_team","entity_scope":"team","evidence_fields":["baseline_defensive_centroid_y_m"],"missing_data_semantics":"unknown","name":"centroid_y","payload_type":"number","temporal_type":"frame_signal","unit":"metre"}],"parameters":[],"purpose":"Measure defending outfield team centroid without goalkeeper bias.","version":"0.1.0"},{"evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"possession","name":"possession_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"ball","name":"entry_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"per_team","entity_scope":"team","name":"defensive_centroid","payload_type":"number","required":true,"temporal_type":"frame_signal","unit":"metre"}],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"signed_lateral_shift","outputs":[{"cardinality":"single","entity_scope":"team","evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"missing_data_semantics":"unknown","name":"signed_shift","payload_type":"number","temporal_type":"frame_signal","unit":"metre"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","start_frame_id","end_frame_id"],"missing_data_semantics":"unknown","name":"anchors","payload_type":"anchor_ref","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Measure defensive centroid movement toward the ball side.","version":"0.1.0"},{"evidence_fields":["classification","outcome_frame_id"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"team","name":"accepted_shift_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"}],"kind":"primitive","limitations":["Does not infer intent, optimality, or missed opportunity."],"missing_data_semantics":"unknown","name":"outcome_classification","outputs":[{"cardinality":"single","entity_scope":"possession","evidence_fields":["classification","outcome_frame_id"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Outcome lookahead horizon in seconds.","maximum":30.0,"minimum":0.2,"name":"horizon","payload_type":"number","required":true,"unit":"second"}],"purpose":"Classify the post-anchor outcome under the frozen M1 predicates.","version":"0.1.0"},{"evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"relation","name":"relation_episodes","payload_type":"relation_ref","required":true,"temporal_type":"relation_episode_set","unit":"none"}],"kind":"primitive","limitations":["Requires an upstream relation episode set.","No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."],"missing_data_semantics":"unknown","name":"relation_destination_entry_classification","outputs":[{"cardinality":"single","entity_scope":"relation","evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Lookahead horizon for destination lane entry.","maximum":30.0,"minimum":0.2,"name":"destination_entry_horizon_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Seed used to derive deterministic experimental result IDs.","name":"result_id_seed","payload_type":"enum","required":true,"unit":"none"},{"allowed_values":["first_by_duration_clearance"],"description":"Deterministic selection strategy when an anchor has multiple relation episodes.","name":"episode_selection","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Classify whether the ball later enters the destination region of a previously evaluated relation episode.","version":"0.1.0"}],"relations":[{"evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"executable":true,"inputs":[{"cardinality":"single","entity_scope":"possession","name":"anchors","payload_type":"enum","required":true,"temporal_type":"frame_signal","unit":"none"}],"kind":"relation","limitations":["No pass probability.","No optimality or decision-quality claim.","No receiver body-orientation model.","No offside model in V1 acceptance."],"missing_data_semantics":"unknown","name":"geometric_progressive_corridor","outputs":[{"cardinality":"collection","entity_scope":"relation","evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"relation_ref","temporal_type":"relation_episode_set","unit":"none"}],"parameters":[{"description":"Maximum relation search window after the anchor.","maximum":15.0,"minimum":0.2,"name":"max_window_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Minimum forward progression from source to target.","maximum":80.0,"minimum":0.0,"name":"minimum_progression_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum source-target segment length.","maximum":80.0,"minimum":0.0,"name":"minimum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Maximum source-target segment length.","maximum":100.0,"minimum":0.0,"name":"maximum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum defender clearance from the source-target segment.","maximum":40.0,"minimum":0.0,"name":"minimum_clearance_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Frames required before a corridor is considered open.","maximum":100.0,"minimum":1.0,"name":"open_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Frames required before a corridor is considered closed.","maximum":100.0,"minimum":1.0,"name":"close_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Minimum open duration retained in the relation output.","maximum":15.0,"minimum":0.0,"name":"minimum_duration_seconds","payload_type":"number","required":true,"unit":"second"},{"allowed_values":["any","same_ball_side","opposite_ball_side"],"description":"Retain corridors by relation destination side relative to the ball side.","name":"side_filter","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Represent a geometrically clear forward connection from the ball location to an attacking teammate over an interval.","version":"0.1.0"},{"evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"anchor","name":"anchors","payload_type":"anchor_ref","required":true,"temporal_type":"episode_set","unit":"none"}],"kind":"relation","limitations":["No pass probability.","No optimality or decision-quality claim.","No player intent, causation, or missed-opportunity claim.","No receiver body-orientation or offside model."],"missing_data_semantics":"unknown","name":"geometric_progressive_corridor_from_anchor_set","outputs":[{"cardinality":"collection","entity_scope":"relation","evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"relation_ref","temporal_type":"relation_episode_set","unit":"none"}],"parameters":[{"description":"Maximum relation search window after the anchor.","maximum":15.0,"minimum":0.2,"name":"max_window_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Minimum forward progression from source to target.","maximum":80.0,"minimum":0.0,"name":"minimum_progression_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum source-target segment length.","maximum":80.0,"minimum":0.0,"name":"minimum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Maximum source-target segment length.","maximum":100.0,"minimum":0.0,"name":"maximum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum defender clearance from the source-target segment.","maximum":40.0,"minimum":0.0,"name":"minimum_clearance_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Frames required before a corridor is considered open.","maximum":100.0,"minimum":1.0,"name":"open_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Frames required before a corridor is considered closed.","maximum":100.0,"minimum":1.0,"name":"close_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Minimum open duration retained in the relation output.","maximum":15.0,"minimum":0.0,"name":"minimum_duration_seconds","payload_type":"number","required":true,"unit":"second"},{"allowed_values":["any","same_ball_side","opposite_ball_side"],"description":"Retain corridors by relation destination side relative to the ball side.","name":"side_filter","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Represent a geometrically clear forward connection from a generic anchor set to an attacking teammate over an interval.","version":"0.1.0"}],"schema_version":"1.0"}
++{"default_complexity_limits":{"max_execution_cost":100000,"max_nesting_depth":8,"max_plan_nodes":40,"max_relations_per_anchor":1000,"max_returned_moments":100,"max_temporal_horizon_seconds":15.0},"operators":[{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gt","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a strict lower numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"lte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to an upper numeric threshold.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"eq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to an equal typed value.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"neq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to a non-equal typed value.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":true,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean"],"input_temporal_types":["frame_signal"],"limitations":["UNKNOWN remains UNKNOWN; absence is not converted to FALSE."],"name":"persists_for","output_cardinality":"collection","output_payload_type":"boolean","output_temporal_type":"episode_set","output_unit":"none","purpose":"Promote a boolean frame signal to intervals after minimum duration.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["boolean","relation_ref"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"exists","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Test whether an episode or relation collection contains any episode.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["entity_set","relation_ref","boolean"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"count_at_least","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Count a collection and compare to a count threshold.","version":"1.0.0"}],"primitives":[{"evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"executable":true,"inputs":[],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"possession_segment","outputs":[{"cardinality":"collection","entity_scope":"possession","evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"boolean","temporal_type":"episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","start_frame_id","end_frame_id"],"missing_data_semantics":"unknown","name":"anchors","payload_type":"anchor_ref","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Identify active-ball possession intervals for the perspective team.","version":"0.1.0"},{"evidence_fields":["wide_entry_y_m","ball_side"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Depends on canonical pitch coordinates and known pitch width."],"missing_data_semantics":"unknown","name":"ball_lateral_fraction","outputs":[{"cardinality":"single","entity_scope":"ball","evidence_fields":["wide_entry_y_m","ball_side"],"missing_data_semantics":"unknown","name":"fraction","payload_type":"number","temporal_type":"frame_signal","unit":"fraction"}],"parameters":[],"purpose":"Normalize ball distance from pitch centerline toward either touchline.","version":"0.1.0"},{"evidence_fields":["baseline_defensive_centroid_y_m","defending_team_id"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Goalkeepers are excluded from the outfield centroid."],"missing_data_semantics":"unknown","name":"defensive_outfield_centroid","outputs":[{"cardinality":"per_team","entity_scope":"team","evidence_fields":["baseline_defensive_centroid_y_m"],"missing_data_semantics":"unknown","name":"centroid_y","payload_type":"number","temporal_type":"frame_signal","unit":"metre"}],"parameters":[],"purpose":"Measure defending outfield team centroid without goalkeeper bias.","version":"0.1.0"},{"evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"possession","name":"possession_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"ball","name":"entry_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"per_team","entity_scope":"team","name":"defensive_centroid","payload_type":"number","required":true,"temporal_type":"frame_signal","unit":"metre"}],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"signed_lateral_shift","outputs":[{"cardinality":"single","entity_scope":"team","evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"missing_data_semantics":"unknown","name":"signed_shift","payload_type":"number","temporal_type":"frame_signal","unit":"metre"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","start_frame_id","end_frame_id"],"missing_data_semantics":"unknown","name":"anchors","payload_type":"anchor_ref","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Measure defensive centroid movement toward the ball side.","version":"0.1.0"},{"evidence_fields":["classification","outcome_frame_id"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"team","name":"accepted_shift_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"}],"kind":"primitive","limitations":["Does not infer intent, optimality, or missed opportunity."],"missing_data_semantics":"unknown","name":"outcome_classification","outputs":[{"cardinality":"single","entity_scope":"possession","evidence_fields":["classification","outcome_frame_id"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Outcome lookahead horizon in seconds.","maximum":30.0,"minimum":0.2,"name":"horizon","payload_type":"number","required":true,"unit":"second"}],"purpose":"Classify the post-anchor outcome under the frozen M1 predicates.","version":"0.1.0"},{"evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"relation","name":"relation_episodes","payload_type":"relation_ref","required":true,"temporal_type":"relation_episode_set","unit":"none"}],"kind":"primitive","limitations":["Requires an upstream relation episode set.","No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."],"missing_data_semantics":"unknown","name":"relation_destination_entry_classification","outputs":[{"cardinality":"single","entity_scope":"relation","evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Lookahead horizon for destination lane entry.","maximum":30.0,"minimum":0.2,"name":"destination_entry_horizon_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Seed used to derive deterministic experimental result IDs.","name":"result_id_seed","payload_type":"enum","required":true,"unit":"none"},{"allowed_values":["first_by_duration_clearance"],"description":"Deterministic selection strategy when an anchor has multiple relation episodes.","name":"episode_selection","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Classify whether the ball later enters the destination region of a previously evaluated relation episode.","version":"0.1.0"}],"relations":[{"evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"executable":true,"inputs":[{"cardinality":"single","entity_scope":"possession","name":"anchors","payload_type":"enum","required":true,"temporal_type":"frame_signal","unit":"none"}],"kind":"relation","limitations":["No pass probability.","No optimality or decision-quality claim.","No receiver body-orientation model.","No offside model in V1 acceptance."],"missing_data_semantics":"unknown","name":"geometric_progressive_corridor","outputs":[{"cardinality":"collection","entity_scope":"relation","evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"relation_ref","temporal_type":"relation_episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","evaluation_status","relation_count","witness_relation_id","unknown_reason","state_counts"],"missing_data_semantics":"unknown","name":"anchor_evaluations","payload_type":"boolean","temporal_type":"episode_set","unit":"none"}],"parameters":[{"description":"Maximum relation search window after the anchor.","maximum":15.0,"minimum":0.2,"name":"max_window_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Minimum forward progression from source to target.","maximum":80.0,"minimum":0.0,"name":"minimum_progression_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum source-target segment length.","maximum":80.0,"minimum":0.0,"name":"minimum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Maximum source-target segment length.","maximum":100.0,"minimum":0.0,"name":"maximum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum defender clearance from the source-target segment.","maximum":40.0,"minimum":0.0,"name":"minimum_clearance_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Frames required before a corridor is considered open.","maximum":100.0,"minimum":1.0,"name":"open_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Frames required before a corridor is considered closed.","maximum":100.0,"minimum":1.0,"name":"close_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Minimum open duration retained in the relation output.","maximum":15.0,"minimum":0.0,"name":"minimum_duration_seconds","payload_type":"number","required":true,"unit":"second"},{"allowed_values":["any","same_ball_side","opposite_ball_side"],"description":"Retain corridors by relation destination side relative to the ball side.","name":"side_filter","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Represent a geometrically clear forward connection from the ball location to an attacking teammate over an interval.","version":"0.1.0"},{"evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"anchor","name":"anchors","payload_type":"anchor_ref","required":true,"temporal_type":"episode_set","unit":"none"}],"kind":"relation","limitations":["No pass probability.","No optimality or decision-quality claim.","No player intent, causation, or missed-opportunity claim.","No receiver body-orientation or offside model."],"missing_data_semantics":"unknown","name":"geometric_progressive_corridor_from_anchor_set","outputs":[{"cardinality":"collection","entity_scope":"relation","evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"relation_ref","temporal_type":"relation_episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","evaluation_status","relation_count","witness_relation_id","unknown_reason","state_counts"],"missing_data_semantics":"unknown","name":"anchor_evaluations","payload_type":"boolean","temporal_type":"episode_set","unit":"none"}],"parameters":[{"description":"Maximum relation search window after the anchor.","maximum":15.0,"minimum":0.2,"name":"max_window_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Minimum forward progression from source to target.","maximum":80.0,"minimum":0.0,"name":"minimum_progression_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum source-target segment length.","maximum":80.0,"minimum":0.0,"name":"minimum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Maximum source-target segment length.","maximum":100.0,"minimum":0.0,"name":"maximum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum defender clearance from the source-target segment.","maximum":40.0,"minimum":0.0,"name":"minimum_clearance_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Frames required before a corridor is considered open.","maximum":100.0,"minimum":1.0,"name":"open_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Frames required before a corridor is considered closed.","maximum":100.0,"minimum":1.0,"name":"close_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Minimum open duration retained in the relation output.","maximum":15.0,"minimum":0.0,"name":"minimum_duration_seconds","payload_type":"number","required":true,"unit":"second"},{"allowed_values":["any","same_ball_side","opposite_ball_side"],"description":"Retain corridors by relation destination side relative to the ball side.","name":"side_filter","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Represent a geometrically clear forward connection from a generic anchor set to an attacking teammate over an interval.","version":"0.1.0"}],"schema_version":"1.0"}
+diff --git a/src/tqe/runtime/binder.py b/src/tqe/runtime/binder.py
+index 0ea6d73..f14c838 100644
+--- a/src/tqe/runtime/binder.py
++++ b/src/tqe/runtime/binder.py
+@@ -186,6 +186,23 @@ class Binder:
+                 ),
+                 "default_invocation.max_results",
+             )
++        estimated_cost = len(draft_plan.nodes) * len(invocation.match_ids) * len(invocation.periods) * invocation.max_results
++        if estimated_cost > limits.max_execution_cost:
++            self._issue(
++                "complexity_execution_cost_exceeded",
++                (
++                    f"estimated_execution_cost={estimated_cost} exceeds "
++                    f"max_execution_cost={limits.max_execution_cost}"
++                ),
++                "draft_plan.complexity_limits.max_execution_cost",
++            )
++        depth = draft_plan_dependency_depth(draft_plan)
++        if depth > limits.max_nesting_depth:
++            self._issue(
++                "complexity_nesting_depth_exceeded",
++                f"dependency_depth={depth} exceeds max_nesting_depth={limits.max_nesting_depth}",
++                "draft_plan.nodes",
++            )
+         for index, node in enumerate(draft_plan.nodes):
+             if isinstance(node, DraftPredicateNode):
+                 if isinstance(node.duration, TypedValue) and node.duration.payload_type == PayloadType.NUMBER:
+@@ -782,6 +799,41 @@ class Binder:
+         return None
+ 
+ 
++def draft_plan_dependency_depth(draft_plan: DraftQueryPlan) -> int:
++    inputs_by_node: dict[str, list[str]] = {}
++    node_ids = {node.node_id for node in draft_plan.nodes}
++    for node in draft_plan.nodes:
++        if isinstance(node, DraftCatalogNode):
++            inputs_by_node[node.node_id] = [
++                reference.source_node_id
++                for reference in node.inputs.values()
++                if reference.source_node_id in node_ids
++            ]
++        elif isinstance(node, DraftPredicateNode):
++            inputs_by_node[node.node_id] = (
++                [node.input.source_node_id]
++                if node.input.source_node_id in node_ids
++                else []
++            )
++
++    visiting: set[str] = set()
++    visited: dict[str, int] = {}
++
++    def depth(node_id: str) -> int:
++        if node_id in visited:
++            return visited[node_id]
++        if node_id in visiting:
++            return len(inputs_by_node)
++        visiting.add(node_id)
++        parents = inputs_by_node.get(node_id, [])
++        value = 1 + max((depth(parent) for parent in parents), default=0)
++        visiting.remove(node_id)
++        visited[node_id] = value
++        return value
++
++    return max((depth(node.node_id) for node in draft_plan.nodes), default=0)
++
++
+ def bind_document_from_path(path: Path) -> BoundQueryPlan:
+     return bind_document(load_tactical_query_document(path))
+ 
+diff --git a/src/tqe/runtime/catalog.py b/src/tqe/runtime/catalog.py
+index 68be589..37b3740 100644
+--- a/src/tqe/runtime/catalog.py
++++ b/src/tqe/runtime/catalog.py
+@@ -443,6 +443,23 @@ def default_relations() -> list[CatalogEntry]:
+                         "target_close_point",
+                     ],
+                 )
++                ,
++                output(
++                    name="anchor_evaluations",
++                    temporal_type=TemporalContainer.EPISODE_SET,
++                    payload_type=PayloadType.BOOLEAN,
++                    cardinality=Cardinality.COLLECTION,
++                    entity_scope=EntityScope.ANCHOR,
++                    evidence_fields=[
++                        "anchor_id",
++                        "anchor_frame_id",
++                        "evaluation_status",
++                        "relation_count",
++                        "witness_relation_id",
++                        "unknown_reason",
++                        "state_counts",
++                    ],
++                ),
+             ],
+             inputs=[
+                 input_ref(
+@@ -594,6 +611,23 @@ def default_relations() -> list[CatalogEntry]:
+                         "target_close_point",
+                     ],
+                 )
++                ,
++                output(
++                    name="anchor_evaluations",
++                    temporal_type=TemporalContainer.EPISODE_SET,
++                    payload_type=PayloadType.BOOLEAN,
++                    cardinality=Cardinality.COLLECTION,
++                    entity_scope=EntityScope.ANCHOR,
++                    evidence_fields=[
++                        "anchor_id",
++                        "anchor_frame_id",
++                        "evaluation_status",
++                        "relation_count",
++                        "witness_relation_id",
++                        "unknown_reason",
++                        "state_counts",
++                    ],
++                ),
+             ],
+             inputs=[
+                 input_ref(
+diff --git a/src/tqe/runtime/executor.py b/src/tqe/runtime/executor.py
+index f1aca9f..9efffbd 100644
+--- a/src/tqe/runtime/executor.py
++++ b/src/tqe/runtime/executor.py
+@@ -447,6 +447,11 @@ class TacticalQueryExecutor:
+         )
+         for node in bound_plan.nodes:
+             self._execute_node(state=state, node=node, compatibility_profile=profile)
++            enforce_runtime_complexity_limits(
++                state=state,
++                node=node,
++                bound_plan=bound_plan,
++            )
+         return state
+ 
+     def _execute_node(
+@@ -691,11 +696,19 @@ def apply_result_semantics(
+             traces_by_result[result_id].append(trace)
+     for result in filtered:
+         result_id = str(result["result_id"])
+-        result["matched_classification_rules"] = matching_classification_rules(
+-            result=result,
+-            traces=traces_by_result.get(result_id, []),
+-            bound_plan=bound_plan,
+-        )
++        decisions = result.get("classification_rule_decisions")
++        if isinstance(decisions, list) and all(isinstance(item, dict) for item in decisions):
++            result["matched_classification_rules"] = [
++                str(item["label"])
++                for item in decisions
++                if item.get("label") is not None
++            ]
++        else:
++            result["matched_classification_rules"] = matching_classification_rules(
++                result=result,
++                traces=traces_by_result.get(result_id, []),
++                bound_plan=bound_plan,
++            )
+ 
+     if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INVALIDATE_EXECUTION:
+         if any(trace.status == "UNKNOWN" for trace in trace_records):
+@@ -754,10 +767,11 @@ def emit_generic_results_from_rules(
+                 existing_predicate_ids={trace.predicate_id for trace in anchor_traces},
+             )
+         )
+-        labels = rule_labels_for_traces(
++        rule_decisions = rule_decisions_for_traces(
+             traces=anchor_traces,
+             bound_plan=bound_plan,
+         )
++        labels = [decision["label"] for decision in rule_decisions]
+         traces.extend(
+             [
+                 trace.model_copy(
+@@ -781,6 +795,9 @@ def emit_generic_results_from_rules(
+             "classification": classification,
+             "accepted": True,
+             "matched_classification_rules": labels,
++            "classification_rule_decisions": rule_decisions,
++            "rule_match_status": rule_decisions[0]["rule_match_status"],
++            "unknown_required_predicates": rule_decisions[0]["unknown_required_predicates"],
+             "requested_evidence": project_requested_evidence_from_runtime(
+                 state=state,
+                 anchor=anchor,
+@@ -841,20 +858,41 @@ def rule_labels_for_traces(
+     traces: list[PredicateTrace],
+     bound_plan: BoundQueryPlan,
+ ) -> list[str]:
++    return [decision["label"] for decision in rule_decisions_for_traces(traces=traces, bound_plan=bound_plan)]
++
++
++def rule_decisions_for_traces(
++    *,
++    traces: list[PredicateTrace],
++    bound_plan: BoundQueryPlan,
++) -> list[dict[str, Any]]:
+     status_by_predicate = {trace.predicate_id: trace.status for trace in traces}
+-    matching: list[tuple[int, int, ClassificationRule]] = []
++    matching: list[tuple[int, int, ClassificationRule, str, list[str]]] = []
+     rule_order = {id(rule): index for index, rule in enumerate(bound_plan.classification_rules)}
+     for rule in bound_plan.classification_rules:
+         statuses = [status_by_predicate.get(predicate_id, "UNKNOWN") for predicate_id in rule.predicate_ids]
+         if any(status == "FAIL" for status in statuses):
+             continue
++        unknown_predicates = [
++            predicate_id
++            for predicate_id in rule.predicate_ids
++            if status_by_predicate.get(predicate_id, "UNKNOWN") == "UNKNOWN"
++        ]
+         if any(status == "UNKNOWN" for status in statuses):
+             if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INCLUDE_WITH_WARNING:
+-                matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule))
++                matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule, "WARNING", unknown_predicates))
+             continue
+-        matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule))
++        matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule, "PASS", []))
+     matching.sort(key=lambda item: (-item[0], item[1]))
+-    return [rule.label for _specificity, _order, rule in matching]
++    return [
++        {
++            "label": rule.label,
++            "rule_match_status": match_status,
++            "unknown_required_predicates": unknown_predicates,
++            "predicate_ids": list(rule.predicate_ids),
++        }
++        for _specificity, _order, rule, match_status, unknown_predicates in matching
++    ]
+ 
+ 
+ def matching_classification_rules(
+@@ -939,6 +977,24 @@ def selected_relation_id_for_anchor(
+     state: PeriodState,
+     anchor: RuntimeAnchor,
+ ) -> str | None:
++    for outputs in state.runtime_values.values():
++        for runtime_value in outputs.values():
++            for record in runtime_records(runtime_value):
++                if record.get("predicate_id") is None:
++                    continue
++                source_record = record.get("source_record") if isinstance(record.get("source_record"), dict) else record
++                if not record_matches_anchor(source_record, anchor):
++                    continue
++                source_evidence = record.get("source_evidence")
++                if isinstance(source_evidence, dict) and source_evidence.get("witness_relation_id") is not None:
++                    return str(source_evidence["witness_relation_id"])
++    for outputs in state.runtime_values.values():
++        runtime_value = outputs.get("anchor_evaluations")
++        if runtime_value is None:
++            continue
++        for record in runtime_records(runtime_value):
++            if record_matches_anchor(record, anchor) and record.get("witness_relation_id") is not None:
++                return str(record["witness_relation_id"])
+     for outputs in state.runtime_values.values():
+         runtime_value = outputs.get("classification")
+         if runtime_value is None:
+@@ -1010,6 +1066,36 @@ def catalog_input_value(
+         ) from error
+ 
+ 
++def enforce_runtime_complexity_limits(
++    *,
++    state: PeriodState,
++    node: BoundPlanNode,
++    bound_plan: BoundQueryPlan,
++) -> None:
++    if not isinstance(node, BoundCatalogNode) or node.kind != NodeKind.RELATION:
++        return
++    limit = int(bound_plan.complexity_limits.max_relations_per_anchor)
++    runtime_value = state.runtime_values.get(node.node_id, {}).get("episodes")
++    if runtime_value is None:
++        return
++    counts: Counter[str] = Counter()
++    for record in runtime_records(runtime_value):
++        key = str(record.get("anchor_id") or record.get("result_id") or record.get("anchor_frame_id") or "")
++        if key:
++            counts[key] += 1
++    violations = {
++        anchor_key: count
++        for anchor_key, count in counts.items()
++        if count > limit
++    }
++    if violations:
++        sample_key, sample_count = sorted(violations.items(), key=lambda item: (-item[1], item[0]))[0]
++        raise RuntimeError(
++            f"{node.node_id} exceeded max_relations_per_anchor={limit}; "
++            f"anchor {sample_key} produced {sample_count} relations"
++        )
++
++
+ def runtime_records(value: RuntimeValue) -> list[dict[str, Any]]:
+     if value.records and all(isinstance(item, dict) for item in value.records):
+         return value.records
+@@ -1424,6 +1510,12 @@ def execute_predicate_with_resolved_inputs(
+         source = runtime_value.value
+         if isinstance(source, list):
+             records = [record for record in source if isinstance(record, dict)]
++            coverage = relation_anchor_evaluation_records(records)
++            if coverage:
++                return exists_from_anchor_evaluations(
++                    node=node,
++                    records=coverage,
++                )
+             frame_ids = [
+                 source_record_frame_id(record)
+                 for record in records
+@@ -1467,10 +1559,146 @@ def execute_predicate_with_resolved_inputs(
+         compare = parameters.get("compare")
+         if compare is None or not isinstance(source, list):
+             raise RuntimeError(f"Unsupported count_at_least source for {node.node_id}")
++        records = [record for record in source if isinstance(record, dict)]
++        coverage = relation_anchor_evaluation_records(records)
++        if coverage:
++            return count_at_least_from_anchor_evaluations(
++                node=node,
++                records=coverage,
++                threshold=int(round(float(compare.value))),
++            )
+         return {"predicate": len(source) >= int(round(float(compare.value)))}
+     raise RuntimeError(f"Unsupported predicate operator {node.operator.name}")
+ 
+ 
++def relation_anchor_evaluation_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    return [
++        record
++        for record in records
++        if record.get("evaluation_status") in {"PASS", "FAIL", "UNKNOWN"}
++        and "anchor_frame_id" in record
++        and "relation_count" in record
++    ]
++
++
++def exists_from_anchor_evaluations(
++    *,
++    node: BoundPredicateNode,
++    records: list[dict[str, Any]],
++) -> dict[str, Any]:
++    statuses = [anchor_evaluation_status(record) for record in records]
++    return predicate_output_from_anchor_evaluations(
++        node=node,
++        records=records,
++        statuses=statuses,
++        values=[None if status is None else bool(status) for status in statuses],
++        threshold=None,
++    )
++
++
++def count_at_least_from_anchor_evaluations(
++    *,
++    node: BoundPredicateNode,
++    records: list[dict[str, Any]],
++    threshold: int,
++) -> dict[str, Any]:
++    statuses: list[bool | None] = []
++    values: list[int | None] = []
++    for record in records:
++        if str(record.get("evaluation_status")) == "UNKNOWN":
++            statuses.append(None)
++            values.append(None)
++            continue
++        count = optional_int(record.get("relation_count"))
++        if count is None:
++            statuses.append(None)
++            values.append(None)
++            continue
++        statuses.append(count >= threshold)
++        values.append(count)
++    return predicate_output_from_anchor_evaluations(
++        node=node,
++        records=records,
++        statuses=statuses,
++        values=values,
++        threshold=TypedValue(payload_type=PayloadType.NUMBER, value=threshold, unit=Unit.COUNT),
++    )
++
++
++def anchor_evaluation_status(record: dict[str, Any]) -> bool | None:
++    status = str(record.get("evaluation_status"))
++    if status == "PASS":
++        return True
++    if status == "FAIL":
++        return False
++    return None
++
++
++def predicate_output_from_anchor_evaluations(
++    *,
++    node: BoundPredicateNode,
++    records: list[dict[str, Any]],
++    statuses: list[bool | None],
++    values: list[Any],
++    threshold: TypedValue | None,
++) -> dict[str, Any]:
++    usable = [
++        (record, status, value, optional_int(record.get("anchor_frame_id")))
++        for record, status, value in zip(records, statuses, values, strict=True)
++    ]
++    usable = [
++        (record, status, value, frame_id)
++        for record, status, value, frame_id in usable
++        if frame_id is not None
++    ]
++    predicate_records: list[dict[str, Any]] = []
++    for record, status, value, frame_id in usable:
++        predicate_records.append(
++            predicate_record_for_source_record(
++                source_record=record,
++                node=node,
++                status=predicate_status_label(status),
++                value=predicate_anchor_evaluation_value(value),
++                threshold=threshold,
++                unit=threshold.unit if threshold is not None else Unit.NONE,
++                frame_id=frame_id,
++                source_evidence={
++                    "source_node_id": node.input.source_node_id,
++                    "source_output_name": node.input.output_name,
++                    "witness_relation_id": record.get("witness_relation_id"),
++                    "relation_count": record.get("relation_count"),
++                    "evaluation_status": record.get("evaluation_status"),
++                    "unknown_reason": record.get("unknown_reason"),
++                },
++            )
++        )
++    return {
++        "predicate": FrameSignal(
++            frame_ids=[int(frame_id) for _record, _status, _value, frame_id in usable],
++            values=[status for _record, status, _value, _frame_id in usable],
++            unknown_mask=[status is None for _record, status, _value, _frame_id in usable],
++            unit=node.output.unit,
++            entity_scope=node.output.entity_scope,
++        ),
++        "predicate_records": predicate_records,
++        "items": [
++            record
++            for record, status, _value, _frame_id in usable
++            if status is True
++        ],
++    }
++
++
++def predicate_anchor_evaluation_value(value: Any) -> TypedValue | None:
++    if value is None:
++        return None
++    if isinstance(value, bool):
++        return TypedValue(payload_type=PayloadType.BOOLEAN, value=value, unit=Unit.NONE)
++    if isinstance(value, int | float) and not isinstance(value, bool):
++        return TypedValue(payload_type=PayloadType.NUMBER, value=float(value), unit=Unit.COUNT)
++    return None
++
++
+ def numeric_runtime_values(runtime_value: RuntimeValue, node_id: str) -> list[float | None]:
+     value = runtime_frame_values(runtime_value)
+     if not isinstance(value, list):
+@@ -1946,6 +2174,7 @@ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatal
+     if not source_results:
+         state.signals[node.node_id] = {
+             "episodes": [],
++            "anchor_evaluations": [],
+             "source_results": [],
+             "summary": {
+                 "episode_count": 0,
+@@ -1997,14 +2226,23 @@ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatal
+             item["relation_id"],
+         )
+     )
++    anchor_evaluations = relation_anchor_evaluations_from_filtered(
++        source_results=source_results,
++        filtered=filtered,
++        raw_anchor_evaluations=relation_report.get("anchor_evaluations") or [],
++    )
+     state.signals[node.node_id] = {
+         "episodes": filtered,
++        "anchor_evaluations": anchor_evaluations,
+         "source_results": source_results,
+         "anchor_source": relation_anchor_source(node),
+         "summary": {
+             **relation_report["summary"],
+             "filtered_episode_count": len(filtered),
+             "filtered_result_count_with_episode": len({item["result_id"] for item in filtered}),
++            "filtered_anchor_evaluation_counts": dict(
++                sorted(Counter(item["evaluation_status"] for item in anchor_evaluations).items())
++            ),
+             "anchor_source": relation_anchor_source(node),
+             "side_filter": side_filter,
+             "minimum_duration_seconds": minimum_duration_seconds,
+@@ -2014,6 +2252,95 @@ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatal
+     }
+ 
+ 
++def relation_anchor_evaluations_from_filtered(
++    *,
++    source_results: list[dict[str, Any]],
++    filtered: list[dict[str, Any]],
++    raw_anchor_evaluations: list[dict[str, Any]],
++) -> list[dict[str, Any]]:
++    raw_by_result_id = {
++        str(record.get("result_id")): record
++        for record in raw_anchor_evaluations
++        if isinstance(record, dict) and record.get("result_id") is not None
++    }
++    filtered_by_result_id: dict[str, list[dict[str, Any]]] = defaultdict(list)
++    for episode in filtered:
++        filtered_by_result_id[str(episode["result_id"])].append(episode)
++
++    evaluations: list[dict[str, Any]] = []
++    for source_result in source_results:
++        result_id = str(source_result["result_id"])
++        raw = raw_by_result_id.get(result_id, {})
++        episodes = filtered_by_result_id.get(result_id, [])
++        base = {
++            **raw,
++            "relation": "geometric_progressive_corridor",
++            "relation_version": "0.1.0",
++            "result_id": result_id,
++            "anchor_id": str(source_result.get("anchor_id") or result_id),
++            "match_id": str(source_result["match_id"]),
++            "period": str(source_result["period"]),
++            "perspective_team_role": str(source_result["perspective_team_role"]),
++            "defending_team_role": str(source_result["defending_team_role"]),
++            "anchor_frame_id": int(source_result["anchor_frame_id"]),
++            "source_result": source_result,
++            "relation_anchor_source": raw.get("relation_anchor_source"),
++        }
++        if episodes:
++            witness = selected_relation_episode(episodes)
++            evaluations.append(
++                {
++                    **base,
++                    "evaluation_status": "PASS",
++                    "relation_count": len(episodes),
++                    "witness_relation_id": str(witness["relation_id"]),
++                    "unknown_reason": None,
++                }
++            )
++            continue
++        if raw.get("evaluation_status") == "UNKNOWN":
++            evaluations.append(
++                {
++                    **base,
++                    "evaluation_status": "UNKNOWN",
++                    "relation_count": 0,
++                    "witness_relation_id": None,
++                    "unknown_reason": raw.get("unknown_reason") or "relation_evidence_unavailable",
++                }
++            )
++            continue
++        evaluations.append(
++            {
++                **base,
++                "evaluation_status": "FAIL",
++                "relation_count": 0,
++                "witness_relation_id": None,
++                "unknown_reason": None,
++            }
++        )
++    evaluations.sort(
++        key=lambda item: (
++            str(item["match_id"]),
++            str(item["period"]),
++            int(item["anchor_frame_id"]),
++            str(item["result_id"]),
++        )
++    )
++    return evaluations
++
++
++def selected_relation_episode(episodes: list[dict[str, Any]]) -> dict[str, Any]:
++    return sorted(
++        episodes,
++        key=lambda item: (
++            -float(item["duration_seconds"]),
++            -float(item["minimum_clearance_m"]),
++            int(item["open_frame_id"]),
++            str(item["relation_id"]),
++        ),
++    )[0]
++
++
+ def select_relation_episode(
+     relation_candidates: list[dict[str, Any]],
+     episode_selection: str,
+diff --git a/src/tqe/runtime/relations.py b/src/tqe/runtime/relations.py
+index 2f82a80..52caf47 100644
+--- a/src/tqe/runtime/relations.py
++++ b/src/tqe/runtime/relations.py
+@@ -41,6 +41,7 @@ def evaluate_geometric_progressive_corridors(
+     players = read_table(canonical_root / "players.parquet")
+     positions_cache: dict[tuple[str, str], pd.DataFrame] = {}
+     episodes: list[dict[str, Any]] = []
++    anchor_evaluations: list[dict[str, Any]] = []
+     negative_examples: list[dict[str, Any]] = []
+     state_counts: Counter[str] = Counter()
+ 
+@@ -62,6 +63,7 @@ def evaluate_geometric_progressive_corridors(
+             config=config,
+         )
+         episodes.extend(relation_rows)
++        anchor_evaluations.append(anchor_evaluation_for_result(result, relation_rows, counts))
+         negative_examples.extend(negatives)
+         state_counts.update(counts)
+ 
+@@ -83,6 +85,14 @@ def evaluate_geometric_progressive_corridors(
+             item["target_player_id"],
+         )
+     )
++    anchor_evaluations.sort(
++        key=lambda item: (
++            item["match_id"],
++            item["period"],
++            item["anchor_frame_id"],
++            item["result_id"],
++        )
++    )
+     selected_negative_examples = negative_examples[:40]
+     unknown_invalid_controls = build_unknown_invalid_controls(results, canonical_root, players, positions_cache)
+     visual_review_cases = select_visual_review_cases(episodes, selected_negative_examples)
+@@ -106,6 +116,7 @@ def evaluate_geometric_progressive_corridors(
+             "state_counts": dict(sorted(state_counts.items())),
+         },
+         "episodes": episodes,
++        "anchor_evaluations": anchor_evaluations,
+         "negative_examples": selected_negative_examples,
+         "unknown_invalid_controls": unknown_invalid_controls,
+         "visual_review_cases": visual_review_cases,
+@@ -175,6 +186,61 @@ def evaluate_result_window(
+     return episodes, negative_examples, state_counts
+ 
+ 
++def anchor_evaluation_for_result(
++    result: dict[str, Any],
++    relation_rows: list[dict[str, Any]],
++    counts: Counter[str],
++) -> dict[str, Any]:
++    total_states = sum(counts.values())
++    known_states = counts.get("PASS", 0) + counts.get("FAIL", 0)
++    base = {
++        "relation": "geometric_progressive_corridor",
++        "relation_version": "0.1.0",
++        "result_id": str(result["result_id"]),
++        "anchor_id": str(result.get("anchor_id") or result["result_id"]),
++        "match_id": str(result["match_id"]),
++        "period": str(result["period"]),
++        "perspective_team_role": str(result["perspective_team_role"]),
++        "defending_team_role": str(result["defending_team_role"]),
++        "anchor_frame_id": int(result["anchor_frame_id"]),
++        "relation_count": len(relation_rows),
++        "state_counts": dict(sorted(counts.items())),
++    }
++    if relation_rows:
++        witness = relation_witness_episode(relation_rows)
++        return {
++            **base,
++            "evaluation_status": "PASS",
++            "witness_relation_id": str(witness["relation_id"]),
++            "unknown_reason": None,
++        }
++    if total_states == 0 or known_states == 0:
++        return {
++            **base,
++            "evaluation_status": "UNKNOWN",
++            "witness_relation_id": None,
++            "unknown_reason": "relation_evidence_unavailable",
++        }
++    return {
++        **base,
++        "evaluation_status": "FAIL",
++        "witness_relation_id": None,
++        "unknown_reason": None,
++    }
++
++
++def relation_witness_episode(relation_rows: list[dict[str, Any]]) -> dict[str, Any]:
++    return sorted(
++        relation_rows,
++        key=lambda item: (
++            -float(item["duration_seconds"]),
++            -float(item["minimum_clearance_m"]),
++            int(item["open_frame_id"]),
++            str(item["relation_id"]),
++        ),
++    )[0]
++
++
+ def corridor_state(
+     *,
+     result: dict[str, Any],

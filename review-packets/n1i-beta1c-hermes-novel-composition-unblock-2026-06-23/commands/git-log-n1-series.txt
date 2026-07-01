@@ -1,0 +1,24 @@
+54eef2e Verify N1I Hermes-origin novel composition
+7b7bf84 Harden N1I runtime seed and failure export
+437ee70 Repair Hermes AST authoring contract
+9fb1337 Record N1H faithful rerun blocker
+dcbe532 Fix N1 runner artifact root recovery
+aa015fa Record N1G faithful rerun blocker
+649c5d9 Make destination entry agent-authorable
+05aeea0 Document N1B N1F destination-entry reconciliation
+9de9673 Record N1F scoped Hermes blocked outcome
+56921fc Recover N1F draft evidence from tool trace
+534d51f Persist N1F failed draft evidence
+22a56a6 Include N1E origin bundle in deploy image
+7044946 Add N1F scoped Hermes origin runner
+2ca2ab3 Record N1E deploy clarification evidence
+43e3d25 Harden N1E recovery commit metadata
+129cb26 Add N1E failed-session recovery export
+9cac5a6 Add protected N1E origin bundle runner
+91ed238 N1E (option A attempt): deploy has the frozen contract but does not expose the origin trace — stop per Task 9
+2b65629 N1E: stop-and-report — live Hermes origin re-run not executable in this environment
+fe7645c N1D.1: Hermes origin & novelty attestation (fail-closed) + entry-mode fix
+6b8ad90 Workbench Beta 1B: comprehension polish
+a9d056e Workbench Beta 1A.1: UX state hardening
+16fa57e N1D: runtime-pinned novel-composition refresh + read-compare freeze gate
+59b6749 Workbench Beta 1A: product-flow pruning

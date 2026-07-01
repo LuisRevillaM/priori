@@ -1,0 +1,14 @@
+{
+  "candidate_commit": "19bc11a10214a41399dcee47305c2035edfa070b",
+  "candidate_target": "SCP-0E.1",
+  "candidate_tree": "1b6f7cee2239eabefe5bbde3f31778b6a46963ab",
+  "claim": "SCP-0E.1 exact-symmetry closure is ready for protected gate evaluation.",
+  "gate_milestone": "AFL-G0",
+  "program": "priori-autonomous-football-language",
+  "schema_version": "1.0",
+  "scp_0_state": "SCP_0E_1_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW",
+  "scp_1_gate": "BLOCKED_PENDING_EXTERNAL_SCP_0E_1_REVIEW",
+  "source_tree_hash": "e09032e0001a04fcbc89f96abaa809a464e3b0f89e447f5b153a10accaa44d0f",
+  "source_tree_hash_scope": "candidate packet source artifacts, not full working tree",
+  "submitted_at": "2026-06-24T04:17:24Z"
+}

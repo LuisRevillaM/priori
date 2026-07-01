@@ -1,0 +1,3017 @@
+{
+  "default_complexity_limits": {
+    "max_execution_cost": 100000,
+    "max_nesting_depth": 12,
+    "max_plan_nodes": 40,
+    "max_relations_per_anchor": 1000,
+    "max_returned_moments": 500,
+    "max_temporal_horizon_seconds": 15.0
+  },
+  "evidence_fields": {
+    "ball_lateral_fraction": [
+      "ball_side",
+      "wide_entry_y_m"
+    ],
+    "defensive_outfield_centroid": [
+      "baseline_defensive_centroid_y_m",
+      "defending_team_id"
+    ],
+    "geometric_progressive_corridor": [
+      "close_frame_id",
+      "destination_lane",
+      "destination_region",
+      "destination_region_bounds",
+      "destination_region_type",
+      "destination_side",
+      "duration_seconds",
+      "limiting_defender_id",
+      "minimum_clearance_m",
+      "open_confirm_frame_id",
+      "open_frame_id",
+      "relation_id",
+      "source_close_point",
+      "source_open_point",
+      "target_close_point",
+      "target_open_point",
+      "target_player_id"
+    ],
+    "geometric_progressive_corridor_from_anchor_set": [
+      "close_frame_id",
+      "destination_lane",
+      "destination_region",
+      "destination_region_bounds",
+      "destination_region_type",
+      "destination_side",
+      "duration_seconds",
+      "limiting_defender_id",
+      "minimum_clearance_m",
+      "open_confirm_frame_id",
+      "open_frame_id",
+      "relation_id",
+      "source_close_point",
+      "source_open_point",
+      "target_close_point",
+      "target_open_point",
+      "target_player_id"
+    ],
+    "outcome_classification": [
+      "classification",
+      "outcome_frame_id"
+    ],
+    "possession_segment": [
+      "possession_duration_seconds",
+      "possession_end_frame_id",
+      "possession_start_frame_id"
+    ],
+    "relation_destination_entry_classification": [
+      "base_result_id",
+      "classification",
+      "destination_entry_frame_id",
+      "destination_lane",
+      "destination_region",
+      "destination_region_bounds",
+      "destination_region_type",
+      "destination_side",
+      "relation_id"
+    ],
+    "signed_lateral_shift": [
+      "anchor_frame_id",
+      "baseline_end_frame_id",
+      "baseline_start_frame_id",
+      "block_shift_score",
+      "signed_shift_metres"
+    ]
+  },
+  "forbidden_surfaces": [
+    "arbitrary_python",
+    "sql",
+    "filesystem_editing",
+    "primitive_mutation",
+    "raw_match_dump",
+    "result_row_mutation",
+    "threshold_auto_tuning"
+  ],
+  "generated_at": "2026-06-21T14:38:19+00:00",
+  "host_owned_complexity_ceilings": {
+    "max_execution_cost": 100000,
+    "max_nesting_depth": 12,
+    "max_plan_nodes": 40,
+    "max_relations_per_anchor": 1000,
+    "max_returned_moments": 500,
+    "max_temporal_horizon_seconds": 15.0
+  },
+  "limitations": [
+    "Hermes receives this bounded context, not raw match dumps or primitive code.",
+    "exists/count_at_least are agent-visible only on anchor_evaluations.",
+    "legacy_m1_parity is allowed only for the frozen approved M1 recipe.",
+    "Unsupported concepts must be returned as capability gaps."
+  ],
+  "milestone": "M1.2",
+  "operators": [
+    {
+      "compare_payload_types": [
+        "number"
+      ],
+      "compare_required": true,
+      "compare_unit_must_match": true,
+      "duration_required": false,
+      "input_cardinalities": [
+        "single",
+        "per_player",
+        "per_team"
+      ],
+      "input_payload_types": [
+        "number"
+      ],
+      "input_temporal_types": [
+        "scalar",
+        "frame_signal"
+      ],
+      "limitations": [],
+      "name": "gt",
+      "output_cardinality": "single",
+      "output_payload_type": "boolean",
+      "output_temporal_type": "frame_signal",
+      "output_unit": "none",
+      "purpose": "Compare a numeric signal to a strict lower numeric threshold.",
+      "version": "1.0.0"
+    },
+    {
+      "compare_payload_types": [
+        "number"
+      ],
+      "compare_required": true,
+      "compare_unit_must_match": true,
+      "duration_required": false,
+      "input_cardinalities": [
+        "single",
+        "per_player",
+        "per_team"
+      ],
+      "input_payload_types": [
+        "number"
+      ],
+      "input_temporal_types": [
+        "scalar",
+        "frame_signal"
+      ],
+      "limitations": [],
+      "name": "gte",
+      "output_cardinality": "single",
+      "output_payload_type": "boolean",
+      "output_temporal_type": "frame_signal",
+      "output_unit": "none",
+      "purpose": "Compare a numeric signal to a numeric threshold.",
+      "version": "1.0.0"
+    },
+    {
+      "compare_payload_types": [
+        "number"
+      ],
+      "compare_required": true,
+      "compare_unit_must_match": true,
+      "duration_required": false,
+      "input_cardinalities": [
+        "single",
+        "per_player",
+        "per_team"
+      ],
+      "input_payload_types": [
+        "number"
+      ],
+      "input_temporal_types": [
+        "scalar",
+        "frame_signal"
+      ],
+      "limitations": [],
+      "name": "lte",
+      "output_cardinality": "single",
+      "output_payload_type": "boolean",
+      "output_temporal_type": "frame_signal",
+      "output_unit": "none",
+      "purpose": "Compare a numeric signal to an upper numeric threshold.",
+      "version": "1.0.0"
+    },
+    {
+      "compare_payload_types": [
+        "boolean",
+        "number",
+        "enum",
+        "entity_ref",
+        "team_ref",
+        "region_ref"
+      ],
+      "compare_required": true,
+      "compare_unit_must_match": true,
+      "duration_required": false,
+      "input_cardinalities": [
+        "single",
+        "per_player",
+        "per_team"
+      ],
+      "input_payload_types": [
+        "boolean",
+        "number",
+        "enum",
+        "entity_ref",
+        "team_ref",
+        "region_ref"
+      ],
+      "input_temporal_types": [
+        "scalar",
+        "frame_signal",
+        "episode_set"
+      ],
+      "limitations": [],
+      "name": "eq",
+      "output_cardinality": "single",
+      "output_payload_type": "boolean",
+      "output_temporal_type": "frame_signal",
+      "output_unit": "none",
+      "purpose": "Compare a signal to an equal typed value.",
+      "version": "1.0.0"
+    },
+    {
+      "compare_payload_types": [
+        "boolean",
+        "number",
+        "enum",
+        "entity_ref",
+        "team_ref",
+        "region_ref"
+      ],
+      "compare_required": true,
+      "compare_unit_must_match": true,
+      "duration_required": false,
+      "input_cardinalities": [
+        "single",
+        "per_player",
+        "per_team"
+      ],
+      "input_payload_types": [
+        "boolean",
+        "number",
+        "enum",
+        "entity_ref",
+        "team_ref",
+        "region_ref"
+      ],
+      "input_temporal_types": [
+        "scalar",
+        "frame_signal",
+        "episode_set"
+      ],
+      "limitations": [],
+      "name": "neq",
+      "output_cardinality": "single",
+      "output_payload_type": "boolean",
+      "output_temporal_type": "frame_signal",
+      "output_unit": "none",
+      "purpose": "Compare a signal to a non-equal typed value.",
+      "version": "1.0.0"
+    },
+    {
+      "compare_payload_types": [],
+      "compare_required": false,
+      "compare_unit_must_match": false,
+      "duration_required": true,
+      "input_cardinalities": [
+        "single",
+        "per_player",
+        "per_team"
+      ],
+      "input_payload_types": [
+        "boolean"
+      ],
+      "input_temporal_types": [
+        "frame_signal"
+      ],
+      "limitations": [
+        "UNKNOWN remains UNKNOWN; absence is not converted to FALSE."
+      ],
+      "name": "persists_for",
+      "output_cardinality": "collection",
+      "output_payload_type": "boolean",
+      "output_temporal_type": "episode_set",
+      "output_unit": "none",
+      "purpose": "Promote a boolean frame signal to intervals after minimum duration.",
+      "version": "1.0.0"
+    },
+    {
+      "agent_visible_source_rule": {
+        "allowed_output_name": "anchor_evaluations",
+        "rejected_sources": [
+          "raw boolean EpisodeSet",
+          "raw RelationEpisodeSet",
+          "generic collection counts not indexed by anchor_id"
+        ]
+      },
+      "compare_payload_types": [],
+      "compare_required": false,
+      "compare_unit_must_match": false,
+      "duration_required": false,
+      "input_cardinalities": [
+        "collection"
+      ],
+      "input_payload_types": [
+        "boolean"
+      ],
+      "input_temporal_types": [
+        "episode_set"
+      ],
+      "limitations": [],
+      "name": "exists",
+      "output_cardinality": "single",
+      "output_payload_type": "boolean",
+      "output_temporal_type": "frame_signal",
+      "output_unit": "none",
+      "purpose": "Test whether a boolean episode or anchor-evaluation collection exists.",
+      "version": "1.0.0"
+    },
+    {
+      "agent_visible_source_rule": {
+        "allowed_output_name": "anchor_evaluations",
+        "rejected_sources": [
+          "raw boolean EpisodeSet",
+          "raw RelationEpisodeSet",
+          "generic collection counts not indexed by anchor_id"
+        ]
+      },
+      "compare_payload_types": [
+        "number"
+      ],
+      "compare_required": true,
+      "compare_unit_must_match": false,
+      "duration_required": false,
+      "input_cardinalities": [
+        "collection"
+      ],
+      "input_payload_types": [
+        "entity_set",
+        "boolean"
+      ],
+      "input_temporal_types": [
+        "episode_set"
+      ],
+      "limitations": [],
+      "name": "count_at_least",
+      "output_cardinality": "single",
+      "output_payload_type": "boolean",
+      "output_temporal_type": "frame_signal",
+      "output_unit": "none",
+      "purpose": "Count a boolean or entity collection and compare to a count threshold.",
+      "version": "1.0.0"
+    }
+  ],
+  "primitives": [
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "possession_start_frame_id",
+        "possession_end_frame_id",
+        "possession_duration_seconds"
+      ],
+      "inputs": [],
+      "kind": "primitive",
+      "limitations": [],
+      "name": "possession_segment",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "possession",
+          "evidence_fields": [
+            "possession_start_frame_id",
+            "possession_end_frame_id",
+            "possession_duration_seconds"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "episodes",
+          "payload_type": "boolean",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "start_frame_id",
+            "end_frame_id"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "parameters": [],
+      "purpose": "Identify active-ball possession intervals for the perspective team.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "wide_entry_y_m",
+        "ball_side"
+      ],
+      "inputs": [],
+      "kind": "primitive",
+      "limitations": [
+        "Depends on canonical pitch coordinates and known pitch width."
+      ],
+      "name": "ball_lateral_fraction",
+      "outputs": [
+        {
+          "cardinality": "single",
+          "entity_scope": "ball",
+          "evidence_fields": [
+            "wide_entry_y_m",
+            "ball_side"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "fraction",
+          "payload_type": "number",
+          "temporal_type": "frame_signal",
+          "unit": "fraction"
+        }
+      ],
+      "parameters": [],
+      "purpose": "Normalize ball distance from pitch centerline toward either touchline.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "baseline_defensive_centroid_y_m",
+        "defending_team_id"
+      ],
+      "inputs": [],
+      "kind": "primitive",
+      "limitations": [
+        "Goalkeepers are excluded from the outfield centroid."
+      ],
+      "name": "defensive_outfield_centroid",
+      "outputs": [
+        {
+          "cardinality": "per_team",
+          "entity_scope": "team",
+          "evidence_fields": [
+            "baseline_defensive_centroid_y_m"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "centroid_y",
+          "payload_type": "number",
+          "temporal_type": "frame_signal",
+          "unit": "metre"
+        }
+      ],
+      "parameters": [],
+      "purpose": "Measure defending outfield team centroid without goalkeeper bias.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "baseline_start_frame_id",
+        "baseline_end_frame_id",
+        "anchor_frame_id",
+        "signed_shift_metres",
+        "block_shift_score"
+      ],
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "possession",
+          "name": "possession_episodes",
+          "payload_type": "boolean",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "ball",
+          "name": "entry_episodes",
+          "payload_type": "boolean",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "per_team",
+          "entity_scope": "team",
+          "name": "defensive_centroid",
+          "payload_type": "number",
+          "required": true,
+          "temporal_type": "frame_signal",
+          "unit": "metre"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [],
+      "name": "signed_lateral_shift",
+      "outputs": [
+        {
+          "cardinality": "single",
+          "entity_scope": "team",
+          "evidence_fields": [
+            "baseline_start_frame_id",
+            "baseline_end_frame_id",
+            "anchor_frame_id",
+            "signed_shift_metres",
+            "block_shift_score"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "signed_shift",
+          "payload_type": "number",
+          "temporal_type": "frame_signal",
+          "unit": "metre"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "start_frame_id",
+            "end_frame_id"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "parameters": [],
+      "purpose": "Measure defensive centroid movement toward the ball side.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": false,
+      "evidence_fields": [
+        "classification",
+        "outcome_frame_id"
+      ],
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "team",
+          "name": "accepted_shift_episodes",
+          "payload_type": "boolean",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Does not infer intent, optimality, or missed opportunity."
+      ],
+      "name": "outcome_classification",
+      "outputs": [
+        {
+          "cardinality": "single",
+          "entity_scope": "possession",
+          "evidence_fields": [
+            "classification",
+            "outcome_frame_id"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "classification",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Outcome lookahead horizon in seconds.",
+          "maximum": 30.0,
+          "minimum": 0.2,
+          "name": "horizon",
+          "payload_type": "number",
+          "required": true,
+          "unit": "second"
+        }
+      ],
+      "purpose": "Classify the post-anchor outcome under the frozen M1 predicates.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "classification",
+        "base_result_id",
+        "relation_id",
+        "destination_entry_frame_id",
+        "destination_region",
+        "destination_region_type",
+        "destination_region_bounds",
+        "destination_side",
+        "destination_lane"
+      ],
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "relation",
+          "name": "relation_episodes",
+          "payload_type": "relation_ref",
+          "required": true,
+          "temporal_type": "relation_episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "primitive",
+      "limitations": [
+        "Requires an upstream relation episode set.",
+        "No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."
+      ],
+      "name": "relation_destination_entry_classification",
+      "outputs": [
+        {
+          "cardinality": "single",
+          "entity_scope": "relation",
+          "evidence_fields": [
+            "classification",
+            "base_result_id",
+            "relation_id",
+            "destination_entry_frame_id",
+            "destination_region",
+            "destination_region_type",
+            "destination_region_bounds",
+            "destination_side",
+            "destination_lane"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "classification",
+          "payload_type": "enum",
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Lookahead horizon for destination lane entry.",
+          "maximum": 30.0,
+          "minimum": 0.2,
+          "name": "destination_entry_horizon_seconds",
+          "payload_type": "number",
+          "required": true,
+          "unit": "second"
+        },
+        {
+          "description": "Seed used to derive deterministic experimental result IDs.",
+          "name": "result_id_seed",
+          "payload_type": "enum",
+          "required": true,
+          "unit": "none"
+        },
+        {
+          "allowed_values": [
+            "first_by_duration_clearance"
+          ],
+          "description": "Deterministic selection strategy when an anchor has multiple relation episodes.",
+          "name": "episode_selection",
+          "payload_type": "enum",
+          "required": true,
+          "unit": "none"
+        }
+      ],
+      "purpose": "Classify whether the ball later enters the destination region of a previously evaluated relation episode.",
+      "version": "0.1.0"
+    }
+  ],
+  "recipe_states": [
+    "APPROVED",
+    "USER_SAVED",
+    "EXPERIMENTAL",
+    "DEPRECATED"
+  ],
+  "relations": [
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "relation_id",
+        "open_frame_id",
+        "open_confirm_frame_id",
+        "close_frame_id",
+        "duration_seconds",
+        "target_player_id",
+        "destination_side",
+        "destination_region",
+        "destination_region_type",
+        "destination_region_bounds",
+        "destination_lane",
+        "minimum_clearance_m",
+        "limiting_defender_id",
+        "source_open_point",
+        "target_open_point",
+        "source_close_point",
+        "target_close_point"
+      ],
+      "inputs": [
+        {
+          "cardinality": "single",
+          "entity_scope": "possession",
+          "name": "anchors",
+          "payload_type": "enum",
+          "required": true,
+          "temporal_type": "frame_signal",
+          "unit": "none"
+        }
+      ],
+      "kind": "relation",
+      "limitations": [
+        "No pass probability.",
+        "No optimality or decision-quality claim.",
+        "No receiver body-orientation model.",
+        "No offside model in V1 acceptance."
+      ],
+      "name": "geometric_progressive_corridor",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "relation",
+          "evidence_fields": [
+            "relation_id",
+            "open_frame_id",
+            "open_confirm_frame_id",
+            "close_frame_id",
+            "duration_seconds",
+            "target_player_id",
+            "destination_side",
+            "destination_region",
+            "destination_region_type",
+            "destination_region_bounds",
+            "destination_lane",
+            "minimum_clearance_m",
+            "limiting_defender_id",
+            "source_open_point",
+            "target_open_point",
+            "source_close_point",
+            "target_close_point"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "episodes",
+          "payload_type": "relation_ref",
+          "temporal_type": "relation_episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "evaluation_status",
+            "relation_count",
+            "witness_relation_id",
+            "unknown_reason",
+            "state_counts"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "boolean",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Maximum relation search window after the anchor.",
+          "maximum": 15.0,
+          "minimum": 0.2,
+          "name": "max_window_seconds",
+          "payload_type": "number",
+          "required": true,
+          "unit": "second"
+        },
+        {
+          "description": "Minimum forward progression from source to target.",
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "name": "minimum_progression_m",
+          "payload_type": "number",
+          "required": true,
+          "unit": "metre"
+        },
+        {
+          "description": "Minimum source-target segment length.",
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "name": "minimum_segment_length_m",
+          "payload_type": "number",
+          "required": true,
+          "unit": "metre"
+        },
+        {
+          "description": "Maximum source-target segment length.",
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "name": "maximum_segment_length_m",
+          "payload_type": "number",
+          "required": true,
+          "unit": "metre"
+        },
+        {
+          "description": "Minimum defender clearance from the source-target segment.",
+          "maximum": 40.0,
+          "minimum": 0.0,
+          "name": "minimum_clearance_m",
+          "payload_type": "number",
+          "required": true,
+          "unit": "metre"
+        },
+        {
+          "description": "Frames required before a corridor is considered open.",
+          "maximum": 100.0,
+          "minimum": 1.0,
+          "name": "open_after_frames",
+          "payload_type": "number",
+          "required": true,
+          "unit": "count"
+        },
+        {
+          "description": "Frames required before a corridor is considered closed.",
+          "maximum": 100.0,
+          "minimum": 1.0,
+          "name": "close_after_frames",
+          "payload_type": "number",
+          "required": true,
+          "unit": "count"
+        },
+        {
+          "description": "Minimum open duration retained in the relation output.",
+          "maximum": 15.0,
+          "minimum": 0.0,
+          "name": "minimum_duration_seconds",
+          "payload_type": "number",
+          "required": true,
+          "unit": "second"
+        },
+        {
+          "allowed_values": [
+            "any",
+            "same_ball_side",
+            "opposite_ball_side"
+          ],
+          "description": "Retain corridors by relation destination side relative to the ball side.",
+          "name": "side_filter",
+          "payload_type": "enum",
+          "required": true,
+          "unit": "none"
+        }
+      ],
+      "purpose": "Represent a geometrically clear forward connection from the ball location to an attacking teammate over an interval.",
+      "version": "0.1.0"
+    },
+    {
+      "agent_authorable": true,
+      "evidence_fields": [
+        "relation_id",
+        "open_frame_id",
+        "open_confirm_frame_id",
+        "close_frame_id",
+        "duration_seconds",
+        "target_player_id",
+        "destination_side",
+        "destination_region",
+        "destination_region_type",
+        "destination_region_bounds",
+        "destination_lane",
+        "minimum_clearance_m",
+        "limiting_defender_id",
+        "source_open_point",
+        "target_open_point",
+        "source_close_point",
+        "target_close_point"
+      ],
+      "inputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "name": "anchors",
+          "payload_type": "anchor_ref",
+          "required": true,
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "kind": "relation",
+      "limitations": [
+        "No pass probability.",
+        "No optimality or decision-quality claim.",
+        "No player intent, causation, or missed-opportunity claim.",
+        "No receiver body-orientation or offside model."
+      ],
+      "name": "geometric_progressive_corridor_from_anchor_set",
+      "outputs": [
+        {
+          "cardinality": "collection",
+          "entity_scope": "relation",
+          "evidence_fields": [
+            "relation_id",
+            "open_frame_id",
+            "open_confirm_frame_id",
+            "close_frame_id",
+            "duration_seconds",
+            "target_player_id",
+            "destination_side",
+            "destination_region",
+            "destination_region_type",
+            "destination_region_bounds",
+            "destination_lane",
+            "minimum_clearance_m",
+            "limiting_defender_id",
+            "source_open_point",
+            "target_open_point",
+            "source_close_point",
+            "target_close_point"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "episodes",
+          "payload_type": "relation_ref",
+          "temporal_type": "relation_episode_set",
+          "unit": "none"
+        },
+        {
+          "cardinality": "collection",
+          "entity_scope": "anchor",
+          "evidence_fields": [
+            "anchor_id",
+            "anchor_frame_id",
+            "evaluation_status",
+            "relation_count",
+            "witness_relation_id",
+            "unknown_reason",
+            "state_counts"
+          ],
+          "missing_data_semantics": "unknown",
+          "name": "anchor_evaluations",
+          "payload_type": "boolean",
+          "temporal_type": "episode_set",
+          "unit": "none"
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Maximum relation search window after the anchor.",
+          "maximum": 15.0,
+          "minimum": 0.2,
+          "name": "max_window_seconds",
+          "payload_type": "number",
+          "required": true,
+          "unit": "second"
+        },
+        {
+          "description": "Minimum forward progression from source to target.",
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "name": "minimum_progression_m",
+          "payload_type": "number",
+          "required": true,
+          "unit": "metre"
+        },
+        {
+          "description": "Minimum source-target segment length.",
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "name": "minimum_segment_length_m",
+          "payload_type": "number",
+          "required": true,
+          "unit": "metre"
+        },
+        {
+          "description": "Maximum source-target segment length.",
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "name": "maximum_segment_length_m",
+          "payload_type": "number",
+          "required": true,
+          "unit": "metre"
+        },
+        {
+          "description": "Minimum defender clearance from the source-target segment.",
+          "maximum": 40.0,
+          "minimum": 0.0,
+          "name": "minimum_clearance_m",
+          "payload_type": "number",
+          "required": true,
+          "unit": "metre"
+        },
+        {
+          "description": "Frames required before a corridor is considered open.",
+          "maximum": 100.0,
+          "minimum": 1.0,
+          "name": "open_after_frames",
+          "payload_type": "number",
+          "required": true,
+          "unit": "count"
+        },
+        {
+          "description": "Frames required before a corridor is considered closed.",
+          "maximum": 100.0,
+          "minimum": 1.0,
+          "name": "close_after_frames",
+          "payload_type": "number",
+          "required": true,
+          "unit": "count"
+        },
+        {
+          "description": "Minimum open duration retained in the relation output.",
+          "maximum": 15.0,
+          "minimum": 0.0,
+          "name": "minimum_duration_seconds",
+          "payload_type": "number",
+          "required": true,
+          "unit": "second"
+        },
+        {
+          "allowed_values": [
+            "any",
+            "same_ball_side",
+            "opposite_ball_side"
+          ],
+          "description": "Retain corridors by relation destination side relative to the ball side.",
+          "name": "side_filter",
+          "payload_type": "enum",
+          "required": true,
+          "unit": "none"
+        }
+      ],
+      "purpose": "Represent a geometrically clear forward connection from a generic anchor set to an attacking teammate over an interval.",
+      "version": "0.1.0"
+    }
+  ],
+  "safe_operator_source_rules": {
+    "count_at_least": {
+      "allowed_output_name": "anchor_evaluations"
+    },
+    "exists": {
+      "allowed_output_name": "anchor_evaluations"
+    }
+  },
+  "schema_version": "1.0",
+  "tools": [
+    {
+      "description": "Return the Hermes-safe capability context.",
+      "exposure": "hermes_s2",
+      "input_schema": {
+        "additionalProperties": false,
+        "properties": {},
+        "title": "ListCapabilitiesRequest",
+        "type": "object"
+      },
+      "name": "list_capabilities",
+      "output_schema": {
+        "oneOf": [
+          {
+            "$defs": {
+              "ToolSpec": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "title": "Description",
+                    "type": "string"
+                  },
+                  "exposure": {
+                    "enum": [
+                      "hermes_s2",
+                      "manual_only"
+                    ],
+                    "title": "Exposure",
+                    "type": "string"
+                  },
+                  "input_schema": {
+                    "additionalProperties": true,
+                    "title": "Input Schema",
+                    "type": "object"
+                  },
+                  "name": {
+                    "title": "Name",
+                    "type": "string"
+                  },
+                  "output_schema": {
+                    "additionalProperties": true,
+                    "title": "Output Schema",
+                    "type": "object"
+                  },
+                  "unavailable_surfaces": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Unavailable Surfaces",
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "name",
+                  "description",
+                  "input_schema",
+                  "output_schema",
+                  "unavailable_surfaces",
+                  "exposure"
+                ],
+                "title": "ToolSpec",
+                "type": "object"
+              }
+            },
+            "additionalProperties": false,
+            "properties": {
+              "default_complexity_limits": {
+                "additionalProperties": true,
+                "title": "Default Complexity Limits",
+                "type": "object"
+              },
+              "evidence_fields": {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "title": "Evidence Fields",
+                "type": "object"
+              },
+              "forbidden_surfaces": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Forbidden Surfaces",
+                "type": "array"
+              },
+              "generated_at": {
+                "title": "Generated At",
+                "type": "string"
+              },
+              "host_owned_complexity_ceilings": {
+                "additionalProperties": true,
+                "title": "Host Owned Complexity Ceilings",
+                "type": "object"
+              },
+              "limitations": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Limitations",
+                "type": "array"
+              },
+              "milestone": {
+                "const": "M1.2",
+                "default": "M1.2",
+                "title": "Milestone",
+                "type": "string"
+              },
+              "operators": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "title": "Operators",
+                "type": "array"
+              },
+              "primitives": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "title": "Primitives",
+                "type": "array"
+              },
+              "recipe_states": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Recipe States",
+                "type": "array"
+              },
+              "relations": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "title": "Relations",
+                "type": "array"
+              },
+              "safe_operator_source_rules": {
+                "additionalProperties": true,
+                "title": "Safe Operator Source Rules",
+                "type": "object"
+              },
+              "schema_version": {
+                "const": "1.0",
+                "default": "1.0",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "tools": {
+                "items": {
+                  "$ref": "#/$defs/ToolSpec"
+                },
+                "title": "Tools",
+                "type": "array"
+              }
+            },
+            "required": [
+              "generated_at",
+              "tools",
+              "primitives",
+              "relations",
+              "operators",
+              "recipe_states",
+              "evidence_fields",
+              "safe_operator_source_rules",
+              "default_complexity_limits",
+              "host_owned_complexity_ceilings",
+              "limitations",
+              "forbidden_surfaces"
+            ],
+            "title": "CapabilityContext",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "details": {
+                "additionalProperties": true,
+                "title": "Details",
+                "type": "object"
+              },
+              "error_code": {
+                "title": "Error Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "ok": {
+                "const": false,
+                "default": false,
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "error_code",
+              "message"
+            ],
+            "title": "ToolErrorResponse",
+            "type": "object"
+          }
+        ]
+      },
+      "unavailable_surfaces": [
+        "arbitrary_python",
+        "sql",
+        "filesystem_editing",
+        "primitive_mutation",
+        "raw_match_dump",
+        "result_row_mutation",
+        "threshold_auto_tuning"
+      ]
+    },
+    {
+      "description": "Describe one exposed tool, primitive, relation, or operator.",
+      "exposure": "hermes_s2",
+      "input_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "capability_name": {
+            "minLength": 1,
+            "title": "Capability Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "capability_name"
+        ],
+        "title": "DescribeCapabilityRequest",
+        "type": "object"
+      },
+      "name": "describe_capability",
+      "output_schema": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "capability": {
+                "additionalProperties": true,
+                "title": "Capability",
+                "type": "object"
+              },
+              "ok": {
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "ok",
+              "capability"
+            ],
+            "title": "DescribeCapabilityResponse",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "details": {
+                "additionalProperties": true,
+                "title": "Details",
+                "type": "object"
+              },
+              "error_code": {
+                "title": "Error Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "ok": {
+                "const": false,
+                "default": false,
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "error_code",
+              "message"
+            ],
+            "title": "ToolErrorResponse",
+            "type": "object"
+          }
+        ]
+      },
+      "unavailable_surfaces": [
+        "arbitrary_python",
+        "sql",
+        "filesystem_editing",
+        "primitive_mutation",
+        "raw_match_dump",
+        "result_row_mutation",
+        "threshold_auto_tuning"
+      ]
+    },
+    {
+      "description": "Store a typed query document and return an opaque draft_plan_id.",
+      "exposure": "hermes_s2",
+      "input_schema": {
+        "$defs": {
+          "Cardinality": {
+            "enum": [
+              "single",
+              "per_player",
+              "per_team",
+              "collection"
+            ],
+            "title": "Cardinality",
+            "type": "string"
+          },
+          "ClassificationMode": {
+            "enum": [
+              "exhaustive",
+              "partial_declared"
+            ],
+            "title": "ClassificationMode",
+            "type": "string"
+          },
+          "ClassificationRule": {
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "title": "Description",
+                "type": "string"
+              },
+              "label": {
+                "pattern": "^[A-Z][A-Z0-9_]*$",
+                "title": "Label",
+                "type": "string"
+              },
+              "predicate_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "title": "Predicate Ids",
+                "type": "array"
+              }
+            },
+            "required": [
+              "label",
+              "predicate_ids",
+              "description"
+            ],
+            "title": "ClassificationRule",
+            "type": "object"
+          },
+          "ComplexityLimits": {
+            "additionalProperties": false,
+            "properties": {
+              "max_execution_cost": {
+                "default": 100000,
+                "minimum": 1,
+                "title": "Max Execution Cost",
+                "type": "integer"
+              },
+              "max_nesting_depth": {
+                "default": 8,
+                "minimum": 1,
+                "title": "Max Nesting Depth",
+                "type": "integer"
+              },
+              "max_plan_nodes": {
+                "default": 40,
+                "minimum": 1,
+                "title": "Max Plan Nodes",
+                "type": "integer"
+              },
+              "max_relations_per_anchor": {
+                "default": 1000,
+                "minimum": 1,
+                "title": "Max Relations Per Anchor",
+                "type": "integer"
+              },
+              "max_returned_moments": {
+                "default": 100,
+                "minimum": 1,
+                "title": "Max Returned Moments",
+                "type": "integer"
+              },
+              "max_temporal_horizon_seconds": {
+                "default": 15.0,
+                "exclusiveMinimum": 0,
+                "title": "Max Temporal Horizon Seconds",
+                "type": "number"
+              }
+            },
+            "title": "ComplexityLimits",
+            "type": "object"
+          },
+          "DraftCatalogNode": {
+            "additionalProperties": false,
+            "properties": {
+              "catalog_ref": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Catalog Ref",
+                "type": "string"
+              },
+              "inputs": {
+                "additionalProperties": {
+                  "$ref": "#/$defs/SignalRef"
+                },
+                "title": "Inputs",
+                "type": "object"
+              },
+              "kind": {
+                "enum": [
+                  "primitive",
+                  "relation"
+                ],
+                "title": "Kind",
+                "type": "string"
+              },
+              "node_id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Node Id",
+                "type": "string"
+              },
+              "parameters": {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/TypedValue"
+                    },
+                    {
+                      "$ref": "#/$defs/ParameterRef"
+                    }
+                  ]
+                },
+                "title": "Parameters",
+                "type": "object"
+              },
+              "version": {
+                "title": "Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "node_id",
+              "catalog_ref",
+              "version"
+            ],
+            "title": "DraftCatalogNode",
+            "type": "object"
+          },
+          "DraftPredicateNode": {
+            "additionalProperties": false,
+            "properties": {
+              "compare": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/TypedValue"
+                  },
+                  {
+                    "$ref": "#/$defs/ParameterRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Compare"
+              },
+              "duration": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/TypedValue"
+                  },
+                  {
+                    "$ref": "#/$defs/ParameterRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Duration"
+              },
+              "input": {
+                "$ref": "#/$defs/SignalRef"
+              },
+              "kind": {
+                "const": "predicate",
+                "default": "predicate",
+                "title": "Kind",
+                "type": "string"
+              },
+              "node_id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Node Id",
+                "type": "string"
+              },
+              "operator": {
+                "$ref": "#/$defs/OperatorRef"
+              },
+              "required_cardinality": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Cardinality"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "required_entity_scope": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/EntityScope"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "node_id",
+              "input",
+              "operator"
+            ],
+            "title": "DraftPredicateNode",
+            "type": "object"
+          },
+          "DraftQueryPlan": {
+            "additionalProperties": false,
+            "properties": {
+              "anchor_source": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/SignalRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "classification_mode": {
+                "$ref": "#/$defs/ClassificationMode"
+              },
+              "classification_rules": {
+                "items": {
+                  "$ref": "#/$defs/ClassificationRule"
+                },
+                "minItems": 1,
+                "title": "Classification Rules",
+                "type": "array"
+              },
+              "complexity_limits": {
+                "$ref": "#/$defs/ComplexityLimits"
+              },
+              "nodes": {
+                "items": {
+                  "discriminator": {
+                    "mapping": {
+                      "predicate": "#/$defs/DraftPredicateNode",
+                      "primitive": "#/$defs/DraftCatalogNode",
+                      "relation": "#/$defs/DraftCatalogNode"
+                    },
+                    "propertyName": "kind"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/DraftCatalogNode"
+                    },
+                    {
+                      "$ref": "#/$defs/DraftPredicateNode"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "title": "Nodes",
+                "type": "array"
+              },
+              "plan_id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Plan Id",
+                "type": "string"
+              },
+              "plan_version": {
+                "title": "Plan Version",
+                "type": "string"
+              },
+              "recipe_id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Recipe Id",
+                "type": "string"
+              },
+              "recipe_version": {
+                "title": "Recipe Version",
+                "type": "string"
+              },
+              "requested_evidence": {
+                "items": {
+                  "$ref": "#/$defs/EvidenceRequest"
+                },
+                "title": "Requested Evidence",
+                "type": "array"
+              },
+              "schema_version": {
+                "const": "1.0",
+                "default": "1.0",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "status": {
+                "$ref": "#/$defs/PlanStatus"
+              },
+              "unknown_evidence_policy": {
+                "$ref": "#/$defs/UnknownEvidencePolicy"
+              }
+            },
+            "required": [
+              "plan_id",
+              "plan_version",
+              "recipe_id",
+              "recipe_version",
+              "status",
+              "unknown_evidence_policy",
+              "classification_mode",
+              "nodes",
+              "classification_rules"
+            ],
+            "title": "DraftQueryPlan",
+            "type": "object"
+          },
+          "EntityScope": {
+            "enum": [
+              "none",
+              "anchor",
+              "ball",
+              "player",
+              "team",
+              "match",
+              "possession",
+              "frame",
+              "relation"
+            ],
+            "title": "EntityScope",
+            "type": "string"
+          },
+          "EvidenceRequest": {
+            "additionalProperties": false,
+            "properties": {
+              "alias": {
+                "anyOf": [
+                  {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Alias"
+              },
+              "field": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Field",
+                "type": "string"
+              },
+              "required": {
+                "default": true,
+                "title": "Required",
+                "type": "boolean"
+              },
+              "source": {
+                "$ref": "#/$defs/SignalRef"
+              }
+            },
+            "required": [
+              "source",
+              "field"
+            ],
+            "title": "EvidenceRequest",
+            "type": "object"
+          },
+          "ExecutionMode": {
+            "enum": [
+              "bind_only",
+              "dry_run",
+              "execute"
+            ],
+            "title": "ExecutionMode",
+            "type": "string"
+          },
+          "OperatorRef": {
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Name",
+                "type": "string"
+              },
+              "version": {
+                "title": "Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "version"
+            ],
+            "title": "OperatorRef",
+            "type": "object"
+          },
+          "ParameterDefinition": {
+            "additionalProperties": false,
+            "properties": {
+              "allowed_values": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Allowed Values"
+              },
+              "default": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/TypedValue"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "description": {
+                "title": "Description",
+                "type": "string"
+              },
+              "maximum": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Maximum"
+              },
+              "minimum": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Minimum"
+              },
+              "name": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Name",
+                "type": "string"
+              },
+              "payload_type": {
+                "$ref": "#/$defs/PayloadType"
+              },
+              "required": {
+                "default": false,
+                "title": "Required",
+                "type": "boolean"
+              },
+              "unit": {
+                "$ref": "#/$defs/Unit",
+                "default": "none"
+              }
+            },
+            "required": [
+              "name",
+              "payload_type",
+              "description"
+            ],
+            "title": "ParameterDefinition",
+            "type": "object"
+          },
+          "ParameterRef": {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "parameter",
+                "default": "parameter",
+                "title": "Kind",
+                "type": "string"
+              },
+              "name": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Name",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "title": "ParameterRef",
+            "type": "object"
+          },
+          "PayloadType": {
+            "enum": [
+              "boolean",
+              "number",
+              "enum",
+              "anchor_ref",
+              "entity_ref",
+              "team_ref",
+              "region_ref",
+              "point",
+              "entity_set",
+              "relation_ref"
+            ],
+            "title": "PayloadType",
+            "type": "string"
+          },
+          "PlanStatus": {
+            "enum": [
+              "approved",
+              "experimental"
+            ],
+            "title": "PlanStatus",
+            "type": "string"
+          },
+          "QueryInvocation": {
+            "additionalProperties": false,
+            "properties": {
+              "execution_mode": {
+                "$ref": "#/$defs/ExecutionMode",
+                "default": "bind_only"
+              },
+              "invocation_id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Invocation Id",
+                "type": "string"
+              },
+              "match_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "title": "Match Ids",
+                "type": "array"
+              },
+              "max_results": {
+                "maximum": 500,
+                "minimum": 1,
+                "title": "Max Results",
+                "type": "integer"
+              },
+              "parameters": {
+                "additionalProperties": {
+                  "$ref": "#/$defs/TypedValue"
+                },
+                "title": "Parameters",
+                "type": "object"
+              },
+              "periods": {
+                "items": {
+                  "enum": [
+                    "firstHalf",
+                    "secondHalf"
+                  ],
+                  "type": "string"
+                },
+                "minItems": 1,
+                "title": "Periods",
+                "type": "array"
+              },
+              "perspective_team_role": {
+                "enum": [
+                  "home",
+                  "away"
+                ],
+                "title": "Perspective Team Role",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "1.0",
+                "default": "1.0",
+                "title": "Schema Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "invocation_id",
+              "match_ids",
+              "periods",
+              "perspective_team_role",
+              "max_results"
+            ],
+            "title": "QueryInvocation",
+            "type": "object"
+          },
+          "RecipeDefinition": {
+            "additionalProperties": false,
+            "properties": {
+              "allowed_claims": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Allowed Claims",
+                "type": "array"
+              },
+              "default_unknown_evidence_policy": {
+                "$ref": "#/$defs/UnknownEvidencePolicy"
+              },
+              "description": {
+                "title": "Description",
+                "type": "string"
+              },
+              "disallowed_claims": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Disallowed Claims",
+                "type": "array"
+              },
+              "display_name": {
+                "title": "Display Name",
+                "type": "string"
+              },
+              "limitations": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Limitations",
+                "type": "array"
+              },
+              "output_classifications": {
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "title": "Output Classifications",
+                "type": "array"
+              },
+              "parameters": {
+                "items": {
+                  "$ref": "#/$defs/ParameterDefinition"
+                },
+                "title": "Parameters",
+                "type": "array"
+              },
+              "recipe_id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Recipe Id",
+                "type": "string"
+              },
+              "recipe_version": {
+                "title": "Recipe Version",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "1.0",
+                "default": "1.0",
+                "title": "Schema Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "recipe_id",
+              "recipe_version",
+              "display_name",
+              "description",
+              "default_unknown_evidence_policy",
+              "output_classifications"
+            ],
+            "title": "RecipeDefinition",
+            "type": "object"
+          },
+          "SignalRef": {
+            "additionalProperties": false,
+            "properties": {
+              "output_name": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output Name",
+                "type": "string"
+              },
+              "source_node_id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Source Node Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_node_id",
+              "output_name"
+            ],
+            "title": "SignalRef",
+            "type": "object"
+          },
+          "TacticalQueryDocument": {
+            "additionalProperties": false,
+            "properties": {
+              "default_invocation": {
+                "$ref": "#/$defs/QueryInvocation"
+              },
+              "draft_plan": {
+                "$ref": "#/$defs/DraftQueryPlan"
+              },
+              "recipe": {
+                "$ref": "#/$defs/RecipeDefinition"
+              },
+              "schema_version": {
+                "const": "1.0",
+                "default": "1.0",
+                "title": "Schema Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "recipe",
+              "default_invocation",
+              "draft_plan"
+            ],
+            "title": "TacticalQueryDocument",
+            "type": "object"
+          },
+          "TypedValue": {
+            "additionalProperties": false,
+            "properties": {
+              "payload_type": {
+                "$ref": "#/$defs/PayloadType"
+              },
+              "unit": {
+                "$ref": "#/$defs/Unit",
+                "default": "none"
+              },
+              "value": {
+                "title": "Value"
+              }
+            },
+            "required": [
+              "payload_type",
+              "value"
+            ],
+            "title": "TypedValue",
+            "type": "object"
+          },
+          "Unit": {
+            "enum": [
+              "none",
+              "metre",
+              "second",
+              "millisecond",
+              "frame",
+              "fraction",
+              "hertz",
+              "count"
+            ],
+            "title": "Unit",
+            "type": "string"
+          },
+          "UnknownEvidencePolicy": {
+            "enum": [
+              "exclude_candidate",
+              "include_with_warning",
+              "invalidate_execution"
+            ],
+            "title": "UnknownEvidencePolicy",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "plan_document": {
+            "$ref": "#/$defs/TacticalQueryDocument"
+          },
+          "source_label": {
+            "default": "manual",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Source Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_document"
+        ],
+        "title": "SubmitQueryPlanRequest",
+        "type": "object"
+      },
+      "name": "submit_query_plan",
+      "output_schema": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "draft_plan_hash": {
+                "title": "Draft Plan Hash",
+                "type": "string"
+              },
+              "draft_plan_id": {
+                "title": "Draft Plan Id",
+                "type": "string"
+              },
+              "ok": {
+                "title": "Ok",
+                "type": "boolean"
+              },
+              "plan_status": {
+                "title": "Plan Status",
+                "type": "string"
+              },
+              "recipe_id": {
+                "title": "Recipe Id",
+                "type": "string"
+              },
+              "recipe_version": {
+                "title": "Recipe Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "ok",
+              "draft_plan_id",
+              "draft_plan_hash",
+              "recipe_id",
+              "recipe_version",
+              "plan_status"
+            ],
+            "title": "SubmitQueryPlanResponse",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "details": {
+                "additionalProperties": true,
+                "title": "Details",
+                "type": "object"
+              },
+              "error_code": {
+                "title": "Error Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "ok": {
+                "const": false,
+                "default": false,
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "error_code",
+              "message"
+            ],
+            "title": "ToolErrorResponse",
+            "type": "object"
+          }
+        ]
+      },
+      "unavailable_surfaces": [
+        "arbitrary_python",
+        "sql",
+        "filesystem_editing",
+        "primitive_mutation",
+        "raw_match_dump",
+        "result_row_mutation",
+        "threshold_auto_tuning"
+      ]
+    },
+    {
+      "description": "Bind and boundary-check a submitted typed query plan.",
+      "exposure": "hermes_s2",
+      "input_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "draft_plan_id": {
+            "title": "Draft Plan Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "draft_plan_id"
+        ],
+        "title": "ValidateQueryPlanRequest",
+        "type": "object"
+      },
+      "name": "validate_query_plan",
+      "output_schema": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "bound_plan_hash": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Bound Plan Hash"
+              },
+              "bound_plan_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Bound Plan Id"
+              },
+              "draft_plan_id": {
+                "title": "Draft Plan Id",
+                "type": "string"
+              },
+              "execution_profile": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Execution Profile"
+              },
+              "issues": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "title": "Issues",
+                "type": "array"
+              },
+              "ok": {
+                "title": "Ok",
+                "type": "boolean"
+              },
+              "plan_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Plan Id"
+              },
+              "plan_status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Plan Status"
+              },
+              "recipe_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Recipe Id"
+              }
+            },
+            "required": [
+              "ok",
+              "draft_plan_id"
+            ],
+            "title": "ValidateQueryPlanResponse",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "details": {
+                "additionalProperties": true,
+                "title": "Details",
+                "type": "object"
+              },
+              "error_code": {
+                "title": "Error Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "ok": {
+                "const": false,
+                "default": false,
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "error_code",
+              "message"
+            ],
+            "title": "ToolErrorResponse",
+            "type": "object"
+          }
+        ]
+      },
+      "unavailable_surfaces": [
+        "arbitrary_python",
+        "sql",
+        "filesystem_editing",
+        "primitive_mutation",
+        "raw_match_dump",
+        "result_row_mutation",
+        "threshold_auto_tuning"
+      ]
+    },
+    {
+      "description": "Execute a validated plan through the deterministic runtime.",
+      "exposure": "hermes_s2",
+      "input_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "bound_plan_id": {
+            "pattern": "^bound_[0-9a-f]{16}$",
+            "title": "Bound Plan Id",
+            "type": "string"
+          },
+          "execution_authorization_id": {
+            "pattern": "^auth_[0-9a-f]{16}$",
+            "title": "Execution Authorization Id",
+            "type": "string"
+          },
+          "result_limit": {
+            "default": 25,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Result Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "bound_plan_id",
+          "execution_authorization_id"
+        ],
+        "title": "ExecuteQueryPlanRequest",
+        "type": "object"
+      },
+      "name": "execute_query_plan",
+      "output_schema": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "bound_plan_hash": {
+                "title": "Bound Plan Hash",
+                "type": "string"
+              },
+              "bound_plan_id": {
+                "title": "Bound Plan Id",
+                "type": "string"
+              },
+              "compatibility_profile": {
+                "title": "Compatibility Profile",
+                "type": "string"
+              },
+              "draft_plan_hash": {
+                "title": "Draft Plan Hash",
+                "type": "string"
+              },
+              "execution_id": {
+                "title": "Execution Id",
+                "type": "string"
+              },
+              "ok": {
+                "title": "Ok",
+                "type": "boolean"
+              },
+              "plan_id": {
+                "title": "Plan Id",
+                "type": "string"
+              },
+              "plan_status": {
+                "title": "Plan Status",
+                "type": "string"
+              },
+              "results": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "title": "Results",
+                "type": "array"
+              },
+              "returned_result_count": {
+                "title": "Returned Result Count",
+                "type": "integer"
+              },
+              "total_result_count": {
+                "title": "Total Result Count",
+                "type": "integer"
+              },
+              "trace_count": {
+                "title": "Trace Count",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "ok",
+              "execution_id",
+              "bound_plan_id",
+              "plan_id",
+              "plan_status",
+              "compatibility_profile",
+              "draft_plan_hash",
+              "total_result_count",
+              "returned_result_count",
+              "results",
+              "trace_count",
+              "bound_plan_hash"
+            ],
+            "title": "ExecuteQueryPlanResponse",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "details": {
+                "additionalProperties": true,
+                "title": "Details",
+                "type": "object"
+              },
+              "error_code": {
+                "title": "Error Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "ok": {
+                "const": false,
+                "default": false,
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "error_code",
+              "message"
+            ],
+            "title": "ToolErrorResponse",
+            "type": "object"
+          }
+        ]
+      },
+      "unavailable_surfaces": [
+        "arbitrary_python",
+        "sql",
+        "filesystem_editing",
+        "primitive_mutation",
+        "raw_match_dump",
+        "result_row_mutation",
+        "threshold_auto_tuning"
+      ]
+    },
+    {
+      "description": "Return predicate traces and requested evidence for a result.",
+      "exposure": "hermes_s2",
+      "input_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "execution_id": {
+            "pattern": "^exec_[0-9a-f]{16}$",
+            "title": "Execution Id",
+            "type": "string"
+          },
+          "result_id": {
+            "title": "Result Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "execution_id",
+          "result_id"
+        ],
+        "title": "InspectResultRequest",
+        "type": "object"
+      },
+      "name": "inspect_result",
+      "output_schema": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "execution_id": {
+                "title": "Execution Id",
+                "type": "string"
+              },
+              "ok": {
+                "title": "Ok",
+                "type": "boolean"
+              },
+              "predicate_traces": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "title": "Predicate Traces",
+                "type": "array"
+              },
+              "requested_evidence": {
+                "additionalProperties": true,
+                "title": "Requested Evidence",
+                "type": "object"
+              },
+              "result": {
+                "additionalProperties": true,
+                "title": "Result",
+                "type": "object"
+              }
+            },
+            "required": [
+              "ok",
+              "execution_id",
+              "result",
+              "predicate_traces",
+              "requested_evidence"
+            ],
+            "title": "InspectResultResponse",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "details": {
+                "additionalProperties": true,
+                "title": "Details",
+                "type": "object"
+              },
+              "error_code": {
+                "title": "Error Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "ok": {
+                "const": false,
+                "default": false,
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "error_code",
+              "message"
+            ],
+            "title": "ToolErrorResponse",
+            "type": "object"
+          }
+        ]
+      },
+      "unavailable_surfaces": [
+        "arbitrary_python",
+        "sql",
+        "filesystem_editing",
+        "primitive_mutation",
+        "raw_match_dump",
+        "result_row_mutation",
+        "threshold_auto_tuning"
+      ]
+    },
+    {
+      "description": "Evaluate a known timestamp target against a bound plan.",
+      "exposure": "hermes_s2",
+      "input_schema": {
+        "$defs": {
+          "EvaluationTarget": {
+            "additionalProperties": false,
+            "properties": {
+              "approximate_time_ms": {
+                "minimum": 0,
+                "title": "Approximate Time Ms",
+                "type": "integer"
+              },
+              "match_id": {
+                "title": "Match Id",
+                "type": "string"
+              },
+              "period": {
+                "enum": [
+                  "firstHalf",
+                  "secondHalf"
+                ],
+                "title": "Period",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "1.0",
+                "default": "1.0",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "search_radius_ms": {
+                "exclusiveMinimum": 0,
+                "title": "Search Radius Ms",
+                "type": "integer"
+              },
+              "target_id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Target Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "target_id",
+              "match_id",
+              "period",
+              "approximate_time_ms",
+              "search_radius_ms"
+            ],
+            "title": "EvaluationTarget",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "execution_id": {
+            "pattern": "^exec_[0-9a-f]{16}$",
+            "title": "Execution Id",
+            "type": "string"
+          },
+          "target": {
+            "$ref": "#/$defs/EvaluationTarget"
+          }
+        },
+        "required": [
+          "execution_id",
+          "target"
+        ],
+        "title": "InspectNonMatchRequest",
+        "type": "object"
+      },
+      "name": "inspect_non_match",
+      "output_schema": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "execution_id": {
+                "title": "Execution Id",
+                "type": "string"
+              },
+              "inspection": {
+                "additionalProperties": true,
+                "title": "Inspection",
+                "type": "object"
+              },
+              "ok": {
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "ok",
+              "execution_id",
+              "inspection"
+            ],
+            "title": "InspectNonMatchResponse",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "details": {
+                "additionalProperties": true,
+                "title": "Details",
+                "type": "object"
+              },
+              "error_code": {
+                "title": "Error Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "ok": {
+                "const": false,
+                "default": false,
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "error_code",
+              "message"
+            ],
+            "title": "ToolErrorResponse",
+            "type": "object"
+          }
+        ]
+      },
+      "unavailable_surfaces": [
+        "arbitrary_python",
+        "sql",
+        "filesystem_editing",
+        "primitive_mutation",
+        "raw_match_dump",
+        "result_row_mutation",
+        "threshold_auto_tuning"
+      ]
+    },
+    {
+      "description": "Materialize a bounded coordinate replay JSON artifact.",
+      "exposure": "hermes_s2",
+      "input_schema": {
+        "$defs": {
+          "EvaluationTarget": {
+            "additionalProperties": false,
+            "properties": {
+              "approximate_time_ms": {
+                "minimum": 0,
+                "title": "Approximate Time Ms",
+                "type": "integer"
+              },
+              "match_id": {
+                "title": "Match Id",
+                "type": "string"
+              },
+              "period": {
+                "enum": [
+                  "firstHalf",
+                  "secondHalf"
+                ],
+                "title": "Period",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "1.0",
+                "default": "1.0",
+                "title": "Schema Version",
+                "type": "string"
+              },
+              "search_radius_ms": {
+                "exclusiveMinimum": 0,
+                "title": "Search Radius Ms",
+                "type": "integer"
+              },
+              "target_id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Target Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "target_id",
+              "match_id",
+              "period",
+              "approximate_time_ms",
+              "search_radius_ms"
+            ],
+            "title": "EvaluationTarget",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "execution_id": {
+            "pattern": "^exec_[0-9a-f]{16}$",
+            "title": "Execution Id",
+            "type": "string"
+          },
+          "padding_seconds": {
+            "default": 2.0,
+            "maximum": 8.0,
+            "minimum": 0.2,
+            "title": "Padding Seconds",
+            "type": "number"
+          },
+          "result_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Result Id"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EvaluationTarget"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "execution_id"
+        ],
+        "title": "ReplayWindowRequest",
+        "type": "object"
+      },
+      "name": "retrieve_replay_window",
+      "output_schema": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "anchor_frame_id": {
+                "title": "Anchor Frame Id",
+                "type": "integer"
+              },
+              "end_frame_id": {
+                "title": "End Frame Id",
+                "type": "integer"
+              },
+              "entity_observation_count": {
+                "title": "Entity Observation Count",
+                "type": "integer"
+              },
+              "execution_id": {
+                "title": "Execution Id",
+                "type": "string"
+              },
+              "frame_count": {
+                "title": "Frame Count",
+                "type": "integer"
+              },
+              "match_id": {
+                "title": "Match Id",
+                "type": "string"
+              },
+              "ok": {
+                "title": "Ok",
+                "type": "boolean"
+              },
+              "period": {
+                "title": "Period",
+                "type": "string"
+              },
+              "replay_window_id": {
+                "title": "Replay Window Id",
+                "type": "string"
+              },
+              "source_kind": {
+                "enum": [
+                  "result",
+                  "target"
+                ],
+                "title": "Source Kind",
+                "type": "string"
+              },
+              "start_frame_id": {
+                "title": "Start Frame Id",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "ok",
+              "execution_id",
+              "replay_window_id",
+              "match_id",
+              "period",
+              "start_frame_id",
+              "end_frame_id",
+              "anchor_frame_id",
+              "frame_count",
+              "entity_observation_count",
+              "source_kind"
+            ],
+            "title": "ReplayWindowResponse",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "details": {
+                "additionalProperties": true,
+                "title": "Details",
+                "type": "object"
+              },
+              "error_code": {
+                "title": "Error Code",
+                "type": "string"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              },
+              "ok": {
+                "const": false,
+                "default": false,
+                "title": "Ok",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "error_code",
+              "message"
+            ],
+            "title": "ToolErrorResponse",
+            "type": "object"
+          }
+        ]
+      },
+      "unavailable_surfaces": [
+        "arbitrary_python",
+        "sql",
+        "filesystem_editing",
+        "primitive_mutation",
+        "raw_match_dump",
+        "result_row_mutation",
+        "threshold_auto_tuning"
+      ]
+    }
+  ]
+}

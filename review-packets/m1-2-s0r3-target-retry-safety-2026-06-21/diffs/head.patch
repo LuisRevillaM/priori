@@ -1,0 +1,846 @@
+commit 8a2685a43f551f957ec99b00c12873fc142985d7
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Sun Jun 21 09:01:13 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Sun Jun 21 09:01:13 2026 -0700
+
+    Make M1.2 target inspection retry safe
+---
+ delivery/m1.2/SPEC.md                              |  24 +++
+ delivery/m1.2/status.yaml                          |  12 +-
+ .../2026-06-21-m1-2-s0r3-target-retry-safety.md    |  19 +++
+ .../2026-06-21-m1-2-s0r3-external-review.md        |  42 +++++
+ generated/capability-context.json                  |   2 +-
+ src/tqe/verification/m1_2_gate_s0.py               | 181 ++++++++++++++++++++-
+ src/tqe/verification/m1_2_gate_s1.py               | 132 +++++++++++++++
+ src/tqe/workshop/m1_2.py                           | 122 +++++++++++---
+ 8 files changed, 500 insertions(+), 34 deletions(-)
+
+diff --git a/delivery/m1.2/SPEC.md b/delivery/m1.2/SPEC.md
+index 1d4de2c..e12924d 100644
+--- a/delivery/m1.2/SPEC.md
++++ b/delivery/m1.2/SPEC.md
+@@ -63,6 +63,22 @@ more S0R2/S1R2 trust-boundary patch before S2:
+ - Model-visible dispatcher responses are validated against the generated
+   Pydantic response schemas before they are accepted as tool output.
+ 
++A third external review on 2026-06-21 kept S2 blocked for one final focused
++S0R3/S1R3 correction:
++
++- `inspect_non_match` and `retrieve_replay_window` must resolve an
++  `EvaluationTarget` through one shared canonical target resolver, so structural
++  inspection and human replay refer to the same frame.
++- Target inspection must expose the resolved canonical frame, resolved match
++  time, and resolution distance.
++- S1 must prove both `NO_COMPATIBLE_ANCHOR` style inspection and a compatible
++  anchor that fails a declared predicate.
++- Content-addressed tool resources must be retry-safe: repeated identical
++  calls return the existing handle, while conflicting payloads remain hard
++  collisions.
++- The model-visible dispatcher must validate successful and failing responses
++  for every S2-visible tool, not just a representative subset.
++
+ ## Scope
+ 
+ M1.2 includes:
+@@ -315,6 +331,10 @@ Hard acceptance:
+ - manual plan validation works without Hermes;
+ - clients use `draft_plan_id`, `bound_plan_id`, `execution_id`, and
+   `replay_window_id` handles instead of local paths.
++- repeated submit, validate, execute, and replay calls are idempotent for
++  identical content-addressed resources and fail only on true handle collision;
++- every S2-visible model-facing tool has both successful and failing
++  response-schema validation coverage.
+ 
+ ### S1 - Manual Reference Workshop
+ 
+@@ -325,6 +345,10 @@ Hard acceptance:
+   and coordinate replay windows;
+ - known-timestamp inspection explains non-matches with failed/unknown
+   predicates;
++- known-timestamp inspection and target replay resolve to the same canonical
++  frame;
++- target inspection includes a real compatible-anchor predicate-failure example,
++  not only a no-compatible-anchor case;
+ - all manual actions flow through the same serialized dispatcher Hermes will use
+   later;
+ - feedback labels `MATCHES_INTENT`, `NEAR_MATCH`, `FALSE_POSITIVE`,
+diff --git a/delivery/m1.2/status.yaml b/delivery/m1.2/status.yaml
+index 5564ef3..599a616 100644
+--- a/delivery/m1.2/status.yaml
++++ b/delivery/m1.2/status.yaml
+@@ -1,6 +1,6 @@
+ milestone: M1.2
+ name: "Grounded Tactical Query Workshop"
+-state: S0R2_S1R2_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW
++state: S0R3_S1R3_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW
+ source_of_truth: delivery/m1.2/SPEC.md
+ last_updated: "2026-06-21"
+ preconditions:
+@@ -12,25 +12,29 @@ slices:
+   S0_tool_boundary_and_capability_context: DONE_CONTROLLER_VERIFIED
+   S0R_agent_boundary_correction: DONE_CONTROLLER_VERIFIED
+   S0R2_trusted_handle_confirmation_and_authoring_boundary: DONE_CONTROLLER_VERIFIED
++  S0R3_retry_safe_model_visible_boundary: DONE_CONTROLLER_VERIFIED
+   S1_manual_reference_workshop: DONE_CONTROLLER_VERIFIED
+   S1R_dispatcher_backed_manual_workshop: DONE_CONTROLLER_VERIFIED
+   S1R2_replay_target_resolution_and_schema_dispatch: DONE_CONTROLLER_VERIFIED
++  S1R3_resolved_target_consistency_and_predicate_failure_probe: DONE_CONTROLLER_VERIFIED
+   S2_hermes_drafting_and_clarification: NOT_STARTED
+   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
+ promotion_gates:
+   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
+   Gate_S0R_real_schemas_handles_host_profiles: PASS_CONTROLLER
+   Gate_S0R2_explicit_caller_profiles_host_confirmation_safe_authoring: PASS_CONTROLLER
++  Gate_S0R3_retry_idempotency_and_all_s2_model_visible_schema_checks: PASS_CONTROLLER
+   Gate_S1_manual_typed_plan_execution_traces_replay_feedback: PASS_CONTROLLER
+   Gate_S1R_serialized_dispatcher_manual_loop: PASS_CONTROLLER
+   Gate_S1R2_canonical_target_replay_and_model_visible_schema_conformance: PASS_CONTROLLER
++  Gate_S1R3_inspection_replay_same_frame_and_failed_predicate_target: PASS_CONTROLLER
+   Gate_S2_hermes_drafting: NOT_STARTED
+   Gate_S3_revision_recipe_loop: NOT_STARTED
+ verification:
+-  automated: PASS_FOR_S0R2_S1R2
++  automated: PASS_FOR_S0R3_S1R3
+   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+   independent_review: M1_1S_S7R2_APPROVED_M1_2_UNBLOCKED
+-  controller_review: S0R2_S1R2_PASS_PENDING_EXTERNAL_PACKET
++  controller_review: S0R3_S1R3_PASS_PENDING_EXTERNAL_PACKET
+   owner_acceptance: APPROVED_TO_PROCEED
+ evidence:
+   S0_report: artifacts/m1.2/gate-s0-verification-report.json
+@@ -41,4 +45,4 @@ evidence:
+   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
+ next_step:
+   external_review: REQUIRED_BEFORE_HERMES_S2
+-  scope: "Review S0R2/S1R2 boundary corrections; do not start Hermes until approved."
++  scope: "Review S0R3/S1R3 boundary corrections; do not start Hermes until approved."
+diff --git a/docs/learnings/2026-06-21-m1-2-s0r3-target-retry-safety.md b/docs/learnings/2026-06-21-m1-2-s0r3-target-retry-safety.md
+new file mode 100644
+index 0000000..4d0bdbf
+--- /dev/null
++++ b/docs/learnings/2026-06-21-m1-2-s0r3-target-retry-safety.md
+@@ -0,0 +1,19 @@
++# M1.2 S0R3 Target And Retry Safety Learning
++
++Date: 2026-06-21
++
++Fact: Structural inspection and coordinate replay are one user-facing claim. If
++they resolve target time independently, the system can explain one moment while
++the human watches another.
++
++Decision: M1.2 uses one resolved target contract for target inspection and replay
++retrieval. The resolved frame is included in inspection output and must match the
++replay anchor frame.
++
++Learning: Immutable content-addressed records still need idempotent retry
++semantics. Agent retries should return the existing resource when canonical
++payloads match, and fail only when the same handle maps to conflicting content.
++
++Follow-up: S2 Hermes drafting should remain a client of this resolved-target and
++retry-safe model-visible boundary. Do not add runtime architecture work during
++S2 unless this boundary reveals a concrete regression.
+diff --git a/docs/reviews/2026-06-21-m1-2-s0r3-external-review.md b/docs/reviews/2026-06-21-m1-2-s0r3-external-review.md
+new file mode 100644
+index 0000000..a31a2e2
+--- /dev/null
++++ b/docs/reviews/2026-06-21-m1-2-s0r3-external-review.md
+@@ -0,0 +1,42 @@
++# M1.2 S0R3 External Review
++
++Date: 2026-06-21
++
++Decision: APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S2
++
++## Blocking Findings
++
++The external review accepted the major S0R2 trust-boundary work but kept S2
++blocked for one focused correction:
++
++- `inspect_non_match` and `retrieve_replay_window` could resolve the same
++  user-supplied target to different frames.
++- Content-addressed immutable handles were not retry-safe for normal repeated
++  agent/user calls.
++- S1 needed to exercise the exact model-visible adapter rather than only the
++  lower-level dispatcher.
++- S1 needed a compatible-anchor predicate-failure proof, not only a
++  no-compatible-anchor explanation.
++
++## Integrated S0R3/S1R3 Corrections
++
++- Added a shared resolved target path for non-match inspection and target replay.
++- Added resolved target metadata to non-match inspection output.
++- Made handle writes idempotent for identical canonical payloads and still fail
++  on true payload collisions.
++- Ignored volatile timestamps and timing metrics only for handle identity
++  comparison.
++- Verified authorization records against bound-plan hash as well as bound-plan
++  ID.
++- Routed S1 S2-visible calls through `dispatch_model_visible`, with host
++  confirmation remaining outside model control.
++- Added retry proof for submit, validate, execute, and replay.
++- Added successful and failing model-visible schema checks for all eight S2
++  tools.
++- Added a real diagnostic typed plan proving a compatible anchor can fail a
++  declared predicate.
++
++## Current Controller Decision
++
++S0R3/S1R3 are controller-verified and ready for external review. Hermes S2
++remains blocked until the packet is reviewed and approved.
+diff --git a/generated/capability-context.json b/generated/capability-context.json
+index 08aa0e3..804491f 100644
+--- a/generated/capability-context.json
++++ b/generated/capability-context.json
+@@ -91,7 +91,7 @@
+     "result_row_mutation",
+     "threshold_auto_tuning"
+   ],
+-  "generated_at": "2026-06-21T14:38:19+00:00",
++  "generated_at": "2026-06-21T15:50:35+00:00",
+   "host_owned_complexity_ceilings": {
+     "max_execution_cost": 100000,
+     "max_nesting_depth": 12,
+diff --git a/src/tqe/verification/m1_2_gate_s0.py b/src/tqe/verification/m1_2_gate_s0.py
+index 1a052bd..9f7c387 100644
+--- a/src/tqe/verification/m1_2_gate_s0.py
++++ b/src/tqe/verification/m1_2_gate_s0.py
+@@ -21,6 +21,7 @@ from tqe.workshop.m1_2 import (
+     SubmitQueryPlanRequest,
+     ToolDispatchRequest,
+     dispatch_model_visible,
++    host_confirm_bound_plan,
+     ValidateQueryPlanRequest,
+     dispatch_tool,
+     list_capabilities,
+@@ -174,6 +175,87 @@ def build_report() -> dict[str, Any]:
+             dispatched.model_dump(mode="json"),
+         )
+     )
++    retry_submit = dispatch_model_visible(
++        ToolDispatchRequest(
++            tool_name="submit_query_plan",
++            arguments={
++                "plan_document": TacticalQueryDocument.model_validate_json(
++                    APPROVED_PLAN_PATH.read_text(encoding="utf-8")
++                ).model_dump(mode="json")
++            },
++        ),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
++    retry_validation = dispatch_model_visible(
++        ToolDispatchRequest(
++            tool_name="validate_query_plan",
++            arguments={"draft_plan_id": approved_submit.draft_plan_id},
++        ),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
++    authorization = host_confirm_bound_plan(approved_validation.bound_plan_id)
++    retry_authorization = host_confirm_bound_plan(approved_validation.bound_plan_id)
++    retry_execution = dispatch_model_visible(
++        ToolDispatchRequest(
++            tool_name="execute_query_plan",
++            arguments={
++                "bound_plan_id": approved_validation.bound_plan_id,
++                "execution_authorization_id": authorization.execution_authorization_id,
++                "result_limit": 2,
++            },
++        ),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
++    retry_execution_again = dispatch_model_visible(
++        ToolDispatchRequest(
++            tool_name="execute_query_plan",
++            arguments={
++                "bound_plan_id": approved_validation.bound_plan_id,
++                "execution_authorization_id": retry_authorization.execution_authorization_id,
++                "result_limit": 2,
++            },
++        ),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
++    retry_replay = dispatch_model_visible(
++        ToolDispatchRequest(
++            tool_name="retrieve_replay_window",
++            arguments={
++                "execution_id": retry_execution["execution_id"],
++                "result_id": retry_execution["results"][0]["result_id"],
++                "padding_seconds": 2.0,
++            },
++        ),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
++    retry_replay_again = dispatch_model_visible(
++        ToolDispatchRequest(
++            tool_name="retrieve_replay_window",
++            arguments={
++                "execution_id": retry_execution["execution_id"],
++                "result_id": retry_execution["results"][0]["result_id"],
++                "padding_seconds": 2.0,
++            },
++        ),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
++    checks.append(
++        check(
++            "s0.content_addressed_retries_idempotent",
++            retry_submit["draft_plan_id"] == approved_submit.draft_plan_id
++            and retry_validation["bound_plan_id"] == approved_validation.bound_plan_id
++            and authorization.execution_authorization_id == retry_authorization.execution_authorization_id
++            and retry_execution["execution_id"] == retry_execution_again["execution_id"]
++            and retry_replay["replay_window_id"] == retry_replay_again["replay_window_id"],
++            "Repeated content-addressed tool calls return existing resources instead of false failures.",
++            {
++                "draft_plan_id": retry_submit["draft_plan_id"],
++                "bound_plan_id": retry_validation["bound_plan_id"],
++                "execution_id": retry_execution["execution_id"],
++                "replay_window_id": retry_replay["replay_window_id"],
++            },
++        )
++    )
+     manual_denied = dispatch_tool(
+         ToolDispatchRequest(tool_name="record_feedback", arguments={}),
+         caller_profile=CallerProfile.HERMES_S2,
+@@ -203,15 +285,15 @@ def build_report() -> dict[str, Any]:
+     )
+     non_authorable_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=non_authorable_submit.draft_plan_id))
+     checks.append(check("s0.non_authorable_capability_rejected", not non_authorable_validation.ok and any("not agent-authorable" in issue.get("message", "") for issue in non_authorable_validation.issues), "Non-authorable catalog capabilities are rejected.", non_authorable_validation.model_dump(mode="json")))
+-    model_visible_success = dispatch_model_visible(
+-        ToolDispatchRequest(tool_name="list_capabilities", arguments={}),
+-        caller_profile=CallerProfile.HERMES_S2,
+-    )
+-    model_visible_failure = dispatch_model_visible(
+-        ToolDispatchRequest(tool_name="describe_capability", arguments={"capability_name": "not_real"}),
+-        caller_profile=CallerProfile.HERMES_S2,
++    model_visible_matrix = model_visible_tool_matrix()
++    checks.append(
++        check(
++            "s0.model_visible_schema_conformance_all_s2_tools",
++            all(item["success_ok"] and item["failure_ok"] for item in model_visible_matrix),
++            "Model-visible dispatcher validates successful and failing responses for every S2-visible tool.",
++            {"matrix": model_visible_matrix},
++        )
+     )
+-    checks.append(check("s0.model_visible_schema_conformance", model_visible_success.get("schema_version") == "1.0" and model_visible_failure.get("ok") is False, "Model-visible dispatcher payloads validate against generated schemas.", {"success_keys": sorted(model_visible_success)[:8], "failure": model_visible_failure}))
+ 
+     summary = {
+         "pass": sum(1 for item in checks if item["status"] == "pass"),
+@@ -231,6 +313,89 @@ def build_report() -> dict[str, Any]:
+     return report
+ 
+ 
++def model_visible_tool_matrix() -> list[dict[str, Any]]:
++    plan_document = TacticalQueryDocument.model_validate_json(APPROVED_PLAN_PATH.read_text(encoding="utf-8"))
++    submit = dispatch_model_visible(
++        ToolDispatchRequest(tool_name="submit_query_plan", arguments={"plan_document": plan_document.model_dump(mode="json")}),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
++    validation = dispatch_model_visible(
++        ToolDispatchRequest(tool_name="validate_query_plan", arguments={"draft_plan_id": submit["draft_plan_id"]}),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
++    authorization = host_confirm_bound_plan(validation["bound_plan_id"])
++    execution = dispatch_model_visible(
++        ToolDispatchRequest(
++            tool_name="execute_query_plan",
++            arguments={
++                "bound_plan_id": validation["bound_plan_id"],
++                "execution_authorization_id": authorization.execution_authorization_id,
++                "result_limit": 1,
++            },
++        ),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
++    result_id = execution["results"][0]["result_id"]
++    first_result = execution["results"][0]
++    target = {
++        "schema_version": "1.0",
++        "target_id": "model_visible_probe",
++        "match_id": first_result["match_id"],
++        "period": first_result["period"],
++        "approximate_time_ms": 0,
++        "search_radius_ms": 250,
++    }
++    success_args = {
++        "list_capabilities": {},
++        "describe_capability": {"capability_name": "execute_query_plan"},
++        "submit_query_plan": {"plan_document": plan_document.model_dump(mode="json")},
++        "validate_query_plan": {"draft_plan_id": submit["draft_plan_id"]},
++        "execute_query_plan": {
++            "bound_plan_id": validation["bound_plan_id"],
++            "execution_authorization_id": authorization.execution_authorization_id,
++            "result_limit": 1,
++        },
++        "inspect_result": {"execution_id": execution["execution_id"], "result_id": result_id},
++        "inspect_non_match": {"execution_id": execution["execution_id"], "target": target},
++        "retrieve_replay_window": {"execution_id": execution["execution_id"], "result_id": result_id},
++    }
++    failure_args = {
++        "list_capabilities": {"unexpected": True},
++        "describe_capability": {"capability_name": "not_real"},
++        "submit_query_plan": {"plan_document": {"not": "a plan"}},
++        "validate_query_plan": {"draft_plan_id": "draft_deadbeefdeadbeef"},
++        "execute_query_plan": {
++            "bound_plan_id": validation["bound_plan_id"],
++            "execution_authorization_id": "auth_deadbeefdeadbeef",
++        },
++        "inspect_result": {"execution_id": execution["execution_id"], "result_id": "missing"},
++        "inspect_non_match": {
++            "execution_id": execution["execution_id"],
++            "target": {**target, "period": "badPeriod"},
++        },
++        "retrieve_replay_window": {"execution_id": execution["execution_id"]},
++    }
++    matrix = []
++    for tool_name in HERMES_S2_TOOL_NAMES:
++        success = dispatch_model_visible(
++            ToolDispatchRequest(tool_name=tool_name, arguments=success_args[tool_name]),
++            caller_profile=CallerProfile.HOST_MANUAL,
++        )
++        failure = dispatch_model_visible(
++            ToolDispatchRequest(tool_name=tool_name, arguments=failure_args[tool_name]),
++            caller_profile=CallerProfile.HOST_MANUAL,
++        )
++        matrix.append(
++            {
++                "tool": tool_name,
++                "success_ok": success.get("ok", True) is not False,
++                "failure_ok": failure.get("ok") is False,
++                "failure_code": failure.get("error_code"),
++            }
++        )
++    return matrix
++
++
+ def unsafe_raw_episode_exists_plan() -> dict[str, Any]:
+     payload = TacticalQueryDocument.model_validate_json(
+         APPROVED_PLAN_PATH.read_text(encoding="utf-8")
+diff --git a/src/tqe/verification/m1_2_gate_s1.py b/src/tqe/verification/m1_2_gate_s1.py
+index a95251c..678a15f 100644
+--- a/src/tqe/verification/m1_2_gate_s1.py
++++ b/src/tqe/verification/m1_2_gate_s1.py
+@@ -3,6 +3,7 @@
+ from __future__ import annotations
+ 
+ import json
++from copy import deepcopy
+ from datetime import UTC, datetime
+ from pathlib import Path
+ from typing import Any
+@@ -13,9 +14,11 @@ from tqe.workshop.m1_2 import (
+     DEFAULT_WORKSHOP_ROOT,
+     FeedbackLabel,
+     ToolDispatchRequest,
++    dispatch_model_visible,
+     dispatch_tool,
+     host_confirm_bound_plan,
+     replay_artifact_path,
++    resolve_evaluation_target,
+     write_manual_workshop_artifacts,
+ )
+ 
+@@ -102,6 +105,29 @@ def build_report() -> dict[str, Any]:
+             non_match,
+         )
+     )
++    checks.append(
++        check(
++            "s1.non_match_inspection_replay_same_resolved_frame",
++            non_match["inspection"]["resolved_target"]["canonical_frame_id"] == non_match["replay"]["anchor_frame_id"],
++            "Known timestamp inspection and coordinate replay resolve to the same canonical frame.",
++            {
++                "inspection_frame": non_match["inspection"]["resolved_target"]["canonical_frame_id"],
++                "replay_frame": non_match["replay"]["anchor_frame_id"],
++            },
++        )
++    )
++    predicate_failure_probe = build_compatible_predicate_failure_probe(experimental_run)
++    checks.append(
++        check(
++            "s1.compatible_anchor_predicate_failure_explained",
++            predicate_failure_probe is not None
++            and predicate_failure_probe["inspection"]["status"] == "NON_MATCH"
++            and predicate_failure_probe["inspection"]["candidate_count"] > 0
++            and bool(predicate_failure_probe["inspection"]["failed_predicates"]),
++            "Known timestamp inspection distinguishes compatible-anchor predicate failure from no compatible anchor.",
++            predicate_failure_probe or {},
++        )
++    )
+     feedback_records = record_feedback_examples(
+         approved_run=approved_run,
+         experimental_run=experimental_run,
+@@ -139,6 +165,7 @@ def build_report() -> dict[str, Any]:
+         "feedback_labels": [label.value for label in FeedbackLabel],
+         "runs": [approved_run, experimental_run],
+         "non_match_inspection": non_match,
++        "predicate_failure_probe": predicate_failure_probe,
+         "saved_recipe": saved_recipe,
+     }
+     workshop_artifacts = write_manual_workshop_artifacts(
+@@ -272,6 +299,94 @@ def build_known_timestamp_non_match(experimental_run: dict[str, Any]) -> dict[st
+     }
+ 
+ 
++def build_compatible_predicate_failure_probe(experimental_run: dict[str, Any]) -> dict[str, Any] | None:
++    diagnostic_plan = strict_corridor_failure_plan()
++    submitted = dispatch(
++        "submit_query_plan",
++        {"plan_document": diagnostic_plan, "source_label": "s1_predicate_failure_probe"},
++    )
++    validation = dispatch("validate_query_plan", {"draft_plan_id": submitted["draft_plan_id"]})
++    execution = dispatch(
++        "execute_query_plan",
++        {
++            "bound_plan_id": validation["bound_plan_id"],
++            "execution_authorization_id": host_confirm_bound_plan(
++                validation["bound_plan_id"],
++                reviewer="controller",
++            ).execution_authorization_id,
++            "result_limit": 5,
++        },
++    )
++    execution_id = execution["execution_id"]
++    first_result = experimental_run["results"][0]
++    match_id = str(first_result["match_id"])
++    period = str(first_result["period"])
++    period_start = resolve_evaluation_target(
++        EvaluationTarget(
++            target_id="period_start_probe",
++            match_id=match_id,
++            period=period,
++            approximate_time_ms=0,
++            search_radius_ms=250,
++        )
++    ).canonical_frame_id
++    candidate_frames = [int(first_result["anchor_frame_id"])]
++    for index, frame_id in enumerate(candidate_frames):
++        approximate_time_ms = int(round((frame_id - period_start) / 25 * 1000))
++        target = EvaluationTarget(
++            target_id=f"predicate_fail_{index}",
++            match_id=match_id,
++            period=period,
++            approximate_time_ms=approximate_time_ms,
++            search_radius_ms=500,
++        )
++        inspection = dispatch(
++            "inspect_non_match",
++            {"execution_id": execution_id, "target": target.model_dump(mode="json")},
++        )["inspection"]
++        if (
++            inspection.get("status") == "NON_MATCH"
++            and int(inspection.get("candidate_count", 0)) > 0
++            and inspection.get("failed_predicates")
++        ):
++            replay = dispatch(
++                "retrieve_replay_window",
++                {
++                    "execution_id": execution_id,
++                    "target": target.model_dump(mode="json"),
++                    "padding_seconds": 2.0,
++                },
++            )
++            return {
++                "diagnostic_execution": execution,
++                "target": target.model_dump(mode="json"),
++                "inspection": inspection,
++                "replay": replay,
++            }
++    return None
++
++
++def strict_corridor_failure_plan() -> dict[str, Any]:
++    payload = deepcopy(read_json(EXPERIMENTAL_PLAN_PATH))
++    payload["recipe"]["recipe_id"] = "s1_strict_corridor_failure_probe"
++    payload["recipe"]["display_name"] = "S1 Strict Corridor Failure Probe"
++    payload["recipe"]["output_classifications"] = ["IMPOSSIBLY_DENSE_CORRIDOR"]
++    payload["draft_plan"]["plan_id"] = "s1_strict_corridor_failure_probe"
++    payload["draft_plan"]["recipe_id"] = "s1_strict_corridor_failure_probe"
++    payload["draft_plan"]["classification_rules"] = [
++        {
++            "label": "IMPOSSIBLY_DENSE_CORRIDOR",
++            "predicate_ids": ["has_progressive_corridor"],
++            "description": "Diagnostic proof that compatible anchors can fail declared predicates.",
++        }
++    ]
++    for node in payload["draft_plan"]["nodes"]:
++        if node.get("node_id") == "has_progressive_corridor":
++            node["operator"] = {"name": "count_at_least", "version": "1.0.0"}
++            node["compare"] = {"payload_type": "number", "unit": "count", "value": 999}
++    return payload
++
++
+ def record_feedback_examples(
+     *,
+     approved_run: dict[str, Any],
+@@ -323,6 +438,23 @@ def record_feedback_examples(
+ 
+ 
+ def dispatch(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
++    if tool_name in {
++        "list_capabilities",
++        "describe_capability",
++        "submit_query_plan",
++        "validate_query_plan",
++        "execute_query_plan",
++        "inspect_result",
++        "inspect_non_match",
++        "retrieve_replay_window",
++    }:
++        payload = dispatch_model_visible(
++            ToolDispatchRequest(tool_name=tool_name, arguments=arguments),
++            caller_profile=CallerProfile.HOST_MANUAL,
++        )
++        if payload.get("ok") is False:
++            raise RuntimeError(f"{tool_name} failed: {payload}")
++        return payload
+     response = dispatch_tool(
+         ToolDispatchRequest(tool_name=tool_name, arguments=arguments),
+         caller_profile=CallerProfile.HOST_MANUAL,
+diff --git a/src/tqe/workshop/m1_2.py b/src/tqe/workshop/m1_2.py
+index a0ea25c..d6c3b97 100644
+--- a/src/tqe/workshop/m1_2.py
++++ b/src/tqe/workshop/m1_2.py
+@@ -112,6 +112,26 @@ class HostConfirmationResponse(StrictModel):
+     execution_authorization_id: str
+ 
+ 
++class ResolvedEvaluationTarget(StrictModel):
++    original_target: EvaluationTarget
++    match_id: str
++    period: str
++    canonical_frame_id: int
++    resolved_match_time_ms: int
++    absolute_frame_time_ms: int
++    resolution_distance_frames: int
++    resolution_distance_ms: int
++
++    def as_executor_target(self) -> EvaluationTarget:
++        return EvaluationTarget(
++            target_id=self.original_target.target_id,
++            match_id=self.match_id,
++            period=self.period,  # type: ignore[arg-type]
++            approximate_time_ms=self.absolute_frame_time_ms,
++            search_radius_ms=self.original_target.search_radius_ms,
++        )
++
++
+ class ToolSpec(StrictModel):
+     name: str
+     description: str
+@@ -360,10 +380,25 @@ def write_handle(
+ ) -> None:
+     path = handle_path(kind, handle_id, output_root=output_root)
+     if path.exists():
+-        raise CapabilityGap(f"{kind} handle already exists: {handle_id}")
++        existing = read_json(path)
++        if canonical_identity(existing) == canonical_identity(payload):
++            return
++        raise CapabilityGap(f"{kind} handle collision: {handle_id}")
+     write_json(path, payload)
+ 
+ 
++def canonical_identity(payload: Any) -> Any:
++    if isinstance(payload, dict):
++        return {
++            key: canonical_identity(value)
++            for key, value in payload.items()
++            if key not in {"created_at", "saved_at", "recorded_at", "generated_at", "timing_ms"}
++        }
++    if isinstance(payload, list):
++        return [canonical_identity(item) for item in payload]
++    return payload
++
++
+ def read_handle(
+     kind: str,
+     handle_id: str,
+@@ -496,10 +531,12 @@ def describe_capability_tool(
+ 
+ def validate_query_plan(
+     request: ValidateQueryPlanRequest,
++    *,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
+     caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+ ) -> ValidateQueryPlanResponse:
+     try:
+-        draft_record = read_handle("draft-plans", request.draft_plan_id)
++        draft_record = read_handle("draft-plans", request.draft_plan_id, output_root=output_root)
+         document = TacticalQueryDocument.model_validate(draft_record["document"])
+         bound = bind_document(document)
+         validate_safe_agent_plan(bound, caller_profile=caller_profile)
+@@ -517,13 +554,13 @@ def validate_query_plan(
+                 "bound_plan": model_payload(bound),
+                 "confirmed": False,
+             }
+-        bound_path = handle_path("bound-plans", bound_plan_id)
++        bound_path = handle_path("bound-plans", bound_plan_id, output_root=output_root)
+         if bound_path.exists():
+-            existing = read_handle("bound-plans", bound_plan_id)
++            existing = read_handle("bound-plans", bound_plan_id, output_root=output_root)
+             if existing.get("bound_plan_hash") != bound.bound_plan_hash:
+                 raise CapabilityGap(f"bound plan handle collision: {bound_plan_id}")
+         else:
+-            write_handle("bound-plans", bound_plan_id, bound_payload)
++            write_handle("bound-plans", bound_plan_id, bound_payload, output_root=output_root)
+         return ValidateQueryPlanResponse(
+             ok=True,
+             draft_plan_id=request.draft_plan_id,
+@@ -585,6 +622,8 @@ def execute_query_plan(
+     auth_record = read_handle("authorizations", request.execution_authorization_id, output_root=output_root)
+     if auth_record.get("bound_plan_id") != request.bound_plan_id:
+         raise CapabilityGap("execution authorization does not match bound_plan_id")
++    if auth_record.get("bound_plan_hash") != bound_record.get("bound_plan_hash"):
++        raise CapabilityGap("execution authorization does not match bound_plan_hash")
+     document = TacticalQueryDocument.model_validate(bound_record["document"])
+     bound = bind_document(document)
+     validate_safe_agent_plan(bound, caller_profile=CallerProfile.HOST_MANUAL)
+@@ -617,8 +656,12 @@ def execute_query_plan(
+     )
+ 
+ 
+-def inspect_result(request: InspectResultRequest) -> InspectResultResponse:
+-    execution_record = read_handle("executions", request.execution_id)
++def inspect_result(
++    request: InspectResultRequest,
++    *,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++) -> InspectResultResponse:
++    execution_record = read_handle("executions", request.execution_id, output_root=output_root)
+     rows = execution_record["rows"]
+     result = next((row for row in rows if str(row["result_id"]) == request.result_id), None)
+     if result is None:
+@@ -638,15 +681,21 @@ def inspect_result(request: InspectResultRequest) -> InspectResultResponse:
+     )
+ 
+ 
+-def inspect_non_match(request: InspectNonMatchRequest) -> InspectNonMatchResponse:
+-    execution_record = read_handle("executions", request.execution_id)
++def inspect_non_match(
++    request: InspectNonMatchRequest,
++    *,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++) -> InspectNonMatchResponse:
++    execution_record = read_handle("executions", request.execution_id, output_root=output_root)
+     document = TacticalQueryDocument.model_validate(execution_record["document"])
+     bound = bind_document(document)
+     validate_safe_agent_plan(bound, caller_profile=CallerProfile.HOST_MANUAL)
++    resolved = resolve_evaluation_target(request.target)
+     inspection = executor_for_profile(str(execution_record["compatibility_profile"])).evaluate_target(
+         bound,
+-        request.target,
++        resolved.as_executor_target(),
+     )
++    inspection["resolved_target"] = resolved.model_dump(mode="json")
+     return InspectNonMatchResponse(ok=True, execution_id=request.execution_id, inspection=inspection)
+ 
+ 
+@@ -661,7 +710,8 @@ def retrieve_replay_window(
+             InspectResultRequest(
+                 execution_id=request.execution_id,
+                 result_id=request.result_id,
+-            )
++            ),
++            output_root=output_root,
+         )
+         row = inspection.result
+         match_id = str(row["match_id"])
+@@ -671,9 +721,10 @@ def retrieve_replay_window(
+         source_kind: Literal["result", "target"] = "result"
+     else:
+         assert request.target is not None
+-        match_id = request.target.match_id
+-        period = request.target.period
+-        anchor_frame_id = canonical_frame_for_target(request.target)
++        resolved = resolve_evaluation_target(request.target)
++        match_id = resolved.match_id
++        period = resolved.period
++        anchor_frame_id = resolved.canonical_frame_id
+         source_id = request.target.target_id
+         source_kind = "target"
+ 
+@@ -697,10 +748,15 @@ def retrieve_replay_window(
+         anchor_frame_id=anchor_frame_id,
+         padding_seconds=request.padding_seconds,
+     )
+-    artifact_path = output_root / "replay-windows" / f"{replay_window_id}.json"
+     if not replay["frames"]:
+         raise CapabilityGap("NO_REPLAY_WINDOW: requested target produced no canonical replay frames")
+-    write_json(artifact_path, replay)
++    artifact_path = output_root / "replay-windows" / f"{replay_window_id}.json"
++    if artifact_path.exists():
++        existing_replay = read_json(artifact_path)
++        if canonical_identity(existing_replay) != canonical_identity(replay):
++            raise CapabilityGap(f"replay artifact collision: {replay_window_id}")
++    else:
++        write_json(artifact_path, replay)
+     write_handle(
+         "replay-windows",
+         replay_window_id,
+@@ -995,6 +1051,7 @@ def dispatch_tool(
+         if caller_profile == CallerProfile.HERMES_S2 and request.tool_name not in HERMES_S2_TOOL_NAMES:
+             raise CapabilityGap(f"{request.tool_name} is not available to Hermes S2")
+         if request.tool_name == "list_capabilities":
++            ListCapabilitiesRequest.model_validate(request.arguments)
+             response = list_capabilities(caller_profile)
+         elif request.tool_name == "describe_capability":
+             response = describe_capability_tool(
+@@ -1010,6 +1067,7 @@ def dispatch_tool(
+         elif request.tool_name == "validate_query_plan":
+             response = validate_query_plan(
+                 ValidateQueryPlanRequest.model_validate(request.arguments),
++                output_root=output_root,
+                 caller_profile=caller_profile,
+             )
+         elif request.tool_name == "execute_query_plan":
+@@ -1018,9 +1076,15 @@ def dispatch_tool(
+                 output_root=output_root,
+             )
+         elif request.tool_name == "inspect_result":
+-            response = inspect_result(InspectResultRequest.model_validate(request.arguments))
++            response = inspect_result(
++                InspectResultRequest.model_validate(request.arguments),
++                output_root=output_root,
++            )
+         elif request.tool_name == "inspect_non_match":
+-            response = inspect_non_match(InspectNonMatchRequest.model_validate(request.arguments))
++            response = inspect_non_match(
++                InspectNonMatchRequest.model_validate(request.arguments),
++                output_root=output_root,
++            )
+         elif request.tool_name == "retrieve_replay_window":
+             response = retrieve_replay_window(
+                 ReplayWindowRequest.model_validate(request.arguments),
+@@ -1121,14 +1185,30 @@ def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:
+     }
+ 
+ 
+-def canonical_frame_for_target(target: EvaluationTarget) -> int:
++def resolve_evaluation_target(target: EvaluationTarget) -> ResolvedEvaluationTarget:
+     frame_path = DEFAULT_CANONICAL_ROOT / "frames" / f"match_id={target.match_id}" / f"period={target.period}.parquet"
+     frames_table = pq.ParquetFile(frame_path).read(columns=["frame_id"]).to_pandas()
+     frame_ids = sorted(int(item) for item in frames_table.frame_id.tolist())
+     if not frame_ids:
+         raise CapabilityGap(f"NO_REPLAY_WINDOW: no canonical frames for {target.match_id} {target.period}")
+-    nominal = frame_ids[0] + int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
+-    return min(frame_ids, key=lambda item: abs(item - nominal))
++    first_frame = frame_ids[0]
++    nominal = first_frame + int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
++    canonical_frame_id = min(frame_ids, key=lambda item: abs(item - nominal))
++    resolution_distance_frames = abs(canonical_frame_id - nominal)
++    return ResolvedEvaluationTarget(
++        original_target=target,
++        match_id=target.match_id,
++        period=target.period,
++        canonical_frame_id=canonical_frame_id,
++        resolved_match_time_ms=int(round((canonical_frame_id - first_frame) / FRAME_RATE_HZ * 1000)),
++        absolute_frame_time_ms=int(round(canonical_frame_id / FRAME_RATE_HZ * 1000)),
++        resolution_distance_frames=resolution_distance_frames,
++        resolution_distance_ms=int(round(resolution_distance_frames / FRAME_RATE_HZ * 1000)),
++    )
++
++
++def canonical_frame_for_target(target: EvaluationTarget) -> int:
++    return resolve_evaluation_target(target).canonical_frame_id
+ 
+ 
+ def replay_artifact_path(

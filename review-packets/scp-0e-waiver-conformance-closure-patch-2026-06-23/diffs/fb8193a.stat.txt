@@ -1,0 +1,22 @@
+fb8193a Tighten SCP-0E exact conformance gates
+ artifacts/scp-0/verification-report.json           |  15 +-
+ delivery/ledger.jsonl                              |   1 +
+ delivery/scp-0/SPEC.md                             |  22 ++
+ delivery/scp-0/progress.md                         |   4 +-
+ delivery/scp-0/status.yaml                         |  17 +-
+ .../2026-06-23-scp-0-semantic-registry.md          |  29 +++
+ generated/semantic-registry/ai-projection.json     |   6 +-
+ .../semantic-registry/product-projection.json      |   6 +-
+ .../recipe-library-projection.json                 |   6 +-
+ .../research-atlas-projection.json                 |   6 +-
+ generated/semantic-registry/runtime-manifest.json  |  57 ++++-
+ .../semantic-registry/semantic-parity-report.json  |  15 +-
+ .../unsupported-capability-projection.json         |   6 +-
+ semantic-registry/registry.lock.json               |   6 +-
+ semantic-registry/registry.yaml                    |  70 +++++-
+ .../schemas/semantic-registry.schema.json          |  95 +++++++-
+ src/tqe/semantic_registry/generate.py              | 247 ++++++++++++++++++++-
+ src/tqe/semantic_registry/models.py                |  28 ++-
+ src/tqe/semantic_registry/runtime_manifest.py      |  58 +++++
+ tests/test_scp0_semantic_registry.py               | 144 ++++++++++++
+ 20 files changed, 786 insertions(+), 52 deletions(-)

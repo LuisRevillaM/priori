@@ -1,0 +1,2462 @@
+diff --git a/Makefile b/Makefile
+index 252565a..c62ef3e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ PYTHON ?= $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python
+ PYTHONPATH := $(CURDIR)/src
+ export PYTHONPATH
+ 
+-.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify m1-2-gate-s0-verify m1-2-gate-s1-verify m1-2-gate-s2-verify m1-2-gate-s2-sealed-verify m1-2-gate-s2i-verify m1-2-gate-s2ib-verify m1-2-gate-s2ic-verify m1-2-gate-s2id-verify m1-2-gate-s2ie-verify m1-2-gate-s2if-verify n1c-verify n1d-freeze n1d-verify n1d1-verify workbench-alpha-install workbench-alpha-build workbench-alpha-serve workbench-alpha-verify cloud-alpha-bundle cloud-alpha-smoke m1-2-verify test
++.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-gate-s4-verify m1-1-gate-s5-verify m1-1-gate-s6-verify m1-1-gate-s7-verify m1-1-gate-s7r-verify m1-1-verify m1-2-gate-s0-verify m1-2-gate-s1-verify m1-2-gate-s2-verify m1-2-gate-s2-sealed-verify m1-2-gate-s2i-verify m1-2-gate-s2ib-verify m1-2-gate-s2ic-verify m1-2-gate-s2id-verify m1-2-gate-s2ie-verify m1-2-gate-s2if-verify n1c-verify n1d-freeze n1d-verify n1d1-verify n1g-verify n1i-verify workbench-alpha-install workbench-alpha-build workbench-alpha-serve workbench-alpha-verify cloud-alpha-bundle cloud-alpha-smoke m1-2-verify test
+ 
+ setup:
+ 	python3.12 -m venv .venv
+@@ -154,6 +154,12 @@ n1d-verify:
+ n1d1-verify:
+ 	$(PYTHON) -m tqe.verification.n1d1
+ 
++n1g-verify:
++	$(PYTHON) -m tqe.verification.n1g
++
++n1i-verify:
++	$(PYTHON) -m tqe.verification.n1i
++
+ workbench-alpha-install:
+ 	npm --prefix apps/workbench-alpha install
+ 
+diff --git a/src/tqe/runtime/executor.py b/src/tqe/runtime/executor.py
+index 3bf1f58..48729ca 100644
+--- a/src/tqe/runtime/executor.py
++++ b/src/tqe/runtime/executor.py
+@@ -940,9 +940,10 @@ def project_requested_evidence_from_runtime(
+     for request in bound_plan.requested_evidence:
+         key = request.alias or f"{request.source.source_node_id}.{request.field}"
+         runtime_value = state.runtime_values.get(request.source.source_node_id, {}).get(request.source.output_name)
+-        selected_relation_id = selected_relation_id_for_anchor(
++        selected_relation_id = selected_relation_id_for_evidence_request(
+             state=state,
+             anchor=anchor,
++            bound_plan=bound_plan,
+             source_node_id=request.source.source_node_id,
+             output_name=request.source.output_name,
+         )
+@@ -1033,6 +1034,60 @@ def selected_relation_id_for_anchor(
+     return None
+ 
+ 
++def selected_relation_id_for_evidence_request(
++    *,
++    state: PeriodState,
++    anchor: RuntimeAnchor,
++    bound_plan: BoundQueryPlan,
++    source_node_id: str | None = None,
++    output_name: str | None = None,
++) -> str | None:
++    destination_relation_id = destination_entry_relation_id_for_source(
++        state=state,
++        anchor=anchor,
++        bound_plan=bound_plan,
++        source_node_id=source_node_id,
++        output_name=output_name,
++    )
++    if destination_relation_id is not None:
++        return destination_relation_id
++    return selected_relation_id_for_anchor(
++        state=state,
++        anchor=anchor,
++        source_node_id=source_node_id,
++        output_name=output_name,
++    )
++
++
++def destination_entry_relation_id_for_source(
++    *,
++    state: PeriodState,
++    anchor: RuntimeAnchor,
++    bound_plan: BoundQueryPlan,
++    source_node_id: str | None,
++    output_name: str | None,
++) -> str | None:
++    if source_node_id is None or output_name != "episodes":
++        return None
++    for node in bound_plan.nodes:
++        if not isinstance(node, BoundCatalogNode):
++            continue
++        if node.catalog_ref != "relation_destination_entry":
++            continue
++        source_ref = node.inputs.get("relation_episodes")
++        if source_ref is None:
++            continue
++        if source_ref.source_node_id != source_node_id or source_ref.output_name != output_name:
++            continue
++        runtime_value = state.runtime_values.get(node.node_id, {}).get("entry_status")
++        if runtime_value is None:
++            continue
++        for record in runtime_records(runtime_value):
++            if record_matches_anchor(record, anchor) and record.get("relation_id") is not None:
++                return str(record["relation_id"])
++    return None
++
++
+ def witness_source_matches(
+     *,
+     source_evidence: Any,
+@@ -2493,7 +2548,8 @@ def primitive_relation_destination_entry_classification(
+         source_results_by_id.setdefault(source_result_id, source_result)
+ 
+     horizon_seconds = node_parameter_number(node, "destination_entry_horizon_seconds", 6.0)
+-    seed = node_parameter_text(node, "result_id_seed", state.params.text("result_id_seed_hash"))
++    result_seed = node.resolved_parameters.get("result_id_seed")
++    seed = str(result_seed.value) if result_seed is not None else state.params.text("result_id_seed_hash")
+     episode_selection = node_parameter_text(
+         node,
+         "episode_selection",
+diff --git a/src/tqe/verification/n1d1.py b/src/tqe/verification/n1d1.py
+index f9f6691..715ad5b 100644
+--- a/src/tqe/verification/n1d1.py
++++ b/src/tqe/verification/n1d1.py
+@@ -66,6 +66,41 @@ def evidence_aliases(document: dict[str, Any]) -> set[str]:
+     }
+ 
+ 
++def audit_augmentation_diff(final_document: dict[str, Any], hermes_document: dict[str, Any]) -> dict[str, Any]:
++    """Audit the only allowed difference between Hermes draft and the pinned N1D plan.
++
++    Earlier N1D paths expected the host to add exactly two aliases after Hermes submitted the
++    draft. After N1I, those aliases are part of the generated authoring contract, so Hermes may
++    author them directly. That is a stronger origin claim, not a weaker one. The invariant is:
++    no structural edits after Hermes submission, no removed Hermes evidence, any host-added aliases
++    are limited to the two approved fields, and the final plan contains both required fields.
++    """
++    final_stripped = strip_requested_evidence(final_document)
++    hermes_stripped = strip_requested_evidence(hermes_document)
++    final_aliases = evidence_aliases(final_document)
++    hermes_aliases = evidence_aliases(hermes_document)
++    added = sorted(final_aliases - hermes_aliases)
++    removed = sorted(hermes_aliases - final_aliases)
++    required_present = ALLOWED_AUGMENTATION.issubset(final_aliases)
++    added_within_allowed = set(added).issubset(ALLOWED_AUGMENTATION)
++    diff_allowed = (
++        final_stripped == hermes_stripped
++        and not removed
++        and added_within_allowed
++        and required_present
++    )
++    return {
++        "structure_identical_after_strip": final_stripped == hermes_stripped,
++        "added_aliases": added,
++        "removed_aliases": removed,
++        "added_equals_allowed": set(added) == ALLOWED_AUGMENTATION and not removed,
++        "added_within_allowed": added_within_allowed,
++        "required_aliases_present": required_present,
++        "required_aliases_authored_by_hermes": sorted(ALLOWED_AUGMENTATION.intersection(hermes_aliases)),
++        "diff_allowed": diff_allowed,
++    }
++
++
+ def locate_hermes_trace(session_id: str, draft_plan_id: str | None) -> dict[str, Any] | None:
+     """Find the persisted Hermes trace for the live session. Returns None if not present."""
+     if not HERMES_TRACES_DIR.exists():
+@@ -119,10 +154,6 @@ def audit_origin_bundle(n1d_plan: dict[str, Any], bundle: dict[str, Any], bundle
+     if not isinstance(tool_calls, list):
+         tool_calls = []
+ 
+-    n1d_stripped = strip_requested_evidence(n1d_plan)
+-    hermes_stripped = strip_requested_evidence(hermes_doc)
+-    added = sorted(evidence_aliases(n1d_plan) - evidence_aliases(hermes_doc))
+-    removed = sorted(evidence_aliases(hermes_doc) - evidence_aliases(n1d_plan))
+     compile_tool_names = [
+         str(call.get("name") or "").removeprefix("functions.")
+         for call in tool_calls
+@@ -139,12 +170,7 @@ def audit_origin_bundle(n1d_plan: dict[str, Any], bundle: dict[str, Any], bundle
+         "hermes_submitted_draft_plan_hash": hermes.get("draft_plan_hash"),
+         "ordered_tool_call_trace_sha256": stable_json_sha256(tool_calls) if tool_calls else None,
+         "raw_hermes_decision_sha256": stable_json_sha256(raw_model_output) if raw_model_output else None,
+-        "allowed_augmentation_diff": {
+-            "structure_identical_after_strip": n1d_stripped == hermes_stripped,
+-            "added_aliases": added,
+-            "removed_aliases": removed,
+-            "added_equals_allowed": set(added) == ALLOWED_AUGMENTATION and not removed,
+-        },
++        "allowed_augmentation_diff": audit_augmentation_diff(n1d_plan, hermes_doc),
+         "origin_artifacts_present": True,
+         "trace_persisted": bool(session_trace.get("trace_persisted") and tool_calls and raw_model_output),
+         "compile_tool_trace": {
+@@ -194,16 +220,7 @@ def audit_hermes_origin(n1d_plan: dict[str, Any]) -> dict[str, Any]:
+     origin["hermes_submitted_draft_plan_hash"] = hermes_handle.get("draft_plan_hash")
+ 
+     # Allowed-augmentation diff vs the genuine Hermes draft.
+-    n1d_stripped = strip_requested_evidence(n1d_plan)
+-    hermes_stripped = strip_requested_evidence(hermes_doc)
+-    added = sorted(evidence_aliases(n1d_plan) - evidence_aliases(hermes_doc))
+-    removed = sorted(evidence_aliases(hermes_doc) - evidence_aliases(n1d_plan))
+-    origin["allowed_augmentation_diff"] = {
+-        "structure_identical_after_strip": n1d_stripped == hermes_stripped,
+-        "added_aliases": added,
+-        "removed_aliases": removed,
+-        "added_equals_allowed": set(added) == ALLOWED_AUGMENTATION and not removed,
+-    }
++    origin["allowed_augmentation_diff"] = audit_augmentation_diff(n1d_plan, hermes_doc)
+ 
+     # Locate the raw decision + ordered tool-call trace. NEVER fabricate if missing.
+     trace = locate_hermes_trace(session_id, draft_plan_id) if session_id else None
+@@ -290,8 +307,8 @@ def main() -> None:
+         ),
+         check(
+             "n1d1.augmentation_diff_allowed",
+-            bool(aug and aug["structure_identical_after_strip"] and aug["added_equals_allowed"]),
+-            "N1D plan equals the Hermes draft plus exactly the two allowed evidence aliases.",
++            bool(aug and aug["diff_allowed"]),
++            "N1D plan equals the Hermes draft except for optional host addition of the two allowed evidence aliases, and the final plan contains both.",
+             aug or {"reason": "origin artifacts absent"},
+         ),
+         check(
+diff --git a/src/tqe/verification/n1g.py b/src/tqe/verification/n1g.py
+new file mode 100644
+index 0000000..b0b2b13
+--- /dev/null
++++ b/src/tqe/verification/n1g.py
+@@ -0,0 +1,417 @@
++"""N1G — agent-authorable destination-entry capability gate.
++
++N1F proved the live origin path was faithful but blocked because Hermes copied the
++trusted ``relation_destination_entry_classification`` wrapper into a possession-start
++corridor draft. N1G keeps that wrapper trusted-only and proves the generic path is
++authorable:
++
++possession anchors -> progressive corridor relation episodes
++-> relation_destination_entry.entry_status -> eq PASS -> result evidence.
++"""
++
++from __future__ import annotations
++
++import json
++from copy import deepcopy
++from datetime import UTC, datetime
++from pathlib import Path
++from typing import Any
++
++from tqe.runtime.binder import bind_document
++from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
++from tqe.runtime.ir import TacticalQueryDocument, stable_hash
++from tqe.verification.n1a import build_candidate_plan
++from tqe.verification.n1c import check, relation_destination_entry_tri_state_fixture
++from tqe.verification.n1d import ENTRY_MODE_EVIDENCE
++from tqe.workshop.knowledge_pack import (
++    PACK_JSON_PATH,
++    PACK_MD_PATH,
++    verify_tactical_knowledge_pack,
++    write_tactical_knowledge_pack,
++)
++from tqe.workshop.m1_2 import (
++    CallerProfile,
++    CapabilityGap,
++    SubmitQueryPlanRequest,
++    ValidateQueryPlanRequest,
++    describe_capability,
++    list_capabilities,
++    submit_query_plan,
++    validate_query_plan,
++    write_capability_context,
++    write_json,
++)
++
++N1G_ROOT = Path("artifacts/n1g")
++WORKSHOP_ROOT = N1G_ROOT / "workshop"
++REPORT_PATH = N1G_ROOT / "n1g-verification-report.json"
++MANUAL_PLAN_PATH = N1G_ROOT / "n1g-manual-possession-destination-entry-plan.json"
++DELIVERY_REPORT_PATH = Path("delivery/n1d/N1G_REPORT.md")
++N1F_BUNDLE_PATH = Path("delivery/n1d/n1f-origin-bundle.json")
++TRUSTED_WRAPPER = "relation_destination_entry_classification"
++GENERIC_ENTRY = "relation_destination_entry"
++
++
++def utc_now_iso() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat()
++
++
++def read_json(path: Path) -> Any:
++    return json.loads(path.read_text(encoding="utf-8"))
++
++
++def add_entry_mode_evidence(document: dict[str, Any]) -> dict[str, Any]:
++    updated = deepcopy(document)
++    requested = updated["draft_plan"].setdefault("requested_evidence", [])
++    aliases = {str(item.get("alias")) for item in requested if isinstance(item, dict)}
++    for evidence in ENTRY_MODE_EVIDENCE:
++        if str(evidence["alias"]) not in aliases:
++            requested.append(deepcopy(evidence))
++    return updated
++
++
++def n1g_manual_document() -> dict[str, Any]:
++    document = add_entry_mode_evidence(build_candidate_plan())
++    document["recipe"]["recipe_id"] = "n1g_possession_corridor_destination_entry_v1"
++    document["recipe"]["recipe_version"] = "0.1.0-local-proof"
++    document["recipe"]["display_name"] = "N1G Possession Corridor Destination Entry"
++    document["draft_plan"]["plan_id"] = "n1g_possession_corridor_destination_entry_v1"
++    document["draft_plan"]["recipe_id"] = document["recipe"]["recipe_id"]
++    document["draft_plan"]["recipe_version"] = document["recipe"]["recipe_version"]
++    document["default_invocation"]["invocation_id"] = "n1g_local_proof"
++    document["default_invocation"]["match_ids"] = ["J03WOY"]
++    document["default_invocation"]["periods"] = ["firstHalf"]
++    document["default_invocation"]["perspective_team_role"] = "home"
++    document["default_invocation"]["max_results"] = 25
++    return document
++
++
++def trusted_wrapper_document_from(document: dict[str, Any]) -> dict[str, Any]:
++    """Return a same-shape invalid draft using the trusted wrapper path."""
++
++    updated = deepcopy(document)
++    for node in updated["draft_plan"]["nodes"]:
++        if node.get("node_id") == "destination_entry":
++            node["catalog_ref"] = TRUSTED_WRAPPER
++            node.setdefault("parameters", {})["episode_selection"] = {
++                "payload_type": "enum",
++                "unit": "none",
++                "value": "first_by_duration_clearance",
++            }
++        elif node.get("node_id") == "destination_region_entered":
++            node["input"] = {"source_node_id": "destination_entry", "output_name": "classification"}
++            node["operator"] = {"name": "neq", "version": "1.0.0"}
++            node["compare"] = {
++                "payload_type": "enum",
++                "unit": "none",
++                "value": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
++            }
++    updated["draft_plan"]["requested_evidence"] = [
++        request
++        for request in updated["draft_plan"].get("requested_evidence", [])
++        if not str(request.get("alias", "")).startswith("destination_")
++    ]
++    updated["draft_plan"]["requested_evidence"].extend(
++        [
++            {
++                "source": {"source_node_id": "destination_entry", "output_name": "classification"},
++                "field": "classification",
++                "alias": "destination_classification",
++            },
++            {
++                "source": {"source_node_id": "destination_entry", "output_name": "classification"},
++                "field": "destination_entry_frame_id",
++                "alias": "destination_entry_frame_id",
++                "required": False,
++            },
++        ]
++    )
++    return updated
++
++
++def model_validate_document(document: dict[str, Any]) -> dict[str, Any]:
++    submitted = submit_query_plan(
++        SubmitQueryPlanRequest(
++            plan_document=TacticalQueryDocument.model_validate(document),
++            source_label="n1g_local_model_boundary",
++        ),
++        output_root=WORKSHOP_ROOT,
++        caller_profile=CallerProfile.HERMES_S2I_MCP,
++    )
++    validation = validate_query_plan(
++        ValidateQueryPlanRequest(draft_plan_id=submitted.draft_plan_id),
++        output_root=WORKSHOP_ROOT,
++        caller_profile=CallerProfile.HERMES_S2I_MCP,
++    )
++    return {
++        "submit": submitted.model_dump(mode="json"),
++        "validation": validation.model_dump(mode="json"),
++    }
++
++
++def execute_manual_document(document: dict[str, Any]) -> dict[str, Any]:
++    bound = bind_document(TacticalQueryDocument.model_validate(document))
++    execution = TacticalQueryExecutor().execute(bound)
++    rows = execution_result_rows(execution)
++    first_evidence = rows[0].get("requested_evidence", {}) if rows else {}
++    relation_witness_mismatches = [
++        {
++            "result_id": str(row.get("result_id")),
++            "relation_id": row.get("requested_evidence", {}).get("relation_id"),
++            "destination_relation_id": row.get("requested_evidence", {}).get("destination_relation_id"),
++        }
++        for row in rows
++        if row.get("requested_evidence", {}).get("relation_id")
++        != row.get("requested_evidence", {}).get("destination_relation_id")
++    ]
++    return {
++        "bound_plan_hash": bound.bound_plan_hash,
++        "execution_status": execution.status.value,
++        "compatibility_profile": execution.provenance.get("compatibility_profile"),
++        "row_count": len(rows),
++        "classifications": sorted({str(row["classification"]) for row in rows}),
++        "first_result_id": str(rows[0]["result_id"]) if rows else None,
++        "first_requested_evidence": first_evidence,
++        "entry_statuses": sorted(
++            {str(row.get("requested_evidence", {}).get("destination_entry_status")) for row in rows}
++        ),
++        "entry_modes": sorted(
++            {
++                str(row.get("requested_evidence", {}).get("destination_entry_mode"))
++                for row in rows
++                if row.get("requested_evidence", {}).get("destination_entry_mode") is not None
++            }
++        ),
++        "has_entry_mode_evidence": bool(rows)
++        and all("destination_entry_mode" in (row.get("requested_evidence", {}) or {}) for row in rows),
++        "has_time_to_entry_evidence": bool(rows)
++        and all(
++            "destination_time_to_entry_seconds" in (row.get("requested_evidence", {}) or {})
++            for row in rows
++        ),
++        "relation_witness_mismatches": relation_witness_mismatches,
++    }
++
++
++def capability_contract() -> dict[str, Any]:
++    context = list_capabilities(CallerProfile.HERMES_S2I_MCP).model_dump(mode="json")
++    primitives = {item["name"]: item for item in context["primitives"]}
++    recipe_contract = describe_capability(
++        "opposite_corridor_after_shift_v1",
++        CallerProfile.HERMES_S2I_MCP,
++    )["authoring_contract"]
++    authorable_refs = {
++        str(node.get("catalog_ref"))
++        for node in recipe_contract.get("authorable_nodes", [])
++        if node.get("catalog_ref")
++    }
++    return {
++        "generic_entry": primitives.get(GENERIC_ENTRY, {}),
++        "trusted_wrapper": primitives.get(TRUSTED_WRAPPER, {}),
++        "safe_composition_rule": context["safe_operator_source_rules"].get(
++            "possession_corridor_destination_entry"
++        ),
++        "opposite_recipe_authorable_refs": sorted(authorable_refs),
++        "opposite_recipe_omitted_refs": recipe_contract.get("trusted_recipe_only_catalog_refs_omitted", []),
++        "opposite_recipe_safe_hints": recipe_contract.get("safe_generic_composition_hints", {}),
++    }
++
++
++def original_n1f_failure_summary() -> dict[str, Any]:
++    if not N1F_BUNDLE_PATH.exists():
++        return {"present": False}
++    bundle = read_json(N1F_BUNDLE_PATH)
++    hermes = bundle.get("hermes_origin") if isinstance(bundle.get("hermes_origin"), dict) else {}
++    draft = hermes.get("draft_document") if isinstance(hermes.get("draft_document"), dict) else {}
++    refs = [
++        str(node.get("catalog_ref"))
++        for node in draft.get("draft_plan", {}).get("nodes", [])
++        if node.get("catalog_ref")
++    ]
++    return {
++        "present": True,
++        "status": bundle.get("status"),
++        "blocking_reason": bundle.get("blocking_reason"),
++        "draft_plan_id": hermes.get("draft_plan_id"),
++        "draft_plan_hash": hermes.get("draft_plan_hash"),
++        "draft_catalog_refs": refs,
++        "used_trusted_wrapper": TRUSTED_WRAPPER in refs,
++    }
++
++
++def build_report() -> dict[str, Any]:
++    N1G_ROOT.mkdir(parents=True, exist_ok=True)
++    WORKSHOP_ROOT.mkdir(parents=True, exist_ok=True)
++    write_capability_context()
++    write_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
++
++    document = n1g_manual_document()
++    write_json(MANUAL_PLAN_PATH, document)
++    generic_validation = model_validate_document(document)
++    wrapper_validation = model_validate_document(trusted_wrapper_document_from(document))
++    execution = execute_manual_document(document)
++    tri_state = relation_destination_entry_tri_state_fixture()
++    contract = capability_contract()
++    knowledge_checks = verify_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
++
++    checks = [
++        check(
++            "n1g.generic_entry_agent_authorable",
++            contract["generic_entry"].get("agent_authorable") is True
++            and bool(contract["generic_entry"].get("agent_authoring", {}).get("safe_generic_path")),
++            "relation_destination_entry is visible as the generic agent-authorable path.",
++            contract["generic_entry"],
++        ),
++        check(
++            "n1g.trusted_wrapper_not_agent_authorable",
++            contract["trusted_wrapper"].get("agent_authorable") is False
++            and TRUSTED_WRAPPER not in contract["opposite_recipe_authorable_refs"]
++            and TRUSTED_WRAPPER in contract["opposite_recipe_omitted_refs"],
++            "relation_destination_entry_classification remains trusted-recipe-only and is omitted from recipe authoring contracts.",
++            contract,
++        ),
++        check(
++            "n1g.safe_composition_path_advertised",
++            bool(contract["safe_composition_rule"])
++            and GENERIC_ENTRY in contract["safe_composition_rule"].get("required_catalog_refs", []),
++            "Hermes-visible catalog describes the possession-corridor destination-entry path.",
++            contract["safe_composition_rule"] or {},
++        ),
++        check(
++            "n1g.manual_generic_plan_validates_for_model",
++            generic_validation["validation"].get("ok") is True,
++            "A manually authored model-profile plan validates through the generic path.",
++            generic_validation["validation"],
++        ),
++        check(
++            "n1g.manual_generic_plan_executes",
++            execution["execution_status"] == "pass"
++            and execution["compatibility_profile"] == "generic"
++            and execution["row_count"] > 0,
++            "The generic possession-start destination-entry plan executes over canonical data.",
++            execution,
++        ),
++        check(
++            "n1g.entry_evidence_projected",
++            execution["has_entry_mode_evidence"] and execution["has_time_to_entry_evidence"],
++            "Result evidence includes destination_entry_mode and destination_time_to_entry_seconds.",
++            execution,
++        ),
++        check(
++            "n1g.destination_evidence_scoped_to_same_relation",
++            not execution["relation_witness_mismatches"],
++            "Destination-entry evidence remains tied to the same witness relation selected by the corridor evidence.",
++            {"mismatches": execution["relation_witness_mismatches"]},
++        ),
++        check(
++            "n1g.eq_pass_preserves_unknown",
++            tri_state["predicate_values_by_case"].get("unknown") is None
++            and tri_state["predicate_unknown_mask_by_case"].get("unknown") is True,
++            "entry_status eq PASS preserves UNKNOWN.",
++            tri_state,
++        ),
++        check(
++            "n1g.wrapper_plan_rejected_for_model",
++            wrapper_validation["validation"].get("ok") is False
++            and any(
++                TRUSTED_WRAPPER in str(issue.get("message", ""))
++                for issue in wrapper_validation["validation"].get("issues", [])
++            ),
++            "The same path using the trusted wrapper is still rejected for model callers.",
++            wrapper_validation["validation"],
++        ),
++        check(
++            "n1g.knowledge_pack_safe_surface",
++            all(item["ok"] for item in knowledge_checks),
++            "Generated tactical knowledge pack exposes the safe generic path and omits the trusted wrapper from authorable recipe summaries.",
++            {"failed_checks": [item for item in knowledge_checks if not item["ok"]]},
++        ),
++    ]
++    summary = {"pass": sum(item["status"] == "pass" for item in checks), "fail": sum(item["status"] != "pass" for item in checks)}
++    report = {
++        "schema_version": "n1g.verification.v1",
++        "generated_at": utc_now_iso(),
++        "status": "pass" if summary["fail"] == 0 else "fail",
++        "summary": summary,
++        "manual_plan_path": str(MANUAL_PLAN_PATH),
++        "manual_plan_hash": stable_hash(document),
++        "capability_contract": contract,
++        "generic_validation": generic_validation,
++        "wrapper_validation": wrapper_validation,
++        "execution": execution,
++        "tri_state": tri_state,
++        "knowledge_pack_checks": knowledge_checks,
++        "original_n1f_failure": original_n1f_failure_summary(),
++        "checks": checks,
++    }
++    write_json(REPORT_PATH, report)
++    DELIVERY_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
++    DELIVERY_REPORT_PATH.write_text(render_markdown(report), encoding="utf-8")
++    return report
++
++
++def render_markdown(report: dict[str, Any]) -> str:
++    lines = [
++        "# N1G — Agent-Authorable Destination Entry Capability",
++        "",
++        f"Status: `{report['status']}`",
++        f"Generated: `{report['generated_at']}`",
++        "",
++        "## Scope",
++        "",
++        "N1G makes the generic destination-entry measurement path visible and valid for agent-authored possession-start corridor plans. It does not expose the trusted recipe wrapper.",
++        "",
++        "## Local Proof",
++        "",
++        f"- Manual plan: `{report['manual_plan_path']}`",
++        f"- Manual plan hash: `{report['manual_plan_hash']}`",
++        f"- Model-profile validation: `{report['generic_validation']['validation'].get('ok')}`",
++        f"- Execution status: `{report['execution']['execution_status']}`",
++        f"- Rows: `{report['execution']['row_count']}`",
++        f"- Bound plan hash: `{report['execution']['bound_plan_hash']}`",
++        f"- Entry modes: `{', '.join(report['execution']['entry_modes'])}`",
++        "",
++        "## N1F Failure Preservation",
++        "",
++        f"- Existing N1F bundle present: `{report['original_n1f_failure'].get('present')}`",
++        f"- Existing N1F status: `{report['original_n1f_failure'].get('status')}`",
++        f"- Existing N1F used trusted wrapper: `{report['original_n1f_failure'].get('used_trusted_wrapper')}`",
++        "",
++        "## Checks",
++        "",
++    ]
++    for item in report["checks"]:
++        lines.append(f"- `{item['status']}` {item['id']}: {item['message']}")
++    lines.extend(
++        [
++            "",
++            "## Next Required Step",
++            "",
++            "Deploy this capability-contract fix, rerun the faithful scoped Hermes origin path, and preserve either a VERIFIED n1d1 attestation or the new blocker. Beta 1C remains blocked until n1d1-verify is VERIFIED.",
++            "",
++        ]
++    )
++    return "\n".join(lines)
++
++
++def main() -> None:
++    try:
++        report = build_report()
++    except CapabilityGap as exc:
++        report = {
++            "schema_version": "n1g.verification.v1",
++            "generated_at": utc_now_iso(),
++            "status": "fail",
++            "error_type": type(exc).__name__,
++            "error_message": str(exc),
++        }
++        write_json(REPORT_PATH, report)
++        print(json.dumps({"status": "fail", "error": str(exc)}, sort_keys=True))
++        raise SystemExit(1) from exc
++    print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
++    if report["status"] != "pass":
++        raise SystemExit(1)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/src/tqe/verification/n1i.py b/src/tqe/verification/n1i.py
+new file mode 100644
+index 0000000..f5be53b
+--- /dev/null
++++ b/src/tqe/verification/n1i.py
+@@ -0,0 +1,447 @@
++"""N1I — Agent AST authoring contract repair gate.
++
++N1H proved the live Hermes path could reach ``submit_query_plan`` but the
++submitted draft used plausible, non-registered AST names. N1I repairs the
++generated Hermes-safe authoring contract so the model can discover the exact
++registered catalog refs, output names, operator names, and node schema.
++
++This gate is local only. The faithful Render rerun remains the origin proof.
++"""
++
++from __future__ import annotations
++
++import json
++import re
++import subprocess
++import tempfile
++from datetime import UTC, datetime
++from pathlib import Path
++from typing import Any
++
++from tqe.runtime.binder import bind_document
++from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
++from tqe.runtime.ir import TacticalQueryDocument, stable_hash
++from tqe.verification.n1g import n1g_manual_document
++from tqe.workshop.knowledge_pack import (
++    PACK_JSON_PATH,
++    PACK_MD_PATH,
++    file_sha256,
++    verify_tactical_knowledge_pack,
++    write_tactical_knowledge_pack,
++)
++from tqe.workshop.m1_2 import (
++    CAPABILITY_CONTEXT_PATH,
++    CallerProfile,
++    SubmitQueryPlanRequest,
++    ValidateQueryPlanRequest,
++    describe_capability,
++    list_capabilities,
++    submit_query_plan,
++    validate_query_plan,
++    write_capability_context,
++)
++
++N1I_ROOT = Path("artifacts/n1i")
++REPORT_PATH = N1I_ROOT / "n1i-verification-report.json"
++FAILURE_ANALYSIS_PATH = N1I_ROOT / "n1h-failure-analysis.json"
++DELIVERY_FAILURE_ANALYSIS_PATH = Path("delivery/n1d/n1i-n1h-failure-analysis.json")
++DELIVERY_REPORT_PATH = Path("delivery/n1d/N1I_REPORT.md")
++N1H_ORIGIN_BUNDLE_PATH = Path("delivery/n1d/n1h-origin-bundle.json")
++
++INVALID_N1H_NAMES = {
++    "active_ball_possession_anchor",
++    "progressive_corridor_availability",
++    "ball_enters_corridor_destination_region",
++}
++
++
++def utc_now_iso() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat()
++
++
++def read_json(path: Path) -> Any:
++    return json.loads(path.read_text(encoding="utf-8"))
++
++
++def write_json(path: Path, payload: Any) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++
++
++def git_head() -> str:
++    return subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
++
++
++def check(check_id: str, ok: bool, message: str, details: Any | None = None) -> dict[str, Any]:
++    return {
++        "id": check_id,
++        "status": "pass" if ok else "fail",
++        "message": message,
++        "details": details if details is not None else {},
++    }
++
++
++def extract_tool_structured_content(content: str) -> dict[str, Any]:
++    match = re.search(r"\n\n(\{.*\})\n</untrusted_tool_result>", content, flags=re.DOTALL)
++    if not match:
++        return {}
++    payload = json.loads(match.group(1))
++    structured = payload.get("structuredContent")
++    if isinstance(structured, dict):
++        return structured
++    result = payload.get("result")
++    if isinstance(result, str) and result.strip().startswith("{"):
++        return json.loads(result)
++    return {}
++
++
++def n1h_validation_response() -> dict[str, Any]:
++    if not N1H_ORIGIN_BUNDLE_PATH.exists():
++        return {}
++    bundle = read_json(N1H_ORIGIN_BUNDLE_PATH)
++    trace = bundle.get("hermes_origin", {}).get("session_trace", {})
++    responses = trace.get("tool_responses") if isinstance(trace, dict) else []
++    for response in reversed(responses if isinstance(responses, list) else []):
++        if not isinstance(response, dict):
++            continue
++        if str(response.get("tool_name") or "").removeprefix("functions.") != "mcp_priori_tactical_validate_query_plan":
++            continue
++        content = response.get("content")
++        if isinstance(content, str):
++            structured = extract_tool_structured_content(content)
++            if structured:
++                return structured
++        if isinstance(content, dict):
++            return content
++    return {}
++
++
++def n1h_failure_analysis() -> dict[str, Any]:
++    response = n1h_validation_response()
++    issues = response.get("issues") if isinstance(response, dict) else []
++    issues = issues if isinstance(issues, list) else []
++    mappings = [
++        {
++            "invalid": "active_ball_possession_anchor",
++            "issue_codes": ["unknown_catalog_ref"],
++            "mapped_to": "possession_segment",
++            "kind": "registered_catalog_ref",
++            "reason": "The registered possession anchor primitive is possession_segment; its anchor output is possession_segment.anchors.",
++        },
++        {
++            "invalid": "progressive_corridor_availability",
++            "issue_codes": ["unknown_catalog_ref"],
++            "mapped_to": "geometric_progressive_corridor_from_anchor_set",
++            "kind": "registered_catalog_ref",
++            "reason": "The agent-authorable relation over possession anchors is geometric_progressive_corridor_from_anchor_set.",
++        },
++        {
++            "invalid": "ball_enters_corridor_destination_region",
++            "issue_codes": ["unknown_operator"],
++            "mapped_to": "relation_destination_entry.entry_status + eq PASS",
++            "kind": "registered_measurement_plus_operator",
++            "reason": "Destination-region entry is a generic measurement node, not a predicate operator.",
++        },
++        {
++            "invalid": "progressive_corridor.candidates",
++            "issue_codes": ["unresolved_temporal_reference"],
++            "mapped_to": "progressive_corridor.episodes for relation_destination_entry and progressive_corridor.anchor_evaluations for exists",
++            "kind": "registered_output_names",
++            "reason": "geometric_progressive_corridor_from_anchor_set exposes episodes and anchor_evaluations, not candidates.",
++        },
++        {
++            "invalid": "undeclared invocation threshold parameters",
++            "issue_codes": ["unknown_parameter"],
++            "mapped_to": "declare recipe.parameters and use ParameterRef, or use inline TypedValue in node.parameters",
++            "kind": "schema_contract",
++            "reason": "default_invocation.parameters may not contain undeclared recipe parameter names.",
++        },
++        {
++            "invalid": "missing draft_plan.anchor_source",
++            "issue_codes": ["missing_anchor_source"],
++            "mapped_to": {"source_node_id": "possession", "output_name": "anchors"},
++            "kind": "schema_contract",
++            "reason": "Generic result emission requires an explicit anchor source.",
++        },
++    ]
++    return {
++        "source_bundle": str(N1H_ORIGIN_BUNDLE_PATH),
++        "draft_plan_id": response.get("draft_plan_id"),
++        "issues": issues,
++        "unknown_catalog_refs": [issue for issue in issues if issue.get("code") == "unknown_catalog_ref"],
++        "unknown_operators": [issue for issue in issues if issue.get("code") == "unknown_operator"],
++        "mappings": mappings,
++    }
++
++
++def model_profile_validation(document: dict[str, Any]) -> dict[str, Any]:
++    with tempfile.TemporaryDirectory(prefix="n1i-workshop-") as directory:
++        output_root = Path(directory)
++        submitted = submit_query_plan(
++            SubmitQueryPlanRequest(
++                plan_document=TacticalQueryDocument.model_validate(document),
++                source_label="n1i_visible_contract_manual_ast",
++            ),
++            output_root=output_root,
++            caller_profile=CallerProfile.HERMES_S2I_MCP,
++        )
++        validation = validate_query_plan(
++            ValidateQueryPlanRequest(draft_plan_id=submitted.draft_plan_id),
++            output_root=output_root,
++            caller_profile=CallerProfile.HERMES_S2I_MCP,
++        )
++        return {
++            "submit": submitted.model_dump(mode="json"),
++            "validation": validation.model_dump(mode="json"),
++        }
++
++
++def inline_result_seed_document(document: dict[str, Any]) -> dict[str, Any]:
++    updated = json.loads(json.dumps(document))
++    updated["recipe"]["parameters"] = [
++        parameter
++        for parameter in updated["recipe"].get("parameters", [])
++        if parameter.get("name") != "result_id_seed_hash"
++    ]
++    for node in updated["draft_plan"].get("nodes", []):
++        if node.get("node_id") == "destination_entry":
++            node.setdefault("parameters", {})["result_id_seed"] = {
++                "payload_type": "enum",
++                "unit": "none",
++                "value": "n1i_inline_seed_regression",
++            }
++    return updated
++
++
++def execute_inline_result_seed_regression(document: dict[str, Any]) -> dict[str, Any]:
++    regression_document = inline_result_seed_document(document)
++    bound = bind_document(TacticalQueryDocument.model_validate(regression_document))
++    execution = TacticalQueryExecutor().execute(bound)
++    rows = execution_result_rows(execution)
++    return {
++        "bound_plan_hash": bound.bound_plan_hash,
++        "execution_status": execution.status.value,
++        "row_count": len(rows),
++        "has_result_id_seed_hash_recipe_parameter": any(
++            parameter.get("name") == "result_id_seed_hash"
++            for parameter in regression_document["recipe"].get("parameters", [])
++        ),
++        "destination_entry_result_seed": next(
++            (
++                node.get("parameters", {}).get("result_id_seed")
++                for node in regression_document["draft_plan"].get("nodes", [])
++                if node.get("node_id") == "destination_entry"
++            ),
++            None,
++        ),
++    }
++
++
++def document_refs_and_operators(document: dict[str, Any]) -> dict[str, list[str]]:
++    refs: list[str] = []
++    operators: list[str] = []
++    outputs: list[str] = []
++    for node in document.get("draft_plan", {}).get("nodes", []):
++        if isinstance(node, dict) and node.get("catalog_ref"):
++            refs.append(str(node["catalog_ref"]))
++        if isinstance(node, dict) and isinstance(node.get("operator"), dict):
++            operators.append(str(node["operator"].get("name")))
++        for ref in [node.get("input") if isinstance(node, dict) else None, *((node.get("inputs") or {}).values() if isinstance(node, dict) else [])]:
++            if isinstance(ref, dict):
++                outputs.append(str(ref.get("output_name")))
++    return {
++        "catalog_refs": sorted(set(refs)),
++        "operators": sorted(set(operators)),
++        "referenced_outputs": sorted(set(outputs)),
++    }
++
++
++def build_report() -> dict[str, Any]:
++    N1I_ROOT.mkdir(parents=True, exist_ok=True)
++    write_capability_context()
++    pack = write_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
++    pack_checks = verify_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
++    failure = n1h_failure_analysis()
++    write_json(FAILURE_ANALYSIS_PATH, failure)
++    write_json(DELIVERY_FAILURE_ANALYSIS_PATH, failure)
++
++    context = list_capabilities(CallerProfile.HERMES_S2I_MCP).model_dump(mode="json")
++    typed_contract = describe_capability("typed_query_plan", CallerProfile.HERMES_S2I_MCP)
++    nodes_contract = describe_capability("plan_nodes", CallerProfile.HERMES_S2I_MCP)
++    destination_contract = describe_capability(
++        "possession_corridor_destination_entry",
++        CallerProfile.HERMES_S2I_MCP,
++    )
++    relation_entry = describe_capability("relation_destination_entry", CallerProfile.HERMES_S2I_MCP)
++
++    document = n1g_manual_document()
++    validation = model_profile_validation(document)
++    inline_seed_regression = execute_inline_result_seed_regression(document)
++    refs = document_refs_and_operators(document)
++    authorable_refs = set(nodes_contract["authorable_catalog_refs"])
++    contract_operators = set(nodes_contract["operators"])
++    destination_text = json.dumps(destination_contract, sort_keys=True)
++    authoring_text = json.dumps(context.get("authoring_contracts", {}), sort_keys=True)
++
++    checks = [
++        check(
++            "n1i.n1h_failure_extracted",
++            bool(failure.get("unknown_catalog_refs")) and bool(failure.get("unknown_operators")),
++            "N1H unknown catalog refs/operators were extracted from the origin bundle.",
++            failure,
++        ),
++        check(
++            "n1i.describe_typed_query_plan_contract",
++            typed_contract.get("kind") == "authoring_contract"
++            and "draft_catalog_node_schema" in typed_contract
++            and "draft_predicate_node_schema" in typed_contract,
++            "describe_capability exposes the exact typed query plan node schemas.",
++            typed_contract,
++        ),
++        check(
++            "n1i.describe_destination_path_contract",
++            destination_contract.get("kind") == "authoring_contract"
++            and destination_contract.get("required_catalog_refs")
++            == [
++                "possession_segment",
++                "geometric_progressive_corridor_from_anchor_set",
++                "relation_destination_entry",
++            ]
++            and destination_contract.get("required_operators") == ["exists", "eq"],
++            "describe_capability exposes exact valid refs/operators for destination entry composition.",
++            destination_contract,
++        ),
++        check(
++            "n1i.relation_destination_entry_contract_complete",
++            relation_entry.get("name") == "relation_destination_entry"
++            and relation_entry.get("agent_authorable") is True
++            and any(output.get("name") == "entry_status" for output in relation_entry.get("outputs", [])),
++            "relation_destination_entry describes its input/output contract and entry_status output.",
++            relation_entry,
++        ),
++        check(
++            "n1i.trusted_wrapper_absent_from_authorable_nodes",
++            "relation_destination_entry_classification" not in authorable_refs
++            and "relation_destination_entry_classification" not in nodes_contract.get("catalog_nodes", {}),
++            "The trusted wrapper is not present in the generated authorable node set.",
++            {
++                "authorable_refs": sorted(authorable_refs),
++                "trusted_recipe_only_catalog_refs_omitted": nodes_contract.get("trusted_recipe_only_catalog_refs_omitted"),
++            },
++        ),
++        check(
++            "n1i.failed_names_not_suggested",
++            not any(name in authoring_text for name in INVALID_N1H_NAMES),
++            "The generated authoring contracts do not suggest the failed N1H invented names.",
++            {"invalid_names": sorted(INVALID_N1H_NAMES)},
++        ),
++        check(
++            "n1i.manual_ast_uses_visible_contract_only",
++            set(refs["catalog_refs"]).issubset(authorable_refs)
++            and set(refs["operators"]).issubset(contract_operators)
++            and "candidates" not in refs["referenced_outputs"],
++            "The manually authored model-profile AST uses only visible refs/operators/output names.",
++            refs,
++        ),
++        check(
++            "n1i.manual_ast_validates",
++            validation["validation"].get("ok") is True,
++            "A model-profile manually authored AST using the visible contract validates.",
++            validation["validation"],
++        ),
++        check(
++            "n1i.inline_result_seed_executes_without_global_fallback",
++            inline_seed_regression["execution_status"] == "pass"
++            and inline_seed_regression["row_count"] > 0
++            and inline_seed_regression["has_result_id_seed_hash_recipe_parameter"] is False,
++            "relation_destination_entry executes with inline result_id_seed and no result_id_seed_hash global.",
++            inline_seed_regression,
++        ),
++        check(
++            "n1i.knowledge_pack_checks_pass",
++            all(item["ok"] for item in pack_checks),
++            "The regenerated tactical knowledge pack passes its safety and consistency checks.",
++            {"failed_checks": [item for item in pack_checks if not item["ok"]]},
++        ),
++    ]
++    summary = {"pass": sum(item["status"] == "pass" for item in checks), "fail": sum(item["status"] != "pass" for item in checks)}
++    report = {
++        "schema_version": "n1i.verification.v1",
++        "generated_at": utc_now_iso(),
++        "status": "pass" if summary["fail"] == 0 else "fail",
++        "summary": summary,
++        "git_head": git_head(),
++        "knowledge_pack": {
++            "path": str(PACK_JSON_PATH),
++            "file_sha256": file_sha256(PACK_JSON_PATH),
++            "semantic_sha256": pack["knowledge_pack_sha256"],
++        },
++        "capability_context": {
++            "path": str(CAPABILITY_CONTEXT_PATH),
++            "file_sha256": file_sha256(CAPABILITY_CONTEXT_PATH),
++        },
++        "n1h_failure_analysis_path": str(FAILURE_ANALYSIS_PATH),
++        "delivery_failure_analysis_path": str(DELIVERY_FAILURE_ANALYSIS_PATH),
++        "n1h_failure_analysis": failure,
++        "manual_ast_hash": stable_hash(document),
++        "manual_ast_refs_and_operators": refs,
++        "model_profile_validation": validation,
++        "inline_result_seed_regression": inline_seed_regression,
++        "pack_checks": pack_checks,
++        "checks": checks,
++    }
++    write_json(REPORT_PATH, report)
++    DELIVERY_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
++    DELIVERY_REPORT_PATH.write_text(render_markdown(report), encoding="utf-8")
++    return report
++
++
++def render_markdown(report: dict[str, Any]) -> str:
++    lines = [
++        "# N1I — Agent AST Authoring Contract Repair",
++        "",
++        f"Status: `{report['status']}`",
++        f"Generated: `{report['generated_at']}`",
++        f"Git head: `{report['git_head']}`",
++        "",
++        "## N1H Failure Mapping",
++        "",
++    ]
++    for mapping in report["n1h_failure_analysis"]["mappings"]:
++        lines.append(f"- `{mapping['invalid']}` -> `{mapping['mapped_to']}` ({mapping['kind']})")
++    lines.extend(
++        [
++            "",
++            "## Regenerated Knowledge Pack",
++            "",
++            f"- Path: `{report['knowledge_pack']['path']}`",
++            f"- File SHA-256: `{report['knowledge_pack']['file_sha256']}`",
++            f"- Semantic SHA-256: `{report['knowledge_pack']['semantic_sha256']}`",
++            "",
++            "## Checks",
++            "",
++        ]
++    )
++    for item in report["checks"]:
++        lines.append(f"- `{item['status']}` {item['id']}: {item['message']}")
++    lines.extend(
++        [
++            "",
++            "## Faithful Rerun Status",
++            "",
++            "Not run by this local gate. The next step is a single faithful deploy-side Hermes rerun using the unchanged scoped hero question. Beta 1C remains blocked unless `n1d1-verify` reaches VERIFIED.",
++            "",
++        ]
++    )
++    return "\n".join(lines)
++
++
++def main() -> None:
++    report = build_report()
++    print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
++    if report["status"] != "pass":
++        raise SystemExit(1)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/src/tqe/workshop/app_service.py b/src/tqe/workshop/app_service.py
+index c864f57..68f4deb 100644
+--- a/src/tqe/workshop/app_service.py
++++ b/src/tqe/workshop/app_service.py
+@@ -69,7 +69,12 @@ CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.e
+ DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
+ HERMES_HOME = Path(os.environ.get("HERMES_HOME", "/Users/luisrevilla/.hermes-priori"))
+ HERMES_DB = HERMES_HOME / "state.db"
+-HERMES_WORKSHOP_ROOT = Path(os.environ.get("WORKBENCH_HERMES_WORKSHOP_ROOT", "artifacts/m1.2/workshop"))
++HERMES_WORKSHOP_ROOT = Path(
++    os.environ.get("WORKBENCH_HERMES_WORKSHOP_ROOT")
++    or os.environ.get("TQE_WORKSHOP_OUTPUT_ROOT")
++    or os.environ.get("TQE_RUNTIME_ROOT")
++    or "artifacts/m1.2/workshop"
++)
+ HERMES_PROVIDER = os.environ.get("WORKBENCH_HERMES_PROVIDER", "openai-codex")
+ HERMES_MODEL = os.environ.get("WORKBENCH_HERMES_MODEL", "gpt-5.5")
+ HERMES_TOOLSET = os.environ.get("WORKBENCH_HERMES_TOOLSET", "mcp-priori_tactical")
+@@ -593,7 +598,7 @@ def hermes_unavailable(
+     )
+ 
+ 
+-def hermes_interpret_request(query: str) -> dict[str, Any]:
++def hermes_interpret_request(query: str, *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> dict[str, Any]:
+     try:
+         hermes = shutil.which("hermes")
+         log_hermes_event(
+@@ -610,7 +615,7 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
+         )
+         if not hermes:
+             return hermes_unavailable(query, "Hermes executable was not found. Manual mode remains available.", fallback_reason="hermes_executable_missing")
+-        surface = hermes_tool_surface(hermes)
++        surface = hermes_tool_surface(hermes, output_root=output_root)
+         if not surface["safe"]:
+             return hermes_unavailable(
+                 query,
+@@ -632,6 +637,7 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
+                 hermes_interpret_prompt(query),
+             ],
+             timeout=HERMES_TIMEOUT_SECONDS,
++            output_root=output_root,
+         )
+         session = newest_hermes_session_after(started_at)
+         invocation = parse_invocation_json(completed.stdout)
+@@ -642,7 +648,7 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
+                 "Hermes did not return a valid structured interpretation. Manual mode remains available.",
+                 fallback_reason="invalid_structured_interpretation",
+             )
+-        return hermes_final_to_interpretation(query, final, session)
++        return hermes_final_to_interpretation(query, final, session, output_root=output_root)
+     except subprocess.TimeoutExpired:
+         return hermes_unavailable(
+             query,
+@@ -672,8 +678,8 @@ def hermes_interpret_request(query: str) -> dict[str, Any]:
+         )
+ 
+ 
+-def hermes_tool_surface(hermes: str) -> dict[str, Any]:
+-    completed = run_hermes_invocation(hermes, ["probe", "--toolset", HERMES_TOOLSET], timeout=60)
++def hermes_tool_surface(hermes: str, *, output_root: Path | None = None) -> dict[str, Any]:
++    completed = run_hermes_invocation(hermes, ["probe", "--toolset", HERMES_TOOLSET], timeout=60, output_root=output_root)
+     payload = parse_invocation_json(completed.stdout)
+     names = {str(name).removeprefix("functions.") for name in payload.get("tool_names") or []}
+     forbidden = [str(name) for name in payload.get("forbidden") or []]
+@@ -686,11 +692,25 @@ def hermes_tool_surface(hermes: str) -> dict[str, Any]:
+     }
+ 
+ 
+-def run_hermes_invocation(hermes: str, args: list[str], *, timeout: int) -> subprocess.CompletedProcess[str]:
++def hermes_invocation_output_root(output_root: Path | None = None) -> Path:
++    return (output_root or HERMES_WORKSHOP_ROOT).resolve()
++
++
++def run_hermes_invocation(
++    hermes: str,
++    args: list[str],
++    *,
++    timeout: int,
++    output_root: Path | None = None,
++) -> subprocess.CompletedProcess[str]:
+     hermes_python = hermes_python_executable(hermes)
++    workshop_output_root = hermes_invocation_output_root(output_root)
+     env = os.environ.copy()
+     env["HERMES_HOME"] = str(HERMES_HOME)
+     env.setdefault("CODEX_HOME", str(Path.home() / ".codex"))
++    env["TQE_WORKSHOP_OUTPUT_ROOT"] = str(workshop_output_root)
++    env.setdefault("TQE_RUNTIME_ROOT", str(workshop_output_root))
++    env.setdefault("WORKBENCH_HERMES_WORKSHOP_ROOT", str(workshop_output_root))
+     env["PYTHONPATH"] = hermes_pythonpath(env.get("PYTHONPATH"))
+     log_hermes_event(
+         "subprocess_start",
+@@ -700,6 +720,7 @@ def run_hermes_invocation(hermes: str, args: list[str], *, timeout: int) -> subp
+             "hermes": path_state(hermes),
+             "cwd": path_state(str(REPO_ROOT)),
+             "pythonpath_entries": len(env["PYTHONPATH"].split(os.pathsep)),
++            "workshop_output_root": cloud_safe_path(workshop_output_root),
+         },
+     )
+     completed = subprocess.run(
+@@ -837,7 +858,13 @@ def parse_final_json(text: str) -> dict[str, Any]:
+     return parsed if isinstance(parsed, dict) else {}
+ 
+ 
+-def hermes_final_to_interpretation(query: str, final: dict[str, Any], session: dict[str, Any] | None) -> dict[str, Any]:
++def hermes_final_to_interpretation(
++    query: str,
++    final: dict[str, Any],
++    session: dict[str, Any] | None,
++    *,
++    output_root: Path | None = None,
++) -> dict[str, Any]:
+     outcome = normalize_outcome(final.get("outcome"))
+     session_id = str(session.get("id")) if session else None
+     base = {
+@@ -896,7 +923,7 @@ def hermes_final_to_interpretation(query: str, final: dict[str, Any], session: d
+         )
+     if outcome == "draft":
+         bound_plan_id = str(final.get("bound_plan_id") or "")
+-        plan_document = hermes_bound_plan_document(bound_plan_id)
++        plan_document = hermes_bound_plan_document(bound_plan_id, output_root=output_root)
+         if plan_document is None:
+             return hermes_unavailable(query, "Hermes validated a draft but the host could not recover its bound plan handle.")
+         return ok(
+@@ -934,10 +961,14 @@ def hermes_plan_provenance(plan_document: dict[str, Any]) -> str:
+     return "HERMES_NOVEL_COMPOSITION"
+ 
+ 
+-def hermes_bound_plan_document(bound_plan_id: str) -> dict[str, Any] | None:
++def hermes_bound_plan_document(bound_plan_id: str, *, output_root: Path | None = None) -> dict[str, Any] | None:
+     if not bound_plan_id:
+         return None
+-    for root in (HERMES_WORKSHOP_ROOT, DEFAULT_WORKSHOP_ROOT):
++    roots: list[Path] = []
++    for candidate in (output_root, HERMES_WORKSHOP_ROOT, DEFAULT_WORKSHOP_ROOT):
++        if candidate is not None and candidate not in roots:
++            roots.append(candidate)
++    for root in roots:
+         try:
+             record = read_handle("bound-plans", bound_plan_id, output_root=root)
+         except CapabilityGap:
+@@ -1258,7 +1289,8 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
+         hermes = shutil.which("hermes")
+         if not hermes:
+             raise CapabilityGap("Hermes executable is not available in the deploy runtime.")
+-        surface = hermes_tool_surface(hermes)
++        hermes_workshop_root = hermes_invocation_output_root(output_root)
++        surface = hermes_tool_surface(hermes, output_root=hermes_workshop_root)
+         if not surface["safe"]:
+             raise CapabilityGap(f"Unsafe Hermes tool surface: {surface}")
+ 
+@@ -1279,6 +1311,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
+                 prompt,
+             ],
+             timeout=HERMES_TIMEOUT_SECONDS,
++            output_root=hermes_workshop_root,
+         )
+         session = newest_hermes_session_after(started_at)
+         invocation = parse_invocation_json(completed.stdout)
+@@ -1286,7 +1319,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
+         if completed.returncode != 0 or not invocation.get("ok") or not final:
+             raise CapabilityGap("Hermes did not return a valid structured N1E interpretation.")
+ 
+-        interpretation = hermes_final_to_interpretation(HERO_QUESTION, final, session)
++        interpretation = hermes_final_to_interpretation(HERO_QUESTION, final, session, output_root=hermes_workshop_root)
+         if interpretation.get("status") != "PLAN_INTERPRETED":
+             raise CapabilityGap(f"Hermes did not return an executable plan: {interpretation.get('status')}")
+         if interpretation.get("provenance_source") != "HERMES_NOVEL_COMPOSITION":
+@@ -1296,7 +1329,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
+         draft_plan_id = str(final.get("draft_plan_id") or interpretation.get("draft_plan_id") or "")
+         if not draft_plan_id:
+             raise CapabilityGap("Hermes final decision did not include draft_plan_id.")
+-        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=HERMES_WORKSHOP_ROOT)
++        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=hermes_workshop_root)
+         hermes_draft_document = hermes_draft_record.get("document")
+         if not isinstance(hermes_draft_document, dict):
+             raise CapabilityGap("Hermes draft handle did not contain a plan document.")
+@@ -1333,7 +1366,7 @@ def run_n1e_origin_bundle(job_id: str, *, output_root: Path) -> None:
+                 "repo_commit": runtime_commit_identifier(),
+                 "runtime_hashes": runtime_hashes(),
+                 "output_root": cloud_safe_path(output_root),
+-                "hermes_workshop_root": cloud_safe_path(HERMES_WORKSHOP_ROOT),
++                "hermes_workshop_root": cloud_safe_path(hermes_workshop_root),
+             },
+             "hermes_origin": {
+                 "session_id": str(session.get("id")) if session else None,
+@@ -1427,7 +1460,7 @@ def recover_latest_n1e_failure_bundle(*, output_root: Path) -> dict[str, Any]:
+             "repo_commit": runtime_commit_identifier(),
+             "runtime_hashes": runtime_hashes(),
+             "output_root": cloud_safe_path(output_root),
+-            "hermes_workshop_root": cloud_safe_path(HERMES_WORKSHOP_ROOT),
++            "hermes_workshop_root": cloud_safe_path(hermes_invocation_output_root(output_root)),
+         },
+         "hermes_origin": {
+             "session_id": session_id,
+@@ -1622,6 +1655,32 @@ def n1f_trace_draft_plan_id(bundle: dict[str, Any]) -> str:
+     return ""
+ 
+ 
++def n1f_trace_tool_response(bundle: dict[str, Any], tool_name: str) -> dict[str, Any] | None:
++    trace = bundle.get("hermes_origin", {}).get("session_trace", {})
++    responses = trace.get("tool_responses") if isinstance(trace, dict) else None
++    if not isinstance(responses, list):
++        return None
++    expected = tool_name.removeprefix("functions.")
++    for response in reversed(responses):
++        if not isinstance(response, dict):
++            continue
++        actual = str(response.get("tool_name") or "").removeprefix("functions.")
++        if actual != expected:
++            continue
++        content = response.get("content")
++        if isinstance(content, dict):
++            return content
++    return None
++
++
++def n1f_trace_submit_response_draft_plan_id(bundle: dict[str, Any]) -> str:
++    content = n1f_trace_tool_response(bundle, "mcp_priori_tactical_submit_query_plan")
++    if not isinstance(content, dict):
++        return ""
++    draft_plan_id = content.get("draft_plan_id")
++    return str(draft_plan_id).strip() if draft_plan_id else ""
++
++
+ def n1f_trace_submitted_plan_document(bundle: dict[str, Any]) -> dict[str, Any] | None:
+     trace = bundle.get("hermes_origin", {}).get("session_trace", {})
+     calls = trace.get("ordered_tool_calls") if isinstance(trace, dict) else None
+@@ -1639,20 +1698,76 @@ def n1f_trace_submitted_plan_document(bundle: dict[str, Any]) -> dict[str, Any]
+     return None
+ 
+ 
+-def attach_n1f_hermes_draft_if_present(bundle: dict[str, Any], final_decision: dict[str, Any]) -> None:
+-    draft_plan_id = str(final_decision.get("draft_plan_id") or "").strip() or n1f_trace_draft_plan_id(bundle)
++def recover_n1f_hermes_draft_record(
++    draft_plan_id: str,
++    bundle: dict[str, Any],
++    *,
++    output_root: Path,
++    hermes_workshop_root: Path,
++) -> dict[str, Any]:
++    lookup_errors: list[dict[str, str]] = []
++    roots: list[Path] = []
++    for candidate in (hermes_workshop_root, output_root, HERMES_WORKSHOP_ROOT, DEFAULT_WORKSHOP_ROOT):
++        if candidate not in roots:
++            roots.append(candidate)
++    for root in roots:
++        try:
++            record = read_handle("draft-plans", draft_plan_id, output_root=root)
++        except Exception as exc:  # noqa: BLE001 - preserve all lookup attempts for origin diagnostics.
++            lookup_errors.append(
++                {
++                    "root": cloud_safe_path(root),
++                    "error_type": type(exc).__name__,
++                    "message": short_text(str(exc), 300),
++                }
++            )
++            continue
++        record = dict(record)
++        record["draft_record_source"] = "handle"
++        record["draft_record_root"] = cloud_safe_path(root)
++        return record
++
++    submitted_document = n1f_trace_submitted_plan_document(bundle)
++    if submitted_document is not None:
++        submit_response = n1f_trace_tool_response(bundle, "mcp_priori_tactical_submit_query_plan") or {}
++        draft_hash = str(submit_response.get("draft_plan_hash") or "").strip() or stable_hash(submitted_document)
++        return {
++            "schema_version": "1.0",
++            "draft_plan_id": draft_plan_id,
++            "draft_plan_hash": draft_hash,
++            "document": submitted_document,
++            "draft_record_source": "persisted_mcp_trace",
++            "draft_document_source": "submit_query_plan.arguments.plan_document",
++            "draft_hash_source": "submit_query_plan.response.draft_plan_hash"
++            if submit_response.get("draft_plan_hash")
++            else "recomputed_from_submit_query_plan.arguments.plan_document",
++            "draft_lookup_errors": lookup_errors,
++        }
++    raise CapabilityGap(f"Unknown draft-plans handle: {draft_plan_id}")
++
++
++def attach_n1f_hermes_draft_if_present(
++    bundle: dict[str, Any],
++    final_decision: dict[str, Any],
++    *,
++    output_root: Path,
++    hermes_workshop_root: Path,
++) -> None:
++    draft_plan_id = (
++        str(final_decision.get("draft_plan_id") or "").strip()
++        or n1f_trace_draft_plan_id(bundle)
++        or n1f_trace_submit_response_draft_plan_id(bundle)
++    )
+     if not draft_plan_id:
+         return
+     try:
+-        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=HERMES_WORKSHOP_ROOT)
++        hermes_draft_record = recover_n1f_hermes_draft_record(
++            draft_plan_id,
++            bundle,
++            output_root=output_root,
++            hermes_workshop_root=hermes_workshop_root,
++        )
+     except Exception as exc:  # noqa: BLE001 - diagnostic bundle should preserve absence rather than fail.
+-        submitted_document = n1f_trace_submitted_plan_document(bundle)
+-        if submitted_document is not None:
+-            hermes_origin = bundle.setdefault("hermes_origin", {})
+-            hermes_origin["draft_plan_id"] = draft_plan_id
+-            hermes_origin["draft_plan_hash"] = stable_json_sha256(submitted_document)
+-            hermes_origin["draft_document"] = submitted_document
+-            hermes_origin["draft_hash_source"] = "submitted_tool_arguments"
+         bundle.setdefault("hermes_origin", {})["draft_lookup_error"] = {
+             "draft_plan_id": draft_plan_id,
+             "error_type": type(exc).__name__,
+@@ -1662,6 +1777,15 @@ def attach_n1f_hermes_draft_if_present(bundle: dict[str, Any], final_decision: d
+     hermes_origin = bundle.setdefault("hermes_origin", {})
+     hermes_origin["draft_plan_id"] = draft_plan_id
+     hermes_origin["draft_plan_hash"] = hermes_draft_record.get("draft_plan_hash")
++    hermes_origin["draft_record_source"] = hermes_draft_record.get("draft_record_source")
++    if hermes_draft_record.get("draft_record_root"):
++        hermes_origin["draft_record_root"] = hermes_draft_record.get("draft_record_root")
++    if hermes_draft_record.get("draft_document_source"):
++        hermes_origin["draft_document_source"] = hermes_draft_record.get("draft_document_source")
++    if hermes_draft_record.get("draft_hash_source"):
++        hermes_origin["draft_hash_source"] = hermes_draft_record.get("draft_hash_source")
++    if hermes_draft_record.get("draft_lookup_errors"):
++        hermes_origin["draft_lookup_errors"] = hermes_draft_record.get("draft_lookup_errors")
+     document = hermes_draft_record.get("document")
+     if isinstance(document, dict):
+         hermes_origin["draft_document"] = document
+@@ -1679,7 +1803,8 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
+         hermes = shutil.which("hermes")
+         if not hermes:
+             raise CapabilityGap("Hermes executable is not available in the deploy runtime.")
+-        surface = hermes_tool_surface(hermes)
++        hermes_workshop_root = hermes_invocation_output_root(output_root)
++        surface = hermes_tool_surface(hermes, output_root=hermes_workshop_root)
+         if not surface["safe"]:
+             raise CapabilityGap(f"Unsafe Hermes tool surface: {surface}")
+ 
+@@ -1701,6 +1826,7 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
+                 prompt,
+             ],
+             timeout=HERMES_TIMEOUT_SECONDS,
++            output_root=hermes_workshop_root,
+         )
+         session = newest_hermes_session_after(started_at)
+         invocation = parse_invocation_json(completed.stdout)
+@@ -1727,10 +1853,15 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
+             )
+             return
+ 
+-        interpretation = hermes_final_to_interpretation(clarified_query, final, session)
++        interpretation = hermes_final_to_interpretation(clarified_query, final, session, output_root=hermes_workshop_root)
+         base_bundle["hermes_origin"]["interpretation"] = interpretation
+         if interpretation.get("status") != "PLAN_INTERPRETED":
+-            attach_n1f_hermes_draft_if_present(base_bundle, final)
++            attach_n1f_hermes_draft_if_present(
++                base_bundle,
++                final,
++                output_root=output_root,
++                hermes_workshop_root=hermes_workshop_root,
++            )
+             write_failed_n1f_bundle(
+                 output_root=output_root,
+                 job_id=job_id,
+@@ -1759,7 +1890,12 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
+                 stage="missing_draft_plan_id",
+             )
+             return
+-        hermes_draft_record = read_handle("draft-plans", draft_plan_id, output_root=HERMES_WORKSHOP_ROOT)
++        hermes_draft_record = recover_n1f_hermes_draft_record(
++            draft_plan_id,
++            base_bundle,
++            output_root=output_root,
++            hermes_workshop_root=hermes_workshop_root,
++        )
+         hermes_draft_document = hermes_draft_record.get("document")
+         if not isinstance(hermes_draft_document, dict):
+             write_failed_n1f_bundle(
+@@ -1773,11 +1909,45 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
+ 
+         host_augmented_document = add_n1e_entry_mode_evidence(hermes_draft_document)
+         write_n1f_status(output_root, job_id, {"status": "running", "stage": "executing_host_authority_pipeline"})
+-        records = run_host_authority_pipeline(
+-            host_augmented_document,
+-            output_root=output_root,
+-            source_label=source_label,
+-        )
++        try:
++            records = run_host_authority_pipeline(
++                host_augmented_document,
++                output_root=output_root,
++                source_label=source_label,
++            )
++        except Exception as exc:  # noqa: BLE001 - preserve validated draft origin on host failures.
++            failure_bundle = {
++                **base_bundle,
++                "hermes_origin": {
++                    **base_bundle["hermes_origin"],
++                    "draft_plan_id": draft_plan_id,
++                    "draft_plan_hash": hermes_draft_record.get("draft_plan_hash"),
++                    "draft_record_source": hermes_draft_record.get("draft_record_source"),
++                    "draft_record_root": hermes_draft_record.get("draft_record_root"),
++                    "draft_document_source": hermes_draft_record.get("draft_document_source"),
++                    "draft_hash_source": hermes_draft_record.get("draft_hash_source"),
++                    "draft_lookup_errors": hermes_draft_record.get("draft_lookup_errors"),
++                    "draft_document": hermes_draft_document,
++                },
++                "host_augmentation": {
++                    "allowed_added_aliases": ["destination_entry_mode", "destination_time_to_entry_seconds"],
++                    "augmented_document": host_augmented_document,
++                    "augmented_document_sha256": stable_json_sha256(host_augmented_document),
++                    "source_label": source_label,
++                },
++                "host_pipeline_error": {
++                    "error_type": type(exc).__name__,
++                    "message": short_text(str(exc), 1000),
++                },
++            }
++            write_failed_n1f_bundle(
++                output_root=output_root,
++                job_id=job_id,
++                bundle=failure_bundle,
++                reason=f"N1F host authority pipeline failed after Hermes validation: {type(exc).__name__}: {short_text(str(exc), 500)}",
++                stage="host_authority_pipeline_failed",
++            )
++            return
+         audit = entry_mode_audit(records["execution_record"])
+         bundle = {
+             **base_bundle,
+@@ -1786,6 +1956,11 @@ def run_n1f_origin_bundle(job_id: str, *, output_root: Path) -> None:
+                 **base_bundle["hermes_origin"],
+                 "draft_plan_id": draft_plan_id,
+                 "draft_plan_hash": hermes_draft_record.get("draft_plan_hash"),
++                "draft_record_source": hermes_draft_record.get("draft_record_source"),
++                "draft_record_root": hermes_draft_record.get("draft_record_root"),
++                "draft_document_source": hermes_draft_record.get("draft_document_source"),
++                "draft_hash_source": hermes_draft_record.get("draft_hash_source"),
++                "draft_lookup_errors": hermes_draft_record.get("draft_lookup_errors"),
+                 "draft_document": hermes_draft_document,
+             },
+             "host_augmentation": {
+@@ -1848,7 +2023,7 @@ def interpret_request(payload: dict[str, Any], *, output_root: Path = DEFAULT_WO
+     if mode == "model":
+         if not hermes_enabled():
+             return hermes_unavailable(query, fallback_reason="hermes_disabled")
+-        return hermes_interpret_request(query)
++        return hermes_interpret_request(query, output_root=output_root)
+ 
+     text = normalized(query)
+     gaps = unsupported_gaps(text)
+diff --git a/src/tqe/workshop/knowledge_pack.py b/src/tqe/workshop/knowledge_pack.py
+index 620090d..0b9c21a 100644
+--- a/src/tqe/workshop/knowledge_pack.py
++++ b/src/tqe/workshop/knowledge_pack.py
+@@ -7,7 +7,6 @@ import json
+ from pathlib import Path
+ from typing import Any
+ 
+-from tqe.runtime.catalog import default_catalog
+ from tqe.runtime.ir import stable_hash
+ from tqe.workshop.hermes_s2 import (
+     CLARIFICATION_DISTANCE_THRESHOLD,
+@@ -36,9 +35,11 @@ from tqe.workshop.m1_2 import (
+     HERMES_S2I_MCP_TOOL_NAMES,
+     HERMES_S2_TOOL_NAMES,
+     MANUAL_ONLY_TOOL_NAMES,
++    NON_AUTHORABLE_CATALOG_REFS,
+     CallerProfile,
+     describe_capability,
+     list_capabilities,
++    recipe_authoring_contract,
+     tool_spec,
+     utc_now_iso,
+     write_json,
+@@ -82,7 +83,6 @@ S2I_HOST_ONLY_TOOL_NAMES = [
+ 
+ def build_tactical_knowledge_pack() -> dict[str, Any]:
+     capability_context = list_capabilities(CallerProfile.HERMES_S2I_MCP).model_dump(mode="json")
+-    catalog = default_catalog()
+     recipes = [recipe_summary(path) for path in RECIPE_PLAN_PATHS]
+     base: dict[str, Any] = {
+         "schema_version": "1.0",
+@@ -123,9 +123,10 @@ def build_tactical_knowledge_pack() -> dict[str, Any]:
+         },
+         "tool_surfaces": tool_surfaces(),
+         "recipes": recipes,
+-        "primitives": [entry.model_dump(mode="json", exclude_none=True) for entry in catalog.primitives],
+-        "relations": [entry.model_dump(mode="json", exclude_none=True) for entry in catalog.relations],
+-        "operators": [operator.model_dump(mode="json", exclude_none=True) for operator in catalog.operators],
++        "primitives": capability_context["primitives"],
++        "relations": capability_context["relations"],
++        "operators": capability_context["operators"],
++        "authoring_contracts": capability_context["authoring_contracts"],
+         "safe_composition_rules": capability_context["safe_operator_source_rules"],
+         "complexity_limits": {
+             "default": capability_context["default_complexity_limits"],
+@@ -197,6 +198,27 @@ def recipe_summary(path: Path) -> dict[str, Any]:
+     recipe = document["recipe"]
+     state = "APPROVED" if recipe["recipe_id"] == "ball_side_block_shift_v1" else "EXPERIMENTAL"
+     draft_plan = document["draft_plan"]
++    non_authorable_node_ids = {
++        str(node.get("node_id"))
++        for node in draft_plan.get("nodes", [])
++        if node.get("catalog_ref") in NON_AUTHORABLE_CATALOG_REFS
++    }
++
++    def node_is_agent_authorable_summary(node: dict[str, Any]) -> bool:
++        if node.get("catalog_ref") in NON_AUTHORABLE_CATALOG_REFS:
++            return False
++        source = node.get("input")
++        if isinstance(source, dict) and str(source.get("source_node_id")) in non_authorable_node_ids:
++            return False
++        return True
++
++    def evidence_is_agent_authorable_summary(request: dict[str, Any]) -> bool:
++        source = request.get("source") if isinstance(request, dict) else None
++        return not (
++            isinstance(source, dict)
++            and str(source.get("source_node_id")) in non_authorable_node_ids
++        )
++
+     return {
+         "recipe_id": recipe["recipe_id"],
+         "recipe_version": recipe["recipe_version"],
+@@ -211,6 +233,7 @@ def recipe_summary(path: Path) -> dict[str, Any]:
+         "parameters": recipe.get("parameters", []),
+         "output_classifications": recipe.get("output_classifications", []),
+         "default_invocation": document.get("default_invocation", {}),
++        "authoring_contract": recipe_authoring_contract(document),
+         "plan_summary": {
+             "plan_id": draft_plan["plan_id"],
+             "plan_version": draft_plan["plan_version"],
+@@ -218,6 +241,13 @@ def recipe_summary(path: Path) -> dict[str, Any]:
+             "unknown_evidence_policy": draft_plan["unknown_evidence_policy"],
+             "classification_mode": draft_plan["classification_mode"],
+             "node_count": len(draft_plan.get("nodes", [])),
++            "trusted_recipe_only_catalog_refs_omitted": sorted(
++                {
++                    str(node.get("catalog_ref"))
++                    for node in draft_plan.get("nodes", [])
++                    if node.get("catalog_ref") in NON_AUTHORABLE_CATALOG_REFS
++                }
++            ),
+             "nodes": [
+                 {
+                     "node_id": node["node_id"],
+@@ -228,9 +258,14 @@ def recipe_summary(path: Path) -> dict[str, Any]:
+                     "input": node.get("input"),
+                 }
+                 for node in draft_plan.get("nodes", [])
++                if node_is_agent_authorable_summary(node)
+             ],
+             "classification_rules": draft_plan.get("classification_rules", []),
+-            "requested_evidence": draft_plan.get("requested_evidence", []),
++            "requested_evidence": [
++                request
++                for request in draft_plan.get("requested_evidence", [])
++                if evidence_is_agent_authorable_summary(request)
++            ],
+         },
+     }
+ 
+@@ -377,6 +412,38 @@ def verify_tactical_knowledge_pack(
+     recipe_ids = {recipe["recipe_id"] for recipe in pack.get("recipes", [])}
+     checks.append(check("pack.recipes.include_approved_m1", "ball_side_block_shift_v1" in recipe_ids, {"recipe_ids": sorted(recipe_ids)}))
+     checks.append(check("pack.recipes.include_corridor", "possession_corridor_availability_v1" in recipe_ids, {"recipe_ids": sorted(recipe_ids)}))
++    primitives = {entry.get("name"): entry for entry in pack.get("primitives", []) if isinstance(entry, dict)}
++    generic_entry = primitives.get("relation_destination_entry", {})
++    trusted_wrapper = primitives.get("relation_destination_entry_classification", {})
++    checks.append(
++        check(
++            "pack.capabilities.generic_destination_entry_authorable",
++            generic_entry.get("agent_authorable") is True
++            and bool(generic_entry.get("agent_authoring", {}).get("safe_generic_path")),
++            {"agent_authorable": generic_entry.get("agent_authorable")},
++        )
++    )
++    checks.append(
++        check(
++            "pack.capabilities.trusted_wrapper_not_authorable",
++            trusted_wrapper.get("agent_authorable") is False
++            and trusted_wrapper.get("agent_authoring", {}).get("allowed") is False,
++            {"agent_authorable": trusted_wrapper.get("agent_authorable")},
++        )
++    )
++    advertised_refs = {
++        str(node.get("catalog_ref"))
++        for recipe in pack.get("recipes", [])
++        for node in recipe.get("plan_summary", {}).get("nodes", [])
++        if isinstance(node, dict) and node.get("catalog_ref")
++    }
++    checks.append(
++        check(
++            "pack.recipes.do_not_advertise_trusted_wrapper_as_authorable",
++            "relation_destination_entry_classification" not in advertised_refs,
++            {"advertised_refs": sorted(advertised_refs)},
++        )
++    )
+     target_tools = set(pack["tool_surfaces"]["s2i_target_hermes_mcp"]["tools"])
+     checks.append(check("pack.tools.include_search_recipes", "search_recipes" in target_tools, {"tools": sorted(target_tools)}))
+     search_schema = pack.get("model_visible_tool_schemas", {}).get("search_recipes", {})
+@@ -399,6 +466,33 @@ def verify_tactical_knowledge_pack(
+     dimensions = {item["code"] for item in pack.get("ambiguity_dimensions", [])}
+     checks.append(check("pack.ambiguity.include_required_dimensions", {CLARIFICATION_SUPPORT_DEFINITION, CLARIFICATION_TIME_WINDOW, CLARIFICATION_DISTANCE_THRESHOLD}.issubset(dimensions), {"dimensions": sorted(dimensions)}))
+     checks.append(check("pack.schema.embedded", bool(pack.get("query_plan_schema", {}).get("schema")), {}))
++    authoring_contracts = pack.get("authoring_contracts", {})
++    destination_contract = authoring_contracts.get("possession_corridor_destination_entry", {})
++    checks.append(
++        check(
++            "pack.authoring_contracts.destination_entry_path_present",
++            bool(destination_contract)
++            and "possession_segment" in destination_contract.get("required_catalog_refs", [])
++            and "geometric_progressive_corridor_from_anchor_set" in destination_contract.get("required_catalog_refs", [])
++            and "relation_destination_entry" in destination_contract.get("required_catalog_refs", []),
++            {"required_catalog_refs": destination_contract.get("required_catalog_refs", [])},
++        )
++    )
++    contract_text = json.dumps(authoring_contracts, sort_keys=True)
++    checks.append(
++        check(
++            "pack.authoring_contracts.no_failed_n1h_identifiers",
++            not any(
++                marker in contract_text
++                for marker in (
++                    "active_ball_possession_anchor",
++                    "progressive_corridor_availability",
++                    "ball_enters_corridor_destination_region",
++                )
++            ),
++            {},
++        )
++    )
+     checks.append(check("pack.source_hashes.present", len(pack.get("source_hashes", {})) >= 8, {"count": len(pack.get("source_hashes", {}))}))
+     pack_text = json.dumps(pack, sort_keys=True)
+     forbidden_markers = ["/Users/", "OPENAI_API_KEY", "sk-", "data/raw/", "data/canonical/", '"frames": [', '"entities": [']
+diff --git a/src/tqe/workshop/m1_2.py b/src/tqe/workshop/m1_2.py
+index 7af744d..d590009 100644
+--- a/src/tqe/workshop/m1_2.py
++++ b/src/tqe/workshop/m1_2.py
+@@ -18,7 +18,12 @@ from typing import Any, Literal
+ import pyarrow.parquet as pq
+ from pydantic import BaseModel, ConfigDict, Field, model_validator
+ 
+-from tqe.runtime.binder import BindError, bind_document, bind_document_from_path
++from tqe.runtime.binder import (
++    HOST_RUNTIME_PARAMETER_DEFAULTS,
++    BindError,
++    bind_document,
++    bind_document_from_path,
++)
+ from tqe.runtime.catalog import default_catalog
+ from tqe.runtime.executor import (
+     DEFAULT_CANONICAL_ROOT,
+@@ -34,12 +39,16 @@ from tqe.runtime.executor import (
+ from tqe.runtime.ir import (
+     BoundCatalogNode,
+     BoundPredicateNode,
++    ClassificationMode,
+     ExecutionMode,
+     EvaluationTarget,
+     NodeKind,
++    PayloadType,
+     PlanStatus,
+     QueryExecution,
+     TacticalQueryDocument,
++    Unit,
++    UnknownEvidencePolicy,
+     model_payload,
+     stable_hash,
+ )
+@@ -97,6 +106,40 @@ NON_AUTHORABLE_CATALOG_REFS = {
+     "shift_persistence",
+     "wide_channel_dwell",
+ }
++DESTINATION_ENTRY_AGENT_PATH = {
++    "path_id": "possession_corridor_destination_entry_v1",
++    "purpose": (
++        "Agent-authorable generic composition for possession-start progressive "
++        "corridors followed by ball entry into the relation destination region."
++    ),
++    "node_sequence": [
++        "possession_segment.anchors",
++        "geometric_progressive_corridor_from_anchor_set.episodes",
++        "relation_destination_entry.entry_status",
++        "eq PASS predicate",
++        "classification/result evidence",
++    ],
++    "required_catalog_refs": [
++        "possession_segment",
++        "geometric_progressive_corridor_from_anchor_set",
++        "relation_destination_entry",
++    ],
++    "classification_predicate": {
++        "input": {"source_node_id": "destination_entry", "output_name": "entry_status"},
++        "operator": {"name": "eq", "version": "1.0.0"},
++        "compare": {"payload_type": "enum", "unit": "none", "value": "PASS"},
++    },
++    "recommended_evidence": [
++        "destination_entry_status",
++        "destination_entry_mode",
++        "destination_time_to_entry_seconds",
++    ],
++    "forbidden_catalog_refs": ["relation_destination_entry_classification"],
++    "claims_boundary": (
++        "Measures geometric ball entry into a relation destination region only; "
++        "no pass probability, optimality, intent, causation, or missed-opportunity claim."
++    ),
++}
+ 
+ 
+ class StrictModel(BaseModel):
+@@ -170,6 +213,7 @@ class CapabilityContext(StrictModel):
+     primitives: list[dict[str, Any]]
+     relations: list[dict[str, Any]]
+     operators: list[dict[str, Any]]
++    authoring_contracts: dict[str, Any]
+     recipe_states: list[str]
+     evidence_fields: dict[str, list[str]]
+     safe_operator_source_rules: dict[str, Any]
+@@ -519,6 +563,288 @@ def visible_tool_names(caller_profile: CallerProfile) -> list[str]:
+     return APPROVED_TOOL_NAMES
+ 
+ 
++def _typed_value_contract(payload_type: str, unit: str = "none", value: Any = "<value>") -> dict[str, Any]:
++    return {"payload_type": payload_type, "unit": unit, "value": value}
++
++
++def _parameter_ref_contract(parameter_name: str = "<declared_recipe_parameter_name>") -> dict[str, str]:
++    return {"kind": "parameter", "name": parameter_name}
++
++
++def _signal_ref_contract(
++    source_node_id: str = "<source_node_id>",
++    output_name: str = "<registered_output_name>",
++) -> dict[str, str]:
++    return {"source_node_id": source_node_id, "output_name": output_name}
++
++
++def _catalog_entry_contract(entry: Any) -> dict[str, Any]:
++    """Return the generated authoring contract for one registered catalog entry."""
++
++    return {
++        "kind": entry.kind.value if hasattr(entry.kind, "value") else entry.kind,
++        "registered_catalog_ref": entry.name,
++        "version": entry.version,
++        "node_schema": {
++            "kind": entry.kind.value if hasattr(entry.kind, "value") else entry.kind,
++            "node_id": "<agent_chosen_lower_snake_id>",
++            "catalog_ref": entry.name,
++            "version": entry.version,
++            "inputs": {
++                input_ref.name: _signal_ref_contract()
++                for input_ref in entry.inputs
++            },
++            "parameters": {
++                parameter.name: {
++                    "accepted_forms": [
++                        _typed_value_contract(
++                            parameter.payload_type.value
++                            if hasattr(parameter.payload_type, "value")
++                            else str(parameter.payload_type),
++                            parameter.unit.value if hasattr(parameter.unit, "value") else str(parameter.unit),
++                        ),
++                        _parameter_ref_contract(),
++                    ],
++                    "definition": parameter.model_dump(mode="json", exclude_none=True),
++                }
++                for parameter in entry.parameters
++            },
++        },
++        "required_inputs": [item.model_dump(mode="json") for item in entry.inputs],
++        "outputs": [item.model_dump(mode="json") for item in entry.outputs],
++        "valid_output_names": [output.name for output in entry.outputs],
++        "valid_parameter_names": [parameter.name for parameter in entry.parameters],
++        "limitations": list(entry.limitations),
++    }
++
++
++def _operator_contract(operator: Any) -> dict[str, Any]:
++    payload = operator.model_dump(mode="json", exclude_none=True)
++    payload["predicate_node_schema"] = {
++        "kind": "predicate",
++        "node_id": "<agent_chosen_lower_snake_id>",
++        "input": _signal_ref_contract(),
++        "operator": {"name": operator.name, "version": operator.version},
++    }
++    if operator.compare_required:
++        payload["predicate_node_schema"]["compare"] = {
++            "accepted_payload_types": [
++                item.value if hasattr(item, "value") else str(item)
++                for item in operator.compare_payload_types
++            ],
++            "schema": _typed_value_contract("<matching_payload_type>", "<matching_unit_or_none>"),
++        }
++    if operator.duration_required:
++        payload["predicate_node_schema"]["duration"] = _typed_value_contract("number", "second")
++    if operator.name in SAFE_ANCHOR_RELATIVE_OPERATORS:
++        payload["agent_visible_source_rule"] = {
++            "allowed_output_name": SAFE_ANCHOR_RELATIVE_OUTPUT,
++            "rejected_sources": [
++                "raw boolean EpisodeSet",
++                "raw RelationEpisodeSet",
++                "generic collection counts not indexed by anchor_id",
++            ],
++        }
++    return payload
++
++
++def _catalog_entry_by_name(catalog: Any, name: str) -> Any:
++    for collection in (catalog.primitives, catalog.relations):
++        for entry in collection:
++            if entry.name == name:
++                return entry
++    raise KeyError(name)
++
++
++def _operator_by_name(catalog: Any, name: str) -> Any:
++    for operator in catalog.operators:
++        if operator.name == name:
++            return operator
++    raise KeyError(name)
++
++
++def typed_query_plan_authoring_contract(catalog: Any) -> dict[str, Any]:
++    """Generated schema guidance for model-authored TacticalQueryDocument payloads."""
++
++    del catalog
++    return {
++        "name": "typed_query_plan",
++        "source": "tqe.runtime.ir",
++        "plan_document_shape": ["schema_version", "recipe", "default_invocation", "draft_plan"],
++        "recipe_contract": {
++            "required_fields": [
++                "schema_version",
++                "recipe_id",
++                "recipe_version",
++                "display_name",
++                "description",
++                "parameters",
++                "default_unknown_evidence_policy",
++                "output_classifications",
++            ],
++            "parameter_rule": (
++                "default_invocation.parameters may only contain names declared in recipe.parameters "
++                "or host-owned runtime globals. Catalog node parameters must use exact catalog "
++                "parameter names and may be inline TypedValue objects or ParameterRef objects whose "
++                "name appears in recipe.parameters."
++            ),
++        },
++        "default_invocation_contract": {
++            "execution_mode_values": [item.value for item in ExecutionMode],
++            "scope_fields": ["match_ids", "periods", "perspective_team_role"],
++            "parameters_rule": "Do not put undeclared names here; use recipe.parameters + ParameterRef or inline node TypedValue.",
++        },
++        "draft_plan_contract": {
++            "status_values": [item.value for item in PlanStatus],
++            "hermes_status": PlanStatus.EXPERIMENTAL.value,
++            "unknown_evidence_policy_values": [item.value for item in UnknownEvidencePolicy],
++            "classification_mode_values": [item.value for item in ClassificationMode],
++            "anchor_source_schema": _signal_ref_contract(),
++            "classification_rule_schema": {
++                "label": "UPPER_SNAKE_CASE",
++                "predicate_ids": ["<predicate_node_id>"],
++                "description": "<human-readable result label explanation>",
++            },
++            "requested_evidence_schema": {
++                "source": _signal_ref_contract(),
++                "field": "<registered_evidence_field_on_source_output>",
++                "alias": "<optional_lower_snake_alias>",
++                "required": True,
++            },
++        },
++        "draft_catalog_node_schema": {
++            "kind": ["primitive", "relation"],
++            "node_id": "lower_snake_case",
++            "catalog_ref": "<exact registered catalog_ref>",
++            "version": "<exact registered version>",
++            "inputs": {"<registered_input_name>": _signal_ref_contract()},
++            "parameters": {
++                "<registered_parameter_name>": [
++                    _typed_value_contract("<payload_type>", "<unit>"),
++                    _parameter_ref_contract(),
++                ]
++            },
++        },
++        "draft_predicate_node_schema": {
++            "kind": "predicate",
++            "node_id": "lower_snake_case",
++            "input": _signal_ref_contract(),
++            "operator": {"name": "<exact registered_operator_name>", "version": "<exact registered_version>"},
++            "compare": _typed_value_contract("<required_when_operator_requires_compare>", "<unit>"),
++            "duration": _typed_value_contract("number", "second"),
++        },
++        "typed_value_schema": {
++            "payload_type_values": [item.value for item in PayloadType],
++            "unit_values": [item.value for item in Unit],
++            "shape": _typed_value_contract("<payload_type>", "<unit>"),
++        },
++        "parameter_ref_schema": _parameter_ref_contract(),
++        "signal_ref_schema": _signal_ref_contract(),
++        "host_runtime_globals": [
++            parameter.model_dump(mode="json", exclude_none=True)
++            for parameter in HOST_RUNTIME_PARAMETER_DEFAULTS.values()
++        ],
++    }
++
++
++def plan_node_authoring_contract(catalog: Any) -> dict[str, Any]:
++    authorable_refs = [
++        entry.name
++        for collection in (catalog.primitives, catalog.relations)
++        for entry in collection
++        if entry.name not in NON_AUTHORABLE_CATALOG_REFS
++    ]
++    return {
++        "name": "plan_nodes",
++        "authorable_catalog_refs": sorted(authorable_refs),
++        "trusted_recipe_only_catalog_refs_omitted": sorted(NON_AUTHORABLE_CATALOG_REFS),
++        "operators": {
++            operator.name: _operator_contract(operator)
++            for operator in catalog.operators
++        },
++        "catalog_nodes": {
++            entry.name: _catalog_entry_contract(entry)
++            for collection in (catalog.primitives, catalog.relations)
++            for entry in collection
++            if entry.name not in NON_AUTHORABLE_CATALOG_REFS
++        },
++    }
++
++
++def possession_corridor_destination_entry_authoring_contract(catalog: Any) -> dict[str, Any]:
++    possession = _catalog_entry_by_name(catalog, "possession_segment")
++    corridor = _catalog_entry_by_name(catalog, "geometric_progressive_corridor_from_anchor_set")
++    destination = _catalog_entry_by_name(catalog, "relation_destination_entry")
++    exists_operator = _operator_by_name(catalog, "exists")
++    eq_operator = _operator_by_name(catalog, "eq")
++    return {
++        **DESTINATION_ENTRY_AGENT_PATH,
++        "required_catalog_refs": [possession.name, corridor.name, destination.name],
++        "required_operators": [exists_operator.name, eq_operator.name],
++        "registered_node_contracts": {
++            possession.name: _catalog_entry_contract(possession),
++            corridor.name: _catalog_entry_contract(corridor),
++            destination.name: _catalog_entry_contract(destination),
++        },
++        "registered_operator_contracts": {
++            exists_operator.name: _operator_contract(exists_operator),
++            eq_operator.name: _operator_contract(eq_operator),
++        },
++        "required_wiring": [
++            {
++                "from": {"source_node_id": "possession", "output_name": "anchors"},
++                "to": {"target_node_id": "progressive_corridor", "input_name": "anchors"},
++            },
++            {
++                "from": {"source_node_id": "progressive_corridor", "output_name": "anchor_evaluations"},
++                "to": {"target_node_id": "has_progressive_corridor", "input": True, "operator": "exists"},
++            },
++            {
++                "from": {"source_node_id": "progressive_corridor", "output_name": "episodes"},
++                "to": {"target_node_id": "destination_entry", "input_name": "relation_episodes"},
++            },
++            {
++                "from": {"source_node_id": "destination_entry", "output_name": "entry_status"},
++                "to": {
++                    "target_node_id": "destination_region_entered",
++                    "input": True,
++                    "operator": "eq",
++                    "compare": {"payload_type": "enum", "unit": "none", "value": "PASS"},
++                },
++            },
++        ],
++        "anchor_source": {"source_node_id": "possession", "output_name": "anchors"},
++        "classification_rule_contract": {
++            "predicate_ids_must_include": ["has_progressive_corridor", "destination_region_entered"],
++            "label_contract": "UPPER_SNAKE_CASE",
++        },
++        "valid_requested_evidence_sources": {
++            "progressive_corridor.episodes": _catalog_entry_contract(corridor)["outputs"][0],
++            "destination_entry.entry_status": _catalog_entry_contract(destination)["outputs"][0],
++        },
++        "required_safety_rules": [
++            "Use geometric_progressive_corridor_from_anchor_set.episodes for relation_destination_entry.relation_episodes.",
++            "Use geometric_progressive_corridor_from_anchor_set.anchor_evaluations for exists.",
++            "Use relation_destination_entry.entry_status with eq PASS for destination-region entry.",
++            "Do not invent operators or catalog refs.",
++            "Do not use relation_destination_entry_classification in agent-authored plans.",
++        ],
++    }
++
++
++def generated_authoring_contracts(catalog: Any) -> dict[str, Any]:
++    typed_contract = typed_query_plan_authoring_contract(catalog)
++    nodes_contract = plan_node_authoring_contract(catalog)
++    destination_contract = possession_corridor_destination_entry_authoring_contract(catalog)
++    return {
++        "typed_query_plan": typed_contract,
++        "query_plan_schema": typed_contract,
++        "plan_nodes": nodes_contract,
++        "possession_corridor_destination_entry": destination_contract,
++        "possession_corridor_destination_entry_v1": destination_contract,
++    }
++
++
+ def list_capabilities(caller_profile: CallerProfile = CallerProfile.HERMES_S2) -> CapabilityContext:
+     catalog = default_catalog()
+     evidence_fields: dict[str, list[str]] = {}
+@@ -533,36 +859,32 @@ def list_capabilities(caller_profile: CallerProfile = CallerProfile.HERMES_S2) -
+ 
+     operators = []
+     for operator in catalog.operators:
+-        payload = operator.model_dump(mode="json", exclude_none=True)
+-        if operator.name in SAFE_ANCHOR_RELATIVE_OPERATORS:
+-            payload["agent_visible_source_rule"] = {
+-                "allowed_output_name": SAFE_ANCHOR_RELATIVE_OUTPUT,
+-                "rejected_sources": [
+-                    "raw boolean EpisodeSet",
+-                    "raw RelationEpisodeSet",
+-                    "generic collection counts not indexed by anchor_id",
+-                ],
+-            }
+-        operators.append(payload)
++        operators.append(_operator_contract(operator))
+ 
+     tool_names = visible_tool_names(caller_profile)
++    authoring_contracts = generated_authoring_contracts(catalog)
+     return CapabilityContext(
+-        generated_at=utc_now_iso(),
++        generated_at="reproducible_from_source_hashes",
+         tools=[tool_spec(name) for name in tool_names],
+         primitives=primitives,
+         relations=relations,
+         operators=operators,
++        authoring_contracts=authoring_contracts,
+         recipe_states=["APPROVED", "USER_SAVED", "EXPERIMENTAL", "DEPRECATED"],
+         evidence_fields=evidence_fields,
+         safe_operator_source_rules={
+             "exists": {"allowed_output_name": SAFE_ANCHOR_RELATIVE_OUTPUT},
+             "count_at_least": {"allowed_output_name": SAFE_ANCHOR_RELATIVE_OUTPUT},
++            "possession_corridor_destination_entry": authoring_contracts[
++                "possession_corridor_destination_entry"
++            ],
+         },
+         default_complexity_limits=catalog.default_complexity_limits.model_dump(mode="json"),
+         host_owned_complexity_ceilings=catalog.default_complexity_limits.model_dump(mode="json"),
+         limitations=[
+             "Hermes receives this bounded context, not raw match dumps or primitive code.",
+             "exists/count_at_least are agent-visible only on anchor_evaluations.",
++            "For destination-region ball entry after possession-start corridors, Hermes must use relation_destination_entry.entry_status with eq PASS; relation_destination_entry_classification is trusted-recipe-only.",
+             "legacy_m1_parity is allowed only for the frozen approved M1 recipe.",
+             "Unsupported concepts must be returned as capability gaps.",
+         ],
+@@ -581,6 +903,9 @@ def describe_capability(
+     caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+ ) -> dict[str, Any]:
+     context = list_capabilities(caller_profile)
++    authoring_contract = context.authoring_contracts.get(capability_name)
++    if authoring_contract is not None:
++        return {"kind": "authoring_contract", **authoring_contract}
+     for collection_name in ("tools", "primitives", "relations", "operators"):
+         collection = getattr(context, collection_name)
+         for item in collection:
+@@ -678,6 +1003,25 @@ def recipe_authoring_contract(document: dict[str, Any]) -> dict[str, Any]:
+ 
+     draft_plan = document["draft_plan"]
+     default_invocation = document["default_invocation"]
++    non_authorable_node_ids = {
++        str(node.get("node_id"))
++        for node in draft_plan.get("nodes", [])
++        if node.get("catalog_ref") in NON_AUTHORABLE_CATALOG_REFS
++    }
++
++    def references_non_authorable_node(node: dict[str, Any]) -> bool:
++        ref = node.get("input")
++        if isinstance(ref, dict) and str(ref.get("source_node_id")) in non_authorable_node_ids:
++            return True
++        for ref in (node.get("inputs") or {}).values():
++            if isinstance(ref, dict) and str(ref.get("source_node_id")) in non_authorable_node_ids:
++                return True
++        return False
++
++    def evidence_references_non_authorable_node(request: dict[str, Any]) -> bool:
++        source = request.get("source") if isinstance(request, dict) else None
++        return isinstance(source, dict) and str(source.get("source_node_id")) in non_authorable_node_ids
++
+     return {
+         "plan_document_shape": ["schema_version", "recipe", "default_invocation", "draft_plan"],
+         "default_invocation_contract": {
+@@ -707,7 +1051,16 @@ def recipe_authoring_contract(document: dict[str, Any]) -> dict[str, Any]:
+             }
+             for node in draft_plan.get("nodes", [])
+             if node.get("kind") in {"primitive", "relation"}
++            and node.get("catalog_ref") not in NON_AUTHORABLE_CATALOG_REFS
++            and not references_non_authorable_node(node)
+         ],
++        "trusted_recipe_only_catalog_refs_omitted": sorted(
++            {
++                str(node.get("catalog_ref"))
++                for node in draft_plan.get("nodes", [])
++                if node.get("catalog_ref") in NON_AUTHORABLE_CATALOG_REFS
++            }
++        ),
+         "required_predicates": [
+             {
+                 "input": node.get("input"),
+@@ -717,13 +1070,23 @@ def recipe_authoring_contract(document: dict[str, Any]) -> dict[str, Any]:
+             }
+             for node in draft_plan.get("nodes", [])
+             if node.get("kind") == "predicate"
++            and not references_non_authorable_node(node)
+         ],
+         "classification_rules": draft_plan.get("classification_rules", []),
+-        "requested_evidence": draft_plan.get("requested_evidence", []),
++        "requested_evidence": [
++            request
++            for request in draft_plan.get("requested_evidence", [])
++            if not evidence_references_non_authorable_node(request)
++        ],
++        "safe_generic_composition_hints": {
++            "destination_entry_after_possession_corridor": DESTINATION_ENTRY_AGENT_PATH,
++        },
+         "constraints": [
+             "The authored plan must keep status=experimental for Hermes.",
+             "Keep default_invocation.execution_mode=execute; host confirmation still controls whether execution may happen.",
+             "exists/count_at_least may only consume anchor_evaluations.",
++            "Use relation_destination_entry.entry_status with eq PASS for agent-authored destination-region entry checks.",
++            "Do not use trusted recipe wrappers such as relation_destination_entry_classification in agent-authored plans.",
+             "Do not request raw match dumps, primitive mutation, confirmation, or execution.",
+         ],
+     }
+@@ -1216,25 +1579,41 @@ def executor_for_profile(profile: str) -> TacticalQueryExecutor:
+ 
+ 
+ def catalog_entry_summary(entry: Any) -> dict[str, Any]:
+-    return {
++    agent_authorable = entry.name not in NON_AUTHORABLE_CATALOG_REFS
++    payload = {
+         "name": entry.name,
+         "version": entry.version,
+         "kind": entry.kind.value if hasattr(entry.kind, "value") else entry.kind,
+         "purpose": entry.purpose,
+-        "agent_authorable": entry.name not in NON_AUTHORABLE_CATALOG_REFS,
++        "agent_authorable": agent_authorable,
+         "inputs": [item.model_dump(mode="json") for item in entry.inputs],
+         "outputs": [output.model_dump(mode="json") for output in entry.outputs],
+         "parameters": [parameter.model_dump(mode="json", exclude_none=True) for parameter in entry.parameters],
+         "limitations": entry.limitations,
+         "evidence_fields": entry.evidence_fields,
+     }
++    if entry.name == "relation_destination_entry":
++        payload["agent_authoring"] = {
++            "safe_generic_path": DESTINATION_ENTRY_AGENT_PATH,
++            "output_to_classify": "entry_status",
++            "required_operator": "eq",
++            "required_compare_value": "PASS",
++        }
++    elif entry.name == "relation_destination_entry_classification":
++        payload["trusted_recipe_wrapper"] = True
++        payload["agent_authoring"] = {
++            "allowed": False,
++            "use_instead": "relation_destination_entry",
++            "reason": "Recipe-specific wrapper; agent-authored plans must use the generic entry_status path.",
++        }
++    return payload
+ 
+ 
+ def tool_spec(name: str) -> ToolSpec:
+     descriptions = {
+         "list_capabilities": "Return the Hermes-safe capability context.",
+         "search_recipes": "Search approved and experimental recipe summaries without exposing files or raw data.",
+-        "describe_capability": "Describe one exposed tool, primitive, relation, or operator.",
++        "describe_capability": "Describe one exposed tool, primitive, relation, operator, or generated typed-plan authoring contract.",
+         "submit_query_plan": "Store a typed query document and return an opaque draft_plan_id.",
+         "validate_query_plan": "Bind and boundary-check a submitted typed query plan.",
+         "execute_query_plan": "Execute a validated plan through the deterministic runtime.",
+diff --git a/tests/test_n1d1_attestation.py b/tests/test_n1d1_attestation.py
+index 0d77336..191bd97 100644
+--- a/tests/test_n1d1_attestation.py
++++ b/tests/test_n1d1_attestation.py
+@@ -8,28 +8,33 @@ from tqe.verification import n1d1
+ 
+ 
+ class N1D1AttestationTests(unittest.TestCase):
+-    def test_verifier_fails_closed_and_does_not_fabricate_origin(self) -> None:
+-        with self.assertRaises(SystemExit) as ctx:
++    def test_verifier_uses_persisted_origin_and_does_not_fabricate(self) -> None:
++        exit_code = 0
++        try:
+             n1d1.main()
+-        self.assertEqual(ctx.exception.code, 1, "N1D.1 must fail closed until a VERIFIED attestation exists")
+-
++        except SystemExit as exc:
++            exit_code = int(exc.code or 0)
+         attestation = json.loads(n1d1.ATTESTATION_PATH.read_text(encoding="utf-8"))
+-        self.assertEqual(attestation["status"], "BLOCKED")
+-        self.assertNotEqual(attestation["status"], "VERIFIED")
+ 
+         origin = attestation["hermes_origin"]
+         if n1d1.N1F_ORIGIN_BUNDLE_PATH.exists():
++            self.assertEqual(exit_code, 0, "A complete N1F origin bundle should verify.")
++            self.assertEqual(attestation["status"], "VERIFIED")
+             self.assertTrue(origin["trace_persisted"])
+             self.assertIsNotNone(origin["ordered_tool_call_trace_sha256"])
+             self.assertIsNotNone(origin["raw_hermes_decision_sha256"])
+-            self.assertIn("n1d1.augmentation_diff_allowed", attestation["blocking_reasons"])
++            self.assertNotIn("n1d1.augmentation_diff_allowed", attestation["blocking_reasons"])
+         elif n1d1.N1E_ORIGIN_BUNDLE_PATH.exists():
++            self.assertEqual(exit_code, 1)
++            self.assertEqual(attestation["status"], "BLOCKED")
+             self.assertTrue(origin["trace_persisted"])
+             self.assertIsNotNone(origin["ordered_tool_call_trace_sha256"])
+             self.assertIsNotNone(origin["raw_hermes_decision_sha256"])
+             self.assertIn("n1d1.origin_compile_tools_present", attestation["blocking_reasons"])
+             self.assertIn("n1d1.augmentation_diff_allowed", attestation["blocking_reasons"])
+         else:
++            self.assertEqual(exit_code, 1)
++            self.assertEqual(attestation["status"], "BLOCKED")
+             self.assertIn("n1d1.origin_trace_persisted", attestation["blocking_reasons"])
+             # The missing raw decision and ordered tool-call trace are recorded as null, never invented.
+             self.assertIsNone(origin["ordered_tool_call_trace_sha256"])
+@@ -49,6 +54,23 @@ class N1D1AttestationTests(unittest.TestCase):
+         self.assertTrue(novelty["structurally_novel"])
+         self.assertFalse(novelty["existing_recipe_selected"])
+ 
++    def test_augmentation_diff_accepts_model_authored_required_aliases(self) -> None:
++        document = {
++            "draft_plan": {
++                "nodes": [{"kind": "primitive", "node_id": "x", "catalog_ref": "possession_segment"}],
++                "requested_evidence": [
++                    {"alias": "a"},
++                    {"alias": "destination_entry_mode"},
++                    {"alias": "destination_time_to_entry_seconds"},
++                ],
++            }
++        }
++        diff = n1d1.audit_augmentation_diff(document, document)
++        self.assertTrue(diff["diff_allowed"])
++        self.assertEqual(diff["added_aliases"], [])
++        self.assertTrue(diff["required_aliases_present"])
++        self.assertEqual(set(diff["required_aliases_authored_by_hermes"]), n1d1.ALLOWED_AUGMENTATION)
++
+     def test_augmentation_diff_rejects_more_than_two_allowed_aliases(self) -> None:
+         # A plan that adds anything beyond the two allowed aliases must be rejected by the diff rule.
+         base = {"draft_plan": {"nodes": [], "requested_evidence": [{"alias": "a"}]}}
+@@ -63,8 +85,15 @@ class N1D1AttestationTests(unittest.TestCase):
+                 ],
+             }
+         }
+-        added = sorted(n1d1.evidence_aliases(augmented) - n1d1.evidence_aliases(base))
+-        self.assertNotEqual(set(added), n1d1.ALLOWED_AUGMENTATION)
++        diff = n1d1.audit_augmentation_diff(augmented, base)
++        self.assertFalse(diff["diff_allowed"])
++        self.assertEqual(diff["added_aliases"], ["destination_entry_mode", "destination_time_to_entry_seconds", "unexpected_extra"])
++
++    def test_augmentation_diff_rejects_missing_required_aliases(self) -> None:
++        document = {"draft_plan": {"nodes": [], "requested_evidence": [{"alias": "a"}]}}
++        diff = n1d1.audit_augmentation_diff(document, document)
++        self.assertFalse(diff["diff_allowed"])
++        self.assertFalse(diff["required_aliases_present"])
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tests/test_workbench_beta0_contract.py b/tests/test_workbench_beta0_contract.py
+index 7c6954b..55e37d5 100644
+--- a/tests/test_workbench_beta0_contract.py
++++ b/tests/test_workbench_beta0_contract.py
+@@ -10,11 +10,13 @@ from unittest.mock import patch
+ from tqe.runtime.ir import ExecutionStatus, QueryExecution, TacticalQueryDocument
+ from tqe.workshop.app_service import (
+     execution_cache_key,
++    hermes_invocation_output_root,
+     hermes_python_executable,
+     host_owned_plan_document,
+     interpret_request,
+     load_plan_from_path,
+     match_library,
++    recover_n1f_hermes_draft_record,
+ )
+ from tqe.workshop.m1_2 import (
+     CallerProfile,
+@@ -26,6 +28,7 @@ from tqe.workshop.m1_2 import (
+     read_handle,
+     submit_query_plan,
+     validate_query_plan,
++    write_handle,
+ )
+ 
+ 
+@@ -182,6 +185,81 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
+             with patch.dict("os.environ", {"WORKBENCH_HERMES_PYTHON": str(root / "missing-python")}, clear=False):
+                 self.assertEqual(sys.executable, hermes_python_executable(str(hermes_path)))
+ 
++    def test_hermes_invocation_uses_active_output_root(self) -> None:
++        with tempfile.TemporaryDirectory() as directory:
++            root = Path(directory)
++            self.assertEqual(root.resolve(), hermes_invocation_output_root(root))
++
++    def test_n1f_draft_recovery_prefers_active_handle_root(self) -> None:
++        with tempfile.TemporaryDirectory() as directory:
++            output_root = Path(directory)
++            document = host_owned_plan_document(scoped_approved_plan(["J03WOY"])).model_dump(mode="json")
++            draft_id = "draft_deadbeefdeadbeef"
++            write_handle(
++                "draft-plans",
++                draft_id,
++                {
++                    "schema_version": "1.0",
++                    "draft_plan_id": draft_id,
++                    "draft_plan_hash": "handle_hash",
++                    "document": document,
++                },
++                output_root=output_root,
++            )
++
++            recovered = recover_n1f_hermes_draft_record(
++                draft_id,
++                {"hermes_origin": {"session_trace": {"ordered_tool_calls": [], "tool_responses": []}}},
++                output_root=output_root,
++                hermes_workshop_root=output_root,
++            )
++
++            self.assertEqual("handle", recovered["draft_record_source"])
++            self.assertEqual("handle_hash", recovered["draft_plan_hash"])
++            self.assertEqual(document, recovered["document"])
++
++    def test_n1f_draft_recovery_falls_back_to_persisted_mcp_trace(self) -> None:
++        with tempfile.TemporaryDirectory() as directory:
++            output_root = Path(directory)
++            document = host_owned_plan_document(scoped_approved_plan(["J03WOY"])).model_dump(mode="json")
++            draft_id = "draft_deadbeefdeadbeef"
++            bundle = {
++                "hermes_origin": {
++                    "session_trace": {
++                        "ordered_tool_calls": [
++                            {
++                                "name": "mcp_priori_tactical_submit_query_plan",
++                                "arguments": {"plan_document": document, "source_label": "hermes_mcp"},
++                            }
++                        ],
++                        "tool_responses": [
++                            {
++                                "tool_name": "mcp_priori_tactical_submit_query_plan",
++                                "content": {
++                                    "ok": True,
++                                    "draft_plan_id": draft_id,
++                                    "draft_plan_hash": "response_hash",
++                                },
++                            }
++                        ],
++                    }
++                }
++            }
++
++            recovered = recover_n1f_hermes_draft_record(
++                draft_id,
++                bundle,
++                output_root=output_root,
++                hermes_workshop_root=output_root,
++            )
++
++            self.assertEqual("persisted_mcp_trace", recovered["draft_record_source"])
++            self.assertEqual("submit_query_plan.arguments.plan_document", recovered["draft_document_source"])
++            self.assertEqual("submit_query_plan.response.draft_plan_hash", recovered["draft_hash_source"])
++            self.assertEqual("response_hash", recovered["draft_plan_hash"])
++            self.assertEqual(document, recovered["document"])
++            self.assertTrue(recovered["draft_lookup_errors"])
++
+ 
+ if __name__ == "__main__":
+     unittest.main()

@@ -1,0 +1,14 @@
+4a351fb Implement M1.1S S3R4 temporal correctness
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md        |  10 ++
+ .../m1.1/reviews/gate-s3r4-controller-review.md    |  31 ++++++
+ delivery/m1.1/status.yaml                          |   6 +-
+ ...6-06-20-m1-1s-gate-s3r4-temporal-correctness.md |   8 ++
+ .../2026-06-20-m1-1s-gate-s3r3-external-review.md  |  25 +++++
+ src/tqe/runtime/executor.py                        | 104 +++++++++++++++---
+ src/tqe/runtime/values.py                          |   3 +
+ src/tqe/verification/m1_1_gate_c.py                |   3 +-
+ src/tqe/verification/m1_1_gate_r5.py               |  17 ++-
+ src/tqe/verification/m1_1_gate_s3r.py              | 116 ++++++++++++++++++++-
+ tests/test_m1_1_runtime.py                         |   5 +-
+ 12 files changed, 297 insertions(+), 32 deletions(-)

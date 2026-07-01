@@ -1,0 +1,4106 @@
+commit 87b2441a626a67bd1222482f5be64e23e694a1f0
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Mon Jun 22 04:47:29 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Mon Jun 22 04:47:29 2026 -0700
+
+    Harden Workbench Alpha R1 acceptance
+---
+ apps/workbench-alpha/package-lock.json             |  590 ++++++++++
+ apps/workbench-alpha/package.json                  |   12 +-
+ apps/workbench-alpha/src/App.tsx                   |  106 +-
+ apps/workbench-alpha/src/PitchCanvas.tsx           |   28 +-
+ apps/workbench-alpha/src/api.ts                    |   44 +-
+ .../workbench-alpha/src/generated/api-schemas.json | 1146 +++++++++++++++++++
+ apps/workbench-alpha/src/generated/api-types.ts    | 1160 ++++++++++++++++++++
+ apps/workbench-alpha/src/pitchGeometry.ts          |   50 +
+ apps/workbench-alpha/src/playback.ts               |   31 +
+ apps/workbench-alpha/src/styles.css                |   25 +-
+ apps/workbench-alpha/src/types.ts                  |    1 -
+ apps/workbench-alpha/tests/geometry.test.ts        |   44 +
+ apps/workbench-alpha/tests/playback.test.ts        |   38 +
+ apps/workbench-alpha/tests/workbench-alpha.spec.ts |   60 +-
+ scripts/workbench_alpha/generate_contracts.py      |   47 +
+ src/tqe/workshop/app_service.py                    |  214 +++-
+ 16 files changed, 3532 insertions(+), 64 deletions(-)
+
+diff --git a/apps/workbench-alpha/package-lock.json b/apps/workbench-alpha/package-lock.json
+index 4fac6e4..0afe59f 100644
+--- a/apps/workbench-alpha/package-lock.json
++++ b/apps/workbench-alpha/package-lock.json
+@@ -8,6 +8,7 @@
+       "name": "priori-workbench-alpha",
+       "version": "0.1.0",
+       "dependencies": {
++        "ajv": "^8.20.0",
+         "react": "^19.2.3",
+         "react-dom": "^19.2.3"
+       },
+@@ -16,6 +17,8 @@
+         "@types/react": "^19.2.7",
+         "@types/react-dom": "^19.2.3",
+         "@vitejs/plugin-react": "^5.1.2",
++        "json-schema-to-ts": "^3.1.1",
++        "tsx": "^4.22.4",
+         "typescript": "^5.9.3",
+         "vite": "^7.3.0"
+       }
+@@ -254,6 +257,16 @@
+         "@babel/core": "^7.0.0-0"
+       }
+     },
++    "node_modules/@babel/runtime": {
++      "version": "7.29.7",
++      "resolved": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.29.7.tgz",
++      "integrity": "sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6.9.0"
++      }
++    },
+     "node_modules/@babel/template": {
+       "version": "7.29.7",
+       "resolved": "https://registry.npmjs.org/@babel/template/-/template-7.29.7.tgz",
+@@ -1260,6 +1273,22 @@
+         "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0"
+       }
+     },
++    "node_modules/ajv": {
++      "version": "8.20.0",
++      "resolved": "https://registry.npmjs.org/ajv/-/ajv-8.20.0.tgz",
++      "integrity": "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==",
++      "license": "MIT",
++      "dependencies": {
++        "fast-deep-equal": "^3.1.3",
++        "fast-uri": "^3.0.1",
++        "json-schema-traverse": "^1.0.0",
++        "require-from-string": "^2.0.2"
++      },
++      "funding": {
++        "type": "github",
++        "url": "https://github.com/sponsors/epoberezkin"
++      }
++    },
+     "node_modules/baseline-browser-mapping": {
+       "version": "2.10.38",
+       "resolved": "https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.10.38.tgz",
+@@ -1419,6 +1448,28 @@
+         "node": ">=6"
+       }
+     },
++    "node_modules/fast-deep-equal": {
++      "version": "3.1.3",
++      "resolved": "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz",
++      "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==",
++      "license": "MIT"
++    },
++    "node_modules/fast-uri": {
++      "version": "3.1.2",
++      "resolved": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.2.tgz",
++      "integrity": "sha512-rVjf7ArG3LTk+FS6Yw81V1DLuZl1bRbNrev6Tmd/9RaroeeRRJhAt7jg/6YFxbvAQXUCavSoZhPPj6oOx+5KjQ==",
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/fastify"
++        },
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/fastify"
++        }
++      ],
++      "license": "BSD-3-Clause"
++    },
+     "node_modules/fdir": {
+       "version": "6.5.0",
+       "resolved": "https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz",
+@@ -1482,6 +1533,26 @@
+         "node": ">=6"
+       }
+     },
++    "node_modules/json-schema-to-ts": {
++      "version": "3.1.1",
++      "resolved": "https://registry.npmjs.org/json-schema-to-ts/-/json-schema-to-ts-3.1.1.tgz",
++      "integrity": "sha512-+DWg8jCJG2TEnpy7kOm/7/AxaYoaRbjVB4LFZLySZlWn8exGs3A4OLJR966cVvU26N7X9TWxl+Jsw7dzAqKT6g==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/runtime": "^7.18.3",
++        "ts-algebra": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=16"
++      }
++    },
++    "node_modules/json-schema-traverse": {
++      "version": "1.0.0",
++      "resolved": "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz",
++      "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==",
++      "license": "MIT"
++    },
+     "node_modules/json5": {
+       "version": "2.2.3",
+       "resolved": "https://registry.npmjs.org/json5/-/json5-2.2.3.tgz",
+@@ -1668,6 +1739,15 @@
+         "node": ">=0.10.0"
+       }
+     },
++    "node_modules/require-from-string": {
++      "version": "2.0.2",
++      "resolved": "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz",
++      "integrity": "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=0.10.0"
++      }
++    },
+     "node_modules/rollup": {
+       "version": "4.62.2",
+       "resolved": "https://registry.npmjs.org/rollup/-/rollup-4.62.2.tgz",
+@@ -1756,6 +1836,516 @@
+         "url": "https://github.com/sponsors/SuperchupuDev"
+       }
+     },
++    "node_modules/ts-algebra": {
++      "version": "2.0.0",
++      "resolved": "https://registry.npmjs.org/ts-algebra/-/ts-algebra-2.0.0.tgz",
++      "integrity": "sha512-FPAhNPFMrkwz76P7cdjdmiShwMynZYN6SgOujD1urY4oNm80Ou9oMdmbR45LotcKOXoy7wSmHkRFE6Mxbrhefw==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/tsx": {
++      "version": "4.22.4",
++      "resolved": "https://registry.npmjs.org/tsx/-/tsx-4.22.4.tgz",
++      "integrity": "sha512-X8EX+XV4QR5xCsrgxaED954zTDfY8KqlDtskKEL0cHhyS/P8b4IFOvGDQpsC9Q1XnLq915wEfwwY/zzskCtmhg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "esbuild": "~0.28.0"
++      },
++      "bin": {
++        "tsx": "dist/cli.mjs"
++      },
++      "engines": {
++        "node": ">=18.0.0"
++      },
++      "optionalDependencies": {
++        "fsevents": "~2.3.3"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/aix-ppc64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/aix-ppc64/-/aix-ppc64-0.28.1.tgz",
++      "integrity": "sha512-Svl7tq8k/08+p6CXPpRjQ1fKX+1odH/BQbb48fV6fj3CWHhsoIOoY87w1oHXm0qEpkIK3ZfVgp0hed3XBXzXMQ==",
++      "cpu": [
++        "ppc64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "aix"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/android-arm": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/android-arm/-/android-arm-0.28.1.tgz",
++      "integrity": "sha512-0k2F129Xdio1TdJfzJ8sy1Q47vUD2NnwdhiAf7drUN1EBTfPf4hsFCtmMgu/6m8JSzsBrlmVjudMBQqOfG8usQ==",
++      "cpu": [
++        "arm"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/android-arm64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/android-arm64/-/android-arm64-0.28.1.tgz",
++      "integrity": "sha512-34EGEbCIAgosYz6goLcopX6Mo7NyGv9tfwEM2/7Ce2VcVRk568iSvniGWcUXIy7wEDR1wzolcxcriFVrWYcwBg==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/android-x64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/android-x64/-/android-x64-0.28.1.tgz",
++      "integrity": "sha512-dbwY7ltSMDWsRatcRpCnES4F+im88OCUgGZjy52shC7GqHRE/cYlxNbB4Z4UpJswpcc4Qxd2oE/ufM0p61IKng==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/darwin-arm64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.28.1.tgz",
++      "integrity": "sha512-TZbWkQY7kvTAXbXUT7uVACR5cMHsDiSz9z7ZKAX/RTq/WJEk3QyRr0wZpNhBDX+/0CtdqUIJlOiodQcta6tY3Q==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/darwin-x64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/darwin-x64/-/darwin-x64-0.28.1.tgz",
++      "integrity": "sha512-zfdzgK9ACBNZLI/CyHTOx81SyNbM6YXn7rxSgX97VjyiPl9W1i4Ka4fgKECEoFCKGpvBj5qArWIGgQjOwkgskQ==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/freebsd-arm64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/freebsd-arm64/-/freebsd-arm64-0.28.1.tgz",
++      "integrity": "sha512-wG2EA8ENdEI0qhkSZMjfqrdY+ziCYCPMmtZjjIwOmXFjmyzEHn+UUxk5of+SYsjtfs3VpnlC7QLzSI5hY/rOAw==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "freebsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/freebsd-x64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/freebsd-x64/-/freebsd-x64-0.28.1.tgz",
++      "integrity": "sha512-i7dZ9vQgnvSCzi/rYCXNgtF/U+eKZNJBzu3eTQbRgHnM7tNSizLOkRFAl3qzVc/Op/u5YkHHa4pf/3DOYHthLQ==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "freebsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/linux-arm": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-arm/-/linux-arm-0.28.1.tgz",
++      "integrity": "sha512-qVXBOHQS+d5Y722GwJzJUtOLlX7km3CraOaGormF1pDtPd2C/l1SHRPgjLunLGe51Sh5YYWKMFDyV4SxgMQYTQ==",
++      "cpu": [
++        "arm"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/linux-arm64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.28.1.tgz",
++      "integrity": "sha512-yHs+0uc8+nvEAfAfxrWQKK5peSNzBc4PegcMO0EJ2hT71uA7vB8Ihg2e77R2P7SG5uYjPbHlLLmve4LLLRCf0g==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/linux-ia32": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-ia32/-/linux-ia32-0.28.1.tgz",
++      "integrity": "sha512-d1z4ZuP0ajrfz/FhGT4vv278rX8KnPPJx8i5+AtK7TYbx9Le9F1hyzurZpkEyjkGa9dUGhQow4C1NmeGvqxN2w==",
++      "cpu": [
++        "ia32"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/linux-loong64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-loong64/-/linux-loong64-0.28.1.tgz",
++      "integrity": "sha512-M5sRjUVZrkm1OAPR3dlOYzNmN+loZKGVi1VUQGrwuqLcbR6qeAz+famMhjASeH3YVKvZz+zT1jlh/keC3Rj/lg==",
++      "cpu": [
++        "loong64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/linux-mips64el": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-mips64el/-/linux-mips64el-0.28.1.tgz",
++      "integrity": "sha512-mRObBZeHh2OxcBFPWE/FjylkRgZdYuiTR3vaTozquCGOH14iP9oN4x4Ge81CoIDYQrXmIxpFumJBu5MtZpnQJQ==",
++      "cpu": [
++        "mips64el"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/linux-ppc64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-ppc64/-/linux-ppc64-0.28.1.tgz",
++      "integrity": "sha512-slScBsMAb3GFDcdrCgLwZtPYRoH2H/youv10QiZyRjmsP48fznoveWytSgCI/R0ZcUgpc0ZhIUEx6LHts8yrfQ==",
++      "cpu": [
++        "ppc64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/linux-riscv64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-riscv64/-/linux-riscv64-0.28.1.tgz",
++      "integrity": "sha512-kw0owk1o0GFETUJyW0jc0G4Yzs0BHZn0JDZ8JRT088vjJYX777BAs1fDGxAC+q831qOs2DTC96mNsG2opdfyyQ==",
++      "cpu": [
++        "riscv64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/linux-s390x": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-s390x/-/linux-s390x-0.28.1.tgz",
++      "integrity": "sha512-/lAIjX8aYFRByhh6L5rYtPEDRqa9de/4V/juOXcta5frjvzXO4/sqEtyytse0g3zZFuWu5cDN0MkLz2qRDD2Ag==",
++      "cpu": [
++        "s390x"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/linux-x64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.28.1.tgz",
++      "integrity": "sha512-u/anNYF2mmVOEDwLtnQ1wOr3EZ9sTNGLWrsYGYwHWzGA3Si84IOkHXlbWTD1NB+9/1lcnweYKO54uhxZydNzfA==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/netbsd-arm64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/netbsd-arm64/-/netbsd-arm64-0.28.1.tgz",
++      "integrity": "sha512-oks0DYbLwWMmaakTsCb+zL4E+aHRVLom9IJZOAthMQEPiQmydXHkziYEsGYRx0uNV/IjEKGAV941JzH02pflqw==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "netbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/netbsd-x64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/netbsd-x64/-/netbsd-x64-0.28.1.tgz",
++      "integrity": "sha512-aeL6lAnN89Hz43Mlh1G8ARasbuoYvSITDEx0tHh5b7jJnHcssqgjy9Yx430GDpmCa6OyrKoS0aNRjKundRizGg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "netbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/openbsd-arm64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/openbsd-arm64/-/openbsd-arm64-0.28.1.tgz",
++      "integrity": "sha512-MEFJe5C3R8pwXdZ5Y21oo6m7ePiS0d9pWucn99O/wvyJZChoIQKrQDxKrGeW8F5+T0okTHesAmDeiHDTIq0V/Q==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/openbsd-x64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/openbsd-x64/-/openbsd-x64-0.28.1.tgz",
++      "integrity": "sha512-i/ZLIOafE0Z8cI/XANJAixoJL/uRAoS2xOA3rb0xN+KK0K177cMAsQYkzHtBrtMXAKuAc7HGgcWiZ/sRC1Nxgw==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/openharmony-arm64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/openharmony-arm64/-/openharmony-arm64-0.28.1.tgz",
++      "integrity": "sha512-ge+Z7EXFNt2BO1oAMsVpiQ8EwndV9i1xXerAeTIK7AtPs3bKFXQM7nlRxDSIUIMeueR1CNXxqztLzdNeReKBJg==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openharmony"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/sunos-x64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/sunos-x64/-/sunos-x64-0.28.1.tgz",
++      "integrity": "sha512-BEjgtECkL3vY+SaSQ6nzVfiALUeFxpawyp8Jmf5PtYhf1Ug40N1h/hxlhts+f1FvSvarEigdxS3BlSMI2PJLcQ==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "sunos"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/win32-arm64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/win32-arm64/-/win32-arm64-0.28.1.tgz",
++      "integrity": "sha512-lCv9eK/H6ZJWbE7bh2nw54CZ9M2nupBxJcTsdk/QQnWkdSjKGuxmmH8/GWrlT1eMmZfn4dGcCjRte397WqfQXA==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/win32-ia32": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/win32-ia32/-/win32-ia32-0.28.1.tgz",
++      "integrity": "sha512-zvb/mB2bSCoJOpoCBgYKKpX6YM6mJBlBUVUtVj41DlZJVEB6/0CKlRYxP5wWl1C1ILiCoAU5wZZ4q1P3qeS6Eg==",
++      "cpu": [
++        "ia32"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/@esbuild/win32-x64": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.28.1.tgz",
++      "integrity": "sha512-bm4Mowrv+GXMlpWX++EcXw/iLyd1o3+bJkC2DkWXYVvgZCqD/bSj9ctZeAMC3cIxgjRVR2Dufaiu4YPxr5gW1A==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/tsx/node_modules/esbuild": {
++      "version": "0.28.1",
++      "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.28.1.tgz",
++      "integrity": "sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw==",
++      "dev": true,
++      "hasInstallScript": true,
++      "license": "MIT",
++      "bin": {
++        "esbuild": "bin/esbuild"
++      },
++      "engines": {
++        "node": ">=18"
++      },
++      "optionalDependencies": {
++        "@esbuild/aix-ppc64": "0.28.1",
++        "@esbuild/android-arm": "0.28.1",
++        "@esbuild/android-arm64": "0.28.1",
++        "@esbuild/android-x64": "0.28.1",
++        "@esbuild/darwin-arm64": "0.28.1",
++        "@esbuild/darwin-x64": "0.28.1",
++        "@esbuild/freebsd-arm64": "0.28.1",
++        "@esbuild/freebsd-x64": "0.28.1",
++        "@esbuild/linux-arm": "0.28.1",
++        "@esbuild/linux-arm64": "0.28.1",
++        "@esbuild/linux-ia32": "0.28.1",
++        "@esbuild/linux-loong64": "0.28.1",
++        "@esbuild/linux-mips64el": "0.28.1",
++        "@esbuild/linux-ppc64": "0.28.1",
++        "@esbuild/linux-riscv64": "0.28.1",
++        "@esbuild/linux-s390x": "0.28.1",
++        "@esbuild/linux-x64": "0.28.1",
++        "@esbuild/netbsd-arm64": "0.28.1",
++        "@esbuild/netbsd-x64": "0.28.1",
++        "@esbuild/openbsd-arm64": "0.28.1",
++        "@esbuild/openbsd-x64": "0.28.1",
++        "@esbuild/openharmony-arm64": "0.28.1",
++        "@esbuild/sunos-x64": "0.28.1",
++        "@esbuild/win32-arm64": "0.28.1",
++        "@esbuild/win32-ia32": "0.28.1",
++        "@esbuild/win32-x64": "0.28.1"
++      }
++    },
+     "node_modules/typescript": {
+       "version": "5.9.3",
+       "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+diff --git a/apps/workbench-alpha/package.json b/apps/workbench-alpha/package.json
+index c845d58..bda900b 100644
+--- a/apps/workbench-alpha/package.json
++++ b/apps/workbench-alpha/package.json
+@@ -4,22 +4,28 @@
+   "private": true,
+   "type": "module",
+   "scripts": {
++    "generate:contracts": "PYTHONPATH=../../src ../../.venv/bin/python ../../scripts/workbench_alpha/generate_contracts.py",
+     "dev": "vite --host 127.0.0.1 --port 5174",
+-    "build": "tsc --noEmit -p tsconfig.json && vite build",
++    "build": "npm run generate:contracts && tsc --noEmit -p tsconfig.json && vite build",
+     "preview": "vite preview --host 127.0.0.1 --port 4174",
++    "test:contracts": "npm run generate:contracts && git diff --exit-code -- src/generated/api-schemas.json src/generated/api-types.ts",
+     "test:fixtures": "node tests/check-no-tactical-fixtures.mjs",
++    "test:unit": "tsx tests/geometry.test.ts && tsx tests/playback.test.ts",
+     "test:e2e": "npm run build && playwright test",
+-    "test:acceptance": "npm run test:fixtures && npm run test:e2e"
++    "test:acceptance": "npm run test:contracts && npm run test:fixtures && npm run test:unit && npm run test:e2e"
+   },
+   "dependencies": {
++    "ajv": "^8.20.0",
+     "react": "^19.2.3",
+     "react-dom": "^19.2.3"
+   },
+   "devDependencies": {
+-    "@vitejs/plugin-react": "^5.1.2",
+     "@playwright/test": "^1.57.0",
+     "@types/react": "^19.2.7",
+     "@types/react-dom": "^19.2.3",
++    "@vitejs/plugin-react": "^5.1.2",
++    "json-schema-to-ts": "^3.1.1",
++    "tsx": "^4.22.4",
+     "typescript": "^5.9.3",
+     "vite": "^7.3.0"
+   }
+diff --git a/apps/workbench-alpha/src/App.tsx b/apps/workbench-alpha/src/App.tsx
+index 890bf35..1019caa 100644
+--- a/apps/workbench-alpha/src/App.tsx
++++ b/apps/workbench-alpha/src/App.tsx
+@@ -1,4 +1,4 @@
+-import { useEffect, useMemo, useState } from "react";
++import { useEffect, useMemo, useRef, useState } from "react";
+ import type { ReactNode } from "react";
+ import {
+   bootstrap,
+@@ -11,6 +11,7 @@ import {
+   submitValidate
+ } from "./api";
+ import { PitchCanvas } from "./PitchCanvas";
++import { advancePlaybackFrame } from "./playback";
+ import type {
+   BootstrapResponse,
+   ConfirmationResponse,
+@@ -94,15 +95,30 @@ export function App() {
+   });
+   const [frameIndex, setFrameIndex] = useState(0);
+   const [playing, setPlaying] = useState(false);
++  const [playbackSpeed, setPlaybackSpeed] = useState<0.5 | 1 | 2>(1);
++  const [inspectionLoadingResultId, setInspectionLoadingResultId] = useState<string | null>(null);
+   const [busy, setBusy] = useState<BusyKey | null>("bootstrap");
+   const [error, setError] = useState<string | null>(null);
++  const inspectionGenerationRef = useRef(0);
++  const playbackRef = useRef<{ previousTimestamp: number | null; carriedMs: number }>({
++    previousTimestamp: null,
++    carriedMs: 0
++  });
++
++  const inspectedResultId = inspection?.inspection.result.result_id ?? null;
++  const effectiveSelectedResultId = selectedResultId ?? inspectedResultId;
+ 
+   const selectedResult = useMemo<ResultRow | null>(() => {
+     const rows = execution?.execution.results ?? [];
+-    return rows.find((item) => item.result_id === selectedResultId) ?? rows[0] ?? null;
+-  }, [execution, selectedResultId]);
+-
+-  const replay: ReplayPayload | null = inspection?.replay ?? timestampInspection?.replay ?? null;
++    return rows.find((item) => item.result_id === effectiveSelectedResultId) ?? rows[0] ?? null;
++  }, [execution, effectiveSelectedResultId]);
++
++  const correlatedInspection =
++    inspection && effectiveSelectedResultId && inspection.inspection.result.result_id === effectiveSelectedResultId
++      ? inspection
++      : null;
++  const replay: ReplayPayload | null = timestampInspection?.replay ?? correlatedInspection?.replay ?? null;
++  const evidenceResult = correlatedInspection ? selectedResult : null;
+   const evidenceAliases = useMemo(() => requestedEvidence(planDocument), [planDocument]);
+ 
+   useEffect(() => {
+@@ -120,16 +136,36 @@ export function App() {
+ 
+   useEffect(() => {
+     if (!playing || !replay || replay.frames.length === 0) return;
+-    const timer = window.setInterval(() => {
+-      setFrameIndex((current) => (current + 1) % replay.frames.length);
+-    }, 120);
+-    return () => window.clearInterval(timer);
+-  }, [playing, replay]);
++    let animationFrame = 0;
++    const tick = (timestamp: number) => {
++      const previous = playbackRef.current.previousTimestamp;
++      playbackRef.current.previousTimestamp = timestamp;
++      if (previous !== null) {
++        const elapsedMs = timestamp - previous;
++        setFrameIndex((current) => {
++          const step = advancePlaybackFrame({
++            currentFrameIndex: current,
++            frameCount: replay.frames.length,
++            frameRateHz: replay.frame_rate_hz,
++            playbackSpeed,
++            elapsedMs,
++            carriedMs: playbackRef.current.carriedMs
++          });
++          playbackRef.current.carriedMs = step.carriedMs;
++          return step.frameIndex;
++        });
++      }
++      animationFrame = window.requestAnimationFrame(tick);
++    };
++    animationFrame = window.requestAnimationFrame(tick);
++    return () => window.cancelAnimationFrame(animationFrame);
++  }, [playing, replay, playbackSpeed]);
+ 
+   useEffect(() => {
+     setFrameIndex(0);
+     setPlaying(false);
+-  }, [inspection?.replay?.replay_window_id, timestampInspection?.replay?.replay_window_id]);
++    playbackRef.current = { previousTimestamp: null, carriedMs: 0 };
++  }, [replay?.replay_window_id]);
+ 
+   async function runAction<T>(key: BusyKey, action: () => Promise<T>): Promise<T | null> {
+     setBusy(key);
+@@ -162,6 +198,7 @@ export function App() {
+     setExecution(null);
+     setInspection(null);
+     setTimestampInspection(null);
++    setInspectionLoadingResultId(null);
+   }
+ 
+   async function handleInterpret() {
+@@ -181,6 +218,7 @@ export function App() {
+       setExecution(null);
+       setInspection(null);
+       setTimestampInspection(null);
++      setInspectionLoadingResultId(null);
+     }
+   }
+ 
+@@ -193,6 +231,7 @@ export function App() {
+     setExecution(null);
+     setInspection(null);
+     setTimestampInspection(null);
++    setInspectionLoadingResultId(null);
+   }
+ 
+   async function handleConfirm() {
+@@ -229,6 +268,11 @@ export function App() {
+   }
+ 
+   async function inspectSpecificResult(executionId: string, resultId: string) {
++    const generation = inspectionGenerationRef.current + 1;
++    inspectionGenerationRef.current = generation;
++    setInspection(null);
++    setTimestampInspection(null);
++    setInspectionLoadingResultId(resultId);
+     const payload = await runAction("inspect", () =>
+       inspectResult({
+         execution_id: executionId,
+@@ -236,9 +280,16 @@ export function App() {
+         padding_seconds: 2
+       })
+     );
+-    if (!payload) return;
++    if (!payload) {
++      if (inspectionGenerationRef.current === generation) {
++        setInspectionLoadingResultId(null);
++      }
++      return;
++    }
++    if (inspectionGenerationRef.current !== generation) return;
++    if (payload.inspection.result.result_id !== resultId) return;
+     setInspection(payload);
+-    setTimestampInspection(null);
++    setInspectionLoadingResultId(null);
+   }
+ 
+   async function handleResultSelect(resultId: string) {
+@@ -259,8 +310,10 @@ export function App() {
+       })
+     );
+     if (!payload) return;
++    inspectionGenerationRef.current += 1;
+     setTimestampInspection(payload);
+     setInspection(null);
++    setInspectionLoadingResultId(null);
+   }
+ 
+   const validationTone = validation?.validation.ok ? "good" : validation ? "bad" : "neutral";
+@@ -433,7 +486,9 @@ export function App() {
+               <div>
+                 <div className="panelTitle">Coordinate Replay</div>
+                 <div className="muted" data-testid="replay-window-summary">
+-                  {replay
++                  {inspectionLoadingResultId
++                    ? `Loading result ${inspectionLoadingResultId}`
++                    : replay
+                     ? `${replay.replay_window_id} ${replay.source_id} ${replay.match_id} ${replay.period} ${replay.start_frame_id}-${replay.end_frame_id}`
+                     : "No replay window selected"}
+                 </div>
+@@ -448,6 +503,18 @@ export function App() {
+               <button data-testid="play-pause-button" onClick={() => setPlaying((value) => !value)} disabled={!replay}>
+                 {playing ? "Pause" : "Play"}
+               </button>
++              <div className="speedControls" data-testid="playback-speed-controls">
++                {([0.5, 1, 2] as const).map((speed) => (
++                  <button
++                    key={speed}
++                    className={playbackSpeed === speed ? "active" : ""}
++                    onClick={() => setPlaybackSpeed(speed)}
++                    disabled={!replay}
++                  >
++                    {speed}x
++                  </button>
++                ))}
++              </div>
+               <button
+                 onClick={() => setFrameIndex((value) => Math.min((replay?.frames.length ?? 1) - 1, value + 1))}
+                 disabled={!replay}
+@@ -474,14 +541,19 @@ export function App() {
+                   <div key={item.id} className="evidenceRow" data-testid="evidence-alias">
+                     <span>{item.alias}</span>
+                     <small>{item.source} / {item.field}</small>
+-                    <code>{String(selectedResult?.requested_evidence[item.alias] ?? "")}</code>
++                    <code>{String(evidenceResult?.requested_evidence[item.alias] ?? "")}</code>
+                   </div>
+                 ))}
++                {inspectionLoadingResultId ? (
++                  <div className="emptyState" data-testid="inspection-loading">
++                    Loading selected result evidence.
++                  </div>
++                ) : null}
+               </div>
+             </div>
+             <div className="panel">
+               <div className="panelTitle">Predicate Trace</div>
+-              <TraceList traces={inspection?.inspection.predicate_traces ?? []} />
++              <TraceList traces={correlatedInspection?.inspection.predicate_traces ?? []} />
+             </div>
+           </section>
+         </section>
+@@ -500,7 +572,7 @@ export function App() {
+                   key={result.result_id}
+                   data-testid="result-item"
+                   data-result-id={result.result_id}
+-                  className={selectedResultId === result.result_id ? "resultItem active" : "resultItem"}
++                  className={effectiveSelectedResultId === result.result_id ? "resultItem active" : "resultItem"}
+                   onClick={() => void handleResultSelect(result.result_id)}
+                 >
+                   <span>#{result.rank} {result.classification}</span>
+diff --git a/apps/workbench-alpha/src/PitchCanvas.tsx b/apps/workbench-alpha/src/PitchCanvas.tsx
+index c371692..52b1f44 100644
+--- a/apps/workbench-alpha/src/PitchCanvas.tsx
++++ b/apps/workbench-alpha/src/PitchCanvas.tsx
+@@ -1,22 +1,12 @@
+ import { useEffect, useRef } from "react";
+ import type { ReplayPayload } from "./types";
++import { layoutPitch, pitchPointToPixel } from "./pitchGeometry";
+ 
+ type PitchCanvasProps = {
+   replay: ReplayPayload | null;
+   frameIndex: number;
+ };
+ 
+-function transformPoint(x: number, y: number, replay: ReplayPayload, width: number, height: number) {
+-  const marginX = width * 0.035;
+-  const marginY = height * 0.055;
+-  const fieldW = width - marginX * 2;
+-  const fieldH = height - marginY * 2;
+-  return {
+-    x: marginX + ((x + replay.pitch.length_m / 2) / replay.pitch.length_m) * fieldW,
+-    y: marginY + ((replay.pitch.width_m / 2 - y) / replay.pitch.width_m) * fieldH
+-  };
+-}
+-
+ export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
+   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+ 
+@@ -25,8 +15,10 @@ export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
+     if (!canvas) return;
+ 
+     const parent = canvas.parentElement;
+-    const width = parent?.clientWidth ? Math.max(parent.clientWidth, 720) : 960;
+-    const height = Math.round(width * 0.58);
++    const pitch = replay?.pitch ?? { length_m: 105, width_m: 68 };
++    const layout = layoutPitch(pitch, parent?.clientWidth);
++    const width = layout.canvasWidth;
++    const height = layout.canvasHeight;
+     const ratio = window.devicePixelRatio || 1;
+     canvas.width = Math.round(width * ratio);
+     canvas.height = Math.round(height * ratio);
+@@ -41,10 +33,10 @@ export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
+     ctx.fillStyle = "#477556";
+     ctx.fillRect(0, 0, width, height);
+ 
+-    const marginX = width * 0.035;
+-    const marginY = height * 0.055;
+-    const fieldW = width - marginX * 2;
+-    const fieldH = height - marginY * 2;
++    const marginX = layout.marginX;
++    const marginY = layout.marginY;
++    const fieldW = layout.fieldWidth;
++    const fieldH = layout.fieldHeight;
+ 
+     ctx.strokeStyle = "rgba(255,255,255,0.84)";
+     ctx.lineWidth = 1.6;
+@@ -74,7 +66,7 @@ export function PitchCanvas({ replay, frameIndex }: PitchCanvasProps) {
+     );
+ 
+     for (const entity of frame.entities) {
+-      const point = transformPoint(entity.x_m, entity.y_m, replay, width, height);
++      const point = pitchPointToPixel(entity.x_m, entity.y_m, replay.pitch, layout);
+       const isBall = entity.entity_type === "ball";
+       const radius = isBall ? 4.4 : 7.5;
+       ctx.beginPath();
+diff --git a/apps/workbench-alpha/src/api.ts b/apps/workbench-alpha/src/api.ts
+index 570681a..186e35f 100644
+--- a/apps/workbench-alpha/src/api.ts
++++ b/apps/workbench-alpha/src/api.ts
+@@ -1,3 +1,5 @@
++import Ajv, { type ValidateFunction } from "ajv";
++import { apiSchemas } from "./generated/api-types";
+ import type {
+   BootstrapResponse,
+   ConfirmationResponse,
+@@ -11,7 +13,29 @@ import type {
+   TimestampTarget
+ } from "./types";
+ 
+-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
++type ApiSchemaName = keyof typeof apiSchemas;
++
++const ajv = new Ajv({ allErrors: true, strict: false });
++const validators = new Map<ApiSchemaName, ValidateFunction>();
++
++function validatorFor(schemaName: ApiSchemaName) {
++  const cached = validators.get(schemaName);
++  if (cached) return cached;
++  const compiled = ajv.compile(apiSchemas[schemaName]);
++  validators.set(schemaName, compiled);
++  return compiled;
++}
++
++function assertValidResponse<T>(schemaName: ApiSchemaName, payload: unknown): T {
++  const validate = validatorFor(schemaName);
++  if (!validate(payload)) {
++    const details = ajv.errorsText(validate.errors, { separator: "; " });
++    throw new Error(`Host response schema invalid for ${schemaName}: ${details}`);
++  }
++  return payload as T;
++}
++
++async function request<T>(schemaName: ApiSchemaName, path: string, options: RequestInit = {}): Promise<T> {
+   const response = await fetch(path, {
+     ...options,
+     headers: {
+@@ -24,15 +48,15 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+     const message = payload.message ?? payload.error_code ?? `Request failed: ${path}`;
+     throw new Error(message);
+   }
+-  return payload;
++  return assertValidResponse<T>(schemaName, payload);
+ }
+ 
+ export function bootstrap(): Promise<BootstrapResponse> {
+-  return request<BootstrapResponse>("/api/bootstrap");
++  return request<BootstrapResponse>("BootstrapResponse", "/api/bootstrap");
+ }
+ 
+ export function fetchPlan(recipeId: string): Promise<{ ok: boolean; recipe: RecipeSummary; plan_document: JsonObject; plan_hash: string }> {
+-  return request(`/api/plan?recipe_id=${encodeURIComponent(recipeId)}`);
++  return request("PlanResponse", `/api/plan?recipe_id=${encodeURIComponent(recipeId)}`);
+ }
+ 
+ export function interpret(input: {
+@@ -42,21 +66,21 @@ export function interpret(input: {
+   preset_id?: string;
+   clarifications?: string[];
+ }): Promise<InterpretResponse> {
+-  return request<InterpretResponse>("/api/interpret", {
++  return request<InterpretResponse>("InterpretResponse", "/api/interpret", {
+     method: "POST",
+     body: JSON.stringify(input)
+   });
+ }
+ 
+ export function submitValidate(planDocument: JsonObject): Promise<SubmitValidateResponse> {
+-  return request<SubmitValidateResponse>("/api/submit-validate", {
++  return request<SubmitValidateResponse>("SubmitValidateResponse", "/api/submit-validate", {
+     method: "POST",
+     body: JSON.stringify({ plan_document: planDocument })
+   });
+ }
+ 
+ export function confirm(boundPlanId: string): Promise<ConfirmationResponse> {
+-  return request<ConfirmationResponse>("/api/confirm", {
++  return request<ConfirmationResponse>("ConfirmationResponse", "/api/confirm", {
+     method: "POST",
+     body: JSON.stringify({ bound_plan_id: boundPlanId, reviewer: "workbench_alpha_host" })
+   });
+@@ -67,7 +91,7 @@ export function execute(input: {
+   execution_authorization_id: string;
+   result_limit: number;
+ }): Promise<ExecutionResponse> {
+-  return request<ExecutionResponse>("/api/execute", {
++  return request<ExecutionResponse>("ExecutionResponse", "/api/execute", {
+     method: "POST",
+     body: JSON.stringify(input)
+   });
+@@ -78,7 +102,7 @@ export function inspectResult(input: {
+   result_id: string;
+   padding_seconds?: number;
+ }): Promise<InspectResultResponse> {
+-  return request<InspectResultResponse>("/api/inspect-result", {
++  return request<InspectResultResponse>("InspectResultResponse", "/api/inspect-result", {
+     method: "POST",
+     body: JSON.stringify(input)
+   });
+@@ -89,7 +113,7 @@ export function inspectTimestamp(input: {
+   target: TimestampTarget;
+   padding_seconds?: number;
+ }): Promise<InspectTimestampResponse> {
+-  return request<InspectTimestampResponse>("/api/inspect-timestamp", {
++  return request<InspectTimestampResponse>("InspectTimestampResponse", "/api/inspect-timestamp", {
+     method: "POST",
+     body: JSON.stringify(input)
+   });
+diff --git a/apps/workbench-alpha/src/generated/api-schemas.json b/apps/workbench-alpha/src/generated/api-schemas.json
+new file mode 100644
+index 0000000..98dc667
+--- /dev/null
++++ b/apps/workbench-alpha/src/generated/api-schemas.json
+@@ -0,0 +1,1146 @@
++{
++  "BootstrapResponse": {
++    "$defs": {
++      "CapabilitySummaryResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "execute_tool_description": {
++            "additionalProperties": true,
++            "title": "Execute Tool Description",
++            "type": "object"
++          },
++          "operator_count": {
++            "title": "Operator Count",
++            "type": "integer"
++          },
++          "primitive_count": {
++            "title": "Primitive Count",
++            "type": "integer"
++          },
++          "relation_count": {
++            "title": "Relation Count",
++            "type": "integer"
++          },
++          "tools": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Tools",
++            "type": "array"
++          }
++        },
++        "required": [
++          "primitive_count",
++          "relation_count",
++          "operator_count",
++          "tools",
++          "execute_tool_description"
++        ],
++        "title": "CapabilitySummaryResponse",
++        "type": "object"
++      },
++      "ModelStatusResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "available": {
++            "title": "Available",
++            "type": "boolean"
++          },
++          "message": {
++            "title": "Message",
++            "type": "string"
++          },
++          "status": {
++            "title": "Status",
++            "type": "string"
++          }
++        },
++        "required": [
++          "available",
++          "status",
++          "message"
++        ],
++        "title": "ModelStatusResponse",
++        "type": "object"
++      },
++      "PresetResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "label": {
++            "title": "Label",
++            "type": "string"
++          },
++          "plan_hash": {
++            "title": "Plan Hash",
++            "type": "string"
++          },
++          "preset_id": {
++            "enum": [
++              "approved_block_shift",
++              "experimental_corridor"
++            ],
++            "title": "Preset Id",
++            "type": "string"
++          },
++          "recipe": {
++            "$ref": "#/$defs/RecipeCardResponse"
++          }
++        },
++        "required": [
++          "preset_id",
++          "label",
++          "recipe",
++          "plan_hash"
++        ],
++        "title": "PresetResponse",
++        "type": "object"
++      },
++      "RecipeCardResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "allowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Allowed Claims",
++            "type": "array"
++          },
++          "description": {
++            "title": "Description",
++            "type": "string"
++          },
++          "disallowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Disallowed Claims",
++            "type": "array"
++          },
++          "display_name": {
++            "title": "Display Name",
++            "type": "string"
++          },
++          "limitations": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Limitations",
++            "type": "array"
++          },
++          "output_classifications": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Output Classifications",
++            "type": "array"
++          },
++          "recipe_id": {
++            "title": "Recipe Id",
++            "type": "string"
++          },
++          "recipe_version": {
++            "title": "Recipe Version",
++            "type": "string"
++          },
++          "state": {
++            "enum": [
++              "APPROVED",
++              "EXPERIMENTAL",
++              "USER_SAVED",
++              "DEPRECATED"
++            ],
++            "title": "State",
++            "type": "string"
++          }
++        },
++        "required": [
++          "recipe_id",
++          "recipe_version",
++          "state",
++          "display_name",
++          "description",
++          "allowed_claims",
++          "disallowed_claims",
++          "limitations",
++          "output_classifications"
++        ],
++        "title": "RecipeCardResponse",
++        "type": "object"
++      },
++      "ServiceStatusResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "mcp_adapter": {
++            "title": "Mcp Adapter",
++            "type": "boolean"
++          },
++          "name": {
++            "title": "Name",
++            "type": "string"
++          }
++        },
++        "required": [
++          "name",
++          "mcp_adapter"
++        ],
++        "title": "ServiceStatusResponse",
++        "type": "object"
++      }
++    },
++    "additionalProperties": false,
++    "properties": {
++      "capabilities": {
++        "$ref": "#/$defs/CapabilitySummaryResponse"
++      },
++      "model": {
++        "$ref": "#/$defs/ModelStatusResponse"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "presets": {
++        "items": {
++          "$ref": "#/$defs/PresetResponse"
++        },
++        "title": "Presets",
++        "type": "array"
++      },
++      "service": {
++        "$ref": "#/$defs/ServiceStatusResponse"
++      }
++    },
++    "required": [
++      "ok",
++      "service",
++      "model",
++      "presets",
++      "capabilities"
++    ],
++    "title": "BootstrapResponse",
++    "type": "object"
++  },
++  "ConfirmationResponse": {
++    "additionalProperties": false,
++    "properties": {
++      "confirmation": {
++        "additionalProperties": true,
++        "title": "Confirmation",
++        "type": "object"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      }
++    },
++    "required": [
++      "ok",
++      "confirmation"
++    ],
++    "title": "ConfirmationResponseEnvelope",
++    "type": "object"
++  },
++  "ErrorResponse": {
++    "additionalProperties": false,
++    "properties": {
++      "details": {
++        "additionalProperties": true,
++        "title": "Details",
++        "type": "object"
++      },
++      "error_code": {
++        "title": "Error Code",
++        "type": "string"
++      },
++      "message": {
++        "title": "Message",
++        "type": "string"
++      },
++      "ok": {
++        "const": false,
++        "title": "Ok",
++        "type": "boolean"
++      }
++    },
++    "required": [
++      "ok",
++      "error_code",
++      "message"
++    ],
++    "title": "ErrorResponse",
++    "type": "object"
++  },
++  "ExecutionResponse": {
++    "additionalProperties": false,
++    "properties": {
++      "execution": {
++        "additionalProperties": true,
++        "title": "Execution",
++        "type": "object"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      }
++    },
++    "required": [
++      "ok",
++      "execution"
++    ],
++    "title": "ExecutionResponseEnvelope",
++    "type": "object"
++  },
++  "HealthResponse": {
++    "additionalProperties": false,
++    "properties": {
++      "mcp_adapter": {
++        "title": "Mcp Adapter",
++        "type": "boolean"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "service": {
++        "title": "Service",
++        "type": "string"
++      }
++    },
++    "required": [
++      "ok",
++      "service",
++      "mcp_adapter"
++    ],
++    "title": "HealthResponse",
++    "type": "object"
++  },
++  "InspectResultResponse": {
++    "$defs": {
++      "PitchResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "coordinate_contract": {
++            "title": "Coordinate Contract",
++            "type": "string"
++          },
++          "length_m": {
++            "title": "Length M",
++            "type": "number"
++          },
++          "width_m": {
++            "title": "Width M",
++            "type": "number"
++          }
++        },
++        "required": [
++          "length_m",
++          "width_m",
++          "coordinate_contract"
++        ],
++        "title": "PitchResponse",
++        "type": "object"
++      },
++      "ReplayEntityResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "entity_id": {
++            "title": "Entity Id",
++            "type": "string"
++          },
++          "entity_type": {
++            "title": "Entity Type",
++            "type": "string"
++          },
++          "team_id": {
++            "title": "Team Id",
++            "type": "string"
++          },
++          "team_role": {
++            "title": "Team Role",
++            "type": "string"
++          },
++          "x_m": {
++            "title": "X M",
++            "type": "number"
++          },
++          "y_m": {
++            "title": "Y M",
++            "type": "number"
++          }
++        },
++        "required": [
++          "team_id",
++          "team_role",
++          "entity_id",
++          "entity_type",
++          "x_m",
++          "y_m"
++        ],
++        "title": "ReplayEntityResponse",
++        "type": "object"
++      },
++      "ReplayFrameResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "entities": {
++            "items": {
++              "$ref": "#/$defs/ReplayEntityResponse"
++            },
++            "title": "Entities",
++            "type": "array"
++          },
++          "frame_id": {
++            "title": "Frame Id",
++            "type": "integer"
++          },
++          "timestamp_utc": {
++            "anyOf": [
++              {
++                "type": "string"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null,
++            "title": "Timestamp Utc"
++          }
++        },
++        "required": [
++          "frame_id",
++          "entities"
++        ],
++        "title": "ReplayFrameResponse",
++        "type": "object"
++      },
++      "ReplayPayloadResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "anchor_frame_id": {
++            "title": "Anchor Frame Id",
++            "type": "integer"
++          },
++          "canonical_sources": {
++            "additionalProperties": {
++              "type": "string"
++            },
++            "title": "Canonical Sources",
++            "type": "object"
++          },
++          "end_frame_id": {
++            "title": "End Frame Id",
++            "type": "integer"
++          },
++          "frame_rate_hz": {
++            "title": "Frame Rate Hz",
++            "type": "number"
++          },
++          "frames": {
++            "items": {
++              "$ref": "#/$defs/ReplayFrameResponse"
++            },
++            "title": "Frames",
++            "type": "array"
++          },
++          "generated_at": {
++            "title": "Generated At",
++            "type": "string"
++          },
++          "match_id": {
++            "title": "Match Id",
++            "type": "string"
++          },
++          "period": {
++            "title": "Period",
++            "type": "string"
++          },
++          "pitch": {
++            "$ref": "#/$defs/PitchResponse"
++          },
++          "plan_path": {
++            "title": "Plan Path",
++            "type": "string"
++          },
++          "replay_window_id": {
++            "title": "Replay Window Id",
++            "type": "string"
++          },
++          "schema_version": {
++            "title": "Schema Version",
++            "type": "string"
++          },
++          "source_id": {
++            "title": "Source Id",
++            "type": "string"
++          },
++          "source_kind": {
++            "enum": [
++              "result",
++              "target"
++            ],
++            "title": "Source Kind",
++            "type": "string"
++          },
++          "start_frame_id": {
++            "title": "Start Frame Id",
++            "type": "integer"
++          }
++        },
++        "required": [
++          "schema_version",
++          "replay_window_id",
++          "source_kind",
++          "source_id",
++          "match_id",
++          "period",
++          "frame_rate_hz",
++          "start_frame_id",
++          "end_frame_id",
++          "anchor_frame_id",
++          "generated_at",
++          "canonical_sources",
++          "plan_path",
++          "pitch",
++          "frames"
++        ],
++        "title": "ReplayPayloadResponse",
++        "type": "object"
++      }
++    },
++    "additionalProperties": false,
++    "properties": {
++      "inspection": {
++        "additionalProperties": true,
++        "title": "Inspection",
++        "type": "object"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "replay": {
++        "$ref": "#/$defs/ReplayPayloadResponse"
++      },
++      "replay_window": {
++        "additionalProperties": true,
++        "title": "Replay Window",
++        "type": "object"
++      }
++    },
++    "required": [
++      "ok",
++      "inspection",
++      "replay_window",
++      "replay"
++    ],
++    "title": "InspectResultResponseEnvelope",
++    "type": "object"
++  },
++  "InspectTimestampResponse": {
++    "$defs": {
++      "PitchResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "coordinate_contract": {
++            "title": "Coordinate Contract",
++            "type": "string"
++          },
++          "length_m": {
++            "title": "Length M",
++            "type": "number"
++          },
++          "width_m": {
++            "title": "Width M",
++            "type": "number"
++          }
++        },
++        "required": [
++          "length_m",
++          "width_m",
++          "coordinate_contract"
++        ],
++        "title": "PitchResponse",
++        "type": "object"
++      },
++      "ReplayEntityResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "entity_id": {
++            "title": "Entity Id",
++            "type": "string"
++          },
++          "entity_type": {
++            "title": "Entity Type",
++            "type": "string"
++          },
++          "team_id": {
++            "title": "Team Id",
++            "type": "string"
++          },
++          "team_role": {
++            "title": "Team Role",
++            "type": "string"
++          },
++          "x_m": {
++            "title": "X M",
++            "type": "number"
++          },
++          "y_m": {
++            "title": "Y M",
++            "type": "number"
++          }
++        },
++        "required": [
++          "team_id",
++          "team_role",
++          "entity_id",
++          "entity_type",
++          "x_m",
++          "y_m"
++        ],
++        "title": "ReplayEntityResponse",
++        "type": "object"
++      },
++      "ReplayFrameResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "entities": {
++            "items": {
++              "$ref": "#/$defs/ReplayEntityResponse"
++            },
++            "title": "Entities",
++            "type": "array"
++          },
++          "frame_id": {
++            "title": "Frame Id",
++            "type": "integer"
++          },
++          "timestamp_utc": {
++            "anyOf": [
++              {
++                "type": "string"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null,
++            "title": "Timestamp Utc"
++          }
++        },
++        "required": [
++          "frame_id",
++          "entities"
++        ],
++        "title": "ReplayFrameResponse",
++        "type": "object"
++      },
++      "ReplayPayloadResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "anchor_frame_id": {
++            "title": "Anchor Frame Id",
++            "type": "integer"
++          },
++          "canonical_sources": {
++            "additionalProperties": {
++              "type": "string"
++            },
++            "title": "Canonical Sources",
++            "type": "object"
++          },
++          "end_frame_id": {
++            "title": "End Frame Id",
++            "type": "integer"
++          },
++          "frame_rate_hz": {
++            "title": "Frame Rate Hz",
++            "type": "number"
++          },
++          "frames": {
++            "items": {
++              "$ref": "#/$defs/ReplayFrameResponse"
++            },
++            "title": "Frames",
++            "type": "array"
++          },
++          "generated_at": {
++            "title": "Generated At",
++            "type": "string"
++          },
++          "match_id": {
++            "title": "Match Id",
++            "type": "string"
++          },
++          "period": {
++            "title": "Period",
++            "type": "string"
++          },
++          "pitch": {
++            "$ref": "#/$defs/PitchResponse"
++          },
++          "plan_path": {
++            "title": "Plan Path",
++            "type": "string"
++          },
++          "replay_window_id": {
++            "title": "Replay Window Id",
++            "type": "string"
++          },
++          "schema_version": {
++            "title": "Schema Version",
++            "type": "string"
++          },
++          "source_id": {
++            "title": "Source Id",
++            "type": "string"
++          },
++          "source_kind": {
++            "enum": [
++              "result",
++              "target"
++            ],
++            "title": "Source Kind",
++            "type": "string"
++          },
++          "start_frame_id": {
++            "title": "Start Frame Id",
++            "type": "integer"
++          }
++        },
++        "required": [
++          "schema_version",
++          "replay_window_id",
++          "source_kind",
++          "source_id",
++          "match_id",
++          "period",
++          "frame_rate_hz",
++          "start_frame_id",
++          "end_frame_id",
++          "anchor_frame_id",
++          "generated_at",
++          "canonical_sources",
++          "plan_path",
++          "pitch",
++          "frames"
++        ],
++        "title": "ReplayPayloadResponse",
++        "type": "object"
++      }
++    },
++    "additionalProperties": false,
++    "properties": {
++      "inspection": {
++        "additionalProperties": true,
++        "title": "Inspection",
++        "type": "object"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "replay": {
++        "$ref": "#/$defs/ReplayPayloadResponse"
++      },
++      "replay_window": {
++        "additionalProperties": true,
++        "title": "Replay Window",
++        "type": "object"
++      }
++    },
++    "required": [
++      "ok",
++      "inspection",
++      "replay_window",
++      "replay"
++    ],
++    "title": "InspectTimestampResponseEnvelope",
++    "type": "object"
++  },
++  "InterpretResponse": {
++    "$defs": {
++      "CapabilityGapResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "concept": {
++            "title": "Concept",
++            "type": "string"
++          },
++          "reason": {
++            "title": "Reason",
++            "type": "string"
++          }
++        },
++        "required": [
++          "concept",
++          "reason"
++        ],
++        "title": "CapabilityGapResponse",
++        "type": "object"
++      },
++      "RecipeCardResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "allowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Allowed Claims",
++            "type": "array"
++          },
++          "description": {
++            "title": "Description",
++            "type": "string"
++          },
++          "disallowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Disallowed Claims",
++            "type": "array"
++          },
++          "display_name": {
++            "title": "Display Name",
++            "type": "string"
++          },
++          "limitations": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Limitations",
++            "type": "array"
++          },
++          "output_classifications": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Output Classifications",
++            "type": "array"
++          },
++          "recipe_id": {
++            "title": "Recipe Id",
++            "type": "string"
++          },
++          "recipe_version": {
++            "title": "Recipe Version",
++            "type": "string"
++          },
++          "state": {
++            "enum": [
++              "APPROVED",
++              "EXPERIMENTAL",
++              "USER_SAVED",
++              "DEPRECATED"
++            ],
++            "title": "State",
++            "type": "string"
++          }
++        },
++        "required": [
++          "recipe_id",
++          "recipe_version",
++          "state",
++          "display_name",
++          "description",
++          "allowed_claims",
++          "disallowed_claims",
++          "limitations",
++          "output_classifications"
++        ],
++        "title": "RecipeCardResponse",
++        "type": "object"
++      }
++    },
++    "additionalProperties": false,
++    "properties": {
++      "capability_gaps": {
++        "anyOf": [
++          {
++            "items": {
++              "$ref": "#/$defs/CapabilityGapResponse"
++            },
++            "type": "array"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Capability Gaps"
++      },
++      "clarification_codes": {
++        "anyOf": [
++          {
++            "items": {
++              "type": "string"
++            },
++            "type": "array"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Clarification Codes"
++      },
++      "clarification_questions": {
++        "anyOf": [
++          {
++            "items": {
++              "type": "string"
++            },
++            "type": "array"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Clarification Questions"
++      },
++      "manual_available": {
++        "anyOf": [
++          {
++            "type": "boolean"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Manual Available"
++      },
++      "message": {
++        "anyOf": [
++          {
++            "type": "string"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Message"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "plan_document": {
++        "anyOf": [
++          {
++            "additionalProperties": true,
++            "type": "object"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Plan Document"
++      },
++      "plan_hash": {
++        "anyOf": [
++          {
++            "type": "string"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Plan Hash"
++      },
++      "query": {
++        "anyOf": [
++          {
++            "type": "string"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Query"
++      },
++      "recipe": {
++        "anyOf": [
++          {
++            "$ref": "#/$defs/RecipeCardResponse"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null
++      },
++      "source": {
++        "anyOf": [
++          {
++            "type": "string"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Source"
++      },
++      "status": {
++        "enum": [
++          "PLAN_INTERPRETED",
++          "CLARIFICATION_REQUIRED",
++          "CAPABILITY_GAP",
++          "MODEL_UNAVAILABLE"
++        ],
++        "title": "Status",
++        "type": "string"
++      }
++    },
++    "required": [
++      "ok",
++      "status"
++    ],
++    "title": "InterpretResponse",
++    "type": "object"
++  },
++  "PlanResponse": {
++    "$defs": {
++      "RecipeCardResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "allowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Allowed Claims",
++            "type": "array"
++          },
++          "description": {
++            "title": "Description",
++            "type": "string"
++          },
++          "disallowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Disallowed Claims",
++            "type": "array"
++          },
++          "display_name": {
++            "title": "Display Name",
++            "type": "string"
++          },
++          "limitations": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Limitations",
++            "type": "array"
++          },
++          "output_classifications": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Output Classifications",
++            "type": "array"
++          },
++          "recipe_id": {
++            "title": "Recipe Id",
++            "type": "string"
++          },
++          "recipe_version": {
++            "title": "Recipe Version",
++            "type": "string"
++          },
++          "state": {
++            "enum": [
++              "APPROVED",
++              "EXPERIMENTAL",
++              "USER_SAVED",
++              "DEPRECATED"
++            ],
++            "title": "State",
++            "type": "string"
++          }
++        },
++        "required": [
++          "recipe_id",
++          "recipe_version",
++          "state",
++          "display_name",
++          "description",
++          "allowed_claims",
++          "disallowed_claims",
++          "limitations",
++          "output_classifications"
++        ],
++        "title": "RecipeCardResponse",
++        "type": "object"
++      }
++    },
++    "additionalProperties": false,
++    "properties": {
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "plan_document": {
++        "additionalProperties": true,
++        "title": "Plan Document",
++        "type": "object"
++      },
++      "plan_hash": {
++        "title": "Plan Hash",
++        "type": "string"
++      },
++      "recipe": {
++        "$ref": "#/$defs/RecipeCardResponse"
++      }
++    },
++    "required": [
++      "ok",
++      "recipe",
++      "plan_document",
++      "plan_hash"
++    ],
++    "title": "PlanResponse",
++    "type": "object"
++  },
++  "SubmitValidateResponse": {
++    "additionalProperties": false,
++    "properties": {
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "submit": {
++        "additionalProperties": true,
++        "title": "Submit",
++        "type": "object"
++      },
++      "validation": {
++        "additionalProperties": true,
++        "title": "Validation",
++        "type": "object"
++      }
++    },
++    "required": [
++      "ok",
++      "submit",
++      "validation"
++    ],
++    "title": "SubmitValidateResponseEnvelope",
++    "type": "object"
++  }
++}
+diff --git a/apps/workbench-alpha/src/generated/api-types.ts b/apps/workbench-alpha/src/generated/api-types.ts
+new file mode 100644
+index 0000000..ab0d8c1
+--- /dev/null
++++ b/apps/workbench-alpha/src/generated/api-types.ts
+@@ -0,0 +1,1160 @@
++/* Generated by scripts/workbench_alpha/generate_contracts.py. */
++import type { FromSchema } from "json-schema-to-ts";
++
++export const apiSchemas = {
++  "BootstrapResponse": {
++    "$defs": {
++      "CapabilitySummaryResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "execute_tool_description": {
++            "additionalProperties": true,
++            "title": "Execute Tool Description",
++            "type": "object"
++          },
++          "operator_count": {
++            "title": "Operator Count",
++            "type": "integer"
++          },
++          "primitive_count": {
++            "title": "Primitive Count",
++            "type": "integer"
++          },
++          "relation_count": {
++            "title": "Relation Count",
++            "type": "integer"
++          },
++          "tools": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Tools",
++            "type": "array"
++          }
++        },
++        "required": [
++          "primitive_count",
++          "relation_count",
++          "operator_count",
++          "tools",
++          "execute_tool_description"
++        ],
++        "title": "CapabilitySummaryResponse",
++        "type": "object"
++      },
++      "ModelStatusResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "available": {
++            "title": "Available",
++            "type": "boolean"
++          },
++          "message": {
++            "title": "Message",
++            "type": "string"
++          },
++          "status": {
++            "title": "Status",
++            "type": "string"
++          }
++        },
++        "required": [
++          "available",
++          "status",
++          "message"
++        ],
++        "title": "ModelStatusResponse",
++        "type": "object"
++      },
++      "PresetResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "label": {
++            "title": "Label",
++            "type": "string"
++          },
++          "plan_hash": {
++            "title": "Plan Hash",
++            "type": "string"
++          },
++          "preset_id": {
++            "enum": [
++              "approved_block_shift",
++              "experimental_corridor"
++            ],
++            "title": "Preset Id",
++            "type": "string"
++          },
++          "recipe": {
++            "$ref": "#/$defs/RecipeCardResponse"
++          }
++        },
++        "required": [
++          "preset_id",
++          "label",
++          "recipe",
++          "plan_hash"
++        ],
++        "title": "PresetResponse",
++        "type": "object"
++      },
++      "RecipeCardResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "allowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Allowed Claims",
++            "type": "array"
++          },
++          "description": {
++            "title": "Description",
++            "type": "string"
++          },
++          "disallowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Disallowed Claims",
++            "type": "array"
++          },
++          "display_name": {
++            "title": "Display Name",
++            "type": "string"
++          },
++          "limitations": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Limitations",
++            "type": "array"
++          },
++          "output_classifications": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Output Classifications",
++            "type": "array"
++          },
++          "recipe_id": {
++            "title": "Recipe Id",
++            "type": "string"
++          },
++          "recipe_version": {
++            "title": "Recipe Version",
++            "type": "string"
++          },
++          "state": {
++            "enum": [
++              "APPROVED",
++              "EXPERIMENTAL",
++              "USER_SAVED",
++              "DEPRECATED"
++            ],
++            "title": "State",
++            "type": "string"
++          }
++        },
++        "required": [
++          "recipe_id",
++          "recipe_version",
++          "state",
++          "display_name",
++          "description",
++          "allowed_claims",
++          "disallowed_claims",
++          "limitations",
++          "output_classifications"
++        ],
++        "title": "RecipeCardResponse",
++        "type": "object"
++      },
++      "ServiceStatusResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "mcp_adapter": {
++            "title": "Mcp Adapter",
++            "type": "boolean"
++          },
++          "name": {
++            "title": "Name",
++            "type": "string"
++          }
++        },
++        "required": [
++          "name",
++          "mcp_adapter"
++        ],
++        "title": "ServiceStatusResponse",
++        "type": "object"
++      }
++    },
++    "additionalProperties": false,
++    "properties": {
++      "capabilities": {
++        "$ref": "#/$defs/CapabilitySummaryResponse"
++      },
++      "model": {
++        "$ref": "#/$defs/ModelStatusResponse"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "presets": {
++        "items": {
++          "$ref": "#/$defs/PresetResponse"
++        },
++        "title": "Presets",
++        "type": "array"
++      },
++      "service": {
++        "$ref": "#/$defs/ServiceStatusResponse"
++      }
++    },
++    "required": [
++      "ok",
++      "service",
++      "model",
++      "presets",
++      "capabilities"
++    ],
++    "title": "BootstrapResponse",
++    "type": "object"
++  },
++  "ConfirmationResponse": {
++    "additionalProperties": false,
++    "properties": {
++      "confirmation": {
++        "additionalProperties": true,
++        "title": "Confirmation",
++        "type": "object"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      }
++    },
++    "required": [
++      "ok",
++      "confirmation"
++    ],
++    "title": "ConfirmationResponseEnvelope",
++    "type": "object"
++  },
++  "ErrorResponse": {
++    "additionalProperties": false,
++    "properties": {
++      "details": {
++        "additionalProperties": true,
++        "title": "Details",
++        "type": "object"
++      },
++      "error_code": {
++        "title": "Error Code",
++        "type": "string"
++      },
++      "message": {
++        "title": "Message",
++        "type": "string"
++      },
++      "ok": {
++        "const": false,
++        "title": "Ok",
++        "type": "boolean"
++      }
++    },
++    "required": [
++      "ok",
++      "error_code",
++      "message"
++    ],
++    "title": "ErrorResponse",
++    "type": "object"
++  },
++  "ExecutionResponse": {
++    "additionalProperties": false,
++    "properties": {
++      "execution": {
++        "additionalProperties": true,
++        "title": "Execution",
++        "type": "object"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      }
++    },
++    "required": [
++      "ok",
++      "execution"
++    ],
++    "title": "ExecutionResponseEnvelope",
++    "type": "object"
++  },
++  "HealthResponse": {
++    "additionalProperties": false,
++    "properties": {
++      "mcp_adapter": {
++        "title": "Mcp Adapter",
++        "type": "boolean"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "service": {
++        "title": "Service",
++        "type": "string"
++      }
++    },
++    "required": [
++      "ok",
++      "service",
++      "mcp_adapter"
++    ],
++    "title": "HealthResponse",
++    "type": "object"
++  },
++  "InspectResultResponse": {
++    "$defs": {
++      "PitchResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "coordinate_contract": {
++            "title": "Coordinate Contract",
++            "type": "string"
++          },
++          "length_m": {
++            "title": "Length M",
++            "type": "number"
++          },
++          "width_m": {
++            "title": "Width M",
++            "type": "number"
++          }
++        },
++        "required": [
++          "length_m",
++          "width_m",
++          "coordinate_contract"
++        ],
++        "title": "PitchResponse",
++        "type": "object"
++      },
++      "ReplayEntityResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "entity_id": {
++            "title": "Entity Id",
++            "type": "string"
++          },
++          "entity_type": {
++            "title": "Entity Type",
++            "type": "string"
++          },
++          "team_id": {
++            "title": "Team Id",
++            "type": "string"
++          },
++          "team_role": {
++            "title": "Team Role",
++            "type": "string"
++          },
++          "x_m": {
++            "title": "X M",
++            "type": "number"
++          },
++          "y_m": {
++            "title": "Y M",
++            "type": "number"
++          }
++        },
++        "required": [
++          "team_id",
++          "team_role",
++          "entity_id",
++          "entity_type",
++          "x_m",
++          "y_m"
++        ],
++        "title": "ReplayEntityResponse",
++        "type": "object"
++      },
++      "ReplayFrameResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "entities": {
++            "items": {
++              "$ref": "#/$defs/ReplayEntityResponse"
++            },
++            "title": "Entities",
++            "type": "array"
++          },
++          "frame_id": {
++            "title": "Frame Id",
++            "type": "integer"
++          },
++          "timestamp_utc": {
++            "anyOf": [
++              {
++                "type": "string"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null,
++            "title": "Timestamp Utc"
++          }
++        },
++        "required": [
++          "frame_id",
++          "entities"
++        ],
++        "title": "ReplayFrameResponse",
++        "type": "object"
++      },
++      "ReplayPayloadResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "anchor_frame_id": {
++            "title": "Anchor Frame Id",
++            "type": "integer"
++          },
++          "canonical_sources": {
++            "additionalProperties": {
++              "type": "string"
++            },
++            "title": "Canonical Sources",
++            "type": "object"
++          },
++          "end_frame_id": {
++            "title": "End Frame Id",
++            "type": "integer"
++          },
++          "frame_rate_hz": {
++            "title": "Frame Rate Hz",
++            "type": "number"
++          },
++          "frames": {
++            "items": {
++              "$ref": "#/$defs/ReplayFrameResponse"
++            },
++            "title": "Frames",
++            "type": "array"
++          },
++          "generated_at": {
++            "title": "Generated At",
++            "type": "string"
++          },
++          "match_id": {
++            "title": "Match Id",
++            "type": "string"
++          },
++          "period": {
++            "title": "Period",
++            "type": "string"
++          },
++          "pitch": {
++            "$ref": "#/$defs/PitchResponse"
++          },
++          "plan_path": {
++            "title": "Plan Path",
++            "type": "string"
++          },
++          "replay_window_id": {
++            "title": "Replay Window Id",
++            "type": "string"
++          },
++          "schema_version": {
++            "title": "Schema Version",
++            "type": "string"
++          },
++          "source_id": {
++            "title": "Source Id",
++            "type": "string"
++          },
++          "source_kind": {
++            "enum": [
++              "result",
++              "target"
++            ],
++            "title": "Source Kind",
++            "type": "string"
++          },
++          "start_frame_id": {
++            "title": "Start Frame Id",
++            "type": "integer"
++          }
++        },
++        "required": [
++          "schema_version",
++          "replay_window_id",
++          "source_kind",
++          "source_id",
++          "match_id",
++          "period",
++          "frame_rate_hz",
++          "start_frame_id",
++          "end_frame_id",
++          "anchor_frame_id",
++          "generated_at",
++          "canonical_sources",
++          "plan_path",
++          "pitch",
++          "frames"
++        ],
++        "title": "ReplayPayloadResponse",
++        "type": "object"
++      }
++    },
++    "additionalProperties": false,
++    "properties": {
++      "inspection": {
++        "additionalProperties": true,
++        "title": "Inspection",
++        "type": "object"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "replay": {
++        "$ref": "#/$defs/ReplayPayloadResponse"
++      },
++      "replay_window": {
++        "additionalProperties": true,
++        "title": "Replay Window",
++        "type": "object"
++      }
++    },
++    "required": [
++      "ok",
++      "inspection",
++      "replay_window",
++      "replay"
++    ],
++    "title": "InspectResultResponseEnvelope",
++    "type": "object"
++  },
++  "InspectTimestampResponse": {
++    "$defs": {
++      "PitchResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "coordinate_contract": {
++            "title": "Coordinate Contract",
++            "type": "string"
++          },
++          "length_m": {
++            "title": "Length M",
++            "type": "number"
++          },
++          "width_m": {
++            "title": "Width M",
++            "type": "number"
++          }
++        },
++        "required": [
++          "length_m",
++          "width_m",
++          "coordinate_contract"
++        ],
++        "title": "PitchResponse",
++        "type": "object"
++      },
++      "ReplayEntityResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "entity_id": {
++            "title": "Entity Id",
++            "type": "string"
++          },
++          "entity_type": {
++            "title": "Entity Type",
++            "type": "string"
++          },
++          "team_id": {
++            "title": "Team Id",
++            "type": "string"
++          },
++          "team_role": {
++            "title": "Team Role",
++            "type": "string"
++          },
++          "x_m": {
++            "title": "X M",
++            "type": "number"
++          },
++          "y_m": {
++            "title": "Y M",
++            "type": "number"
++          }
++        },
++        "required": [
++          "team_id",
++          "team_role",
++          "entity_id",
++          "entity_type",
++          "x_m",
++          "y_m"
++        ],
++        "title": "ReplayEntityResponse",
++        "type": "object"
++      },
++      "ReplayFrameResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "entities": {
++            "items": {
++              "$ref": "#/$defs/ReplayEntityResponse"
++            },
++            "title": "Entities",
++            "type": "array"
++          },
++          "frame_id": {
++            "title": "Frame Id",
++            "type": "integer"
++          },
++          "timestamp_utc": {
++            "anyOf": [
++              {
++                "type": "string"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "default": null,
++            "title": "Timestamp Utc"
++          }
++        },
++        "required": [
++          "frame_id",
++          "entities"
++        ],
++        "title": "ReplayFrameResponse",
++        "type": "object"
++      },
++      "ReplayPayloadResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "anchor_frame_id": {
++            "title": "Anchor Frame Id",
++            "type": "integer"
++          },
++          "canonical_sources": {
++            "additionalProperties": {
++              "type": "string"
++            },
++            "title": "Canonical Sources",
++            "type": "object"
++          },
++          "end_frame_id": {
++            "title": "End Frame Id",
++            "type": "integer"
++          },
++          "frame_rate_hz": {
++            "title": "Frame Rate Hz",
++            "type": "number"
++          },
++          "frames": {
++            "items": {
++              "$ref": "#/$defs/ReplayFrameResponse"
++            },
++            "title": "Frames",
++            "type": "array"
++          },
++          "generated_at": {
++            "title": "Generated At",
++            "type": "string"
++          },
++          "match_id": {
++            "title": "Match Id",
++            "type": "string"
++          },
++          "period": {
++            "title": "Period",
++            "type": "string"
++          },
++          "pitch": {
++            "$ref": "#/$defs/PitchResponse"
++          },
++          "plan_path": {
++            "title": "Plan Path",
++            "type": "string"
++          },
++          "replay_window_id": {
++            "title": "Replay Window Id",
++            "type": "string"
++          },
++          "schema_version": {
++            "title": "Schema Version",
++            "type": "string"
++          },
++          "source_id": {
++            "title": "Source Id",
++            "type": "string"
++          },
++          "source_kind": {
++            "enum": [
++              "result",
++              "target"
++            ],
++            "title": "Source Kind",
++            "type": "string"
++          },
++          "start_frame_id": {
++            "title": "Start Frame Id",
++            "type": "integer"
++          }
++        },
++        "required": [
++          "schema_version",
++          "replay_window_id",
++          "source_kind",
++          "source_id",
++          "match_id",
++          "period",
++          "frame_rate_hz",
++          "start_frame_id",
++          "end_frame_id",
++          "anchor_frame_id",
++          "generated_at",
++          "canonical_sources",
++          "plan_path",
++          "pitch",
++          "frames"
++        ],
++        "title": "ReplayPayloadResponse",
++        "type": "object"
++      }
++    },
++    "additionalProperties": false,
++    "properties": {
++      "inspection": {
++        "additionalProperties": true,
++        "title": "Inspection",
++        "type": "object"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "replay": {
++        "$ref": "#/$defs/ReplayPayloadResponse"
++      },
++      "replay_window": {
++        "additionalProperties": true,
++        "title": "Replay Window",
++        "type": "object"
++      }
++    },
++    "required": [
++      "ok",
++      "inspection",
++      "replay_window",
++      "replay"
++    ],
++    "title": "InspectTimestampResponseEnvelope",
++    "type": "object"
++  },
++  "InterpretResponse": {
++    "$defs": {
++      "CapabilityGapResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "concept": {
++            "title": "Concept",
++            "type": "string"
++          },
++          "reason": {
++            "title": "Reason",
++            "type": "string"
++          }
++        },
++        "required": [
++          "concept",
++          "reason"
++        ],
++        "title": "CapabilityGapResponse",
++        "type": "object"
++      },
++      "RecipeCardResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "allowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Allowed Claims",
++            "type": "array"
++          },
++          "description": {
++            "title": "Description",
++            "type": "string"
++          },
++          "disallowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Disallowed Claims",
++            "type": "array"
++          },
++          "display_name": {
++            "title": "Display Name",
++            "type": "string"
++          },
++          "limitations": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Limitations",
++            "type": "array"
++          },
++          "output_classifications": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Output Classifications",
++            "type": "array"
++          },
++          "recipe_id": {
++            "title": "Recipe Id",
++            "type": "string"
++          },
++          "recipe_version": {
++            "title": "Recipe Version",
++            "type": "string"
++          },
++          "state": {
++            "enum": [
++              "APPROVED",
++              "EXPERIMENTAL",
++              "USER_SAVED",
++              "DEPRECATED"
++            ],
++            "title": "State",
++            "type": "string"
++          }
++        },
++        "required": [
++          "recipe_id",
++          "recipe_version",
++          "state",
++          "display_name",
++          "description",
++          "allowed_claims",
++          "disallowed_claims",
++          "limitations",
++          "output_classifications"
++        ],
++        "title": "RecipeCardResponse",
++        "type": "object"
++      }
++    },
++    "additionalProperties": false,
++    "properties": {
++      "capability_gaps": {
++        "anyOf": [
++          {
++            "items": {
++              "$ref": "#/$defs/CapabilityGapResponse"
++            },
++            "type": "array"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Capability Gaps"
++      },
++      "clarification_codes": {
++        "anyOf": [
++          {
++            "items": {
++              "type": "string"
++            },
++            "type": "array"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Clarification Codes"
++      },
++      "clarification_questions": {
++        "anyOf": [
++          {
++            "items": {
++              "type": "string"
++            },
++            "type": "array"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Clarification Questions"
++      },
++      "manual_available": {
++        "anyOf": [
++          {
++            "type": "boolean"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Manual Available"
++      },
++      "message": {
++        "anyOf": [
++          {
++            "type": "string"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Message"
++      },
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "plan_document": {
++        "anyOf": [
++          {
++            "additionalProperties": true,
++            "type": "object"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Plan Document"
++      },
++      "plan_hash": {
++        "anyOf": [
++          {
++            "type": "string"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Plan Hash"
++      },
++      "query": {
++        "anyOf": [
++          {
++            "type": "string"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Query"
++      },
++      "recipe": {
++        "anyOf": [
++          {
++            "$ref": "#/$defs/RecipeCardResponse"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null
++      },
++      "source": {
++        "anyOf": [
++          {
++            "type": "string"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "default": null,
++        "title": "Source"
++      },
++      "status": {
++        "enum": [
++          "PLAN_INTERPRETED",
++          "CLARIFICATION_REQUIRED",
++          "CAPABILITY_GAP",
++          "MODEL_UNAVAILABLE"
++        ],
++        "title": "Status",
++        "type": "string"
++      }
++    },
++    "required": [
++      "ok",
++      "status"
++    ],
++    "title": "InterpretResponse",
++    "type": "object"
++  },
++  "PlanResponse": {
++    "$defs": {
++      "RecipeCardResponse": {
++        "additionalProperties": false,
++        "properties": {
++          "allowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Allowed Claims",
++            "type": "array"
++          },
++          "description": {
++            "title": "Description",
++            "type": "string"
++          },
++          "disallowed_claims": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Disallowed Claims",
++            "type": "array"
++          },
++          "display_name": {
++            "title": "Display Name",
++            "type": "string"
++          },
++          "limitations": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Limitations",
++            "type": "array"
++          },
++          "output_classifications": {
++            "items": {
++              "type": "string"
++            },
++            "title": "Output Classifications",
++            "type": "array"
++          },
++          "recipe_id": {
++            "title": "Recipe Id",
++            "type": "string"
++          },
++          "recipe_version": {
++            "title": "Recipe Version",
++            "type": "string"
++          },
++          "state": {
++            "enum": [
++              "APPROVED",
++              "EXPERIMENTAL",
++              "USER_SAVED",
++              "DEPRECATED"
++            ],
++            "title": "State",
++            "type": "string"
++          }
++        },
++        "required": [
++          "recipe_id",
++          "recipe_version",
++          "state",
++          "display_name",
++          "description",
++          "allowed_claims",
++          "disallowed_claims",
++          "limitations",
++          "output_classifications"
++        ],
++        "title": "RecipeCardResponse",
++        "type": "object"
++      }
++    },
++    "additionalProperties": false,
++    "properties": {
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "plan_document": {
++        "additionalProperties": true,
++        "title": "Plan Document",
++        "type": "object"
++      },
++      "plan_hash": {
++        "title": "Plan Hash",
++        "type": "string"
++      },
++      "recipe": {
++        "$ref": "#/$defs/RecipeCardResponse"
++      }
++    },
++    "required": [
++      "ok",
++      "recipe",
++      "plan_document",
++      "plan_hash"
++    ],
++    "title": "PlanResponse",
++    "type": "object"
++  },
++  "SubmitValidateResponse": {
++    "additionalProperties": false,
++    "properties": {
++      "ok": {
++        "const": true,
++        "title": "Ok",
++        "type": "boolean"
++      },
++      "submit": {
++        "additionalProperties": true,
++        "title": "Submit",
++        "type": "object"
++      },
++      "validation": {
++        "additionalProperties": true,
++        "title": "Validation",
++        "type": "object"
++      }
++    },
++    "required": [
++      "ok",
++      "submit",
++      "validation"
++    ],
++    "title": "SubmitValidateResponseEnvelope",
++    "type": "object"
++  }
++} as const;
++
++export type BootstrapResponse = FromSchema<typeof apiSchemas["BootstrapResponse"]>;
++export type ConfirmationResponse = FromSchema<typeof apiSchemas["ConfirmationResponse"]>;
++export type ErrorResponse = FromSchema<typeof apiSchemas["ErrorResponse"]>;
++export type ExecutionResponse = FromSchema<typeof apiSchemas["ExecutionResponse"]>;
++export type HealthResponse = FromSchema<typeof apiSchemas["HealthResponse"]>;
++export type InspectResultResponse = FromSchema<typeof apiSchemas["InspectResultResponse"]>;
++export type InspectTimestampResponse = FromSchema<typeof apiSchemas["InspectTimestampResponse"]>;
++export type InterpretResponse = FromSchema<typeof apiSchemas["InterpretResponse"]>;
++export type PlanResponse = FromSchema<typeof apiSchemas["PlanResponse"]>;
++export type SubmitValidateResponse = FromSchema<typeof apiSchemas["SubmitValidateResponse"]>;
+diff --git a/apps/workbench-alpha/src/pitchGeometry.ts b/apps/workbench-alpha/src/pitchGeometry.ts
+new file mode 100644
+index 0000000..6caeb8d
+--- /dev/null
++++ b/apps/workbench-alpha/src/pitchGeometry.ts
+@@ -0,0 +1,50 @@
++export type PitchDimensions = {
++  length_m: number;
++  width_m: number;
++};
++
++export type PitchLayout = {
++  canvasWidth: number;
++  canvasHeight: number;
++  marginX: number;
++  marginY: number;
++  fieldWidth: number;
++  fieldHeight: number;
++  scalePxPerM: number;
++};
++
++const HORIZONTAL_MARGIN_RATIO = 0.035;
++const VERTICAL_MARGIN_RATIO = 0.055;
++const FALLBACK_WIDTH = 960;
++const MIN_CANVAS_WIDTH = 320;
++
++export function layoutPitch(pitch: PitchDimensions, requestedWidth: number | null | undefined): PitchLayout {
++  const canvasWidth = Math.max(Math.round(requestedWidth || FALLBACK_WIDTH), MIN_CANVAS_WIDTH);
++  const marginX = canvasWidth * HORIZONTAL_MARGIN_RATIO;
++  const fieldWidth = canvasWidth - marginX * 2;
++  const scalePxPerM = fieldWidth / pitch.length_m;
++  const fieldHeight = pitch.width_m * scalePxPerM;
++  const canvasHeight = Math.round(fieldHeight / (1 - VERTICAL_MARGIN_RATIO * 2));
++  const marginY = (canvasHeight - fieldHeight) / 2;
++  return {
++    canvasWidth,
++    canvasHeight,
++    marginX,
++    marginY,
++    fieldWidth,
++    fieldHeight,
++    scalePxPerM
++  };
++}
++
++export function pitchPointToPixel(
++  x_m: number,
++  y_m: number,
++  pitch: PitchDimensions,
++  layout: PitchLayout
++) {
++  return {
++    x: layout.marginX + ((x_m + pitch.length_m / 2) / pitch.length_m) * layout.fieldWidth,
++    y: layout.marginY + ((pitch.width_m / 2 - y_m) / pitch.width_m) * layout.fieldHeight
++  };
++}
+diff --git a/apps/workbench-alpha/src/playback.ts b/apps/workbench-alpha/src/playback.ts
+new file mode 100644
+index 0000000..109a96c
+--- /dev/null
++++ b/apps/workbench-alpha/src/playback.ts
+@@ -0,0 +1,31 @@
++export type PlaybackStep = {
++  frameIndex: number;
++  carriedMs: number;
++};
++
++export function sourceFrameDurationMs(frameRateHz: number): number {
++  return 1000 / Math.max(frameRateHz, 1);
++}
++
++export function advancePlaybackFrame(input: {
++  currentFrameIndex: number;
++  frameCount: number;
++  frameRateHz: number;
++  playbackSpeed: number;
++  elapsedMs: number;
++  carriedMs: number;
++}): PlaybackStep {
++  if (input.frameCount <= 0) {
++    return { frameIndex: 0, carriedMs: 0 };
++  }
++  const sourceMs = sourceFrameDurationMs(input.frameRateHz);
++  const accumulated = input.carriedMs + Math.max(0, input.elapsedMs) * input.playbackSpeed;
++  const frames = Math.floor(accumulated / sourceMs);
++  if (frames <= 0) {
++    return { frameIndex: input.currentFrameIndex, carriedMs: accumulated };
++  }
++  return {
++    frameIndex: (input.currentFrameIndex + frames) % input.frameCount,
++    carriedMs: accumulated - frames * sourceMs
++  };
++}
+diff --git a/apps/workbench-alpha/src/styles.css b/apps/workbench-alpha/src/styles.css
+index 4955623..e21c2cf 100644
+--- a/apps/workbench-alpha/src/styles.css
++++ b/apps/workbench-alpha/src/styles.css
+@@ -354,17 +354,31 @@ button:disabled {
+ 
+ .replayControls {
+   display: grid;
+-  grid-template-columns: 74px 74px 74px minmax(160px, 1fr);
++  grid-template-columns: 74px 74px minmax(132px, auto) 74px minmax(160px, 1fr);
+   gap: 8px;
+   align-items: center;
+   margin-top: 10px;
+ }
+ 
+-.replayControls button {
++.replayControls button,
++.speedControls button {
+   height: 32px;
+   border-radius: 7px;
+ }
+ 
++.speedControls {
++  display: grid;
++  grid-template-columns: repeat(3, 44px);
++  gap: 5px;
++}
++
++.speedControls button.active {
++  border-color: var(--accent-dark);
++  background: #edf4ee;
++  color: var(--accent-dark);
++  font-weight: 750;
++}
++
+ .replayControls input {
+   width: 100%;
+ }
+@@ -494,7 +508,12 @@ button:disabled {
+   }
+ 
+   .replayControls {
+-    grid-template-columns: repeat(3, 1fr);
++    grid-template-columns: repeat(4, 1fr);
++  }
++
++  .speedControls {
++    grid-column: span 2;
++    grid-template-columns: repeat(3, minmax(38px, 1fr));
+   }
+ 
+   .replayControls input {
+diff --git a/apps/workbench-alpha/src/types.ts b/apps/workbench-alpha/src/types.ts
+index e22ffe8..08a4bd1 100644
+--- a/apps/workbench-alpha/src/types.ts
++++ b/apps/workbench-alpha/src/types.ts
+@@ -32,7 +32,6 @@ export type BootstrapResponse = {
+   service: {
+     name: string;
+     mcp_adapter: boolean;
+-    output_root: string;
+   };
+   model: {
+     available: boolean;
+diff --git a/apps/workbench-alpha/tests/geometry.test.ts b/apps/workbench-alpha/tests/geometry.test.ts
+new file mode 100644
+index 0000000..8d9a1bb
+--- /dev/null
++++ b/apps/workbench-alpha/tests/geometry.test.ts
+@@ -0,0 +1,44 @@
++import assert from "node:assert/strict";
++import { layoutPitch, pitchPointToPixel } from "../src/pitchGeometry";
++
++const pitch = { length_m: 105, width_m: 68 };
++const layout = layoutPitch(pitch, 1000);
++const epsilon = 1e-6;
++
++function close(actual: number, expected: number, label: string) {
++  assert.ok(Math.abs(actual - expected) < epsilon, `${label}: expected ${expected}, got ${actual}`);
++}
++
++const center = pitchPointToPixel(0, 0, pitch, layout);
++close(center.x, layout.canvasWidth / 2, "center x");
++close(center.y, layout.canvasHeight / 2, "center y");
++
++const topLeft = pitchPointToPixel(-52.5, 34, pitch, layout);
++close(topLeft.x, layout.marginX, "top left x");
++close(topLeft.y, layout.marginY, "top left y");
++
++const topRight = pitchPointToPixel(52.5, 34, pitch, layout);
++close(topRight.x, layout.marginX + layout.fieldWidth, "top right x");
++close(topRight.y, layout.marginY, "top right y");
++
++const bottomLeft = pitchPointToPixel(-52.5, -34, pitch, layout);
++close(bottomLeft.x, layout.marginX, "bottom left x");
++close(bottomLeft.y, layout.marginY + layout.fieldHeight, "bottom left y");
++
++const bottomRight = pitchPointToPixel(52.5, -34, pitch, layout);
++close(bottomRight.x, layout.marginX + layout.fieldWidth, "bottom right x");
++close(bottomRight.y, layout.marginY + layout.fieldHeight, "bottom right y");
++
++close(pitchPointToPixel(0, 34, pitch, layout).y, layout.marginY, "top touchline");
++close(pitchPointToPixel(0, -34, pitch, layout).y, layout.marginY + layout.fieldHeight, "bottom touchline");
++close(pitchPointToPixel(0, 0, pitch, layout).x, layout.canvasWidth / 2, "halfway line");
++
++const tenMetersX = Math.abs(
++  pitchPointToPixel(10, 0, pitch, layout).x - pitchPointToPixel(0, 0, pitch, layout).x
++);
++const tenMetersY = Math.abs(
++  pitchPointToPixel(0, 10, pitch, layout).y - pitchPointToPixel(0, 0, pitch, layout).y
++);
++close(tenMetersX, tenMetersY, "equal metre distance scale");
++
++console.log("pitch geometry tests passed");
+diff --git a/apps/workbench-alpha/tests/playback.test.ts b/apps/workbench-alpha/tests/playback.test.ts
+new file mode 100644
+index 0000000..1913b7d
+--- /dev/null
++++ b/apps/workbench-alpha/tests/playback.test.ts
+@@ -0,0 +1,38 @@
++import assert from "node:assert/strict";
++import { advancePlaybackFrame, sourceFrameDurationMs } from "../src/playback";
++
++assert.equal(sourceFrameDurationMs(25), 40);
++
++const oneSecond = advancePlaybackFrame({
++  currentFrameIndex: 0,
++  frameCount: 101,
++  frameRateHz: 25,
++  playbackSpeed: 1,
++  elapsedMs: 1000,
++  carriedMs: 0
++});
++assert.equal(oneSecond.frameIndex, 25, "1x playback advances 25 frames in one real second at 25 Hz");
++assert.equal(oneSecond.carriedMs, 0);
++
++const halfSpeed = advancePlaybackFrame({
++  currentFrameIndex: 0,
++  frameCount: 101,
++  frameRateHz: 25,
++  playbackSpeed: 0.5,
++  elapsedMs: 1000,
++  carriedMs: 0
++});
++assert.equal(halfSpeed.frameIndex, 12, "0.5x playback advances about half the source frames");
++assert.equal(halfSpeed.carriedMs, 20);
++
++const doubleSpeed = advancePlaybackFrame({
++  currentFrameIndex: 95,
++  frameCount: 101,
++  frameRateHz: 25,
++  playbackSpeed: 2,
++  elapsedMs: 1000,
++  carriedMs: 0
++});
++assert.equal(doubleSpeed.frameIndex, 44, "2x playback wraps through the frame window");
++
++console.log("playback tests passed");
+diff --git a/apps/workbench-alpha/tests/workbench-alpha.spec.ts b/apps/workbench-alpha/tests/workbench-alpha.spec.ts
+index b55614c..b4d232e 100644
+--- a/apps/workbench-alpha/tests/workbench-alpha.spec.ts
++++ b/apps/workbench-alpha/tests/workbench-alpha.spec.ts
+@@ -143,6 +143,20 @@ async function boot(page: Page, consoleErrors: string[]) {
+   await expect(page.getByTestId("execute-button")).toBeDisabled();
+ }
+ 
++async function waitForInspectionResponse(page: Page, resultId: string) {
++  return page.waitForResponse(async (response) => {
++    if (new URL(response.url()).pathname !== "/api/inspect-result") return false;
++    try {
++      const payload = (await response.json()) as Record<string, unknown>;
++      const inspection = payload.inspection as Record<string, unknown> | undefined;
++      const result = inspection?.result as Record<string, unknown> | undefined;
++      return result?.result_id === resultId;
++    } catch {
++      return false;
++    }
++  });
++}
++
+ async function runRealQueryJourney(
+   page: Page,
+   label: "approved" | "experimental",
+@@ -276,12 +290,42 @@ async function runRealQueryJourney(
+     await expect(page.getByTestId("replay-window-summary")).toContainText(String(alternateResult.result_id));
+   }
+ 
++  const rapidTargets = results.slice(2, Math.min(5, results.length));
++  const finalRapidTarget = rapidTargets.at(-1);
++  if (finalRapidTarget) {
++    const rapidStart = Date.now();
++    const finalInspectPromise = waitForInspectionResponse(page, String(finalRapidTarget.result_id));
++    for (const result of rapidTargets) {
++      await page.locator(`[data-testid="result-item"][data-result-id="${result.result_id}"]`).click();
++    }
++    const finalInspectResponse = await finalInspectPromise;
++    selectedInspection = (await finalInspectResponse.json()) as Record<string, unknown>;
++    trace.push({
++      label: `${label}.inspect_rapid_final_result`,
++      path: "/api/inspect-result",
++      status: finalInspectResponse.status(),
++      duration_ms: Date.now() - rapidStart,
++      summary: summarizePayload(selectedInspection)
++    });
++    await expect(page.getByTestId("replay-window-summary")).toContainText(String(finalRapidTarget.result_id));
++    await expect(page.locator(`[data-testid="result-item"][data-result-id="${finalRapidTarget.result_id}"]`)).toHaveClass(/active/);
++    await expect(page.getByTestId("inspection-loading")).toHaveCount(0);
++    await expect(page.getByTestId("evidence-alias").first().locator("code")).not.toHaveText("");
++    await expect(page.getByTestId("predicate-trace").first()).toBeVisible();
++    await page.waitForTimeout(250);
++    await expect(page.getByTestId("replay-window-summary")).toContainText(String(finalRapidTarget.result_id));
++  }
++
+   const selectedReplay = selectedInspection.replay as Record<string, unknown>;
+   const proof = {
+     label,
+     sourceCommit: git(["rev-parse", "HEAD"]),
++    workbenchCommit: git(["rev-parse", "HEAD"]),
++    hostRuntimeCommit: git(["rev-parse", "HEAD"]),
+     hostServiceCommit: git(["rev-parse", "HEAD"]),
++    cleanGitStatus: git(["status", "--short", "--untracked-files=all"]),
+     trackedDirtyStatus: git(["status", "--short", "--untracked-files=no"]),
++    tacticalKnowledgePackHash: hashFile(join(repoRoot, "generated/tactical-knowledge-pack.json")),
+     appSourceHashes: hashDirectory(join(appRoot, "src")),
+     browserBuildHashes: hashDirectory(join(appRoot, "dist")),
+     apiTracePath: relative(repoRoot, join(proofRoot, "api-traces", `${label}.json`)),
+@@ -408,6 +452,12 @@ test("clarification, capability-gap, and model-unavailable states remain explici
+ });
+ 
+ test("host authority is enforced through public API routes", async ({ request }) => {
++  const bootstrapResponse = await request.get("/api/bootstrap");
++  expect(bootstrapResponse.ok()).toBe(true);
++  const bootstrapPayload = (await bootstrapResponse.json()) as Record<string, unknown>;
++  expect(String(JSON.stringify(bootstrapPayload))).not.toContain("output_root");
++  expect(String(JSON.stringify(bootstrapPayload))).not.toContain("/Users/");
++
+   const planResponse = await request.get("/api/plan?recipe_id=ball_side_block_shift_v1");
+   expect(planResponse.ok()).toBe(true);
+   const planPayload = (await planResponse.json()) as Record<string, unknown>;
+@@ -427,7 +477,10 @@ test("host authority is enforced through public API routes", async ({ request })
+     }
+   });
+   expect(unconfirmedExecution.status()).toBe(403);
+-  expect(await unconfirmedExecution.json()).toMatchObject({ ok: false });
++  const unconfirmedPayload = await unconfirmedExecution.json();
++  expect(unconfirmedPayload).toMatchObject({ ok: false });
++  expect(JSON.stringify(unconfirmedPayload)).not.toContain("auth_deadbeefdeadbeef");
++  expect(JSON.stringify(unconfirmedPayload)).not.toContain("/Users/");
+ 
+   const forgedConfirmation = await request.post("/api/confirm", {
+     data: {
+@@ -451,7 +504,10 @@ test("host authority is enforced through public API routes", async ({ request })
+     }
+   });
+   expect(profileOverride.status()).toBe(400);
+-  expect(await profileOverride.json()).toMatchObject({ ok: false, error_code: "REQUEST_SCHEMA_INVALID" });
++  const profileOverridePayload = await profileOverride.json();
++  expect(profileOverridePayload).toMatchObject({ ok: false, error_code: "REQUEST_SCHEMA_INVALID" });
++  expect(JSON.stringify(profileOverridePayload)).not.toContain("compatibility_profile");
++  expect(JSON.stringify(profileOverridePayload)).not.toContain("/Users/");
+ 
+   const localArtifact = await request.get("/artifacts/m1.2/workshop/handles/executions/exec_deadbeefdeadbeef.json");
+   expect(localArtifact.status()).toBe(404);
+diff --git a/scripts/workbench_alpha/generate_contracts.py b/scripts/workbench_alpha/generate_contracts.py
+new file mode 100644
+index 0000000..01f70c3
+--- /dev/null
++++ b/scripts/workbench_alpha/generate_contracts.py
+@@ -0,0 +1,47 @@
++"""Generate Workbench Alpha frontend API contracts from Pydantic models."""
++
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++from tqe.workshop.app_service import WORKBENCH_RESPONSE_MODELS
++
++REPO_ROOT = Path(__file__).resolve().parents[2]
++OUT_DIR = REPO_ROOT / "apps/workbench-alpha/src/generated"
++SCHEMA_PATH = OUT_DIR / "api-schemas.json"
++TYPES_PATH = OUT_DIR / "api-types.ts"
++
++
++def main() -> None:
++    OUT_DIR.mkdir(parents=True, exist_ok=True)
++    schemas = {
++        name: model.model_json_schema(ref_template="#/$defs/{model}")
++        for name, model in sorted(WORKBENCH_RESPONSE_MODELS.items())
++    }
++    SCHEMA_PATH.write_text(
++        json.dumps(schemas, indent=2, sort_keys=True) + "\n",
++        encoding="utf-8",
++    )
++    schema_literal = json.dumps(schemas, indent=2, sort_keys=True)
++    TYPES_PATH.write_text(
++        "\n".join(
++            [
++                "/* Generated by scripts/workbench_alpha/generate_contracts.py. */",
++                'import type { FromSchema } from "json-schema-to-ts";',
++                "",
++                f"export const apiSchemas = {schema_literal} as const;",
++                "",
++                *[
++                    f'export type {name} = FromSchema<typeof apiSchemas["{name}"]>;'
++                    for name in sorted(schemas)
++                ],
++                "",
++            ]
++        ),
++        encoding="utf-8",
++    )
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/src/tqe/workshop/app_service.py b/src/tqe/workshop/app_service.py
+index 452a716..23114f2 100644
+--- a/src/tqe/workshop/app_service.py
++++ b/src/tqe/workshop/app_service.py
+@@ -13,10 +13,10 @@ import mimetypes
+ from http import HTTPStatus
+ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ from pathlib import Path
+-from typing import Any
++from typing import Any, Literal
+ from urllib.parse import parse_qs, urlparse
+ 
+-from pydantic import ValidationError
++from pydantic import BaseModel, ConfigDict, Field, ValidationError
+ 
+ from tqe.runtime.ir import TacticalQueryDocument, stable_hash
+ from tqe.workshop.m1_2 import (
+@@ -48,6 +48,179 @@ APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
+ CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
+ DEFAULT_STATIC_ROOT = Path("apps/workbench-alpha/dist")
+ 
++
++class WorkbenchResponseModel(BaseModel):
++    model_config = ConfigDict(extra="forbid")
++
++
++class ErrorResponse(WorkbenchResponseModel):
++    ok: Literal[False]
++    error_code: str
++    message: str
++    details: dict[str, Any] = Field(default_factory=dict)
++
++
++class RecipeCardResponse(WorkbenchResponseModel):
++    recipe_id: str
++    recipe_version: str
++    state: Literal["APPROVED", "EXPERIMENTAL", "USER_SAVED", "DEPRECATED"]
++    display_name: str
++    description: str
++    allowed_claims: list[str]
++    disallowed_claims: list[str]
++    limitations: list[str]
++    output_classifications: list[str]
++
++
++class ServiceStatusResponse(WorkbenchResponseModel):
++    name: str
++    mcp_adapter: bool
++
++
++class ModelStatusResponse(WorkbenchResponseModel):
++    available: bool
++    status: str
++    message: str
++
++
++class PresetResponse(WorkbenchResponseModel):
++    preset_id: Literal["approved_block_shift", "experimental_corridor"]
++    label: str
++    recipe: RecipeCardResponse
++    plan_hash: str
++
++
++class CapabilitySummaryResponse(WorkbenchResponseModel):
++    primitive_count: int
++    relation_count: int
++    operator_count: int
++    tools: list[str]
++    execute_tool_description: dict[str, Any]
++
++
++class BootstrapResponse(WorkbenchResponseModel):
++    ok: Literal[True]
++    service: ServiceStatusResponse
++    model: ModelStatusResponse
++    presets: list[PresetResponse]
++    capabilities: CapabilitySummaryResponse
++
++
++class HealthResponse(WorkbenchResponseModel):
++    ok: Literal[True]
++    service: str
++    mcp_adapter: bool
++
++
++class PlanResponse(WorkbenchResponseModel):
++    ok: Literal[True]
++    recipe: RecipeCardResponse
++    plan_document: dict[str, Any]
++    plan_hash: str
++
++
++class CapabilityGapResponse(WorkbenchResponseModel):
++    concept: str
++    reason: str
++
++
++class InterpretResponse(WorkbenchResponseModel):
++    ok: Literal[True]
++    status: Literal["PLAN_INTERPRETED", "CLARIFICATION_REQUIRED", "CAPABILITY_GAP", "MODEL_UNAVAILABLE"]
++    query: str | None = None
++    message: str | None = None
++    source: str | None = None
++    recipe: RecipeCardResponse | None = None
++    plan_document: dict[str, Any] | None = None
++    plan_hash: str | None = None
++    clarification_questions: list[str] | None = None
++    clarification_codes: list[str] | None = None
++    capability_gaps: list[CapabilityGapResponse] | None = None
++    manual_available: bool | None = None
++
++
++class SubmitValidateResponseEnvelope(WorkbenchResponseModel):
++    ok: Literal[True]
++    submit: dict[str, Any]
++    validation: dict[str, Any]
++
++
++class ConfirmationResponseEnvelope(WorkbenchResponseModel):
++    ok: Literal[True]
++    confirmation: dict[str, Any]
++
++
++class ExecutionResponseEnvelope(WorkbenchResponseModel):
++    ok: Literal[True]
++    execution: dict[str, Any]
++
++
++class ReplayEntityResponse(WorkbenchResponseModel):
++    team_id: str
++    team_role: str
++    entity_id: str
++    entity_type: str
++    x_m: float
++    y_m: float
++
++
++class ReplayFrameResponse(WorkbenchResponseModel):
++    frame_id: int
++    timestamp_utc: str | None = None
++    entities: list[ReplayEntityResponse]
++
++
++class PitchResponse(WorkbenchResponseModel):
++    length_m: float
++    width_m: float
++    coordinate_contract: str
++
++
++class ReplayPayloadResponse(WorkbenchResponseModel):
++    schema_version: str
++    replay_window_id: str
++    source_kind: Literal["result", "target"]
++    source_id: str
++    match_id: str
++    period: str
++    frame_rate_hz: float
++    start_frame_id: int
++    end_frame_id: int
++    anchor_frame_id: int
++    generated_at: str
++    canonical_sources: dict[str, str]
++    plan_path: str
++    pitch: PitchResponse
++    frames: list[ReplayFrameResponse]
++
++
++class InspectResultResponseEnvelope(WorkbenchResponseModel):
++    ok: Literal[True]
++    inspection: dict[str, Any]
++    replay_window: dict[str, Any]
++    replay: ReplayPayloadResponse
++
++
++class InspectTimestampResponseEnvelope(WorkbenchResponseModel):
++    ok: Literal[True]
++    inspection: dict[str, Any]
++    replay_window: dict[str, Any]
++    replay: ReplayPayloadResponse
++
++
++WORKBENCH_RESPONSE_MODELS: dict[str, type[BaseModel]] = {
++    "ErrorResponse": ErrorResponse,
++    "HealthResponse": HealthResponse,
++    "BootstrapResponse": BootstrapResponse,
++    "PlanResponse": PlanResponse,
++    "InterpretResponse": InterpretResponse,
++    "SubmitValidateResponse": SubmitValidateResponseEnvelope,
++    "ConfirmationResponse": ConfirmationResponseEnvelope,
++    "ExecutionResponse": ExecutionResponseEnvelope,
++    "InspectResultResponse": InspectResultResponseEnvelope,
++    "InspectTimestampResponse": InspectTimestampResponseEnvelope,
++}
++
+ UNSUPPORTED_CONCEPTS = {
+     "body orientation": "No body-orientation primitive is exposed.",
+     "orientation": "No body-orientation primitive is exposed.",
+@@ -93,6 +266,21 @@ def error_response(code: str, message: str, *, details: dict[str, Any] | None =
+     return {"ok": False, "error_code": code, "message": message, "details": details or {}}
+ 
+ 
++PUBLIC_ERROR_MESSAGES = {
++    "REQUEST_SCHEMA_INVALID": "Request payload does not match the API contract.",
++    "UNKNOWN_HANDLE": "Requested handle is unavailable.",
++    "NO_REPLAY_WINDOW": "No replay window is available for that request.",
++    "EXECUTION_NOT_CONFIRMED": "Execution requires host-generated confirmation authorization.",
++    "CAPABILITY_GAP": "Requested capability is unavailable through this API.",
++    "PLAN_NOT_FOUND": "Requested plan was not found.",
++    "INTERNAL_ERROR": "Internal host service error.",
++}
++
++
++def public_error_message(code: str) -> str:
++    return PUBLIC_ERROR_MESSAGES.get(code, "Request could not be completed.")
++
++
+ def plan_for_recipe(recipe_id: str) -> dict[str, Any]:
+     if recipe_id == "ball_side_block_shift_v1":
+         return read_json(APPROVED_PLAN_PATH)
+@@ -388,8 +576,8 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
+                 plan = plan_for_recipe(recipe_id)
+                 state = "APPROVED" if recipe_id == "ball_side_block_shift_v1" else "EXPERIMENTAL"
+                 self.send_json(ok({"recipe": recipe_card(plan, state), "plan_document": plan, "plan_hash": stable_hash(plan)}))
+-            except Exception as exc:
+-                self.send_json(error_response("PLAN_NOT_FOUND", str(exc)), HTTPStatus.NOT_FOUND)
++            except Exception:
++                self.send_json(error_response("PLAN_NOT_FOUND", public_error_message("PLAN_NOT_FOUND")), HTTPStatus.NOT_FOUND)
+             return
+         if parsed.path.startswith("/api/"):
+             self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
+@@ -441,16 +629,23 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
+                 self.send_json(timestamp_inspection(payload, output_root=self.server.output_root))
+             else:
+                 self.send_json(error_response("NOT_FOUND", f"Unknown endpoint: {parsed.path}"), HTTPStatus.NOT_FOUND)
+-        except (KeyError, ValueError, ValidationError) as exc:
+-            self.send_json(error_response("REQUEST_SCHEMA_INVALID", str(exc)), HTTPStatus.BAD_REQUEST)
++        except (KeyError, ValueError, ValidationError):
++            self.send_json(
++                error_response(
++                    "REQUEST_SCHEMA_INVALID",
++                    public_error_message("REQUEST_SCHEMA_INVALID"),
++                ),
++                HTTPStatus.BAD_REQUEST,
++            )
+         except CapabilityGap as exc:
++            code = stable_tool_error_code(exc)
+             self.send_json(
+-                error_response(stable_tool_error_code(exc), str(exc)),
++                error_response(code, public_error_message(code)),
+                 HTTPStatus.FORBIDDEN,
+             )
+-        except Exception as exc:
++        except Exception:
+             self.send_json(
+-                error_response(type(exc).__name__.upper(), str(exc)),
++                error_response("INTERNAL_ERROR", public_error_message("INTERNAL_ERROR")),
+                 HTTPStatus.INTERNAL_SERVER_ERROR,
+             )
+ 
+@@ -463,7 +658,6 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
+                 "service": {
+                     "name": "workbench_alpha_host",
+                     "mcp_adapter": False,
+-                    "output_root": str(self.server.output_root),
+                 },
+                 "model": {
+                     "available": False,

@@ -1,0 +1,9 @@
+$ make n1d1-verify
+/Users/luisrevilla/Documents/priori/.venv/bin/python -m tqe.verification.n1d1
+{"attestation_status": "VERIFIED", "blocking_reasons": []}
+$ make n1d-verify
+/Users/luisrevilla/Documents/priori/.venv/bin/python -m tqe.verification.n1d
+{"mode": "gate", "status": "pass", "summary": {"fail": 0, "pass": 12}}
+$ make n1i-verify
+/Users/luisrevilla/Documents/priori/.venv/bin/python -m tqe.verification.n1i
+{"status": "pass", "summary": {"fail": 0, "pass": 10}}

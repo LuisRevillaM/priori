@@ -1,0 +1,9 @@
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md        |  10 ++
+ .../m1.1/reviews/gate-s3r3-controller-review.md    |  30 ++++
+ delivery/m1.1/status.yaml                          |   6 +-
+ ...-m1-1s-gate-s3r3-profile-temporal-correction.md |  11 ++
+ .../2026-06-20-m1-1s-gate-s3r2-external-review.md  |  26 +++
+ src/tqe/runtime/executor.py                        | 189 ++++++++++++++++-----
+ src/tqe/verification/m1_1_gate_s3r.py              | 171 +++++++++++++++----
+ 8 files changed, 366 insertions(+), 78 deletions(-)

@@ -1,0 +1,16 @@
+ Makefile                                           |  11 +-
+ delivery/ledger.jsonl                              |   3 +
+ delivery/m1.1/reviews/gate-s1-controller-review.md |  43 ++
+ delivery/m1.1/reviews/gate-s2-controller-review.md |  44 ++
+ delivery/m1.1/reviews/gate-s3-controller-review.md |  38 ++
+ .../m1.1/reviews/gate-s3-external-review-prompt.md |  68 +++
+ delivery/m1.1/status.yaml                          |  16 +-
+ .../2026-06-20-m1-1s-gate-s1-runtime-values.md     |  28 +
+ ...-06-20-m1-1s-gate-s2-node-execution-contract.md |  17 +
+ .../2026-06-20-m1-1s-gate-s3-anchor-core.md        |  18 +
+ src/tqe/runtime/executor.py                        | 603 +++++++++++++++------
+ src/tqe/runtime/values.py                          | 178 ++++--
+ src/tqe/verification/m1_1_gate_s1.py               | 277 ++++++++++
+ src/tqe/verification/m1_1_gate_s2.py               | 306 +++++++++++
+ src/tqe/verification/m1_1_gate_s3.py               | 252 +++++++++
+ 15 files changed, 1702 insertions(+), 200 deletions(-)

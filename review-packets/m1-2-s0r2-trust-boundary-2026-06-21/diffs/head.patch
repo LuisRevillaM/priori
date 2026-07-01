@@ -1,0 +1,1569 @@
+commit a003bc898560570445a00feaafc2507d4036d21c
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Sun Jun 21 07:45:29 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Sun Jun 21 07:45:29 2026 -0700
+
+    Harden M1.2 workshop trust boundary
+---
+ delivery/m1.2/SPEC.md                              |  23 ++
+ delivery/m1.2/status.yaml                          |  12 +-
+ .../2026-06-21-m1-2-s0r2-trust-boundary.md         |  20 +
+ .../2026-06-21-m1-2-s0r2-external-review.md        |  49 +++
+ generated/capability-context.json                  | 455 +--------------------
+ src/tqe/verification/m1_2_gate_s0.py               |  80 +++-
+ src/tqe/verification/m1_2_gate_s1.py               |  24 +-
+ src/tqe/workshop/m1_2.py                           | 321 ++++++++++++---
+ 8 files changed, 470 insertions(+), 514 deletions(-)
+
+diff --git a/delivery/m1.2/SPEC.md b/delivery/m1.2/SPEC.md
+index 731032a..1d4de2c 100644
+--- a/delivery/m1.2/SPEC.md
++++ b/delivery/m1.2/SPEC.md
+@@ -40,6 +40,29 @@ S2. The corrected pre-S2 boundary is:
+ - The manual reference proof must call the same serialized dispatcher that
+   Hermes will use later.
+ 
++A second external review on 2026-06-21 approved that direction but required one
++more S0R2/S1R2 trust-boundary patch before S2:
++
++- Every tool call is evaluated under an explicit caller profile. Hermes sees
++  only the S2-safe tool surface; host/manual verification can use the full
++  reference surface.
++- Execution confirmation is host-owned. `validate_query_plan` creates an
++  unconfirmed bound handle, and `host_confirm_bound_plan` creates the execution
++  authorization. Hermes cannot mint or choose authorization IDs.
++- Draft, bound, execution, replay, recipe, and authorization handles are opaque,
++  pattern-validated, storage-root confined, and create-once.
++- Hermes-authored submitted plans must be `EXPERIMENTAL`.
++- Non-authorable catalog nodes cannot appear in Hermes-authored plans. The only
++  approved legacy path is the exact trusted frozen M1 recipe, selected by host
++  binding/hash rather than by model request.
++- Hermes-visible replay responses return replay-window handles and summary
++  metadata, not local filesystem paths. Host/UI code may resolve replay artifacts
++  internally.
++- Target-time replay resolution maps supplied timestamps to canonical frames and
++  rejects empty replay windows as explicit capability gaps.
++- Model-visible dispatcher responses are validated against the generated
++  Pydantic response schemas before they are accepted as tool output.
++
+ ## Scope
+ 
+ M1.2 includes:
+diff --git a/delivery/m1.2/status.yaml b/delivery/m1.2/status.yaml
+index 2cea2d2..5564ef3 100644
+--- a/delivery/m1.2/status.yaml
++++ b/delivery/m1.2/status.yaml
+@@ -1,6 +1,6 @@
+ milestone: M1.2
+ name: "Grounded Tactical Query Workshop"
+-state: S0R_S1R_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW
++state: S0R2_S1R2_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW
+ source_of_truth: delivery/m1.2/SPEC.md
+ last_updated: "2026-06-21"
+ preconditions:
+@@ -11,22 +11,26 @@ preconditions:
+ slices:
+   S0_tool_boundary_and_capability_context: DONE_CONTROLLER_VERIFIED
+   S0R_agent_boundary_correction: DONE_CONTROLLER_VERIFIED
++  S0R2_trusted_handle_confirmation_and_authoring_boundary: DONE_CONTROLLER_VERIFIED
+   S1_manual_reference_workshop: DONE_CONTROLLER_VERIFIED
+   S1R_dispatcher_backed_manual_workshop: DONE_CONTROLLER_VERIFIED
++  S1R2_replay_target_resolution_and_schema_dispatch: DONE_CONTROLLER_VERIFIED
+   S2_hermes_drafting_and_clarification: NOT_STARTED
+   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
+ promotion_gates:
+   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
+   Gate_S0R_real_schemas_handles_host_profiles: PASS_CONTROLLER
++  Gate_S0R2_explicit_caller_profiles_host_confirmation_safe_authoring: PASS_CONTROLLER
+   Gate_S1_manual_typed_plan_execution_traces_replay_feedback: PASS_CONTROLLER
+   Gate_S1R_serialized_dispatcher_manual_loop: PASS_CONTROLLER
++  Gate_S1R2_canonical_target_replay_and_model_visible_schema_conformance: PASS_CONTROLLER
+   Gate_S2_hermes_drafting: NOT_STARTED
+   Gate_S3_revision_recipe_loop: NOT_STARTED
+ verification:
+-  automated: PASS_FOR_S0_S1
++  automated: PASS_FOR_S0R2_S1R2
+   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+   independent_review: M1_1S_S7R2_APPROVED_M1_2_UNBLOCKED
+-  controller_review: S0R_S1R_PASS_PENDING_EXTERNAL_PACKET
++  controller_review: S0R2_S1R2_PASS_PENDING_EXTERNAL_PACKET
+   owner_acceptance: APPROVED_TO_PROCEED
+ evidence:
+   S0_report: artifacts/m1.2/gate-s0-verification-report.json
+@@ -37,4 +41,4 @@ evidence:
+   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
+ next_step:
+   external_review: REQUIRED_BEFORE_HERMES_S2
+-  scope: "Review S0R/S1R boundary corrections; do not start Hermes until approved."
++  scope: "Review S0R2/S1R2 boundary corrections; do not start Hermes until approved."
+diff --git a/docs/learnings/2026-06-21-m1-2-s0r2-trust-boundary.md b/docs/learnings/2026-06-21-m1-2-s0r2-trust-boundary.md
+new file mode 100644
+index 0000000..48e93fe
+--- /dev/null
++++ b/docs/learnings/2026-06-21-m1-2-s0r2-trust-boundary.md
+@@ -0,0 +1,20 @@
++# M1.2 S0R2 Trust Boundary Learning
++
++Date: 2026-06-21
++
++Fact: A typed tool API is still unsafe if the model can choose caller privileges,
++execution authorization, recipe status, local paths, or handles that map directly
++to filesystem locations.
++
++Decision: M1.2 treats Hermes as a restricted caller profile. Hermes can submit
++experimental plans and consume schema-valid handles, but host code owns
++confirmation, compatibility profile selection, approved recipe trust, and replay
++artifact resolution.
++
++Learning: The workshop needs two surfaces: a narrow Hermes S2 surface and a
++host/manual reference surface. Both call the same dispatcher, but they must not
++have identical authority.
++
++Follow-up: Send the S0R2/S1R2 packet for external review before starting Hermes
++drafting. If approved, S2 should implement natural-language drafting as a client
++of this boundary rather than expanding the runtime.
+diff --git a/docs/reviews/2026-06-21-m1-2-s0r2-external-review.md b/docs/reviews/2026-06-21-m1-2-s0r2-external-review.md
+new file mode 100644
+index 0000000..ec7e150
+--- /dev/null
++++ b/docs/reviews/2026-06-21-m1-2-s0r2-external-review.md
+@@ -0,0 +1,49 @@
++# M1.2 S0R2 External Review
++
++Date: 2026-06-21
++
++Decision: APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S2
++
++## Blocking Findings
++
++The external review accepted the S0R/S1R direction but kept S2 blocked on one
++more focused trust-boundary correction:
++
++- Hermes and manual/host tools were not separated strongly enough in code.
++- Model-visible execution confirmation was still too close to model control.
++- Opaque handles needed pattern validation, storage-root confinement, and
++  create-once behavior.
++- Hermes-authored plans needed explicit `EXPERIMENTAL` restriction and
++  `agent_authorable` enforcement.
++- Approved recipes and legacy parity had to be selected from trusted host state,
++  not by model-authored status claims.
++- Hermes-visible replay responses still exposed local filesystem paths.
++- Supplied target times needed canonical frame resolution, and empty replay
++  windows had to fail explicitly.
++- Model-visible dispatcher payloads needed response-schema validation.
++
++## Integrated S0R2/S1R2 Corrections
++
++- Added `CallerProfile` and enforced a strict Hermes S2 tool surface distinct
++  from the host/manual reference surface.
++- Replaced model-supplied confirmation tokens with host-created authorization
++  handles.
++- Added strict handle regexes for drafts, bound plans, executions, replay
++  windows, recipes, and authorizations.
++- Made handle writes create-once and confined under the workshop handle store.
++- Restricted Hermes submissions to `EXPERIMENTAL` plans.
++- Rejected non-authorable catalog refs for Hermes-authored plans unless the
++  bound plan is the trusted frozen M1 recipe.
++- Removed local artifact paths from `retrieve_replay_window` responses and added
++  an internal host resolver for verifiers/UI.
++- Mapped target timestamps to canonical frames and rejected replay requests that
++  return no frames.
++- Added model-visible dispatcher output validation against generated response
++  models.
++- Updated S0 and S1 verifiers to prove the new trust boundary, hostile handles,
++  manual-only tool denial, schema conformance, and replay behavior.
++
++## Current Controller Decision
++
++S0R2/S1R2 are controller-verified and ready for an external packet. Hermes S2
++remains blocked until the packet is reviewed and approved.
+diff --git a/generated/capability-context.json b/generated/capability-context.json
+index 468ff02..08aa0e3 100644
+--- a/generated/capability-context.json
++++ b/generated/capability-context.json
+@@ -91,7 +91,7 @@
+     "result_row_mutation",
+     "threshold_auto_tuning"
+   ],
+-  "generated_at": "2026-06-21T14:06:02+00:00",
++  "generated_at": "2026-06-21T14:38:19+00:00",
+   "host_owned_complexity_ceilings": {
+     "max_execution_cost": 100000,
+     "max_nesting_depth": 12,
+@@ -2291,18 +2291,6 @@
+                 "default": null,
+                 "title": "Bound Plan Id"
+               },
+-              "confirmation_token": {
+-                "anyOf": [
+-                  {
+-                    "type": "string"
+-                  },
+-                  {
+-                    "type": "null"
+-                  }
+-                ],
+-                "default": null,
+-                "title": "Confirmation Token"
+-              },
+               "draft_plan_id": {
+                 "title": "Draft Plan Id",
+                 "type": "string"
+@@ -2424,11 +2412,13 @@
+         "additionalProperties": false,
+         "properties": {
+           "bound_plan_id": {
++            "pattern": "^bound_[0-9a-f]{16}$",
+             "title": "Bound Plan Id",
+             "type": "string"
+           },
+-          "confirmation_token": {
+-            "title": "Confirmation Token",
++          "execution_authorization_id": {
++            "pattern": "^auth_[0-9a-f]{16}$",
++            "title": "Execution Authorization Id",
+             "type": "string"
+           },
+           "result_limit": {
+@@ -2441,7 +2431,7 @@
+         },
+         "required": [
+           "bound_plan_id",
+-          "confirmation_token"
++          "execution_authorization_id"
+         ],
+         "title": "ExecuteQueryPlanRequest",
+         "type": "object"
+@@ -2571,6 +2561,7 @@
+         "additionalProperties": false,
+         "properties": {
+           "execution_id": {
++            "pattern": "^exec_[0-9a-f]{16}$",
+             "title": "Execution Id",
+             "type": "string"
+           },
+@@ -2727,6 +2718,7 @@
+         "additionalProperties": false,
+         "properties": {
+           "execution_id": {
++            "pattern": "^exec_[0-9a-f]{16}$",
+             "title": "Execution Id",
+             "type": "string"
+           },
+@@ -2867,6 +2859,7 @@
+         "additionalProperties": false,
+         "properties": {
+           "execution_id": {
++            "pattern": "^exec_[0-9a-f]{16}$",
+             "title": "Execution Id",
+             "type": "string"
+           },
+@@ -2917,10 +2910,6 @@
+                 "title": "Anchor Frame Id",
+                 "type": "integer"
+               },
+-              "artifact_path": {
+-                "title": "Artifact Path",
+-                "type": "string"
+-              },
+               "end_frame_id": {
+                 "title": "End Frame Id",
+                 "type": "integer"
+@@ -2970,7 +2959,6 @@
+               "ok",
+               "execution_id",
+               "replay_window_id",
+-              "artifact_path",
+               "match_id",
+               "period",
+               "start_frame_id",
+@@ -3024,431 +3012,6 @@
+         "result_row_mutation",
+         "threshold_auto_tuning"
+       ]
+-    },
+-    {
+-      "description": "Compute deterministic semantic diffs for two query documents.",
+-      "exposure": "manual_only",
+-      "input_schema": {
+-        "additionalProperties": false,
+-        "properties": {
+-          "after_recipe_version_id": {
+-            "title": "After Recipe Version Id",
+-            "type": "string"
+-          },
+-          "before_recipe_version_id": {
+-            "title": "Before Recipe Version Id",
+-            "type": "string"
+-          }
+-        },
+-        "required": [
+-          "before_recipe_version_id",
+-          "after_recipe_version_id"
+-        ],
+-        "title": "CompareQueryVersionsRequest",
+-        "type": "object"
+-      },
+-      "name": "compare_query_versions",
+-      "output_schema": {
+-        "oneOf": [
+-          {
+-            "additionalProperties": false,
+-            "properties": {
+-              "after_hash": {
+-                "title": "After Hash",
+-                "type": "string"
+-              },
+-              "before_hash": {
+-                "title": "Before Hash",
+-                "type": "string"
+-              },
+-              "ok": {
+-                "title": "Ok",
+-                "type": "boolean"
+-              },
+-              "same": {
+-                "title": "Same",
+-                "type": "boolean"
+-              },
+-              "semantic_changes": {
+-                "items": {
+-                  "additionalProperties": true,
+-                  "type": "object"
+-                },
+-                "title": "Semantic Changes",
+-                "type": "array"
+-              }
+-            },
+-            "required": [
+-              "ok",
+-              "before_hash",
+-              "after_hash",
+-              "same",
+-              "semantic_changes"
+-            ],
+-            "title": "CompareQueryVersionsResponse",
+-            "type": "object"
+-          },
+-          {
+-            "additionalProperties": false,
+-            "properties": {
+-              "details": {
+-                "additionalProperties": true,
+-                "title": "Details",
+-                "type": "object"
+-              },
+-              "error_code": {
+-                "title": "Error Code",
+-                "type": "string"
+-              },
+-              "message": {
+-                "title": "Message",
+-                "type": "string"
+-              },
+-              "ok": {
+-                "const": false,
+-                "default": false,
+-                "title": "Ok",
+-                "type": "boolean"
+-              }
+-            },
+-            "required": [
+-              "error_code",
+-              "message"
+-            ],
+-            "title": "ToolErrorResponse",
+-            "type": "object"
+-          }
+-        ]
+-      },
+-      "unavailable_surfaces": [
+-        "arbitrary_python",
+-        "sql",
+-        "filesystem_editing",
+-        "primitive_mutation",
+-        "raw_match_dump",
+-        "result_row_mutation",
+-        "threshold_auto_tuning"
+-      ]
+-    },
+-    {
+-      "description": "Append immutable analyst feedback for a result or known target.",
+-      "exposure": "manual_only",
+-      "input_schema": {
+-        "$defs": {
+-          "EvaluationTarget": {
+-            "additionalProperties": false,
+-            "properties": {
+-              "approximate_time_ms": {
+-                "minimum": 0,
+-                "title": "Approximate Time Ms",
+-                "type": "integer"
+-              },
+-              "match_id": {
+-                "title": "Match Id",
+-                "type": "string"
+-              },
+-              "period": {
+-                "enum": [
+-                  "firstHalf",
+-                  "secondHalf"
+-                ],
+-                "title": "Period",
+-                "type": "string"
+-              },
+-              "schema_version": {
+-                "const": "1.0",
+-                "default": "1.0",
+-                "title": "Schema Version",
+-                "type": "string"
+-              },
+-              "search_radius_ms": {
+-                "exclusiveMinimum": 0,
+-                "title": "Search Radius Ms",
+-                "type": "integer"
+-              },
+-              "target_id": {
+-                "pattern": "^[a-z][a-z0-9_]*$",
+-                "title": "Target Id",
+-                "type": "string"
+-              }
+-            },
+-            "required": [
+-              "target_id",
+-              "match_id",
+-              "period",
+-              "approximate_time_ms",
+-              "search_radius_ms"
+-            ],
+-            "title": "EvaluationTarget",
+-            "type": "object"
+-          },
+-          "FeedbackLabel": {
+-            "enum": [
+-              "MATCHES_INTENT",
+-              "NEAR_MATCH",
+-              "FALSE_POSITIVE",
+-              "KNOWN_MISS",
+-              "UNUSABLE_DATA"
+-            ],
+-            "title": "FeedbackLabel",
+-            "type": "string"
+-          }
+-        },
+-        "additionalProperties": false,
+-        "properties": {
+-          "execution_id": {
+-            "title": "Execution Id",
+-            "type": "string"
+-          },
+-          "label": {
+-            "$ref": "#/$defs/FeedbackLabel"
+-          },
+-          "note": {
+-            "anyOf": [
+-              {
+-                "type": "string"
+-              },
+-              {
+-                "type": "null"
+-              }
+-            ],
+-            "default": null,
+-            "title": "Note"
+-          },
+-          "reason_code": {
+-            "title": "Reason Code",
+-            "type": "string"
+-          },
+-          "result_id": {
+-            "anyOf": [
+-              {
+-                "type": "string"
+-              },
+-              {
+-                "type": "null"
+-              }
+-            ],
+-            "default": null,
+-            "title": "Result Id"
+-          },
+-          "reviewer": {
+-            "title": "Reviewer",
+-            "type": "string"
+-          },
+-          "target": {
+-            "anyOf": [
+-              {
+-                "$ref": "#/$defs/EvaluationTarget"
+-              },
+-              {
+-                "type": "null"
+-              }
+-            ],
+-            "default": null
+-          }
+-        },
+-        "required": [
+-          "execution_id",
+-          "label",
+-          "reviewer",
+-          "reason_code"
+-        ],
+-        "title": "RecordFeedbackRequest",
+-        "type": "object"
+-      },
+-      "name": "record_feedback",
+-      "output_schema": {
+-        "oneOf": [
+-          {
+-            "additionalProperties": false,
+-            "properties": {
+-              "execution_id": {
+-                "title": "Execution Id",
+-                "type": "string"
+-              },
+-              "feedback_id": {
+-                "title": "Feedback Id",
+-                "type": "string"
+-              },
+-              "ok": {
+-                "title": "Ok",
+-                "type": "boolean"
+-              },
+-              "path": {
+-                "title": "Path",
+-                "type": "string"
+-              }
+-            },
+-            "required": [
+-              "ok",
+-              "execution_id",
+-              "feedback_id",
+-              "path"
+-            ],
+-            "title": "RecordFeedbackResponse",
+-            "type": "object"
+-          },
+-          {
+-            "additionalProperties": false,
+-            "properties": {
+-              "details": {
+-                "additionalProperties": true,
+-                "title": "Details",
+-                "type": "object"
+-              },
+-              "error_code": {
+-                "title": "Error Code",
+-                "type": "string"
+-              },
+-              "message": {
+-                "title": "Message",
+-                "type": "string"
+-              },
+-              "ok": {
+-                "const": false,
+-                "default": false,
+-                "title": "Ok",
+-                "type": "boolean"
+-              }
+-            },
+-            "required": [
+-              "error_code",
+-              "message"
+-            ],
+-            "title": "ToolErrorResponse",
+-            "type": "object"
+-          }
+-        ]
+-      },
+-      "unavailable_surfaces": [
+-        "arbitrary_python",
+-        "sql",
+-        "filesystem_editing",
+-        "primitive_mutation",
+-        "raw_match_dump",
+-        "result_row_mutation",
+-        "threshold_auto_tuning"
+-      ]
+-    },
+-    {
+-      "description": "Save a content-addressed experimental recipe version.",
+-      "exposure": "manual_only",
+-      "input_schema": {
+-        "additionalProperties": false,
+-        "properties": {
+-          "creator": {
+-            "title": "Creator",
+-            "type": "string"
+-          },
+-          "draft_plan_id": {
+-            "title": "Draft Plan Id",
+-            "type": "string"
+-          },
+-          "note": {
+-            "anyOf": [
+-              {
+-                "type": "string"
+-              },
+-              {
+-                "type": "null"
+-              }
+-            ],
+-            "default": null,
+-            "title": "Note"
+-          },
+-          "parent_version": {
+-            "anyOf": [
+-              {
+-                "type": "string"
+-              },
+-              {
+-                "type": "null"
+-              }
+-            ],
+-            "default": null,
+-            "title": "Parent Version"
+-          }
+-        },
+-        "required": [
+-          "draft_plan_id",
+-          "creator"
+-        ],
+-        "title": "SaveExperimentalRecipeRequest",
+-        "type": "object"
+-      },
+-      "name": "save_experimental_recipe",
+-      "output_schema": {
+-        "oneOf": [
+-          {
+-            "additionalProperties": false,
+-            "properties": {
+-              "ok": {
+-                "title": "Ok",
+-                "type": "boolean"
+-              },
+-              "path": {
+-                "title": "Path",
+-                "type": "string"
+-              },
+-              "query_hash": {
+-                "title": "Query Hash",
+-                "type": "string"
+-              },
+-              "recipe_version_id": {
+-                "title": "Recipe Version Id",
+-                "type": "string"
+-              }
+-            },
+-            "required": [
+-              "ok",
+-              "recipe_version_id",
+-              "path",
+-              "query_hash"
+-            ],
+-            "title": "SaveExperimentalRecipeResponse",
+-            "type": "object"
+-          },
+-          {
+-            "additionalProperties": false,
+-            "properties": {
+-              "details": {
+-                "additionalProperties": true,
+-                "title": "Details",
+-                "type": "object"
+-              },
+-              "error_code": {
+-                "title": "Error Code",
+-                "type": "string"
+-              },
+-              "message": {
+-                "title": "Message",
+-                "type": "string"
+-              },
+-              "ok": {
+-                "const": false,
+-                "default": false,
+-                "title": "Ok",
+-                "type": "boolean"
+-              }
+-            },
+-            "required": [
+-              "error_code",
+-              "message"
+-            ],
+-            "title": "ToolErrorResponse",
+-            "type": "object"
+-          }
+-        ]
+-      },
+-      "unavailable_surfaces": [
+-        "arbitrary_python",
+-        "sql",
+-        "filesystem_editing",
+-        "primitive_mutation",
+-        "raw_match_dump",
+-        "result_row_mutation",
+-        "threshold_auto_tuning"
+-      ]
+     }
+   ]
+ }
+diff --git a/src/tqe/verification/m1_2_gate_s0.py b/src/tqe/verification/m1_2_gate_s0.py
+index 703d2b7..1a052bd 100644
+--- a/src/tqe/verification/m1_2_gate_s0.py
++++ b/src/tqe/verification/m1_2_gate_s0.py
+@@ -3,6 +3,7 @@
+ from __future__ import annotations
+ 
+ import json
++import shutil
+ from copy import deepcopy
+ from datetime import UTC, datetime
+ from pathlib import Path
+@@ -13,10 +14,13 @@ from tqe.workshop.m1_2 import (
+     APPROVED_TOOL_NAMES,
+     CAPABILITY_CONTEXT_PATH,
+     FORBIDDEN_SURFACES,
++    HERMES_S2_TOOL_NAMES,
+     SAFE_ANCHOR_RELATIVE_OUTPUT,
+     CapabilityGap,
++    CallerProfile,
+     SubmitQueryPlanRequest,
+     ToolDispatchRequest,
++    dispatch_model_visible,
+     ValidateQueryPlanRequest,
+     dispatch_tool,
+     list_capabilities,
+@@ -48,10 +52,13 @@ def check(check_id: str, passed: bool, message: str, details: dict[str, Any] | N
+ 
+ 
+ def build_report() -> dict[str, Any]:
++    clean_handles()
+     context = write_capability_context(CAPABILITY_CONTEXT_PATH)
++    manual_context = list_capabilities(CallerProfile.HOST_MANUAL)
+     checks: list[dict[str, Any]] = []
+     tool_names = [tool.name for tool in context.tools]
+-    checks.append(check("s0.tool_surface.exact", tool_names == APPROVED_TOOL_NAMES, "Tool catalog contains the staged S2 and manual-only tools.", {"tools": tool_names}))
++    checks.append(check("s0.hermes_tool_surface.exact", tool_names == HERMES_S2_TOOL_NAMES, "Hermes sees only the S2 tool surface.", {"tools": tool_names}))
++    checks.append(check("s0.manual_tool_surface.full", [tool.name for tool in manual_context.tools] == APPROVED_TOOL_NAMES, "Host/manual sees the full staged tool surface.", {"tools": [tool.name for tool in manual_context.tools]}))
+     placeholder_schemas = [
+         tool.name
+         for tool in context.tools
+@@ -107,9 +114,13 @@ def build_report() -> dict[str, Any]:
+     approved_submit = submit_query_plan(
+         SubmitQueryPlanRequest(
+             plan_document=TacticalQueryDocument.model_validate_json(APPROVED_PLAN_PATH.read_text(encoding="utf-8"))
+-        )
++        ),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
++    approved_validation = validate_query_plan(
++        ValidateQueryPlanRequest(draft_plan_id=approved_submit.draft_plan_id),
++        caller_profile=CallerProfile.HOST_MANUAL,
+     )
+-    approved_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=approved_submit.draft_plan_id))
+     checks.append(
+         check(
+             "s0.approved_plan.validates",
+@@ -121,7 +132,8 @@ def build_report() -> dict[str, Any]:
+     unsafe_submit = submit_query_plan(
+         SubmitQueryPlanRequest(
+             plan_document=TacticalQueryDocument.model_validate(unsafe_raw_episode_exists_plan())
+-        )
++        ),
++        caller_profile=CallerProfile.HERMES_S2,
+     )
+     unsafe_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=unsafe_submit.draft_plan_id))
+     checks.append(
+@@ -151,7 +163,8 @@ def build_report() -> dict[str, Any]:
+         ToolDispatchRequest(
+             tool_name="validate_query_plan",
+             arguments={"draft_plan_id": approved_submit.draft_plan_id},
+-        )
++        ),
++        caller_profile=CallerProfile.HOST_MANUAL,
+     )
+     checks.append(
+         check(
+@@ -161,6 +174,44 @@ def build_report() -> dict[str, Any]:
+             dispatched.model_dump(mode="json"),
+         )
+     )
++    manual_denied = dispatch_tool(
++        ToolDispatchRequest(tool_name="record_feedback", arguments={}),
++        caller_profile=CallerProfile.HERMES_S2,
++    )
++    checks.append(check("s0.hermes_manual_tool_denied", not manual_denied.ok, "Hermes cannot call manual-only tools.", manual_denied.model_dump(mode="json")))
++    authored_approved = dispatch_tool(
++        ToolDispatchRequest(
++            tool_name="submit_query_plan",
++            arguments={"plan_document": TacticalQueryDocument.model_validate_json(APPROVED_PLAN_PATH.read_text(encoding="utf-8")).model_dump(mode="json")},
++        ),
++        caller_profile=CallerProfile.HERMES_S2,
++    )
++    checks.append(check("s0.hermes_cannot_submit_approved", not authored_approved.ok, "Hermes-authored documents cannot claim APPROVED status.", authored_approved.model_dump(mode="json")))
++    traversal_rejected = False
++    traversal_details: dict[str, Any] = {}
++    try:
++        traversal_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id="draft_../../badbad"))
++        traversal_rejected = not traversal_validation.ok
++        traversal_details = traversal_validation.model_dump(mode="json")
++    except Exception as exc:
++        traversal_rejected = True
++        traversal_details = {"error": type(exc).__name__, "message": str(exc)}
++    checks.append(check("s0.handle_traversal_rejected", traversal_rejected, "Invalid handle patterns and traversal are rejected.", traversal_details))
++    non_authorable_submit = submit_query_plan(
++        SubmitQueryPlanRequest(plan_document=TacticalQueryDocument.model_validate(non_authorable_outcome_plan())),
++        caller_profile=CallerProfile.HERMES_S2,
++    )
++    non_authorable_validation = validate_query_plan(ValidateQueryPlanRequest(draft_plan_id=non_authorable_submit.draft_plan_id))
++    checks.append(check("s0.non_authorable_capability_rejected", not non_authorable_validation.ok and any("not agent-authorable" in issue.get("message", "") for issue in non_authorable_validation.issues), "Non-authorable catalog capabilities are rejected.", non_authorable_validation.model_dump(mode="json")))
++    model_visible_success = dispatch_model_visible(
++        ToolDispatchRequest(tool_name="list_capabilities", arguments={}),
++        caller_profile=CallerProfile.HERMES_S2,
++    )
++    model_visible_failure = dispatch_model_visible(
++        ToolDispatchRequest(tool_name="describe_capability", arguments={"capability_name": "not_real"}),
++        caller_profile=CallerProfile.HERMES_S2,
++    )
++    checks.append(check("s0.model_visible_schema_conformance", model_visible_success.get("schema_version") == "1.0" and model_visible_failure.get("ok") is False, "Model-visible dispatcher payloads validate against generated schemas.", {"success_keys": sorted(model_visible_success)[:8], "failure": model_visible_failure}))
+ 
+     summary = {
+         "pass": sum(1 for item in checks if item["status"] == "pass"),
+@@ -194,6 +245,7 @@ def unsafe_raw_episode_exists_plan() -> dict[str, Any]:
+     }
+     payload["draft_plan"]["plan_id"] = "unsafe_raw_episode_exists"
+     payload["draft_plan"]["recipe_id"] = "unsafe_raw_episode_exists"
++    payload["draft_plan"]["status"] = "experimental"
+     payload["recipe"]["recipe_id"] = "unsafe_raw_episode_exists"
+     payload["recipe"]["display_name"] = "Unsafe Raw Episode Exists"
+     payload["draft_plan"]["nodes"] = [possession, predicate]
+@@ -211,6 +263,24 @@ def unsafe_raw_episode_exists_plan() -> dict[str, Any]:
+     return payload
+ 
+ 
++def non_authorable_outcome_plan() -> dict[str, Any]:
++    payload = TacticalQueryDocument.model_validate_json(
++        APPROVED_PLAN_PATH.read_text(encoding="utf-8")
++    ).model_dump(mode="json")
++    payload["draft_plan"]["plan_id"] = "unsafe_outcome_authored"
++    payload["draft_plan"]["recipe_id"] = "unsafe_outcome_authored"
++    payload["draft_plan"]["status"] = "experimental"
++    payload["recipe"]["recipe_id"] = "unsafe_outcome_authored"
++    payload["recipe"]["display_name"] = "Unsafe Outcome Authored"
++    return payload
++
++
++def clean_handles() -> None:
++    handle_root = Path("artifacts/m1.2/workshop/handles")
++    if handle_root.exists():
++        shutil.rmtree(handle_root)
++
++
+ def main() -> None:
+     report = build_report()
+     print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
+diff --git a/src/tqe/verification/m1_2_gate_s1.py b/src/tqe/verification/m1_2_gate_s1.py
+index a5a9057..a95251c 100644
+--- a/src/tqe/verification/m1_2_gate_s1.py
++++ b/src/tqe/verification/m1_2_gate_s1.py
+@@ -9,10 +9,13 @@ from typing import Any
+ 
+ from tqe.runtime.ir import EvaluationTarget
+ from tqe.workshop.m1_2 import (
++    CallerProfile,
+     DEFAULT_WORKSHOP_ROOT,
+     FeedbackLabel,
+     ToolDispatchRequest,
+     dispatch_tool,
++    host_confirm_bound_plan,
++    replay_artifact_path,
+     write_manual_workshop_artifacts,
+ )
+ 
+@@ -193,7 +196,10 @@ def run_manual_plan(*, plan_path: Path, recipe_state: str) -> dict[str, Any]:
+         "execute_query_plan",
+         {
+             "bound_plan_id": validation["bound_plan_id"],
+-            "confirmation_token": validation["confirmation_token"],
++            "execution_authorization_id": host_confirm_bound_plan(
++                validation["bound_plan_id"],
++                reviewer="controller",
++            ).execution_authorization_id,
+             "result_limit": 5,
+         },
+     )
+@@ -211,7 +217,7 @@ def run_manual_plan(*, plan_path: Path, recipe_state: str) -> dict[str, Any]:
+                 "padding_seconds": 2.0,
+             },
+         )
+-        replay_payload = read_json(Path(replay["artifact_path"]))
++        replay_payload = read_json(replay_artifact_path(replay["replay_window_id"]))
+         results.append(
+             {
+                 **result,
+@@ -317,13 +323,18 @@ def record_feedback_examples(
+ 
+ 
+ def dispatch(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+-    response = dispatch_tool(ToolDispatchRequest(tool_name=tool_name, arguments=arguments))
++    response = dispatch_tool(
++        ToolDispatchRequest(tool_name=tool_name, arguments=arguments),
++        caller_profile=CallerProfile.HOST_MANUAL,
++    )
+     if not response.ok:
+         raise RuntimeError(f"{tool_name} failed: {response.response}")
+     return response.response
+ 
+ 
+ def clean_workshop_artifacts() -> None:
++    import shutil
++
+     for path in (
+         DEFAULT_WORKSHOP_ROOT / "feedback-records.jsonl",
+         DEFAULT_WORKSHOP_ROOT / "manual-workshop-data.json",
+@@ -332,6 +343,13 @@ def clean_workshop_artifacts() -> None:
+     ):
+         if path.exists():
+             path.unlink()
++    for directory in (
++        DEFAULT_WORKSHOP_ROOT / "handles",
++        DEFAULT_WORKSHOP_ROOT / "replay-windows",
++        DEFAULT_WORKSHOP_ROOT / "recipes",
++    ):
++        if directory.exists():
++            shutil.rmtree(directory)
+ 
+ 
+ def main() -> None:
+diff --git a/src/tqe/workshop/m1_2.py b/src/tqe/workshop/m1_2.py
+index 664d72c..a0ea25c 100644
+--- a/src/tqe/workshop/m1_2.py
++++ b/src/tqe/workshop/m1_2.py
+@@ -7,6 +7,7 @@ client of this surface, but S0/S1 keep every operation usable without an agent.
+ from __future__ import annotations
+ 
+ import json
++import re
+ from datetime import UTC, datetime
+ from enum import StrEnum
+ from pathlib import Path
+@@ -29,6 +30,7 @@ from tqe.runtime.executor import (
+     execution_result_rows,
+ )
+ from tqe.runtime.ir import (
++    BoundCatalogNode,
+     BoundPredicateNode,
+     EvaluationTarget,
+     NodeKind,
+@@ -68,6 +70,13 @@ SAFE_ANCHOR_RELATIVE_OPERATORS = {"exists", "count_at_least"}
+ SAFE_ANCHOR_RELATIVE_OUTPUT = "anchor_evaluations"
+ DEFAULT_WORKSHOP_ROOT = Path("artifacts/m1.2/workshop")
+ CAPABILITY_CONTEXT_PATH = Path("generated/capability-context.json")
++TRUSTED_M1_RECIPE_ID = "ball_side_block_shift_v1"
++TRUSTED_M1_RECIPE_VERSION = "1.0.0"
++NON_AUTHORABLE_CATALOG_REFS = {
++    "outcome_classification",
++    "shift_persistence",
++    "wide_channel_dwell",
++}
+ 
+ 
+ class StrictModel(BaseModel):
+@@ -82,6 +91,27 @@ class FeedbackLabel(StrEnum):
+     UNUSABLE_DATA = "UNUSABLE_DATA"
+ 
+ 
++class CallerProfile(StrEnum):
++    HERMES_S2 = "HERMES_S2"
++    HOST_MANUAL = "HOST_MANUAL"
++
++
++HANDLE_PATTERNS = {
++    "draft-plans": re.compile(r"^draft_[0-9a-f]{16}$"),
++    "bound-plans": re.compile(r"^bound_[0-9a-f]{16}$"),
++    "executions": re.compile(r"^exec_[0-9a-f]{16}$"),
++    "replay-windows": re.compile(r"^replay_[0-9a-f]{16}$"),
++    "recipes": re.compile(r"^recipe_[0-9a-f]{16}$"),
++    "authorizations": re.compile(r"^auth_[0-9a-f]{16}$"),
++}
++
++
++class HostConfirmationResponse(StrictModel):
++    ok: bool
++    bound_plan_id: str
++    execution_authorization_id: str
++
++
+ class ToolSpec(StrictModel):
+     name: str
+     description: str
+@@ -166,13 +196,12 @@ class ValidateQueryPlanResponse(StrictModel):
+     plan_status: str | None = None
+     bound_plan_hash: str | None = None
+     execution_profile: str | None = None
+-    confirmation_token: str | None = None
+     issues: list[dict[str, Any]] = Field(default_factory=list)
+ 
+ 
+ class ExecuteQueryPlanRequest(StrictModel):
+-    bound_plan_id: str
+-    confirmation_token: str
++    bound_plan_id: str = Field(pattern=r"^bound_[0-9a-f]{16}$")
++    execution_authorization_id: str = Field(pattern=r"^auth_[0-9a-f]{16}$")
+     result_limit: int = Field(default=25, ge=1, le=100)
+ 
+ 
+@@ -192,7 +221,7 @@ class ExecuteQueryPlanResponse(StrictModel):
+ 
+ 
+ class InspectResultRequest(StrictModel):
+-    execution_id: str
++    execution_id: str = Field(pattern=r"^exec_[0-9a-f]{16}$")
+     result_id: str
+ 
+ 
+@@ -205,7 +234,7 @@ class InspectResultResponse(StrictModel):
+ 
+ 
+ class InspectNonMatchRequest(StrictModel):
+-    execution_id: str
++    execution_id: str = Field(pattern=r"^exec_[0-9a-f]{16}$")
+     target: EvaluationTarget
+ 
+ 
+@@ -216,7 +245,7 @@ class InspectNonMatchResponse(StrictModel):
+ 
+ 
+ class ReplayWindowRequest(StrictModel):
+-    execution_id: str
++    execution_id: str = Field(pattern=r"^exec_[0-9a-f]{16}$")
+     result_id: str | None = None
+     target: EvaluationTarget | None = None
+     padding_seconds: float = Field(default=2.0, ge=0.2, le=8.0)
+@@ -232,7 +261,6 @@ class ReplayWindowResponse(StrictModel):
+     ok: bool
+     execution_id: str
+     replay_window_id: str
+-    artifact_path: str
+     match_id: str
+     period: str
+     start_frame_id: int
+@@ -244,7 +272,7 @@ class ReplayWindowResponse(StrictModel):
+ 
+ 
+ class RecordFeedbackRequest(StrictModel):
+-    execution_id: str
++    execution_id: str = Field(pattern=r"^exec_[0-9a-f]{16}$")
+     label: FeedbackLabel
+     reviewer: str
+     reason_code: str
+@@ -267,7 +295,7 @@ class RecordFeedbackResponse(StrictModel):
+ 
+ 
+ class SaveExperimentalRecipeRequest(StrictModel):
+-    draft_plan_id: str
++    draft_plan_id: str = Field(pattern=r"^draft_[0-9a-f]{16}$")
+     creator: str
+     parent_version: str | None = None
+     note: str | None = None
+@@ -281,8 +309,8 @@ class SaveExperimentalRecipeResponse(StrictModel):
+ 
+ 
+ class CompareQueryVersionsRequest(StrictModel):
+-    before_recipe_version_id: str
+-    after_recipe_version_id: str
++    before_recipe_version_id: str = Field(pattern=r"^recipe_[0-9a-f]{16}$")
++    after_recipe_version_id: str = Field(pattern=r"^recipe_[0-9a-f]{16}$")
+ 
+ 
+ class CompareQueryVersionsResponse(StrictModel):
+@@ -311,7 +339,16 @@ def write_json(path: Path, payload: Any) -> None:
+ 
+ 
+ def handle_path(kind: str, handle_id: str, *, output_root: Path = DEFAULT_WORKSHOP_ROOT) -> Path:
+-    return output_root / "handles" / kind / f"{handle_id}.json"
++    pattern = HANDLE_PATTERNS.get(kind)
++    if pattern is None:
++        raise CapabilityGap(f"Unsupported handle kind: {kind}")
++    if pattern.fullmatch(handle_id) is None:
++        raise CapabilityGap(f"Invalid {kind} handle: {handle_id}")
++    base = (output_root / "handles" / kind).resolve()
++    path = (base / f"{handle_id}.json").resolve()
++    if base not in path.parents:
++        raise CapabilityGap(f"Handle path escapes storage root: {handle_id}")
++    return path
+ 
+ 
+ def write_handle(
+@@ -321,7 +358,10 @@ def write_handle(
+     *,
+     output_root: Path = DEFAULT_WORKSHOP_ROOT,
+ ) -> None:
+-    write_json(handle_path(kind, handle_id, output_root=output_root), payload)
++    path = handle_path(kind, handle_id, output_root=output_root)
++    if path.exists():
++        raise CapabilityGap(f"{kind} handle already exists: {handle_id}")
++    write_json(path, payload)
+ 
+ 
+ def read_handle(
+@@ -343,7 +383,10 @@ def submit_query_plan(
+     request: SubmitQueryPlanRequest,
+     *,
+     output_root: Path = DEFAULT_WORKSHOP_ROOT,
++    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+ ) -> SubmitQueryPlanResponse:
++    if caller_profile == CallerProfile.HERMES_S2 and request.plan_document.draft_plan.status != PlanStatus.EXPERIMENTAL:
++        raise CapabilityGap("Hermes-authored query documents must be EXPERIMENTAL")
+     document_payload = model_payload(request.plan_document)
+     draft_hash = stable_hash(document_payload)
+     draft_plan_id = f"draft_{draft_hash[:16]}"
+@@ -370,7 +413,7 @@ def submit_query_plan(
+     )
+ 
+ 
+-def list_capabilities() -> CapabilityContext:
++def list_capabilities(caller_profile: CallerProfile = CallerProfile.HERMES_S2) -> CapabilityContext:
+     catalog = default_catalog()
+     evidence_fields: dict[str, list[str]] = {}
+     primitives = []
+@@ -396,9 +439,10 @@ def list_capabilities() -> CapabilityContext:
+             }
+         operators.append(payload)
+ 
++    tool_names = HERMES_S2_TOOL_NAMES if caller_profile == CallerProfile.HERMES_S2 else APPROVED_TOOL_NAMES
+     return CapabilityContext(
+         generated_at=utc_now_iso(),
+-        tools=[tool_spec(name) for name in APPROVED_TOOL_NAMES],
++        tools=[tool_spec(name) for name in tool_names],
+         primitives=primitives,
+         relations=relations,
+         operators=operators,
+@@ -421,13 +465,16 @@ def list_capabilities() -> CapabilityContext:
+ 
+ 
+ def write_capability_context(path: Path = CAPABILITY_CONTEXT_PATH) -> CapabilityContext:
+-    context = list_capabilities()
++    context = list_capabilities(CallerProfile.HERMES_S2)
+     write_json(path, context.model_dump(mode="json"))
+     return context
+ 
+ 
+-def describe_capability(capability_name: str) -> dict[str, Any]:
+-    context = list_capabilities()
++def describe_capability(
++    capability_name: str,
++    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
++) -> dict[str, Any]:
++    context = list_capabilities(caller_profile)
+     for collection_name in ("tools", "primitives", "relations", "operators"):
+         collection = getattr(context, collection_name)
+         for item in collection:
+@@ -437,22 +484,28 @@ def describe_capability(capability_name: str) -> dict[str, Any]:
+     raise CapabilityGap(f"Unsupported capability: {capability_name}")
+ 
+ 
+-def describe_capability_tool(request: DescribeCapabilityRequest) -> DescribeCapabilityResponse:
+-    return DescribeCapabilityResponse(ok=True, capability=describe_capability(request.capability_name))
++def describe_capability_tool(
++    request: DescribeCapabilityRequest,
++    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
++) -> DescribeCapabilityResponse:
++    return DescribeCapabilityResponse(
++        ok=True,
++        capability=describe_capability(request.capability_name, caller_profile),
++    )
+ 
+ 
+-def validate_query_plan(request: ValidateQueryPlanRequest) -> ValidateQueryPlanResponse:
++def validate_query_plan(
++    request: ValidateQueryPlanRequest,
++    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
++) -> ValidateQueryPlanResponse:
+     try:
+         draft_record = read_handle("draft-plans", request.draft_plan_id)
+         document = TacticalQueryDocument.model_validate(draft_record["document"])
+         bound = bind_document(document)
+-        validate_safe_agent_plan(bound)
++        validate_safe_agent_plan(bound, caller_profile=caller_profile)
+         profile = default_profile_for_bound_plan(bound)
+         bound_plan_id = f"bound_{bound.bound_plan_hash[:16]}"
+-        write_handle(
+-            "bound-plans",
+-            bound_plan_id,
+-            {
++        bound_payload = {
+                 "schema_version": "1.0",
+                 "created_at": utc_now_iso(),
+                 "draft_plan_id": request.draft_plan_id,
+@@ -462,11 +515,15 @@ def validate_query_plan(request: ValidateQueryPlanRequest) -> ValidateQueryPlanR
+                 "execution_profile": profile,
+                 "document": draft_record["document"],
+                 "bound_plan": model_payload(bound),
+-                "confirmation_token": stable_hash(
+-                    {"bound_plan_id": bound_plan_id, "bound_plan_hash": bound.bound_plan_hash}
+-                )[:16],
+-            },
+-        )
++                "confirmed": False,
++            }
++        bound_path = handle_path("bound-plans", bound_plan_id)
++        if bound_path.exists():
++            existing = read_handle("bound-plans", bound_plan_id)
++            if existing.get("bound_plan_hash") != bound.bound_plan_hash:
++                raise CapabilityGap(f"bound plan handle collision: {bound_plan_id}")
++        else:
++            write_handle("bound-plans", bound_plan_id, bound_payload)
+         return ValidateQueryPlanResponse(
+             ok=True,
+             draft_plan_id=request.draft_plan_id,
+@@ -476,9 +533,6 @@ def validate_query_plan(request: ValidateQueryPlanRequest) -> ValidateQueryPlanR
+             plan_status=bound.plan_status.value,
+             bound_plan_hash=bound.bound_plan_hash,
+             execution_profile=profile,
+-            confirmation_token=stable_hash(
+-                {"bound_plan_id": bound_plan_id, "bound_plan_hash": bound.bound_plan_hash}
+-            )[:16],
+         )
+     except BindError as exc:
+         return ValidateQueryPlanResponse(
+@@ -494,31 +548,62 @@ def validate_query_plan(request: ValidateQueryPlanRequest) -> ValidateQueryPlanR
+         )
+ 
+ 
++def host_confirm_bound_plan(
++    bound_plan_id: str,
++    *,
++    reviewer: str = "controller",
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++) -> HostConfirmationResponse:
++    bound_record = read_handle("bound-plans", bound_plan_id, output_root=output_root)
++    auth_id = f"auth_{stable_hash({'bound_plan_id': bound_plan_id, 'reviewer': reviewer, 'bound_plan_hash': bound_record['bound_plan_hash']})[:16]}"
++    write_handle(
++        "authorizations",
++        auth_id,
++        {
++            "schema_version": "1.0",
++            "created_at": utc_now_iso(),
++            "bound_plan_id": bound_plan_id,
++            "bound_plan_hash": bound_record["bound_plan_hash"],
++            "reviewer": reviewer,
++            "confirmation_source": "host_manual",
++        },
++        output_root=output_root,
++    )
++    return HostConfirmationResponse(
++        ok=True,
++        bound_plan_id=bound_plan_id,
++        execution_authorization_id=auth_id,
++    )
++
++
+ def execute_query_plan(
+     request: ExecuteQueryPlanRequest,
+     *,
+     output_root: Path = DEFAULT_WORKSHOP_ROOT,
+ ) -> ExecuteQueryPlanResponse:
+     bound_record = read_handle("bound-plans", request.bound_plan_id, output_root=output_root)
+-    if request.confirmation_token != bound_record["confirmation_token"]:
+-        raise CapabilityGap("execution requires the host confirmation token for this bound plan")
++    auth_record = read_handle("authorizations", request.execution_authorization_id, output_root=output_root)
++    if auth_record.get("bound_plan_id") != request.bound_plan_id:
++        raise CapabilityGap("execution authorization does not match bound_plan_id")
+     document = TacticalQueryDocument.model_validate(bound_record["document"])
+     bound = bind_document(document)
+-    validate_safe_agent_plan(bound)
++    validate_safe_agent_plan(bound, caller_profile=CallerProfile.HOST_MANUAL)
+     profile = str(bound_record["execution_profile"])
+     execution = executor_for_profile(profile).execute(bound)
+     rows = execution_result_rows(execution)
+     returned = rows[: request.result_limit]
++    execution_id = f"exec_{execution.execution_id}"
+     execution_record = execution_record_payload(
+         bound_record=bound_record,
+         execution=execution,
+         rows=rows,
+         profile=profile,
++        execution_id=execution_id,
+     )
+-    write_handle("executions", execution.execution_id, execution_record, output_root=output_root)
++    write_handle("executions", execution_id, execution_record, output_root=output_root)
+     return ExecuteQueryPlanResponse(
+         ok=True,
+-        execution_id=execution.execution_id,
++        execution_id=execution_id,
+         bound_plan_id=request.bound_plan_id,
+         plan_id=bound.plan_id,
+         plan_status=bound.plan_status.value,
+@@ -557,7 +642,7 @@ def inspect_non_match(request: InspectNonMatchRequest) -> InspectNonMatchRespons
+     execution_record = read_handle("executions", request.execution_id)
+     document = TacticalQueryDocument.model_validate(execution_record["document"])
+     bound = bind_document(document)
+-    validate_safe_agent_plan(bound)
++    validate_safe_agent_plan(bound, caller_profile=CallerProfile.HOST_MANUAL)
+     inspection = executor_for_profile(str(execution_record["compatibility_profile"])).evaluate_target(
+         bound,
+         request.target,
+@@ -588,11 +673,11 @@ def retrieve_replay_window(
+         assert request.target is not None
+         match_id = request.target.match_id
+         period = request.target.period
+-        anchor_frame_id = int(round(request.target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
++        anchor_frame_id = canonical_frame_for_target(request.target)
+         source_id = request.target.target_id
+         source_kind = "target"
+ 
+-    replay_window_id = stable_hash(
++    replay_window_id = "replay_" + stable_hash(
+         {
+             "execution_id": request.execution_id,
+             "source_id": source_id,
+@@ -613,12 +698,33 @@ def retrieve_replay_window(
+         padding_seconds=request.padding_seconds,
+     )
+     artifact_path = output_root / "replay-windows" / f"{replay_window_id}.json"
++    if not replay["frames"]:
++        raise CapabilityGap("NO_REPLAY_WINDOW: requested target produced no canonical replay frames")
+     write_json(artifact_path, replay)
++    write_handle(
++        "replay-windows",
++        replay_window_id,
++        {
++            "schema_version": "1.0",
++            "created_at": utc_now_iso(),
++            "replay_window_id": replay_window_id,
++            "execution_id": request.execution_id,
++            "source_kind": source_kind,
++            "source_id": source_id,
++            "match_id": match_id,
++            "period": period,
++            "start_frame_id": int(replay["start_frame_id"]),
++            "end_frame_id": int(replay["end_frame_id"]),
++            "anchor_frame_id": anchor_frame_id,
++            "frame_count": len(replay["frames"]),
++            "artifact_path": str(artifact_path),
++        },
++        output_root=output_root,
++    )
+     return ReplayWindowResponse(
+         ok=True,
+         execution_id=request.execution_id,
+         replay_window_id=replay_window_id,
+-        artifact_path=str(artifact_path),
+         match_id=match_id,
+         period=period,
+         start_frame_id=int(replay["start_frame_id"]),
+@@ -661,7 +767,7 @@ def save_experimental_recipe(
+     draft_record = read_handle("draft-plans", request.draft_plan_id, output_root=output_root)
+     document = TacticalQueryDocument.model_validate(draft_record["document"])
+     bound = bind_document(document)
+-    validate_safe_agent_plan(bound)
++    validate_safe_agent_plan(bound, caller_profile=CallerProfile.HOST_MANUAL)
+     if document.draft_plan.status != PlanStatus.EXPERIMENTAL:
+         raise CapabilityGap("save_experimental_recipe only accepts experimental draft plans")
+     query_hash = stable_hash(model_payload(document))
+@@ -677,7 +783,7 @@ def save_experimental_recipe(
+         "bound_plan_hash": bound.bound_plan_hash,
+         "document": model_payload(document),
+     }
+-    recipe_version_id = query_hash[:16]
++    recipe_version_id = f"recipe_{query_hash[:16]}"
+     path = output_root / "recipes" / f"{recipe_version_id}.json"
+     if path.exists():
+         existing = read_json(path)
+@@ -720,8 +826,20 @@ def compare_query_versions(request: CompareQueryVersionsRequest) -> CompareQuery
+     )
+ 
+ 
+-def validate_safe_agent_plan(bound: Any) -> None:
++def validate_safe_agent_plan(
++    bound: Any,
++    *,
++    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
++) -> None:
++    trusted_m1 = is_trusted_m1_bound_plan(bound)
++    if caller_profile == CallerProfile.HERMES_S2 and bound.plan_status != PlanStatus.EXPERIMENTAL:
++        raise CapabilityGap("Hermes-authored query documents must be EXPERIMENTAL")
++    if bound.plan_status == PlanStatus.APPROVED and not trusted_m1:
++        raise CapabilityGap("Approved recipes must be loaded from trusted host records")
+     for node in bound.nodes:
++        if isinstance(node, BoundCatalogNode) and not trusted_m1:
++            if node.catalog_ref in NON_AUTHORABLE_CATALOG_REFS:
++                raise CapabilityGap(f"{node.catalog_ref} is not agent-authorable")
+         if not isinstance(node, BoundPredicateNode):
+             continue
+         if node.operator.name in SAFE_ANCHOR_RELATIVE_OPERATORS:
+@@ -734,27 +852,36 @@ def validate_safe_agent_plan(bound: Any) -> None:
+ 
+ 
+ def default_profile_for_bound_plan(bound_plan: Any) -> str:
+-    if (
+-        bound_plan.plan_status == PlanStatus.APPROVED
+-        and bound_plan.recipe_id == "ball_side_block_shift"
+-        and bound_plan.recipe_version == "1.0.0"
+-    ):
++    if is_trusted_m1_bound_plan(bound_plan):
+         return LEGACY_M1_PARITY_PROFILE
+     return GENERIC_EXECUTION_PROFILE
+ 
+ 
++def is_trusted_m1_bound_plan(bound_plan: Any) -> bool:
++    if bound_plan.plan_status != PlanStatus.APPROVED:
++        return False
++    if bound_plan.recipe_id != TRUSTED_M1_RECIPE_ID or bound_plan.recipe_version != TRUSTED_M1_RECIPE_VERSION:
++        return False
++    try:
++        trusted = bind_document_from_path(Path("config/query-plans/ball_side_block_shift.ir.v1.json"))
++    except Exception:
++        return False
++    return bound_plan.bound_plan_hash == trusted.bound_plan_hash
++
++
+ def execution_record_payload(
+     *,
+     bound_record: dict[str, Any],
+     execution: QueryExecution,
+     rows: list[dict[str, Any]],
+     profile: str,
++    execution_id: str,
+ ) -> dict[str, Any]:
+     traces = [trace.model_dump(mode="json", exclude_none=True) for trace in execution.predicate_traces]
+     return {
+         "schema_version": "1.0",
+         "created_at": utc_now_iso(),
+-        "execution_id": execution.execution_id,
++        "execution_id": execution_id,
+         "draft_plan_id": bound_record["draft_plan_id"],
+         "draft_plan_hash": bound_record["draft_plan_hash"],
+         "bound_plan_id": bound_record["bound_plan_id"],
+@@ -862,19 +989,29 @@ def dispatch_tool(
+     request: ToolDispatchRequest,
+     *,
+     output_root: Path = DEFAULT_WORKSHOP_ROOT,
++    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
+ ) -> ToolDispatchResponse:
+     try:
++        if caller_profile == CallerProfile.HERMES_S2 and request.tool_name not in HERMES_S2_TOOL_NAMES:
++            raise CapabilityGap(f"{request.tool_name} is not available to Hermes S2")
+         if request.tool_name == "list_capabilities":
+-            response = list_capabilities()
++            response = list_capabilities(caller_profile)
+         elif request.tool_name == "describe_capability":
+-            response = describe_capability_tool(DescribeCapabilityRequest.model_validate(request.arguments))
++            response = describe_capability_tool(
++                DescribeCapabilityRequest.model_validate(request.arguments),
++                caller_profile,
++            )
+         elif request.tool_name == "submit_query_plan":
+             response = submit_query_plan(
+                 SubmitQueryPlanRequest.model_validate(request.arguments),
+                 output_root=output_root,
++                caller_profile=caller_profile,
+             )
+         elif request.tool_name == "validate_query_plan":
+-            response = validate_query_plan(ValidateQueryPlanRequest.model_validate(request.arguments))
++            response = validate_query_plan(
++                ValidateQueryPlanRequest.model_validate(request.arguments),
++                caller_profile=caller_profile,
++            )
+         elif request.tool_name == "execute_query_plan":
+             response = execute_query_plan(
+                 ExecuteQueryPlanRequest.model_validate(request.arguments),
+@@ -919,6 +1056,59 @@ def dispatch_tool(
+         )
+ 
+ 
++def dispatch_model_visible(
++    request: ToolDispatchRequest,
++    *,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
++) -> dict[str, Any]:
++    dispatch = dispatch_tool(request, output_root=output_root, caller_profile=caller_profile)
++    payload = dispatch.response
++    validate_model_visible_payload(
++        tool_name=request.tool_name,
++        payload=payload,
++        caller_profile=caller_profile,
++    )
++    return payload
++
++
++def validate_model_visible_payload(
++    *,
++    tool_name: str,
++    payload: dict[str, Any],
++    caller_profile: CallerProfile = CallerProfile.HERMES_S2,
++) -> None:
++    context = list_capabilities(caller_profile)
++    tool = next((item for item in context.tools if item.name == tool_name), None)
++    if tool is None:
++        if payload.get("ok") is False:
++            ToolErrorResponse.model_validate(payload)
++            return
++        raise CapabilityGap(f"{tool_name} is not visible to {caller_profile.value}")
++    model = response_model_for_tool(tool_name)
++    try:
++        model.model_validate(payload)
++    except Exception:
++        ToolErrorResponse.model_validate(payload)
++
++
++def response_model_for_tool(tool_name: str) -> type[BaseModel]:
++    response_models: dict[str, type[BaseModel]] = {
++        "list_capabilities": CapabilityContext,
++        "describe_capability": DescribeCapabilityResponse,
++        "submit_query_plan": SubmitQueryPlanResponse,
++        "validate_query_plan": ValidateQueryPlanResponse,
++        "execute_query_plan": ExecuteQueryPlanResponse,
++        "inspect_result": InspectResultResponse,
++        "inspect_non_match": InspectNonMatchResponse,
++        "retrieve_replay_window": ReplayWindowResponse,
++        "compare_query_versions": CompareQueryVersionsResponse,
++        "record_feedback": RecordFeedbackResponse,
++        "save_experimental_recipe": SaveExperimentalRecipeResponse,
++    }
++    return response_models[tool_name]
++
++
+ def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:
+     return {
+         "rank": rank,
+@@ -931,6 +1121,25 @@ def rank_result(row: dict[str, Any], *, rank: int) -> dict[str, Any]:
+     }
+ 
+ 
++def canonical_frame_for_target(target: EvaluationTarget) -> int:
++    frame_path = DEFAULT_CANONICAL_ROOT / "frames" / f"match_id={target.match_id}" / f"period={target.period}.parquet"
++    frames_table = pq.ParquetFile(frame_path).read(columns=["frame_id"]).to_pandas()
++    frame_ids = sorted(int(item) for item in frames_table.frame_id.tolist())
++    if not frame_ids:
++        raise CapabilityGap(f"NO_REPLAY_WINDOW: no canonical frames for {target.match_id} {target.period}")
++    nominal = frame_ids[0] + int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
++    return min(frame_ids, key=lambda item: abs(item - nominal))
++
++
++def replay_artifact_path(
++    replay_window_id: str,
++    *,
++    output_root: Path = DEFAULT_WORKSHOP_ROOT,
++) -> Path:
++    handle_path("replay-windows", replay_window_id, output_root=output_root)
++    return output_root / "replay-windows" / f"{replay_window_id}.json"
++
++
+ def replay_window_from_canonical(
+     *,
+     replay_window_id: str,
+@@ -1115,7 +1324,7 @@ function renderPitch(){
+     ctx.fill();
+   }
+   document.getElementById("frame").textContent =
+-    `${selected.result_id} | frame ${frame.frame_id || "-"} | ${frameIndex+1}/${frames.length} | ${replay.artifact_path}`;
++    `${selected.result_id} | ${replay.replay_window_id} | frame ${frame.frame_id || "-"} | ${frameIndex+1}/${frames.length}`;
+ }
+ function renderAll(){
+   renderResults(); renderPitch();

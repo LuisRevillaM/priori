@@ -1,0 +1,27 @@
+commit a38cd1d9d95cdf7e0eb2c07e357a3f233ec197d6
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Mon Jun 22 00:46:26 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Mon Jun 22 00:49:00 2026 -0700
+
+    Add Workbench Alpha host UI
+
+ .gitignore                                         |    4 +
+ Makefile                                           |   15 +-
+ apps/workbench-alpha/ACCEPTANCE.md                 |   78 +
+ apps/workbench-alpha/index.html                    |   12 +
+ apps/workbench-alpha/package-lock.json             | 1887 ++++++++++++++++++++
+ apps/workbench-alpha/package.json                  |   26 +
+ apps/workbench-alpha/playwright.config.ts          |   34 +
+ apps/workbench-alpha/src/App.tsx                   |  578 ++++++
+ apps/workbench-alpha/src/PitchCanvas.tsx           |  110 ++
+ apps/workbench-alpha/src/api.ts                    |   96 +
+ apps/workbench-alpha/src/main.tsx                  |   16 +
+ apps/workbench-alpha/src/styles.css                |  503 ++++++
+ apps/workbench-alpha/src/types.ts                  |  205 +++
+ .../tests/check-no-tactical-fixtures.mjs           |   84 +
+ apps/workbench-alpha/tests/workbench-alpha.spec.ts |  523 ++++++
+ apps/workbench-alpha/tsconfig.json                 |   20 +
+ apps/workbench-alpha/vite.config.ts                |   11 +
+ src/tqe/workshop/app_service.py                    |  521 ++++++
+ 18 files changed, 4722 insertions(+), 1 deletion(-)

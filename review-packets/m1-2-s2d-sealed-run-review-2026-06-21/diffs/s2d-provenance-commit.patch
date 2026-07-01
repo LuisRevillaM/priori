@@ -1,0 +1,1299 @@
+commit 8a873801767dc7ac5292de2442bf979e961548db
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Sun Jun 21 12:48:59 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Sun Jun 21 12:48:59 2026 -0700
+
+    Add M1.2 S2 session provenance
+---
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.2/SPEC.md                              | 122 +++++++----
+ delivery/m1.2/status.yaml                          |  19 +-
+ .../2026-06-21-m1-2-s2d-provenance-integrity.md    |  21 ++
+ .../reviews/2026-06-21-m1-2-s2d-external-review.md |  36 +++
+ src/tqe/verification/m1_2_gate_s2.py               | 133 ++++++++++-
+ src/tqe/workshop/hermes_s2.py                      | 243 ++++++++++++++++++++-
+ 7 files changed, 506 insertions(+), 69 deletions(-)
+
+diff --git a/delivery/ledger.jsonl b/delivery/ledger.jsonl
+index 5139363..9c415ec 100644
+--- a/delivery/ledger.jsonl
++++ b/delivery/ledger.jsonl
+@@ -51,3 +51,4 @@
+ {"timestamp":"2026-06-20T20:36:36-07:00","milestone":"M1.1S","slice":"Gate_S7R2_final_agent_safety_correction","from":"APPROVE_WITH_REQUIRED_CHANGES_BEFORE_M1_2","to":"ACCEPTED_CONTROLLER_ONLY_READY_TO_UNBLOCK_M1_2","actor":"controller","evidence":["docs/reviews/2026-06-20-m1-1s-gate-s7r-external-review.md","delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md","delivery/m1.1/status.yaml","delivery/m1.2/status.yaml","src/tqe/runtime/relations.py","src/tqe/runtime/executor.py","src/tqe/runtime/catalog.py","src/tqe/runtime/binder.py","config/query-plans/opposite_corridor_after_shift.experimental.v1.json","src/tqe/verification/m1_1_gate_s7r.py","src/tqe/verification/m1_1_gate_s4.py","generated/capability-catalog.json","artifacts/m1.1/gate-s7r-verification-report.json","artifacts/m1.1/gate-s4-verification-report.json","artifacts/m1.1/gate-s6-verification-report.json","artifacts/m1.1/gate-s7-verification-report.json","artifacts/m1.1/binder-validation-report.json","delivery/m1.1/reviews/gate-s7r2-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s7r2-agent-safety.md"],"notes":"Integrated S7R external decision APPROVE_WITH_REQUIRED_CHANGES_BEFORE_M1_2 as S7R2. Mixed relation evidence now returns UNKNOWN when missing evidence could change existence, while proven relation rows remain PASS and fully evaluated zero-relation anchors remain FAIL. Evidence witness lookup is scoped to the requested relation source. Agent-visible exists/count_at_least no longer accept raw relation episode inputs; opposite_corridor plan now uses anchor_evaluations for existence and keeps episodes for destination evidence. Binder enforces trusted catalog ceilings over self-declared complexity limits. Verification passes: S7R2 13/0/0, S4 16/0/0, S6 8/0/0, S7 7/0/0, Gate A 80/0/0, make test 27 OK, git diff --check clean. M1.2 is ready after commit and owner confirmation."}
+ {"timestamp":"2026-06-20T21:25:05-07:00","milestone":"M1.2","slice":"unblock_after_s7r2_external_review","from":"READY_AFTER_M1_1S_S7R2_COMMIT_AND_OWNER_CONFIRMATION","to":"UNBLOCKED_NOT_STARTED","actor":"controller","evidence":["docs/reviews/2026-06-20-m1-1s-gate-s7r2-external-review.md","delivery/m1.1/status.yaml","delivery/m1.2/status.yaml","delivery/m1.2/SPEC.md","review-packets/m1-1s-gate-s7r2-final-unblock-2026-06-20.zip","5428d9d"],"notes":"External review returned APPROVE_M1_2_UNBLOCKED for committed S7R2. M1.1S is complete and M1.2 is unblocked. Added the required M1.2 S0 guard: Hermes-visible capabilities must expose only proven-safe operator/source combinations, with exists/count_at_least limited to declared anchor_evaluations until broader collection semantics are designed and tested. Added the human visual inspection boundary: S1 manual reference workshop must include plain coordinate replay; polished UI remains out of scope."}
+ {"timestamp":"2026-06-21T11:45:00-07:00","milestone":"M1.2","slice":"S2C_agent_identity_strict_output_blind_evaluation","from":"S2B_MODEL_BACKED_HERMES_CONTROLLER_VERIFIED_WITH_EXTERNAL_REQUIRED_CHANGES","to":"S2C_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW","actor":"controller","evidence":["/Users/luisrevilla/.codex/attachments/84a85254-37df-4fc6-9281-75be2b26455a/pasted-text.txt","delivery/m1.2/SPEC.md","delivery/m1.2/status.yaml","src/tqe/workshop/hermes_s2.py","src/tqe/verification/m1_2_gate_s2.py","config/evaluation/m1_2_s2c_blind_corpus.json","artifacts/m1.2/gate-s2-verification-report.json","artifacts/m1.2/agent-evaluation-report.json","artifacts/m1.2/agent-blind-evaluation-report.json","artifacts/m1.2/hermes-s2-trace-report.json","artifacts/m1.2/verification-report.json","artifacts/m1.1/gate-s7r-verification-report.json","docs/reviews/2026-06-21-m1-2-s2c-external-review.md","docs/learnings/2026-06-21-m1-2-s2c-agent-identity-strict-eval.md"],"notes":"Integrated external S2B decision APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S3 as S2C. The compiler is now honestly identified as ModelBackedTacticalQueryCompiler rather than a completed Hermes runtime. Model outputs pass strict action-specific Pydantic validation, explicit semantic validation, one bounded repair turn, and fail closed as MODEL_OUTPUT_INVALID when still invalid. Failed plan binding returns PLAN_VALIDATION_FAILED. Evaluation now scores exact recipe/parameter/clarification/gap expectations and includes a separate blind corpus. Confirmed execution traces include clarification lineage, model metadata, full context/schema hashes, raw structured output, ordered tool calls, host confirmation, execution, inspection, and replay handles. Verification passes: make m1-2-gate-s2-verify 19/0, make m1-2-verify 3/0, make test 27 OK, make m1-1-gate-s7r-verify 13/0/0. S3 remains blocked pending external S2C review."}
++{"timestamp":"2026-06-21T12:45:00-07:00","milestone":"M1.2","slice":"S2D_session_provenance_and_evaluation_integrity","from":"S2C_CONTROLLER_VERIFIED_PENDING_EXTERNAL_REVIEW","to":"S2D_PROVENANCE_CONTROLLER_VERIFIED_SEALED_SET_PENDING","actor":"controller","evidence":["/Users/luisrevilla/.codex/attachments/686d3570-58be-461b-bbd4-788ad05541af/pasted-text.txt","delivery/m1.2/SPEC.md","delivery/m1.2/status.yaml","src/tqe/workshop/hermes_s2.py","src/tqe/verification/m1_2_gate_s2.py","artifacts/m1.2/gate-s2-verification-report.json","artifacts/m1.2/agent-evaluation-report.json","artifacts/m1.2/agent-blind-evaluation-report.json","artifacts/m1.2/hermes-s2-trace-report.json","artifacts/m1.2/workshop/compiler-sessions","docs/reviews/2026-06-21-m1-2-s2d-external-review.md","docs/learnings/2026-06-21-m1-2-s2d-provenance-integrity.md"],"notes":"Integrated external S2C decision APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S3 as S2D. Added host-owned session_id, turn_id, and parent_turn_id; persisted compiler session records linking clarification questions, answers, model decisions, draft/bound hashes, confirmation, execution, inspection, and replay. Model decision traces now include attempts, raw outputs, schema/semantic validation results, repair_count, and final_accepted_output. Evaluation reports now expose first-pass accuracy and repair rates by category. requested_evidence was removed from the model decision schema until it has real execution semantics. Product/spec/verifier language now uses model-backed compiler, agent caller profile, and model-visible boundary. make m1-2-gate-s2-verify passes 21/0. S3 remains blocked pending owner or independent reviewer sealed 8/4/4 prompt set at config/evaluation/m1_2_s2d_sealed_prompt_set.json and one frozen compiler run."}
+diff --git a/delivery/m1.2/SPEC.md b/delivery/m1.2/SPEC.md
+index f1b13a1..a42a8ca 100644
+--- a/delivery/m1.2/SPEC.md
++++ b/delivery/m1.2/SPEC.md
+@@ -2,11 +2,11 @@
+ 
+ ## Product Outcome
+ 
+-A soccer expert can describe a positional process, inspect Hermes's interpretation, execute the bound query plan, review real moments and non-matches, label good and bad results, approve an explicit revision, and save a new immutable experimental recipe version.
++A soccer expert can describe a positional process, inspect the model-backed compiler's interpretation, execute the bound query plan, review real moments and non-matches, label good and bad results, approve an explicit revision, and save a new immutable experimental recipe version.
+ 
+ ## Boundary Decision
+ 
+-M1.2 makes Hermes a first-class client of the M1.1 deterministic runtime. It does not invent a separate agent analytics path.
++M1.2 makes a model-backed tactical query compiler a bounded client of the M1.1 deterministic runtime. It does not invent a separate agent analytics path.
+ 
+ M1.2 begins only after M1.1 is accepted. If M1.1 fails, the problem is architectural. If M1.2 fails, the deterministic runtime remains valuable and the problem is language interpretation or interaction design.
+ 
+@@ -18,8 +18,8 @@ The externally approved M1.2 opening cut is:
+ 
+ ```text
+ S0  Freeze the safe capability and tool boundary.
+-S1  Build the manual reference workshop before Hermes.
+-S2  Add Hermes drafting and clarification only after S1 works manually.
++S1  Build the manual reference workshop before model-backed compilation.
++S2  Add model-backed drafting and clarification only after S1 works manually.
+ S3  Add feedback-driven revision diffs and immutable recipe versions.
+ ```
+ 
+@@ -30,7 +30,7 @@ scope until the manual typed-plan -> execution -> traces -> coordinate replay
+ External review on 2026-06-21 required an S0R/S1R boundary correction before
+ S2. The corrected pre-S2 boundary is:
+ 
+-- Hermes and the manual client submit typed plan documents and receive opaque
++- the model-backed compiler and the manual client submit typed plan documents and receive opaque
+   host-owned handles, not filesystem paths.
+ - Tool schemas are generated from Pydantic request and response models.
+ - The host selects compatibility mode; legacy parity is restricted to the frozen
+@@ -38,24 +38,24 @@ S2. The corrected pre-S2 boundary is:
+ - Result inspection, non-match inspection, replay retrieval, and feedback
+   resolve through immutable `execution_id` records.
+ - The manual reference proof must call the same serialized dispatcher that
+-  Hermes will use later.
++  model-backed compiler will use later.
+ 
+ A second external review on 2026-06-21 approved that direction but required one
+ more S0R2/S1R2 trust-boundary patch before S2:
+ 
+-- Every tool call is evaluated under an explicit caller profile. Hermes sees
++- Every tool call is evaluated under an explicit caller profile. The model-backed compiler sees
+   only the S2-safe tool surface; host/manual verification can use the full
+   reference surface.
+ - Execution confirmation is host-owned. `validate_query_plan` creates an
+   unconfirmed bound handle, and `host_confirm_bound_plan` creates the execution
+-  authorization. Hermes cannot mint or choose authorization IDs.
++  authorization. The model-backed compiler cannot mint or choose authorization IDs.
+ - Draft, bound, execution, replay, recipe, and authorization handles are opaque,
+   pattern-validated, storage-root confined, and create-once.
+-- Hermes-authored submitted plans must be `EXPERIMENTAL`.
+-- Non-authorable catalog nodes cannot appear in Hermes-authored plans. The only
++- model-authored submitted plans must be `EXPERIMENTAL`.
++- Non-authorable catalog nodes cannot appear in model-authored plans. The only
+   approved legacy path is the exact trusted frozen M1 recipe, selected by host
+   binding/hash rather than by model request.
+-- Hermes-visible replay responses return replay-window handles and summary
++- model-visible replay responses return replay-window handles and summary
+   metadata, not local filesystem paths. Host/UI code may resolve replay artifacts
+   internally.
+ - Target-time replay resolution maps supplied timestamps to canonical frames and
+@@ -86,7 +86,7 @@ guardrails:
+   submit -> validate -> host confirmation -> execute -> inspect -> replay;
+ - keep host confirmation outside model control;
+ - use recipe lookup and drafting without exposing filesystem paths or allowing
+-  Hermes-authored approved documents;
++  model-authored approved documents;
+ - persist the language-to-execution trace, including original language,
+   selected recipe or draft, draft/bound hashes, validation, confirmation event,
+   execution ID, result IDs, and tool calls;
+@@ -100,10 +100,10 @@ The first S2 implementation is explicitly named **S2A - Deterministic Compiler
+ Contract**. It remains as a deterministic reference fixture and offline fallback,
+ but it is not sufficient for S3 by itself.
+ 
+-External review required **S2B - Model-Backed Hermes Compiler and Corpus
++External review required **S2B - Model-Backed Compiler and Corpus
+ Evaluation** before S3:
+ 
+-- use a real model-backed Hermes client, not a keyword router;
++- use a real model-backed compiler client, not a keyword router;
+ - keep model output bounded to trusted recipe selection, typed experimental
+   draft, clarification request, or structured capability gap;
+ - prove two semantically different supported requests create different validated
+@@ -118,7 +118,7 @@ Evaluation** before S3:
+ 
+ M1.2 includes:
+ 
+-- Hermes/tool-mediated drafting of `DraftQueryPlan` objects;
++- model/tool-mediated drafting of `DraftQueryPlan` objects;
+ - recipe search across approved, user-saved, experimental, and deprecated recipes;
+ - deterministic validation and binding before execution;
+ - visible interpretation and confirmation before execution;
+@@ -147,7 +147,7 @@ M1.2 excludes:
+ - polished M3/M5-grade workbench design;
+ - production persistence, auth, cloud deployment, or match video.
+ 
+-## Hermes Tool Boundary
++## Model-Visible Tool Boundary
+ 
+ During S0/S1, the exposed tool surface is intentionally limited to:
+ 
+@@ -170,10 +170,10 @@ record_feedback
+ save_experimental_recipe
+ ```
+ 
+-Hermes drafting tools are deferred to S2 and must be added only after this
++Model-backed drafting tools are deferred to S2 and must be added only after this
+ manual surface is reviewed.
+ 
+-Hermes may not use:
++The model-backed compiler may not use:
+ 
+ ```text
+ arbitrary Python execution
+@@ -185,7 +185,7 @@ threshold auto-tuning
+ complete raw-match coordinate dumps
+ ```
+ 
+-Hermes has access to the complete dataset through scoped tools, not by loading coordinates into model context.
++The model-backed compiler has access to the complete dataset through scoped tools, not by loading coordinates into model context.
+ 
+ `retrieve_tracking_window` returns:
+ 
+@@ -198,7 +198,7 @@ It must not place hundreds or thousands of coordinate rows into the model contex
+ 
+ ## Runtime Decision Process
+ 
+-Hermes follows this order:
++The model-backed compiler follows this order:
+ 
+ 1. Search approved recipes.
+ 2. Search user-saved recipes.
+@@ -207,20 +207,20 @@ Hermes follows this order:
+ 
+ Unsupported concepts must not be silently approximated. A disclosed approximation can be proposed, but it cannot execute as if it were exact.
+ 
+-Hermes may not fabricate explanations for non-matches. It must present the engine result, including `NO_COMPATIBLE_ANCHOR` when applicable.
++The model-backed compiler may not fabricate explanations for non-matches. It must present the engine result, including `NO_COMPATIBLE_ANCHOR` when applicable.
+ 
+ ## M1.2 S0 Capability Guard
+ 
+-The Hermes-visible capability context is stricter than the internal catalog. S0 must expose only operator/source combinations with positive proof coverage.
++The model-visible capability context is stricter than the internal catalog. S0 must expose only operator/source combinations with positive proof coverage.
+ 
+ Until broader collection semantics are intentionally designed and tested:
+ 
+-- Hermes may use `exists` and `count_at_least` only for declared `anchor_evaluations` coverage outputs;
+-- Hermes must not bind `exists` or `count_at_least` directly to raw relation episode collections;
+-- Hermes must not use generic Boolean `EpisodeSet` counting as if it were anchor-relative;
++- the model-backed compiler may use `exists` and `count_at_least` only for declared `anchor_evaluations` coverage outputs;
++- the model-backed compiler must not bind `exists` or `count_at_least` directly to raw relation episode collections;
++- the model-backed compiler must not use generic Boolean `EpisodeSet` counting as if it were anchor-relative;
+ - rejected or hidden combinations must appear as explicit capability gaps, not silent approximations.
+ 
+-The S0 verifier must prove that the Hermes-facing capability context enforces this safe subset even if the internal runtime contains broader compatibility paths.
++The S0 verifier must prove that the model-facing capability context enforces this safe subset even if the internal runtime contains broader compatibility paths.
+ 
+ ## Human Visual Inspection Boundary
+ 
+@@ -287,7 +287,7 @@ Inside or progressive geometric corridor
+ persisting at least 0.4 seconds
+ ```
+ 
+-All result deltas must be computed by the deterministic engine, not by Hermes.
++All result deltas must be computed by the deterministic engine, not by the model-backed compiler.
+ 
+ ## Persistence
+ 
+@@ -363,7 +363,7 @@ Hard acceptance:
+   `anchor_evaluations`;
+ - host-owned complexity ceilings are visible and enforced by validation;
+ - unsupported concepts fail as capability gaps;
+-- manual plan validation works without Hermes;
++- manual plan validation works without the model-backed compiler;
+ - clients use `draft_plan_id`, `bound_plan_id`, `execution_id`, and
+   `replay_window_id` handles instead of local paths.
+ - repeated submit, validate, execute, and replay calls are idempotent for
+@@ -384,35 +384,35 @@ Hard acceptance:
+   frame;
+ - target inspection includes a real compatible-anchor predicate-failure example,
+   not only a no-compatible-anchor case;
+-- all manual actions flow through the same serialized dispatcher Hermes will use
++- all manual actions flow through the same serialized dispatcher the model-backed compiler will use
+   later;
+ - feedback labels `MATCHES_INTENT`, `NEAR_MATCH`, `FALSE_POSITIVE`,
+   `KNOWN_MISS`, and `UNUSABLE_DATA` are recorded through a schema-valid tool;
+ - an experimental recipe can be saved as an immutable content-addressed
+   version;
+ - a plain local replay workshop artifact is generated;
+-- no Hermes, model calls, canned prompts, or hardcoded result moments are used.
++- no model calls, canned prompts, or hardcoded result moments are used.
+ 
+ ### Gate A - Tool Boundary and Capability Context
+ 
+ Hard acceptance:
+ 
+-- Hermes tool surface is bounded to the approved tools;
++- model-visible tool surface is bounded to the approved tools;
+ - no filesystem editing, code execution, SQL, primitive mutation, result-row mutation, threshold auto-tuning, or raw coordinate dumps are available;
+ - generated capability context includes primitives, relations, operators, recipe states, limitations, and supported evidence fields;
+ - unsupported concepts produce capability-gap responses;
+-- manual plan entry remains usable without Hermes.
++- manual plan entry remains usable without the model-backed compiler.
+ 
+ ### Gate B - Draft, Bind, Confirm, Execute
+ 
+ Hard acceptance:
+ 
+-- Hermes produces only schema-valid draft plans or explicit refusals;
++- the model-backed compiler produces only schema-valid draft plans or explicit refusals;
+ - all plans are validated/bound by the deterministic compiler before execution;
+ - user sees the interpretation before execution;
+ - every assistant execution records original text, draft plan, bound plan, confirmation, result IDs, hashes, scope, and provenance;
+-- the same bound plan produces identical results whether invoked manually or by Hermes;
+-- manual plan inspector remains usable when Hermes is unavailable.
++- the same bound plan produces identical results whether invoked manually or by the model-backed compiler;
++- manual plan inspector remains usable when the model-backed compiler is unavailable.
+ 
+ ### S2A - Deterministic Compiler Contract
+ 
+@@ -421,24 +421,24 @@ Hard acceptance:
+ - supported progressive-corridor prompts compile to `EXPERIMENTAL` typed draft
+   plans through `dispatch_model_visible(..., caller_profile=HERMES_S2)`;
+ - approved recipes are selected as trusted host records, not submitted as
+-  Hermes-authored approved documents;
++  model-authored approved documents;
+ - ambiguous support language asks clarification before drafting;
+ - unsupported concepts such as body orientation, intent, optimality,
+   communication, video, and pass probability return explicit capability gaps;
+-- host confirmation remains outside the compile response and outside Hermes tool
++- host confirmation remains outside the compile response and outside model-visible tool
+   calls;
+ - after host confirmation, execution, result inspection, and replay retrieval
+-  succeed through the Hermes caller profile;
++  succeed through the agent caller profile;
+ - semantically equivalent language requests may share content-addressed handles
+   while preserving separate language traces;
+ - the initial evaluation corpus contains at least 20 supported, 10 ambiguous,
+   and 10 unsupported prompts.
+ 
+-### S2B - Model-Backed Hermes Compiler And Corpus Evaluation
++### S2B - Model-Backed Compiler And Corpus Evaluation
+ 
+ Hard acceptance:
+ 
+-- a real model-backed Hermes client receives the tactical system instructions,
++- a real model-backed compiler client receives the tactical system instructions,
+   safe capability context, tool schemas, trusted recipe summaries, user request,
+   and clarification history;
+ - model output is bounded to trusted recipe selection, typed experimental draft,
+@@ -504,6 +504,36 @@ Hard acceptance:
+   parameter names, wrong units, and hostile complexity limits fail validation;
+ - prompt-injection and unauthorized-action tests remain fail-closed.
+ 
++### S2D - Session Provenance And Evaluation Integrity
++
++External S2C review approved the core compiler but blocked S3 until provenance
++and evaluation integrity were strong enough for feedback and revision lineage.
++
++Hard acceptance:
++
++- every compiler request receives a host-owned `session_id` and `turn_id`;
++- clarification answers reference the original clarification turn through
++  `parent_turn_id`;
++- session records contain the original request, model questions, user answers,
++  model decisions, draft/bound plan hashes, confirmation event, execution ID,
++  inspection handle, and replay handle;
++- every model decision trace records all attempts, raw outputs, schema
++  validation results, semantic validation results, `repair_count`, and the final
++  accepted output;
++- evaluation summaries report first-pass accuracy, after-repair accuracy, and
++  repair rate by category;
++- the previous "blind" corpus is described as a separate held-out regression set,
++  not proof of external blindness;
++- the verifier supports an externally sealed prompt set at
++  `config/evaluation/m1_2_s2d_sealed_prompt_set.json`;
++- S3 remains blocked until an owner or independent reviewer supplies that sealed
++  set after code/prompt freeze and the frozen compiler run is preserved;
++- `requested_evidence` is not accepted in the model decision schema until it has
++  real execution semantics;
++- product/spec/verifier language uses "model-backed compiler", "agent caller
++  profile", and "model-visible tool boundary"; "Hermes integration" is reserved
++  for a real Hermes adapter.
++
+ ### Gate C - Feedback and Non-Match Inspection
+ 
+ Hard acceptance:
+@@ -519,7 +549,7 @@ Hard acceptance:
+ 
+ Hard acceptance:
+ 
+-- Hermes proposes explicit revisions using available primitives/relations only;
++- the model-backed compiler proposes explicit revisions using available primitives/relations only;
+ - semantic and raw diffs are visible;
+ - full-corpus added, removed, and retained result sets are inspectable;
+ - previous versions remain reproducible and executable;
+@@ -582,13 +612,13 @@ make m1-1-verify
+ make m1-2-verify
+ ```
+ 
+-`make m1-2-verify` must fail if Hermes bypasses the binder, unsupported concepts are silently approximated, revisions happen without confirmation, prior versions are unreproducible, feedback is lost across restart, result deltas are model-computed, or workshop evidence is hardcoded.
++`make m1-2-verify` must fail if the model-backed compiler bypasses the binder, unsupported concepts are silently approximated, revisions happen without confirmation, prior versions are unreproducible, feedback is lost across restart, result deltas are model-computed, or workshop evidence is hardcoded.
+ 
+ ## Anti-Reward-Hacking Rules
+ 
+-- Hermes never executes generated code.
+-- Hermes never mutates primitive implementations.
+-- Hermes never silently changes thresholds or semantics.
++- The model-backed compiler never executes generated code.
++- The model-backed compiler never mutates primitive implementations.
++- The model-backed compiler never silently changes thresholds or semantics.
+ - Agent memory cannot change query semantics; persisted recipes and feedback are explicit and versioned.
+ - Unsupported concepts produce capability gaps, not nearby substitute executions.
+ - Experimental, user-saved, approved, and deprecated recipes remain visually distinct.
+@@ -601,7 +631,7 @@ make m1-2-verify
+ 
+ Stop and reassess if:
+ 
+-- Hermes succeeds only on canned prompts;
++- The model-backed compiler succeeds only on canned prompts;
+ - unsupported prompts execute as approximate supported prompts;
+ - feedback causes hidden threshold tuning;
+ - query versions cannot be reproduced;
+diff --git a/delivery/m1.2/status.yaml b/delivery/m1.2/status.yaml
+index 6a5265e..ffabd10 100644
+--- a/delivery/m1.2/status.yaml
++++ b/delivery/m1.2/status.yaml
+@@ -1,6 +1,6 @@
+ milestone: M1.2
+ name: "Grounded Tactical Query Workshop"
+-state: S2C_AGENT_IDENTITY_STRICT_OUTPUT_BLIND_EVAL_CONTROLLER_VERIFIED
++state: S2D_SESSION_PROVENANCE_DONE_SEALED_SET_PENDING
+ source_of_truth: delivery/m1.2/SPEC.md
+ last_updated: "2026-06-21"
+ preconditions:
+@@ -18,8 +18,9 @@ slices:
+   S1R2_replay_target_resolution_and_schema_dispatch: DONE_CONTROLLER_VERIFIED
+   S1R3_resolved_target_consistency_and_predicate_failure_probe: DONE_CONTROLLER_VERIFIED
+   S2A_deterministic_compiler_contract: DONE_CONTROLLER_VERIFIED
+-  S2B_model_backed_hermes_compiler_and_corpus_evaluation: DONE_CONTROLLER_VERIFIED
++  S2B_model_backed_compiler_and_corpus_evaluation: DONE_CONTROLLER_VERIFIED
+   S2C_agent_identity_strict_output_and_blind_evaluation: DONE_CONTROLLER_VERIFIED
++  S2D_session_provenance_and_evaluation_integrity: DONE_CONTROLLER_VERIFIED_EXCEPT_INDEPENDENT_SEALED_SET
+   S3_revision_diff_feedback_and_recipe_loop: NOT_STARTED
+ promotion_gates:
+   Gate_S0_tool_boundary_capability_context: PASS_CONTROLLER
+@@ -31,15 +32,17 @@ promotion_gates:
+   Gate_S1R2_canonical_target_replay_and_model_visible_schema_conformance: PASS_CONTROLLER
+   Gate_S1R3_inspection_replay_same_frame_and_failed_predicate_target: PASS_CONTROLLER
+   Gate_S2A_deterministic_compiler_contract: PASS_CONTROLLER
+-  Gate_S2B_model_backed_hermes_and_corpus_evaluation: PASS_CONTROLLER
++  Gate_S2B_model_backed_compiler_and_corpus_evaluation: PASS_CONTROLLER
+   Gate_S2C_agent_identity_strict_output_blind_eval_trace_completeness: PASS_CONTROLLER
++  Gate_S2D_session_provenance_repair_stats_requested_evidence_removed: PASS_CONTROLLER
++  Gate_S2D_independent_sealed_prompt_set: BLOCKED_PENDING_OWNER_OR_EXTERNAL_REVIEWER_ARTIFACT
+   Gate_S3_revision_recipe_loop: NOT_STARTED
+ verification:
+   automated: PASS_FOR_S0_S1_S2
+   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+-  independent_review: S2B_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S3
+-  controller_review: S2C_PASS_PENDING_EXTERNAL_REVIEW
+-  owner_acceptance: APPROVED_TO_PROCEED
++  independent_review: S2C_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S3
++  controller_review: S2D_PROVENANCE_PASS_SEALED_SET_PENDING
++  owner_acceptance: BLOCKED_BEFORE_S3_UNTIL_SEALED_SET_RUN
+ evidence:
+   S0_report: artifacts/m1.2/gate-s0-verification-report.json
+   S1_report: artifacts/m1.2/gate-s1-verification-report.json
+@@ -51,9 +54,11 @@ evidence:
+   S2_blind_eval_corpus: artifacts/m1.2/agent-blind-evaluation-corpus.json
+   S2_blind_eval_report: artifacts/m1.2/agent-blind-evaluation-report.json
+   S2_blind_eval_source: config/evaluation/m1_2_s2c_blind_corpus.json
++  S2D_sealed_eval_source_required: config/evaluation/m1_2_s2d_sealed_prompt_set.json
++  S2D_sealed_eval_report_when_available: artifacts/m1.2/agent-sealed-evaluation-report.json
+   capability_context: generated/capability-context.json
+   workshop_html: artifacts/m1.2/workshop/index.html
+   workshop_data: artifacts/m1.2/workshop/manual-workshop-data.json
+ next_step:
+   external_review: REQUIRED_BEFORE_S3
+-  scope: "Review S2C agent-neutral compiler identity, strict output/semantic validation, blind corpus scores, clarification session lineage, full trace artifacts, and validation-failure handling before S3."
++  scope: "Have owner or independent reviewer provide the sealed 8/4/4 prompt set after commit freeze, run the frozen compiler once, then review S2D provenance, repair-attempt accounting, first-pass/after-repair stats, requested_evidence removal, and terminology cleanup before S3."
+diff --git a/docs/learnings/2026-06-21-m1-2-s2d-provenance-integrity.md b/docs/learnings/2026-06-21-m1-2-s2d-provenance-integrity.md
+new file mode 100644
+index 0000000..30d4930
+--- /dev/null
++++ b/docs/learnings/2026-06-21-m1-2-s2d-provenance-integrity.md
+@@ -0,0 +1,21 @@
++# M1.2 S2D Learning
++
++Fact: A clarification answer is not enough by itself. The system needs a stable
++session object that links the original model question, the user answer, the
++validated plan, host confirmation, execution, inspection, replay, and future
++revision events.
++
++Decision: S2D introduces host-owned session and turn IDs and persists session
++records independently from individual compile traces.
++
++Learning: Repair turns are acceptable only when they are visible. Evaluation
++reports must distinguish first-pass behavior from after-repair behavior, or the
++compiler can look more reliable than it really is.
++
++Learning: No accepted model field may be decorative. `requested_evidence` was
++removed from the decision schema until plan generation gives it real execution
++semantics.
++
++Follow-up: S3 must not begin until an owner or independent reviewer supplies the
++sealed prompt set after code/prompt freeze and the frozen compiler run is
++preserved.
+diff --git a/docs/reviews/2026-06-21-m1-2-s2d-external-review.md b/docs/reviews/2026-06-21-m1-2-s2d-external-review.md
+new file mode 100644
+index 0000000..29d7a5f
+--- /dev/null
++++ b/docs/reviews/2026-06-21-m1-2-s2d-external-review.md
+@@ -0,0 +1,36 @@
++# M1.2 S2D External Review Integration
++
++External decision: `APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S3`.
++
++S2C was accepted as a useful bounded compiler milestone, but S3 remained blocked
++on session provenance and evaluation integrity.
++
++Integrated S2D corrections:
++
++- added host-owned `session_id`, `turn_id`, and `parent_turn_id` to compiler
++  requests and responses;
++- persisted session records under `artifacts/m1.2/workshop/compiler-sessions/`;
++- linked clarification question turns, answered turns, and confirmed execution
++  events in the same session record;
++- added model decision `attempts`, `repair_count`, and `final_accepted_output`
++  to compile and execution traces;
++- added first-pass accuracy and repair-rate-by-category to evaluation reports;
++- removed `requested_evidence` from the model decision schema until it has real
++  plan semantics;
++- updated milestone terminology to use model-backed compiler, agent caller
++  profile, and model-visible tool boundary;
++- added sealed-set runner support for
++  `config/evaluation/m1_2_s2d_sealed_prompt_set.json`.
++
++Controller verification:
++
++- `make m1-2-gate-s2-verify`: pass, 21/21.
++
++Remaining required artifact before S3:
++
++- owner or independent reviewer must provide the sealed 8 supported / 4
++  ambiguous / 4 unsupported prompt set after compiler code/prompt freeze;
++- run the frozen compiler once and preserve
++  `artifacts/m1.2/agent-sealed-evaluation-report.json`.
++
++S3 remains blocked until that sealed run is complete and reviewed.
+diff --git a/src/tqe/verification/m1_2_gate_s2.py b/src/tqe/verification/m1_2_gate_s2.py
+index 0d150b8..f56a34b 100644
+--- a/src/tqe/verification/m1_2_gate_s2.py
++++ b/src/tqe/verification/m1_2_gate_s2.py
+@@ -1,4 +1,4 @@
+-"""Verify M1.2 S2: bounded Hermes drafting and clarification shell."""
++"""Verify M1.2 S2: bounded model-backed compiler and clarification shell."""
+ 
+ from __future__ import annotations
+ 
+@@ -30,6 +30,8 @@ BLIND_CORPUS_SOURCE_PATH = Path("config/evaluation/m1_2_s2c_blind_corpus.json")
+ EVALUATION_REPORT_PATH = Path("artifacts/m1.2/agent-evaluation-report.json")
+ BLIND_EVALUATION_REPORT_PATH = Path("artifacts/m1.2/agent-blind-evaluation-report.json")
+ TRACE_REPORT_PATH = Path("artifacts/m1.2/hermes-s2-trace-report.json")
++SEALED_CORPUS_SOURCE_PATH = Path("config/evaluation/m1_2_s2d_sealed_prompt_set.json")
++SEALED_EVALUATION_REPORT_PATH = Path("artifacts/m1.2/agent-sealed-evaluation-report.json")
+ 
+ 
+ def utc_now_iso() -> str:
+@@ -41,11 +43,20 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
+     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+ 
+ 
++def read_json_path(path: Path) -> dict[str, Any]:
++    return json.loads(path.read_text(encoding="utf-8"))
++
++
+ def trace_artifact(trace_id: str) -> dict[str, str]:
+     path = DEFAULT_WORKSHOP_ROOT / "hermes-traces" / f"{trace_id}.json"
+     return {"trace_id": trace_id, "path": str(path)}
+ 
+ 
++def session_artifact(session_id: str) -> dict[str, str]:
++    path = DEFAULT_WORKSHOP_ROOT / "compiler-sessions" / f"{session_id}.json"
++    return {"session_id": session_id, "path": str(path)}
++
++
+ def check(check_id: str, passed: bool, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
+     return {
+         "id": check_id,
+@@ -68,16 +79,18 @@ def build_report() -> dict[str, Any]:
+     )
+     checks.append(
+         check(
+-            "s2.hermes_experimental_draft_validated",
++            "s2.compiler_experimental_draft_validated",
+             compile_response.status == HermesCompileStatus.DRAFT_VALIDATED
+             and compile_response.agent_kind == "model_backed_tactical_query_compiler"
+             and compile_response.agent_identity == "ModelBackedTacticalQueryCompiler"
++            and compile_response.session_id.startswith("session_")
++            and compile_response.turn_id.startswith("turn_")
+             and bool(compile_response.draft_plan_id)
+             and bool(compile_response.bound_plan_id)
+             and compile_response.validation_result is not None
+             and compile_response.validation_result.get("plan_status") == "experimental"
+             and all(call["caller_profile"] == CallerProfile.HERMES_S2.value for call in compile_response.tool_calls),
+-            "Hermes compiles a supported prompt into a validated experimental draft through the Hermes caller profile.",
++            "The model-backed compiler compiles a supported prompt into a validated experimental draft through the agent caller profile.",
+             compile_response.model_dump(mode="json"),
+         )
+     )
+@@ -109,12 +122,12 @@ def build_report() -> dict[str, Any]:
+     execution_trace = confirmed_session["trace"]
+     checks.append(
+         check(
+-            "s2.hermes_confirmed_execution_grounded",
++            "s2.compiler_confirmed_execution_grounded",
+             execution["total_result_count"] > 0
+             and bool(inspection["predicate_traces"])
+             and replay["frame_count"] > 0
+             and execution_trace["original_language"] == compile_response.original_language,
+-            "After host confirmation, Hermes executes, inspects, and retrieves replay through the model-visible boundary.",
++            "After host confirmation, the compiler path executes, inspects, and retrieves replay through the model-visible boundary.",
+             {
+                 "execution_id": execution["execution_id"],
+                 "result_count": execution["total_result_count"],
+@@ -145,6 +158,8 @@ def build_report() -> dict[str, Any]:
+         check(
+             "s2.full_session_metadata_recorded",
+             execution_trace["agent_identity"] == "ModelBackedTacticalQueryCompiler"
++            and execution_trace["session_id"] == compile_response.session_id
++            and execution_trace["turn_id"] == compile_response.turn_id
+             and bool(execution_trace["system_prompt_hash"])
+             and bool(execution_trace["capability_context_hash"])
+             and bool(execution_trace["tool_schema_hash"])
+@@ -168,7 +183,7 @@ def build_report() -> dict[str, Any]:
+             "s2.confirmation_boundary_preserved",
+             authorization.execution_authorization_id not in json.dumps(compile_response.model_dump(mode="json"))
+             and not any(call["tool_name"] == "host_confirm_bound_plan" for call in compile_response.tool_calls),
+-            "Hermes compile output does not mint or receive execution authorization before host confirmation.",
++            "Compiler output does not mint or receive execution authorization before host confirmation.",
+             {"compile_trace_id": compile_response.trace_id},
+         )
+     )
+@@ -212,7 +227,7 @@ def build_report() -> dict[str, Any]:
+             and approved.selected_recipe["state"] == "APPROVED"
+             and approved.draft_plan_id is None
+             and not any(call["tool_name"] == "submit_query_plan" for call in approved.tool_calls),
+-            "Approved recipes are selected as trusted host records rather than submitted as Hermes-authored approved documents.",
++            "Approved recipes are selected as trusted host records rather than submitted as model-authored approved documents.",
+             approved.model_dump(mode="json"),
+         )
+     )
+@@ -271,6 +286,8 @@ def build_report() -> dict[str, Any]:
+         HermesCompileRequest(
+             original_language="Show support after the line break.",
+             clarifications=["Progressive corridor within two seconds."],
++            session_id=clarification_start.session_id,
++            parent_turn_id=clarification_start.turn_id,
+         )
+     )
+     checks.append(
+@@ -278,6 +295,8 @@ def build_report() -> dict[str, Any]:
+             "s2.clarification_round_trip_to_validated_plan",
+             clarification_start.status == HermesCompileStatus.CLARIFICATION_REQUIRED
+             and clarification_answered.status == HermesCompileStatus.DRAFT_VALIDATED
++            and clarification_answered.session_id == clarification_start.session_id
++            and clarification_answered.parent_turn_id == clarification_start.turn_id
+             and clarification_answered.interpretation.get("corridor_parameters", {}).get("corridor_max_window_seconds") == 2.0,
+             "A clarification answer changes an ambiguous support request into a validated supported plan.",
+             {
+@@ -304,6 +323,30 @@ def build_report() -> dict[str, Any]:
+             {"trace_id": clarified_session["trace"]["trace_id"], "clarification_turns": clarified_session["trace"]["clarification_turns"]},
+         )
+     )
++    clarified_session_record = read_json_path(
++        DEFAULT_WORKSHOP_ROOT / "compiler-sessions" / f"{clarification_start.session_id}.json"
++    )
++    checks.append(
++        check(
++            "s2.session_record_links_clarification_execution",
++            clarified_session_record["session_id"] == clarification_start.session_id
++            and len(clarified_session_record["turns"]) >= 2
++            and any(turn["turn_id"] == clarification_start.turn_id for turn in clarified_session_record["turns"])
++            and any(
++                turn["turn_id"] == clarification_answered.turn_id
++                and turn["parent_turn_id"] == clarification_start.turn_id
++                and turn["clarification_answers"] == ["Progressive corridor within two seconds."]
++                for turn in clarified_session_record["turns"]
++            )
++            and any(item["execution_id"] == clarified_session["execution"]["execution_id"] for item in clarified_session_record["executions"]),
++            "Host-owned session record links initial question, answered turn, and confirmed execution.",
++            {
++                "session": session_artifact(clarification_start.session_id),
++                "turn_ids": [turn["turn_id"] for turn in clarified_session_record["turns"]],
++                "execution_ids": [item["execution_id"] for item in clarified_session_record["executions"]],
++            },
++        )
++    )
+ 
+     checks.extend(strict_output_and_invalid_plan_checks())
+ 
+@@ -321,6 +364,7 @@ def build_report() -> dict[str, Any]:
+     evaluation_report = evaluate_corpus(corpus, output_path=EVALUATION_REPORT_PATH)
+     blind_corpus = read_blind_corpus()
+     blind_evaluation_report = evaluate_corpus(blind_corpus, output_path=BLIND_EVALUATION_REPORT_PATH)
++    sealed_evaluation_report = evaluate_sealed_corpus_if_present()
+     checks.append(
+         check(
+             "s2.model_backed_corpus_scores_pass",
+@@ -349,6 +393,19 @@ def build_report() -> dict[str, Any]:
+             blind_evaluation_report["summary"],
+         )
+     )
++    checks.append(
++        check(
++            "s2.repair_provenance_and_first_pass_stats_visible",
++            "first_pass_supported_accuracy" in evaluation_report["summary"]
++            and "repair_rate_by_category" in evaluation_report["summary"]
++            and all("attempts" in row and "repair_count" in row for row in evaluation_report["rows"]),
++            "Evaluation rows expose model attempts, repair counts, first-pass accuracy, and repair rates.",
++            {
++                "visible_summary": evaluation_report["summary"],
++                "blind_summary": blind_evaluation_report["summary"],
++            },
++        )
++    )
+ 
+     trace_report = {
+         "schema_version": "1.0",
+@@ -364,6 +421,10 @@ def build_report() -> dict[str, Any]:
+         ],
+         "confirmed_execution_trace": trace_artifact(execution_trace["trace_id"]),
+         "clarified_confirmed_execution_trace": trace_artifact(clarified_session["trace"]["trace_id"]),
++        "sessions": [
++            session_artifact(compile_response.session_id),
++            session_artifact(clarification_start.session_id),
++        ],
+         "model_provider": compile_response.model_provider,
+         "model_name": compile_response.model_name,
+         "agent_identity": compile_response.agent_identity,
+@@ -372,6 +433,7 @@ def build_report() -> dict[str, Any]:
+         "capability_context_hash": compile_response.capability_context_hash,
+         "tool_schema_hash": compile_response.tool_schema_hash,
+         "trusted_recipe_context_hash": compile_response.trusted_recipe_context_hash,
++        "sealed_evaluation": sealed_evaluation_report,
+     }
+     write_json(TRACE_REPORT_PATH, trace_report)
+ 
+@@ -382,7 +444,7 @@ def build_report() -> dict[str, Any]:
+     report = {
+         "schema_version": "1.0",
+         "milestone": "M1.2",
+-        "gate": "S2_hermes_drafting_and_clarification",
++        "gate": "S2_model_backed_compiler_drafting_and_clarification",
+         "generated_at": utc_now_iso(),
+         "status": "pass" if summary["fail"] == 0 else "fail",
+         "summary": summary,
+@@ -390,6 +452,7 @@ def build_report() -> dict[str, Any]:
+             "corpus": str(CORPUS_PATH),
+             "evaluation_report": str(EVALUATION_REPORT_PATH),
+             "blind_evaluation_report": str(BLIND_EVALUATION_REPORT_PATH),
++            "sealed_evaluation_report": str(SEALED_EVALUATION_REPORT_PATH) if SEALED_EVALUATION_REPORT_PATH.exists() else "not_run_requires_independent_prompt_set",
+             "trace_report": str(TRACE_REPORT_PATH),
+         },
+         "checks": checks,
+@@ -526,6 +589,23 @@ def read_blind_corpus() -> dict[str, Any]:
+     return payload
+ 
+ 
++def evaluate_sealed_corpus_if_present() -> dict[str, Any]:
++    if not SEALED_CORPUS_SOURCE_PATH.exists():
++        return {
++            "status": "not_run",
++            "reason": "requires owner or independent reviewer sealed prompt set after compiler freeze",
++            "expected_path": str(SEALED_CORPUS_SOURCE_PATH),
++        }
++    payload = read_json_path(SEALED_CORPUS_SOURCE_PATH)
++    report = evaluate_corpus(payload, output_path=SEALED_EVALUATION_REPORT_PATH)
++    return {
++        "status": "run",
++        "source": str(SEALED_CORPUS_SOURCE_PATH),
++        "report": str(SEALED_EVALUATION_REPORT_PATH),
++        "summary": report["summary"],
++    }
++
++
+ def evaluate_corpus(corpus: dict[str, Any], *, output_path: Path) -> dict[str, Any]:
+     rows = []
+     for category in ("supported", "ambiguous", "unsupported", "held_out"):
+@@ -552,6 +632,9 @@ def evaluate_corpus(corpus: dict[str, Any], *, output_path: Path) -> dict[str, A
+                         "selected_recipe": response.selected_recipe,
+                         "draft_plan_validity": bool(response.validation_result and response.validation_result.get("ok")),
+                         "semantic_expectation": expectation,
++                        "attempts": response.attempts,
++                        "repair_count": response.repair_count,
++                        "first_pass_accepted": bool(response.attempts and response.attempts[0].get("accepted")),
+                         "raw_model_output": response.raw_model_output,
+                         "model_metadata": {
+                             "agent_identity": response.agent_identity,
+@@ -597,6 +680,14 @@ def evaluate_corpus(corpus: dict[str, Any], *, output_path: Path) -> dict[str, A
+         "supported_accuracy": accuracy(supported_rows),
+         "ambiguous_accuracy": accuracy(ambiguous_rows),
+         "unsupported_accuracy": accuracy(unsupported_rows),
++        "first_pass_supported_accuracy": first_pass_accuracy(supported_rows),
++        "first_pass_ambiguous_accuracy": first_pass_accuracy(ambiguous_rows),
++        "first_pass_unsupported_accuracy": first_pass_accuracy(unsupported_rows),
++        "repair_rate_by_category": {
++            "supported": repair_rate(supported_rows),
++            "ambiguous": repair_rate(ambiguous_rows),
++            "unsupported": repair_rate(unsupported_rows),
++        },
+         "invented_identifier_count": sum(int(row.get("invented_identifiers", 0)) for row in rows),
+         "unauthorized_tool_call_count": sum(int(row.get("unauthorized_tool_calls", 0)) for row in rows),
+         "unconfirmed_execution_count": sum(int(row.get("unconfirmed_executions", 0)) for row in rows),
+@@ -729,6 +820,13 @@ def strict_output_and_invalid_plan_checks() -> list[dict[str, Any]]:
+             "interpretation": "negative parameter",
+             "corridor_parameters": {"corridor_minimum_clearance_m": -1.0},
+         },
++        {
++            "action": "draft_corridor",
++            "recipe_id": "possession_corridor_availability_v1",
++            "interpretation": "decorative evidence request",
++            "corridor_parameters": {},
++            "requested_evidence": ["relation_count"],
++        },
+     ]
+     failures = []
+     for payload in invalid_payloads:
+@@ -796,7 +894,6 @@ def validate_mutated_corridor_plan(
+         "recipe_id": "possession_corridor_availability_v1",
+         "interpretation": "adversarial validation probe",
+         "corridor_parameters": {},
+-        "requested_evidence": [],
+     }
+     plan_document = experimental_corridor_plan_for_model_decision(request, decision)
+     plan_document["default_invocation"]["parameters"].update(invocation_parameters)
+@@ -843,6 +940,20 @@ def accuracy(rows: list[dict[str, Any]]) -> float:
+     return sum(1 for row in rows if row["review_outcome"] == "pass") / len(rows)
+ 
+ 
++def first_pass_accuracy(rows: list[dict[str, Any]]) -> float:
++    if not rows:
++        return 0.0
++    return sum(
++        1 for row in rows if row["review_outcome"] == "pass" and row.get("repair_count", 0) == 0
++    ) / len(rows)
++
++
++def repair_rate(rows: list[dict[str, Any]]) -> float:
++    if not rows:
++        return 0.0
++    return sum(1 for row in rows if row.get("repair_count", 0) > 0) / len(rows)
++
++
+ def invented_identifier_count(response: Any) -> int:
+     allowed_recipes = {"ball_side_block_shift_v1", "possession_corridor_availability_v1"}
+     raw = response.raw_model_output or {}
+@@ -871,11 +982,13 @@ def unauthorized_tool_count(response: Any) -> int:
+ 
+ 
+ def clean_s2_artifacts() -> None:
+-    for path in (CORPUS_PATH, EVALUATION_REPORT_PATH, TRACE_REPORT_PATH, REPORT_PATH):
++    for path in (CORPUS_PATH, EVALUATION_REPORT_PATH, BLIND_EVALUATION_REPORT_PATH, SEALED_EVALUATION_REPORT_PATH, TRACE_REPORT_PATH, REPORT_PATH):
+         if path.exists():
+             path.unlink()
+     if (DEFAULT_WORKSHOP_ROOT / "hermes-traces").exists():
+         shutil.rmtree(DEFAULT_WORKSHOP_ROOT / "hermes-traces")
++    if (DEFAULT_WORKSHOP_ROOT / "compiler-sessions").exists():
++        shutil.rmtree(DEFAULT_WORKSHOP_ROOT / "compiler-sessions")
+ 
+ 
+ def main() -> None:
+diff --git a/src/tqe/workshop/hermes_s2.py b/src/tqe/workshop/hermes_s2.py
+index 2fa074e..7ea0f30 100644
+--- a/src/tqe/workshop/hermes_s2.py
++++ b/src/tqe/workshop/hermes_s2.py
+@@ -33,6 +33,7 @@ from tqe.workshop.m1_2 import (
+ APPROVED_M1_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
+ EXPERIMENTAL_CORRIDOR_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
+ TRACE_DIR = DEFAULT_WORKSHOP_ROOT / "hermes-traces"
++SESSION_DIR = DEFAULT_WORKSHOP_ROOT / "compiler-sessions"
+ OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
+ DEFAULT_HERMES_MODEL = "gpt-4o-mini"
+ COMPILER_IDENTITY = "ModelBackedTacticalQueryCompiler"
+@@ -146,12 +147,17 @@ class HermesCompileRequest(StrictModel):
+     original_language: str = Field(min_length=1, max_length=1000)
+     clarifications: list[str] = Field(default_factory=list)
+     requester: str = Field(default="analyst", min_length=1, max_length=80)
++    session_id: str | None = Field(default=None, min_length=1, max_length=80)
++    parent_turn_id: str | None = Field(default=None, min_length=1, max_length=80)
+ 
+ 
+ class HermesCompileResponse(StrictModel):
+     ok: bool
+     status: HermesCompileStatus
+     trace_id: str
++    session_id: str
++    turn_id: str
++    parent_turn_id: str | None = None
+     original_language: str
+     clarifications: list[str] = Field(default_factory=list)
+     agent_kind: Literal["model_backed_tactical_query_compiler", "deterministic_reference"] = "deterministic_reference"
+@@ -168,6 +174,9 @@ class HermesCompileResponse(StrictModel):
+     trusted_recipe_context_hash: str | None = None
+     raw_model_output: dict[str, Any] | None = None
+     model_output_errors: list[dict[str, Any]] = Field(default_factory=list)
++    attempts: list[dict[str, Any]] = Field(default_factory=list)
++    repair_count: int = 0
++    final_accepted_output: dict[str, Any] | None = None
+     interpretation: dict[str, Any]
+     selected_recipe: dict[str, Any] | None = None
+     draft_plan_id: str | None = None
+@@ -203,7 +212,6 @@ class DraftCorridorDecision(StrictModel):
+     recipe_id: Literal["possession_corridor_availability_v1"]
+     interpretation: str = Field(min_length=1, max_length=500)
+     corridor_parameters: CorridorParameters = Field(default_factory=CorridorParameters)
+-    requested_evidence: list[Literal["relation_count", "witness_relation_id"]] = Field(default_factory=list, max_length=2)
+ 
+ 
+ class ClarificationDecision(StrictModel):
+@@ -287,6 +295,10 @@ def compile_hermes_model_request(
+         else:
+             exc = None
+     if isinstance(locals().get("exc"), ValidationError):
++        attempts = model_attempts_from_payload(
++            model_payload,
++            final_schema_errors=exc.errors(),
++        )
+         metadata = {
+             "agent_kind": "model_backed_tactical_query_compiler",
+             "agent_identity": COMPILER_IDENTITY,
+@@ -302,11 +314,15 @@ def compile_hermes_model_request(
+             "trusted_recipe_context_hash": stable_hash(recipe_summaries),
+             "raw_model_output": model_payload["json"],
+             "model_output_errors": exc.errors(),
++            "attempts": attempts,
++            "repair_count": repair_count_for_attempts(attempts),
++            "final_accepted_output": None,
+         }
+         response = HermesCompileResponse(
+             ok=False,
+             status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
+             trace_id=trace_id_for(request, "model_output_invalid", model_payload["json"]),
++            **compile_lineage_fields(request),
+             original_language=request.original_language,
+             clarifications=request.clarifications,
+             interpretation={
+@@ -338,6 +354,10 @@ def compile_hermes_model_request(
+                 "invalid_first_output": model_payload["json"],
+                 "first_output_semantic_errors": semantic_errors,
+             }
++            attempts = model_attempts_from_payload(
++                model_payload,
++                final_schema_errors=exc.errors(),
++            )
+             metadata = {
+                 "agent_kind": "model_backed_tactical_query_compiler",
+                 "agent_identity": COMPILER_IDENTITY,
+@@ -353,11 +373,15 @@ def compile_hermes_model_request(
+                 "trusted_recipe_context_hash": stable_hash(recipe_summaries),
+                 "raw_model_output": model_payload["json"],
+                 "model_output_errors": exc.errors(),
++                "attempts": attempts,
++                "repair_count": repair_count_for_attempts(attempts),
++                "final_accepted_output": None,
+             }
+             response = HermesCompileResponse(
+                 ok=False,
+                 status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
+                 trace_id=trace_id_for(request, "model_output_invalid_after_semantic_repair", model_payload["json"]),
++                **compile_lineage_fields(request),
+                 original_language=request.original_language,
+                 clarifications=request.clarifications,
+                 interpretation={
+@@ -377,6 +401,11 @@ def compile_hermes_model_request(
+             "first_output_semantic_errors": semantic_errors,
+         }
+         if semantic_errors_after_repair:
++            attempts = model_attempts_from_payload(
++                model_payload,
++                final_decision=decision,
++                final_semantic_errors=semantic_errors_after_repair,
++            )
+             metadata = {
+                 "agent_kind": "model_backed_tactical_query_compiler",
+                 "agent_identity": COMPILER_IDENTITY,
+@@ -392,11 +421,15 @@ def compile_hermes_model_request(
+                 "trusted_recipe_context_hash": stable_hash(recipe_summaries),
+                 "raw_model_output": model_payload["json"],
+                 "model_output_errors": [{"type": "semantic_validation", "message": item} for item in semantic_errors_after_repair],
++                "attempts": attempts,
++                "repair_count": repair_count_for_attempts(attempts),
++                "final_accepted_output": None,
+             }
+             response = HermesCompileResponse(
+                 ok=False,
+                 status=HermesCompileStatus.MODEL_OUTPUT_INVALID,
+                 trace_id=trace_id_for(request, "model_semantic_invalid", model_payload["json"]),
++                **compile_lineage_fields(request),
+                 original_language=request.original_language,
+                 clarifications=request.clarifications,
+                 interpretation={
+@@ -410,6 +443,7 @@ def compile_hermes_model_request(
+             persist_compile_trace(response, output_root=output_root)
+             return response
+ 
++    attempts = model_attempts_from_payload(model_payload, final_decision=decision)
+     metadata = {
+         "agent_kind": "model_backed_tactical_query_compiler",
+         "agent_identity": COMPILER_IDENTITY,
+@@ -424,6 +458,9 @@ def compile_hermes_model_request(
+         "tool_schema_hash": stable_hash(tool_schemas),
+         "trusted_recipe_context_hash": stable_hash(recipe_summaries),
+         "raw_model_output": model_payload["json"],
++        "attempts": attempts,
++        "repair_count": repair_count_for_attempts(attempts),
++        "final_accepted_output": model_payload["json"],
+     }
+ 
+     if decision["action"] == "capability_gap":
+@@ -431,6 +468,7 @@ def compile_hermes_model_request(
+             ok=False,
+             status=HermesCompileStatus.CAPABILITY_GAP,
+             trace_id=trace_id_for(request, "model_capability_gap", decision),
++            **compile_lineage_fields(request),
+             original_language=request.original_language,
+             clarifications=request.clarifications,
+             interpretation={
+@@ -450,6 +488,7 @@ def compile_hermes_model_request(
+             ok=False,
+             status=HermesCompileStatus.CLARIFICATION_REQUIRED,
+             trace_id=trace_id_for(request, "model_clarification", decision),
++            **compile_lineage_fields(request),
+             original_language=request.original_language,
+             clarifications=request.clarifications,
+             interpretation={
+@@ -470,6 +509,7 @@ def compile_hermes_model_request(
+             ok=True,
+             status=HermesCompileStatus.EXISTING_RECIPE_SELECTED,
+             trace_id=trace_id_for(request, "model_existing_recipe", decision),
++            **compile_lineage_fields(request),
+             original_language=request.original_language,
+             clarifications=request.clarifications,
+             interpretation={
+@@ -509,6 +549,7 @@ def compile_hermes_model_request(
+         ok=validated,
+         status=HermesCompileStatus.DRAFT_VALIDATED if validated else HermesCompileStatus.PLAN_VALIDATION_FAILED,
+         trace_id=trace_id_for(request, "model_draft_validated" if validated else "model_plan_validation_failed", decision),
++        **compile_lineage_fields(request),
+         original_language=request.original_language,
+         clarifications=request.clarifications,
+         interpretation={
+@@ -554,6 +595,7 @@ def compile_hermes_reference_request(
+             ok=False,
+             status=HermesCompileStatus.CAPABILITY_GAP,
+             trace_id=trace_id_for(request, "capability_gap", gaps),
++            **compile_lineage_fields(request),
+             original_language=request.original_language,
+             clarifications=request.clarifications,
+             interpretation={
+@@ -573,6 +615,7 @@ def compile_hermes_reference_request(
+             ok=True,
+             status=HermesCompileStatus.EXISTING_RECIPE_SELECTED,
+             trace_id=trace_id_for(request, "existing_recipe", selected),
++            **compile_lineage_fields(request),
+             original_language=request.original_language,
+             clarifications=request.clarifications,
+             interpretation={
+@@ -597,6 +640,7 @@ def compile_hermes_reference_request(
+             ok=False,
+             status=HermesCompileStatus.CLARIFICATION_REQUIRED,
+             trace_id=trace_id_for(request, "clarification", questions),
++            **compile_lineage_fields(request),
+             original_language=request.original_language,
+             clarifications=request.clarifications,
+             interpretation={
+@@ -635,6 +679,7 @@ def compile_hermes_reference_request(
+             ok=validated,
+             status=HermesCompileStatus.DRAFT_VALIDATED if validated else HermesCompileStatus.PLAN_VALIDATION_FAILED,
+             trace_id=trace_id_for(request, "draft_validated" if validated else "plan_validation_failed", validation),
++            **compile_lineage_fields(request),
+             original_language=request.original_language,
+             clarifications=request.clarifications,
+             interpretation={
+@@ -666,6 +711,7 @@ def compile_hermes_reference_request(
+         ok=False,
+         status=HermesCompileStatus.CLARIFICATION_REQUIRED,
+         trace_id=trace_id_for(request, "unclassified", text),
++        **compile_lineage_fields(request),
+         original_language=request.original_language,
+         clarifications=request.clarifications,
+         interpretation={
+@@ -755,7 +801,7 @@ def call_hermes_model(
+ ) -> dict[str, Any]:
+     api_key = os.environ.get("OPENAI_API_KEY")
+     if not api_key:
+-        raise RuntimeError("OPENAI_API_KEY is required for model-backed Hermes S2B verification")
++        raise RuntimeError("OPENAI_API_KEY is required for model-backed compiler S2 verification")
+     model = os.environ.get("HERMES_S2_MODEL") or os.environ.get("OPENAI_MODEL") or DEFAULT_HERMES_MODEL
+     payload = {
+         "model": model,
+@@ -821,7 +867,6 @@ def normalize_model_decision(payload: dict[str, Any]) -> dict[str, Any]:
+     params = CorridorParameters().model_dump()
+     gaps: list[dict[str, str]] = []
+     questions: list[str] = []
+-    requested_evidence: list[str] = []
+     recipe_id: str | None = None
+     if isinstance(decision, SelectRecipeDecision):
+         action = decision.action
+@@ -830,7 +875,6 @@ def normalize_model_decision(payload: dict[str, Any]) -> dict[str, Any]:
+         action = decision.action
+         recipe_id = decision.recipe_id
+         params = decision.corridor_parameters.model_dump()
+-        requested_evidence = list(decision.requested_evidence)
+     elif isinstance(decision, ClarificationDecision):
+         action = decision.action
+         questions = decision.clarification_questions
+@@ -844,7 +888,7 @@ def normalize_model_decision(payload: dict[str, Any]) -> dict[str, Any]:
+         "clarification_questions": questions,
+         "capability_gaps": gaps,
+         "corridor_parameters": params,
+-        "requested_evidence": requested_evidence,
++        "requested_evidence": [],
+     }
+ 
+ 
+@@ -942,7 +986,6 @@ def model_visible_parameter_context(
+             "draft_corridor": {
+                 "allowed_recipe_ids": ["possession_corridor_availability_v1"],
+                 "allowed_parameters": exposed_parameters,
+-                "requested_evidence_allowed_values": ["relation_count", "witness_relation_id"],
+             },
+         },
+         "trusted_recipe_summaries": recipe_summaries,
+@@ -1074,6 +1117,57 @@ def semantic_decision_errors(request: HermesCompileRequest, decision: dict[str,
+     return errors
+ 
+ 
++def model_attempts_from_payload(
++    model_payload: dict[str, Any],
++    *,
++    final_decision: dict[str, Any] | None = None,
++    final_schema_errors: list[dict[str, Any]] | None = None,
++    final_semantic_errors: list[str] | None = None,
++) -> list[dict[str, Any]]:
++    attempts: list[dict[str, Any]] = []
++    first_output = model_payload.get("invalid_first_output")
++    if first_output is not None:
++        first_schema_errors = model_payload.get("first_output_schema_errors") or []
++        first_semantic_errors = model_payload.get("first_output_semantic_errors") or []
++        attempts.append(
++            {
++                "attempt_index": 1,
++                "raw_output": first_output,
++                "schema_validation": {
++                    "ok": not first_schema_errors,
++                    "errors": first_schema_errors,
++                },
++                "semantic_validation": {
++                    "ok": not first_semantic_errors,
++                    "errors": first_semantic_errors,
++                },
++                "accepted": False,
++            }
++        )
++    schema_errors = final_schema_errors or []
++    semantic_errors = final_semantic_errors or []
++    attempts.append(
++        {
++            "attempt_index": len(attempts) + 1,
++            "raw_output": model_payload.get("json"),
++            "schema_validation": {
++                "ok": not schema_errors,
++                "errors": schema_errors,
++            },
++            "semantic_validation": {
++                "ok": not semantic_errors and final_decision is not None,
++                "errors": semantic_errors,
++            },
++            "accepted": final_decision is not None and not schema_errors and not semantic_errors,
++        }
++    )
++    return attempts
++
++
++def repair_count_for_attempts(attempts: list[dict[str, Any]]) -> int:
++    return max(0, len(attempts) - 1)
++
++
+ def dedupe_gaps(gaps: list[dict[str, str]]) -> list[dict[str, str]]:
+     seen = set()
+     deduped = []
+@@ -1138,6 +1232,9 @@ def record_confirmed_execution_trace(
+         "trace_kind": "hermes_confirmed_execution",
+         "recorded_at": utc_now_iso(),
+         "compile_trace_id": compile_response.trace_id,
++        "session_id": compile_response.session_id,
++        "turn_id": compile_response.turn_id,
++        "parent_turn_id": compile_response.parent_turn_id,
+         "original_language": compile_response.original_language,
+         "clarification_turns": [
+             {
+@@ -1146,6 +1243,7 @@ def record_confirmed_execution_trace(
+             }
+             for index, answer in enumerate(compile_response.clarifications)
+         ],
++        "clarification_questions": compile_response.clarification_questions,
+         "agent_kind": compile_response.agent_kind,
+         "agent_identity": compile_response.agent_identity,
+         "agent_identity_decision": compile_response.agent_identity_decision,
+@@ -1159,6 +1257,9 @@ def record_confirmed_execution_trace(
+         "tool_schema_hash": compile_response.tool_schema_hash,
+         "trusted_recipe_context_hash": compile_response.trusted_recipe_context_hash,
+         "raw_model_output": compile_response.raw_model_output,
++        "attempts": compile_response.attempts,
++        "repair_count": compile_response.repair_count,
++        "final_accepted_output": compile_response.final_accepted_output,
+         "selected_recipe": compile_response.selected_recipe,
+         "draft_plan_id": compile_response.draft_plan_id,
+         "draft_plan_hash": compile_response.draft_plan_hash,
+@@ -1180,6 +1281,15 @@ def record_confirmed_execution_trace(
+     trace_id = "hermes_exec_" + stable_hash(payload)[:16]
+     path = output_root / "hermes-traces" / f"{trace_id}.json"
+     write_json(path, {"trace_id": trace_id, **payload})
++    record_session_execution(
++        compile_response=compile_response,
++        execution_authorization_id=execution_authorization_id,
++        execution=execution,
++        inspection=inspection,
++        replay=replay,
++        trace_id=trace_id,
++        output_root=output_root,
++    )
+     return {"trace_id": trace_id, **payload}
+ 
+ 
+@@ -1235,6 +1345,127 @@ def execute_confirmed_hermes_session(
+ def persist_compile_trace(response: HermesCompileResponse, *, output_root: Path) -> None:
+     path = output_root / "hermes-traces" / f"{response.trace_id}.json"
+     write_json(path, response.model_dump(mode="json"))
++    record_session_turn(response, output_root=output_root)
++
++
++def compile_lineage_fields(request: HermesCompileRequest) -> dict[str, Any]:
++    return {
++        "session_id": session_id_for(request),
++        "turn_id": turn_id_for(request),
++        "parent_turn_id": parent_turn_id_for(request),
++    }
++
++
++def session_id_for(request: HermesCompileRequest) -> str:
++    if request.session_id:
++        return request.session_id
++    return "session_" + stable_hash(
++        {
++            "requester": request.requester,
++            "original_language": request.original_language,
++        }
++    )[:16]
++
++
++def turn_id_for(request: HermesCompileRequest) -> str:
++    return "turn_" + stable_hash(
++        {
++            "session_id": session_id_for(request),
++            "original_language": request.original_language,
++            "clarifications": request.clarifications,
++            "requester": request.requester,
++        }
++    )[:16]
++
++
++def parent_turn_id_for(request: HermesCompileRequest) -> str | None:
++    if request.parent_turn_id:
++        return request.parent_turn_id
++    if request.clarifications:
++        parent_request = request.model_copy(update={"clarifications": [], "parent_turn_id": None})
++        return turn_id_for(parent_request)
++    return None
++
++
++def record_session_turn(response: HermesCompileResponse, *, output_root: Path) -> None:
++    path = output_root / "compiler-sessions" / f"{response.session_id}.json"
++    if path.exists():
++        session = read_json(path)
++    else:
++        session = {
++            "schema_version": "1.0",
++            "session_id": response.session_id,
++            "created_at": utc_now_iso(),
++            "original_language": response.original_language,
++            "turns": [],
++            "executions": [],
++        }
++    turns = [turn for turn in session.get("turns", []) if turn.get("turn_id") != response.turn_id]
++    turns.append(
++        {
++            "turn_id": response.turn_id,
++            "parent_turn_id": response.parent_turn_id,
++            "trace_id": response.trace_id,
++            "recorded_at": utc_now_iso(),
++            "original_language": response.original_language,
++            "clarification_questions": response.clarification_questions,
++            "clarification_answers": response.clarifications,
++            "status": response.status.value,
++            "model_decision": response.raw_model_output,
++            "attempts": response.attempts,
++            "repair_count": response.repair_count,
++            "draft_plan_hash": response.draft_plan_hash,
++            "bound_plan_hash": response.bound_plan_hash,
++        }
++    )
++    session["turns"] = sorted(turns, key=lambda item: item["recorded_at"])
++    session["updated_at"] = utc_now_iso()
++    write_json(path, session)
++
++
++def record_session_execution(
++    *,
++    compile_response: HermesCompileResponse,
++    execution_authorization_id: str,
++    execution: dict[str, Any],
++    inspection: dict[str, Any],
++    replay: dict[str, Any],
++    trace_id: str,
++    output_root: Path,
++) -> None:
++    path = output_root / "compiler-sessions" / f"{compile_response.session_id}.json"
++    if path.exists():
++        session = read_json(path)
++    else:
++        session = {
++            "schema_version": "1.0",
++            "session_id": compile_response.session_id,
++            "created_at": utc_now_iso(),
++            "original_language": compile_response.original_language,
++            "turns": [],
++            "executions": [],
++        }
++    executions = [
++        item
++        for item in session.get("executions", [])
++        if item.get("execution_id") != execution.get("execution_id")
++    ]
++    executions.append(
++        {
++            "trace_id": trace_id,
++            "turn_id": compile_response.turn_id,
++            "parent_turn_id": compile_response.parent_turn_id,
++            "recorded_at": utc_now_iso(),
++            "execution_authorization_id": execution_authorization_id,
++            "execution_id": execution.get("execution_id"),
++            "result_ids": [result["result_id"] for result in execution.get("results", [])],
++            "inspection_result_id": inspection.get("result_id"),
++            "replay_window_id": replay.get("replay_window_id"),
++        }
++    )
++    session["executions"] = executions
++    session["updated_at"] = utc_now_iso()
++    write_json(path, session)
+ 
+ 
+ def trace_id_for(request: HermesCompileRequest, outcome: str, payload: Any) -> str:

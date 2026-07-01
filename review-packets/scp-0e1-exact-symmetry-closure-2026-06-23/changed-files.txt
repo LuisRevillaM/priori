@@ -1,0 +1,17 @@
+artifacts/scp-0/verification-report.json
+delivery/ledger.jsonl
+delivery/scp-0/SPEC.md
+delivery/scp-0/progress.md
+delivery/scp-0/status.yaml
+docs/learnings/2026-06-23-scp-0-semantic-registry.md
+generated/semantic-registry/ai-projection.json
+generated/semantic-registry/product-projection.json
+generated/semantic-registry/recipe-library-projection.json
+generated/semantic-registry/research-atlas-projection.json
+generated/semantic-registry/semantic-parity-report.json
+generated/semantic-registry/unsupported-capability-projection.json
+semantic-registry/registry.lock.json
+semantic-registry/registry.yaml
+src/tqe/semantic_registry/generate.py
+src/tqe/semantic_registry/runtime_manifest.py
+tests/test_scp0_semantic_registry.py

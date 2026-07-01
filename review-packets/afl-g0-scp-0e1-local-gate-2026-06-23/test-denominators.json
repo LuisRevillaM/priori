@@ -1,0 +1,74 @@
+{
+  "atlas_entries": 741,
+  "atlas_leakage_ai": 0,
+  "atlas_leakage_product": 0,
+  "candidate_target": "SCP-0E.1",
+  "gate_milestone": "AFL-G0",
+  "global_hard_gates": [
+    {
+      "metric": "critical_safety_violations",
+      "target_class": "HARD_GATE",
+      "threshold": 0,
+      "waivable": false
+    },
+    {
+      "metric": "undeclared_runtime_dependencies",
+      "target_class": "HARD_GATE",
+      "threshold": 0,
+      "waivable": false
+    },
+    {
+      "metric": "evidence_reference_violations",
+      "target_class": "HARD_GATE",
+      "threshold": 0,
+      "waivable": false
+    },
+    {
+      "metric": "stale_waivers",
+      "target_class": "HARD_GATE",
+      "threshold": 0,
+      "waivable": false
+    },
+    {
+      "metric": "broad_subject_only_waivers",
+      "target_class": "HARD_GATE",
+      "threshold": 0,
+      "waivable": false
+    },
+    {
+      "metric": "deterministic_reproduction_failures",
+      "target_class": "HARD_GATE",
+      "threshold": 0,
+      "waivable": false
+    },
+    {
+      "metric": "protected_mutants_survived",
+      "target_class": "HARD_GATE",
+      "threshold": 0,
+      "waivable": false
+    }
+  ],
+  "operators_semantically_defined": 8,
+  "program": "priori-autonomous-football-language",
+  "repository_tests_reported": 134,
+  "runtime_capabilities_bound": 11,
+  "schema_version": "1.0",
+  "scp_0_focused_tests_reported": 52,
+  "staged_targets": {
+    "canonical_football_intents": {
+      "bootstrap": 250,
+      "north_star": 1500,
+      "release": 750
+    },
+    "generated_valid_semantic_programs": {
+      "bootstrap": 5000,
+      "north_star": 100000,
+      "release": 25000
+    },
+    "intents_per_major_family": {
+      "bootstrap": 20,
+      "north_star": 100,
+      "release": 50
+    }
+  }
+}

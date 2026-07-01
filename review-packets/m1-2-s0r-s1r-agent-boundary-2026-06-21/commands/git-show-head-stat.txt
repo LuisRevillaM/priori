@@ -1,0 +1,10 @@
+71d0532 Harden M1.2 S0-S1 agent boundary
+ delivery/m1.2/SPEC.md                              |   27 +-
+ delivery/m1.2/status.yaml                          |   12 +-
+ .../2026-06-21-m1-2-agent-boundary-correction.md   |   21 +
+ .../2026-06-21-m1-2-s0-s1-external-review.md       |   50 +
+ generated/capability-context.json                  | 2308 +++++++++++++++++++-
+ src/tqe/verification/m1_2_gate_s0.py               |   52 +-
+ src/tqe/verification/m1_2_gate_s1.py               |  297 +--
+ src/tqe/workshop/m1_2.py                           |  440 +++-
+ 8 files changed, 2924 insertions(+), 283 deletions(-)

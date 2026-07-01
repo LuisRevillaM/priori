@@ -1,0 +1,7 @@
+limitations:
+- Local AFL-G0 runs in SELF_VERIFIED mode; it is not a protected CI boundary.
+- No hidden holdout, protected mutation suite, or independent signing key is active
+  locally.
+- The packet can validate mechanics and canaries but cannot prove builder-independent
+  promotion.
+schema_version: '1.0'

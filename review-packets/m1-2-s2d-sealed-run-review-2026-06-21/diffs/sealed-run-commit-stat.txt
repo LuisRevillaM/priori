@@ -1,0 +1,6 @@
+9077249 Record M1.2 S2D sealed evaluation
+ config/evaluation/m1_2_s2d_sealed_prompt_set.json | 132 ++++++++++++++++++++++
+ delivery/ledger.jsonl                             |   1 +
+ delivery/m1.2/status.yaml                         |  27 +++--
+ docs/reviews/2026-06-21-m1-2-s2d-sealed-run.md    |  67 +++++++++++
+ 4 files changed, 220 insertions(+), 7 deletions(-)

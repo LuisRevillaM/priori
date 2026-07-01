@@ -1,0 +1,821 @@
+/Users/luisrevilla/Documents/priori/.venv/bin/python -m tqe.verification.scp0
+{
+  "atlas_leakage": {
+    "ai": 0,
+    "product": 0
+  },
+  "findings": [],
+  "operators": {
+    "missing_definitions": 0,
+    "runtime_total": 8,
+    "semantically_defined": 8
+  },
+  "pilots": {
+    "ball_side_block_shift": {
+      "capability_paths": [
+        {
+          "binding_found": true,
+          "binding_id": "binding.primitive.possession_segment.0_1_0",
+          "capability": {
+            "kind": "primitive",
+            "name": "possession_segment",
+            "version": "0.1.0"
+          },
+          "claim_contracts": [
+            "claim.possession_context.v1"
+          ],
+          "concepts": [
+            "concept.possession_context"
+          ],
+          "conformance": "EXACT",
+          "effective_claims": {
+            "claim.possession_context.v1": [
+              "possession_anchor_identified",
+              "team_active_ball_possession_interval_identified"
+            ]
+          },
+          "effective_evidence": {
+            "evidence.possession_context.v1": [
+              "anchor_frame_id",
+              "anchor_id",
+              "match_id",
+              "period",
+              "possession_end_frame_id",
+              "possession_start_frame_id"
+            ]
+          },
+          "evidence_contracts": [
+            "evidence.possession_context.v1"
+          ],
+          "implementation_id": "impl.possession_segment.python.v1",
+          "in_ai_projection": true,
+          "in_product_projection": true,
+          "operationalizations": [
+            "op.possession_segment_intervals.v1"
+          ],
+          "subject_ref": "runtime:primitive:possession_segment:0.1.0"
+        },
+        {
+          "binding_found": true,
+          "binding_id": "binding.primitive.ball_lateral_fraction.0_1_0",
+          "capability": {
+            "kind": "primitive",
+            "name": "ball_lateral_fraction",
+            "version": "0.1.0"
+          },
+          "claim_contracts": [
+            "claim.wide_ball_entry.v1"
+          ],
+          "concepts": [
+            "concept.normalized_ball_lateral_position"
+          ],
+          "conformance": "EXACT",
+          "effective_claims": {
+            "claim.wide_ball_entry.v1": [
+              "ball_lateral_position_measured",
+              "configured_wide_area_entry_measured"
+            ]
+          },
+          "effective_evidence": {
+            "evidence.wide_ball_entry.v1": [
+              "anchor_frame_id",
+              "ball_side",
+              "wide_entry_y_m"
+            ]
+          },
+          "evidence_contracts": [
+            "evidence.wide_ball_entry.v1"
+          ],
+          "implementation_id": "impl.ball_lateral_fraction.python.v1",
+          "in_ai_projection": true,
+          "in_product_projection": true,
+          "operationalizations": [
+            "op.ball_lateral_fraction.v1"
+          ],
+          "subject_ref": "runtime:primitive:ball_lateral_fraction:0.1.0"
+        },
+        {
+          "binding_found": true,
+          "binding_id": "binding.primitive.defensive_outfield_centroid.0_1_0",
+          "capability": {
+            "kind": "primitive",
+            "name": "defensive_outfield_centroid",
+            "version": "0.1.0"
+          },
+          "claim_contracts": [
+            "claim.defensive_outfield_centroid.v1"
+          ],
+          "concepts": [
+            "concept.defensive_outfield_centroid"
+          ],
+          "conformance": "PARTIAL",
+          "effective_claims": {
+            "claim.defensive_outfield_centroid.v1": [
+              "defending_outfield_centroid_measured"
+            ]
+          },
+          "effective_evidence": {
+            "evidence.defensive_outfield_centroid.v1": [
+              "baseline_defensive_centroid_y_m",
+              "defending_outfield_player_ids"
+            ]
+          },
+          "evidence_contracts": [
+            "evidence.defensive_outfield_centroid.v1"
+          ],
+          "implementation_id": "impl.defensive_outfield_centroid.python.v1",
+          "in_ai_projection": true,
+          "in_product_projection": true,
+          "operationalizations": [
+            "op.defensive_outfield_centroid.v1"
+          ],
+          "subject_ref": "runtime:primitive:defensive_outfield_centroid:0.1.0"
+        },
+        {
+          "binding_found": true,
+          "binding_id": "binding.primitive.signed_lateral_shift.0_1_0",
+          "capability": {
+            "kind": "primitive",
+            "name": "signed_lateral_shift",
+            "version": "0.1.0"
+          },
+          "claim_contracts": [
+            "claim.defensive_block_lateral_shift.v1"
+          ],
+          "concepts": [
+            "concept.defensive_block_lateral_shift"
+          ],
+          "conformance": "EXACT",
+          "effective_claims": {
+            "claim.defensive_block_lateral_shift.v1": [
+              "defending_outfield_centroid_measured",
+              "defensive_centroid_shift_measured_toward_ball_side"
+            ]
+          },
+          "effective_evidence": {
+            "evidence.defensive_block_lateral_shift.v1": [
+              "baseline_defensive_centroid_y_m",
+              "defending_outfield_player_ids",
+              "shift_frame_id",
+              "signed_shift_metres"
+            ]
+          },
+          "evidence_contracts": [
+            "evidence.defensive_block_lateral_shift.v1"
+          ],
+          "implementation_id": "impl.signed_lateral_shift.python.v1",
+          "in_ai_projection": true,
+          "in_product_projection": true,
+          "operationalizations": [
+            "op.baseline_relative_defensive_shift.v1"
+          ],
+          "subject_ref": "runtime:primitive:signed_lateral_shift:0.1.0"
+        },
+        {
+          "binding_found": true,
+          "binding_id": "binding.primitive.outcome_classification.0_1_0",
+          "capability": {
+            "kind": "primitive",
+            "name": "outcome_classification",
+            "version": "0.1.0"
+          },
+          "claim_contracts": [
+            "claim.reviewed_outcome_classification.v1"
+          ],
+          "concepts": [
+            "concept.reviewed_outcome_classification"
+          ],
+          "conformance": "LEGACY_APPROXIMATION",
+          "effective_claims": {
+            "claim.reviewed_outcome_classification.v1": [
+              "reviewed_recipe_outcome_label_assigned"
+            ]
+          },
+          "effective_evidence": {
+            "evidence.reviewed_outcome_classification.v1": [
+              "classification",
+              "outcome_window_end_frame_id",
+              "outcome_window_start_frame_id"
+            ]
+          },
+          "evidence_contracts": [
+            "evidence.reviewed_outcome_classification.v1"
+          ],
+          "implementation_id": "impl.outcome_classification.python.v1",
+          "in_ai_projection": false,
+          "in_product_projection": true,
+          "operationalizations": [
+            "op.reviewed_block_shift_outcome.v1"
+          ],
+          "subject_ref": "runtime:primitive:outcome_classification:0.1.0"
+        }
+      ],
+      "claim_contract": "claim.ball_side_block_shift.v1",
+      "evidence_contract": "evidence.ball_side_block_shift.v1",
+      "mapping_id": "recipe.ball_side_block_shift.v1",
+      "operator_paths": [
+        {
+          "definition_found": true,
+          "operator": {
+            "name": "gt",
+            "version": "1.0.0"
+          }
+        },
+        {
+          "definition_found": true,
+          "operator": {
+            "name": "persists_for",
+            "version": "1.0.0"
+          }
+        },
+        {
+          "definition_found": true,
+          "operator": {
+            "name": "gte",
+            "version": "1.0.0"
+          }
+        },
+        {
+          "definition_found": true,
+          "operator": {
+            "name": "neq",
+            "version": "1.0.0"
+          }
+        }
+      ],
+      "plan_artifact_id": "plan.ball_side_block_shift.v1",
+      "plan_integrity": {
+        "artifact_id": "plan.ball_side_block_shift.v1",
+        "capability_dependencies": [
+          {
+            "kind": "primitive",
+            "name": "possession_segment",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "ball_lateral_fraction",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "defensive_outfield_centroid",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "signed_lateral_shift",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "outcome_classification",
+            "version": "0.1.0"
+          }
+        ],
+        "dependency_refs": [
+          "possession_segment",
+          "ball_lateral_fraction",
+          "defensive_outfield_centroid",
+          "signed_lateral_shift",
+          "outcome_classification",
+          "gt",
+          "persists_for",
+          "gte",
+          "neq"
+        ],
+        "draft_status": "approved",
+        "exists": true,
+        "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+        "operator_dependencies": [
+          {
+            "name": "gt",
+            "version": "1.0.0"
+          },
+          {
+            "name": "persists_for",
+            "version": "1.0.0"
+          },
+          {
+            "name": "gte",
+            "version": "1.0.0"
+          },
+          {
+            "name": "neq",
+            "version": "1.0.0"
+          }
+        ],
+        "origin": "REVIEWED_RECIPE",
+        "parameter_defaults": {
+          "accepted_per_match_limit": 5,
+          "accepted_result_limit": 16,
+          "analysis_rate_hz": 5,
+          "baseline_window_seconds": 0.8,
+          "dedupe_window_seconds": 8.0,
+          "maximum_analysis_gap_ms": 250,
+          "minimum_outfield_players_per_team": 9,
+          "minimum_possession_seconds": 8.0,
+          "minimum_shift_metres": 5.0,
+          "minimum_shift_persistence_seconds": 0.6,
+          "minimum_wide_dwell_seconds": 1.2,
+          "near_miss_limit": 8,
+          "opposite_side_fraction": 0.35,
+          "outcome_horizon_seconds": 6.0,
+          "prior_central_fraction": 0.45,
+          "result_id_seed_hash": "af42853e6a3c8449e023dd98751ababbc7d34640f8751fbffa1c2bbbd0eab523",
+          "retained_after_switch_seconds": 1.0,
+          "shift_search_window_seconds": 4.0,
+          "wide_entry_fraction": 0.6
+        },
+        "path": "config/query-plans/ball_side_block_shift.ir.v1.json",
+        "plan_id": "ball_side_block_shift_ir_v1",
+        "plan_version": "1.0.0",
+        "promotion_status": "REVIEWED_RECIPE",
+        "recipe_id": "ball_side_block_shift_v1",
+        "recipe_version": "1.0.0",
+        "referenced_parameters": [
+          "minimum_shift_metres",
+          "minimum_shift_persistence_seconds",
+          "minimum_wide_dwell_seconds",
+          "outcome_horizon_seconds",
+          "wide_entry_fraction"
+        ],
+        "source_kind": "typed_plan",
+        "valid_typed_plan": true
+      },
+      "profiles": [
+        "profile.ball_side_block_shift_reviewed.v1"
+      ],
+      "recipe_id": "ball_side_block_shift_v1",
+      "recipe_mapped": true,
+      "recipe_version": "1.0.0"
+    },
+    "high_bypass_completed_pass": {
+      "capability_paths": [
+        {
+          "binding_found": true,
+          "binding_id": "binding.primitive.controlled_pass_episode.0_1_0",
+          "capability": {
+            "kind": "primitive",
+            "name": "controlled_pass_episode",
+            "version": "0.1.0"
+          },
+          "claim_contracts": [
+            "claim.controlled_ball_transfer.v1"
+          ],
+          "concepts": [
+            "concept.controlled_ball_transfer"
+          ],
+          "conformance": "PARTIAL",
+          "effective_claims": {
+            "claim.controlled_ball_transfer.v1": [
+              "event_candidate_pass_identified",
+              "tracking_confirmed_controlled_reception",
+              "tracking_confirmed_physical_release"
+            ]
+          },
+          "effective_evidence": {
+            "evidence.controlled_ball_transfer.v1": [
+              "controlled_reception_frame_id",
+              "event_anchor_frame_id",
+              "forward_progression_m",
+              "passer_id",
+              "physical_release_frame_id",
+              "receiver_id",
+              "reception_ball_point",
+              "release_ball_point"
+            ]
+          },
+          "evidence_contracts": [
+            "evidence.controlled_ball_transfer.v1"
+          ],
+          "implementation_id": "impl.controlled_pass_episode.python.v1",
+          "in_ai_projection": true,
+          "in_product_projection": true,
+          "operationalizations": [
+            "op.event_seeded_tracking_confirmed_pass.v1"
+          ],
+          "subject_ref": "runtime:primitive:controlled_pass_episode:0.1.0"
+        },
+        {
+          "binding_found": true,
+          "binding_id": "binding.relation.opponents_bypassed_by_action.0_1_0",
+          "capability": {
+            "kind": "relation",
+            "name": "opponents_bypassed_by_action",
+            "version": "0.1.0"
+          },
+          "claim_contracts": [
+            "claim.opponent_ball_side_transition_count.v1"
+          ],
+          "concepts": [
+            "concept.opponent_ball_side_transition_count"
+          ],
+          "conformance": "PARTIAL",
+          "effective_claims": {
+            "claim.opponent_ball_side_transition_count.v1": [
+              "listed_opponents_changed_from_goal_side_to_behind_ball_between_release_and_reception"
+            ]
+          },
+          "effective_evidence": {
+            "evidence.opponent_ball_side_transition_count.v1": [
+              "active_opponent_denominator",
+              "bypassed_player_ids",
+              "forward_progression_m",
+              "opponents_bypassed_count",
+              "reception_frame_id",
+              "release_frame_id"
+            ]
+          },
+          "evidence_contracts": [
+            "evidence.opponent_ball_side_transition_count.v1"
+          ],
+          "implementation_id": "impl.opponents_bypassed_by_action.python.v1",
+          "in_ai_projection": true,
+          "in_product_projection": true,
+          "operationalizations": [
+            "op.release_reception_opponent_transition_count.v1"
+          ],
+          "subject_ref": "runtime:relation:opponents_bypassed_by_action:0.1.0"
+        }
+      ],
+      "claim_contract": "claim.high_bypass_completed_pass.v1",
+      "evidence_contract": "evidence.high_bypass_completed_pass.v1",
+      "mapping_id": "recipe.high_bypass_completed_pass.v1",
+      "operator_paths": [
+        {
+          "definition_found": true,
+          "operator": {
+            "name": "gte",
+            "version": "1.0.0"
+          }
+        }
+      ],
+      "plan_artifact_id": "plan.high_bypass_completed_pass.v1",
+      "plan_integrity": {
+        "artifact_id": "plan.high_bypass_completed_pass.v1",
+        "capability_dependencies": [
+          {
+            "kind": "primitive",
+            "name": "controlled_pass_episode",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "relation",
+            "name": "opponents_bypassed_by_action",
+            "version": "0.1.0"
+          }
+        ],
+        "dependency_refs": [
+          "controlled_pass_episode",
+          "opponents_bypassed_by_action",
+          "gte"
+        ],
+        "draft_status": "experimental",
+        "exists": true,
+        "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+        "operator_dependencies": [
+          {
+            "name": "gte",
+            "version": "1.0.0"
+          }
+        ],
+        "origin": "MANUAL_PRESET",
+        "parameter_defaults": {
+          "bypassed_buffer_m": 1.0,
+          "goal_side_buffer_m": 1.0,
+          "minimum_bypassed_opponents": 5,
+          "minimum_forward_progression_m": 8.0
+        },
+        "path": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
+        "plan_id": "m2a_high_bypass_completed_pass",
+        "plan_version": "0.1.0",
+        "promotion_status": "EXPERIMENTAL_PRESET",
+        "recipe_id": "high_bypass_completed_pass_v1",
+        "recipe_version": "0.1.0",
+        "referenced_parameters": [
+          "bypassed_buffer_m",
+          "goal_side_buffer_m",
+          "minimum_bypassed_opponents",
+          "minimum_forward_progression_m"
+        ],
+        "source_kind": "typed_plan",
+        "valid_typed_plan": true
+      },
+      "profiles": [
+        "profile.high_bypass_default.v1"
+      ],
+      "recipe_id": "high_bypass_completed_pass_v1",
+      "recipe_mapped": true,
+      "recipe_version": "0.1.0"
+    },
+    "validated_ai_composition": {
+      "capability_paths": [
+        {
+          "binding_found": true,
+          "binding_id": "binding.primitive.possession_segment.0_1_0",
+          "capability": {
+            "kind": "primitive",
+            "name": "possession_segment",
+            "version": "0.1.0"
+          },
+          "claim_contracts": [
+            "claim.possession_context.v1"
+          ],
+          "concepts": [
+            "concept.possession_context"
+          ],
+          "conformance": "EXACT",
+          "effective_claims": {
+            "claim.possession_context.v1": [
+              "possession_anchor_identified",
+              "team_active_ball_possession_interval_identified"
+            ]
+          },
+          "effective_evidence": {
+            "evidence.possession_context.v1": [
+              "anchor_frame_id",
+              "anchor_id",
+              "match_id",
+              "period",
+              "possession_end_frame_id",
+              "possession_start_frame_id"
+            ]
+          },
+          "evidence_contracts": [
+            "evidence.possession_context.v1"
+          ],
+          "implementation_id": "impl.possession_segment.python.v1",
+          "in_ai_projection": true,
+          "in_product_projection": true,
+          "operationalizations": [
+            "op.possession_segment_intervals.v1"
+          ],
+          "subject_ref": "runtime:primitive:possession_segment:0.1.0"
+        },
+        {
+          "binding_found": true,
+          "binding_id": "binding.relation.geometric_progressive_corridor_from_anchor_set.0_1_0",
+          "capability": {
+            "kind": "relation",
+            "name": "geometric_progressive_corridor_from_anchor_set",
+            "version": "0.1.0"
+          },
+          "claim_contracts": [
+            "claim.progressive_connection_availability.v1"
+          ],
+          "concepts": [
+            "concept.progressive_connection_availability"
+          ],
+          "conformance": "EXACT",
+          "effective_claims": {
+            "claim.progressive_connection_availability.v1": [
+              "geometric_forward_connection_available_under_declared_thresholds"
+            ]
+          },
+          "effective_evidence": {
+            "evidence.progressive_connection_availability.v1": [
+              "anchor_id",
+              "destination_region",
+              "minimum_clearance_m",
+              "open_frame_id",
+              "relation_id",
+              "target_player_id"
+            ]
+          },
+          "evidence_contracts": [
+            "evidence.progressive_connection_availability.v1"
+          ],
+          "implementation_id": "impl.geometric_progressive_corridor_anchor_set.python.v1",
+          "in_ai_projection": true,
+          "in_product_projection": true,
+          "operationalizations": [
+            "op.geometric_progressive_corridor_anchor_set.v1"
+          ],
+          "subject_ref": "runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0"
+        },
+        {
+          "binding_found": true,
+          "binding_id": "binding.primitive.relation_destination_entry.0_1_0",
+          "capability": {
+            "kind": "primitive",
+            "name": "relation_destination_entry",
+            "version": "0.1.0"
+          },
+          "claim_contracts": [
+            "claim.relation_destination_entry.v1"
+          ],
+          "concepts": [
+            "concept.relation_destination_entry"
+          ],
+          "conformance": "EXACT",
+          "effective_claims": {
+            "claim.relation_destination_entry.v1": [
+              "ball_did_not_enter_relation_destination_region_when_window_complete",
+              "ball_entered_relation_destination_region"
+            ]
+          },
+          "effective_evidence": {
+            "evidence.relation_destination_entry.v1": [
+              "anchor_id",
+              "destination_region",
+              "entry_mode",
+              "entry_status",
+              "relation_id",
+              "witness_frame_id"
+            ]
+          },
+          "evidence_contracts": [
+            "evidence.relation_destination_entry.v1"
+          ],
+          "implementation_id": "impl.relation_destination_entry.python.v1",
+          "in_ai_projection": true,
+          "in_product_projection": true,
+          "operationalizations": [
+            "op.relation_destination_entry.v1"
+          ],
+          "subject_ref": "runtime:primitive:relation_destination_entry:0.1.0"
+        }
+      ],
+      "claim_contract": "claim.ai_corridor_destination_composition.v1",
+      "composition_mapped": true,
+      "evidence_contract": "evidence.ai_corridor_destination_composition.v1",
+      "id": "composition.ai_corridor_destination.2026_06_23",
+      "is_recipe": false,
+      "origin": "AI_AUTHORED",
+      "plan_artifact_id": "plan.ai_corridor_destination.2026_06_23",
+      "plan_integrity": {
+        "artifact_id": "plan.ai_corridor_destination.2026_06_23",
+        "capability_dependencies": [
+          {
+            "kind": "primitive",
+            "name": "possession_segment",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "relation",
+            "name": "geometric_progressive_corridor_from_anchor_set",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "relation_destination_entry",
+            "version": "0.1.0"
+          }
+        ],
+        "dependency_refs": [
+          "possession_segment",
+          "geometric_progressive_corridor_from_anchor_set",
+          "relation_destination_entry",
+          "exists",
+          "eq"
+        ],
+        "draft_status": "experimental",
+        "exists": true,
+        "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+        "operator_dependencies": [
+          {
+            "name": "exists",
+            "version": "1.0.0"
+          },
+          {
+            "name": "eq",
+            "version": "1.0.0"
+          }
+        ],
+        "origin": "AI_AUTHORED",
+        "parameter_defaults": {
+          "corridor_close_after_frames": 2,
+          "corridor_max_window_seconds": 4.0,
+          "corridor_maximum_segment_length_m": 45.0,
+          "corridor_minimum_clearance_m": 4.0,
+          "corridor_minimum_duration_seconds": 0.8,
+          "corridor_minimum_progression_m": 5.0,
+          "corridor_minimum_segment_length_m": 6.0,
+          "corridor_open_after_frames": 2,
+          "destination_entry_horizon_seconds": 5.0
+        },
+        "path": "delivery/n1d/n1f-origin-bundle.json",
+        "plan_id": "possession_corridor_destination_entry_plan",
+        "plan_version": "0.1.0",
+        "promotion_status": "VALIDATED_COMPOSITION",
+        "recipe_id": "possession_corridor_destination_entry_v1",
+        "recipe_version": "0.1.0",
+        "referenced_parameters": [
+          "corridor_close_after_frames",
+          "corridor_max_window_seconds",
+          "corridor_maximum_segment_length_m",
+          "corridor_minimum_clearance_m",
+          "corridor_minimum_duration_seconds",
+          "corridor_minimum_progression_m",
+          "corridor_minimum_segment_length_m",
+          "corridor_open_after_frames",
+          "destination_entry_horizon_seconds"
+        ],
+        "source_kind": "n1f_origin_bundle.host_augmented_document",
+        "valid_typed_plan": true
+      },
+      "promotion_status": "VALIDATED_COMPOSITION"
+    }
+  },
+  "projection_differences": {
+    "ai": {
+      "added": [
+        "composition:composition.ai_corridor_destination.2026_06_23"
+      ],
+      "baseline_count": 21,
+      "changed": [
+        "operator:count_at_least:1.0.0",
+        "operator:eq:1.0.0",
+        "operator:exists:1.0.0",
+        "operator:gt:1.0.0",
+        "operator:gte:1.0.0",
+        "operator:lte:1.0.0",
+        "operator:neq:1.0.0",
+        "operator:persists_for:1.0.0",
+        "recipe:ball_side_block_shift_v1:1.0.0",
+        "recipe:high_bypass_completed_pass_v1:0.1.0",
+        "recipe:opposite_corridor_after_shift_v1:0.1.0",
+        "recipe:possession_corridor_availability_v1:0.1.0",
+        "runtime:primitive:ball_lateral_fraction:0.1.0",
+        "runtime:primitive:controlled_pass_episode:0.1.0",
+        "runtime:primitive:defensive_outfield_centroid:0.1.0",
+        "runtime:primitive:possession_segment:0.1.0",
+        "runtime:primitive:relation_destination_entry:0.1.0",
+        "runtime:primitive:signed_lateral_shift:0.1.0",
+        "runtime:relation:geometric_progressive_corridor:0.1.0",
+        "runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0",
+        "runtime:relation:opponents_bypassed_by_action:0.1.0"
+      ],
+      "projection_count": 22,
+      "removed": []
+    },
+    "product": {
+      "added": [
+        "composition:composition.ai_corridor_destination.2026_06_23"
+      ],
+      "baseline_count": 15,
+      "changed": [
+        "recipe:ball_side_block_shift_v1:1.0.0",
+        "recipe:high_bypass_completed_pass_v1:0.1.0",
+        "recipe:opposite_corridor_after_shift_v1:0.1.0",
+        "recipe:possession_corridor_availability_v1:0.1.0",
+        "runtime:primitive:ball_lateral_fraction:0.1.0",
+        "runtime:primitive:controlled_pass_episode:0.1.0",
+        "runtime:primitive:defensive_outfield_centroid:0.1.0",
+        "runtime:primitive:outcome_classification:0.1.0",
+        "runtime:primitive:possession_segment:0.1.0",
+        "runtime:primitive:relation_destination_entry:0.1.0",
+        "runtime:primitive:relation_destination_entry_classification:0.1.0",
+        "runtime:primitive:signed_lateral_shift:0.1.0",
+        "runtime:relation:geometric_progressive_corridor:0.1.0",
+        "runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0",
+        "runtime:relation:opponents_bypassed_by_action:0.1.0"
+      ],
+      "projection_count": 16,
+      "removed": []
+    }
+  },
+  "recipes": {
+    "mapped": 4,
+    "missing_plan_artifacts": 0,
+    "parsed_plan_artifacts": 5,
+    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
+    "registered": 4
+  },
+  "registry_lock": {
+    "ai_projection_policy": "projection.ai.v1",
+    "evidence_schema_version": "1.0",
+    "generator_version": "scp0.generator.v1",
+    "lock_hash": "d3c1f3c0cafd5b4bb6b500f7b258a6217c210be1169814947beab5837a85c390",
+    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
+    "product_projection_policy": "projection.product.v1",
+    "recipe_projection_policy": "projection.recipe_library.v1",
+    "registry_revision": "80afeb152caa7413782c88799c7a6025be9f63b73068cdd946cbf627ce11b9c7",
+    "research_atlas_projection_policy": "projection.research_atlas.v1",
+    "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+    "schema_version": "1.0",
+    "typed_plan_schema_version": "1.0",
+    "unsupported_projection_policy": "projection.unsupported.v1"
+  },
+  "runtime_capabilities": {
+    "bound": 11,
+    "duplicate_bindings": 0,
+    "including_operators_total": 19,
+    "orphaned": 0,
+    "runtime_total": 11,
+    "unresolved_bindings": 0
+  },
+  "schema_version": "1.0",
+  "status": "PASS",
+  "validated_compositions": {
+    "mapped": 1,
+    "total": 1
+  }
+}
+/Users/luisrevilla/Documents/priori/.venv/bin/python -m unittest tests.test_scp0_semantic_registry
+......................
+----------------------------------------------------------------------
+Ran 22 tests in 5.205s
+
+OK

@@ -1,0 +1,47 @@
+{
+  "artifacts/m1.1/binder-validation-report.json": {
+    "gate": "Gate_A_type_system_and_binder",
+    "status": "pass",
+    "summary": {
+      "fail": 0,
+      "not_ready": 0,
+      "pass": 80
+    }
+  },
+  "artifacts/m1.1/gate-s4-verification-report.json": {
+    "gate": "Gate_S4_rule_driven_result_emission",
+    "status": "pass",
+    "summary": {
+      "fail": 0,
+      "not_ready": 0,
+      "pass": 16
+    }
+  },
+  "artifacts/m1.1/gate-s6-verification-report.json": {
+    "gate": "Gate_S6_second_real_plan_relation_proof",
+    "status": "pass",
+    "summary": {
+      "fail": 0,
+      "not_ready": 0,
+      "pass": 8
+    }
+  },
+  "artifacts/m1.1/gate-s7-verification-report.json": {
+    "gate": "Gate_S7_parity_adapter_final_architecture_proof",
+    "status": "pass",
+    "summary": {
+      "fail": 0,
+      "not_ready": 0,
+      "pass": 7
+    }
+  },
+  "artifacts/m1.1/gate-s7r-verification-report.json": {
+    "gate": "Gate_S7R2_relation_coverage_witness_agent_safety",
+    "status": "pass",
+    "summary": {
+      "fail": 0,
+      "not_ready": 0,
+      "pass": 13
+    }
+  }
+}

@@ -1,0 +1,6 @@
+fd09735 Route attested Hermes hero through scoped product path
+ apps/workbench-alpha/src/App.tsx           | 11 ++++++++++-
+ apps/workbench-alpha/src/workbenchState.ts |  2 +-
+ src/tqe/workshop/app_service.py            | 24 +++++++++++++++++++++---
+ tests/test_workbench_beta0_contract.py     | 13 +++++++++++++
+ 4 files changed, 45 insertions(+), 5 deletions(-)

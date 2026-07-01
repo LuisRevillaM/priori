@@ -1,0 +1,23 @@
+{
+  "runtimeCatalogPrimitives": 6,
+  "runtimeCatalogRelations": 2,
+  "runtimeCatalogOperators": 8,
+  "recipes": 3,
+  "legacyDocumentedOrEmbeddedCapabilities": 5,
+  "duplicatesOrAdapters": [
+    "geometric_progressive_corridor and geometric_progressive_corridor_from_anchor_set duplicate football semantics with different input contracts.",
+    "wide_channel_dwell and shift_persistence are legacy documented primitives now represented by predicate/operator composition.",
+    "docs/primitives/registry.yaml lists robust_team_width and robust_team_length, but they are not current catalog entries."
+  ],
+  "mislayeredOrOverstated": [
+    "signed_lateral_shift is registered as a primitive but embeds candidate extraction, baseline/search policy, quality gating, and anchor creation.",
+    "outcome_classification is recipe-specific L4 logic registered as a primitive.",
+    "geometric_progressive_corridor is agent-visible and useful, but its L1 geometric lowering is not cataloged as reusable kernel operations."
+  ],
+  "hiddenDependencies": [
+    "possession_segment reads minimum_possession_seconds and analysis_rate_hz from recipe parameters although the catalog entry declares no parameters.",
+    "signed_lateral_shift reads baseline_window_seconds, shift_search_window_seconds, minimum_outfield_players_per_team, prior_central_fraction, and minimum_wide_dwell_seconds through shared runtime state rather than catalog-declared node parameters.",
+    "outcome_classification reads result_id_seed_hash, analysis_rate_hz, dedupe_window_seconds, opposite_side_fraction, and retained_after_switch_seconds beyond its declared horizon parameter.",
+    "geometric corridor implementations depend on analysis_rate_hz from shared runtime parameters in addition to node parameters."
+  ]
+}

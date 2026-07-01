@@ -1,0 +1,7 @@
+/Users/luisrevilla/Documents/priori/.venv/bin/python -m unittest discover -s tests
+............................................................................................................................
+----------------------------------------------------------------------
+Ran 124 tests in 304.684s
+
+OK
+{"attestation_status": "VERIFIED", "blocking_reasons": []}

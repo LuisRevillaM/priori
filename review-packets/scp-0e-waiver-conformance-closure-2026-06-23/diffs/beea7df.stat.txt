@@ -1,0 +1,20 @@
+beea7df Close SCP-0E waiver and conformance gates
+ artifacts/scp-0/verification-report.json           |  53 +-
+ delivery/ledger.jsonl                              |   1 +
+ delivery/scp-0/SPEC.md                             |  43 ++
+ delivery/scp-0/progress.md                         |   3 +-
+ delivery/scp-0/status.yaml                         |  34 +-
+ .../2026-06-23-scp-0-semantic-registry.md          |  29 ++
+ generated/semantic-registry/ai-projection.json     |   8 +-
+ .../semantic-registry/product-projection.json      |   8 +-
+ .../recipe-library-projection.json                 |   8 +-
+ .../research-atlas-projection.json                 |   4 +-
+ .../semantic-registry/semantic-parity-report.json  |  53 +-
+ .../unsupported-capability-projection.json         |   4 +-
+ semantic-registry/registry.lock.json               |   4 +-
+ semantic-registry/registry.yaml                    | 283 +++++++++--
+ .../schemas/semantic-registry.schema.json          | 198 +++++++-
+ src/tqe/semantic_registry/generate.py              | 561 +++++++++++++++++----
+ src/tqe/semantic_registry/models.py                |  44 +-
+ tests/test_scp0_semantic_registry.py               | 158 +++++-
+ 18 files changed, 1322 insertions(+), 174 deletions(-)

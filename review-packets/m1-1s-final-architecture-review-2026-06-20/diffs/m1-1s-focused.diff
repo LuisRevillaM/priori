@@ -1,0 +1,2924 @@
+diff --git a/config/query-plans/opposite_corridor_after_shift.experimental.v1.json b/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
+index 678a18e..cfc6a9c 100644
+--- a/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
++++ b/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
+@@ -642,35 +642,41 @@
+           "source_node_id": "opposite_corridor",
+           "output_name": "episodes"
+         },
+-        "field": "relation_id"
++        "field": "relation_id",
++        "alias": "relation_id"
+       },
+       {
+         "source": {
+           "source_node_id": "opposite_corridor",
+           "output_name": "episodes"
+         },
+-        "field": "destination_region"
++        "field": "destination_region",
++        "alias": "destination_region"
+       },
+       {
+         "source": {
+           "source_node_id": "opposite_corridor",
+           "output_name": "episodes"
+         },
+-        "field": "duration_seconds"
++        "field": "duration_seconds",
++        "alias": "relation_duration_seconds"
+       },
+       {
+         "source": {
+           "source_node_id": "destination_entry",
+           "output_name": "classification"
+         },
+-        "field": "classification"
++        "field": "classification",
++        "alias": "destination_classification"
+       },
+       {
+         "source": {
+           "source_node_id": "destination_entry",
+           "output_name": "classification"
+         },
+-        "field": "destination_entry_frame_id"
++        "field": "destination_entry_frame_id",
++        "alias": "destination_entry_frame_id",
++        "required": false
+       }
+     ],
+     "anchor_source": {
+diff --git a/config/query-plans/possession_corridor_availability.experimental.v1.json b/config/query-plans/possession_corridor_availability.experimental.v1.json
+new file mode 100644
+index 0000000..551e064
+--- /dev/null
++++ b/config/query-plans/possession_corridor_availability.experimental.v1.json
+@@ -0,0 +1,339 @@
++{
++  "schema_version": "1.0",
++  "recipe": {
++    "schema_version": "1.0",
++    "recipe_id": "possession_corridor_availability_v1",
++    "recipe_version": "0.1.0",
++    "display_name": "Possession Corridor Availability",
++    "description": "Experimental composition that starts from ordinary possession anchors and detects whether a geometric progressive corridor appears without using the M1 wide-entry block-shift spine.",
++    "default_unknown_evidence_policy": "exclude_candidate",
++    "allowed_claims": [
++      "The team had an active-ball possession anchor.",
++      "A geometric progressive corridor appeared under the configured relation thresholds.",
++      "The replay coordinates come from canonical 25 Hz source frames."
++    ],
++    "disallowed_claims": [
++      "The attack intentionally created the corridor.",
++      "A pass should have been played.",
++      "The corridor is optimal.",
++      "The result is a pass probability, decision-quality, causation, player-intent, or missed-opportunity claim.",
++      "The result is backed by licensed match video."
++    ],
++    "limitations": [
++      "Experimental plan; not an approved recipe.",
++      "No offside, receiver body orientation, pressure, pass probability, or optimality model is evaluated.",
++      "No match video is used."
++    ],
++    "output_classifications": [
++      "PROGRESSIVE_CORRIDOR_AVAILABLE"
++    ],
++    "parameters": [
++      {
++        "name": "analysis_rate_hz",
++        "payload_type": "number",
++        "unit": "hertz",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "hertz",
++          "value": 5
++        },
++        "description": "Analysis cadence."
++      },
++      {
++        "name": "minimum_possession_seconds",
++        "payload_type": "number",
++        "unit": "second",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "second",
++          "value": 5.0
++        },
++        "description": "Minimum active-ball possession duration."
++      },
++      {
++        "name": "maximum_analysis_gap_ms",
++        "payload_type": "number",
++        "unit": "millisecond",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "millisecond",
++          "value": 250
++        },
++        "description": "Maximum permitted gap in the analysis stream."
++      },
++      {
++        "name": "minimum_outfield_players_per_team",
++        "payload_type": "number",
++        "unit": "count",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "count",
++          "value": 9
++        },
++        "description": "Minimum outfield players required per team for quality checks."
++      },
++      {
++        "name": "corridor_max_window_seconds",
++        "payload_type": "number",
++        "unit": "second",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "second",
++          "value": 5.0
++        },
++        "description": "Maximum post-anchor relation search window."
++      },
++      {
++        "name": "corridor_minimum_progression_m",
++        "payload_type": "number",
++        "unit": "metre",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "metre",
++          "value": 5.0
++        },
++        "description": "Minimum forward progression for a corridor segment."
++      },
++      {
++        "name": "corridor_minimum_segment_length_m",
++        "payload_type": "number",
++        "unit": "metre",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "metre",
++          "value": 6.0
++        },
++        "description": "Minimum source-target segment length."
++      },
++      {
++        "name": "corridor_maximum_segment_length_m",
++        "payload_type": "number",
++        "unit": "metre",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "metre",
++          "value": 45.0
++        },
++        "description": "Maximum source-target segment length."
++      },
++      {
++        "name": "corridor_minimum_clearance_m",
++        "payload_type": "number",
++        "unit": "metre",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "metre",
++          "value": 4.0
++        },
++        "description": "Minimum defender clearance from the corridor segment."
++      },
++      {
++        "name": "corridor_open_after_frames",
++        "payload_type": "number",
++        "unit": "count",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "count",
++          "value": 2
++        },
++        "description": "Frames required before a corridor is considered open."
++      },
++      {
++        "name": "corridor_close_after_frames",
++        "payload_type": "number",
++        "unit": "count",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "count",
++          "value": 2
++        },
++        "description": "Frames required before a corridor is considered closed."
++      },
++      {
++        "name": "corridor_minimum_duration_seconds",
++        "payload_type": "number",
++        "unit": "second",
++        "required": false,
++        "default": {
++          "payload_type": "number",
++          "unit": "second",
++          "value": 0.4
++        },
++        "description": "Minimum open duration retained in relation output."
++      }
++    ]
++  },
++  "default_invocation": {
++    "schema_version": "1.0",
++    "invocation_id": "m1_fortuna_experimental_possession_corridor",
++    "match_ids": [
++      "J03WOY",
++      "J03WPY",
++      "J03WQQ",
++      "J03WR9"
++    ],
++    "periods": [
++      "firstHalf",
++      "secondHalf"
++    ],
++    "perspective_team_role": "home",
++    "parameters": {},
++    "max_results": 64,
++    "execution_mode": "execute"
++  },
++  "draft_plan": {
++    "schema_version": "1.0",
++    "plan_id": "possession_corridor_availability_experimental_v1",
++    "plan_version": "0.1.0",
++    "recipe_id": "possession_corridor_availability_v1",
++    "recipe_version": "0.1.0",
++    "status": "experimental",
++    "unknown_evidence_policy": "exclude_candidate",
++    "classification_mode": "partial_declared",
++    "nodes": [
++      {
++        "kind": "primitive",
++        "node_id": "possession",
++        "catalog_ref": "possession_segment",
++        "version": "0.1.0"
++      },
++      {
++        "kind": "relation",
++        "node_id": "progressive_corridor",
++        "catalog_ref": "geometric_progressive_corridor_from_anchor_set",
++        "version": "0.1.0",
++        "inputs": {
++          "anchors": {
++            "source_node_id": "possession",
++            "output_name": "anchors"
++          }
++        },
++        "parameters": {
++          "max_window_seconds": {
++            "kind": "parameter",
++            "name": "corridor_max_window_seconds"
++          },
++          "minimum_progression_m": {
++            "kind": "parameter",
++            "name": "corridor_minimum_progression_m"
++          },
++          "minimum_segment_length_m": {
++            "kind": "parameter",
++            "name": "corridor_minimum_segment_length_m"
++          },
++          "maximum_segment_length_m": {
++            "kind": "parameter",
++            "name": "corridor_maximum_segment_length_m"
++          },
++          "minimum_clearance_m": {
++            "kind": "parameter",
++            "name": "corridor_minimum_clearance_m"
++          },
++          "open_after_frames": {
++            "kind": "parameter",
++            "name": "corridor_open_after_frames"
++          },
++          "close_after_frames": {
++            "kind": "parameter",
++            "name": "corridor_close_after_frames"
++          },
++          "minimum_duration_seconds": {
++            "kind": "parameter",
++            "name": "corridor_minimum_duration_seconds"
++          },
++          "side_filter": {
++            "payload_type": "enum",
++            "unit": "none",
++            "value": "any"
++          }
++        }
++      },
++      {
++        "kind": "predicate",
++        "node_id": "has_progressive_corridor",
++        "input": {
++          "source_node_id": "progressive_corridor",
++          "output_name": "episodes"
++        },
++        "operator": {
++          "name": "exists",
++          "version": "1.0.0"
++        }
++      }
++    ],
++    "classification_rules": [
++      {
++        "label": "PROGRESSIVE_CORRIDOR_AVAILABLE",
++        "predicate_ids": [
++          "has_progressive_corridor"
++        ],
++        "description": "A geometric progressive corridor appeared from a generic possession anchor."
++      }
++    ],
++    "requested_evidence": [
++      {
++        "source": {
++          "source_node_id": "progressive_corridor",
++          "output_name": "episodes"
++        },
++        "field": "relation_id",
++        "alias": "relation_id"
++      },
++      {
++        "source": {
++          "source_node_id": "progressive_corridor",
++          "output_name": "episodes"
++        },
++        "field": "target_player_id",
++        "alias": "target_player_id"
++      },
++      {
++        "source": {
++          "source_node_id": "progressive_corridor",
++          "output_name": "episodes"
++        },
++        "field": "destination_region",
++        "alias": "destination_region"
++      },
++      {
++        "source": {
++          "source_node_id": "progressive_corridor",
++          "output_name": "episodes"
++        },
++        "field": "duration_seconds",
++        "alias": "relation_duration_seconds"
++      },
++      {
++        "source": {
++          "source_node_id": "progressive_corridor",
++          "output_name": "episodes"
++        },
++        "field": "minimum_clearance_m",
++        "alias": "minimum_clearance_m"
++      }
++    ],
++    "anchor_source": {
++      "source_node_id": "possession",
++      "output_name": "anchors"
++    },
++    "complexity_limits": {
++      "max_plan_nodes": 20,
++      "max_nesting_depth": 4,
++      "max_temporal_horizon_seconds": 15.0,
++      "max_returned_moments": 100,
++      "max_relations_per_anchor": 1000,
++      "max_execution_cost": 100000
++    }
++  }
++}
+diff --git a/src/tqe/runtime/catalog.py b/src/tqe/runtime/catalog.py
+index cb1be19..68be589 100644
+--- a/src/tqe/runtime/catalog.py
++++ b/src/tqe/runtime/catalog.py
+@@ -559,6 +559,157 @@ def default_relations() -> list[CatalogEntry]:
+                 "No receiver body-orientation model.",
+                 "No offside model in V1 acceptance.",
+             ],
++        ),
++        relation(
++            name="geometric_progressive_corridor_from_anchor_set",
++            version="0.1.0",
++            purpose=(
++                "Represent a geometrically clear forward connection from a generic "
++                "anchor set to an attacking teammate over an interval."
++            ),
++            outputs=[
++                output(
++                    name="episodes",
++                    temporal_type=TemporalContainer.RELATION_EPISODE_SET,
++                    payload_type=PayloadType.RELATION_REF,
++                    cardinality=Cardinality.COLLECTION,
++                    entity_scope=EntityScope.RELATION,
++                    evidence_fields=[
++                        "relation_id",
++                        "open_frame_id",
++                        "open_confirm_frame_id",
++                        "close_frame_id",
++                        "duration_seconds",
++                        "target_player_id",
++                        "destination_side",
++                        "destination_region",
++                        "destination_region_type",
++                        "destination_region_bounds",
++                        "destination_lane",
++                        "minimum_clearance_m",
++                        "limiting_defender_id",
++                        "source_open_point",
++                        "target_open_point",
++                        "source_close_point",
++                        "target_close_point",
++                    ],
++                )
++            ],
++            inputs=[
++                input_ref(
++                    name="anchors",
++                    temporal_type=TemporalContainer.EPISODE_SET,
++                    payload_type=PayloadType.ANCHOR_REF,
++                    cardinality=Cardinality.COLLECTION,
++                    entity_scope=EntityScope.ANCHOR,
++                )
++            ],
++            parameters=[
++                parameter(
++                    name="max_window_seconds",
++                    payload_type=PayloadType.NUMBER,
++                    unit=Unit.SECOND,
++                    required=True,
++                    minimum=0.2,
++                    maximum=15.0,
++                    description="Maximum relation search window after the anchor.",
++                ),
++                parameter(
++                    name="minimum_progression_m",
++                    payload_type=PayloadType.NUMBER,
++                    unit=Unit.METRE,
++                    required=True,
++                    minimum=0.0,
++                    maximum=80.0,
++                    description="Minimum forward progression from source to target.",
++                ),
++                parameter(
++                    name="minimum_segment_length_m",
++                    payload_type=PayloadType.NUMBER,
++                    unit=Unit.METRE,
++                    required=True,
++                    minimum=0.0,
++                    maximum=80.0,
++                    description="Minimum source-target segment length.",
++                ),
++                parameter(
++                    name="maximum_segment_length_m",
++                    payload_type=PayloadType.NUMBER,
++                    unit=Unit.METRE,
++                    required=True,
++                    minimum=0.0,
++                    maximum=100.0,
++                    description="Maximum source-target segment length.",
++                ),
++                parameter(
++                    name="minimum_clearance_m",
++                    payload_type=PayloadType.NUMBER,
++                    unit=Unit.METRE,
++                    required=True,
++                    minimum=0.0,
++                    maximum=40.0,
++                    description="Minimum defender clearance from the source-target segment.",
++                ),
++                parameter(
++                    name="open_after_frames",
++                    payload_type=PayloadType.NUMBER,
++                    unit=Unit.COUNT,
++                    required=True,
++                    minimum=1.0,
++                    maximum=100.0,
++                    description="Frames required before a corridor is considered open.",
++                ),
++                parameter(
++                    name="close_after_frames",
++                    payload_type=PayloadType.NUMBER,
++                    unit=Unit.COUNT,
++                    required=True,
++                    minimum=1.0,
++                    maximum=100.0,
++                    description="Frames required before a corridor is considered closed.",
++                ),
++                parameter(
++                    name="minimum_duration_seconds",
++                    payload_type=PayloadType.NUMBER,
++                    unit=Unit.SECOND,
++                    required=True,
++                    minimum=0.0,
++                    maximum=15.0,
++                    description="Minimum open duration retained in the relation output.",
++                ),
++                parameter(
++                    name="side_filter",
++                    payload_type=PayloadType.ENUM,
++                    required=True,
++                    allowed_values=["any", "same_ball_side", "opposite_ball_side"],
++                    description="Retain corridors by relation destination side relative to the ball side.",
++                ),
++            ],
++            evidence_fields=[
++                "relation_id",
++                "open_frame_id",
++                "open_confirm_frame_id",
++                "close_frame_id",
++                "duration_seconds",
++                "target_player_id",
++                "destination_side",
++                "destination_region",
++                "destination_region_type",
++                "destination_region_bounds",
++                "destination_lane",
++                "minimum_clearance_m",
++                "limiting_defender_id",
++                "source_open_point",
++                "target_open_point",
++                "source_close_point",
++                "target_close_point",
++            ],
++            limitations=[
++                "No pass probability.",
++                "No optimality or decision-quality claim.",
++                "No player intent, causation, or missed-opportunity claim.",
++                "No receiver body-orientation or offside model.",
++            ],
+         )
+     ]
+ 
+diff --git a/src/tqe/runtime/executor.py b/src/tqe/runtime/executor.py
+index 3258e9c..f1aca9f 100644
+--- a/src/tqe/runtime/executor.py
++++ b/src/tqe/runtime/executor.py
+@@ -27,6 +27,7 @@ from tqe.runtime.ir import (
+     BoundPredicateNode,
+     BoundQueryPlan,
+     BoundPlanNode,
++    ClassificationRule,
+     EvaluationTarget,
+     ExecutionMode,
+     ExecutionStatus,
+@@ -197,6 +198,7 @@ class TacticalQueryExecutor:
+         }
+         self.relations: dict[str, RelationImplementation] = {
+             "geometric_progressive_corridor": relation_geometric_progressive_corridor,
++            "geometric_progressive_corridor_from_anchor_set": relation_geometric_progressive_corridor,
+         }
+         self.predicates: dict[str, PredicateImplementation] = {
+             "gt": predicate_gt,
+@@ -223,6 +225,7 @@ class TacticalQueryExecutor:
+                     "plan_id": bound_plan.plan_id,
+                     "plan_status": bound_plan.plan_status.value,
+                     "execution_mode": bound_plan.execution_mode.value,
++                    "compatibility_profile": self.compatibility_profile,
+                     "runtime_result_count": 0,
+                     "runtime_value_count": 0,
+                     "skipped_reason": "bind_only",
+@@ -241,6 +244,7 @@ class TacticalQueryExecutor:
+                     "plan_id": bound_plan.plan_id,
+                     "plan_status": bound_plan.plan_status.value,
+                     "execution_mode": bound_plan.execution_mode.value,
++                    "compatibility_profile": self.compatibility_profile,
+                     "runtime_result_count": 0,
+                     "runtime_value_count": 0,
+                     "skipped_reason": "dry_run",
+@@ -276,6 +280,9 @@ class TacticalQueryExecutor:
+                 for trace in trace_records
+                 if str(trace.source_evidence.get("result_id")) in kept_ids
+             ]
++        evidence_failures = unresolved_requested_evidence(results, bound_plan)
++        if evidence_failures:
++            unknown_policy_status = ExecutionStatus.INCOMPLETE
+ 
+         query_results = [
+             QueryResult(
+@@ -290,7 +297,9 @@ class TacticalQueryExecutor:
+                         for key, value in result.items()
+                         if key != "result_id" and not key.startswith("_")
+                     },
+-                    "requested_evidence": project_requested_evidence(result, bound_plan),
++                    "requested_evidence": result.get("requested_evidence")
++                    if isinstance(result.get("requested_evidence"), dict)
++                    else project_requested_evidence(result, bound_plan),
+                     "plan_status": bound_plan.plan_status.value,
+                 },
+             )
+@@ -323,11 +332,14 @@ class TacticalQueryExecutor:
+                 "plan_id": bound_plan.plan_id,
+                 "plan_status": bound_plan.plan_status.value,
+                 "execution_mode": bound_plan.execution_mode.value,
++                "compatibility_profile": self.compatibility_profile,
+                 "max_results": bound_plan.max_results,
+                 "runtime_result_count": len(query_results),
+                 "runtime_value_count": runtime_value_count,
+                 "unknown_policy": bound_plan.unknown_evidence_policy.value,
+                 "unknown_trace_count": sum(1 for trace in trace_records if trace.status == "UNKNOWN"),
++                "requested_evidence_failure_count": len(evidence_failures),
++                "requested_evidence_failures": evidence_failures[:20],
+                 "runtime_trace_hash": stable_hash(trace_payload),
+             },
+         )
+@@ -351,17 +363,43 @@ class TacticalQueryExecutor:
+                 params=params,
+                 compatibility_profile=compatibility_profile,
+             )
+-            accepted.extend(state.accepted)
+-            traces.extend(accepted_predicate_traces(state, compatibility_profile=compatibility_profile))
++            if compatibility_profile == LEGACY_M1_PARITY_PROFILE:
++                accepted.extend(state.accepted)
++                traces.extend(
++                    accepted_predicate_traces(
++                        state,
++                        bound_plan=bound_plan,
++                        compatibility_profile=compatibility_profile,
++                    )
++                )
++            else:
++                period_results, period_traces = emit_generic_results_from_rules(
++                    state=state,
++                    bound_plan=bound_plan,
++                    compatibility_profile=compatibility_profile,
++                )
++                accepted.extend(period_results)
++                traces.extend(period_traces)
+             runtime_value_count += sum(len(outputs) for outputs in state.runtime_values.values())
+-        accepted.sort(
+-            key=lambda item: (
+-                -float(item["block_shift_score"]),
+-                item["match_id"],
+-                item["period"],
+-                item["wide_entry_frame_id"],
++        if compatibility_profile == LEGACY_M1_PARITY_PROFILE:
++            accepted.sort(
++                key=lambda item: (
++                    -float(item["block_shift_score"]),
++                    item["match_id"],
++                    item["period"],
++                    item["wide_entry_frame_id"],
++                )
++            )
++        else:
++            accepted.sort(
++                key=lambda item: (
++                    item["match_id"],
++                    item["period"],
++                    int(item["anchor_frame_id"]),
++                    item["classification"],
++                    item["result_id"],
++                )
+             )
+-        )
+         return accepted, traces, runtime_value_count
+ 
+     def evaluate_target(
+@@ -660,12 +698,12 @@ def apply_result_semantics(
+         )
+ 
+     if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INVALIDATE_EXECUTION:
+-        if any(trace.status == "UNKNOWN" for trace in filtered_traces):
+-            return filtered, filtered_traces, ExecutionStatus.INCOMPLETE
++        if any(trace.status == "UNKNOWN" for trace in trace_records):
++            return filtered, trace_records, ExecutionStatus.INCOMPLETE
+     if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.EXCLUDE_CANDIDATE:
+         unknown_ids = {
+             str(trace.source_evidence.get("result_id"))
+-            for trace in filtered_traces
++            for trace in trace_records
+             if trace.status == "UNKNOWN"
+         }
+         if unknown_ids:
+@@ -674,9 +712,151 @@ def apply_result_semantics(
+             filtered_traces = [
+                 trace for trace in filtered_traces if str(trace.source_evidence.get("result_id")) in kept_ids
+             ]
++            filtered_traces.extend(
++                [
++                    trace
++                    for trace in trace_records
++                    if trace.status == "UNKNOWN"
++                    and str(trace.source_evidence.get("result_id")) not in kept_ids
++                ]
++            )
+     return filtered, filtered_traces, ExecutionStatus.PASS
+ 
+ 
++def emit_generic_results_from_rules(
++    *,
++    state: PeriodState,
++    bound_plan: BoundQueryPlan,
++    compatibility_profile: str,
++) -> tuple[list[dict[str, Any]], list[PredicateTrace]]:
++    anchors = runtime_anchors(state, bound_plan.anchor_source)
++    emitted: list[dict[str, Any]] = []
++    traces: list[PredicateTrace] = []
++    for anchor in anchors:
++        base_result = generic_result_base(
++            state=state,
++            bound_plan=bound_plan,
++            anchor=anchor,
++        )
++        anchor_traces = predicate_traces_for_anchor(
++            state,
++            anchor,
++            base_result,
++            bound_plan=bound_plan,
++            compatibility_profile=compatibility_profile,
++        )
++        anchor_traces.extend(
++            missing_target_predicate_traces(
++                bound_plan=bound_plan,
++                state=state,
++                anchor=anchor,
++                result=base_result,
++                existing_predicate_ids={trace.predicate_id for trace in anchor_traces},
++            )
++        )
++        labels = rule_labels_for_traces(
++            traces=anchor_traces,
++            bound_plan=bound_plan,
++        )
++        traces.extend(
++            [
++                trace.model_copy(
++                    update={
++                        "source_evidence": {
++                            **trace.source_evidence,
++                            "result_id": base_result["result_id"],
++                            "emitted_result": bool(labels),
++                        }
++                    }
++                )
++                for trace in anchor_traces
++                if trace.status == "UNKNOWN"
++            ]
++        )
++        if not labels:
++            continue
++        classification = labels[0]
++        result = {
++            **base_result,
++            "classification": classification,
++            "accepted": True,
++            "matched_classification_rules": labels,
++            "requested_evidence": project_requested_evidence_from_runtime(
++                state=state,
++                anchor=anchor,
++                bound_plan=bound_plan,
++            ),
++            "provenance": {
++                "emitter": "generic_rule_emitter",
++                "anchor_source": f"{bound_plan.anchor_source.source_node_id}.{bound_plan.anchor_source.output_name}"
++                if bound_plan.anchor_source is not None
++                else None,
++                "compatibility_profile": compatibility_profile,
++            },
++        }
++        emitted.append(result)
++        traces.extend(
++            [
++                trace.model_copy(
++                    update={
++                        "source_evidence": {
++                            **trace.source_evidence,
++                            "result_id": result["result_id"],
++                        }
++                    }
++                )
++                for trace in anchor_traces
++            ]
++        )
++    return emitted, traces
++
++
++def generic_result_base(
++    *,
++    state: PeriodState,
++    bound_plan: BoundQueryPlan,
++    anchor: RuntimeAnchor,
++) -> dict[str, Any]:
++    result_id = hashlib.sha256(
++        (
++            f"{bound_plan.bound_plan_hash}:generic:"
++            f"{anchor.match_id}:{anchor.period}:{anchor.anchor_id}"
++        ).encode("utf-8")
++    ).hexdigest()[:16]
++    return {
++        "result_id": result_id,
++        "classification": None,
++        "match_id": anchor.match_id,
++        "period": anchor.period,
++        "anchor_frame_id": anchor.anchor_frame_id,
++        "anchor_id": anchor.anchor_id,
++        "accepted": False,
++        "perspective_team_role": state.perspective_team_role,
++        "defending_team_role": state.defending_team_role,
++    }
++
++
++def rule_labels_for_traces(
++    *,
++    traces: list[PredicateTrace],
++    bound_plan: BoundQueryPlan,
++) -> list[str]:
++    status_by_predicate = {trace.predicate_id: trace.status for trace in traces}
++    matching: list[tuple[int, int, ClassificationRule]] = []
++    rule_order = {id(rule): index for index, rule in enumerate(bound_plan.classification_rules)}
++    for rule in bound_plan.classification_rules:
++        statuses = [status_by_predicate.get(predicate_id, "UNKNOWN") for predicate_id in rule.predicate_ids]
++        if any(status == "FAIL" for status in statuses):
++            continue
++        if any(status == "UNKNOWN" for status in statuses):
++            if bound_plan.unknown_evidence_policy == UnknownEvidencePolicy.INCLUDE_WITH_WARNING:
++                matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule))
++            continue
++        matching.append((len(rule.predicate_ids), rule_order[id(rule)], rule))
++    matching.sort(key=lambda item: (-item[0], item[1]))
++    return [rule.label for _specificity, _order, rule in matching]
++
++
+ def matching_classification_rules(
+     *,
+     result: dict[str, Any],
+@@ -699,11 +879,120 @@ def project_requested_evidence(
+ ) -> dict[str, Any]:
+     projected: dict[str, Any] = {}
+     for request in bound_plan.requested_evidence:
+-        key = f"{request.source.source_node_id}.{request.field}"
++        key = request.alias or f"{request.source.source_node_id}.{request.field}"
+         projected[key] = result.get(request.field)
+     return projected
+ 
+ 
++def project_requested_evidence_from_runtime(
++    *,
++    state: PeriodState,
++    anchor: RuntimeAnchor,
++    bound_plan: BoundQueryPlan,
++) -> dict[str, Any]:
++    projected: dict[str, Any] = {}
++    selected_relation_id = selected_relation_id_for_anchor(state=state, anchor=anchor)
++    for request in bound_plan.requested_evidence:
++        key = request.alias or f"{request.source.source_node_id}.{request.field}"
++        runtime_value = state.runtime_values.get(request.source.source_node_id, {}).get(request.source.output_name)
++        projected[key] = evidence_value_for_anchor(
++            runtime_value=runtime_value,
++            anchor=anchor,
++            field=request.field,
++            selected_relation_id=selected_relation_id,
++        )
++    return projected
++
++
++def unresolved_requested_evidence(
++    results: list[dict[str, Any]],
++    bound_plan: BoundQueryPlan,
++) -> list[dict[str, Any]]:
++    required_aliases = {
++        request.alias or f"{request.source.source_node_id}.{request.field}"
++        for request in bound_plan.requested_evidence
++        if request.required
++    }
++    failures: list[dict[str, Any]] = []
++    for result in results:
++        requested = result.get("requested_evidence")
++        if not isinstance(requested, dict):
++            continue
++        missing = sorted(
++            key
++            for key, value in requested.items()
++            if key in required_aliases and value is None
++        )
++        if missing:
++            failures.append(
++                {
++                    "result_id": str(result.get("result_id")),
++                    "classification": str(result.get("classification")),
++                    "missing_aliases": missing,
++                }
++            )
++    return failures
++
++
++def selected_relation_id_for_anchor(
++    *,
++    state: PeriodState,
++    anchor: RuntimeAnchor,
++) -> str | None:
++    for outputs in state.runtime_values.values():
++        runtime_value = outputs.get("classification")
++        if runtime_value is None:
++            continue
++        for record in runtime_records(runtime_value):
++            if record_matches_anchor(record, anchor) and record.get("relation_id") is not None:
++                return str(record["relation_id"])
++    return None
++
++
++def evidence_value_for_anchor(
++    *,
++    runtime_value: RuntimeValue | None,
++    anchor: RuntimeAnchor,
++    field: str,
++    selected_relation_id: str | None = None,
++) -> Any:
++    if runtime_value is None:
++        return None
++    for record in runtime_records(runtime_value):
++        if (
++            selected_relation_id is not None
++            and record.get("relation_id") is not None
++            and str(record["relation_id"]) != selected_relation_id
++        ):
++            continue
++        if record_matches_anchor(record, anchor):
++            return record.get(field)
++    if isinstance(runtime_value.value, FrameSignal):
++        try:
++            index = runtime_value.value.frame_ids.index(anchor.anchor_frame_id)
++        except ValueError:
++            return None
++        if field == runtime_value.output.name or field in {"value", "classification"}:
++            return runtime_value.value.values[index]
++    return None
++
++
++def record_matches_anchor(record: dict[str, Any], anchor: RuntimeAnchor) -> bool:
++    if not isinstance(record, dict):
++        return False
++    if str(record.get("anchor_id") or "") == anchor.anchor_id:
++        return True
++    if optional_int(record.get("anchor_frame_id")) == anchor.anchor_frame_id:
++        return True
++    source = record.get("source_result")
++    if isinstance(source, dict) and record_matches_anchor(source, anchor):
++        return True
++    for source_record in record.get("source_records") or []:
++        if isinstance(source_record, dict) and record_matches_anchor(source_record, anchor):
++            return True
++    return False
++
++
+ def catalog_input_value(
+     state: PeriodState,
+     node: BoundCatalogNode,
+@@ -1089,24 +1378,26 @@ def execute_predicate_with_resolved_inputs(
+         }
+         records = runtime_records(runtime_value)
+         if node.operator.name == "neq" and records and len(records) == len(passed):
++            predicate_records: list[dict[str, Any]] = []
+             for record, status, value in zip(records, passed, values, strict=False):
+-                if "_predicate_status" in record:
+-                    record_candidate_predicate(
+-                        candidate=record,
++                predicate_records.append(
++                    predicate_record_for_source_record(
++                        source_record=record,
+                         node=node,
+                         status=predicate_status_label(status),
+                         value=typed_enum(str(value)) if value is not None else None,
+                         threshold=typed_enum(str(compare_value)),
+                         unit=Unit.NONE,
+-                        frame_id=int(record["outcome_frame_id"]) if record.get("outcome_frame_id") is not None else None,
++                        frame_id=optional_int(record.get("outcome_frame_id")),
+                         source_evidence={
+                             "source_node_id": node.input.source_node_id,
+                             "source_output_name": node.input.output_name,
+                             "reason": "outcome_not_evaluated" if value is None else None,
+                         },
+                     )
++                )
+             output["items"] = [record for record, status in zip(records, passed, strict=False) if status]
+-            output["predicate_records"] = output["items"]
++            output["predicate_records"] = predicate_records
+         return output
+     if node.operator.name == "persists_for":
+         duration = parameters.get("duration")
+@@ -1119,15 +1410,56 @@ def execute_predicate_with_resolved_inputs(
+             duration=duration,
+             analysis_rate_hz=context.params.integer("analysis_rate_hz"),
+         )
++        records = attach_source_records_to_temporal_records(
++            temporal.output_records(),
++            source_records=runtime_records(runtime_value),
++        )
+         return {
+-            "predicate": temporal.output_records(),
+-            "episodes": temporal.output_records(),
++            "predicate": records,
++            "episodes": records,
+             "passing_episodes": temporal.episodes,
+             "unknown_intervals": temporal.unknown_intervals,
+         }
+     if node.operator.name == "exists":
+         source = runtime_value.value
+         if isinstance(source, list):
++            records = [record for record in source if isinstance(record, dict)]
++            frame_ids = [
++                source_record_frame_id(record)
++                for record in records
++            ]
++            usable = [
++                (record, int(frame_id))
++                for record, frame_id in zip(records, frame_ids, strict=False)
++                if frame_id is not None
++            ]
++            if usable:
++                return {
++                    "predicate": FrameSignal(
++                        frame_ids=[frame_id for _record, frame_id in usable],
++                        values=[True for _record, _frame_id in usable],
++                        unknown_mask=[False for _record, _frame_id in usable],
++                        unit=node.output.unit,
++                        entity_scope=node.output.entity_scope,
++                    ),
++                    "predicate_records": [
++                        predicate_record_for_source_record(
++                            source_record=record,
++                            node=node,
++                            status="PASS",
++                            value=TypedValue(payload_type=PayloadType.BOOLEAN, value=True, unit=Unit.NONE),
++                            threshold=None,
++                            unit=Unit.NONE,
++                            frame_id=frame_id,
++                            source_evidence={
++                                "source_node_id": node.input.source_node_id,
++                                "source_output_name": node.input.output_name,
++                            },
++                        )
++                        for record, frame_id in usable
++                    ],
++                    "episodes": source,
++                }
+             return {"predicate": bool(source), "episodes": source}
+         raise RuntimeError(f"Unsupported exists source for {node.node_id}")
+     if node.operator.name == "count_at_least":
+@@ -1443,6 +1775,7 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
+     accepted_shift_records = catalog_input_value(state, node, "accepted_shift_episodes").value
+     if not isinstance(accepted_shift_records, list):
+         raise RuntimeError(f"{node.node_id} requires accepted shift episode records")
++    accepted_shift_records = expanded_pass_source_records(accepted_shift_records)
+     query_hash = state.params.text("result_id_seed_hash")
+     analysis_rate_hz = state.params.integer("analysis_rate_hz")
+     dedupe_source_frames = int(round(state.params.number("dedupe_window_seconds") * FRAME_RATE_HZ))
+@@ -1525,6 +1858,25 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
+     }
+ 
+ 
++def expanded_pass_source_records(records: list[Any]) -> list[dict[str, Any]]:
++    expanded: list[dict[str, Any]] = []
++    for record in records:
++        if not isinstance(record, dict):
++            continue
++        if record.get("temporal_status") not in {None, "PASS"}:
++            continue
++        source_records = [
++            item
++            for item in record.get("source_records") or []
++            if isinstance(item, dict) and "possession_start_frame_id" in item
++        ]
++        if source_records:
++            expanded.extend(source_records)
++        elif "possession_start_frame_id" in record:
++            expanded.append(record)
++    return expanded
++
++
+ def relation_anchor_source(node: BoundCatalogNode) -> str:
+     anchor_reference = node.inputs.get("anchors")
+     if anchor_reference is None:
+@@ -1534,11 +1886,13 @@ def relation_anchor_source(node: BoundCatalogNode) -> str:
+ 
+ def relation_anchor_results(state: PeriodState, node: BoundCatalogNode) -> list[dict[str, Any]]:
+     raw_anchors = runtime_records(catalog_input_value(state, node, "anchors"))
+-    anchor_results = [
+-        anchor
+-        for anchor in raw_anchors
+-        if isinstance(anchor, dict) and relation_anchor_has_required_fields(anchor)
+-    ]
++    anchor_results: list[dict[str, Any]] = []
++    for anchor in raw_anchors:
++        if not isinstance(anchor, dict):
++            continue
++        normalized = normalized_relation_anchor(state, anchor)
++        if normalized is not None:
++            anchor_results.append(normalized)
+     anchor_results.sort(
+         key=lambda item: (
+             str(item["match_id"]),
+@@ -1550,17 +1904,41 @@ def relation_anchor_results(state: PeriodState, node: BoundCatalogNode) -> list[
+     return anchor_results
+ 
+ 
++def normalized_relation_anchor(state: PeriodState, anchor: dict[str, Any]) -> dict[str, Any] | None:
++    if not relation_anchor_has_required_fields(anchor):
++        return None
++    anchor_frame_id = optional_int(anchor.get("anchor_frame_id"))
++    if anchor_frame_id is None:
++        return None
++    result_id = str(anchor.get("result_id") or anchor.get("anchor_id") or "")
++    if not result_id:
++        return None
++    return {
++        **anchor,
++        "result_id": result_id,
++        "match_id": str(anchor.get("match_id") or state.match_id),
++        "period": str(anchor.get("period") or state.period),
++        "perspective_team_role": str(anchor.get("perspective_team_role") or state.perspective_team_role),
++        "defending_team_role": str(anchor.get("defending_team_role") or state.defending_team_role),
++        "anchor_frame_id": anchor_frame_id,
++        "outcome_frame_id": optional_int(anchor.get("outcome_frame_id"))
++        or optional_int(anchor.get("end_frame_id"))
++        or min(int(state.frame_ids[-1]), anchor_frame_id + FRAME_RATE_HZ * 4),
++        "replay_start_frame_id": optional_int(anchor.get("replay_start_frame_id"))
++        or max(int(state.frame_ids[0]), anchor_frame_id - FRAME_RATE_HZ * 2),
++        "replay_end_frame_id": optional_int(anchor.get("replay_end_frame_id"))
++        or min(int(state.frame_ids[-1]), anchor_frame_id + FRAME_RATE_HZ * 6),
++    }
++
++
+ def relation_anchor_has_required_fields(anchor: dict[str, Any]) -> bool:
+     required_fields = {
+-        "result_id",
+         "match_id",
+         "period",
+-        "perspective_team_role",
+-        "defending_team_role",
+         "anchor_frame_id",
+-        "outcome_frame_id",
+     }
+-    return required_fields.issubset(anchor)
++    has_identity = "result_id" in anchor or "anchor_id" in anchor
++    return has_identity and required_fields.issubset(anchor)
+ 
+ 
+ def relation_geometric_progressive_corridor(state: PeriodState, node: BoundCatalogNode) -> None:
+@@ -2028,9 +2406,12 @@ def wide_entry_candidates_from_episodes(
+ ) -> list[dict[str, Any]]:
+     wide_mask = np.zeros(len(state.frame_ids), dtype=bool)
+     structured_episodes: list[dict[str, Any]] = []
++    frame_index = {int(frame_id): index for index, frame_id in enumerate(state.frame_ids)}
+     for episode in entry_episodes:
+-        start_index = episode_start_index(episode)
+-        end_index = episode_end_index(episode)
++        if isinstance(episode, dict) and episode.get("temporal_status") not in {None, "PASS"}:
++            continue
++        start_index = episode_start_index(episode, frame_index=frame_index)
++        end_index = episode_end_index(episode, frame_index=frame_index)
+         if start_index is None or end_index is None:
+             continue
+         wide_mask[start_index : end_index + 1] = True
+@@ -2062,17 +2443,62 @@ def wide_entry_candidates_from_episodes(
+     return candidates
+ 
+ 
+-def episode_start_index(episode: Any) -> int | None:
++def attach_source_records_to_temporal_records(
++    records: list[dict[str, Any]],
++    *,
++    source_records: list[dict[str, Any]],
++) -> list[dict[str, Any]]:
++    if not source_records:
++        return records
++    enriched: list[dict[str, Any]] = []
++    for record in records:
++        start = optional_int(record.get("start_frame_id"))
++        end = optional_int(record.get("end_frame_id"))
++        if start is None or end is None:
++            enriched.append(record)
++            continue
++        matches = [
++            source
++            for source in source_records
++            if source_record_frame_id(source) is not None
++            and start <= int(source_record_frame_id(source)) <= end
++        ]
++        enriched.append({**record, "source_records": matches} if matches else record)
++    return enriched
++
++
++def source_record_frame_id(record: dict[str, Any]) -> int | None:
++    for key in ("anchor_frame_id", "frame_id", "wide_entry_frame_id", "start_frame_id"):
++        frame_id = optional_int(record.get(key))
++        if frame_id is not None:
++            return frame_id
++    source = record.get("source_result")
++    if isinstance(source, dict):
++        frame_id = source_record_frame_id(source)
++        if frame_id is not None:
++            return frame_id
++    return None
++
++
++def episode_start_index(episode: Any, *, frame_index: dict[int, int] | None = None) -> int | None:
+     if isinstance(episode, dict):
+-        return int(episode["start_index"]) if "start_index" in episode else None
++        if "start_index" in episode:
++            return int(episode["start_index"])
++        if frame_index is not None and "start_frame_id" in episode:
++            return frame_index.get(int(episode["start_frame_id"]))
++        return None
+     if isinstance(episode, tuple | list) and len(episode) >= 1:
+         return int(episode[0])
+     return None
+ 
+ 
+-def episode_end_index(episode: Any) -> int | None:
++def episode_end_index(episode: Any, *, frame_index: dict[int, int] | None = None) -> int | None:
+     if isinstance(episode, dict):
+-        return int(episode["end_index"]) if "end_index" in episode else None
++        if "end_index" in episode:
++            return int(episode["end_index"])
++        if frame_index is not None and "end_frame_id" in episode:
++            return frame_index.get(int(episode["end_frame_id"]))
++        return None
+     if isinstance(episode, tuple | list) and len(episode) >= 2:
+         return int(episode[1])
+     return None
+@@ -2265,6 +2691,7 @@ def select_proof_results(candidates: list[dict[str, Any]], params: RuntimeParame
+ def accepted_predicate_traces(
+     state: PeriodState,
+     *,
++    bound_plan: BoundQueryPlan | None = None,
+     compatibility_profile: str = LEGACY_M1_PARITY_PROFILE,
+ ) -> list[PredicateTrace]:
+     if state.predicate_traces:
+@@ -2284,6 +2711,7 @@ def accepted_predicate_traces(
+                     state,
+                     anchor,
+                     result,
++                    bound_plan=bound_plan,
+                     compatibility_profile=compatibility_profile,
+                 )
+             )
+@@ -2371,7 +2799,9 @@ def predicate_traces_for_anchor(
+         merged: list[PredicateTrace] = []
+         for trace in runtime_traces:
+             legacy = legacy_by_id.pop(trace.predicate_id, None)
+-            if legacy is not None and trace.status == "UNKNOWN":
++            if legacy is not None and compatibility_profile == LEGACY_M1_PARITY_PROFILE:
++                merged.append(legacy)
++            elif legacy is not None and trace.status == "UNKNOWN":
+                 merged.append(legacy)
+             else:
+                 merged.append(trace)
+@@ -2415,6 +2845,30 @@ def predicate_traces_from_declared_runtime_outputs(
+     return traces
+ 
+ 
++def predicate_record_for_source_record(
++    *,
++    source_record: dict[str, Any],
++    node: BoundPredicateNode,
++    status: str,
++    value: TypedValue | None,
++    threshold: TypedValue | None,
++    unit: Unit,
++    frame_id: int | None,
++    source_evidence: dict[str, Any],
++) -> dict[str, Any]:
++    return {
++        "predicate_id": node.node_id,
++        "status": status,
++        "value": value.model_dump(mode="json") if value is not None else None,
++        "threshold": threshold.model_dump(mode="json") if threshold is not None else None,
++        "unit": unit.value,
++        "frame_id": frame_id,
++        "window": None,
++        "source_evidence": {key: item for key, item in source_evidence.items() if item is not None},
++        "source_record": source_record,
++    }
++
++
+ def predicate_trace_from_runtime_value(
+     *,
+     node: BoundPredicateNode,
+@@ -2429,6 +2883,14 @@ def predicate_trace_from_runtime_value(
+         "source_output_name": node.input.output_name,
+         "trace_source": f"{node.node_id}.{node.output.name}",
+     }
++    record_trace = predicate_trace_from_runtime_record(
++        node=node,
++        runtime_value=runtime_value,
++        anchor=anchor,
++        source_evidence=source_evidence,
++    )
++    if record_trace is not None:
++        return record_trace
+     if isinstance(runtime_value.value, FrameSignal):
+         try:
+             index = runtime_value.value.frame_ids.index(anchor.anchor_frame_id)
+@@ -2504,6 +2966,43 @@ def predicate_trace_from_runtime_value(
+     return None
+ 
+ 
++def predicate_trace_from_runtime_record(
++    *,
++    node: BoundPredicateNode,
++    runtime_value: RuntimeValue,
++    anchor: RuntimeAnchor,
++    source_evidence: dict[str, Any],
++) -> PredicateTrace | None:
++    for record in runtime_records(runtime_value):
++        if record.get("predicate_id") != node.node_id:
++            continue
++        source_record = record.get("source_record") if isinstance(record.get("source_record"), dict) else record
++        if not record_matches_anchor(source_record, anchor):
++            continue
++        return PredicateTrace(
++            predicate_id=node.node_id,
++            status=record["status"],
++            value=TypedValue.model_validate(record["value"])
++            if record.get("value") is not None
++            else None,
++            threshold=TypedValue.model_validate(record["threshold"])
++            if record.get("threshold") is not None
++            else None,
++            unit=Unit(record.get("unit", Unit.NONE.value)),
++            frame_id=optional_int(record.get("frame_id")) or anchor.anchor_frame_id,
++            window=record.get("window"),
++            source_evidence={
++                **source_evidence,
++                **{
++                    key: value
++                    for key, value in dict(record.get("source_evidence") or {}).items()
++                    if value is not None
++                },
++            },
++        )
++    return None
++
++
+ def missing_target_predicate_traces(
+     *,
+     bound_plan: BoundQueryPlan,
+@@ -2772,6 +3271,20 @@ def execute_plan_from_path(
+     *,
+     canonical_root: Path = DEFAULT_CANONICAL_ROOT,
+     raw_root: Path = DEFAULT_RAW_ROOT,
++) -> tuple[BoundQueryPlan, QueryExecution]:
++    bound = bind_document_from_path(plan_path)
++    execution = TacticalQueryExecutor(
++        canonical_root=canonical_root,
++        raw_root=raw_root,
++    ).execute(bound)
++    return bound, execution
++
++
++def execute_legacy_m1_plan_from_path(
++    plan_path: Path,
++    *,
++    canonical_root: Path = DEFAULT_CANONICAL_ROOT,
++    raw_root: Path = DEFAULT_RAW_ROOT,
+ ) -> tuple[BoundQueryPlan, QueryExecution]:
+     bound = bind_document_from_path(plan_path)
+     execution = TacticalQueryExecutor(
+diff --git a/src/tqe/runtime/ir.py b/src/tqe/runtime/ir.py
+index ed54dc8..060910c 100644
+--- a/src/tqe/runtime/ir.py
++++ b/src/tqe/runtime/ir.py
+@@ -239,6 +239,8 @@ TypedArgument = Annotated[TypedValue | ParameterRef, Field(union_mode="left_to_r
+ class EvidenceRequest(StrictModel):
+     source: SignalRef
+     field: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
++    alias: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]*$")
++    required: bool = True
+ 
+ 
+ class DraftCatalogNode(StrictModel):
+diff --git a/src/tqe/verification/m1_1_gate_s4.py b/src/tqe/verification/m1_1_gate_s4.py
+new file mode 100644
+index 0000000..c56c61e
+--- /dev/null
++++ b/src/tqe/verification/m1_1_gate_s4.py
+@@ -0,0 +1,534 @@
++"""Verify M1.1S Gate S4: rule-driven generic result emission."""
++
++from __future__ import annotations
++
++import json
++from collections import Counter
++from copy import deepcopy
++from datetime import UTC, datetime
++from pathlib import Path
++from typing import Any
++
++from tqe.runtime.binder import bind_document
++from tqe.runtime.executor import (
++    TacticalQueryExecutor,
++    emit_generic_results_from_rules,
++    execute_default_plan,
++    execute_plan_from_path,
++    execution_result_rows,
++    runtime_parameters,
++    rule_labels_for_traces,
++)
++from tqe.runtime.ir import (
++    ClassificationRule,
++    ExecutionMode,
++    ExecutionStatus,
++    PredicateTrace,
++    TacticalQueryDocument,
++    UnknownEvidencePolicy,
++)
++
++PLAN_PATH = Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json")
++REPORT_PATH = Path("artifacts/m1.1/gate-s4-verification-report.json")
++
++
++def utc_now_iso() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat()
++
++
++def write_json(path: Path, payload: dict[str, Any]) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++
++
++def pass_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "pass", "message": message, "details": details or {}}
++
++
++def fail_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "fail", "message": message, "details": details or {}}
++
++
++def build_report() -> dict[str, Any]:
++    checks: list[dict[str, Any]] = []
++    bound, execution = execute_plan_from_path(PLAN_PATH)
++    rows = execution_result_rows(execution)
++
++    checks.extend(validate_real_generic_rows(execution, rows))
++    checks.extend(validate_classification_rules_control_labels(rows))
++    checks.extend(validate_classification_conflict_semantics(bound))
++    checks.extend(validate_required_predicate_changes_inclusion())
++    checks.extend(validate_unknown_policy_semantics(bound))
++    checks.extend(validate_evidence_projection(rows))
++    checks.extend(validate_side_channel_perturbation_independence(bound))
++    checks.extend(validate_no_required_m1_fields(rows))
++    checks.extend(validate_generic_profile_and_no_legacy_adapter(execution))
++    checks.extend(validate_determinism())
++    checks.extend(validate_limits_and_modes(bound))
++    checks.extend(validate_legacy_parity_is_explicit())
++
++    summary = {
++        "pass": sum(1 for check in checks if check["status"] == "pass"),
++        "fail": sum(1 for check in checks if check["status"] == "fail"),
++        "not_ready": sum(1 for check in checks if check["status"] == "not_ready"),
++    }
++    report = {
++        "schema_version": "1.0",
++        "milestone": "M1.1S",
++        "gate": "Gate_S4_rule_driven_result_emission",
++        "generated_at": utc_now_iso(),
++        "status": "pass" if summary["fail"] == 0 and summary["not_ready"] == 0 else "fail",
++        "summary": summary,
++        "execution": {
++            "plan_path": str(PLAN_PATH),
++            "execution_id": execution.execution_id,
++            "status": execution.status.value,
++            "result_count": len(rows),
++            "trace_count": len(execution.predicate_traces),
++            "compatibility_profile": execution.provenance.get("compatibility_profile"),
++        },
++        "checks": checks,
++    }
++    write_json(REPORT_PATH, report)
++    return report
++
++
++def validate_real_generic_rows(execution: Any, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    by_label = Counter(str(row["classification"]) for row in rows)
++    return [
++        pass_check(
++            "generic.real_rows",
++            "generic execution emits real QueryResult rows from canonical match data",
++            {"result_count": len(rows), "by_label": dict(sorted(by_label.items()))},
++        )
++        if execution.status == ExecutionStatus.PASS
++        and execution.provenance.get("compatibility_profile") == "generic"
++        and len(rows) > 0
++        else fail_check(
++            "generic.real_rows",
++            "generic execution did not emit real rows",
++            {
++                "status": execution.status.value,
++                "result_count": len(rows),
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++            },
++        )
++    ]
++
++
++def validate_classification_rules_control_labels(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    labels = {str(row["classification"]) for row in rows}
++    matched = [
++        row
++        for row in rows
++        if row.get("matched_classification_rules") == [row.get("classification")]
++    ]
++    expected = {"DESTINATION_ENTERED", "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY"}
++    return [
++        pass_check(
++            "rules.labels",
++            "classification labels come from matching classification rules",
++            {"labels": sorted(labels), "matched_count": len(matched)},
++        )
++        if expected.issubset(labels) and len(matched) == len(rows)
++        else fail_check(
++            "rules.labels",
++            "classification labels are missing or not rule matched",
++            {"labels": sorted(labels), "matched_count": len(matched), "result_count": len(rows)},
++        )
++    ]
++
++
++def validate_classification_conflict_semantics(bound: Any) -> list[dict[str, Any]]:
++    corridor = ClassificationRule(
++        label="CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
++        predicate_ids=["p1"],
++        description="Equal-specificity first rule.",
++    )
++    destination = ClassificationRule(
++        label="DESTINATION_ENTERED",
++        predicate_ids=["p1"],
++        description="Equal-specificity second rule.",
++    )
++    destination_specific = ClassificationRule(
++        label="DESTINATION_ENTERED",
++        predicate_ids=["p1", "p2"],
++        description="More-specific rule.",
++    )
++    traces = [
++        PredicateTrace(predicate_id="p1", status="PASS"),
++        PredicateTrace(predicate_id="p2", status="PASS"),
++    ]
++    equal_forward = rule_labels_for_traces(
++        traces=traces,
++        bound_plan=bound.model_copy(update={"classification_rules": [corridor, destination]}),
++    )
++    equal_reverse = rule_labels_for_traces(
++        traces=traces,
++        bound_plan=bound.model_copy(update={"classification_rules": [destination, corridor]}),
++    )
++    specific_first = rule_labels_for_traces(
++        traces=traces,
++        bound_plan=bound.model_copy(update={"classification_rules": [corridor, destination_specific]}),
++    )
++    return [
++        pass_check(
++            "rules.conflict_semantics",
++            "classification conflict resolution is explicit: specificity first, then plan order",
++            {
++                "equal_forward": equal_forward,
++                "equal_reverse": equal_reverse,
++                "specific_first": specific_first,
++            },
++        )
++        if equal_forward[:2]
++        == ["CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY", "DESTINATION_ENTERED"]
++        and equal_reverse[:2] == ["DESTINATION_ENTERED", "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY"]
++        and specific_first[0] == "DESTINATION_ENTERED"
++        else fail_check(
++            "rules.conflict_semantics",
++            "classification conflict resolution did not follow specificity and plan-order semantics",
++            {
++                "equal_forward": equal_forward,
++                "equal_reverse": equal_reverse,
++                "specific_first": specific_first,
++            },
++        )
++    ]
++
++
++def validate_required_predicate_changes_inclusion() -> list[dict[str, Any]]:
++    payload = plan_payload()
++    payload["draft_plan"]["classification_rules"] = [
++        rule
++        for rule in payload["draft_plan"]["classification_rules"]
++        if rule["label"] == "DESTINATION_ENTERED"
++    ]
++    baseline = bind_document(TacticalQueryDocument.model_validate(payload))
++    baseline_rows = execution_result_rows(TacticalQueryExecutor().execute(baseline))
++    for node in payload["draft_plan"]["nodes"]:
++        if node["node_id"] == "destination_region_entered":
++            node["operator"] = {"name": "eq", "version": "1.0.0"}
++    mutated = bind_document(TacticalQueryDocument.model_validate(payload))
++    mutated_execution = TacticalQueryExecutor().execute(mutated)
++    mutated_rows = execution_result_rows(mutated_execution)
++    before = Counter(str(row["classification"]) for row in baseline_rows)
++    after = Counter(str(row["classification"]) for row in mutated_rows)
++    before_anchor_frames = {row["anchor_frame_id"] for row in baseline_rows}
++    after_anchor_frames = {row["anchor_frame_id"] for row in mutated_rows}
++    return [
++        pass_check(
++            "rules.required_predicate_changes_inclusion",
++            "changing a required predicate from PASS to FAIL changes inclusion while retaining declared label",
++            {
++                "before": dict(sorted(before.items())),
++                "after": dict(sorted(after.items())),
++                "retained_anchor_count": len(before_anchor_frames.intersection(after_anchor_frames)),
++            },
++        )
++        if after["DESTINATION_ENTERED"] < before["DESTINATION_ENTERED"]
++        and set(after).issubset({"DESTINATION_ENTERED"})
++        and not before_anchor_frames.intersection(after_anchor_frames)
++        else fail_check(
++            "rules.required_predicate_changes_inclusion",
++            "predicate mutation did not change inclusion as expected",
++            {
++                "before": dict(sorted(before.items())),
++                "after": dict(sorted(after.items())),
++                "retained_anchor_count": len(before_anchor_frames.intersection(after_anchor_frames)),
++            },
++        )
++    ]
++
++
++def validate_unknown_policy_semantics(bound: Any) -> list[dict[str, Any]]:
++    checks: list[dict[str, Any]] = []
++    for policy, expected_status, expect_results in [
++        (UnknownEvidencePolicy.EXCLUDE_CANDIDATE, ExecutionStatus.PASS, False),
++        (UnknownEvidencePolicy.INCLUDE_WITH_WARNING, ExecutionStatus.PASS, True),
++        (UnknownEvidencePolicy.INVALIDATE_EXECUTION, ExecutionStatus.INCOMPLETE, False),
++    ]:
++        policy_bound = unknown_policy_probe_bound(policy)
++        execution = TacticalQueryExecutor().execute(policy_bound)
++        rows = execution_result_rows(execution)
++        unknown_traces = [trace for trace in execution.predicate_traces if trace.status == "UNKNOWN"]
++        checks.append(
++            pass_check(
++                f"unknown_policy.{policy.value}",
++                "unknown evidence policy controls generic result emission end to end",
++                {
++                    "status": execution.status.value,
++                    "result_count": len(rows),
++                    "unknown_trace_count": len(unknown_traces),
++                },
++            )
++            if execution.status == expected_status
++            and bool(rows) is expect_results
++            and bool(unknown_traces)
++            else fail_check(
++                f"unknown_policy.{policy.value}",
++                "unknown evidence policy did not control generic execution end to end",
++                {
++                    "expected_status": expected_status.value,
++                    "actual_status": execution.status.value,
++                    "result_count": len(rows),
++                    "unknown_trace_count": len(unknown_traces),
++                },
++            )
++        )
++    return checks
++
++
++def unknown_policy_probe_bound(policy: UnknownEvidencePolicy) -> Any:
++    payload = plan_payload()
++    payload["draft_plan"]["unknown_evidence_policy"] = policy.value
++    payload["draft_plan"]["anchor_source"] = {"source_node_id": "possession", "output_name": "anchors"}
++    payload["draft_plan"]["requested_evidence"] = []
++    payload["draft_plan"]["classification_rules"] = [
++        {
++            "label": "DESTINATION_ENTERED",
++            "predicate_ids": ["destination_region_entered"],
++            "description": "Probe anchors whose required destination predicate is unknown.",
++        }
++    ]
++    return bind_document(TacticalQueryDocument.model_validate(payload))
++
++
++def validate_evidence_projection(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    failures = [
++        row["result_id"]
++        for row in rows
++        if not row.get("requested_evidence", {}).get("relation_id")
++        or row.get("requested_evidence", {}).get("destination_region") is None
++        or row.get("requested_evidence", {}).get("relation_duration_seconds") is None
++        or row.get("requested_evidence", {}).get("destination_classification") != row["classification"]
++    ]
++    node_id_keys = [
++        key
++        for row in rows
++        for key in row.get("requested_evidence", {})
++        if "." in key
++    ]
++    return [
++        pass_check(
++            "evidence.declared_runtime_outputs",
++            "requested evidence resolves through stable aliases from declared runtime outputs",
++            {"result_count": len(rows)},
++        )
++        if not failures and not node_id_keys and rows
++        else fail_check(
++            "evidence.declared_runtime_outputs",
++            "one or more rows lack declared requested evidence or expose node-ID keys",
++            {"failure_sample": failures[:10], "node_id_keys": sorted(set(node_id_keys)), "result_count": len(rows)},
++        )
++    ]
++
++
++def validate_side_channel_perturbation_independence(bound: Any) -> list[dict[str, Any]]:
++    executor = TacticalQueryExecutor()
++    params = runtime_parameters(bound)
++    state = executor._execute_period(  # noqa: SLF001 - verifier intentionally inspects generic state.
++        bound_plan=bound,
++        match_id=bound.match_ids[0],
++        period=bound.periods[0],
++        params=params,
++    )
++    before_results, before_traces = emit_generic_results_from_rules(
++        state=state,
++        bound_plan=bound,
++        compatibility_profile="generic",
++    )
++    state.candidates = [{"result_id": "poison_candidate"}]
++    state.accepted = [{"result_id": "poison_accepted"}]
++    state.predicate_traces = [PredicateTrace(predicate_id="poison", status="FAIL")]
++    for outputs in state.runtime_values.values():
++        for runtime_value in outputs.values():
++            for record in runtime_value.records:
++                record["_runtime_result"] = {"classification": "POISON"}
++                record["_predicate_status"] = {"poison": {"status": "PASS"}}
++            if isinstance(runtime_value.value, list):
++                for item in runtime_value.value:
++                    if isinstance(item, dict):
++                        item["_runtime_result"] = {"classification": "POISON"}
++                        item["_predicate_status"] = {"poison": {"status": "PASS"}}
++    after_results, after_traces = emit_generic_results_from_rules(
++        state=state,
++        bound_plan=bound,
++        compatibility_profile="generic",
++    )
++    before = normalized_generic_emission(before_results, before_traces)
++    after = normalized_generic_emission(after_results, after_traces)
++    return [
++        pass_check(
++            "generic.side_channels_ignored",
++            "generic emitted rows, classifications, and traces ignore legacy side channels",
++            {"result_count": len(before_results), "trace_count": len(before_traces)},
++        )
++        if before == after and before_results
++        else fail_check(
++            "generic.side_channels_ignored",
++            "generic emission changed after side-channel perturbation",
++            {"before_result_count": len(before_results), "after_result_count": len(after_results)},
++        )
++    ]
++
++
++def normalized_generic_emission(
++    results: list[dict[str, Any]],
++    traces: list[PredicateTrace],
++) -> dict[str, Any]:
++    return {
++        "results": [
++            {
++                "result_id": result["result_id"],
++                "classification": result["classification"],
++                "anchor_frame_id": result["anchor_frame_id"],
++                "requested_evidence": result.get("requested_evidence"),
++            }
++            for result in results
++        ],
++        "traces": [
++            {
++                "predicate_id": trace.predicate_id,
++                "status": trace.status,
++                "frame_id": trace.frame_id,
++                "result_id": trace.source_evidence.get("result_id"),
++            }
++            for trace in traces
++        ],
++    }
++
++
++def validate_no_required_m1_fields(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    forbidden = {"block_shift_score", "wide_entry_frame_id", "signed_shift_metres"}
++    violations = [
++        {"result_id": row["result_id"], "fields": sorted(forbidden.intersection(row))}
++        for row in rows
++        if forbidden.intersection(row)
++    ]
++    return [
++        pass_check(
++            "generic.no_required_m1_fields",
++            "generic result rows do not expose required M1 result fields",
++        )
++        if not violations
++        else fail_check(
++            "generic.no_required_m1_fields",
++            "generic result rows still expose M1-specific fields",
++            {"violations": violations[:10]},
++        )
++    ]
++
++
++def validate_generic_profile_and_no_legacy_adapter(execution: Any) -> list[dict[str, Any]]:
++    adapter_hits = [
++        trace.model_dump(mode="json", exclude_none=True)
++        for trace in execution.predicate_traces
++        if "legacy_m1" in json.dumps(trace.source_evidence, sort_keys=True)
++    ]
++    return [
++        pass_check(
++            "generic.no_legacy_adapter",
++            "generic execution reports generic profile and traces contain no legacy adapter evidence",
++            {"trace_count": len(execution.predicate_traces)},
++        )
++        if execution.provenance.get("compatibility_profile") == "generic" and not adapter_hits
++        else fail_check(
++            "generic.no_legacy_adapter",
++            "generic execution used or reported legacy behavior",
++            {
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++                "adapter_hit_count": len(adapter_hits),
++            },
++        )
++    ]
++
++
++def validate_determinism() -> list[dict[str, Any]]:
++    first_rows = execution_result_rows(execute_plan_from_path(PLAN_PATH)[1])
++    second_rows = execution_result_rows(execute_plan_from_path(PLAN_PATH)[1])
++    first_ids = [row["result_id"] for row in first_rows]
++    second_ids = [row["result_id"] for row in second_rows]
++    return [
++        pass_check(
++            "execution.deterministic_ids_order",
++            "generic result IDs and ordering are deterministic",
++            {"result_count": len(first_ids)},
++        )
++        if first_ids == second_ids and first_ids
++        else fail_check(
++            "execution.deterministic_ids_order",
++            "generic result IDs or ordering changed across runs",
++            {"first": first_ids[:10], "second": second_ids[:10]},
++        )
++    ]
++
++
++def validate_limits_and_modes(bound: Any) -> list[dict[str, Any]]:
++    executor = TacticalQueryExecutor()
++    limited = executor.execute(bound.model_copy(update={"max_results": 3}))
++    bind_only = executor.execute(bound.model_copy(update={"execution_mode": ExecutionMode.BIND_ONLY}))
++    dry_run = executor.execute(bound.model_copy(update={"execution_mode": ExecutionMode.DRY_RUN}))
++    checks = [
++        pass_check(
++            "execution.max_results",
++            "generic max_results truncates emitted results",
++            {"result_count": len(limited.results)},
++        )
++        if len(limited.results) == 3
++        else fail_check(
++            "execution.max_results",
++            "generic max_results was not honored",
++            {"result_count": len(limited.results)},
++        ),
++        pass_check("execution.bind_only", "bind_only does not execute results")
++        if bind_only.status == ExecutionStatus.NOT_STARTED and not bind_only.results
++        else fail_check("execution.bind_only", "bind_only emitted results"),
++        pass_check("execution.dry_run", "dry_run validates without results")
++        if dry_run.status == ExecutionStatus.PASS and not dry_run.results
++        else fail_check("execution.dry_run", "dry_run emitted results or failed"),
++    ]
++    return checks
++
++
++def validate_legacy_parity_is_explicit() -> list[dict[str, Any]]:
++    _bound, execution = execute_default_plan()
++    rows = execution_result_rows(execution)
++    return [
++        pass_check(
++            "legacy.explicit_parity_preserved",
++            "frozen M1 parity remains exact through the explicit legacy helper",
++            {
++                "result_count": len(rows),
++                "trace_count": len(execution.predicate_traces),
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++            },
++        )
++        if len(rows) == 180
++        and len(execution.predicate_traces) == 900
++        and execution.provenance.get("compatibility_profile") == "legacy_m1_parity"
++        else fail_check(
++            "legacy.explicit_parity_preserved",
++            "legacy helper did not preserve frozen parity",
++            {
++                "result_count": len(rows),
++                "trace_count": len(execution.predicate_traces),
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++            },
++        )
++    ]
++
++
++def plan_payload() -> dict[str, Any]:
++    return json.loads(PLAN_PATH.read_text(encoding="utf-8"))
++
++
++def main() -> None:
++    report = build_report()
++    print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
++    if report["status"] != "pass":
++        raise SystemExit(1)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/src/tqe/verification/m1_1_gate_s5.py b/src/tqe/verification/m1_1_gate_s5.py
+new file mode 100644
+index 0000000..2c65cdd
+--- /dev/null
++++ b/src/tqe/verification/m1_1_gate_s5.py
+@@ -0,0 +1,320 @@
++"""Verify M1.1S Gate S5: alias-based evidence projection."""
++
++from __future__ import annotations
++
++import json
++from copy import deepcopy
++from datetime import UTC, datetime
++from pathlib import Path
++from typing import Any
++
++from tqe.runtime.binder import BindError, bind_document
++from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
++from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument
++
++PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
++REPORT_PATH = Path("artifacts/m1.1/gate-s5-verification-report.json")
++
++
++def utc_now_iso() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat()
++
++
++def write_json(path: Path, payload: dict[str, Any]) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++
++
++def pass_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "pass", "message": message, "details": details or {}}
++
++
++def fail_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "fail", "message": message, "details": details or {}}
++
++
++def build_report() -> dict[str, Any]:
++    checks: list[dict[str, Any]] = []
++    baseline = execute_payload(plan_payload())
++    baseline_rows = execution_result_rows(baseline)
++
++    checks.extend(validate_stable_aliases(baseline_rows))
++    checks.extend(validate_node_rename_public_shape(baseline_rows))
++    checks.extend(validate_evidence_rewire_changes_value(baseline_rows))
++    checks.extend(validate_missing_evidence_fails_visibly())
++    checks.extend(validate_unsupported_evidence_bind_failure())
++    checks.extend(validate_no_default_m1_evidence_leak(baseline_rows))
++
++    summary = {
++        "pass": sum(1 for check in checks if check["status"] == "pass"),
++        "fail": sum(1 for check in checks if check["status"] == "fail"),
++        "not_ready": sum(1 for check in checks if check["status"] == "not_ready"),
++    }
++    report = {
++        "schema_version": "1.0",
++        "milestone": "M1.1S",
++        "gate": "Gate_S5_alias_based_evidence_projection",
++        "generated_at": utc_now_iso(),
++        "status": "pass" if summary["fail"] == 0 and summary["not_ready"] == 0 else "fail",
++        "summary": summary,
++        "execution": {
++            "plan_path": str(PLAN_PATH),
++            "status": baseline.status.value,
++            "result_count": len(baseline_rows),
++            "compatibility_profile": baseline.provenance.get("compatibility_profile"),
++            "requested_evidence_failure_count": baseline.provenance.get("requested_evidence_failure_count"),
++        },
++        "checks": checks,
++    }
++    write_json(REPORT_PATH, report)
++    return report
++
++
++def validate_stable_aliases(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    expected = {
++        "relation_id",
++        "target_player_id",
++        "destination_region",
++        "relation_duration_seconds",
++        "minimum_clearance_m",
++    }
++    failures = [
++        row["result_id"]
++        for row in rows
++        if set(row.get("requested_evidence", {})) != expected
++        or any("." in key for key in row.get("requested_evidence", {}))
++        or any(value is None for value in row.get("requested_evidence", {}).values())
++    ]
++    return [
++        pass_check(
++            "evidence.stable_aliases",
++            "requested evidence uses stable aliases independent of node IDs",
++            {"aliases": sorted(expected), "result_count": len(rows)},
++        )
++        if rows and not failures
++        else fail_check(
++            "evidence.stable_aliases",
++            "requested evidence aliases are missing, node-shaped, or null",
++            {"failure_sample": failures[:10], "result_count": len(rows)},
++        )
++    ]
++
++
++def validate_node_rename_public_shape(baseline_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    payload = plan_payload()
++    rename_node(payload, "progressive_corridor", "renamed_corridor")
++    rename_signal_refs(payload, "progressive_corridor", "renamed_corridor")
++    renamed_rows = execution_result_rows(execute_payload(payload))
++    baseline_public = public_rows(baseline_rows)
++    renamed_public = public_rows(renamed_rows)
++    return [
++        pass_check(
++            "evidence.node_rename_public_shape",
++            "renaming an evidence-producing node preserves public result shape",
++            {"result_count": len(baseline_public)},
++        )
++        if baseline_public == renamed_public and baseline_public
++        else fail_check(
++            "evidence.node_rename_public_shape",
++            "node rename changed public rows or requested evidence",
++            {
++                "baseline_count": len(baseline_public),
++                "renamed_count": len(renamed_public),
++                "baseline_sample": baseline_public[:1],
++                "renamed_sample": renamed_public[:1],
++            },
++        )
++    ]
++
++
++def validate_evidence_rewire_changes_value(baseline_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    payload = plan_payload()
++    for request in payload["draft_plan"]["requested_evidence"]:
++        if request["alias"] == "relation_duration_seconds":
++            request["field"] = "minimum_clearance_m"
++            request["alias"] = "rewired_metric"
++    rewired_rows = execution_result_rows(execute_payload(payload))
++    baseline_values = [row["requested_evidence"]["relation_duration_seconds"] for row in baseline_rows[:10]]
++    rewired_values = [row["requested_evidence"]["rewired_metric"] for row in rewired_rows[:10]]
++    rewired_keys = {tuple(sorted(row.get("requested_evidence", {}))) for row in rewired_rows}
++    return [
++        pass_check(
++            "evidence.rewire_changes_value",
++            "rewiring an evidence request to another declared field changes projected values",
++            {
++                "baseline_values": baseline_values[:5],
++                "rewired_values": rewired_values[:5],
++                "rewired_keys": [list(item) for item in sorted(rewired_keys)],
++            },
++        )
++        if baseline_values
++        and rewired_values
++        and baseline_values != rewired_values
++        and all("rewired_metric" in keys for keys in rewired_keys)
++        else fail_check(
++            "evidence.rewire_changes_value",
++            "evidence rewire did not change projected values",
++            {
++                "baseline_values": baseline_values[:5],
++                "rewired_values": rewired_values[:5],
++                "rewired_keys": [list(item) for item in sorted(rewired_keys)],
++            },
++        )
++    ]
++
++
++def validate_missing_evidence_fails_visibly() -> list[dict[str, Any]]:
++    payload = plan_payload()
++    for request in payload["draft_plan"]["requested_evidence"]:
++        if request["alias"] == "relation_id":
++            request["source"] = {"source_node_id": "has_progressive_corridor", "output_name": "predicate"}
++            request["field"] = "predicate_value"
++            request["alias"] = "missing_predicate_value"
++    execution = execute_payload(payload)
++    rows = execution_result_rows(execution)
++    failure_count = execution.provenance.get("requested_evidence_failure_count")
++    failures = execution.provenance.get("requested_evidence_failures")
++    return [
++        pass_check(
++            "evidence.missing_required_fails_visibly",
++            "missing requested evidence fails visibly instead of silently passing nulls",
++            {
++                "status": execution.status.value,
++                "result_count": len(rows),
++                "failure_count": failure_count,
++                "failure_sample": failures[:3] if isinstance(failures, list) else failures,
++            },
++        )
++        if execution.status == ExecutionStatus.INCOMPLETE
++        and isinstance(failure_count, int)
++        and failure_count > 0
++        and isinstance(failures, list)
++        else fail_check(
++            "evidence.missing_required_fails_visibly",
++            "missing requested evidence did not produce visible incomplete status",
++            {
++                "status": execution.status.value,
++                "failure_count": failure_count,
++                "failures": failures,
++            },
++        )
++    ]
++
++
++def validate_unsupported_evidence_bind_failure() -> list[dict[str, Any]]:
++    payload = plan_payload()
++    payload["draft_plan"]["requested_evidence"][0]["field"] = "not_a_declared_field"
++    try:
++        bind_document(TacticalQueryDocument.model_validate(payload))
++    except BindError as error:
++        codes = {issue.code for issue in error.issues}
++        return [
++            pass_check(
++                "evidence.unsupported_field_bind_failure",
++                "unsupported evidence fields fail at bind time",
++                {"codes": sorted(codes)},
++            )
++            if "unsupported_evidence_field" in codes
++            else fail_check(
++                "evidence.unsupported_field_bind_failure",
++                "bind failed for a different reason",
++                {"codes": sorted(codes)},
++            )
++        ]
++    return [
++        fail_check(
++            "evidence.unsupported_field_bind_failure",
++            "unsupported evidence field unexpectedly bound successfully",
++        )
++    ]
++
++
++def validate_no_default_m1_evidence_leak(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    forbidden = {
++        "block_shift_score",
++        "wide_entry_frame_id",
++        "signed_shift_metres",
++        "baseline_defensive_centroid_y_m",
++        "source_classification",
++        "destination_entry_frame_id",
++    }
++    leaks = [
++        {"result_id": row["result_id"], "keys": sorted(forbidden.intersection(row))}
++        for row in rows
++        if forbidden.intersection(row)
++    ]
++    requested_leaks = [
++        {
++            "result_id": row["result_id"],
++            "keys": sorted(forbidden.intersection(row.get("requested_evidence", {}))),
++        }
++        for row in rows
++        if forbidden.intersection(row.get("requested_evidence", {}))
++    ]
++    return [
++        pass_check(
++            "evidence.no_default_m1_evidence_leak",
++            "query results include only requested evidence, not hardcoded M1 evidence",
++            {"result_count": len(rows)},
++        )
++        if rows and not leaks and not requested_leaks
++        else fail_check(
++            "evidence.no_default_m1_evidence_leak",
++            "M1-specific evidence leaked into second-plan public rows",
++            {"row_leaks": leaks[:10], "requested_leaks": requested_leaks[:10]},
++        )
++    ]
++
++
++def public_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    return [
++        {
++            "classification": row["classification"],
++            "match_id": row["match_id"],
++            "period": row["period"],
++            "anchor_frame_id": row["anchor_frame_id"],
++            "requested_evidence": row.get("requested_evidence"),
++        }
++        for row in rows
++    ]
++
++
++def rename_node(payload: dict[str, Any], old: str, new: str) -> None:
++    for node in payload["draft_plan"]["nodes"]:
++        if node["node_id"] == old:
++            node["node_id"] = new
++
++
++def rename_signal_refs(payload: dict[str, Any], old: str, new: str) -> None:
++    for node in payload["draft_plan"]["nodes"]:
++        if "input" in node and node["input"].get("source_node_id") == old:
++            node["input"]["source_node_id"] = new
++        for ref in node.get("inputs", {}).values():
++            if ref.get("source_node_id") == old:
++                ref["source_node_id"] = new
++    for request in payload["draft_plan"]["requested_evidence"]:
++        if request["source"].get("source_node_id") == old:
++            request["source"]["source_node_id"] = new
++    anchor_source = payload["draft_plan"].get("anchor_source")
++    if anchor_source and anchor_source.get("source_node_id") == old:
++        anchor_source["source_node_id"] = new
++
++
++def execute_payload(payload: dict[str, Any]) -> Any:
++    bound = bind_document(TacticalQueryDocument.model_validate(payload))
++    return TacticalQueryExecutor().execute(bound)
++
++
++def plan_payload() -> dict[str, Any]:
++    return json.loads(PLAN_PATH.read_text(encoding="utf-8"))
++
++
++def main() -> None:
++    report = build_report()
++    print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
++    if report["status"] != "pass":
++        raise SystemExit(1)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/src/tqe/verification/m1_1_gate_s6.py b/src/tqe/verification/m1_1_gate_s6.py
+new file mode 100644
+index 0000000..a6417ee
+--- /dev/null
++++ b/src/tqe/verification/m1_1_gate_s6.py
+@@ -0,0 +1,335 @@
++"""Verify M1.1S Gate S6: second real generic plan and relation proof."""
++
++from __future__ import annotations
++
++import json
++from collections import Counter
++from datetime import UTC, datetime
++from pathlib import Path
++from typing import Any
++
++from tqe.runtime.binder import bind_document
++from tqe.runtime.executor import (
++    TacticalQueryExecutor,
++    execute_plan_from_path,
++    execution_result_rows,
++    runtime_parameters,
++)
++from tqe.runtime.ir import BoundCatalogNode, ExecutionStatus, NodeKind, TacticalQueryDocument
++
++PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
++REPORT_PATH = Path("artifacts/m1.1/gate-s6-verification-report.json")
++
++
++def utc_now_iso() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat()
++
++
++def write_json(path: Path, payload: dict[str, Any]) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++
++
++def pass_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "pass", "message": message, "details": details or {}}
++
++
++def fail_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "fail", "message": message, "details": details or {}}
++
++
++def build_report() -> dict[str, Any]:
++    checks: list[dict[str, Any]] = []
++    bound, execution = execute_plan_from_path(PLAN_PATH)
++    rows = execution_result_rows(execution)
++
++    checks.extend(validate_real_second_plan_rows(execution, rows))
++    checks.extend(validate_non_block_shift_plan_shape(bound, rows))
++    checks.extend(validate_possession_anchor_relation(bound))
++    checks.extend(validate_generic_classification(rows, execution.predicate_traces))
++    checks.extend(validate_declared_evidence(rows))
++    checks.extend(validate_period_runtime_state(bound))
++    checks.extend(validate_determinism())
++    checks.extend(validate_gate_d_relation_precondition())
++
++    summary = {
++        "pass": sum(1 for check in checks if check["status"] == "pass"),
++        "fail": sum(1 for check in checks if check["status"] == "fail"),
++        "not_ready": sum(1 for check in checks if check["status"] == "not_ready"),
++    }
++    report = {
++        "schema_version": "1.0",
++        "milestone": "M1.1S",
++        "gate": "Gate_S6_second_real_plan_relation_proof",
++        "generated_at": utc_now_iso(),
++        "status": "pass" if summary["fail"] == 0 and summary["not_ready"] == 0 else "fail",
++        "summary": summary,
++        "execution": {
++            "plan_path": str(PLAN_PATH),
++            "execution_id": execution.execution_id,
++            "status": execution.status.value,
++            "result_count": len(rows),
++            "trace_count": len(execution.predicate_traces),
++            "compatibility_profile": execution.provenance.get("compatibility_profile"),
++            "by_label": dict(sorted(Counter(str(row["classification"]) for row in rows).items())),
++        },
++        "checks": checks,
++    }
++    write_json(REPORT_PATH, report)
++    return report
++
++
++def validate_real_second_plan_rows(execution: Any, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    labels = Counter(str(row["classification"]) for row in rows)
++    return [
++        pass_check(
++            "second_plan.real_generic_rows",
++            "non-block-shift generic plan emits real QueryResult rows",
++            {"result_count": len(rows), "labels": dict(sorted(labels.items()))},
++        )
++        if execution.status == ExecutionStatus.PASS
++        and execution.provenance.get("compatibility_profile") == "generic"
++        and len(rows) > 0
++        and set(labels) == {"PROGRESSIVE_CORRIDOR_AVAILABLE"}
++        else fail_check(
++            "second_plan.real_generic_rows",
++            "second plan did not emit expected generic rows",
++            {
++                "status": execution.status.value,
++                "result_count": len(rows),
++                "labels": dict(sorted(labels.items())),
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++            },
++        )
++    ]
++
++
++def validate_non_block_shift_plan_shape(bound: Any, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    forbidden_node_ids = {
++        "ball_lateral",
++        "wide_entry_threshold",
++        "wide_entry_persists",
++        "defensive_centroid",
++        "signed_shift",
++        "shift_threshold",
++        "shift_persists",
++        "outcome",
++        "not_stoppage",
++        "destination_entry",
++    }
++    forbidden_catalog_refs = {
++        "ball_lateral_fraction",
++        "defensive_outfield_centroid",
++        "signed_lateral_shift",
++        "outcome_classification",
++        "relation_destination_entry_classification",
++    }
++    node_ids = {node.node_id for node in bound.nodes}
++    catalog_refs = {
++        node.catalog_ref
++        for node in bound.nodes
++        if isinstance(node, BoundCatalogNode)
++    }
++    forbidden_fields = {"block_shift_score", "wide_entry_frame_id", "signed_shift_metres"}
++    row_violations = [
++        row["result_id"]
++        for row in rows
++        if forbidden_fields.intersection(row)
++    ]
++    return [
++        pass_check(
++            "second_plan.non_block_shift_shape",
++            "second plan does not use the M1 wide-entry/block-shift/outcome spine",
++            {
++                "node_ids": sorted(node_ids),
++                "catalog_refs": sorted(catalog_refs),
++                "result_count": len(rows),
++            },
++        )
++        if not forbidden_node_ids.intersection(node_ids)
++        and not forbidden_catalog_refs.intersection(catalog_refs)
++        and not row_violations
++        else fail_check(
++            "second_plan.non_block_shift_shape",
++            "second plan still uses M1-shaped nodes or fields",
++            {
++                "forbidden_node_ids": sorted(forbidden_node_ids.intersection(node_ids)),
++                "forbidden_catalog_refs": sorted(forbidden_catalog_refs.intersection(catalog_refs)),
++                "row_violations": row_violations[:10],
++            },
++        )
++    ]
++
++
++def validate_possession_anchor_relation(bound: Any) -> list[dict[str, Any]]:
++    relation_nodes = [
++        node
++        for node in bound.nodes
++        if isinstance(node, BoundCatalogNode) and node.kind == NodeKind.RELATION
++    ]
++    valid = (
++        len(relation_nodes) == 1
++        and relation_nodes[0].catalog_ref == "geometric_progressive_corridor_from_anchor_set"
++        and relation_nodes[0].inputs["anchors"].source_node_id == "possession"
++        and relation_nodes[0].inputs["anchors"].output_name == "anchors"
++        and bound.anchor_source.source_node_id == "possession"
++        and bound.anchor_source.output_name == "anchors"
++    )
++    return [
++        pass_check(
++            "second_plan.possession_anchor_relation",
++            "corridor relation executes from a non-M1 possession anchor set",
++            {
++                "relation_node_count": len(relation_nodes),
++                "anchor_source": f"{bound.anchor_source.source_node_id}.{bound.anchor_source.output_name}",
++            },
++        )
++        if valid
++        else fail_check(
++            "second_plan.possession_anchor_relation",
++            "corridor relation is not wired to possession anchors",
++            {"relation_node_count": len(relation_nodes)},
++        )
++    ]
++
++
++def validate_generic_classification(rows: list[dict[str, Any]], traces: list[Any]) -> list[dict[str, Any]]:
++    matched = [
++        row
++        for row in rows
++        if row.get("matched_classification_rules") == ["PROGRESSIVE_CORRIDOR_AVAILABLE"]
++    ]
++    trace_predicates = {trace.predicate_id for trace in traces}
++    return [
++        pass_check(
++            "second_plan.rule_driven_classification",
++            "second plan classifications come from declared generic rules and predicate traces",
++            {"matched_count": len(matched), "trace_predicates": sorted(trace_predicates)},
++        )
++        if rows and len(matched) == len(rows) and trace_predicates == {"has_progressive_corridor"}
++        else fail_check(
++            "second_plan.rule_driven_classification",
++            "second plan rows are not fully rule-driven",
++            {
++                "matched_count": len(matched),
++                "result_count": len(rows),
++                "trace_predicates": sorted(trace_predicates),
++            },
++        )
++    ]
++
++
++def validate_declared_evidence(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    required = {
++        "relation_id",
++        "target_player_id",
++        "destination_region",
++        "relation_duration_seconds",
++        "minimum_clearance_m",
++    }
++    failures = [
++        row["result_id"]
++        for row in rows
++        if set(row.get("requested_evidence", {})) != required
++        or any(value is None for value in row.get("requested_evidence", {}).values())
++        or any("." in key for key in row.get("requested_evidence", {}))
++    ]
++    return [
++        pass_check(
++            "second_plan.declared_alias_evidence",
++            "second plan requested evidence uses stable aliases from declared relation outputs",
++            {"result_count": len(rows), "aliases": sorted(required)},
++        )
++        if rows and not failures
++        else fail_check(
++            "second_plan.declared_alias_evidence",
++            "second plan evidence is missing, null, or node-ID shaped",
++            {"failure_sample": failures[:10], "result_count": len(rows)},
++        )
++    ]
++
++
++def validate_period_runtime_state(bound: Any) -> list[dict[str, Any]]:
++    executor = TacticalQueryExecutor()
++    params = runtime_parameters(bound)
++    state = executor._execute_period(  # noqa: SLF001 - verifier checks the runtime contract.
++        bound_plan=bound,
++        match_id=bound.match_ids[0],
++        period=bound.periods[0],
++        params=params,
++    )
++    relation_value = state.runtime_values.get("progressive_corridor", {}).get("episodes")
++    episode_count = (
++        len(relation_value.value)
++        if relation_value is not None and isinstance(relation_value.value, list)
++        else 0
++    )
++    return [
++        pass_check(
++            "second_plan.no_terminal_state_accepted",
++            "second plan relation episodes are declared runtime output, not terminal state.accepted handoff",
++            {"episode_count": episode_count, "accepted_count": len(state.accepted)},
++        )
++        if episode_count > 0 and not state.accepted
++        else fail_check(
++            "second_plan.no_terminal_state_accepted",
++            "second plan used terminal accepted handoff or produced no relation episodes",
++            {"episode_count": episode_count, "accepted_count": len(state.accepted)},
++        )
++    ]
++
++
++def validate_determinism() -> list[dict[str, Any]]:
++    first_rows = execution_result_rows(execute_plan_from_path(PLAN_PATH)[1])
++    second_rows = execution_result_rows(execute_plan_from_path(PLAN_PATH)[1])
++    first_ids = [row["result_id"] for row in first_rows]
++    second_ids = [row["result_id"] for row in second_rows]
++    return [
++        pass_check(
++            "second_plan.deterministic_ids_order",
++            "second plan result IDs and ordering are deterministic",
++            {"result_count": len(first_ids)},
++        )
++        if first_ids == second_ids and first_ids
++        else fail_check(
++            "second_plan.deterministic_ids_order",
++            "second plan result IDs or ordering changed across runs",
++            {"first": first_ids[:10], "second": second_ids[:10]},
++        )
++    ]
++
++
++def validate_gate_d_relation_precondition() -> list[dict[str, Any]]:
++    path = Path("artifacts/m1.1/gate-d-verification-report.json")
++    if not path.exists():
++        return [fail_check("relation.capability_controls", "Gate D relation proof report is missing")]
++    report = json.loads(path.read_text(encoding="utf-8"))
++    return [
++        pass_check(
++            "relation.capability_controls",
++            "existing relation capability proof remains passing",
++            {"summary": report.get("summary")},
++        )
++        if report.get("status") == "pass"
++        else fail_check(
++            "relation.capability_controls",
++            "existing relation capability proof is not passing",
++            {"status": report.get("status"), "summary": report.get("summary")},
++        )
++    ]
++
++
++def plan_payload() -> dict[str, Any]:
++    return json.loads(PLAN_PATH.read_text(encoding="utf-8"))
++
++
++def main() -> None:
++    bind_document(TacticalQueryDocument.model_validate(plan_payload()))
++    report = build_report()
++    print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
++    if report["status"] != "pass":
++        raise SystemExit(1)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/src/tqe/verification/m1_1_gate_s7.py b/src/tqe/verification/m1_1_gate_s7.py
+new file mode 100644
+index 0000000..a307e15
+--- /dev/null
++++ b/src/tqe/verification/m1_1_gate_s7.py
+@@ -0,0 +1,314 @@
++"""Verify M1.1S Gate S7: final architecture proof and packet readiness."""
++
++from __future__ import annotations
++
++import json
++import shutil
++from collections.abc import Callable
++from datetime import UTC, datetime
++from pathlib import Path
++from typing import Any
++
++from tqe.runtime.executor import (
++    execute_default_plan,
++    execute_plan_from_path,
++    execution_result_rows,
++)
++from tqe.verification.m1_1_gate_b import build_report as build_gate_b_report
++
++S4_PLAN_PATH = Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json")
++S6_PLAN_PATH = Path("config/query-plans/possession_corridor_availability.experimental.v1.json")
++EXECUTOR_PATH = Path("src/tqe/runtime/executor.py")
++REPORT_PATH = Path("artifacts/m1.1/gate-s7-verification-report.json")
++
++
++def utc_now_iso() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat()
++
++
++def write_json(path: Path, payload: dict[str, Any]) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++
++
++def pass_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "pass", "message": message, "details": details or {}}
++
++
++def fail_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "fail", "message": message, "details": details or {}}
++
++
++def build_report() -> dict[str, Any]:
++    checks: list[dict[str, Any]] = []
++    checks.extend(validate_prior_gates())
++    checks.extend(validate_m1_legacy_parity())
++    checks.extend(validate_generic_plan_reproduction())
++    checks.extend(validate_cache_independent_generic_reproduction())
++    checks.extend(validate_source_coupling_boundaries())
++    checks.extend(validate_external_packet_inputs_ready())
++
++    summary = {
++        "pass": sum(1 for check in checks if check["status"] == "pass"),
++        "fail": sum(1 for check in checks if check["status"] == "fail"),
++        "not_ready": sum(1 for check in checks if check["status"] == "not_ready"),
++    }
++    report = {
++        "schema_version": "1.0",
++        "milestone": "M1.1S",
++        "gate": "Gate_S7_parity_adapter_final_architecture_proof",
++        "generated_at": utc_now_iso(),
++        "status": "pass" if summary["fail"] == 0 and summary["not_ready"] == 0 else "fail",
++        "summary": summary,
++        "checks": checks,
++    }
++    write_json(REPORT_PATH, report)
++    return report
++
++
++def validate_prior_gates() -> list[dict[str, Any]]:
++    required = {
++        "s4": Path("artifacts/m1.1/gate-s4-verification-report.json"),
++        "s5": Path("artifacts/m1.1/gate-s5-verification-report.json"),
++        "s6": Path("artifacts/m1.1/gate-s6-verification-report.json"),
++        "s3r": Path("artifacts/m1.1/gate-s3r-verification-report.json"),
++    }
++    reports: dict[str, dict[str, Any]] = {}
++    missing: list[str] = []
++    failing: dict[str, Any] = {}
++    for name, path in required.items():
++        if not path.exists():
++            missing.append(str(path))
++            continue
++        report = json.loads(path.read_text(encoding="utf-8"))
++        reports[name] = {"status": report.get("status"), "summary": report.get("summary")}
++        if report.get("status") != "pass":
++            failing[name] = reports[name]
++    return [
++        pass_check(
++            "architecture.prior_s_gates_pass",
++            "S3R, S4, S5, and S6 verification reports are passing",
++            {"reports": reports},
++        )
++        if not missing and not failing
++        else fail_check(
++            "architecture.prior_s_gates_pass",
++            "one or more required prior S-gate reports are missing or failing",
++            {"missing": missing, "failing": failing, "reports": reports},
++        )
++    ]
++
++
++def validate_m1_legacy_parity() -> list[dict[str, Any]]:
++    gate_b = build_gate_b_report()
++    _bound, execution = execute_default_plan()
++    rows = execution_result_rows(execution)
++    return [
++        pass_check(
++            "parity.explicit_legacy_path_exact",
++            "M1 exact parity remains isolated behind the explicit legacy helper",
++            {
++                "gate_b_summary": gate_b.get("summary"),
++                "result_count": len(rows),
++                "trace_count": len(execution.predicate_traces),
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++            },
++        )
++        if gate_b.get("status") == "pass"
++        and len(rows) == 180
++        and len(execution.predicate_traces) == 900
++        and execution.provenance.get("compatibility_profile") == "legacy_m1_parity"
++        else fail_check(
++            "parity.explicit_legacy_path_exact",
++            "M1 parity failed or did not use explicit legacy compatibility",
++            {
++                "gate_b_status": gate_b.get("status"),
++                "gate_b_summary": gate_b.get("summary"),
++                "result_count": len(rows),
++                "trace_count": len(execution.predicate_traces),
++                "compatibility_profile": execution.provenance.get("compatibility_profile"),
++            },
++        )
++    ]
++
++
++def validate_generic_plan_reproduction() -> list[dict[str, Any]]:
++    s4_rows = execution_result_rows(execute_plan_from_path(S4_PLAN_PATH)[1])
++    s6_rows = execution_result_rows(execute_plan_from_path(S6_PLAN_PATH)[1])
++    return [
++        pass_check(
++            "architecture.generic_plans_reproduce",
++            "S4 and S6 generic plans execute from canonical data with expected row counts",
++            {
++                "s4_count": len(s4_rows),
++                "s6_count": len(s6_rows),
++                "s4_labels": sorted({row["classification"] for row in s4_rows}),
++                "s6_labels": sorted({row["classification"] for row in s6_rows}),
++            },
++        )
++        if len(s4_rows) == 15
++        and len(s6_rows) == 64
++        and {row["classification"] for row in s6_rows} == {"PROGRESSIVE_CORRIDOR_AVAILABLE"}
++        else fail_check(
++            "architecture.generic_plans_reproduce",
++            "S4 or S6 generic plan reproduction changed",
++            {"s4_count": len(s4_rows), "s6_count": len(s6_rows)},
++        )
++    ]
++
++
++def validate_cache_independent_generic_reproduction() -> list[dict[str, Any]]:
++    baseline = {
++        "s4": result_ids(execution_result_rows(execute_plan_from_path(S4_PLAN_PATH)[1])),
++        "s6": result_ids(execution_result_rows(execute_plan_from_path(S6_PLAN_PATH)[1])),
++    }
++    temp_paths = [
++        (Path("artifacts/m1.1"), Path("artifacts/m1.1.s7-cache-tmp")),
++        (Path("generated"), Path("generated.s7-cache-tmp")),
++    ]
++    conflict = [str(tmp) for _src, tmp in temp_paths if tmp.exists()]
++    if conflict:
++        return [
++            fail_check(
++                "reproduction.generic_cache_independent",
++                "temporary cache path already exists",
++                {"conflicts": conflict},
++            )
++        ]
++    moved: list[tuple[Path, Path]] = []
++    try:
++        for src, tmp in temp_paths:
++            if src.exists():
++                src.rename(tmp)
++                moved.append((src, tmp))
++        reproduced = {
++            "s4": result_ids(execution_result_rows(execute_plan_from_path(S4_PLAN_PATH)[1])),
++            "s6": result_ids(execution_result_rows(execute_plan_from_path(S6_PLAN_PATH)[1])),
++        }
++    finally:
++        for src, tmp in reversed(moved):
++            if tmp.exists() and not src.exists():
++                tmp.rename(src)
++    return [
++        pass_check(
++            "reproduction.generic_cache_independent",
++            "generic S4 and S6 plans reproduce without generated/artifact caches",
++            {"s4_count": len(baseline["s4"]), "s6_count": len(baseline["s6"])},
++        )
++        if baseline == reproduced
++        else fail_check(
++            "reproduction.generic_cache_independent",
++            "generic plan result IDs changed when caches were unavailable",
++            {
++                "baseline": {key: len(value) for key, value in baseline.items()},
++                "reproduced": {key: len(value) for key, value in reproduced.items()},
++            },
++        )
++    ]
++
++
++def validate_source_coupling_boundaries() -> list[dict[str, Any]]:
++    source = EXECUTOR_PATH.read_text(encoding="utf-8")
++    experimental_predicate_ids = {
++        "has_opposite_corridor",
++        "destination_region_entered",
++        "has_progressive_corridor",
++    }
++    approved_predicate_ids = {
++        "wide_entry_threshold",
++        "wide_entry_persists",
++        "shift_threshold",
++        "shift_persists",
++        "not_stoppage",
++    }
++    generic_emit_body = function_body(source, "emit_generic_results_from_rules")
++    generic_trace_body = function_body(source, "predicate_traces_from_declared_runtime_outputs")
++    generic_bodies = "\n".join([generic_emit_body, generic_trace_body])
++    generic_hits = sorted(
++        item
++        for item in approved_predicate_ids.union(experimental_predicate_ids)
++        if item in generic_bodies
++    )
++    legacy_only_hits = sorted(
++        item
++        for item in experimental_predicate_ids
++        if item in function_body(source, "experimental_predicate_traces_for_result")
++    )
++    return [
++        pass_check(
++            "architecture.generic_source_has_no_plan_predicate_ids",
++            "generic result emission and generic trace construction contain no plan predicate IDs",
++            {"checked_ids": sorted(approved_predicate_ids.union(experimental_predicate_ids))},
++        )
++        if not generic_hits
++        else fail_check(
++            "architecture.generic_source_has_no_plan_predicate_ids",
++            "generic emission or trace source contains plan predicate IDs",
++            {"hits": generic_hits},
++        ),
++        pass_check(
++            "architecture.legacy_specific_literals_are_isolated",
++            "remaining experimental predicate literals are isolated to legacy compatibility trace rewriting",
++            {"legacy_only_hits": legacy_only_hits},
++        )
++        if legacy_only_hits == ["destination_region_entered", "has_opposite_corridor"]
++        else fail_check(
++            "architecture.legacy_specific_literals_are_isolated",
++            "experimental predicate literals are missing or not isolated as expected",
++            {"legacy_only_hits": legacy_only_hits},
++        ),
++    ]
++
++
++def validate_external_packet_inputs_ready() -> list[dict[str, Any]]:
++    required_paths = [
++        Path("delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md"),
++        Path("delivery/m1.1/status.yaml"),
++        Path("delivery/ledger.jsonl"),
++        Path("delivery/m1.1/reviews/gate-s4r-controller-review.md"),
++        Path("delivery/m1.1/reviews/gate-s5-controller-review.md"),
++        Path("delivery/m1.1/reviews/gate-s6-controller-review.md"),
++        Path("docs/reviews/2026-06-20-m1-1s-gate-s4-external-review.md"),
++        Path("config/query-plans/opposite_corridor_after_shift.experimental.v1.json"),
++        Path("config/query-plans/possession_corridor_availability.experimental.v1.json"),
++    ]
++    missing = [str(path) for path in required_paths if not path.exists()]
++    return [
++        pass_check(
++            "packet.inputs_ready",
++            "source-of-truth files for external packet are present",
++            {"path_count": len(required_paths)},
++        )
++        if not missing
++        else fail_check(
++            "packet.inputs_ready",
++            "external packet source files are missing",
++            {"missing": missing},
++        )
++    ]
++
++
++def result_ids(rows: list[dict[str, Any]]) -> list[str]:
++    return [str(row["result_id"]) for row in rows]
++
++
++def function_body(source: str, name: str) -> str:
++    marker = f"def {name}("
++    start = source.find(marker)
++    if start < 0:
++        return ""
++    next_def = source.find("\ndef ", start + len(marker))
++    if next_def < 0:
++        return source[start:]
++    return source[start:next_def]
++
++
++def main() -> None:
++    report = build_report()
++    print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
++    if report["status"] != "pass":
++        raise SystemExit(1)
++
++
++if __name__ == "__main__":
++    main()

@@ -1,0 +1,10 @@
+6636dc4 Harden M1.2 S2 compiler evaluation
+ config/evaluation/m1_2_s2c_blind_corpus.json       | 132 ++++
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.2/SPEC.md                              |  45 ++
+ delivery/m1.2/status.yaml                          |  13 +-
+ ...26-06-21-m1-2-s2c-agent-identity-strict-eval.md |  21 +
+ .../reviews/2026-06-21-m1-2-s2c-external-review.md |  38 ++
+ src/tqe/verification/m1_2_gate_s2.py               | 498 +++++++++++++--
+ src/tqe/workshop/hermes_s2.py                      | 672 +++++++++++++++++----
+ 8 files changed, 1252 insertions(+), 168 deletions(-)

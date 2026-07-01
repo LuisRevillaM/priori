@@ -1,0 +1,14 @@
+{
+  "EXPRESSIBLE_NOW": 2,
+  "EXPRESSIBLE_BY_NEW_COMPOSITION": 1,
+  "MISSING_PRIMITIVE": 8,
+  "MISSING_RELATION": 4,
+  "MISSING_IR_CONSTRUCT": 0,
+  "UNAVAILABLE_DATA": 0,
+  "SUBJECTIVE_OR_CAUSAL": 0,
+  "missingCapabilityTotal": 12,
+  "notes": [
+    "Several questions contain subjective football wording, but none are subjective-only if rephrased into measurable thresholds.",
+    "No question requires pausing S2I or Workbench Alpha for an IR redesign; missing vocabulary can be added incrementally as primitives or relations."
+  ]
+}

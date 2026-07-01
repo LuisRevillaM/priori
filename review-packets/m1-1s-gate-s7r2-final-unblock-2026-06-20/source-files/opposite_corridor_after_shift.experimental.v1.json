@@ -1,0 +1,687 @@
+{
+  "schema_version": "1.0",
+  "recipe": {
+    "schema_version": "1.0",
+    "recipe_id": "opposite_corridor_after_shift_v1",
+    "recipe_version": "0.1.0",
+    "display_name": "Opposite Corridor After Shift",
+    "description": "Experimental composition that finds wide-entry block shifts, evaluates opposite-side geometric progressive corridors, and classifies whether the ball enters the corridor destination region.",
+    "default_unknown_evidence_policy": "exclude_candidate",
+    "allowed_claims": [
+      "The ball entered a configured wide area.",
+      "The defending outfield centroid shifted toward the ball side by the configured threshold.",
+      "A geometric progressive corridor appeared on the opposite side under the configured relation thresholds.",
+      "The ball either entered or did not enter the selected corridor destination region within the configured horizon.",
+      "The replay coordinates come from canonical 25 Hz source frames."
+    ],
+    "disallowed_claims": [
+      "The attack intentionally created the corridor.",
+      "A pass should have been played.",
+      "The corridor is optimal.",
+      "The result is a pass probability, decision-quality, causation, player-intent, or missed-opportunity claim.",
+      "The result is backed by licensed match video."
+    ],
+    "limitations": [
+      "Experimental plan; not an approved recipe.",
+      "Destination entry is geometric ball-region entry only.",
+      "No offside, receiver body orientation, pressure, pass probability, or optimality model is evaluated.",
+      "No match video is used."
+    ],
+    "output_classifications": [
+      "DESTINATION_ENTERED",
+      "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY"
+    ],
+    "parameters": [
+      {
+        "name": "result_id_seed_hash",
+        "payload_type": "enum",
+        "unit": "none",
+        "required": false,
+        "default": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "opposite_corridor_after_shift_experimental_v1"
+        },
+        "description": "Plan-specific deterministic result ID seed."
+      },
+      {
+        "name": "analysis_rate_hz",
+        "payload_type": "number",
+        "unit": "hertz",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "hertz",
+          "value": 5
+        },
+        "description": "Analysis cadence."
+      },
+      {
+        "name": "minimum_possession_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 8.0
+        },
+        "description": "Minimum active-ball possession duration."
+      },
+      {
+        "name": "wide_entry_fraction",
+        "payload_type": "number",
+        "unit": "fraction",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "fraction",
+          "value": 0.6
+        },
+        "description": "Ball lateral fraction required for wide entry."
+      },
+      {
+        "name": "prior_central_fraction",
+        "payload_type": "number",
+        "unit": "fraction",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "fraction",
+          "value": 0.45
+        },
+        "description": "Prior central-ball fraction required before wide entry."
+      },
+      {
+        "name": "minimum_wide_dwell_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 1.2
+        },
+        "description": "Minimum time the ball must dwell in the wide channel."
+      },
+      {
+        "name": "baseline_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.8
+        },
+        "description": "Pre-entry baseline window for defensive centroid measurement."
+      },
+      {
+        "name": "shift_search_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 4.0
+        },
+        "description": "Post-entry search window for the maximum signed defensive shift."
+      },
+      {
+        "name": "minimum_shift_metres",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 5.0
+        },
+        "description": "Minimum signed defending block shift toward the ball side."
+      },
+      {
+        "name": "minimum_shift_persistence_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.6
+        },
+        "description": "Minimum time the block shift must persist."
+      },
+      {
+        "name": "outcome_horizon_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 6.0
+        },
+        "description": "Post-anchor horizon used for retained possession and base outcome classification."
+      },
+      {
+        "name": "opposite_side_fraction",
+        "payload_type": "number",
+        "unit": "fraction",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "fraction",
+          "value": 0.35
+        },
+        "description": "Opposite-side ball lateral fraction used by base outcome classification."
+      },
+      {
+        "name": "retained_after_switch_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 1.0
+        },
+        "description": "Minimum retained-possession time after opposite-side entry."
+      },
+      {
+        "name": "maximum_analysis_gap_ms",
+        "payload_type": "number",
+        "unit": "millisecond",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "millisecond",
+          "value": 250
+        },
+        "description": "Maximum permitted gap in the analysis stream."
+      },
+      {
+        "name": "minimum_outfield_players_per_team",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 9
+        },
+        "description": "Minimum defending outfield players required for accepted quality."
+      },
+      {
+        "name": "dedupe_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 8.0
+        },
+        "description": "Minimum source-frame separation between accepted wide-entry candidates."
+      },
+      {
+        "name": "corridor_max_window_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 4.0
+        },
+        "description": "Maximum post-anchor relation search window."
+      },
+      {
+        "name": "corridor_minimum_progression_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 8.0
+        },
+        "description": "Minimum forward progression for a corridor segment."
+      },
+      {
+        "name": "corridor_minimum_segment_length_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 8.0
+        },
+        "description": "Minimum corridor segment length."
+      },
+      {
+        "name": "corridor_maximum_segment_length_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 45.0
+        },
+        "description": "Maximum corridor segment length."
+      },
+      {
+        "name": "corridor_minimum_clearance_m",
+        "payload_type": "number",
+        "unit": "metre",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "metre",
+          "value": 5.0
+        },
+        "description": "Minimum defender clearance from the corridor segment."
+      },
+      {
+        "name": "corridor_open_after_frames",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        },
+        "description": "Consecutive passing relation frames required to open the corridor."
+      },
+      {
+        "name": "corridor_close_after_frames",
+        "payload_type": "number",
+        "unit": "count",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "count",
+          "value": 2
+        },
+        "description": "Consecutive failing relation frames required to close the corridor."
+      },
+      {
+        "name": "corridor_minimum_duration_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 0.8
+        },
+        "description": "Minimum corridor duration for this experimental composition."
+      },
+      {
+        "name": "destination_entry_horizon_seconds",
+        "payload_type": "number",
+        "unit": "second",
+        "required": false,
+        "default": {
+          "payload_type": "number",
+          "unit": "second",
+          "value": 6.0
+        },
+        "description": "Horizon after corridor open to test ball entry into the destination region."
+      }
+    ]
+  },
+  "default_invocation": {
+    "schema_version": "1.0",
+    "invocation_id": "m1_fortuna_experimental_opposite_corridor",
+    "match_ids": [
+      "J03WOY",
+      "J03WPY",
+      "J03WQQ",
+      "J03WR9"
+    ],
+    "periods": [
+      "firstHalf",
+      "secondHalf"
+    ],
+    "perspective_team_role": "home",
+    "parameters": {},
+    "max_results": 64,
+    "execution_mode": "execute"
+  },
+  "draft_plan": {
+    "schema_version": "1.0",
+    "plan_id": "opposite_corridor_after_shift_experimental_v1",
+    "plan_version": "0.1.0",
+    "recipe_id": "opposite_corridor_after_shift_v1",
+    "recipe_version": "0.1.0",
+    "status": "experimental",
+    "unknown_evidence_policy": "exclude_candidate",
+    "classification_mode": "partial_declared",
+    "complexity_limits": {
+      "max_plan_nodes": 40,
+      "max_nesting_depth": 10,
+      "max_temporal_horizon_seconds": 12.0,
+      "max_returned_moments": 64,
+      "max_relations_per_anchor": 20,
+      "max_execution_cost": 80000
+    },
+    "nodes": [
+      {
+        "kind": "primitive",
+        "node_id": "possession",
+        "catalog_ref": "possession_segment",
+        "version": "0.1.0"
+      },
+      {
+        "kind": "primitive",
+        "node_id": "ball_lateral",
+        "catalog_ref": "ball_lateral_fraction",
+        "version": "0.1.0"
+      },
+      {
+        "kind": "predicate",
+        "node_id": "wide_entry_threshold",
+        "input": {
+          "source_node_id": "ball_lateral",
+          "output_name": "fraction"
+        },
+        "operator": {
+          "name": "gt",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "kind": "parameter",
+          "name": "wide_entry_fraction"
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "wide_entry_persists",
+        "input": {
+          "source_node_id": "wide_entry_threshold",
+          "output_name": "predicate"
+        },
+        "operator": {
+          "name": "persists_for",
+          "version": "1.0.0"
+        },
+        "duration": {
+          "kind": "parameter",
+          "name": "minimum_wide_dwell_seconds"
+        }
+      },
+      {
+        "kind": "primitive",
+        "node_id": "defensive_centroid",
+        "catalog_ref": "defensive_outfield_centroid",
+        "version": "0.1.0"
+      },
+      {
+        "kind": "primitive",
+        "node_id": "signed_shift",
+        "catalog_ref": "signed_lateral_shift",
+        "version": "0.1.0",
+        "inputs": {
+          "possession_episodes": {
+            "source_node_id": "possession",
+            "output_name": "episodes"
+          },
+          "entry_episodes": {
+            "source_node_id": "wide_entry_persists",
+            "output_name": "predicate"
+          },
+          "defensive_centroid": {
+            "source_node_id": "defensive_centroid",
+            "output_name": "centroid_y"
+          }
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "shift_threshold",
+        "input": {
+          "source_node_id": "signed_shift",
+          "output_name": "signed_shift"
+        },
+        "operator": {
+          "name": "gte",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "kind": "parameter",
+          "name": "minimum_shift_metres"
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "shift_persists",
+        "input": {
+          "source_node_id": "shift_threshold",
+          "output_name": "predicate"
+        },
+        "operator": {
+          "name": "persists_for",
+          "version": "1.0.0"
+        },
+        "duration": {
+          "kind": "parameter",
+          "name": "minimum_shift_persistence_seconds"
+        }
+      },
+      {
+        "kind": "primitive",
+        "node_id": "outcome",
+        "catalog_ref": "outcome_classification",
+        "version": "0.1.0",
+        "inputs": {
+          "accepted_shift_episodes": {
+            "source_node_id": "shift_persists",
+            "output_name": "predicate"
+          }
+        },
+        "parameters": {
+          "horizon": {
+            "kind": "parameter",
+            "name": "outcome_horizon_seconds"
+          }
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "not_stoppage",
+        "input": {
+          "source_node_id": "outcome",
+          "output_name": "classification"
+        },
+        "operator": {
+          "name": "neq",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "STOPPAGE"
+        }
+      },
+      {
+        "kind": "relation",
+        "node_id": "opposite_corridor",
+        "catalog_ref": "geometric_progressive_corridor",
+        "version": "0.1.0",
+        "inputs": {
+          "anchors": {
+            "source_node_id": "outcome",
+            "output_name": "classification"
+          }
+        },
+        "parameters": {
+          "max_window_seconds": {
+            "kind": "parameter",
+            "name": "corridor_max_window_seconds"
+          },
+          "minimum_progression_m": {
+            "kind": "parameter",
+            "name": "corridor_minimum_progression_m"
+          },
+          "minimum_segment_length_m": {
+            "kind": "parameter",
+            "name": "corridor_minimum_segment_length_m"
+          },
+          "maximum_segment_length_m": {
+            "kind": "parameter",
+            "name": "corridor_maximum_segment_length_m"
+          },
+          "minimum_clearance_m": {
+            "kind": "parameter",
+            "name": "corridor_minimum_clearance_m"
+          },
+          "open_after_frames": {
+            "kind": "parameter",
+            "name": "corridor_open_after_frames"
+          },
+          "close_after_frames": {
+            "kind": "parameter",
+            "name": "corridor_close_after_frames"
+          },
+          "minimum_duration_seconds": {
+            "kind": "parameter",
+            "name": "corridor_minimum_duration_seconds"
+          },
+          "side_filter": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "opposite_ball_side"
+          }
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "has_opposite_corridor",
+        "input": {
+          "source_node_id": "opposite_corridor",
+          "output_name": "anchor_evaluations"
+        },
+        "operator": {
+          "name": "exists",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "kind": "primitive",
+        "node_id": "destination_entry",
+        "catalog_ref": "relation_destination_entry_classification",
+        "version": "0.1.0",
+        "inputs": {
+          "relation_episodes": {
+            "source_node_id": "opposite_corridor",
+            "output_name": "episodes"
+          }
+        },
+        "parameters": {
+          "destination_entry_horizon_seconds": {
+            "kind": "parameter",
+            "name": "destination_entry_horizon_seconds"
+          },
+          "result_id_seed": {
+            "kind": "parameter",
+            "name": "result_id_seed_hash"
+          },
+          "episode_selection": {
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "first_by_duration_clearance"
+          }
+        }
+      },
+      {
+        "kind": "predicate",
+        "node_id": "destination_region_entered",
+        "input": {
+          "source_node_id": "destination_entry",
+          "output_name": "classification"
+        },
+        "operator": {
+          "name": "neq",
+          "version": "1.0.0"
+        },
+        "compare": {
+          "payload_type": "enum",
+          "unit": "none",
+          "value": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY"
+        }
+      }
+    ],
+    "classification_rules": [
+      {
+        "label": "DESTINATION_ENTERED",
+        "predicate_ids": [
+          "wide_entry_persists",
+          "shift_persists",
+          "has_opposite_corridor",
+          "destination_region_entered"
+        ],
+        "description": "The opposite-side geometric progressive corridor persisted and the ball entered the selected destination region."
+      },
+      {
+        "label": "CORRIDOR_PERSISTED_NO_DESTINATION_ENTRY",
+        "predicate_ids": [
+          "wide_entry_persists",
+          "shift_persists",
+          "has_opposite_corridor"
+        ],
+        "description": "The opposite-side geometric progressive corridor persisted, but the ball did not enter the selected destination region within the horizon."
+      }
+    ],
+    "requested_evidence": [
+      {
+        "source": {
+          "source_node_id": "opposite_corridor",
+          "output_name": "episodes"
+        },
+        "field": "relation_id",
+        "alias": "relation_id"
+      },
+      {
+        "source": {
+          "source_node_id": "opposite_corridor",
+          "output_name": "episodes"
+        },
+        "field": "destination_region",
+        "alias": "destination_region"
+      },
+      {
+        "source": {
+          "source_node_id": "opposite_corridor",
+          "output_name": "episodes"
+        },
+        "field": "duration_seconds",
+        "alias": "relation_duration_seconds"
+      },
+      {
+        "source": {
+          "source_node_id": "destination_entry",
+          "output_name": "classification"
+        },
+        "field": "classification",
+        "alias": "destination_classification"
+      },
+      {
+        "source": {
+          "source_node_id": "destination_entry",
+          "output_name": "classification"
+        },
+        "field": "destination_entry_frame_id",
+        "alias": "destination_entry_frame_id",
+        "required": false
+      }
+    ],
+    "anchor_source": {
+      "source_node_id": "signed_shift",
+      "output_name": "anchors"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+delivery/ledger.jsonl
+delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+delivery/m1.1/reviews/gate-s3r4-controller-review.md
+delivery/m1.1/status.yaml
+docs/learnings/2026-06-20-m1-1s-gate-s3r4-temporal-correctness.md
+docs/reviews/2026-06-20-m1-1s-gate-s3r3-external-review.md
+src/tqe/runtime/executor.py
+src/tqe/runtime/values.py
+src/tqe/verification/m1_1_gate_c.py
+src/tqe/verification/m1_1_gate_r5.py
+src/tqe/verification/m1_1_gate_s3r.py
+tests/test_m1_1_runtime.py

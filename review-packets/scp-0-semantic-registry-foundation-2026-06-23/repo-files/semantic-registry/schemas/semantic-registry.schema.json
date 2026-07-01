@@ -1,0 +1,2346 @@
+{
+  "$defs": {
+    "AtlasEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "exposure_default": {
+          "$ref": "#/$defs/AuthoringExposure",
+          "default": "DENIED"
+        },
+        "family": {
+          "title": "Family",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "AtlasEntry",
+          "default": "AtlasEntry",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "provisional_kind": {
+          "default": "UNCLASSIFIED",
+          "title": "Provisional Kind",
+          "type": "string"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "source_name": {
+          "title": "Source Name",
+          "type": "string"
+        },
+        "source_provenance": {
+          "additionalProperties": true,
+          "title": "Source Provenance",
+          "type": "object"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "source_name",
+        "family",
+        "source_provenance"
+      ],
+      "title": "AtlasEntry",
+      "type": "object"
+    },
+    "AuthoringExposure": {
+      "enum": [
+        "ALLOWED",
+        "DENIED",
+        "REVIEWED_PLAN_ONLY"
+      ],
+      "title": "AuthoringExposure",
+      "type": "string"
+    },
+    "ClaimContract": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "inherits": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Inherits",
+          "type": "array"
+        },
+        "kind": {
+          "const": "ClaimContract",
+          "default": "ClaimContract",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "permitted": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Permitted",
+          "type": "array"
+        },
+        "prohibited": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Prohibited",
+          "type": "array"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "unknown_conditions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unknown Conditions",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description"
+      ],
+      "title": "ClaimContract",
+      "type": "object"
+    },
+    "CompositionInstance": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "claim_contract_ref": {
+          "title": "Claim Contract Ref",
+          "type": "string"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "evidence_contract_ref": {
+          "title": "Evidence Contract Ref",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "CompositionInstance",
+          "default": "CompositionInstance",
+          "title": "Kind",
+          "type": "string"
+        },
+        "origin": {
+          "enum": [
+            "AI_AUTHORED",
+            "MANUAL_PRESET"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "plan_artifact_ref": {
+          "title": "Plan Artifact Ref",
+          "type": "string"
+        },
+        "promotion_status": {
+          "enum": [
+            "VALIDATED_COMPOSITION",
+            "EXPERIMENTAL"
+          ],
+          "title": "Promotion Status",
+          "type": "string"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "plan_artifact_ref",
+        "origin",
+        "promotion_status",
+        "claim_contract_ref",
+        "evidence_contract_ref"
+      ],
+      "title": "CompositionInstance",
+      "type": "object"
+    },
+    "Concept": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "claim_contract_ref": {
+          "title": "Claim Contract Ref",
+          "type": "string"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "evidence_contract_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evidence Contract Ref"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "Concept",
+          "default": "Concept",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "claim_contract_ref"
+      ],
+      "title": "Concept",
+      "type": "object"
+    },
+    "ConformanceStatus": {
+      "enum": [
+        "EXACT",
+        "PARTIAL",
+        "LEGACY_APPROXIMATION"
+      ],
+      "title": "ConformanceStatus",
+      "type": "string"
+    },
+    "DefinitionProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "bindings": {
+          "additionalProperties": true,
+          "title": "Bindings",
+          "type": "object"
+        },
+        "claim_contract_ref": {
+          "title": "Claim Contract Ref",
+          "type": "string"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "evidence_contract_ref": {
+          "title": "Evidence Contract Ref",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "DefinitionProfile",
+          "default": "DefinitionProfile",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operationalization_ref": {
+          "title": "Operationalization Ref",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "operationalization_ref",
+        "claim_contract_ref",
+        "evidence_contract_ref"
+      ],
+      "title": "DefinitionProfile",
+      "type": "object"
+    },
+    "EvidenceContract": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "inherits": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Inherits",
+          "type": "array"
+        },
+        "kind": {
+          "const": "EvidenceContract",
+          "default": "EvidenceContract",
+          "title": "Kind",
+          "type": "string"
+        },
+        "optional": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Optional",
+          "type": "array"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "replay_projection": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Replay Projection",
+          "type": "array"
+        },
+        "required": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required",
+          "type": "array"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description"
+      ],
+      "title": "EvidenceContract",
+      "type": "object"
+    },
+    "ExecutionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "execution_ref": {
+          "title": "Execution Ref",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "ExecutionRecord",
+          "default": "ExecutionRecord",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "plan_artifact_ref": {
+          "title": "Plan Artifact Ref",
+          "type": "string"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "scope": {
+          "additionalProperties": true,
+          "title": "Scope",
+          "type": "object"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "plan_artifact_ref",
+        "execution_ref"
+      ],
+      "title": "ExecutionRecord",
+      "type": "object"
+    },
+    "ExposurePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "ai_compiler": {
+          "$ref": "#/$defs/AuthoringExposure",
+          "default": "DENIED"
+        },
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "ExposurePolicy",
+          "default": "ExposurePolicy",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "parameter_overrides": {
+          "additionalProperties": true,
+          "title": "Parameter Overrides",
+          "type": "object"
+        },
+        "product": {
+          "$ref": "#/$defs/AuthoringExposure",
+          "default": "DENIED"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "reviewed_recipes": {
+          "$ref": "#/$defs/AuthoringExposure",
+          "default": "ALLOWED"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "subject_ref": {
+          "title": "Subject Ref",
+          "type": "string"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "subject_ref"
+      ],
+      "title": "ExposurePolicy",
+      "type": "object"
+    },
+    "Implementation": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "implementation_type": {
+          "default": "python",
+          "title": "Implementation Type",
+          "type": "string"
+        },
+        "implements": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Implements",
+          "type": "array"
+        },
+        "kind": {
+          "const": "Implementation",
+          "default": "Implementation",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "source_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Refs",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "implements"
+      ],
+      "title": "Implementation",
+      "type": "object"
+    },
+    "MaturityAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_safety": {
+          "$ref": "#/$defs/MaturityLevel"
+        },
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "implementation": {
+          "$ref": "#/$defs/MaturityLevel"
+        },
+        "kind": {
+          "const": "MaturityAssessment",
+          "default": "MaturityAssessment",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "product": {
+          "$ref": "#/$defs/MaturityLevel"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "semantic": {
+          "$ref": "#/$defs/MaturityLevel"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "subject_ref": {
+          "title": "Subject Ref",
+          "type": "string"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "validation": {
+          "$ref": "#/$defs/MaturityLevel"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "subject_ref",
+        "semantic",
+        "implementation",
+        "validation",
+        "agent_safety",
+        "product"
+      ],
+      "title": "MaturityAssessment",
+      "type": "object"
+    },
+    "MaturityLevel": {
+      "enum": [
+        "NONE",
+        "PROPOSED",
+        "REVIEWED",
+        "IMPLEMENTED",
+        "VERIFIED",
+        "APPROVED",
+        "EXPOSED",
+        "NOT_REVIEWED",
+        "NOT_EXPOSED"
+      ],
+      "title": "MaturityLevel",
+      "type": "string"
+    },
+    "Operationalization": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "applicability": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Applicability",
+          "type": "array"
+        },
+        "claim_contract_ref": {
+          "title": "Claim Contract Ref",
+          "type": "string"
+        },
+        "concept_refs": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Concept Refs",
+          "type": "array"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "evidence_contract_ref": {
+          "title": "Evidence Contract Ref",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/TypedField"
+          },
+          "minItems": 1,
+          "title": "Inputs",
+          "type": "array"
+        },
+        "kind": {
+          "const": "Operationalization",
+          "default": "Operationalization",
+          "title": "Kind",
+          "type": "string"
+        },
+        "lowering": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Lowering",
+          "type": "array"
+        },
+        "outputs": {
+          "items": {
+            "$ref": "#/$defs/TypedField"
+          },
+          "minItems": 1,
+          "title": "Outputs",
+          "type": "array"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "required_modalities": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Modalities",
+          "type": "array"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "semantic_basis": {
+          "$ref": "#/$defs/SemanticBasis"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "concept_refs",
+        "semantic_basis",
+        "required_modalities",
+        "inputs",
+        "outputs",
+        "claim_contract_ref",
+        "evidence_contract_ref"
+      ],
+      "title": "Operationalization",
+      "type": "object"
+    },
+    "OperatorDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "authorability": {
+          "$ref": "#/$defs/AuthoringExposure",
+          "default": "ALLOWED"
+        },
+        "compare": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypeRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "$ref": "#/$defs/TypeRef"
+        },
+        "kind": {
+          "const": "OperatorDefinition",
+          "default": "OperatorDefinition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator_id": {
+          "title": "Operator Id",
+          "type": "string"
+        },
+        "operator_version": {
+          "title": "Operator Version",
+          "type": "string"
+        },
+        "output": {
+          "$ref": "#/$defs/TypeRef"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "parameters": {
+          "items": {
+            "$ref": "#/$defs/OperatorParameter"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "unknown_semantics": {
+          "additionalProperties": true,
+          "title": "Unknown Semantics",
+          "type": "object"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "operator_id",
+        "operator_version",
+        "input",
+        "output"
+      ],
+      "title": "OperatorDefinition",
+      "type": "object"
+    },
+    "OperatorParameter": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "type": {
+          "$ref": "#/$defs/TypeRef"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ],
+      "title": "OperatorParameter",
+      "type": "object"
+    },
+    "PlanArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "exact_typed_plan_ref": {
+          "title": "Exact Typed Plan Ref",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "PlanArtifact",
+          "default": "PlanArtifact",
+          "title": "Kind",
+          "type": "string"
+        },
+        "origin": {
+          "enum": [
+            "REVIEWED_RECIPE",
+            "MANUAL_PRESET",
+            "AI_AUTHORED"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "promotion_status": {
+          "enum": [
+            "REGISTERED_RECIPE",
+            "VALIDATED_COMPOSITION",
+            "EXPERIMENTAL_PRESET",
+            "REVIEWED_RECIPE"
+          ],
+          "title": "Promotion Status",
+          "type": "string"
+        },
+        "recipe_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recipe Ref"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "origin",
+        "promotion_status",
+        "exact_typed_plan_ref"
+      ],
+      "title": "PlanArtifact",
+      "type": "object"
+    },
+    "ProjectionPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "excludes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Excludes",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "ProjectionPolicy",
+          "default": "ProjectionPolicy",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "requires": {
+          "additionalProperties": true,
+          "title": "Requires",
+          "type": "object"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "target": {
+          "$ref": "#/$defs/ProjectionTarget"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "target"
+      ],
+      "title": "ProjectionPolicy",
+      "type": "object"
+    },
+    "ProjectionTarget": {
+      "enum": [
+        "product",
+        "ai",
+        "recipe_library",
+        "unsupported",
+        "research_atlas"
+      ],
+      "title": "ProjectionTarget",
+      "type": "string"
+    },
+    "RecipeDefinitionMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "claim_contract_ref": {
+          "title": "Claim Contract Ref",
+          "type": "string"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "dependency_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependency Refs",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "evidence_contract_ref": {
+          "title": "Evidence Contract Ref",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "RecipeDefinition",
+          "default": "RecipeDefinition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "plan_artifact_ref": {
+          "title": "Plan Artifact Ref",
+          "type": "string"
+        },
+        "profile_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Profile Refs",
+          "type": "array"
+        },
+        "recipe_id": {
+          "title": "Recipe Id",
+          "type": "string"
+        },
+        "recipe_version": {
+          "title": "Recipe Version",
+          "type": "string"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "recipe_id",
+        "recipe_version",
+        "plan_artifact_ref",
+        "claim_contract_ref",
+        "evidence_contract_ref"
+      ],
+      "title": "RecipeDefinitionMapping",
+      "type": "object"
+    },
+    "RuntimeBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "conformance_status": {
+          "$ref": "#/$defs/ConformanceStatus"
+        },
+        "created_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Created From",
+          "type": "array"
+        },
+        "deprecated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated By"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "implementation_ref": {
+          "title": "Implementation Ref",
+          "type": "string"
+        },
+        "implements": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Implements",
+          "type": "array"
+        },
+        "kind": {
+          "const": "RuntimeBinding",
+          "default": "RuntimeBinding",
+          "title": "Kind",
+          "type": "string"
+        },
+        "known_deviations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Known Deviations",
+          "type": "array"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "reviewers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reviewers",
+          "type": "array"
+        },
+        "runtime_capability": {
+          "$ref": "#/$defs/RuntimeCapabilityRef"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "CURRENT"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "version": {
+          "default": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "runtime_capability",
+        "implementation_ref",
+        "implements",
+        "conformance_status"
+      ],
+      "title": "RuntimeBinding",
+      "type": "object"
+    },
+    "RuntimeCapabilityRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "primitive",
+            "relation"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "kind"
+      ],
+      "title": "RuntimeCapabilityRef",
+      "type": "object"
+    },
+    "SemanticBasis": {
+      "enum": [
+        "OBSERVED",
+        "DETERMINISTIC",
+        "INFERRED_CANDIDATE",
+        "MODELLED",
+        "EVIDENCE"
+      ],
+      "title": "SemanticBasis",
+      "type": "string"
+    },
+    "Status": {
+      "enum": [
+        "CURRENT",
+        "PROPOSED_ATLAS",
+        "DEPRECATED",
+        "SHADOW"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "TypeRef": {
+      "additionalProperties": false,
+      "properties": {
+        "container": {
+          "title": "Container",
+          "type": "string"
+        },
+        "coordinate_frame": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coordinate Frame"
+        },
+        "entity_scope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Scope"
+        },
+        "nullable": {
+          "default": true,
+          "title": "Nullable",
+          "type": "boolean"
+        },
+        "perspective": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Perspective"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "temporal_basis": {
+          "default": "canonical_frame_time",
+          "title": "Temporal Basis",
+          "type": "string"
+        },
+        "unit": {
+          "default": "none",
+          "title": "Unit",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "container",
+        "value"
+      ],
+      "title": "TypeRef",
+      "type": "object"
+    },
+    "TypedField": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "type": {
+          "$ref": "#/$defs/TypeRef"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ],
+      "title": "TypedField",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "atlas_entries": {
+      "items": {
+        "$ref": "#/$defs/AtlasEntry"
+      },
+      "title": "Atlas Entries",
+      "type": "array"
+    },
+    "claim_contracts": {
+      "items": {
+        "$ref": "#/$defs/ClaimContract"
+      },
+      "title": "Claim Contracts",
+      "type": "array"
+    },
+    "composition_instances": {
+      "items": {
+        "$ref": "#/$defs/CompositionInstance"
+      },
+      "title": "Composition Instances",
+      "type": "array"
+    },
+    "concepts": {
+      "items": {
+        "$ref": "#/$defs/Concept"
+      },
+      "title": "Concepts",
+      "type": "array"
+    },
+    "definition_profiles": {
+      "items": {
+        "$ref": "#/$defs/DefinitionProfile"
+      },
+      "title": "Definition Profiles",
+      "type": "array"
+    },
+    "evidence_contracts": {
+      "items": {
+        "$ref": "#/$defs/EvidenceContract"
+      },
+      "title": "Evidence Contracts",
+      "type": "array"
+    },
+    "execution_records": {
+      "items": {
+        "$ref": "#/$defs/ExecutionRecord"
+      },
+      "title": "Execution Records",
+      "type": "array"
+    },
+    "exposure_policies": {
+      "items": {
+        "$ref": "#/$defs/ExposurePolicy"
+      },
+      "title": "Exposure Policies",
+      "type": "array"
+    },
+    "implementations": {
+      "items": {
+        "$ref": "#/$defs/Implementation"
+      },
+      "title": "Implementations",
+      "type": "array"
+    },
+    "maturity_assessments": {
+      "items": {
+        "$ref": "#/$defs/MaturityAssessment"
+      },
+      "title": "Maturity Assessments",
+      "type": "array"
+    },
+    "operationalizations": {
+      "items": {
+        "$ref": "#/$defs/Operationalization"
+      },
+      "title": "Operationalizations",
+      "type": "array"
+    },
+    "operator_definitions": {
+      "items": {
+        "$ref": "#/$defs/OperatorDefinition"
+      },
+      "title": "Operator Definitions",
+      "type": "array"
+    },
+    "plan_artifacts": {
+      "items": {
+        "$ref": "#/$defs/PlanArtifact"
+      },
+      "title": "Plan Artifacts",
+      "type": "array"
+    },
+    "projection_policies": {
+      "items": {
+        "$ref": "#/$defs/ProjectionPolicy"
+      },
+      "title": "Projection Policies",
+      "type": "array"
+    },
+    "recipe_definitions": {
+      "items": {
+        "$ref": "#/$defs/RecipeDefinitionMapping"
+      },
+      "title": "Recipe Definitions",
+      "type": "array"
+    },
+    "registry_id": {
+      "title": "Registry Id",
+      "type": "string"
+    },
+    "registry_version": {
+      "title": "Registry Version",
+      "type": "string"
+    },
+    "runtime_bindings": {
+      "items": {
+        "$ref": "#/$defs/RuntimeBinding"
+      },
+      "title": "Runtime Bindings",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "registry_id",
+    "registry_version"
+  ],
+  "title": "SemanticRegistry",
+  "type": "object"
+}

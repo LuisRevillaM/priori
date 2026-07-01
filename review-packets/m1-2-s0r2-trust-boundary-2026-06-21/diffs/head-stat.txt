@@ -1,0 +1,10 @@
+a003bc8 Harden M1.2 workshop trust boundary
+ delivery/m1.2/SPEC.md                              |  23 ++
+ delivery/m1.2/status.yaml                          |  12 +-
+ .../2026-06-21-m1-2-s0r2-trust-boundary.md         |  20 +
+ .../2026-06-21-m1-2-s0r2-external-review.md        |  49 +++
+ generated/capability-context.json                  | 455 +--------------------
+ src/tqe/verification/m1_2_gate_s0.py               |  80 +++-
+ src/tqe/verification/m1_2_gate_s1.py               |  24 +-
+ src/tqe/workshop/m1_2.py                           | 321 ++++++++++++---
+ 8 files changed, 470 insertions(+), 514 deletions(-)

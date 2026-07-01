@@ -1,0 +1,124 @@
+{
+  "draft_plan_id": "draft_327d06b5dce40827",
+  "issues": [
+    {
+      "code": "unknown_parameter",
+      "message": "invocation supplies unknown parameter corridor_max_window_seconds",
+      "path": "default_invocation.parameters.corridor_max_window_seconds"
+    },
+    {
+      "code": "unknown_parameter",
+      "message": "invocation supplies unknown parameter corridor_minimum_duration_seconds",
+      "path": "default_invocation.parameters.corridor_minimum_duration_seconds"
+    },
+    {
+      "code": "unknown_parameter",
+      "message": "invocation supplies unknown parameter destination_entry_horizon_seconds",
+      "path": "default_invocation.parameters.destination_entry_horizon_seconds"
+    },
+    {
+      "code": "unknown_catalog_ref",
+      "message": "primitive active_ball_possession_anchor@0.1.0 is not in the catalog",
+      "path": "draft_plan.nodes[0].catalog_ref"
+    },
+    {
+      "code": "unknown_catalog_ref",
+      "message": "relation progressive_corridor_availability@0.1.0 is not in the catalog",
+      "path": "draft_plan.nodes[1].catalog_ref"
+    },
+    {
+      "code": "unresolved_temporal_reference",
+      "message": "no bound output exists for progressive_corridor.candidates",
+      "path": "draft_plan.nodes[2].input"
+    },
+    {
+      "code": "unknown_operator",
+      "message": "operator ball_enters_corridor_destination_region@0.1.0 is not in the catalog",
+      "path": "draft_plan.nodes[2].operator"
+    },
+    {
+      "code": "missing_anchor_source",
+      "message": "draft plan must designate an anchor source",
+      "path": "draft_plan.anchor_source"
+    }
+  ],
+  "mappings": [
+    {
+      "invalid": "active_ball_possession_anchor",
+      "issue_codes": [
+        "unknown_catalog_ref"
+      ],
+      "kind": "registered_catalog_ref",
+      "mapped_to": "possession_segment",
+      "reason": "The registered possession anchor primitive is possession_segment; its anchor output is possession_segment.anchors."
+    },
+    {
+      "invalid": "progressive_corridor_availability",
+      "issue_codes": [
+        "unknown_catalog_ref"
+      ],
+      "kind": "registered_catalog_ref",
+      "mapped_to": "geometric_progressive_corridor_from_anchor_set",
+      "reason": "The agent-authorable relation over possession anchors is geometric_progressive_corridor_from_anchor_set."
+    },
+    {
+      "invalid": "ball_enters_corridor_destination_region",
+      "issue_codes": [
+        "unknown_operator"
+      ],
+      "kind": "registered_measurement_plus_operator",
+      "mapped_to": "relation_destination_entry.entry_status + eq PASS",
+      "reason": "Destination-region entry is a generic measurement node, not a predicate operator."
+    },
+    {
+      "invalid": "progressive_corridor.candidates",
+      "issue_codes": [
+        "unresolved_temporal_reference"
+      ],
+      "kind": "registered_output_names",
+      "mapped_to": "progressive_corridor.episodes for relation_destination_entry and progressive_corridor.anchor_evaluations for exists",
+      "reason": "geometric_progressive_corridor_from_anchor_set exposes episodes and anchor_evaluations, not candidates."
+    },
+    {
+      "invalid": "undeclared invocation threshold parameters",
+      "issue_codes": [
+        "unknown_parameter"
+      ],
+      "kind": "schema_contract",
+      "mapped_to": "declare recipe.parameters and use ParameterRef, or use inline TypedValue in node.parameters",
+      "reason": "default_invocation.parameters may not contain undeclared recipe parameter names."
+    },
+    {
+      "invalid": "missing draft_plan.anchor_source",
+      "issue_codes": [
+        "missing_anchor_source"
+      ],
+      "kind": "schema_contract",
+      "mapped_to": {
+        "output_name": "anchors",
+        "source_node_id": "possession"
+      },
+      "reason": "Generic result emission requires an explicit anchor source."
+    }
+  ],
+  "source_bundle": "delivery/n1d/n1h-origin-bundle.json",
+  "unknown_catalog_refs": [
+    {
+      "code": "unknown_catalog_ref",
+      "message": "primitive active_ball_possession_anchor@0.1.0 is not in the catalog",
+      "path": "draft_plan.nodes[0].catalog_ref"
+    },
+    {
+      "code": "unknown_catalog_ref",
+      "message": "relation progressive_corridor_availability@0.1.0 is not in the catalog",
+      "path": "draft_plan.nodes[1].catalog_ref"
+    }
+  ],
+  "unknown_operators": [
+    {
+      "code": "unknown_operator",
+      "message": "operator ball_enters_corridor_destination_region@0.1.0 is not in the catalog",
+      "path": "draft_plan.nodes[2].operator"
+    }
+  ]
+}

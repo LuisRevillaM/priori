@@ -1,0 +1,23 @@
+5428d9d Implement M1.1S S7R2 agent-safety corrections
+ Makefile                                           |   5 +-
+ .../query-plans/ball_side_block_shift.ir.v1.json   |   2 +-
+ ...osite_corridor_after_shift.experimental.v1.json |   4 +-
+ ...sion_corridor_availability.experimental.v1.json |   2 +-
+ delivery/ledger.jsonl                              |   2 +
+ delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md        |  26 +
+ .../m1.1/reviews/gate-s7r-controller-review.md     |  25 +
+ .../m1.1/reviews/gate-s7r2-controller-review.md    |  30 +
+ delivery/m1.1/status.yaml                          |  14 +-
+ delivery/m1.2/status.yaml                          |   6 +-
+ .../2026-06-20-m1-1s-gate-s7r-relation-coverage.md |  13 +
+ .../2026-06-20-m1-1s-gate-s7r2-agent-safety.md     |  12 +
+ .../2026-06-20-m1-1s-gate-s7-external-review.md    |  22 +
+ .../2026-06-20-m1-1s-gate-s7r-external-review.md   |  19 +
+ generated/capability-catalog.json                  |   2 +-
+ src/tqe/runtime/binder.py                          |  91 ++-
+ src/tqe/runtime/catalog.py                         |  50 +-
+ src/tqe/runtime/executor.py                        | 393 ++++++++++-
+ src/tqe/runtime/relations.py                       |  69 ++
+ src/tqe/verification/m1_1_gate_s4.py               |   2 +-
+ src/tqe/verification/m1_1_gate_s7r.py              | 756 +++++++++++++++++++++
+ 21 files changed, 1502 insertions(+), 43 deletions(-)

@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "audit_id": "workbench_product_audit_v1",
+  "deployed_url": "https://priori-integrated-alpha.onrender.com",
+  "deployed_commit": "25f29a146e475ef573dbf59da1901bec4d9c8253",
+  "overall_verdict": "SENDABLE_AFTER_P0_P1",
+  "criteria": [
+    {
+      "criterion": "default journey is understandable",
+      "score": "PARTIAL",
+      "evidence": "Manual recipe and execution flow works, but primary UI exposes host/API details and duplicate validation/confirmation actions."
+    },
+    {
+      "criterion": "match scope is explicit",
+      "score": "PASS",
+      "evidence": "/api/matches exposes four deployed matches and UI shows perspective team, match count, periods, and possession."
+    },
+    {
+      "criterion": "stale-state contradictions are eliminated",
+      "score": "PARTIAL",
+      "evidence": "Scope transitions clear dependent artifacts, but mode/query/preset changes can leave stale or contradictory interpretation context."
+    },
+    {
+      "criterion": "one natural-language Hermes journey works",
+      "score": "FAIL",
+      "evidence": "Live model-mode /api/interpret returned HTTP 500 for all tested prompts on 2026-06-22."
+    },
+    {
+      "criterion": "one approved recipe works",
+      "score": "PASS",
+      "evidence": "Approved block-shift recipe executed in cloud with 180 total results and cached follow-up."
+    },
+    {
+      "criterion": "one novel experimental composition works",
+      "score": "FAIL",
+      "evidence": "Current deployed compiler does not prove ad hoc composition beyond recipe selection/corridor template; live model mode fails. Binary gate requires a Hermes-authored schema-valid plan structurally different from registered recipes/templates, at least two composable capabilities, temporal or relational logic, no code/prompt change, new plan hash, first-run MISS, and honest real-data execution."
+    },
+    {
+      "criterion": "plan provenance is explicit and truthful",
+      "score": "FAIL",
+      "evidence": "The UI currently maps raw sources to friendly labels but does not expose the required source ontology: REVIEWED_RECIPE, MANUAL_PRESET, HERMES_RECIPE_SELECTION, HERMES_NOVEL_COMPOSITION, DETERMINISTIC_REPAIR, CAPABILITY_GAP."
+    },
+    {
+      "criterion": "ambiguity requests clarification",
+      "score": "PARTIAL",
+      "evidence": "Manual support ambiguity produces clarification; live Hermes mode currently 500."
+    },
+    {
+      "criterion": "unsupported request gives a capability gap",
+      "score": "PARTIAL",
+      "evidence": "Optimality, communication, pressure, video/body orientation work; scanning/body angle can fall through in manual mode."
+    },
+    {
+      "criterion": "cold loading is comprehensible",
+      "score": "PARTIAL",
+      "evidence": "Cache HIT/MISS is honest but cold execution lacks elapsed time, selected-match search context, and cancel."
+    },
+    {
+      "criterion": "cache use is honestly labelled",
+      "score": "PASS",
+      "evidence": "Run State shows HIT/MISS and stage list; API cache keys include scope, params, runtime version, and data hash."
+    },
+    {
+      "criterion": "replay overlays have legends",
+      "score": "FAIL",
+      "evidence": "Overlay proof text exists but no legend or tactical explanation; corridor line lacks open/close interval."
+    },
+    {
+      "criterion": "result context is obvious",
+      "score": "PARTIAL",
+      "evidence": "Match, period, canonical time, and result index are visible; tactical labels and measurements remain implementation-heavy."
+    },
+    {
+      "criterion": "Developer details are hidden by default",
+      "score": "PARTIAL",
+      "evidence": "Raw JSON drawers are hidden, but API badges, busy key, known-timestamp form, evidence aliases, predicate ids, result ids, and replay ids remain visible."
+    },
+    {
+      "criterion": "no console errors occur",
+      "score": "PASS",
+      "evidence": "Headless live page-load check captured no console errors; local Playwright proof also expects no console errors."
+    },
+    {
+      "criterion": "deployed flow is stable",
+      "score": "PARTIAL",
+      "evidence": "Manual approved and experimental flows are stable; Hermes model interpretation endpoint is not stable."
+    }
+  ],
+  "blocking_summary": {
+    "p0": [
+      "Fix live Hermes model interpretation failure and convert invocation errors to MODEL_UNAVAILABLE instead of HTTP 500.",
+      "Prove or honestly remove the novel-composition claim from the emailable product journey.",
+      "Add explicit provenance labels so presets, reviewed recipes, Hermes recipe selection, Hermes novel composition, deterministic repair, and capability gaps cannot be confused.",
+      "Prevent unsupported football-language concepts from silently mapping to the selected preset.",
+      "Make mode/query/preset changes fail closed by clearing stale validation/execution/replay."
+    ],
+    "p1": [
+      "Add replay overlay legend and temporal corridor validity.",
+      "Simplify primary action sequence and move implementation details out of default view.",
+      "Improve cold execution waiting state."
+    ]
+  }
+}

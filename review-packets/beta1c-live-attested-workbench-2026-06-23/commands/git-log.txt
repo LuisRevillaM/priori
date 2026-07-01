@@ -1,0 +1,12 @@
+b4e1028 (HEAD -> codex/integrated-alpha, origin/codex/integrated-alpha) Include N1D attestation artifacts in runtime image
+5ca720b Expose verified attested Hermes hero plan
+fd09735 Route attested Hermes hero through scoped product path
+3caa4b6 Expose attested Hermes novel composition
+54eef2e Verify N1I Hermes-origin novel composition
+7b7bf84 Harden N1I runtime seed and failure export
+437ee70 Repair Hermes AST authoring contract
+9fb1337 Record N1H faithful rerun blocker
+dcbe532 Fix N1 runner artifact root recovery
+aa015fa Record N1G faithful rerun blocker
+649c5d9 Make destination entry agent-authorable
+05aeea0 Document N1B N1F destination-entry reconciliation

@@ -1,0 +1,1692 @@
+commit 9febb97f681fd862b156a62316a90d6cfe75cb0c
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Sat Jun 20 09:55:07 2026 -0500
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Sat Jun 20 09:55:07 2026 -0500
+
+    Implement M1.1S Gate S3R anchor contract
+
+diff --git a/Makefile b/Makefile
+index 8f63055..e7f7b26 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ PYTHON ?= $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python
+ PYTHONPATH := $(CURDIR)/src
+ export PYTHONPATH
+ 
+-.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-verify test
++.PHONY: setup provision-j03woh provision-corpus gate-a-build gate-b-build gate-c-build gate-a-verify gate-b-verify gate-c-verify m1-verify m1-baseline-freeze m1-1-build m1-1-gate-a-verify m1-1-gate-b-verify m1-1-gate-c-verify m1-1-gate-d-verify m1-1-gate-e-verify m1-1-gate-f-verify m1-1-gate-r1-verify m1-1-gate-r2-verify m1-1-gate-r3-verify m1-1-gate-r4-verify m1-1-gate-r5-verify m1-1-gate-s1-verify m1-1-gate-s2-verify m1-1-gate-s3-verify m1-1-gate-s3r-verify m1-1-verify test
+ 
+ setup:
+ 	python3.12 -m venv .venv
+@@ -90,6 +90,9 @@ m1-1-gate-s2-verify:
+ m1-1-gate-s3-verify:
+ 	$(PYTHON) -m tqe.verification.m1_1_gate_s3
+ 
++m1-1-gate-s3r-verify:
++	$(PYTHON) -m tqe.verification.m1_1_gate_s3r
++
+ m1-1-verify:
+ 	$(PYTHON) -m tqe.verification.m1_1
+ 
+diff --git a/config/query-plans/ball_side_block_shift.ir.v1.json b/config/query-plans/ball_side_block_shift.ir.v1.json
+index efbe559..29eaaeb 100644
+--- a/config/query-plans/ball_side_block_shift.ir.v1.json
++++ b/config/query-plans/ball_side_block_shift.ir.v1.json
+@@ -409,10 +409,6 @@
+           "accepted_shift_episodes": {
+             "source_node_id": "shift_persists",
+             "output_name": "predicate"
+-          },
+-          "signed_shift": {
+-            "source_node_id": "signed_shift",
+-            "output_name": "signed_shift"
+           }
+         },
+         "parameters": {
+@@ -520,6 +516,10 @@
+         },
+         "field": "outcome_frame_id"
+       }
+-    ]
++    ],
++    "anchor_source": {
++      "source_node_id": "signed_shift",
++      "output_name": "anchors"
++    }
+   }
+ }
+diff --git a/config/query-plans/opposite_corridor_after_shift.experimental.v1.json b/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
+index dbef39d..678a18e 100644
+--- a/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
++++ b/config/query-plans/opposite_corridor_after_shift.experimental.v1.json
+@@ -481,10 +481,6 @@
+           "accepted_shift_episodes": {
+             "source_node_id": "shift_persists",
+             "output_name": "predicate"
+-          },
+-          "signed_shift": {
+-            "source_node_id": "signed_shift",
+-            "output_name": "signed_shift"
+           }
+         },
+         "parameters": {
+@@ -676,6 +672,10 @@
+         },
+         "field": "destination_entry_frame_id"
+       }
+-    ]
++    ],
++    "anchor_source": {
++      "source_node_id": "signed_shift",
++      "output_name": "anchors"
++    }
+   }
+ }
+diff --git a/delivery/ledger.jsonl b/delivery/ledger.jsonl
+index a2a8029..cf0773c 100644
+--- a/delivery/ledger.jsonl
++++ b/delivery/ledger.jsonl
+@@ -37,3 +37,4 @@
+ {"timestamp":"2026-06-20T04:31:20-05:00","milestone":"M1.1S","slice":"Gate_S1_runtime_value_result_type_hardening","from":"NOT_STARTED","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["src/tqe/runtime/values.py","src/tqe/runtime/executor.py","src/tqe/verification/m1_1_gate_s1.py","artifacts/m1.1/gate-s1-verification-report.json","artifacts/m1.1/gate-r2-verification-report.json","artifacts/m1.1/gate-r3-verification-report.json","artifacts/m1.1/gate-r5-verification-report.json","delivery/m1.1/reviews/gate-s1-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s1-runtime-values.md"],"notes":"Implemented and controller-accepted M1.1S Gate S1. Frame signals now carry frame IDs, values, UNKNOWN mask, unit, and entity scope; Pandas Series no longer drop missing frames; M1-shaped dictionaries are rejected as frame-signal payloads; episode and relation episode outputs have minimum schema checks; and actual runtime values carry declared output provenance. Compatibility side channels remain for later S2-S5 removal, but declared outputs no longer launder M1 result dictionaries. make m1-1-gate-s1-verify passes 8/0/0; regressions pass for R2 4/0/0, R3 9/0/0, R5 10/0/0, make test 26 tests, and git diff --check."}
+ {"timestamp":"2026-06-20T08:27:41-05:00","milestone":"M1.1S","slice":"Gate_S2_node_execution_contract","from":"NOT_STARTED","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["src/tqe/runtime/executor.py","src/tqe/runtime/values.py","src/tqe/verification/m1_1_gate_s2.py","Makefile","artifacts/m1.1/gate-s2-verification-report.json","artifacts/m1.1/gate-s1-verification-report.json","artifacts/m1.1/gate-r2-verification-report.json","artifacts/m1.1/gate-r3-verification-report.json","artifacts/m1.1/gate-r5-verification-report.json","artifacts/m1.1/gate-c-verification-report.json","artifacts/m1.1/gate-d-verification-report.json","artifacts/m1.1/gate-e-verification-report.json","delivery/m1.1/reviews/gate-s2-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s2-node-execution-contract.md"],"notes":"Implemented and controller-accepted M1.1S Gate S2. Downstream nodes now resolve declared RuntimeValue inputs through catalog_input_value, generic predicate operators no longer branch on M1 candidate side channels, predicate facts travel through declared runtime record sidecars, and signed_lateral_shift consumption of defensive_centroid is proven by compatible input substitution. The centroid primitive emits a full-frame FrameSignal to preserve frozen detector semantics under declared input consumption. make m1-1-gate-s2-verify passes 4/0/0; regressions pass for S1 8/0/0, R2 4/0/0, R3 9/0/0, R5 10/0/0, Gate C 10/0/0, Gate D 11/0/0, Gate E 21/0/0, make test 26 tests, and git diff --check. S3 remains required to replace the remaining M1 candidate anchor/target-inspection core with generic anchors and traces."}
+ {"timestamp":"2026-06-20T08:54:11-05:00","milestone":"M1.1S","slice":"Gate_S3_anchor_predicate_trace_core","from":"NOT_STARTED","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["src/tqe/runtime/executor.py","src/tqe/verification/m1_1_gate_s3.py","Makefile","artifacts/m1.1/gate-s3-verification-report.json","artifacts/m1.1/gate-s2-verification-report.json","artifacts/m1.1/gate-c-verification-report.json","artifacts/m1.1/gate-r5-verification-report.json","delivery/m1.1/reviews/gate-s3-controller-review.md","delivery/m1.1/reviews/gate-s3-external-review-prompt.md","docs/learnings/2026-06-20-m1-1s-gate-s3-anchor-core.md"],"notes":"Implemented and controller-accepted M1.1S Gate S3. Added RuntimeAnchor and runtime_anchors so a generic anchor set is produced from declared runtime output records, target evaluation now derives compatible anchors without reading state.candidates, accepted-result predicate traces are reconstructed from anchor/result records, and non-match evaluation emits explicit UNKNOWN traces when downstream source output is unavailable. make m1-1-gate-s3-verify passes 5/0/0; regressions pass for S2 4/0/0, Gate C 10/0/0, R5 10/0/0, make test 26 tests, and git diff --check. This is a meaningful external review checkpoint before S4 rule-driven result emission; a relay-ready external review prompt was added."}
++{"timestamp":"2026-06-20T09:52:59-05:00","milestone":"M1.1S","slice":"Gate_S3R_explicit_anchor_contract_generic_temporal_semantics","from":"BLOCKING_EXTERNAL_REVIEW_REQUIRED_CHANGES_BEFORE_S4","to":"ACCEPTED_CONTROLLER_ONLY","actor":"controller","evidence":["docs/reviews/2026-06-20-m1-1s-gate-s3-external-review.md","delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md","delivery/m1.1/status.yaml","src/tqe/runtime/ir.py","src/tqe/runtime/binder.py","src/tqe/runtime/catalog.py","src/tqe/runtime/executor.py","src/tqe/runtime/values.py","src/tqe/verification/m1_1_gate_s3r.py","src/tqe/verification/m1_1_gate_r5.py","config/query-plans/ball_side_block_shift.ir.v1.json","config/query-plans/opposite_corridor_after_shift.experimental.v1.json","generated/tactical-query-plan.schema.json","generated/tactical-query-plan.types.ts","generated/capability-catalog.json","artifacts/m1.1/gate-s3r-verification-report.json","artifacts/m1.1/gate-s1-verification-report.json","artifacts/m1.1/gate-s2-verification-report.json","artifacts/m1.1/gate-s3-verification-report.json","artifacts/m1.1/parity-report.json","artifacts/m1.1/gate-c-verification-report.json","artifacts/m1.1/gate-r5-verification-report.json","delivery/m1.1/reviews/gate-s3r-controller-review.md","docs/learnings/2026-06-20-m1-1s-gate-s3r-explicit-anchor-contract.md"],"notes":"Integrated external review decision APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4 and implemented S3R. Plans now designate anchor_source; binder requires episode_set<anchor_ref>; signed_lateral_shift and possession_segment emit typed anchor records with semantic IDs; runtime_anchors reads only the designated source and deduplicates; target evaluation supports non-M1 anchors without M1 fields; RuntimeValue.records holds sidecar records outside provenance; frame signal length mismatches fail; persists_for consumes generic tri-state Boolean truth series without shift-specific fields; and node execution returns NodeExecutionResult. make m1-1-gate-s3r-verify passes 9/0/0; regressions pass for S1 8/0/0, S2 4/0/0, S3 5/0/0, Gate B 14/0/0, Gate C 10/0/0, R5 10/0/0, make test 26 tests, and git diff --check. S4 is unblocked from the controller perspective."}
+diff --git a/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md b/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+index 9ec6645..2e462e3 100644
+--- a/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
++++ b/delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md
+@@ -203,6 +203,23 @@ Acceptance:
+ - actual missing data produces UNKNOWN end to end through ordinary execution;
+ - all three unknown policies are tested through actual node execution.
+ 
++### Gate S3R - Explicit Anchor Contract And Generic Temporal Semantics
++
++Acceptance:
++
++- external S3 review is recorded and S4 remains blocked until this gate passes;
++- the plan designates a single anchor source, and runtime anchor discovery does not scan arbitrary record sidecars;
++- anchor records have a rigorous schema with semantic IDs derived from match, period, frame/window, and entities, not node IDs, output names, or list ordering;
++- repeated representations of the same physical anchor deduplicate to one anchor;
++- renaming plan nodes while preserving references leaves anchor IDs unchanged;
++- a non-M1 anchor without `wide_entry_*`, `block_shift_*`, or `shift_gate_*` fields can be targeted and traced;
++- clearing `state.candidates` and `state.accepted` does not change anchor discovery;
++- runtime records are not hidden in provenance metadata;
++- frame-signal frame-ID/value length mismatch is a hard error;
++- `persists_for` consumes tri-state Boolean signals and emits episodes without shift-specific fields;
++- generic anchor/target code contains no `wide_entry_*`, `block_shift_*`, or `shift_gate_*` assumptions;
++- node execution returns an explicit result containing resolved inputs, parameters, outputs, runtime values, warnings, and provenance.
++
+ ### Gate S4 - Rule-Driven Result Emission
+ 
+ Acceptance:
+diff --git a/delivery/m1.1/reviews/gate-s3r-controller-review.md b/delivery/m1.1/reviews/gate-s3r-controller-review.md
+new file mode 100644
+index 0000000..835fe7a
+--- /dev/null
++++ b/delivery/m1.1/reviews/gate-s3r-controller-review.md
+@@ -0,0 +1,50 @@
++# M1.1S Gate S3R Controller Review - Explicit Anchor Contract And Generic Temporal Semantics
++
++Date: 2026-06-20
++
++Decision: ACCEPTED_CONTROLLER_ONLY
++
++## Scope Reviewed
++
++- `src/tqe/runtime/ir.py`
++- `src/tqe/runtime/binder.py`
++- `src/tqe/runtime/catalog.py`
++- `src/tqe/runtime/executor.py`
++- `src/tqe/runtime/values.py`
++- `src/tqe/verification/m1_1_gate_s3r.py`
++- approved and experimental query plans
++- generated schema/catalog artifacts
++
++## Acceptance Evidence
++
++S3R addresses the external review findings before S4:
++
++- plans now designate `anchor_source`;
++- anchor source must bind to `episode_set<anchor_ref>` records;
++- anchors are discovered only from the designated source;
++- anchor IDs are semantic and stable under node rename;
++- duplicate physical anchor records deduplicate;
++- non-M1 anchors without block-shift fields can be targeted and traced;
++- generic target/anchor code no longer carries `wide_entry`, `block_shift`, or `shift_gate` assumptions;
++- runtime records live on `RuntimeValue.records`, not in provenance metadata;
++- frame-signal length mismatch is a hard error;
++- `persists_for` consumes tri-state Boolean truth series and emits generic predicate episodes;
++- node execution returns an explicit `NodeExecutionResult`.
++
++## Verification Run
++
++- `make m1-1-gate-s3r-verify`: pass, 9/0/0
++- `make m1-1-gate-s1-verify`: pass, 8/0/0
++- `make m1-1-gate-s2-verify`: pass, 4/0/0
++- `make m1-1-gate-s3-verify`: pass, 5/0/0
++- `make m1-1-gate-b-verify`: pass, 14/0/0
++- `make m1-1-gate-c-verify`: pass, 10/0/0
++- `make m1-1-gate-r5-verify`: pass, 10/0/0
++- `make test`: pass, 26 tests
++- `git diff --check`: pass
++
++## Controller Notes
++
++This gate intentionally stops before S4. M1-specific primitive/result logic still exists, but generic anchor discovery, target inspection, and temporal persistence are no longer allowed to depend on M1 candidate/result side channels.
++
++Proceeding to S4 is now reasonable from the controller perspective, pending any further external review requested by the owner.
+diff --git a/delivery/m1.1/status.yaml b/delivery/m1.1/status.yaml
+index e133c47..4d21367 100644
+--- a/delivery/m1.1/status.yaml
++++ b/delivery/m1.1/status.yaml
+@@ -31,6 +31,7 @@ slices:
+   S14_m1_1s_runtime_value_result_type_hardening: DONE
+   S15_m1_1s_node_execution_contract: DONE
+   S16_m1_1s_anchor_predicate_trace_core: DONE
++  S16R_m1_1s_explicit_anchor_contract_generic_temporal_semantics: DONE
+   S17_m1_1s_rule_driven_result_emission: NOT_STARTED
+   S18_m1_1s_alias_based_evidence_projection: NOT_STARTED
+   S19_m1_1s_second_real_plan_relation_proof: NOT_STARTED
+@@ -53,14 +54,15 @@ promotion_gates:
+   Gate_S1_runtime_value_result_type_hardening: ACCEPTED_CONTROLLER_ONLY
+   Gate_S2_node_execution_contract: ACCEPTED_CONTROLLER_ONLY
+   Gate_S3_anchor_predicate_trace_core: ACCEPTED_CONTROLLER_ONLY
++  Gate_S3R_explicit_anchor_contract_generic_temporal_semantics: ACCEPTED_CONTROLLER_ONLY
+   Gate_S4_rule_driven_result_emission: NOT_STARTED
+   Gate_S5_alias_based_evidence_projection: NOT_STARTED
+   Gate_S6_second_real_plan_relation_proof: NOT_STARTED
+   Gate_S7_parity_adapter_final_architecture_proof: NOT_STARTED
+ verification:
+-  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_S1_GATE_S2_GATE_S3_PASS
++  automated: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_PASS_BUT_EXTERNAL_REVIEW_REJECTED_ARCHITECTURE_GATE_S1_GATE_S2_GATE_S3_GATE_S3R_PASS
+   planning_review: APPROVED_WITH_REQUIRED_CHANGES_INTEGRATED
+-  independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19_REJECTED_M1_1R_GATE_R5_REVIEW_2026_06_20
+-  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_GATE_S1_GATE_S2_GATE_S3_ACCEPTED_CONTROLLER_ONLY
++  independent_review: REJECTED_IMPLEMENTATION_REVIEW_2026_06_19_REJECTED_M1_1R_GATE_R5_REVIEW_2026_06_20_S3_APPROVED_WITH_REQUIRED_CHANGES_BEFORE_S4_2026_06_20
++  controller_review: GATE_A_GATE_B_GATE_C_GATE_D_GATE_E_GATE_F_ACCEPTED_CONTROLLER_ONLY_GATE_R1_GATE_R2_GATE_R3_GATE_R4_GATE_R5_GATE_S1_GATE_S2_GATE_S3_GATE_S3R_ACCEPTED_CONTROLLER_ONLY
+   owner_acceptance: NOT_STARTED
+   m1_2_blocked_until: M1_1S_EXTERNAL_APPROVAL_OR_REQUIRED_CHANGES_INTEGRATED
+diff --git a/docs/learnings/2026-06-20-m1-1s-gate-s3r-explicit-anchor-contract.md b/docs/learnings/2026-06-20-m1-1s-gate-s3r-explicit-anchor-contract.md
+new file mode 100644
+index 0000000..50e49f5
+--- /dev/null
++++ b/docs/learnings/2026-06-20-m1-1s-gate-s3r-explicit-anchor-contract.md
+@@ -0,0 +1,16 @@
++# M1.1S Gate S3R Learning - Explicit Anchor Sources Beat Sidecar Scanning
++
++Date: 2026-06-20
++
++Fact: Scanning arbitrary runtime record sidecars for `anchor_frame_id` produced duplicated physical anchors and unstable identity.
++
++Decision: Plans now designate a single `anchor_source`, and the binder requires it to be an `episode_set<anchor_ref>` output. Runtime records moved from provenance metadata into `RuntimeValue.records`.
++
++Learning: Generic anchor and trace code should not discover structure opportunistically. It needs an explicit source, a strict record schema, semantic IDs, and tests that synthetic non-M1 anchors work without M1 fields.
++
++Evidence:
++
++- `make m1-1-gate-s3r-verify` passes and writes `artifacts/m1.1/gate-s3r-verification-report.json`.
++- The verifier proves node rename stability, deduplication, non-M1 target/trace support, side-channel independence, generic tri-state persistence, frame-length mismatch rejection, and parity preservation.
++
++Follow-up: S4 can now focus on rule-driven result emission without having to reopen anchor identity or generic temporal semantics first.
+diff --git a/docs/reviews/2026-06-20-m1-1s-gate-s3-external-review.md b/docs/reviews/2026-06-20-m1-1s-gate-s3-external-review.md
+new file mode 100644
+index 0000000..f1ae42f
+--- /dev/null
++++ b/docs/reviews/2026-06-20-m1-1s-gate-s3-external-review.md
+@@ -0,0 +1,34 @@
++# M1.1S Gate S3 External Review
++
++Date: 2026-06-20
++
++Decision: APPROVE_WITH_REQUIRED_CHANGES_BEFORE_S4
++
++## Blocking Findings Accepted By Controller
++
++1. Anchors were inferred from arbitrary record sidecars instead of a designated anchor domain.
++2. Anchor IDs included node/output identity and ordering-sensitive fields.
++3. Generic target and trace paths still assumed M1-shaped fields.
++4. `persists_for` still contained block-shift-specific temporal semantics.
++5. Node execution did not yet expose an explicit execution-result contract.
++6. Frame-signal length mismatch could silently fall back to synthetic frame IDs.
++
++## Required Corrective Gate
++
++Create S3R: Explicit Anchor Contract and Generic Temporal Semantics.
++
++Required before S4:
++
++- plan-designated anchor source;
++- semantic anchor IDs stable under node renaming;
++- deduplication of repeated physical anchors;
++- non-M1 anchors targetable and traceable;
++- anchor discovery independent of `state.candidates` and `state.accepted`;
++- generic `persists_for` over tri-state Boolean signals only;
++- no mandatory `wide_entry_*`, `block_shift_*`, or `shift_gate_*` assumptions in generic anchor/trace code;
++- hard failure on frame-ID/value length mismatch;
++- explicit node execution result contract.
++
++## Controller Response
++
++Accepted. S4 remains blocked until S3R passes.
+diff --git a/generated/capability-catalog.json b/generated/capability-catalog.json
+index 12640ea..dab0bb6 100644
+--- a/generated/capability-catalog.json
++++ b/generated/capability-catalog.json
+@@ -1 +1 @@
+-{"default_complexity_limits":{"max_execution_cost":100000,"max_nesting_depth":8,"max_plan_nodes":40,"max_relations_per_anchor":1000,"max_returned_moments":100,"max_temporal_horizon_seconds":15.0},"operators":[{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gt","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a strict lower numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"lte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to an upper numeric threshold.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"eq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to an equal typed value.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"neq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to a non-equal typed value.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":true,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean"],"input_temporal_types":["frame_signal"],"limitations":["UNKNOWN remains UNKNOWN; absence is not converted to FALSE."],"name":"persists_for","output_cardinality":"collection","output_payload_type":"boolean","output_temporal_type":"episode_set","output_unit":"none","purpose":"Promote a boolean frame signal to intervals after minimum duration.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["boolean","relation_ref"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"exists","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Test whether an episode or relation collection contains any episode.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["entity_set","relation_ref","boolean"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"count_at_least","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Count a collection and compare to a count threshold.","version":"1.0.0"}],"primitives":[{"evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"executable":true,"inputs":[],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"possession_segment","outputs":[{"cardinality":"collection","entity_scope":"possession","evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"boolean","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Identify active-ball possession intervals for the perspective team.","version":"0.1.0"},{"evidence_fields":["wide_entry_y_m","ball_side"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Depends on canonical pitch coordinates and known pitch width."],"missing_data_semantics":"unknown","name":"ball_lateral_fraction","outputs":[{"cardinality":"single","entity_scope":"ball","evidence_fields":["wide_entry_y_m","ball_side"],"missing_data_semantics":"unknown","name":"fraction","payload_type":"number","temporal_type":"frame_signal","unit":"fraction"}],"parameters":[],"purpose":"Normalize ball distance from pitch centerline toward either touchline.","version":"0.1.0"},{"evidence_fields":["baseline_defensive_centroid_y_m","defending_team_id"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Goalkeepers are excluded from the outfield centroid."],"missing_data_semantics":"unknown","name":"defensive_outfield_centroid","outputs":[{"cardinality":"per_team","entity_scope":"team","evidence_fields":["baseline_defensive_centroid_y_m"],"missing_data_semantics":"unknown","name":"centroid_y","payload_type":"number","temporal_type":"frame_signal","unit":"metre"}],"parameters":[],"purpose":"Measure defending outfield team centroid without goalkeeper bias.","version":"0.1.0"},{"evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"possession","name":"possession_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"ball","name":"entry_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"per_team","entity_scope":"team","name":"defensive_centroid","payload_type":"number","required":true,"temporal_type":"frame_signal","unit":"metre"}],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"signed_lateral_shift","outputs":[{"cardinality":"single","entity_scope":"team","evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"missing_data_semantics":"unknown","name":"signed_shift","payload_type":"number","temporal_type":"frame_signal","unit":"metre"}],"parameters":[],"purpose":"Measure defensive centroid movement toward the ball side.","version":"0.1.0"},{"evidence_fields":["classification","outcome_frame_id"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"team","name":"accepted_shift_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"single","entity_scope":"team","name":"signed_shift","payload_type":"number","required":true,"temporal_type":"frame_signal","unit":"metre"}],"kind":"primitive","limitations":["Does not infer intent, optimality, or missed opportunity."],"missing_data_semantics":"unknown","name":"outcome_classification","outputs":[{"cardinality":"single","entity_scope":"possession","evidence_fields":["classification","outcome_frame_id"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Outcome lookahead horizon in seconds.","maximum":30.0,"minimum":0.2,"name":"horizon","payload_type":"number","required":true,"unit":"second"}],"purpose":"Classify the post-anchor outcome under the frozen M1 predicates.","version":"0.1.0"},{"evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"relation","name":"relation_episodes","payload_type":"relation_ref","required":true,"temporal_type":"relation_episode_set","unit":"none"}],"kind":"primitive","limitations":["Requires an upstream relation episode set.","No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."],"missing_data_semantics":"unknown","name":"relation_destination_entry_classification","outputs":[{"cardinality":"single","entity_scope":"relation","evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Lookahead horizon for destination lane entry.","maximum":30.0,"minimum":0.2,"name":"destination_entry_horizon_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Seed used to derive deterministic experimental result IDs.","name":"result_id_seed","payload_type":"enum","required":true,"unit":"none"},{"allowed_values":["first_by_duration_clearance"],"description":"Deterministic selection strategy when an anchor has multiple relation episodes.","name":"episode_selection","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Classify whether the ball later enters the destination region of a previously evaluated relation episode.","version":"0.1.0"}],"relations":[{"evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"executable":true,"inputs":[{"cardinality":"single","entity_scope":"possession","name":"anchors","payload_type":"enum","required":true,"temporal_type":"frame_signal","unit":"none"}],"kind":"relation","limitations":["No pass probability.","No optimality or decision-quality claim.","No receiver body-orientation model.","No offside model in V1 acceptance."],"missing_data_semantics":"unknown","name":"geometric_progressive_corridor","outputs":[{"cardinality":"collection","entity_scope":"relation","evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"relation_ref","temporal_type":"relation_episode_set","unit":"none"}],"parameters":[{"description":"Maximum relation search window after the anchor.","maximum":15.0,"minimum":0.2,"name":"max_window_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Minimum forward progression from source to target.","maximum":80.0,"minimum":0.0,"name":"minimum_progression_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum source-target segment length.","maximum":80.0,"minimum":0.0,"name":"minimum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Maximum source-target segment length.","maximum":100.0,"minimum":0.0,"name":"maximum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum defender clearance from the source-target segment.","maximum":40.0,"minimum":0.0,"name":"minimum_clearance_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Frames required before a corridor is considered open.","maximum":100.0,"minimum":1.0,"name":"open_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Frames required before a corridor is considered closed.","maximum":100.0,"minimum":1.0,"name":"close_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Minimum open duration retained in the relation output.","maximum":15.0,"minimum":0.0,"name":"minimum_duration_seconds","payload_type":"number","required":true,"unit":"second"},{"allowed_values":["any","same_ball_side","opposite_ball_side"],"description":"Retain corridors by relation destination side relative to the ball side.","name":"side_filter","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Represent a geometrically clear forward connection from the ball location to an attacking teammate over an interval.","version":"0.1.0"}],"schema_version":"1.0"}
++{"default_complexity_limits":{"max_execution_cost":100000,"max_nesting_depth":8,"max_plan_nodes":40,"max_relations_per_anchor":1000,"max_returned_moments":100,"max_temporal_horizon_seconds":15.0},"operators":[{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gt","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a strict lower numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"gte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to a numeric threshold.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["number"],"input_temporal_types":["scalar","frame_signal"],"limitations":[],"name":"lte","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a numeric signal to an upper numeric threshold.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"eq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to an equal typed value.","version":"1.0.0"},{"compare_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"compare_required":true,"compare_unit_must_match":true,"duration_required":false,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean","number","enum","entity_ref","team_ref","region_ref"],"input_temporal_types":["scalar","frame_signal","episode_set"],"limitations":[],"name":"neq","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Compare a signal to a non-equal typed value.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":true,"input_cardinalities":["single","per_player","per_team"],"input_payload_types":["boolean"],"input_temporal_types":["frame_signal"],"limitations":["UNKNOWN remains UNKNOWN; absence is not converted to FALSE."],"name":"persists_for","output_cardinality":"collection","output_payload_type":"boolean","output_temporal_type":"episode_set","output_unit":"none","purpose":"Promote a boolean frame signal to intervals after minimum duration.","version":"1.0.0"},{"compare_payload_types":[],"compare_required":false,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["boolean","relation_ref"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"exists","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Test whether an episode or relation collection contains any episode.","version":"1.0.0"},{"compare_payload_types":["number"],"compare_required":true,"compare_unit_must_match":false,"duration_required":false,"input_cardinalities":["collection"],"input_payload_types":["entity_set","relation_ref","boolean"],"input_temporal_types":["episode_set","relation_episode_set"],"limitations":[],"name":"count_at_least","output_cardinality":"single","output_payload_type":"boolean","output_temporal_type":"frame_signal","output_unit":"none","purpose":"Count a collection and compare to a count threshold.","version":"1.0.0"}],"primitives":[{"evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"executable":true,"inputs":[],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"possession_segment","outputs":[{"cardinality":"collection","entity_scope":"possession","evidence_fields":["possession_start_frame_id","possession_end_frame_id","possession_duration_seconds"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"boolean","temporal_type":"episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","start_frame_id","end_frame_id"],"missing_data_semantics":"unknown","name":"anchors","payload_type":"anchor_ref","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Identify active-ball possession intervals for the perspective team.","version":"0.1.0"},{"evidence_fields":["wide_entry_y_m","ball_side"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Depends on canonical pitch coordinates and known pitch width."],"missing_data_semantics":"unknown","name":"ball_lateral_fraction","outputs":[{"cardinality":"single","entity_scope":"ball","evidence_fields":["wide_entry_y_m","ball_side"],"missing_data_semantics":"unknown","name":"fraction","payload_type":"number","temporal_type":"frame_signal","unit":"fraction"}],"parameters":[],"purpose":"Normalize ball distance from pitch centerline toward either touchline.","version":"0.1.0"},{"evidence_fields":["baseline_defensive_centroid_y_m","defending_team_id"],"executable":true,"inputs":[],"kind":"primitive","limitations":["Goalkeepers are excluded from the outfield centroid."],"missing_data_semantics":"unknown","name":"defensive_outfield_centroid","outputs":[{"cardinality":"per_team","entity_scope":"team","evidence_fields":["baseline_defensive_centroid_y_m"],"missing_data_semantics":"unknown","name":"centroid_y","payload_type":"number","temporal_type":"frame_signal","unit":"metre"}],"parameters":[],"purpose":"Measure defending outfield team centroid without goalkeeper bias.","version":"0.1.0"},{"evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"possession","name":"possession_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"collection","entity_scope":"ball","name":"entry_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"},{"cardinality":"per_team","entity_scope":"team","name":"defensive_centroid","payload_type":"number","required":true,"temporal_type":"frame_signal","unit":"metre"}],"kind":"primitive","limitations":[],"missing_data_semantics":"unknown","name":"signed_lateral_shift","outputs":[{"cardinality":"single","entity_scope":"team","evidence_fields":["baseline_start_frame_id","baseline_end_frame_id","anchor_frame_id","signed_shift_metres","block_shift_score"],"missing_data_semantics":"unknown","name":"signed_shift","payload_type":"number","temporal_type":"frame_signal","unit":"metre"},{"cardinality":"collection","entity_scope":"anchor","evidence_fields":["anchor_id","anchor_frame_id","start_frame_id","end_frame_id"],"missing_data_semantics":"unknown","name":"anchors","payload_type":"anchor_ref","temporal_type":"episode_set","unit":"none"}],"parameters":[],"purpose":"Measure defensive centroid movement toward the ball side.","version":"0.1.0"},{"evidence_fields":["classification","outcome_frame_id"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"team","name":"accepted_shift_episodes","payload_type":"boolean","required":true,"temporal_type":"episode_set","unit":"none"}],"kind":"primitive","limitations":["Does not infer intent, optimality, or missed opportunity."],"missing_data_semantics":"unknown","name":"outcome_classification","outputs":[{"cardinality":"single","entity_scope":"possession","evidence_fields":["classification","outcome_frame_id"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Outcome lookahead horizon in seconds.","maximum":30.0,"minimum":0.2,"name":"horizon","payload_type":"number","required":true,"unit":"second"}],"purpose":"Classify the post-anchor outcome under the frozen M1 predicates.","version":"0.1.0"},{"evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"executable":true,"inputs":[{"cardinality":"collection","entity_scope":"relation","name":"relation_episodes","payload_type":"relation_ref","required":true,"temporal_type":"relation_episode_set","unit":"none"}],"kind":"primitive","limitations":["Requires an upstream relation episode set.","No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."],"missing_data_semantics":"unknown","name":"relation_destination_entry_classification","outputs":[{"cardinality":"single","entity_scope":"relation","evidence_fields":["classification","base_result_id","relation_id","destination_entry_frame_id","destination_region","destination_region_type","destination_region_bounds","destination_side","destination_lane"],"missing_data_semantics":"unknown","name":"classification","payload_type":"enum","temporal_type":"frame_signal","unit":"none"}],"parameters":[{"description":"Lookahead horizon for destination lane entry.","maximum":30.0,"minimum":0.2,"name":"destination_entry_horizon_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Seed used to derive deterministic experimental result IDs.","name":"result_id_seed","payload_type":"enum","required":true,"unit":"none"},{"allowed_values":["first_by_duration_clearance"],"description":"Deterministic selection strategy when an anchor has multiple relation episodes.","name":"episode_selection","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Classify whether the ball later enters the destination region of a previously evaluated relation episode.","version":"0.1.0"}],"relations":[{"evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"executable":true,"inputs":[{"cardinality":"single","entity_scope":"possession","name":"anchors","payload_type":"enum","required":true,"temporal_type":"frame_signal","unit":"none"}],"kind":"relation","limitations":["No pass probability.","No optimality or decision-quality claim.","No receiver body-orientation model.","No offside model in V1 acceptance."],"missing_data_semantics":"unknown","name":"geometric_progressive_corridor","outputs":[{"cardinality":"collection","entity_scope":"relation","evidence_fields":["relation_id","open_frame_id","open_confirm_frame_id","close_frame_id","duration_seconds","target_player_id","destination_side","destination_region","destination_region_type","destination_region_bounds","destination_lane","minimum_clearance_m","limiting_defender_id","source_open_point","target_open_point","source_close_point","target_close_point"],"missing_data_semantics":"unknown","name":"episodes","payload_type":"relation_ref","temporal_type":"relation_episode_set","unit":"none"}],"parameters":[{"description":"Maximum relation search window after the anchor.","maximum":15.0,"minimum":0.2,"name":"max_window_seconds","payload_type":"number","required":true,"unit":"second"},{"description":"Minimum forward progression from source to target.","maximum":80.0,"minimum":0.0,"name":"minimum_progression_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum source-target segment length.","maximum":80.0,"minimum":0.0,"name":"minimum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Maximum source-target segment length.","maximum":100.0,"minimum":0.0,"name":"maximum_segment_length_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Minimum defender clearance from the source-target segment.","maximum":40.0,"minimum":0.0,"name":"minimum_clearance_m","payload_type":"number","required":true,"unit":"metre"},{"description":"Frames required before a corridor is considered open.","maximum":100.0,"minimum":1.0,"name":"open_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Frames required before a corridor is considered closed.","maximum":100.0,"minimum":1.0,"name":"close_after_frames","payload_type":"number","required":true,"unit":"count"},{"description":"Minimum open duration retained in the relation output.","maximum":15.0,"minimum":0.0,"name":"minimum_duration_seconds","payload_type":"number","required":true,"unit":"second"},{"allowed_values":["any","same_ball_side","opposite_ball_side"],"description":"Retain corridors by relation destination side relative to the ball side.","name":"side_filter","payload_type":"enum","required":true,"unit":"none"}],"purpose":"Represent a geometrically clear forward connection from the ball location to an attacking teammate over an interval.","version":"0.1.0"}],"schema_version":"1.0"}
+diff --git a/generated/tactical-query-plan.schema.json b/generated/tactical-query-plan.schema.json
+index aa90240..ede6188 100644
+--- a/generated/tactical-query-plan.schema.json
++++ b/generated/tactical-query-plan.schema.json
+@@ -1 +1 @@
+-{"$defs":{"BoundCatalogNode":{"additionalProperties":false,"properties":{"catalog_ref":{"title":"Catalog Ref","type":"string"},"input_types":{"additionalProperties":{"$ref":"#/$defs/CatalogOutput"},"title":"Input Types","type":"object"},"inputs":{"additionalProperties":{"$ref":"#/$defs/SignalRef"},"title":"Inputs","type":"object"},"kind":{"enum":["primitive","relation"],"title":"Kind","type":"string"},"node_id":{"title":"Node Id","type":"string"},"outputs":{"items":{"$ref":"#/$defs/CatalogOutput"},"title":"Outputs","type":"array"},"resolved_parameters":{"additionalProperties":{"$ref":"#/$defs/TypedValue"},"title":"Resolved Parameters","type":"object"},"version":{"title":"Version","type":"string"}},"required":["kind","node_id","catalog_ref","version","outputs"],"title":"BoundCatalogNode","type":"object"},"BoundPredicateNode":{"additionalProperties":false,"properties":{"compare":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"type":"null"}],"default":null},"duration":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"type":"null"}],"default":null},"input":{"$ref":"#/$defs/SignalRef"},"input_type":{"$ref":"#/$defs/CatalogOutput"},"kind":{"const":"predicate","default":"predicate","title":"Kind","type":"string"},"node_id":{"title":"Node Id","type":"string"},"operator":{"$ref":"#/$defs/OperatorRef"},"operator_signature":{"$ref":"#/$defs/OperatorSignature"},"output":{"$ref":"#/$defs/CatalogOutput"}},"required":["node_id","input","input_type","operator","operator_signature","output"],"title":"BoundPredicateNode","type":"object"},"BoundQueryPlan":{"additionalProperties":false,"properties":{"bound_plan_hash":{"title":"Bound Plan Hash","type":"string"},"classification_mode":{"$ref":"#/$defs/ClassificationMode"},"classification_rules":{"items":{"$ref":"#/$defs/ClassificationRule"},"title":"Classification Rules","type":"array"},"complexity_limits":{"$ref":"#/$defs/ComplexityLimits"},"execution_mode":{"$ref":"#/$defs/ExecutionMode"},"invocation_id":{"title":"Invocation Id","type":"string"},"match_ids":{"items":{"type":"string"},"title":"Match Ids","type":"array"},"max_results":{"title":"Max Results","type":"integer"},"nodes":{"items":{"discriminator":{"mapping":{"predicate":"#/$defs/BoundPredicateNode","primitive":"#/$defs/BoundCatalogNode","relation":"#/$defs/BoundCatalogNode"},"propertyName":"kind"},"oneOf":[{"$ref":"#/$defs/BoundCatalogNode"},{"$ref":"#/$defs/BoundPredicateNode"}]},"title":"Nodes","type":"array"},"periods":{"items":{"enum":["firstHalf","secondHalf"],"type":"string"},"title":"Periods","type":"array"},"perspective_team_role":{"enum":["home","away"],"title":"Perspective Team Role","type":"string"},"plan_hash":{"title":"Plan Hash","type":"string"},"plan_id":{"title":"Plan Id","type":"string"},"plan_status":{"$ref":"#/$defs/PlanStatus"},"plan_version":{"title":"Plan Version","type":"string"},"recipe_id":{"title":"Recipe Id","type":"string"},"recipe_version":{"title":"Recipe Version","type":"string"},"requested_evidence":{"items":{"$ref":"#/$defs/EvidenceRequest"},"title":"Requested Evidence","type":"array"},"resolved_parameters":{"items":{"$ref":"#/$defs/ResolvedParameter"},"title":"Resolved Parameters","type":"array"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"},"unknown_evidence_policy":{"$ref":"#/$defs/UnknownEvidencePolicy"}},"required":["plan_id","plan_version","plan_status","recipe_id","recipe_version","invocation_id","match_ids","periods","perspective_team_role","max_results","execution_mode","unknown_evidence_policy","classification_mode","classification_rules","requested_evidence","complexity_limits","resolved_parameters","nodes","plan_hash","bound_plan_hash"],"title":"BoundQueryPlan","type":"object"},"Cardinality":{"enum":["single","per_player","per_team","collection"],"title":"Cardinality","type":"string"},"CatalogOutput":{"additionalProperties":false,"properties":{"cardinality":{"$ref":"#/$defs/Cardinality"},"entity_scope":{"$ref":"#/$defs/EntityScope","default":"none"},"evidence_fields":{"items":{"type":"string"},"title":"Evidence Fields","type":"array"},"missing_data_semantics":{"$ref":"#/$defs/MissingDataSemantics"},"name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Name","type":"string"},"payload_type":{"$ref":"#/$defs/PayloadType"},"temporal_type":{"$ref":"#/$defs/TemporalContainer"},"unit":{"$ref":"#/$defs/Unit","default":"none"}},"required":["name","temporal_type","payload_type","cardinality","missing_data_semantics"],"title":"CatalogOutput","type":"object"},"ClassificationMode":{"enum":["exhaustive","partial_declared"],"title":"ClassificationMode","type":"string"},"ClassificationRule":{"additionalProperties":false,"properties":{"description":{"title":"Description","type":"string"},"label":{"pattern":"^[A-Z][A-Z0-9_]*$","title":"Label","type":"string"},"predicate_ids":{"items":{"type":"string"},"minItems":1,"title":"Predicate Ids","type":"array"}},"required":["label","predicate_ids","description"],"title":"ClassificationRule","type":"object"},"ComplexityLimits":{"additionalProperties":false,"properties":{"max_execution_cost":{"default":100000,"minimum":1,"title":"Max Execution Cost","type":"integer"},"max_nesting_depth":{"default":8,"minimum":1,"title":"Max Nesting Depth","type":"integer"},"max_plan_nodes":{"default":40,"minimum":1,"title":"Max Plan Nodes","type":"integer"},"max_relations_per_anchor":{"default":1000,"minimum":1,"title":"Max Relations Per Anchor","type":"integer"},"max_returned_moments":{"default":100,"minimum":1,"title":"Max Returned Moments","type":"integer"},"max_temporal_horizon_seconds":{"default":15.0,"exclusiveMinimum":0,"title":"Max Temporal Horizon Seconds","type":"number"}},"title":"ComplexityLimits","type":"object"},"DraftCatalogNode":{"additionalProperties":false,"properties":{"catalog_ref":{"pattern":"^[a-z][a-z0-9_]*$","title":"Catalog Ref","type":"string"},"inputs":{"additionalProperties":{"$ref":"#/$defs/SignalRef"},"title":"Inputs","type":"object"},"kind":{"enum":["primitive","relation"],"title":"Kind","type":"string"},"node_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Node Id","type":"string"},"parameters":{"additionalProperties":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"$ref":"#/$defs/ParameterRef"}]},"title":"Parameters","type":"object"},"version":{"title":"Version","type":"string"}},"required":["kind","node_id","catalog_ref","version"],"title":"DraftCatalogNode","type":"object"},"DraftPredicateNode":{"additionalProperties":false,"properties":{"compare":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"$ref":"#/$defs/ParameterRef"},{"type":"null"}],"default":null,"title":"Compare"},"duration":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"$ref":"#/$defs/ParameterRef"},{"type":"null"}],"default":null,"title":"Duration"},"input":{"$ref":"#/$defs/SignalRef"},"kind":{"const":"predicate","default":"predicate","title":"Kind","type":"string"},"node_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Node Id","type":"string"},"operator":{"$ref":"#/$defs/OperatorRef"},"required_cardinality":{"anyOf":[{"$ref":"#/$defs/Cardinality"},{"type":"null"}],"default":null},"required_entity_scope":{"anyOf":[{"$ref":"#/$defs/EntityScope"},{"type":"null"}],"default":null}},"required":["node_id","input","operator"],"title":"DraftPredicateNode","type":"object"},"DraftQueryPlan":{"additionalProperties":false,"properties":{"classification_mode":{"$ref":"#/$defs/ClassificationMode"},"classification_rules":{"items":{"$ref":"#/$defs/ClassificationRule"},"minItems":1,"title":"Classification Rules","type":"array"},"complexity_limits":{"$ref":"#/$defs/ComplexityLimits"},"nodes":{"items":{"discriminator":{"mapping":{"predicate":"#/$defs/DraftPredicateNode","primitive":"#/$defs/DraftCatalogNode","relation":"#/$defs/DraftCatalogNode"},"propertyName":"kind"},"oneOf":[{"$ref":"#/$defs/DraftCatalogNode"},{"$ref":"#/$defs/DraftPredicateNode"}]},"minItems":1,"title":"Nodes","type":"array"},"plan_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Plan Id","type":"string"},"plan_version":{"title":"Plan Version","type":"string"},"recipe_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Recipe Id","type":"string"},"recipe_version":{"title":"Recipe Version","type":"string"},"requested_evidence":{"items":{"$ref":"#/$defs/EvidenceRequest"},"title":"Requested Evidence","type":"array"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"},"status":{"$ref":"#/$defs/PlanStatus"},"unknown_evidence_policy":{"$ref":"#/$defs/UnknownEvidencePolicy"}},"required":["plan_id","plan_version","recipe_id","recipe_version","status","unknown_evidence_policy","classification_mode","nodes","classification_rules"],"title":"DraftQueryPlan","type":"object"},"EntityScope":{"enum":["none","ball","player","team","match","possession","frame","relation"],"title":"EntityScope","type":"string"},"EvaluationTarget":{"additionalProperties":false,"properties":{"approximate_time_ms":{"minimum":0,"title":"Approximate Time Ms","type":"integer"},"match_id":{"title":"Match Id","type":"string"},"period":{"enum":["firstHalf","secondHalf"],"title":"Period","type":"string"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"},"search_radius_ms":{"exclusiveMinimum":0,"title":"Search Radius Ms","type":"integer"},"target_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Target Id","type":"string"}},"required":["target_id","match_id","period","approximate_time_ms","search_radius_ms"],"title":"EvaluationTarget","type":"object"},"EvidenceRequest":{"additionalProperties":false,"properties":{"field":{"pattern":"^[a-z][a-z0-9_]*$","title":"Field","type":"string"},"source":{"$ref":"#/$defs/SignalRef"}},"required":["source","field"],"title":"EvidenceRequest","type":"object"},"ExecutionMode":{"enum":["bind_only","dry_run","execute"],"title":"ExecutionMode","type":"string"},"ExecutionStatus":{"enum":["not_started","pass","fail","incomplete"],"title":"ExecutionStatus","type":"string"},"MissingDataSemantics":{"enum":["unknown","quality_fail","not_applicable"],"title":"MissingDataSemantics","type":"string"},"OperatorRef":{"additionalProperties":false,"properties":{"name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Name","type":"string"},"version":{"title":"Version","type":"string"}},"required":["name","version"],"title":"OperatorRef","type":"object"},"OperatorSignature":{"additionalProperties":false,"properties":{"compare_payload_types":{"items":{"$ref":"#/$defs/PayloadType"},"title":"Compare Payload Types","type":"array"},"compare_required":{"default":false,"title":"Compare Required","type":"boolean"},"compare_unit_must_match":{"default":false,"title":"Compare Unit Must Match","type":"boolean"},"duration_required":{"default":false,"title":"Duration Required","type":"boolean"},"input_cardinalities":{"items":{"$ref":"#/$defs/Cardinality"},"minItems":1,"title":"Input Cardinalities","type":"array"},"input_payload_types":{"items":{"$ref":"#/$defs/PayloadType"},"minItems":1,"title":"Input Payload Types","type":"array"},"input_temporal_types":{"items":{"$ref":"#/$defs/TemporalContainer"},"minItems":1,"title":"Input Temporal Types","type":"array"},"limitations":{"items":{"type":"string"},"title":"Limitations","type":"array"},"name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Name","type":"string"},"output_cardinality":{"$ref":"#/$defs/Cardinality"},"output_payload_type":{"$ref":"#/$defs/PayloadType"},"output_temporal_type":{"$ref":"#/$defs/TemporalContainer"},"output_unit":{"$ref":"#/$defs/Unit","default":"none"},"purpose":{"title":"Purpose","type":"string"},"version":{"title":"Version","type":"string"}},"required":["name","version","purpose","input_temporal_types","input_payload_types","input_cardinalities","output_temporal_type","output_payload_type","output_cardinality"],"title":"OperatorSignature","type":"object"},"ParameterDefinition":{"additionalProperties":false,"properties":{"allowed_values":{"anyOf":[{"items":{"type":"string"},"type":"array"},{"type":"null"}],"default":null,"title":"Allowed Values"},"default":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"type":"null"}],"default":null},"description":{"title":"Description","type":"string"},"maximum":{"anyOf":[{"type":"number"},{"type":"null"}],"default":null,"title":"Maximum"},"minimum":{"anyOf":[{"type":"number"},{"type":"null"}],"default":null,"title":"Minimum"},"name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Name","type":"string"},"payload_type":{"$ref":"#/$defs/PayloadType"},"required":{"default":false,"title":"Required","type":"boolean"},"unit":{"$ref":"#/$defs/Unit","default":"none"}},"required":["name","payload_type","description"],"title":"ParameterDefinition","type":"object"},"ParameterRef":{"additionalProperties":false,"properties":{"kind":{"const":"parameter","default":"parameter","title":"Kind","type":"string"},"name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Name","type":"string"}},"required":["name"],"title":"ParameterRef","type":"object"},"PayloadType":{"enum":["boolean","number","enum","entity_ref","team_ref","region_ref","point","entity_set","relation_ref"],"title":"PayloadType","type":"string"},"PlanStatus":{"enum":["approved","experimental"],"title":"PlanStatus","type":"string"},"PredicateTrace":{"additionalProperties":false,"properties":{"frame_id":{"anyOf":[{"type":"integer"},{"type":"null"}],"default":null,"title":"Frame Id"},"predicate_id":{"title":"Predicate Id","type":"string"},"source_evidence":{"additionalProperties":true,"title":"Source Evidence","type":"object"},"status":{"enum":["PASS","FAIL","UNKNOWN"],"title":"Status","type":"string"},"threshold":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"type":"null"}],"default":null},"unit":{"$ref":"#/$defs/Unit","default":"none"},"value":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"type":"null"}],"default":null},"window":{"anyOf":[{"additionalProperties":true,"type":"object"},{"type":"null"}],"default":null,"title":"Window"}},"required":["predicate_id","status"],"title":"PredicateTrace","type":"object"},"QueryExecution":{"additionalProperties":false,"properties":{"bound_plan_hash":{"title":"Bound Plan Hash","type":"string"},"execution_id":{"title":"Execution Id","type":"string"},"plan_hash":{"title":"Plan Hash","type":"string"},"predicate_traces":{"items":{"$ref":"#/$defs/PredicateTrace"},"title":"Predicate Traces","type":"array"},"provenance":{"additionalProperties":true,"title":"Provenance","type":"object"},"results":{"items":{"$ref":"#/$defs/QueryResult"},"title":"Results","type":"array"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"},"status":{"$ref":"#/$defs/ExecutionStatus"},"timing_ms":{"additionalProperties":true,"title":"Timing Ms","type":"object"}},"required":["execution_id","status","plan_hash","bound_plan_hash"],"title":"QueryExecution","type":"object"},"QueryInvocation":{"additionalProperties":false,"properties":{"execution_mode":{"$ref":"#/$defs/ExecutionMode","default":"bind_only"},"invocation_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Invocation Id","type":"string"},"match_ids":{"items":{"type":"string"},"minItems":1,"title":"Match Ids","type":"array"},"max_results":{"maximum":500,"minimum":1,"title":"Max Results","type":"integer"},"parameters":{"additionalProperties":{"$ref":"#/$defs/TypedValue"},"title":"Parameters","type":"object"},"periods":{"items":{"enum":["firstHalf","secondHalf"],"type":"string"},"minItems":1,"title":"Periods","type":"array"},"perspective_team_role":{"enum":["home","away"],"title":"Perspective Team Role","type":"string"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"}},"required":["invocation_id","match_ids","periods","perspective_team_role","max_results"],"title":"QueryInvocation","type":"object"},"QueryResult":{"additionalProperties":false,"properties":{"anchor_frame_id":{"title":"Anchor Frame Id","type":"integer"},"classification":{"title":"Classification","type":"string"},"evidence":{"additionalProperties":true,"title":"Evidence","type":"object"},"match_id":{"title":"Match Id","type":"string"},"period":{"enum":["firstHalf","secondHalf"],"title":"Period","type":"string"},"result_id":{"title":"Result Id","type":"string"}},"required":["result_id","classification","match_id","period","anchor_frame_id"],"title":"QueryResult","type":"object"},"RecipeDefinition":{"additionalProperties":false,"properties":{"allowed_claims":{"items":{"type":"string"},"title":"Allowed Claims","type":"array"},"default_unknown_evidence_policy":{"$ref":"#/$defs/UnknownEvidencePolicy"},"description":{"title":"Description","type":"string"},"disallowed_claims":{"items":{"type":"string"},"title":"Disallowed Claims","type":"array"},"display_name":{"title":"Display Name","type":"string"},"limitations":{"items":{"type":"string"},"title":"Limitations","type":"array"},"output_classifications":{"items":{"type":"string"},"minItems":1,"title":"Output Classifications","type":"array"},"parameters":{"items":{"$ref":"#/$defs/ParameterDefinition"},"title":"Parameters","type":"array"},"recipe_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Recipe Id","type":"string"},"recipe_version":{"title":"Recipe Version","type":"string"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"}},"required":["recipe_id","recipe_version","display_name","description","default_unknown_evidence_policy","output_classifications"],"title":"RecipeDefinition","type":"object"},"ResolvedParameter":{"additionalProperties":false,"properties":{"name":{"title":"Name","type":"string"},"source":{"enum":["invocation","default"],"title":"Source","type":"string"},"value":{"$ref":"#/$defs/TypedValue"}},"required":["name","value","source"],"title":"ResolvedParameter","type":"object"},"SignalRef":{"additionalProperties":false,"properties":{"output_name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Output Name","type":"string"},"source_node_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Source Node Id","type":"string"}},"required":["source_node_id","output_name"],"title":"SignalRef","type":"object"},"TemporalContainer":{"enum":["scalar","frame_signal","episode_set","relation_episode_set"],"title":"TemporalContainer","type":"string"},"TypedValue":{"additionalProperties":false,"properties":{"payload_type":{"$ref":"#/$defs/PayloadType"},"unit":{"$ref":"#/$defs/Unit","default":"none"},"value":{"title":"Value"}},"required":["payload_type","value"],"title":"TypedValue","type":"object"},"Unit":{"enum":["none","metre","second","millisecond","frame","fraction","hertz","count"],"title":"Unit","type":"string"},"UnknownEvidencePolicy":{"enum":["exclude_candidate","include_with_warning","invalidate_execution"],"title":"UnknownEvidencePolicy","type":"string"}},"$id":"https://priori.local/schemas/tactical-query-plan.v1.json","additionalProperties":false,"properties":{"bound_query_plan":{"$ref":"#/$defs/BoundQueryPlan"},"draft_query_plan":{"$ref":"#/$defs/DraftQueryPlan"},"evaluation_target":{"$ref":"#/$defs/EvaluationTarget"},"query_execution":{"$ref":"#/$defs/QueryExecution"},"query_invocation":{"$ref":"#/$defs/QueryInvocation"},"recipe_definition":{"$ref":"#/$defs/RecipeDefinition"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"}},"required":["recipe_definition","query_invocation","evaluation_target","draft_query_plan","bound_query_plan","query_execution"],"title":"Tactical Query IR v1 Schema Bundle","type":"object"}
++{"$defs":{"BoundCatalogNode":{"additionalProperties":false,"properties":{"catalog_ref":{"title":"Catalog Ref","type":"string"},"input_types":{"additionalProperties":{"$ref":"#/$defs/CatalogOutput"},"title":"Input Types","type":"object"},"inputs":{"additionalProperties":{"$ref":"#/$defs/SignalRef"},"title":"Inputs","type":"object"},"kind":{"enum":["primitive","relation"],"title":"Kind","type":"string"},"node_id":{"title":"Node Id","type":"string"},"outputs":{"items":{"$ref":"#/$defs/CatalogOutput"},"title":"Outputs","type":"array"},"resolved_parameters":{"additionalProperties":{"$ref":"#/$defs/TypedValue"},"title":"Resolved Parameters","type":"object"},"version":{"title":"Version","type":"string"}},"required":["kind","node_id","catalog_ref","version","outputs"],"title":"BoundCatalogNode","type":"object"},"BoundPredicateNode":{"additionalProperties":false,"properties":{"compare":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"type":"null"}],"default":null},"duration":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"type":"null"}],"default":null},"input":{"$ref":"#/$defs/SignalRef"},"input_type":{"$ref":"#/$defs/CatalogOutput"},"kind":{"const":"predicate","default":"predicate","title":"Kind","type":"string"},"node_id":{"title":"Node Id","type":"string"},"operator":{"$ref":"#/$defs/OperatorRef"},"operator_signature":{"$ref":"#/$defs/OperatorSignature"},"output":{"$ref":"#/$defs/CatalogOutput"}},"required":["node_id","input","input_type","operator","operator_signature","output"],"title":"BoundPredicateNode","type":"object"},"BoundQueryPlan":{"additionalProperties":false,"properties":{"anchor_source":{"anyOf":[{"$ref":"#/$defs/SignalRef"},{"type":"null"}],"default":null},"bound_plan_hash":{"title":"Bound Plan Hash","type":"string"},"classification_mode":{"$ref":"#/$defs/ClassificationMode"},"classification_rules":{"items":{"$ref":"#/$defs/ClassificationRule"},"title":"Classification Rules","type":"array"},"complexity_limits":{"$ref":"#/$defs/ComplexityLimits"},"execution_mode":{"$ref":"#/$defs/ExecutionMode"},"invocation_id":{"title":"Invocation Id","type":"string"},"match_ids":{"items":{"type":"string"},"title":"Match Ids","type":"array"},"max_results":{"title":"Max Results","type":"integer"},"nodes":{"items":{"discriminator":{"mapping":{"predicate":"#/$defs/BoundPredicateNode","primitive":"#/$defs/BoundCatalogNode","relation":"#/$defs/BoundCatalogNode"},"propertyName":"kind"},"oneOf":[{"$ref":"#/$defs/BoundCatalogNode"},{"$ref":"#/$defs/BoundPredicateNode"}]},"title":"Nodes","type":"array"},"periods":{"items":{"enum":["firstHalf","secondHalf"],"type":"string"},"title":"Periods","type":"array"},"perspective_team_role":{"enum":["home","away"],"title":"Perspective Team Role","type":"string"},"plan_hash":{"title":"Plan Hash","type":"string"},"plan_id":{"title":"Plan Id","type":"string"},"plan_status":{"$ref":"#/$defs/PlanStatus"},"plan_version":{"title":"Plan Version","type":"string"},"recipe_id":{"title":"Recipe Id","type":"string"},"recipe_version":{"title":"Recipe Version","type":"string"},"requested_evidence":{"items":{"$ref":"#/$defs/EvidenceRequest"},"title":"Requested Evidence","type":"array"},"resolved_parameters":{"items":{"$ref":"#/$defs/ResolvedParameter"},"title":"Resolved Parameters","type":"array"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"},"unknown_evidence_policy":{"$ref":"#/$defs/UnknownEvidencePolicy"}},"required":["plan_id","plan_version","plan_status","recipe_id","recipe_version","invocation_id","match_ids","periods","perspective_team_role","max_results","execution_mode","unknown_evidence_policy","classification_mode","classification_rules","requested_evidence","complexity_limits","resolved_parameters","nodes","plan_hash","bound_plan_hash"],"title":"BoundQueryPlan","type":"object"},"Cardinality":{"enum":["single","per_player","per_team","collection"],"title":"Cardinality","type":"string"},"CatalogOutput":{"additionalProperties":false,"properties":{"cardinality":{"$ref":"#/$defs/Cardinality"},"entity_scope":{"$ref":"#/$defs/EntityScope","default":"none"},"evidence_fields":{"items":{"type":"string"},"title":"Evidence Fields","type":"array"},"missing_data_semantics":{"$ref":"#/$defs/MissingDataSemantics"},"name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Name","type":"string"},"payload_type":{"$ref":"#/$defs/PayloadType"},"temporal_type":{"$ref":"#/$defs/TemporalContainer"},"unit":{"$ref":"#/$defs/Unit","default":"none"}},"required":["name","temporal_type","payload_type","cardinality","missing_data_semantics"],"title":"CatalogOutput","type":"object"},"ClassificationMode":{"enum":["exhaustive","partial_declared"],"title":"ClassificationMode","type":"string"},"ClassificationRule":{"additionalProperties":false,"properties":{"description":{"title":"Description","type":"string"},"label":{"pattern":"^[A-Z][A-Z0-9_]*$","title":"Label","type":"string"},"predicate_ids":{"items":{"type":"string"},"minItems":1,"title":"Predicate Ids","type":"array"}},"required":["label","predicate_ids","description"],"title":"ClassificationRule","type":"object"},"ComplexityLimits":{"additionalProperties":false,"properties":{"max_execution_cost":{"default":100000,"minimum":1,"title":"Max Execution Cost","type":"integer"},"max_nesting_depth":{"default":8,"minimum":1,"title":"Max Nesting Depth","type":"integer"},"max_plan_nodes":{"default":40,"minimum":1,"title":"Max Plan Nodes","type":"integer"},"max_relations_per_anchor":{"default":1000,"minimum":1,"title":"Max Relations Per Anchor","type":"integer"},"max_returned_moments":{"default":100,"minimum":1,"title":"Max Returned Moments","type":"integer"},"max_temporal_horizon_seconds":{"default":15.0,"exclusiveMinimum":0,"title":"Max Temporal Horizon Seconds","type":"number"}},"title":"ComplexityLimits","type":"object"},"DraftCatalogNode":{"additionalProperties":false,"properties":{"catalog_ref":{"pattern":"^[a-z][a-z0-9_]*$","title":"Catalog Ref","type":"string"},"inputs":{"additionalProperties":{"$ref":"#/$defs/SignalRef"},"title":"Inputs","type":"object"},"kind":{"enum":["primitive","relation"],"title":"Kind","type":"string"},"node_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Node Id","type":"string"},"parameters":{"additionalProperties":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"$ref":"#/$defs/ParameterRef"}]},"title":"Parameters","type":"object"},"version":{"title":"Version","type":"string"}},"required":["kind","node_id","catalog_ref","version"],"title":"DraftCatalogNode","type":"object"},"DraftPredicateNode":{"additionalProperties":false,"properties":{"compare":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"$ref":"#/$defs/ParameterRef"},{"type":"null"}],"default":null,"title":"Compare"},"duration":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"$ref":"#/$defs/ParameterRef"},{"type":"null"}],"default":null,"title":"Duration"},"input":{"$ref":"#/$defs/SignalRef"},"kind":{"const":"predicate","default":"predicate","title":"Kind","type":"string"},"node_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Node Id","type":"string"},"operator":{"$ref":"#/$defs/OperatorRef"},"required_cardinality":{"anyOf":[{"$ref":"#/$defs/Cardinality"},{"type":"null"}],"default":null},"required_entity_scope":{"anyOf":[{"$ref":"#/$defs/EntityScope"},{"type":"null"}],"default":null}},"required":["node_id","input","operator"],"title":"DraftPredicateNode","type":"object"},"DraftQueryPlan":{"additionalProperties":false,"properties":{"anchor_source":{"anyOf":[{"$ref":"#/$defs/SignalRef"},{"type":"null"}],"default":null},"classification_mode":{"$ref":"#/$defs/ClassificationMode"},"classification_rules":{"items":{"$ref":"#/$defs/ClassificationRule"},"minItems":1,"title":"Classification Rules","type":"array"},"complexity_limits":{"$ref":"#/$defs/ComplexityLimits"},"nodes":{"items":{"discriminator":{"mapping":{"predicate":"#/$defs/DraftPredicateNode","primitive":"#/$defs/DraftCatalogNode","relation":"#/$defs/DraftCatalogNode"},"propertyName":"kind"},"oneOf":[{"$ref":"#/$defs/DraftCatalogNode"},{"$ref":"#/$defs/DraftPredicateNode"}]},"minItems":1,"title":"Nodes","type":"array"},"plan_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Plan Id","type":"string"},"plan_version":{"title":"Plan Version","type":"string"},"recipe_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Recipe Id","type":"string"},"recipe_version":{"title":"Recipe Version","type":"string"},"requested_evidence":{"items":{"$ref":"#/$defs/EvidenceRequest"},"title":"Requested Evidence","type":"array"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"},"status":{"$ref":"#/$defs/PlanStatus"},"unknown_evidence_policy":{"$ref":"#/$defs/UnknownEvidencePolicy"}},"required":["plan_id","plan_version","recipe_id","recipe_version","status","unknown_evidence_policy","classification_mode","nodes","classification_rules"],"title":"DraftQueryPlan","type":"object"},"EntityScope":{"enum":["none","anchor","ball","player","team","match","possession","frame","relation"],"title":"EntityScope","type":"string"},"EvaluationTarget":{"additionalProperties":false,"properties":{"approximate_time_ms":{"minimum":0,"title":"Approximate Time Ms","type":"integer"},"match_id":{"title":"Match Id","type":"string"},"period":{"enum":["firstHalf","secondHalf"],"title":"Period","type":"string"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"},"search_radius_ms":{"exclusiveMinimum":0,"title":"Search Radius Ms","type":"integer"},"target_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Target Id","type":"string"}},"required":["target_id","match_id","period","approximate_time_ms","search_radius_ms"],"title":"EvaluationTarget","type":"object"},"EvidenceRequest":{"additionalProperties":false,"properties":{"field":{"pattern":"^[a-z][a-z0-9_]*$","title":"Field","type":"string"},"source":{"$ref":"#/$defs/SignalRef"}},"required":["source","field"],"title":"EvidenceRequest","type":"object"},"ExecutionMode":{"enum":["bind_only","dry_run","execute"],"title":"ExecutionMode","type":"string"},"ExecutionStatus":{"enum":["not_started","pass","fail","incomplete"],"title":"ExecutionStatus","type":"string"},"MissingDataSemantics":{"enum":["unknown","quality_fail","not_applicable"],"title":"MissingDataSemantics","type":"string"},"OperatorRef":{"additionalProperties":false,"properties":{"name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Name","type":"string"},"version":{"title":"Version","type":"string"}},"required":["name","version"],"title":"OperatorRef","type":"object"},"OperatorSignature":{"additionalProperties":false,"properties":{"compare_payload_types":{"items":{"$ref":"#/$defs/PayloadType"},"title":"Compare Payload Types","type":"array"},"compare_required":{"default":false,"title":"Compare Required","type":"boolean"},"compare_unit_must_match":{"default":false,"title":"Compare Unit Must Match","type":"boolean"},"duration_required":{"default":false,"title":"Duration Required","type":"boolean"},"input_cardinalities":{"items":{"$ref":"#/$defs/Cardinality"},"minItems":1,"title":"Input Cardinalities","type":"array"},"input_payload_types":{"items":{"$ref":"#/$defs/PayloadType"},"minItems":1,"title":"Input Payload Types","type":"array"},"input_temporal_types":{"items":{"$ref":"#/$defs/TemporalContainer"},"minItems":1,"title":"Input Temporal Types","type":"array"},"limitations":{"items":{"type":"string"},"title":"Limitations","type":"array"},"name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Name","type":"string"},"output_cardinality":{"$ref":"#/$defs/Cardinality"},"output_payload_type":{"$ref":"#/$defs/PayloadType"},"output_temporal_type":{"$ref":"#/$defs/TemporalContainer"},"output_unit":{"$ref":"#/$defs/Unit","default":"none"},"purpose":{"title":"Purpose","type":"string"},"version":{"title":"Version","type":"string"}},"required":["name","version","purpose","input_temporal_types","input_payload_types","input_cardinalities","output_temporal_type","output_payload_type","output_cardinality"],"title":"OperatorSignature","type":"object"},"ParameterDefinition":{"additionalProperties":false,"properties":{"allowed_values":{"anyOf":[{"items":{"type":"string"},"type":"array"},{"type":"null"}],"default":null,"title":"Allowed Values"},"default":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"type":"null"}],"default":null},"description":{"title":"Description","type":"string"},"maximum":{"anyOf":[{"type":"number"},{"type":"null"}],"default":null,"title":"Maximum"},"minimum":{"anyOf":[{"type":"number"},{"type":"null"}],"default":null,"title":"Minimum"},"name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Name","type":"string"},"payload_type":{"$ref":"#/$defs/PayloadType"},"required":{"default":false,"title":"Required","type":"boolean"},"unit":{"$ref":"#/$defs/Unit","default":"none"}},"required":["name","payload_type","description"],"title":"ParameterDefinition","type":"object"},"ParameterRef":{"additionalProperties":false,"properties":{"kind":{"const":"parameter","default":"parameter","title":"Kind","type":"string"},"name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Name","type":"string"}},"required":["name"],"title":"ParameterRef","type":"object"},"PayloadType":{"enum":["boolean","number","enum","anchor_ref","entity_ref","team_ref","region_ref","point","entity_set","relation_ref"],"title":"PayloadType","type":"string"},"PlanStatus":{"enum":["approved","experimental"],"title":"PlanStatus","type":"string"},"PredicateTrace":{"additionalProperties":false,"properties":{"frame_id":{"anyOf":[{"type":"integer"},{"type":"null"}],"default":null,"title":"Frame Id"},"predicate_id":{"title":"Predicate Id","type":"string"},"source_evidence":{"additionalProperties":true,"title":"Source Evidence","type":"object"},"status":{"enum":["PASS","FAIL","UNKNOWN"],"title":"Status","type":"string"},"threshold":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"type":"null"}],"default":null},"unit":{"$ref":"#/$defs/Unit","default":"none"},"value":{"anyOf":[{"$ref":"#/$defs/TypedValue"},{"type":"null"}],"default":null},"window":{"anyOf":[{"additionalProperties":true,"type":"object"},{"type":"null"}],"default":null,"title":"Window"}},"required":["predicate_id","status"],"title":"PredicateTrace","type":"object"},"QueryExecution":{"additionalProperties":false,"properties":{"bound_plan_hash":{"title":"Bound Plan Hash","type":"string"},"execution_id":{"title":"Execution Id","type":"string"},"plan_hash":{"title":"Plan Hash","type":"string"},"predicate_traces":{"items":{"$ref":"#/$defs/PredicateTrace"},"title":"Predicate Traces","type":"array"},"provenance":{"additionalProperties":true,"title":"Provenance","type":"object"},"results":{"items":{"$ref":"#/$defs/QueryResult"},"title":"Results","type":"array"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"},"status":{"$ref":"#/$defs/ExecutionStatus"},"timing_ms":{"additionalProperties":true,"title":"Timing Ms","type":"object"}},"required":["execution_id","status","plan_hash","bound_plan_hash"],"title":"QueryExecution","type":"object"},"QueryInvocation":{"additionalProperties":false,"properties":{"execution_mode":{"$ref":"#/$defs/ExecutionMode","default":"bind_only"},"invocation_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Invocation Id","type":"string"},"match_ids":{"items":{"type":"string"},"minItems":1,"title":"Match Ids","type":"array"},"max_results":{"maximum":500,"minimum":1,"title":"Max Results","type":"integer"},"parameters":{"additionalProperties":{"$ref":"#/$defs/TypedValue"},"title":"Parameters","type":"object"},"periods":{"items":{"enum":["firstHalf","secondHalf"],"type":"string"},"minItems":1,"title":"Periods","type":"array"},"perspective_team_role":{"enum":["home","away"],"title":"Perspective Team Role","type":"string"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"}},"required":["invocation_id","match_ids","periods","perspective_team_role","max_results"],"title":"QueryInvocation","type":"object"},"QueryResult":{"additionalProperties":false,"properties":{"anchor_frame_id":{"title":"Anchor Frame Id","type":"integer"},"classification":{"title":"Classification","type":"string"},"evidence":{"additionalProperties":true,"title":"Evidence","type":"object"},"match_id":{"title":"Match Id","type":"string"},"period":{"enum":["firstHalf","secondHalf"],"title":"Period","type":"string"},"result_id":{"title":"Result Id","type":"string"}},"required":["result_id","classification","match_id","period","anchor_frame_id"],"title":"QueryResult","type":"object"},"RecipeDefinition":{"additionalProperties":false,"properties":{"allowed_claims":{"items":{"type":"string"},"title":"Allowed Claims","type":"array"},"default_unknown_evidence_policy":{"$ref":"#/$defs/UnknownEvidencePolicy"},"description":{"title":"Description","type":"string"},"disallowed_claims":{"items":{"type":"string"},"title":"Disallowed Claims","type":"array"},"display_name":{"title":"Display Name","type":"string"},"limitations":{"items":{"type":"string"},"title":"Limitations","type":"array"},"output_classifications":{"items":{"type":"string"},"minItems":1,"title":"Output Classifications","type":"array"},"parameters":{"items":{"$ref":"#/$defs/ParameterDefinition"},"title":"Parameters","type":"array"},"recipe_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Recipe Id","type":"string"},"recipe_version":{"title":"Recipe Version","type":"string"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"}},"required":["recipe_id","recipe_version","display_name","description","default_unknown_evidence_policy","output_classifications"],"title":"RecipeDefinition","type":"object"},"ResolvedParameter":{"additionalProperties":false,"properties":{"name":{"title":"Name","type":"string"},"source":{"enum":["invocation","default"],"title":"Source","type":"string"},"value":{"$ref":"#/$defs/TypedValue"}},"required":["name","value","source"],"title":"ResolvedParameter","type":"object"},"SignalRef":{"additionalProperties":false,"properties":{"output_name":{"pattern":"^[a-z][a-z0-9_]*$","title":"Output Name","type":"string"},"source_node_id":{"pattern":"^[a-z][a-z0-9_]*$","title":"Source Node Id","type":"string"}},"required":["source_node_id","output_name"],"title":"SignalRef","type":"object"},"TemporalContainer":{"enum":["scalar","frame_signal","episode_set","relation_episode_set"],"title":"TemporalContainer","type":"string"},"TypedValue":{"additionalProperties":false,"properties":{"payload_type":{"$ref":"#/$defs/PayloadType"},"unit":{"$ref":"#/$defs/Unit","default":"none"},"value":{"title":"Value"}},"required":["payload_type","value"],"title":"TypedValue","type":"object"},"Unit":{"enum":["none","metre","second","millisecond","frame","fraction","hertz","count"],"title":"Unit","type":"string"},"UnknownEvidencePolicy":{"enum":["exclude_candidate","include_with_warning","invalidate_execution"],"title":"UnknownEvidencePolicy","type":"string"}},"$id":"https://priori.local/schemas/tactical-query-plan.v1.json","additionalProperties":false,"properties":{"bound_query_plan":{"$ref":"#/$defs/BoundQueryPlan"},"draft_query_plan":{"$ref":"#/$defs/DraftQueryPlan"},"evaluation_target":{"$ref":"#/$defs/EvaluationTarget"},"query_execution":{"$ref":"#/$defs/QueryExecution"},"query_invocation":{"$ref":"#/$defs/QueryInvocation"},"recipe_definition":{"$ref":"#/$defs/RecipeDefinition"},"schema_version":{"const":"1.0","default":"1.0","title":"Schema Version","type":"string"}},"required":["recipe_definition","query_invocation","evaluation_target","draft_query_plan","bound_query_plan","query_execution"],"title":"Tactical Query IR v1 Schema Bundle","type":"object"}
+diff --git a/generated/tactical-query-plan.types.ts b/generated/tactical-query-plan.types.ts
+index 45be4ec..5668a5f 100644
+--- a/generated/tactical-query-plan.types.ts
++++ b/generated/tactical-query-plan.types.ts
+@@ -1,12 +1,12 @@
+ /* eslint-disable */
+ // Generated from Pydantic TacticalQuerySchemaBundle.
+-// schema_sha256: 3ae97077c50d3380e4dd86bf53b593a5309576de264b4bb19a020505b43c3ae9
++// schema_sha256: bbc180e10362ef2a5960ee5aa990f154b4b4266f20978fedf08fe8fe24af6b99
+ 
+ export type TemporalContainer = 'scalar' | 'frame_signal' | 'episode_set' | 'relation_episode_set';
+-export type PayloadType = 'boolean' | 'number' | 'enum' | 'entity_ref' | 'team_ref' | 'region_ref' | 'point' | 'entity_set' | 'relation_ref';
++export type PayloadType = 'boolean' | 'number' | 'enum' | 'anchor_ref' | 'entity_ref' | 'team_ref' | 'region_ref' | 'point' | 'entity_set' | 'relation_ref';
+ export type Cardinality = 'single' | 'per_player' | 'per_team' | 'collection';
+ export type Unit = 'none' | 'metre' | 'second' | 'millisecond' | 'frame' | 'fraction' | 'hertz' | 'count';
+-export type EntityScope = 'none' | 'ball' | 'player' | 'team' | 'match' | 'possession' | 'frame' | 'relation';
++export type EntityScope = 'none' | 'anchor' | 'ball' | 'player' | 'team' | 'match' | 'possession' | 'frame' | 'relation';
+ export type MissingDataSemantics = 'unknown' | 'quality_fail' | 'not_applicable';
+ export type UnknownEvidencePolicy = 'exclude_candidate' | 'include_with_warning' | 'invalidate_execution';
+ export type ExecutionMode = 'bind_only' | 'dry_run' | 'execute';
+diff --git a/src/tqe/runtime/binder.py b/src/tqe/runtime/binder.py
+index f185587..0ea6d73 100644
+--- a/src/tqe/runtime/binder.py
++++ b/src/tqe/runtime/binder.py
+@@ -100,6 +100,7 @@ class Binder:
+         resolved_parameters = self._resolve_parameters(recipe, invocation)
+         self._bind_nodes(draft_plan, resolved_parameters)
+         self._validate_classifications(recipe, draft_plan)
++        self._validate_anchor_source(draft_plan)
+         self._validate_evidence_requests(draft_plan)
+ 
+         if self.issues:
+@@ -127,6 +128,7 @@ class Binder:
+             "unknown_evidence_policy": draft_plan.unknown_evidence_policy,
+             "classification_mode": draft_plan.classification_mode,
+             "classification_rules": draft_plan.classification_rules,
++            "anchor_source": draft_plan.anchor_source,
+             "requested_evidence": draft_plan.requested_evidence,
+             "complexity_limits": draft_plan.complexity_limits,
+             "resolved_parameters": sorted(resolved_parameters, key=lambda item: item.name),
+@@ -692,6 +694,29 @@ class Binder:
+                     f"draft_plan.requested_evidence[{index}].field",
+                 )
+ 
++    def _validate_anchor_source(self, draft_plan: DraftQueryPlan) -> None:
++        if draft_plan.anchor_source is None:
++            self._issue(
++                "missing_anchor_source",
++                "draft plan must designate an anchor source",
++                "draft_plan.anchor_source",
++            )
++            return
++        referenced = self._resolve_signal(draft_plan.anchor_source, "draft_plan.anchor_source")
++        if referenced is None:
++            return
++        _, output = referenced
++        if (
++            output.temporal_type != TemporalContainer.EPISODE_SET
++            or output.payload_type != PayloadType.ANCHOR_REF
++            or output.cardinality != Cardinality.COLLECTION
++        ):
++            self._issue(
++                "invalid_anchor_source",
++                "anchor source must be an episode_set collection of anchor_ref records",
++                "draft_plan.anchor_source",
++            )
++
+     def _find_catalog_entry(
+         self,
+         kind: NodeKind,
+diff --git a/src/tqe/runtime/catalog.py b/src/tqe/runtime/catalog.py
+index 59ffe6c..cb1be19 100644
+--- a/src/tqe/runtime/catalog.py
++++ b/src/tqe/runtime/catalog.py
+@@ -168,7 +168,20 @@ def default_primitives() -> list[CatalogEntry]:
+                         "possession_end_frame_id",
+                         "possession_duration_seconds",
+                     ],
+-                )
++                ),
++                output(
++                    name="anchors",
++                    temporal_type=TemporalContainer.EPISODE_SET,
++                    payload_type=PayloadType.ANCHOR_REF,
++                    cardinality=Cardinality.COLLECTION,
++                    entity_scope=EntityScope.ANCHOR,
++                    evidence_fields=[
++                        "anchor_id",
++                        "anchor_frame_id",
++                        "start_frame_id",
++                        "end_frame_id",
++                    ],
++                ),
+             ],
+             evidence_fields=[
+                 "possession_start_frame_id",
+@@ -231,7 +244,20 @@ def default_primitives() -> list[CatalogEntry]:
+                         "signed_shift_metres",
+                         "block_shift_score",
+                     ],
+-                )
++                ),
++                output(
++                    name="anchors",
++                    temporal_type=TemporalContainer.EPISODE_SET,
++                    payload_type=PayloadType.ANCHOR_REF,
++                    cardinality=Cardinality.COLLECTION,
++                    entity_scope=EntityScope.ANCHOR,
++                    evidence_fields=[
++                        "anchor_id",
++                        "anchor_frame_id",
++                        "start_frame_id",
++                        "end_frame_id",
++                    ],
++                ),
+             ],
+             inputs=[
+                 input_ref(
+@@ -287,14 +313,6 @@ def default_primitives() -> list[CatalogEntry]:
+                     cardinality=Cardinality.COLLECTION,
+                     entity_scope=EntityScope.TEAM,
+                 ),
+-                input_ref(
+-                    name="signed_shift",
+-                    temporal_type=TemporalContainer.FRAME_SIGNAL,
+-                    payload_type=PayloadType.NUMBER,
+-                    cardinality=Cardinality.SINGLE,
+-                    unit=Unit.METRE,
+-                    entity_scope=EntityScope.TEAM,
+-                ),
+             ],
+             parameters=[
+                 parameter(
+diff --git a/src/tqe/runtime/executor.py b/src/tqe/runtime/executor.py
+index 1c84721..d06e7b4 100644
+--- a/src/tqe/runtime/executor.py
++++ b/src/tqe/runtime/executor.py
+@@ -119,6 +119,17 @@ class RuntimeAnchor:
+     attributes: dict[str, Any]
+ 
+ 
++@dataclass(frozen=True)
++class NodeExecutionResult:
++    node_id: str
++    inputs: dict[str, RuntimeValue]
++    parameters: dict[str, TypedValue]
++    outputs: dict[str, Any]
++    runtime_values: dict[str, RuntimeValue]
++    warnings: list[str] = field(default_factory=list)
++    provenance: dict[str, Any] = field(default_factory=dict)
++
++
+ PrimitiveImplementation = Callable[[PeriodState, BoundCatalogNode], None]
+ RelationImplementation = Callable[[PeriodState, BoundCatalogNode], None]
+ PredicateImplementation = Callable[[PeriodState, BoundPredicateNode], None]
+@@ -328,73 +339,7 @@ class TacticalQueryExecutor:
+             period=target.period,
+             params=params,
+         )
+-        target_frame_id = int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
+-        radius_frames = int(round(target.search_radius_ms / 1000.0 * FRAME_RATE_HZ))
+-        anchors = runtime_anchors(state)
+-        compatible = [
+-            anchor
+-            for anchor in anchors
+-            if abs(anchor.anchor_frame_id - target_frame_id) <= radius_frames
+-        ]
+-        if not compatible:
+-            return {
+-                "target": target.model_dump(mode="json"),
+-                "status": "NO_COMPATIBLE_ANCHOR",
+-                "target_frame_id": target_frame_id,
+-                "search_radius_frames": radius_frames,
+-                "candidate_count": 0,
+-                "closest_candidate": None,
+-                "predicate_traces": [],
+-                "failed_predicates": [],
+-            }
+-
+-        closest = min(
+-            compatible,
+-            key=lambda anchor: abs(anchor.anchor_frame_id - target_frame_id),
+-        )
+-        anchor_record = closest.attributes
+-        result = anchor_record.get("_runtime_result") or base_result_fields(
+-            state,
+-            anchor_record,
+-            state.params.text("result_id_seed_hash"),
+-            state.params.integer("analysis_rate_hz"),
+-        )
+-        traces = predicate_traces_for_anchor(state, closest, result)
+-        traces.extend(
+-            missing_target_predicate_traces(
+-                bound_plan=bound_plan,
+-                state=state,
+-                anchor=closest,
+-                result=result,
+-                existing_predicate_ids={trace.predicate_id for trace in traces},
+-            )
+-        )
+-        trace_payload = [trace.model_dump(mode="json", exclude_none=True) for trace in traces]
+-        failed = [
+-            trace
+-            for trace in trace_payload
+-            if trace["status"] in {"FAIL", "UNKNOWN"}
+-        ]
+-        accepted = bool(result.get("accepted"))
+-        return {
+-            "target": target.model_dump(mode="json"),
+-            "status": "MATCH" if accepted else "NON_MATCH",
+-            "target_frame_id": target_frame_id,
+-            "search_radius_frames": radius_frames,
+-            "candidate_count": len(compatible),
+-            "closest_candidate": {
+-                "candidate_key": closest.anchor_id,
+-                "anchor_id": closest.anchor_id,
+-                "wide_entry_frame_id": int(anchor_record["wide_entry_frame_id"]),
+-                "anchor_frame_id": closest.anchor_frame_id,
+-                "frame_distance": abs(closest.anchor_frame_id - target_frame_id),
+-                "accepted": accepted,
+-                "rejection_reason": result.get("near_miss_reason"),
+-                "classification": result.get("classification"),
+-            },
+-            "predicate_traces": trace_payload,
+-            "failed_predicates": failed,
+-        }
++        return evaluate_target_in_state(bound_plan=bound_plan, state=state, target=target)
+ 
+     def _execute_period(
+         self,
+@@ -413,25 +358,44 @@ class TacticalQueryExecutor:
+             params=params,
+         )
+         for node in bound_plan.nodes:
+-            if isinstance(node, BoundCatalogNode):
+-                if node.kind == NodeKind.RELATION:
+-                    implementation = self.relations.get(node.catalog_ref)
+-                    if implementation is None:
+-                        raise RuntimeError(f"No relation implementation for {node.catalog_ref}")
+-                else:
+-                    implementation = self.primitives.get(node.catalog_ref)
+-                if implementation is None:
+-                    raise RuntimeError(f"No primitive implementation for {node.catalog_ref}")
+-                implementation(state, node)
+-                record_runtime_values(state, node)
+-            elif isinstance(node, BoundPredicateNode):
+-                implementation = self.predicates.get(node.operator.name)
+-                if implementation is None:
+-                    raise RuntimeError(f"No predicate implementation for {node.operator.name}")
+-                implementation(state, node)
+-                record_runtime_values(state, node)
++            self._execute_node(state=state, node=node)
+         return state
+ 
++    def _execute_node(
++        self,
++        *,
++        state: PeriodState,
++        node: BoundPlanNode,
++    ) -> NodeExecutionResult:
++        inputs = resolved_node_inputs(state, node)
++        parameters = resolved_node_parameters(node)
++        if isinstance(node, BoundCatalogNode):
++            if node.kind == NodeKind.RELATION:
++                implementation = self.relations.get(node.catalog_ref)
++                if implementation is None:
++                    raise RuntimeError(f"No relation implementation for {node.catalog_ref}")
++            else:
++                implementation = self.primitives.get(node.catalog_ref)
++            if implementation is None:
++                raise RuntimeError(f"No primitive implementation for {node.catalog_ref}")
++            implementation(state, node)
++        elif isinstance(node, BoundPredicateNode):
++            implementation = self.predicates.get(node.operator.name)
++            if implementation is None:
++                raise RuntimeError(f"No predicate implementation for {node.operator.name}")
++            implementation(state, node)
++        else:
++            raise RuntimeError(f"Unsupported bound node {node}")
++        runtime_values = record_runtime_values(state, node)
++        return NodeExecutionResult(
++            node_id=node.node_id,
++            inputs=inputs,
++            parameters=parameters,
++            outputs=state.signals.get(node.node_id, {}),
++            runtime_values=runtime_values,
++            provenance={"node_kind": node.kind.value},
++        )
++
+     def _period_state(
+         self,
+         *,
+@@ -500,6 +464,75 @@ def runtime_parameters(bound_plan: BoundQueryPlan) -> RuntimeParameters:
+     )
+ 
+ 
++def evaluate_target_in_state(
++    *,
++    bound_plan: BoundQueryPlan,
++    state: PeriodState,
++    target: EvaluationTarget,
++) -> dict[str, Any]:
++    target_frame_id = int(round(target.approximate_time_ms / 1000.0 * FRAME_RATE_HZ))
++    radius_frames = int(round(target.search_radius_ms / 1000.0 * FRAME_RATE_HZ))
++    anchors = runtime_anchors(state, bound_plan.anchor_source)
++    compatible = [
++        anchor
++        for anchor in anchors
++        if abs(anchor.anchor_frame_id - target_frame_id) <= radius_frames
++    ]
++    if not compatible:
++        return {
++            "target": target.model_dump(mode="json"),
++            "status": "NO_COMPATIBLE_ANCHOR",
++            "target_frame_id": target_frame_id,
++            "search_radius_frames": radius_frames,
++            "candidate_count": 0,
++            "closest_candidate": None,
++            "predicate_traces": [],
++            "failed_predicates": [],
++        }
++
++    closest = min(
++        compatible,
++        key=lambda anchor: abs(anchor.anchor_frame_id - target_frame_id),
++    )
++    anchor_record = closest.attributes
++    result = anchor_record.get("_runtime_result") or generic_target_result(anchor_record)
++    traces = predicate_traces_for_anchor(state, closest, result)
++    traces.extend(
++        missing_target_predicate_traces(
++            bound_plan=bound_plan,
++            state=state,
++            anchor=closest,
++            result=result,
++            existing_predicate_ids={trace.predicate_id for trace in traces},
++        )
++    )
++    trace_payload = [trace.model_dump(mode="json", exclude_none=True) for trace in traces]
++    failed = [
++        trace
++        for trace in trace_payload
++        if trace["status"] in {"FAIL", "UNKNOWN"}
++    ]
++    accepted = bool(result.get("accepted"))
++    return {
++        "target": target.model_dump(mode="json"),
++        "status": "MATCH" if accepted else "NON_MATCH",
++        "target_frame_id": target_frame_id,
++        "search_radius_frames": radius_frames,
++        "candidate_count": len(compatible),
++        "closest_candidate": {
++            "candidate_key": closest.anchor_id,
++            "anchor_id": closest.anchor_id,
++            "anchor_frame_id": closest.anchor_frame_id,
++            "frame_distance": abs(closest.anchor_frame_id - target_frame_id),
++            "accepted": accepted,
++            "rejection_reason": result.get("near_miss_reason"),
++            "classification": result.get("classification"),
++        },
++        "predicate_traces": trace_payload,
++        "failed_predicates": failed,
++    }
++
++
+ def apply_result_semantics(
+     *,
+     results: list[dict[str, Any]],
+@@ -589,9 +622,8 @@ def catalog_input_value(
+ 
+ 
+ def runtime_records(value: RuntimeValue) -> list[dict[str, Any]]:
+-    records = value.provenance.get("records")
+-    if isinstance(records, list) and all(isinstance(item, dict) for item in records):
+-        return records
++    if value.records and all(isinstance(item, dict) for item in value.records):
++        return value.records
+     if isinstance(value.value, list) and all(isinstance(item, dict) for item in value.value):
+         return value.value
+     return []
+@@ -627,6 +659,22 @@ def numeric_source_values(state: PeriodState, node: BoundPredicateNode) -> list[
+     return values
+ 
+ 
++def predicate_frame_signal_from_source(
++    source_value: RuntimeValue,
++    passed: list[bool | None],
++    node: BoundPredicateNode,
++) -> FrameSignal:
++    return FrameSignal(
++        frame_ids=source_value.value.frame_ids
++        if isinstance(source_value.value, FrameSignal)
++        else list(range(len(passed))),
++        values=passed,
++        unknown_mask=[status is None for status in passed],
++        unit=node.output.unit,
++        entity_scope=node.output.entity_scope,
++    )
++
++
+ def record_candidate_predicate(
+     *,
+     candidate: dict[str, Any],
+@@ -688,39 +736,16 @@ def predicate_status_label(status: bool | None) -> str:
+ def record_persistence_evidence(
+     *,
+     record: dict[str, Any],
+-    source_predicate_id: str,
+     minimum_frames: int,
+     analysis_rate_hz: int,
+ ) -> dict[str, Any]:
+-    series = record.get("persistence_series")
+-    threshold = record_predicate_threshold(record, source_predicate_id)
+-    if not isinstance(series, pd.Series) or threshold is None:
++    series = record.get("truth_series")
++    if not isinstance(series, pd.Series):
+         return {"persistent": False, "duration_seconds": None, "start_frame_id": None, "end_frame_id": None}
+-    return shift_persistence_evidence(series, threshold, minimum_frames, analysis_rate_hz)
+-
+-
+-def record_predicate_threshold(record: dict[str, Any], predicate_id: str) -> float | None:
+-    status = (record.get("_predicate_status") or {}).get(predicate_id)
+-    if not isinstance(status, dict):
+-        return None
+-    threshold = status.get("threshold")
+-    if not isinstance(threshold, dict):
+-        return None
+-    value = threshold.get("value")
+-    if isinstance(value, bool) or not isinstance(value, int | float):
+-        return None
+-    return float(value)
++    return boolean_persistence_evidence(series, minimum_frames, analysis_rate_hz)
+ 
+ 
+-def record_quality_passed(record: dict[str, Any]) -> bool:
+-    if "quality_status" in record:
+-        return record["quality_status"] == "pass"
+-    if "quality_passed" in record:
+-        return bool(record["quality_passed"])
+-    return True
+-
+-
+-def record_runtime_values(state: PeriodState, node: BoundPlanNode) -> None:
++def record_runtime_values(state: PeriodState, node: BoundPlanNode) -> dict[str, RuntimeValue]:
+     raw_outputs = state.signals.get(node.node_id)
+     if raw_outputs is None:
+         raise RuntimeError(f"{node.node_id} did not emit any outputs")
+@@ -743,6 +768,31 @@ def record_runtime_values(state: PeriodState, node: BoundPlanNode) -> None:
+             records=raw_outputs.get(f"{output.name}_records"),
+         )
+     state.runtime_values[node.node_id] = values
++    return values
++
++
++def resolved_node_inputs(state: PeriodState, node: BoundPlanNode) -> dict[str, RuntimeValue]:
++    if isinstance(node, BoundCatalogNode):
++        return {
++            name: catalog_input_value(state, node, name)
++            for name in sorted(node.inputs)
++        }
++    if isinstance(node, BoundPredicateNode):
++        return {node.input.output_name: source_runtime_value(state, node)}
++    return {}
++
++
++def resolved_node_parameters(node: BoundPlanNode) -> dict[str, TypedValue]:
++    if isinstance(node, BoundCatalogNode):
++        return dict(node.resolved_parameters)
++    if isinstance(node, BoundPredicateNode):
++        parameters: dict[str, TypedValue] = {}
++        if node.compare is not None:
++            parameters["compare"] = node.compare
++        if node.duration is not None:
++            parameters["duration"] = node.duration
++        return parameters
++    return {}
+ 
+ 
+ def primitive_noop(state: PeriodState, node: BoundCatalogNode) -> None:
+@@ -754,14 +804,26 @@ def primitive_possession_segment(state: PeriodState, node: BoundCatalogNode) ->
+     minimum_frames = int(round(state.params.number("minimum_possession_seconds") * state.params.integer("analysis_rate_hz")))
+     segments = [
+         {
++            "anchor_id": anchor_record_id(
++                match_id=state.match_id,
++                period=state.period,
++                anchor_frame_id=int(state.frame_ids[start]),
++                start_frame_id=int(state.frame_ids[start]),
++                end_frame_id=int(state.frame_ids[end]),
++                entity_refs=[state.perspective_team_id],
++            ),
++            "match_id": state.match_id,
++            "period": state.period,
++            "anchor_frame_id": int(state.frame_ids[start]),
+             "start_index": start,
+             "end_index": end,
+             "start_frame_id": int(state.frame_ids[start]),
+             "end_frame_id": int(state.frame_ids[end]),
++            "entity_refs": [state.perspective_team_id],
+         }
+         for start, end in segment_true(possession_mask, minimum_frames)
+     ]
+-    state.signals[node.node_id] = {"episodes": segments}
++    state.signals[node.node_id] = {"episodes": segments, "anchors": segments}
+ 
+ 
+ def primitive_ball_lateral_fraction(state: PeriodState, node: BoundCatalogNode) -> None:
+@@ -843,8 +905,21 @@ def primitive_signed_lateral_shift(state: PeriodState, node: BoundCatalogNode) -
+         shifted.append(
+             {
+                 **candidate,
++                "anchor_id": anchor_record_id(
++                    match_id=state.match_id,
++                    period=state.period,
++                    anchor_frame_id=anchor_frame_id,
++                    start_frame_id=baseline_start_frame,
++                    end_frame_id=int(search_frame_ids[-1]),
++                    entity_refs=[state.perspective_team_id, state.defending_team_id],
++                ),
++                "match_id": state.match_id,
++                "period": state.period,
++                "entity_refs": [state.perspective_team_id, state.defending_team_id],
+                 "baseline_start_frame_id": baseline_start_frame,
+                 "baseline_end_frame_id": baseline_end_frame,
++                "start_frame_id": baseline_start_frame,
++                "end_frame_id": int(search_frame_ids[-1]),
+                 "shift_search_start_frame_id": int(search_frame_ids[0]),
+                 "shift_search_end_frame_id": int(search_frame_ids[-1]),
+                 "baseline_defensive_centroid_y_m": round(baseline_centroid_y, 3),
+@@ -853,7 +928,7 @@ def primitive_signed_lateral_shift(state: PeriodState, node: BoundCatalogNode) -
+                 "block_shift_score": round(max_shift, 6),
+                 "quality_status": "pass" if enough_defenders else "fail",
+                 "enough_defenders": enough_defenders,
+-                "persistence_series": signed_shift,
++                "measure_series": signed_shift,
+             }
+         )
+     state.candidates = shifted
+@@ -866,6 +941,7 @@ def primitive_signed_lateral_shift(state: PeriodState, node: BoundCatalogNode) -
+             entity_scope=node.outputs[0].entity_scope,
+         ),
+         "signed_shift_records": shifted,
++        "anchors": shifted,
+     }
+ 
+ 
+@@ -873,11 +949,8 @@ def primitive_outcome_classification(state: PeriodState, node: BoundCatalogNode)
+     accepted: list[dict[str, Any]] = []
+     near_misses: list[dict[str, Any]] = []
+     accepted_shift_records = catalog_input_value(state, node, "accepted_shift_episodes").value
+-    signed_shift_value = catalog_input_value(state, node, "signed_shift")
+     if not isinstance(accepted_shift_records, list):
+         raise RuntimeError(f"{node.node_id} requires accepted shift episode records")
+-    if not isinstance(signed_shift_value.value, FrameSignal):
+-        raise RuntimeError(f"{node.node_id} requires signed shift frame signal")
+     query_hash = state.params.text("result_id_seed_hash")
+     analysis_rate_hz = state.params.integer("analysis_rate_hz")
+     dedupe_source_frames = int(round(state.params.number("dedupe_window_seconds") * FRAME_RATE_HZ))
+@@ -1231,6 +1304,11 @@ def predicate_gte(state: PeriodState, node: BoundPredicateNode) -> None:
+     }
+     if records and len(records) == len(passed):
+         for record, status, value in zip(records, passed, values, strict=True):
++            measure_series = record.get("measure_series")
++            if isinstance(measure_series, pd.Series):
++                record["truth_series"] = measure_series.apply(
++                    lambda item: None if is_nan_number(item) else bool(float(item) >= threshold)
++                )
+             record_candidate_predicate(
+                 candidate=record,
+                 node=node,
+@@ -1296,12 +1374,13 @@ def predicate_lte(state: PeriodState, node: BoundPredicateNode) -> None:
+ 
+ def predicate_eq(state: PeriodState, node: BoundPredicateNode) -> None:
+     runtime_value = source_runtime_value(state, node)
+-    values = runtime_value.frame_values if isinstance(runtime_value.value, FrameSignal) else runtime_value.value
++    values = runtime_frame_values(runtime_value)
+     if not isinstance(values, list):
+         raise RuntimeError(f"{node.node_id} expected list-backed source values")
+     compare = node.compare.value if isinstance(node.compare, TypedValue) else None
++    passed = [None if value is None else value == compare for value in values]
+     state.signals[node.node_id] = {
+-        "predicate": [None if value is None else value == compare for value in values]
++        "predicate": predicate_frame_signal_from_source(runtime_value, passed, node),
+     }
+ 
+ 
+@@ -1312,7 +1391,9 @@ def predicate_neq(state: PeriodState, node: BoundPredicateNode) -> None:
+         raise RuntimeError(f"{node.node_id} expected list-backed source values")
+     compare = node.compare.value if isinstance(node.compare, TypedValue) else None
+     passed = [None if value is None else value != compare for value in values]
+-    output: dict[str, Any] = {"predicate": passed}
++    output: dict[str, Any] = {
++        "predicate": predicate_frame_signal_from_source(runtime_value, passed, node),
++    }
+     items = runtime_records(runtime_value)
+     if isinstance(items, list) and items and all(isinstance(item, dict) for item in items):
+         for item, status, value in zip(items, passed, values, strict=False):
+@@ -1350,27 +1431,24 @@ def predicate_persists_for(state: PeriodState, node: BoundPredicateNode) -> None
+     if (
+         records
+         and len(records) == len(values)
+-        and all(isinstance(record.get("persistence_series"), pd.Series) for record in records)
++        and all(isinstance(record.get("truth_series"), pd.Series) for record in records)
+     ):
+         accepted_records: list[dict[str, Any]] = []
+         for record, source_status in zip(records, values, strict=True):
+             persistence = record_persistence_evidence(
+                 record=record,
+-                source_predicate_id=node.input.source_node_id,
+                 minimum_frames=minimum_frames,
+                 analysis_rate_hz=state.params.integer("analysis_rate_hz"),
+             )
+             persistent = bool(persistence["persistent"])
+-            record["persistent_shift"] = persistent
+-            record["shift_persistence_seconds"] = persistence["duration_seconds"]
+-            record["shift_persistence_start_frame_id"] = persistence["start_frame_id"]
+-            record["shift_persistence_end_frame_id"] = persistence["end_frame_id"]
++            record["predicate_persistent"] = persistent
++            record["predicate_persistence_seconds"] = persistence["duration_seconds"]
++            record["predicate_persistence_start_frame_id"] = persistence["start_frame_id"]
++            record["predicate_persistence_end_frame_id"] = persistence["end_frame_id"]
+             record["predicate_gate_passed"] = bool(
+                 source_status is True
+                 and persistent
+-                and record_quality_passed(record)
+             )
+-            record["shift_gate_passed"] = record["predicate_gate_passed"]
+             record_candidate_predicate(
+                 candidate=record,
+                 node=node,
+@@ -1623,23 +1701,27 @@ def execution_result_rows(execution: QueryExecution) -> list[dict[str, Any]]:
+     return rows
+ 
+ 
+-def runtime_anchors(state: PeriodState) -> list[RuntimeAnchor]:
++def runtime_anchors(state: PeriodState, anchor_source: Any) -> list[RuntimeAnchor]:
+     anchors: list[RuntimeAnchor] = []
+     seen: set[str] = set()
+-    for node_id, outputs in state.runtime_values.items():
+-        for output_name, runtime_value in outputs.items():
+-            for index, record in enumerate(runtime_records(runtime_value)):
+-                anchor = runtime_anchor_from_record(
+-                    state=state,
+-                    node_id=node_id,
+-                    output_name=output_name,
+-                    index=index,
+-                    record=record,
+-                )
+-                if anchor is None or anchor.anchor_id in seen:
+-                    continue
+-                seen.add(anchor.anchor_id)
+-                anchors.append(anchor)
++    if anchor_source is None:
++        return anchors
++    try:
++        runtime_value = state.runtime_values[anchor_source.source_node_id][anchor_source.output_name]
++    except KeyError:
++        return anchors
++    for index, record in enumerate(runtime_records(runtime_value)):
++        anchor = runtime_anchor_from_record(
++            state=state,
++            node_id=anchor_source.source_node_id,
++            output_name=anchor_source.output_name,
++            index=index,
++            record=record,
++        )
++        if anchor is None or anchor.anchor_id in seen:
++            continue
++        seen.add(anchor.anchor_id)
++        anchors.append(anchor)
+     anchors.sort(
+         key=lambda item: (
+             item.match_id,
+@@ -1671,17 +1753,14 @@ def runtime_anchor_from_record(
+     period = str(record.get("period") or state.period)
+     anchor_id = record.get("anchor_id")
+     if not isinstance(anchor_id, str) or not anchor_id:
+-        anchor_id = stable_hash(
+-            {
+-                "match_id": match_id,
+-                "period": period,
+-                "anchor_frame_id": anchor_frame_id,
+-                "source_node_id": node_id,
+-                "output_name": output_name,
+-                "index": index,
+-                "wide_entry_frame_id": record.get("wide_entry_frame_id"),
+-            }
+-        )[:16]
++        anchor_id = anchor_record_id(
++            match_id=match_id,
++            period=period,
++            anchor_frame_id=anchor_frame_id,
++            start_frame_id=optional_int(record.get("start_frame_id")),
++            end_frame_id=optional_int(record.get("end_frame_id")),
++            entity_refs=record.get("entity_refs"),
++        )
+     return RuntimeAnchor(
+         anchor_id=anchor_id,
+         match_id=match_id,
+@@ -1695,6 +1774,38 @@ def runtime_anchor_from_record(
+     )
+ 
+ 
++def generic_target_result(anchor_record: dict[str, Any]) -> dict[str, Any]:
++    return {
++        "result_id": str(anchor_record.get("anchor_id", "")),
++        "classification": anchor_record.get("classification"),
++        "accepted": False,
++        "anchor_frame_id": anchor_record.get("anchor_frame_id"),
++        "_predicate_status": anchor_record.get("_predicate_status", {}),
++    }
++
++
++def anchor_record_id(
++    *,
++    match_id: str,
++    period: str,
++    anchor_frame_id: int,
++    start_frame_id: int | None,
++    end_frame_id: int | None,
++    entity_refs: Any,
++) -> str:
++    entities = sorted(str(item) for item in entity_refs) if isinstance(entity_refs, list) else []
++    return stable_hash(
++        {
++            "match_id": match_id,
++            "period": period,
++            "anchor_frame_id": int(anchor_frame_id),
++            "start_frame_id": start_frame_id,
++            "end_frame_id": end_frame_id,
++            "entity_refs": entities,
++        }
++    )[:16]
++
++
+ def optional_int(value: Any) -> int | None:
+     if value is None:
+         return None
+@@ -1770,7 +1881,6 @@ def predicate_traces_from_status_records(
+         "anchor_id": anchor.anchor_id,
+         "match_id": anchor.match_id,
+         "period": anchor.period,
+-        "wide_entry_frame_id": int(anchor_record["wide_entry_frame_id"]),
+         "anchor_frame_id": anchor.anchor_frame_id,
+     }
+     traces: list[PredicateTrace] = []
+@@ -1844,7 +1954,6 @@ def missing_target_predicate_traces(
+                     "anchor_id": anchor.anchor_id,
+                     "match_id": anchor.match_id,
+                     "period": anchor.period,
+-                    "wide_entry_frame_id": int(anchor_record["wide_entry_frame_id"]),
+                     "anchor_frame_id": anchor.anchor_frame_id,
+                     "source_node_id": node.input.source_node_id,
+                     "source_output_name": node.input.output_name,
+@@ -2193,6 +2302,51 @@ def shift_persistence_evidence(
+     }
+ 
+ 
++def boolean_persistence_evidence(
++    values: pd.Series,
++    persistence_frames: int,
++    analysis_rate_hz: int = FRAME_RATE_HZ,
++) -> dict[str, Any]:
++    if len(values) == 0:
++        return {
++            "persistent": False,
++            "duration_seconds": 0.0,
++            "start_frame_id": None,
++            "end_frame_id": None,
++        }
++
++    best_start: int | None = None
++    best_end: int | None = None
++    best_count = 0
++    current_start: int | None = None
++    current_count = 0
++    current_end: int | None = None
++
++    for frame_id, value in values.items():
++        passes = value is True
++        if passes:
++            if current_start is None:
++                current_start = int(frame_id)
++                current_count = 0
++            current_count += 1
++            current_end = int(frame_id)
++            if current_count > best_count:
++                best_count = current_count
++                best_start = current_start
++                best_end = current_end
++        else:
++            current_start = None
++            current_count = 0
++            current_end = None
++
++    return {
++        "persistent": best_count >= persistence_frames,
++        "duration_seconds": round(best_count / analysis_rate_hz, 3),
++        "start_frame_id": best_start,
++        "end_frame_id": best_end,
++    }
++
++
+ def classify_outcome(
+     *,
+     signed_ball_y: np.ndarray,
+diff --git a/src/tqe/runtime/ir.py b/src/tqe/runtime/ir.py
+index 62c416c..ed54dc8 100644
+--- a/src/tqe/runtime/ir.py
++++ b/src/tqe/runtime/ir.py
+@@ -33,6 +33,7 @@ class PayloadType(StrEnum):
+     BOOLEAN = "boolean"
+     NUMBER = "number"
+     ENUM = "enum"
++    ANCHOR_REF = "anchor_ref"
+     ENTITY_REF = "entity_ref"
+     TEAM_REF = "team_ref"
+     REGION_REF = "region_ref"
+@@ -61,6 +62,7 @@ class Unit(StrEnum):
+ 
+ class EntityScope(StrEnum):
+     NONE = "none"
++    ANCHOR = "anchor"
+     BALL = "ball"
+     PLAYER = "player"
+     TEAM = "team"
+@@ -131,6 +133,7 @@ class TypedValue(StrictModel):
+                 raise ValueError("number typed values must contain an int or float")
+         if self.payload_type in {
+             PayloadType.ENUM,
++            PayloadType.ANCHOR_REF,
+             PayloadType.ENTITY_REF,
+             PayloadType.TEAM_REF,
+             PayloadType.REGION_REF,
+@@ -287,6 +290,7 @@ class DraftQueryPlan(StrictModel):
+     classification_mode: ClassificationMode
+     nodes: list[DraftPlanNode] = Field(min_length=1)
+     classification_rules: list[ClassificationRule] = Field(min_length=1)
++    anchor_source: SignalRef | None = None
+     requested_evidence: list[EvidenceRequest] = Field(default_factory=list)
+     complexity_limits: ComplexityLimits = Field(default_factory=ComplexityLimits)
+ 
+@@ -465,6 +469,7 @@ class BoundQueryPlan(StrictModel):
+     unknown_evidence_policy: UnknownEvidencePolicy
+     classification_mode: ClassificationMode
+     classification_rules: list[ClassificationRule]
++    anchor_source: SignalRef | None = None
+     requested_evidence: list[EvidenceRequest]
+     complexity_limits: ComplexityLimits
+     resolved_parameters: list[ResolvedParameter]
+diff --git a/src/tqe/runtime/values.py b/src/tqe/runtime/values.py
+index 34a2362..8dd37e4 100644
+--- a/src/tqe/runtime/values.py
++++ b/src/tqe/runtime/values.py
+@@ -29,6 +29,7 @@ class RuntimeValue:
+     output: CatalogOutput
+     value: Any
+     provenance: dict[str, Any] = field(default_factory=dict)
++    records: list[dict[str, Any]] = field(default_factory=list)
+ 
+     @property
+     def temporal_type(self) -> TemporalContainer:
+@@ -74,8 +75,8 @@ def runtime_value_from_raw(
+             "payload_type": output.payload_type.value,
+             "unit": output.unit.value,
+             "entity_scope": output.entity_scope.value,
+-            "records": records,
+         },
++        records=records or [],
+     )
+ 
+ 
+@@ -127,7 +128,12 @@ def normalize_frame_signal(
+             raise RuntimeError(
+                 f"{node_id}.{output.name} frame signal must contain scalar payload values, not structured records"
+             )
+-        if frame_ids is not None and len(frame_ids) == len(raw_value):
++        if frame_ids is not None:
++            if len(frame_ids) != len(raw_value):
++                raise RuntimeError(
++                    f"{node_id}.{output.name} frame signal length {len(raw_value)} "
++                    f"does not match frame_ids length {len(frame_ids)}"
++                )
+             signal_frame_ids = [int(item) for item in frame_ids]
+         else:
+             signal_frame_ids = list(range(len(raw_value)))
+@@ -194,6 +200,9 @@ def assert_value_conforms(*, node_id: str, output: CatalogOutput, value: Any) ->
+ def assert_episode_record(*, node_id: str, output: CatalogOutput, item: Any) -> None:
+     if not isinstance(item, dict):
+         raise RuntimeError(f"{node_id}.{output.name} episode entries must be dictionaries")
++    if output.payload_type == PayloadType.ANCHOR_REF:
++        assert_anchor_record(node_id=node_id, output=output, item=item)
++        return
+     has_standard_window = {"start_frame_id", "end_frame_id"}.issubset(item)
+     has_possession_window = {"possession_start_frame_id", "possession_end_frame_id"}.issubset(item)
+     has_anchor_window = "anchor_frame_id" in item or "wide_entry_frame_id" in item
+@@ -201,6 +210,18 @@ def assert_episode_record(*, node_id: str, output: CatalogOutput, item: Any) ->
+         raise RuntimeError(f"{node_id}.{output.name} episode entries need frame identity")
+ 
+ 
++def assert_anchor_record(*, node_id: str, output: CatalogOutput, item: dict[str, Any]) -> None:
++    required = {"anchor_id", "match_id", "period", "anchor_frame_id", "start_frame_id", "end_frame_id"}
++    missing = sorted(required - set(item))
++    if missing:
++        raise RuntimeError(f"{node_id}.{output.name} anchor records missing {missing}")
++    for field in ("anchor_frame_id", "start_frame_id", "end_frame_id"):
++        if isinstance(item.get(field), bool) or not isinstance(item.get(field), int):
++            raise RuntimeError(f"{node_id}.{output.name} anchor {field} must be an integer")
++    if not isinstance(item.get("anchor_id"), str) or not item["anchor_id"]:
++        raise RuntimeError(f"{node_id}.{output.name} anchor_id must be a non-empty string")
++
++
+ def assert_relation_episode_record(*, node_id: str, output: CatalogOutput, item: Any) -> None:
+     if not isinstance(item, dict) or "relation_id" not in item:
+         raise RuntimeError(f"{node_id}.{output.name} relation episodes need relation_id")
+@@ -241,6 +262,7 @@ def _matches_payload(
+         return True
+     if payload_type in {
+         PayloadType.ENUM,
++        PayloadType.ANCHOR_REF,
+         PayloadType.ENTITY_REF,
+         PayloadType.TEAM_REF,
+         PayloadType.REGION_REF,
+diff --git a/src/tqe/verification/m1_1_gate_r5.py b/src/tqe/verification/m1_1_gate_r5.py
+index 7d466cb..4bc00f6 100644
+--- a/src/tqe/verification/m1_1_gate_r5.py
++++ b/src/tqe/verification/m1_1_gate_r5.py
+@@ -448,6 +448,9 @@ def renamed_node_payload(payload: dict[str, Any]) -> dict[str, Any]:
+         rule["predicate_ids"] = [mapping[predicate_id] for predicate_id in rule["predicate_ids"]]
+     for request in payload["draft_plan"]["requested_evidence"]:
+         request["source"]["source_node_id"] = mapping[request["source"]["source_node_id"]]
++    anchor_source = payload["draft_plan"].get("anchor_source")
++    if isinstance(anchor_source, dict):
++        anchor_source["source_node_id"] = mapping[anchor_source["source_node_id"]]
+     payload["draft_plan"]["plan_id"] = "r5_renamed_approved_plan"
+     payload["default_invocation"]["invocation_id"] = "r5_renamed_invocation"
+     return payload
+@@ -580,6 +583,7 @@ def simple_non_block_shift_payload() -> dict[str, Any]:
+                     "description": "The period has possession episodes.",
+                 }
+             ],
++            "anchor_source": {"source_node_id": "possession", "output_name": "anchors"},
+             "requested_evidence": [],
+         },
+     }
+diff --git a/src/tqe/verification/m1_1_gate_s2.py b/src/tqe/verification/m1_1_gate_s2.py
+index 09ffbf7..28c5366 100644
+--- a/src/tqe/verification/m1_1_gate_s2.py
++++ b/src/tqe/verification/m1_1_gate_s2.py
+@@ -124,7 +124,7 @@ def validate_downstream_nodes_use_catalog_inputs() -> list[dict[str, Any]]:
+         ),
+         "primitive_outcome_classification": (
+             primitive_outcome_classification,
+-            ["accepted_shift_episodes", "signed_shift"],
++            ["accepted_shift_episodes"],
+         ),
+         "relation_anchor_results": (relation_anchor_results, ["anchors"]),
+         "primitive_relation_destination_entry_classification": (
+diff --git a/src/tqe/verification/m1_1_gate_s3.py b/src/tqe/verification/m1_1_gate_s3.py
+index 10f7497..0ae6802 100644
+--- a/src/tqe/verification/m1_1_gate_s3.py
++++ b/src/tqe/verification/m1_1_gate_s3.py
+@@ -50,7 +50,7 @@ def build_report() -> dict[str, Any]:
+         period="firstHalf",
+         params=runtime_parameters(bound),
+     )
+-    anchors = runtime_anchors(state)
++    anchors = runtime_anchors(state, bound.anchor_source)
+ 
+     checks.extend(validate_runtime_anchor_set(state, anchors))
+     checks.extend(validate_target_evaluation_uses_anchor_core(executor, bound))
+diff --git a/src/tqe/verification/m1_1_gate_s3r.py b/src/tqe/verification/m1_1_gate_s3r.py
+new file mode 100644
+index 0000000..f22d001
+--- /dev/null
++++ b/src/tqe/verification/m1_1_gate_s3r.py
+@@ -0,0 +1,430 @@
++"""Verify M1.1S Gate S3R: explicit anchors and generic temporal semantics."""
++
++from __future__ import annotations
++
++import inspect
++import json
++from datetime import UTC, datetime
++from pathlib import Path
++from typing import Any
++
++import numpy as np
++import pandas as pd
++
++from tqe.runtime.binder import bind_document, bind_document_from_path
++from tqe.runtime.catalog import output
++from tqe.runtime.executor import (
++    FRAME_RATE_HZ,
++    PeriodState,
++    RuntimeParameters,
++    TacticalQueryExecutor,
++    evaluate_target_in_state,
++    execution_result_rows,
++    predicate_persists_for,
++    runtime_anchors,
++    runtime_parameters,
++    typed_number,
++)
++from tqe.runtime.ir import (
++    BoundPredicateNode,
++    Cardinality,
++    EntityScope,
++    EvaluationTarget,
++    PayloadType,
++    SignalRef,
++    TacticalQueryDocument,
++    TemporalContainer,
++    Unit,
++)
++from tqe.runtime.values import FrameSignal, RuntimeValue, runtime_value_from_raw
++from tqe.verification.m1_1_gate_r5 import clone_plan_payload, renamed_node_payload
++
++APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
++REPORT_PATH = Path("artifacts/m1.1/gate-s3r-verification-report.json")
++
++
++def utc_now_iso() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat()
++
++
++def write_json(path: Path, payload: dict[str, Any]) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++
++
++def pass_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "pass", "message": message, "details": details or {}}
++
++
++def fail_check(check_id: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
++    return {"id": check_id, "status": "fail", "message": message, "details": details or {}}
++
++
++def build_report() -> dict[str, Any]:
++    checks: list[dict[str, Any]] = []
++    bound = bind_document_from_path(APPROVED_PLAN_PATH)
++    executor = TacticalQueryExecutor()
++    state = executor._execute_period(  # noqa: SLF001 - verifier inspects runtime contract.
++        bound_plan=bound,
++        match_id="J03WOY",
++        period="firstHalf",
++        params=runtime_parameters(bound),
++    )
++
++    checks.extend(validate_explicit_anchor_source(bound, state))
++    checks.extend(validate_anchor_identity_rename_stability(executor, bound))
++    checks.extend(validate_anchor_dedup_and_side_channel_independence(bound))
++    checks.extend(validate_non_m1_anchor_target_and_trace(bound))
++    checks.extend(validate_generic_temporal_semantics(bound))
++    checks.extend(validate_frame_length_mismatch_rejected())
++    checks.extend(validate_generic_source_no_forbidden_assumptions())
++    checks.extend(validate_node_execution_result_contract(executor, bound))
++    checks.extend(validate_approved_plan_parity(bound, executor))
++
++    summary = {
++        "pass": sum(1 for check in checks if check["status"] == "pass"),
++        "fail": sum(1 for check in checks if check["status"] == "fail"),
++        "not_ready": sum(1 for check in checks if check["status"] == "not_ready"),
++    }
++    report = {
++        "schema_version": "1.0",
++        "milestone": "M1.1S",
++        "gate": "Gate_S3R_explicit_anchor_contract_generic_temporal_semantics",
++        "generated_at": utc_now_iso(),
++        "status": "pass" if summary["fail"] == 0 and summary["not_ready"] == 0 else "fail",
++        "summary": summary,
++        "checks": checks,
++    }
++    write_json(REPORT_PATH, report)
++    return report
++
++
++def validate_explicit_anchor_source(bound: Any, state: PeriodState) -> list[dict[str, Any]]:
++    anchors = runtime_anchors(state, bound.anchor_source)
++    sources = sorted({f"{anchor.source_node_id}.{anchor.output_name}" for anchor in anchors})
++    return [
++        pass_check(
++            "anchors.explicit_plan_anchor_source",
++            "runtime anchor discovery uses the plan-designated anchor source only",
++            {"anchor_source": bound.anchor_source.model_dump(mode="json"), "sources": sources, "count": len(anchors)},
++        )
++        if bound.anchor_source == SignalRef(source_node_id="signed_shift", output_name="anchors")
++        and sources == ["signed_shift.anchors"]
++        and anchors
++        else fail_check(
++            "anchors.explicit_plan_anchor_source",
++            "anchor discovery is missing or not bound to the explicit plan anchor source",
++            {"anchor_source": getattr(bound.anchor_source, "model_dump", lambda **_: None)(mode="json") if bound.anchor_source else None, "sources": sources},
++        )
++    ]
++
++
++def validate_anchor_identity_rename_stability(
++    executor: TacticalQueryExecutor,
++    bound: Any,
++) -> list[dict[str, Any]]:
++    payload = renamed_node_payload(clone_plan_payload(APPROVED_PLAN_PATH))
++    renamed_bound = bind_document(TacticalQueryDocument.model_validate(payload))
++    params = runtime_parameters(bound)
++    renamed_params = runtime_parameters(renamed_bound)
++    original = executor._execute_period(  # noqa: SLF001
++        bound_plan=bound,
++        match_id="J03WOY",
++        period="firstHalf",
++        params=params,
++    )
++    renamed = executor._execute_period(  # noqa: SLF001
++        bound_plan=renamed_bound,
++        match_id="J03WOY",
++        period="firstHalf",
++        params=renamed_params,
++    )
++    original_ids = sorted(anchor.anchor_id for anchor in runtime_anchors(original, bound.anchor_source))
++    renamed_ids = sorted(anchor.anchor_id for anchor in runtime_anchors(renamed, renamed_bound.anchor_source))
++    return [
++        pass_check(
++            "anchors.semantic_ids_survive_node_rename",
++            "renaming and reordering-independent node identity does not change anchor IDs",
++            {"anchor_count": len(original_ids)},
++        )
++        if original_ids and original_ids == renamed_ids
++        else fail_check(
++            "anchors.semantic_ids_survive_node_rename",
++            "anchor IDs changed after node rename",
++            {"original_sample": original_ids[:10], "renamed_sample": renamed_ids[:10]},
++        )
++    ]
++
++
++def validate_anchor_dedup_and_side_channel_independence(bound: Any) -> list[dict[str, Any]]:
++    state = synthetic_period_state()
++    record = synthetic_anchor_record("anchor_a", 125)
++    duplicate = dict(record)
++    duplicate["ignored_extra"] = "same_physical_anchor"
++    state.runtime_values["anchor_node"] = {
++        "anchors": RuntimeValue(
++            output=anchor_output(),
++            value=[record, duplicate],
++        )
++    }
++    state.candidates = [dict(record), dict(duplicate)]
++    state.accepted = [dict(record)]
++    before = runtime_anchors(state, SignalRef(source_node_id="anchor_node", output_name="anchors"))
++    state.candidates = []
++    state.accepted = []
++    after = runtime_anchors(state, SignalRef(source_node_id="anchor_node", output_name="anchors"))
++    return [
++        pass_check(
++            "anchors.deduplicate_and_ignore_side_channels",
++            "repeated representations of one physical anchor deduplicate and do not depend on state side channels",
++            {"before": [anchor.anchor_id for anchor in before], "after": [anchor.anchor_id for anchor in after]},
++        )
++        if [anchor.anchor_id for anchor in before] == ["anchor_a"]
++        and [anchor.anchor_id for anchor in after] == ["anchor_a"]
++        else fail_check(
++            "anchors.deduplicate_and_ignore_side_channels",
++            "anchor dedupe or state side-channel independence failed",
++            {"before": [anchor.anchor_id for anchor in before], "after": [anchor.anchor_id for anchor in after]},
++        )
++    ]
++
++
++def validate_non_m1_anchor_target_and_trace(bound: Any) -> list[dict[str, Any]]:
++    state = synthetic_period_state()
++    record = synthetic_anchor_record("non_m1_anchor", 125)
++    state.runtime_values["anchor_node"] = {
++        "anchors": RuntimeValue(output=anchor_output(), value=[record])
++    }
++    synthetic_bound = bound.model_copy(
++        update={"anchor_source": SignalRef(source_node_id="anchor_node", output_name="anchors")}
++    )
++    result = evaluate_target_in_state(
++        bound_plan=synthetic_bound,
++        state=state,
++        target=EvaluationTarget(
++            target_id="non_m1_anchor_probe",
++            match_id="synthetic",
++            period="firstHalf",
++            approximate_time_ms=int(round(125 / FRAME_RATE_HZ * 1000)),
++            search_radius_ms=250,
++        ),
++    )
++    traces = result["predicate_traces"]
++    source_text = inspect.getsource(evaluate_target_in_state)
++    return [
++        pass_check(
++            "anchors.non_m1_anchor_targetable_and_traceable",
++            "a non-M1 anchor with no block-shift fields can be targeted and traced",
++            {"status": result["status"], "trace_count": len(traces), "closest": result["closest_candidate"]},
++        )
++        if result["status"] == "NON_MATCH"
++        and result["closest_candidate"]["anchor_id"] == "non_m1_anchor"
++        and traces
++        and all(trace["status"] == "UNKNOWN" for trace in traces)
++        and "wide_entry" not in source_text
++        and "base_result_fields" not in source_text
++        else fail_check(
++            "anchors.non_m1_anchor_targetable_and_traceable",
++            "non-M1 anchor target/trace path failed or still contains M1 assumptions",
++            {"result": result, "source_contains_wide_entry": "wide_entry" in source_text},
++        )
++    ]
++
++
++def validate_generic_temporal_semantics(bound: Any) -> list[dict[str, Any]]:
++    node = next(
++        node
++        for node in bound.nodes
++        if isinstance(node, BoundPredicateNode) and node.operator.name == "persists_for"
++    ).model_copy(update={"duration": typed_number(0.4, Unit.SECOND)})
++    state = synthetic_period_state()
++    values = [True, True, None, True, True, True, False, True]
++    state.runtime_values[node.input.source_node_id] = {
++        node.input.output_name: RuntimeValue(output=node.input_type, value=values)
++    }
++    predicate_persists_for(state, node)
++    episodes = state.signals[node.node_id]["episodes"]
++    windows = [(episode["start_frame_id"], episode["end_frame_id"]) for episode in episodes]
++    source = inspect.getsource(predicate_persists_for)
++    forbidden = ["wide_entry", "block_shift", "shift_gate", "persistence_series", "quality_status"]
++    hits = [token for token in forbidden if token in source]
++    return [
++        pass_check(
++            "temporal.persists_for_generic_tri_state",
++            "persists_for consumes tri-state booleans, breaks on UNKNOWN, and has no shift-specific assumptions",
++            {"windows": windows},
++        )
++        if windows == [(100, 101), (103, 105)] and not hits
++        else fail_check(
++            "temporal.persists_for_generic_tri_state",
++            "generic persists_for semantics failed",
++            {"windows": windows, "forbidden_hits": hits},
++        )
++    ]
++
++
++def validate_frame_length_mismatch_rejected() -> list[dict[str, Any]]:
++    try:
++        runtime_value_from_raw(
++            node_id="frame_mismatch_probe",
++            output=output(
++                name="predicate",
++                temporal_type=TemporalContainer.FRAME_SIGNAL,
++                payload_type=PayloadType.BOOLEAN,
++                cardinality=Cardinality.SINGLE,
++                entity_scope=EntityScope.FRAME,
++            ),
++            raw_value=[True, False],
++            frame_ids=[10, 11, 12],
++        )
++    except RuntimeError as error:
++        return [
++            pass_check(
++                "frame_signal.length_mismatch_rejected",
++                "frame-signal values cannot silently fall back to synthetic frame IDs",
++                {"error": str(error)},
++            )
++        ]
++    return [
++        fail_check(
++            "frame_signal.length_mismatch_rejected",
++            "frame-signal values with mismatched frame IDs were accepted",
++        )
++    ]
++
++
++def validate_generic_source_no_forbidden_assumptions() -> list[dict[str, Any]]:
++    functions = [
++        runtime_anchors,
++        evaluate_target_in_state,
++    ]
++    forbidden = ["wide_entry", "block_shift", "shift_gate"]
++    hits: dict[str, list[str]] = {}
++    for function in functions:
++        source = inspect.getsource(function)
++        found = [token for token in forbidden if token in source]
++        if found:
++            hits[function.__name__] = found
++    return [
++        pass_check(
++            "generic_anchor_trace_source.no_m1_assumptions",
++            "generic anchor/target code has no wide_entry, block_shift, or shift_gate assumptions",
++            {"checked": [function.__name__ for function in functions]},
++        )
++        if not hits
++        else fail_check(
++            "generic_anchor_trace_source.no_m1_assumptions",
++            "generic anchor/target code still contains M1-specific assumptions",
++            {"hits": hits},
++        )
++    ]
++
++
++def validate_node_execution_result_contract(
++    executor: TacticalQueryExecutor,
++    bound: Any,
++) -> list[dict[str, Any]]:
++    params = runtime_parameters(bound)
++    state = executor._period_state(  # noqa: SLF001
++        match_id="J03WOY",
++        period="firstHalf",
++        perspective_team_role=bound.perspective_team_role,
++        recipe_id=bound.recipe_id,
++        recipe_version=bound.recipe_version,
++        params=params,
++    )
++    results = []
++    for node in bound.nodes:
++        result = executor._execute_node(state=state, node=node)  # noqa: SLF001
++        results.append(result)
++    input_counts = {result.node_id: len(result.inputs) for result in results}
++    output_counts = {result.node_id: len(result.runtime_values) for result in results}
++    return [
++        pass_check(
++            "nodes.execution_result_contract",
++            "node execution returns explicit inputs, parameters, outputs, runtime values, and provenance",
++            {"input_counts": input_counts, "output_counts": output_counts},
++        )
++        if all(isinstance(result.outputs, dict) and result.runtime_values for result in results)
++        and input_counts.get("outcome") == 1
++        else fail_check(
++            "nodes.execution_result_contract",
++            "node execution result contract is incomplete",
++            {"input_counts": input_counts, "output_counts": output_counts},
++        )
++    ]
++
++
++def validate_approved_plan_parity(bound: Any, executor: TacticalQueryExecutor) -> list[dict[str, Any]]:
++    execution = executor.execute(bound)
++    rows = execution_result_rows(execution)
++    return [
++        pass_check(
++            "approved_plan.parity_preserved",
++            "approved plan still returns the frozen 180 results and 900 predicate traces",
++            {"result_count": len(rows), "trace_count": len(execution.predicate_traces)},
++        )
++        if len(rows) == 180 and len(execution.predicate_traces) == 900
++        else fail_check(
++            "approved_plan.parity_preserved",
++            "approved plan parity changed",
++            {"result_count": len(rows), "trace_count": len(execution.predicate_traces)},
++        )
++    ]
++
++
++def anchor_output() -> Any:
++    return output(
++        name="anchors",
++        temporal_type=TemporalContainer.EPISODE_SET,
++        payload_type=PayloadType.ANCHOR_REF,
++        cardinality=Cardinality.COLLECTION,
++        entity_scope=EntityScope.ANCHOR,
++    )
++
++
++def synthetic_anchor_record(anchor_id: str, frame_id: int) -> dict[str, Any]:
++    return {
++        "anchor_id": anchor_id,
++        "match_id": "synthetic",
++        "period": "firstHalf",
++        "anchor_frame_id": frame_id,
++        "start_frame_id": frame_id - 5,
++        "end_frame_id": frame_id + 5,
++        "entity_refs": ["synthetic_entity"],
++    }
++
++
++def synthetic_period_state() -> PeriodState:
++    return PeriodState(
++        match_id="synthetic",
++        period="firstHalf",
++        params=RuntimeParameters(values={"analysis_rate_hz": 5}),
++        recipe_id="synthetic_recipe",
++        recipe_version="1.0.0",
++        perspective_team_role="home",
++        perspective_team_id="home_team",
++        defending_team_role="away",
++        defending_team_id="away_team",
++        canonical_root=Path("."),
++        raw_tracking=Path("."),
++        positions=pd.DataFrame(),
++        frame_ids=np.arange(100, 108, dtype=np.int64),
++        ball_y=np.array([], dtype=float),
++        possession_role=np.array([], dtype=object),
++        ball_alive=np.array([], dtype=bool),
++        defender_count=pd.Series(dtype=int),
++        defender_centroid_y=pd.Series(dtype=float),
++    )
++
++
++def main() -> None:
++    report = build_report()
++    print(f"Wrote {REPORT_PATH}")
++    print(json.dumps({"status": report["status"], "summary": report["summary"]}, sort_keys=True))
++    if report["status"] != "pass":
++        raise SystemExit(1)
++
++
++if __name__ == "__main__":
++    main()

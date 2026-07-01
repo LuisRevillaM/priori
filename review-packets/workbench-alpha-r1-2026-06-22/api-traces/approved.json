@@ -1,0 +1,138 @@
+[
+  {
+    "label": "approved.interpret",
+    "path": "/api/interpret",
+    "status": 200,
+    "duration_ms": 29,
+    "summary": {
+      "ok": true,
+      "status": "PLAN_INTERPRETED",
+      "plan_hash": "804b45319c45b8a4bf483e02f5cd0a435d52471d684f67afde7536332e46e029"
+    }
+  },
+  {
+    "label": "approved.validate",
+    "path": "/api/submit-validate",
+    "status": 200,
+    "duration_ms": 27,
+    "summary": {
+      "ok": true,
+      "draft_plan_id": "draft_afbb42ec0e5f7de3",
+      "bound_plan_id": "bound_4a5a1dabc168ffcc"
+    }
+  },
+  {
+    "label": "approved.confirm",
+    "path": "/api/confirm",
+    "status": 200,
+    "duration_ms": 29,
+    "summary": {
+      "ok": true,
+      "bound_plan_id": "bound_4a5a1dabc168ffcc",
+      "authorization_id": "auth_fc125471b51062db"
+    }
+  },
+  {
+    "label": "approved.execute",
+    "path": "/api/execute",
+    "status": 200,
+    "duration_ms": 29409,
+    "summary": {
+      "ok": true,
+      "bound_plan_id": "bound_4a5a1dabc168ffcc",
+      "execution_id": "exec_a814849e06f7f6fe",
+      "total_result_count": 180,
+      "returned_result_count": 25,
+      "result_ids": [
+        "7cd5a46f6988a065",
+        "9d7c768b86f9d0b4",
+        "3647a5fb42d1e723",
+        "4b1aa3f32bd1cdd2",
+        "ab36a887429b808a",
+        "cfc400a14315b990",
+        "1bf919fd4a47e65d",
+        "3c84bb3756c9f837",
+        "4d9f8219e715d749",
+        "acdb6f018c886b5d",
+        "98c2a962e70ea64b",
+        "a2a3d28cec0ed20a",
+        "a712e69e866373c1",
+        "5bc6402662ab8183",
+        "d8f99c07583fa271",
+        "fad1aa8fe91d7f79",
+        "a5f3f78e8c4cd0f3",
+        "08aa43c140cb89b0",
+        "ea3f3cb139312e84",
+        "8b5170401d49a488",
+        "9d2222c26919c8a0",
+        "499d140b3e5641cb",
+        "019f37cf6e91fc07",
+        "40d60c74d1e1e18e",
+        "104077c21a6faef7"
+      ]
+    }
+  },
+  {
+    "label": "approved.inspect_initial_result",
+    "path": "/api/inspect-result",
+    "status": 200,
+    "duration_ms": 29409,
+    "summary": {
+      "ok": true,
+      "execution_id": "exec_a814849e06f7f6fe",
+      "selected_result_id": "7cd5a46f6988a065",
+      "replay_window_id": "replay_3e8fc424424ba032",
+      "replay_source_id": "7cd5a46f6988a065",
+      "replay_frame_count": 101,
+      "trace_statuses": [
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS"
+      ]
+    }
+  },
+  {
+    "label": "approved.inspect_selected_result",
+    "path": "/api/inspect-result",
+    "status": 200,
+    "duration_ms": 307,
+    "summary": {
+      "ok": true,
+      "execution_id": "exec_a814849e06f7f6fe",
+      "selected_result_id": "9d7c768b86f9d0b4",
+      "replay_window_id": "replay_1cac3e389b7a9af1",
+      "replay_source_id": "9d7c768b86f9d0b4",
+      "replay_frame_count": 101,
+      "trace_statuses": [
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS"
+      ]
+    }
+  },
+  {
+    "label": "approved.inspect_rapid_final_result",
+    "path": "/api/inspect-result",
+    "status": 200,
+    "duration_ms": 679,
+    "summary": {
+      "ok": true,
+      "execution_id": "exec_a814849e06f7f6fe",
+      "selected_result_id": "ab36a887429b808a",
+      "replay_window_id": "replay_16f70a1be1a87952",
+      "replay_source_id": "ab36a887429b808a",
+      "replay_frame_count": 101,
+      "trace_statuses": [
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS"
+      ]
+    }
+  }
+]

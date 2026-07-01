@@ -1,0 +1,33 @@
+{
+  "checks": [
+    {
+      "id": "m1_2.s0",
+      "status": "pass",
+      "summary": {
+        "fail": 0,
+        "pass": 16
+      }
+    },
+    {
+      "id": "m1_2.s1",
+      "status": "pass",
+      "summary": {
+        "fail": 0,
+        "pass": 8
+      }
+    }
+  ],
+  "generated_at": "2026-06-21T14:39:45+00:00",
+  "milestone": "M1.2",
+  "reports": {
+    "s0": "artifacts/m1.2/gate-s0-verification-report.json",
+    "s1": "artifacts/m1.2/gate-s1-verification-report.json"
+  },
+  "schema_version": "1.0",
+  "scope": "S0_S1_manual_workshop_only",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "pass": 2
+  }
+}

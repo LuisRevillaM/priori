@@ -1,0 +1,1875 @@
+{
+  "capabilities": [
+    {
+      "binding_id": "binding.primitive.ball_lateral_fraction.0_1_0",
+      "conformance": "EXACT",
+      "id": "ball_lateral_fraction",
+      "implements": [
+        "op.ball_lateral_fraction.v1"
+      ],
+      "kind": "primitive",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "wide_entry_y_m",
+          "ball_side"
+        ],
+        "executable": true,
+        "inputs": [],
+        "kind": "primitive",
+        "limitations": [
+          "Depends on canonical pitch coordinates and known pitch width."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "ball_lateral_fraction",
+        "outputs": [
+          {
+            "cardinality": "single",
+            "entity_scope": "ball",
+            "evidence_fields": [
+              "wide_entry_y_m",
+              "ball_side"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "fraction",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "fraction"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Normalize ball distance from pitch centerline toward either touchline.",
+        "runtime_id": "primitive:ball_lateral_fraction:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
+      "binding_id": "binding.primitive.controlled_pass_episode.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "controlled_pass_episode",
+      "implements": [
+        "op.event_seeded_tracking_confirmed_pass.v1"
+      ],
+      "kind": "primitive",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "pass_episode_id",
+          "passer_id",
+          "receiver_id",
+          "event_anchor_frame_id",
+          "physical_release_frame_id",
+          "controlled_reception_frame_id",
+          "release_ball_point",
+          "reception_ball_point",
+          "release_passer_point",
+          "reception_receiver_point",
+          "controlled_pass_status",
+          "release_control_status",
+          "controlled_reception_status",
+          "possession_continuity_status",
+          "forward_progression_m",
+          "controlled_pass_status"
+        ],
+        "executable": true,
+        "inputs": [],
+        "kind": "primitive",
+        "limitations": [
+          "Uses event data for candidate passes and tracking data for release/reception proof.",
+          "Does not infer tactical intention, pass optimality, or decision quality."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "controlled_pass_episode",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "pass_episode_id",
+              "passer_id",
+              "receiver_id",
+              "event_anchor_frame_id",
+              "physical_release_frame_id",
+              "controlled_reception_frame_id",
+              "release_match_time_ms",
+              "reception_match_time_ms",
+              "controlled_pass_status",
+              "release_control_status",
+              "controlled_reception_status",
+              "possession_continuity_status",
+              "release_ball_point",
+              "reception_ball_point",
+              "release_passer_point",
+              "reception_receiver_point",
+              "forward_progression_m",
+              "controlled_pass_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "boolean",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id",
+              "pass_episode_id",
+              "passer_id",
+              "receiver_id",
+              "controlled_pass_status",
+              "forward_progression_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "controlled_pass_status",
+              "release_detection_status",
+              "controlled_reception_status"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "controlled_pass_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "forward_progression_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "forward_progression_m",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "metre"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 1.0
+            },
+            "description": "Search window before the event anchor for passer control.",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "release_search_before_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 3.0
+            },
+            "description": "Search window after the event anchor for ball departure.",
+            "maximum": 8.0,
+            "minimum": 0.0,
+            "name": "release_search_after_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 6.0
+            },
+            "description": "Maximum release-to-controlled-reception search window.",
+            "maximum": 15.0,
+            "minimum": 0.2,
+            "name": "reception_search_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 2.5
+            },
+            "description": "Maximum ball-player distance for control evidence.",
+            "maximum": 8.0,
+            "minimum": 0.1,
+            "name": "control_distance_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 1.0
+            },
+            "description": "Margin allowing the intended player to count as controlling near teammates.",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "nearest_teammate_margin_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "second",
+              "value": 0.24
+            },
+            "description": "Minimum receiver-control dwell for controlled reception.",
+            "maximum": 2.0,
+            "minimum": 0.04,
+            "name": "minimum_receiver_dwell_seconds",
+            "payload_type": "number",
+            "required": false,
+            "unit": "second"
+          }
+        ],
+        "purpose": "Identify completed pass actions where event data supplies the candidate passer/receiver and tracking proves physical release plus controlled reception.",
+        "runtime_id": "primitive:controlled_pass_episode:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
+      "binding_id": "binding.primitive.defensive_outfield_centroid.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "defensive_outfield_centroid",
+      "implements": [
+        "op.defensive_outfield_centroid.v1"
+      ],
+      "kind": "primitive",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "baseline_defensive_centroid_y_m",
+          "defending_team_id"
+        ],
+        "executable": true,
+        "inputs": [],
+        "kind": "primitive",
+        "limitations": [
+          "Goalkeepers are excluded from the outfield centroid."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "defensive_outfield_centroid",
+        "outputs": [
+          {
+            "cardinality": "per_team",
+            "entity_scope": "team",
+            "evidence_fields": [
+              "baseline_defensive_centroid_y_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "centroid_y",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "metre"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Measure defending outfield team centroid without goalkeeper bias.",
+        "runtime_id": "primitive:defensive_outfield_centroid:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
+      "binding_id": "binding.relation.geometric_progressive_corridor.0_1_0",
+      "conformance": "EXACT",
+      "id": "geometric_progressive_corridor",
+      "implements": [
+        "op.geometric_progressive_corridor.v1"
+      ],
+      "kind": "relation",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "relation_id",
+          "open_frame_id",
+          "open_confirm_frame_id",
+          "close_frame_id",
+          "duration_seconds",
+          "target_player_id",
+          "destination_side",
+          "destination_region",
+          "destination_region_type",
+          "destination_region_bounds",
+          "destination_lane",
+          "minimum_clearance_m",
+          "limiting_defender_id",
+          "source_open_point",
+          "target_open_point",
+          "source_close_point",
+          "target_close_point"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "single",
+            "entity_scope": "possession",
+            "name": "anchors",
+            "payload_type": "enum",
+            "required": true,
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "No pass probability.",
+          "No optimality or decision-quality claim.",
+          "No receiver body-orientation model.",
+          "No offside model in V1 acceptance."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "geometric_progressive_corridor",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "relation",
+            "evidence_fields": [
+              "relation_id",
+              "open_frame_id",
+              "open_confirm_frame_id",
+              "close_frame_id",
+              "duration_seconds",
+              "target_player_id",
+              "destination_side",
+              "destination_region",
+              "destination_region_type",
+              "destination_region_bounds",
+              "destination_lane",
+              "minimum_clearance_m",
+              "limiting_defender_id",
+              "source_open_point",
+              "target_open_point",
+              "source_close_point",
+              "target_close_point"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "relation_ref",
+            "temporal_type": "relation_episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "evaluation_status",
+              "relation_count",
+              "witness_relation_id",
+              "unknown_reason",
+              "state_counts"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "boolean",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "description": "Maximum relation search window after the anchor.",
+            "maximum": 15.0,
+            "minimum": 0.2,
+            "name": "max_window_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "description": "Minimum forward progression from source to target.",
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "name": "minimum_progression_m",
+            "payload_type": "number",
+            "required": true,
+            "unit": "metre"
+          },
+          {
+            "description": "Minimum source-target segment length.",
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "name": "minimum_segment_length_m",
+            "payload_type": "number",
+            "required": true,
+            "unit": "metre"
+          },
+          {
+            "description": "Maximum source-target segment length.",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "name": "maximum_segment_length_m",
+            "payload_type": "number",
+            "required": true,
+            "unit": "metre"
+          },
+          {
+            "description": "Minimum defender clearance from the source-target segment.",
+            "maximum": 40.0,
+            "minimum": 0.0,
+            "name": "minimum_clearance_m",
+            "payload_type": "number",
+            "required": true,
+            "unit": "metre"
+          },
+          {
+            "description": "Frames required before a corridor is considered open.",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "name": "open_after_frames",
+            "payload_type": "number",
+            "required": true,
+            "unit": "count"
+          },
+          {
+            "description": "Frames required before a corridor is considered closed.",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "name": "close_after_frames",
+            "payload_type": "number",
+            "required": true,
+            "unit": "count"
+          },
+          {
+            "description": "Minimum open duration retained in the relation output.",
+            "maximum": 15.0,
+            "minimum": 0.0,
+            "name": "minimum_duration_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "allowed_values": [
+              "any",
+              "same_ball_side",
+              "opposite_ball_side"
+            ],
+            "description": "Retain corridors by relation destination side relative to the ball side.",
+            "name": "side_filter",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Represent a geometrically clear forward connection from the ball location to an attacking teammate over an interval.",
+        "runtime_id": "relation:geometric_progressive_corridor:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
+      "binding_id": "binding.relation.geometric_progressive_corridor_from_anchor_set.0_1_0",
+      "conformance": "EXACT",
+      "id": "geometric_progressive_corridor_from_anchor_set",
+      "implements": [
+        "op.geometric_progressive_corridor_anchor_set.v1"
+      ],
+      "kind": "relation",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "relation_id",
+          "open_frame_id",
+          "open_confirm_frame_id",
+          "close_frame_id",
+          "duration_seconds",
+          "target_player_id",
+          "destination_side",
+          "destination_region",
+          "destination_region_type",
+          "destination_region_bounds",
+          "destination_lane",
+          "minimum_clearance_m",
+          "limiting_defender_id",
+          "source_open_point",
+          "target_open_point",
+          "source_close_point",
+          "target_close_point"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "No pass probability.",
+          "No optimality or decision-quality claim.",
+          "No player intent, causation, or missed-opportunity claim.",
+          "No receiver body-orientation or offside model."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "geometric_progressive_corridor_from_anchor_set",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "relation",
+            "evidence_fields": [
+              "relation_id",
+              "open_frame_id",
+              "open_confirm_frame_id",
+              "close_frame_id",
+              "duration_seconds",
+              "target_player_id",
+              "destination_side",
+              "destination_region",
+              "destination_region_type",
+              "destination_region_bounds",
+              "destination_lane",
+              "minimum_clearance_m",
+              "limiting_defender_id",
+              "source_open_point",
+              "target_open_point",
+              "source_close_point",
+              "target_close_point"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "relation_ref",
+            "temporal_type": "relation_episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "evaluation_status",
+              "relation_count",
+              "witness_relation_id",
+              "unknown_reason",
+              "state_counts"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "boolean",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "description": "Maximum relation search window after the anchor.",
+            "maximum": 15.0,
+            "minimum": 0.2,
+            "name": "max_window_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "description": "Minimum forward progression from source to target.",
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "name": "minimum_progression_m",
+            "payload_type": "number",
+            "required": true,
+            "unit": "metre"
+          },
+          {
+            "description": "Minimum source-target segment length.",
+            "maximum": 80.0,
+            "minimum": 0.0,
+            "name": "minimum_segment_length_m",
+            "payload_type": "number",
+            "required": true,
+            "unit": "metre"
+          },
+          {
+            "description": "Maximum source-target segment length.",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "name": "maximum_segment_length_m",
+            "payload_type": "number",
+            "required": true,
+            "unit": "metre"
+          },
+          {
+            "description": "Minimum defender clearance from the source-target segment.",
+            "maximum": 40.0,
+            "minimum": 0.0,
+            "name": "minimum_clearance_m",
+            "payload_type": "number",
+            "required": true,
+            "unit": "metre"
+          },
+          {
+            "description": "Frames required before a corridor is considered open.",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "name": "open_after_frames",
+            "payload_type": "number",
+            "required": true,
+            "unit": "count"
+          },
+          {
+            "description": "Frames required before a corridor is considered closed.",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "name": "close_after_frames",
+            "payload_type": "number",
+            "required": true,
+            "unit": "count"
+          },
+          {
+            "description": "Minimum open duration retained in the relation output.",
+            "maximum": 15.0,
+            "minimum": 0.0,
+            "name": "minimum_duration_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "allowed_values": [
+              "any",
+              "same_ball_side",
+              "opposite_ball_side"
+            ],
+            "description": "Retain corridors by relation destination side relative to the ball side.",
+            "name": "side_filter",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Represent a geometrically clear forward connection from a generic anchor set to an attacking teammate over an interval.",
+        "runtime_id": "relation:geometric_progressive_corridor_from_anchor_set:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
+      "binding_id": "binding.relation.opponents_bypassed_by_action.0_1_0",
+      "conformance": "PARTIAL",
+      "id": "opponents_bypassed_by_action",
+      "implements": [
+        "op.release_reception_opponent_transition_count.v1"
+      ],
+      "kind": "relation",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "pass_episode_id",
+          "passer_id",
+          "receiver_id",
+          "release_frame_id",
+          "reception_frame_id",
+          "release_ball_point",
+          "reception_ball_point",
+          "release_passer_point",
+          "reception_receiver_point",
+          "forward_progression_m",
+          "opponents_bypassed_count",
+          "bypassed_player_ids",
+          "candidate_goal_side_player_ids",
+          "expected_active_opposition_outfield_ids",
+          "evaluated_opponent_ids",
+          "missing_active_opponent_ids"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "name": "controlled_pass_episodes",
+            "payload_type": "boolean",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "name": "controlled_pass_anchors",
+            "payload_type": "anchor_ref",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "relation",
+        "limitations": [
+          "Counts relative ball-position change between release and controlled reception.",
+          "Does not prove the pass alone caused every opponent to be bypassed.",
+          "Goalkeepers are excluded from the opponent denominator."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "opponents_bypassed_by_action",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id",
+              "pass_episode_id",
+              "passer_id",
+              "receiver_id",
+              "release_frame_id",
+              "reception_frame_id",
+              "release_match_time_ms",
+              "reception_match_time_ms",
+              "release_ball_point",
+              "reception_ball_point",
+              "release_passer_point",
+              "reception_receiver_point",
+              "forward_progression_m",
+              "evaluation_status",
+              "coverage_status",
+              "opponents_bypassed_count",
+              "bypassed_player_ids",
+              "candidate_goal_side_player_ids",
+              "expected_active_opposition_outfield_ids",
+              "evaluated_opponent_ids",
+              "missing_active_opponent_ids",
+              "goal_side_buffer_m",
+              "bypassed_buffer_m",
+              "unknown_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchor_evaluations",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "opponents_bypassed_count",
+              "bypassed_player_ids"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "opponents_bypassed_count",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "count"
+          },
+          {
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "forward_progression_m"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "forward_progression_m",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "metre"
+          },
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "evaluation_status",
+              "coverage_status",
+              "unknown_reason"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "evaluation_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 1.0
+            },
+            "description": "Release-frame buffer for deciding whether an opponent is goal-side of the ball.",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "goal_side_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          },
+          {
+            "default": {
+              "payload_type": "number",
+              "unit": "metre",
+              "value": 1.0
+            },
+            "description": "Reception-frame buffer for deciding whether an opponent is behind the ball.",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "name": "bypassed_buffer_m",
+            "payload_type": "number",
+            "required": false,
+            "unit": "metre"
+          }
+        ],
+        "purpose": "Count opposition outfield players who were goal-side of the ball at action release and behind the ball at controlled reception.",
+        "runtime_id": "relation:opponents_bypassed_by_action:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
+      "binding_id": "binding.primitive.outcome_classification.0_1_0",
+      "conformance": "LEGACY_APPROXIMATION",
+      "id": "outcome_classification",
+      "implements": [
+        "op.reviewed_block_shift_outcome.v1"
+      ],
+      "kind": "primitive",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": false,
+        "evidence_fields": [
+          "classification",
+          "outcome_frame_id"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "team",
+            "name": "accepted_shift_episodes",
+            "payload_type": "boolean",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Does not infer intent, optimality, or missed opportunity."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "outcome_classification",
+        "outputs": [
+          {
+            "cardinality": "single",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "classification",
+              "outcome_frame_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "classification",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "description": "Outcome lookahead horizon in seconds.",
+            "maximum": 30.0,
+            "minimum": 0.2,
+            "name": "horizon",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          }
+        ],
+        "purpose": "Classify the post-anchor outcome under the frozen M1 predicates.",
+        "runtime_id": "primitive:outcome_classification:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
+      "binding_id": "binding.primitive.possession_segment.0_1_0",
+      "conformance": "EXACT",
+      "id": "possession_segment",
+      "implements": [
+        "op.possession_segment_intervals.v1"
+      ],
+      "kind": "primitive",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "possession_start_frame_id",
+          "possession_end_frame_id",
+          "possession_duration_seconds"
+        ],
+        "executable": true,
+        "inputs": [],
+        "kind": "primitive",
+        "limitations": [],
+        "missing_data_semantics": "unknown",
+        "name": "possession_segment",
+        "outputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "possession_start_frame_id",
+              "possession_end_frame_id",
+              "possession_duration_seconds"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "episodes",
+            "payload_type": "boolean",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Identify active-ball possession intervals for the perspective team.",
+        "runtime_id": "primitive:possession_segment:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
+      "binding_id": "binding.primitive.relation_destination_entry.0_1_0",
+      "conformance": "EXACT",
+      "id": "relation_destination_entry",
+      "implements": [
+        "op.relation_destination_entry.v1"
+      ],
+      "kind": "primitive",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "entry_status",
+          "relation_id",
+          "anchor_id",
+          "destination_entry_frame_id",
+          "time_to_entry_seconds",
+          "entry_mode",
+          "destination_region",
+          "destination_region_type",
+          "destination_region_bounds",
+          "destination_side",
+          "destination_lane",
+          "observed_window_start_frame_id",
+          "observed_window_end_frame_id",
+          "unknown_reason",
+          "missing_ball_frame_count"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "relation",
+            "name": "relation_episodes",
+            "payload_type": "relation_ref",
+            "required": true,
+            "temporal_type": "relation_episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Measures entry into relation destination geometry only.",
+          "No pass probability, optimality, decision-quality, intent, causation, or missed-opportunity claim."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "relation_destination_entry",
+        "outputs": [
+          {
+            "allowed_values": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ],
+            "cardinality": "single",
+            "entity_scope": "relation",
+            "evidence_fields": [
+              "entry_status",
+              "relation_id",
+              "anchor_id",
+              "destination_entry_frame_id",
+              "time_to_entry_seconds",
+              "entry_mode",
+              "destination_region",
+              "destination_region_type",
+              "destination_region_bounds",
+              "destination_side",
+              "destination_lane",
+              "observed_window_start_frame_id",
+              "observed_window_end_frame_id",
+              "unknown_reason",
+              "missing_ball_frame_count"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "entry_status",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "description": "Lookahead horizon for relation destination entry.",
+            "maximum": 30.0,
+            "minimum": 0.2,
+            "name": "destination_entry_horizon_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "description": "Seed used to derive deterministic relation-entry record IDs.",
+            "name": "result_id_seed",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "entry_first_then_progression",
+              "first_by_duration_clearance"
+            ],
+            "description": "Deterministic witness ordering when an anchor has multiple relation episodes.",
+            "name": "episode_selection",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Measure whether the ball enters the exact destination region of a relation episode inside a declared post-open window.",
+        "runtime_id": "primitive:relation_destination_entry:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
+      "binding_id": "binding.primitive.relation_destination_entry_classification.0_1_0",
+      "conformance": "LEGACY_APPROXIMATION",
+      "id": "relation_destination_entry_classification",
+      "implements": [
+        "op.reviewed_relation_destination_entry_classification.v1"
+      ],
+      "kind": "primitive",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": false,
+        "evidence_fields": [
+          "classification",
+          "base_result_id",
+          "relation_id",
+          "destination_entry_frame_id",
+          "destination_region",
+          "destination_region_type",
+          "destination_region_bounds",
+          "destination_side",
+          "destination_lane"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "relation",
+            "name": "relation_episodes",
+            "payload_type": "relation_ref",
+            "required": true,
+            "temporal_type": "relation_episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Trusted recipe wrapper; agent-authored plans should use relation_destination_entry.",
+          "Requires an upstream relation episode set.",
+          "No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "relation_destination_entry_classification",
+        "outputs": [
+          {
+            "cardinality": "single",
+            "entity_scope": "relation",
+            "evidence_fields": [
+              "classification",
+              "base_result_id",
+              "relation_id",
+              "destination_entry_frame_id",
+              "destination_region",
+              "destination_region_type",
+              "destination_region_bounds",
+              "destination_side",
+              "destination_lane"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "classification",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "description": "Lookahead horizon for destination lane entry.",
+            "maximum": 30.0,
+            "minimum": 0.2,
+            "name": "destination_entry_horizon_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "description": "Seed used to derive deterministic experimental result IDs.",
+            "name": "result_id_seed",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "first_by_duration_clearance"
+            ],
+            "description": "Deterministic selection strategy when an anchor has multiple relation episodes.",
+            "name": "episode_selection",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Classify whether the ball later enters the destination region of a previously evaluated relation episode.",
+        "runtime_id": "primitive:relation_destination_entry_classification:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    },
+    {
+      "binding_id": "binding.primitive.signed_lateral_shift.0_1_0",
+      "conformance": "EXACT",
+      "id": "signed_lateral_shift",
+      "implements": [
+        "op.baseline_relative_defensive_shift.v1"
+      ],
+      "kind": "primitive",
+      "product_exposure": "ALLOWED",
+      "product_maturity": "EXPOSED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": true,
+        "evidence_fields": [
+          "baseline_start_frame_id",
+          "baseline_end_frame_id",
+          "anchor_frame_id",
+          "signed_shift_metres",
+          "block_shift_score"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "possession",
+            "name": "possession_episodes",
+            "payload_type": "boolean",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "ball",
+            "name": "entry_episodes",
+            "payload_type": "boolean",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          },
+          {
+            "cardinality": "per_team",
+            "entity_scope": "team",
+            "name": "defensive_centroid",
+            "payload_type": "number",
+            "required": true,
+            "temporal_type": "frame_signal",
+            "unit": "metre"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [],
+        "missing_data_semantics": "unknown",
+        "name": "signed_lateral_shift",
+        "outputs": [
+          {
+            "cardinality": "single",
+            "entity_scope": "team",
+            "evidence_fields": [
+              "baseline_start_frame_id",
+              "baseline_end_frame_id",
+              "anchor_frame_id",
+              "signed_shift_metres",
+              "block_shift_score"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "signed_shift",
+            "payload_type": "number",
+            "temporal_type": "frame_signal",
+            "unit": "metre"
+          },
+          {
+            "cardinality": "collection",
+            "entity_scope": "anchor",
+            "evidence_fields": [
+              "anchor_id",
+              "anchor_frame_id",
+              "start_frame_id",
+              "end_frame_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "anchors",
+            "payload_type": "anchor_ref",
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "parameters": [],
+        "purpose": "Measure defensive centroid movement toward the ball side.",
+        "runtime_id": "primitive:signed_lateral_shift:0.1.0",
+        "version": "0.1.0"
+      },
+      "semantic_maturity": "REVIEWED",
+      "version": "0.1.0"
+    }
+  ],
+  "recipes": [
+    {
+      "claim_contract_ref": "claim.ball_side_block_shift.v1",
+      "concept_ref": "concept.ball_side_block_shift",
+      "dependencies": [
+        "possession_segment",
+        "ball_lateral_fraction",
+        "gt",
+        "persists_for",
+        "defensive_outfield_centroid",
+        "signed_lateral_shift",
+        "gte",
+        "outcome_classification",
+        "neq"
+      ],
+      "dependency_bindings_verified": true,
+      "evidence_contract_ref": "evidence.ball_side_block_shift.v1",
+      "exact_typed_plan_ref": "config/query-plans/ball_side_block_shift.ir.v1.json",
+      "id": "ball_side_block_shift_v1",
+      "mapping_id": "recipe.ball_side_block_shift.v1",
+      "plan_artifact_exists": true,
+      "plan_artifact_id": "plan.ball_side_block_shift.v1",
+      "plan_integrity": {
+        "artifact_id": "plan.ball_side_block_shift.v1",
+        "capability_dependencies": [
+          {
+            "kind": "primitive",
+            "name": "possession_segment",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "ball_lateral_fraction",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "defensive_outfield_centroid",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "signed_lateral_shift",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "outcome_classification",
+            "version": "0.1.0"
+          }
+        ],
+        "dependency_refs": [
+          "possession_segment",
+          "ball_lateral_fraction",
+          "defensive_outfield_centroid",
+          "signed_lateral_shift",
+          "outcome_classification",
+          "gt",
+          "persists_for",
+          "gte",
+          "neq"
+        ],
+        "draft_status": "approved",
+        "exists": true,
+        "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+        "normalized_selected_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+        "operator_dependencies": [
+          {
+            "name": "gt",
+            "version": "1.0.0"
+          },
+          {
+            "name": "persists_for",
+            "version": "1.0.0"
+          },
+          {
+            "name": "gte",
+            "version": "1.0.0"
+          },
+          {
+            "name": "neq",
+            "version": "1.0.0"
+          }
+        ],
+        "origin": "REVIEWED_RECIPE",
+        "parameter_defaults": {
+          "accepted_per_match_limit": 5,
+          "accepted_result_limit": 16,
+          "analysis_rate_hz": 5,
+          "baseline_window_seconds": 0.8,
+          "dedupe_window_seconds": 8.0,
+          "maximum_analysis_gap_ms": 250,
+          "minimum_outfield_players_per_team": 9,
+          "minimum_possession_seconds": 8.0,
+          "minimum_shift_metres": 5.0,
+          "minimum_shift_persistence_seconds": 0.6,
+          "minimum_wide_dwell_seconds": 1.2,
+          "near_miss_limit": 8,
+          "opposite_side_fraction": 0.35,
+          "outcome_horizon_seconds": 6.0,
+          "prior_central_fraction": 0.45,
+          "result_id_seed_hash": "af42853e6a3c8449e023dd98751ababbc7d34640f8751fbffa1c2bbbd0eab523",
+          "retained_after_switch_seconds": 1.0,
+          "shift_search_window_seconds": 4.0,
+          "wide_entry_fraction": 0.6
+        },
+        "path": "config/query-plans/ball_side_block_shift.ir.v1.json",
+        "plan_id": "ball_side_block_shift_ir_v1",
+        "plan_version": "1.0.0",
+        "promotion_status": "REVIEWED_RECIPE",
+        "recipe_id": "ball_side_block_shift_v1",
+        "recipe_version": "1.0.0",
+        "referenced_parameters": [
+          "minimum_shift_metres",
+          "minimum_shift_persistence_seconds",
+          "minimum_wide_dwell_seconds",
+          "outcome_horizon_seconds",
+          "wide_entry_fraction"
+        ],
+        "source_artifact_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+        "source_kind": "typed_plan",
+        "valid_typed_plan": true
+      },
+      "profiles": [
+        "profile.ball_side_block_shift_reviewed.v1"
+      ],
+      "subject_ref": "recipe:ball_side_block_shift_v1:1.0.0",
+      "version": "1.0.0"
+    },
+    {
+      "claim_contract_ref": "claim.possession_corridor_availability.v1",
+      "concept_ref": "concept.progressive_connection_availability",
+      "dependencies": [
+        "possession_segment",
+        "geometric_progressive_corridor_from_anchor_set",
+        "exists"
+      ],
+      "dependency_bindings_verified": true,
+      "evidence_contract_ref": "evidence.possession_corridor_availability.v1",
+      "exact_typed_plan_ref": "config/query-plans/possession_corridor_availability.experimental.v1.json",
+      "id": "possession_corridor_availability_v1",
+      "mapping_id": "recipe.possession_corridor_availability.v1",
+      "plan_artifact_exists": true,
+      "plan_artifact_id": "plan.possession_corridor_availability.v1",
+      "plan_integrity": {
+        "artifact_id": "plan.possession_corridor_availability.v1",
+        "capability_dependencies": [
+          {
+            "kind": "primitive",
+            "name": "possession_segment",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "relation",
+            "name": "geometric_progressive_corridor_from_anchor_set",
+            "version": "0.1.0"
+          }
+        ],
+        "dependency_refs": [
+          "possession_segment",
+          "geometric_progressive_corridor_from_anchor_set",
+          "exists"
+        ],
+        "draft_status": "experimental",
+        "exists": true,
+        "normalized_plan_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+        "normalized_selected_document_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+        "operator_dependencies": [
+          {
+            "name": "exists",
+            "version": "1.0.0"
+          }
+        ],
+        "origin": "MANUAL_PRESET",
+        "parameter_defaults": {
+          "analysis_rate_hz": 5,
+          "corridor_close_after_frames": 2,
+          "corridor_max_window_seconds": 5.0,
+          "corridor_maximum_segment_length_m": 45.0,
+          "corridor_minimum_clearance_m": 4.0,
+          "corridor_minimum_duration_seconds": 0.4,
+          "corridor_minimum_progression_m": 5.0,
+          "corridor_minimum_segment_length_m": 6.0,
+          "corridor_open_after_frames": 2,
+          "maximum_analysis_gap_ms": 250,
+          "minimum_outfield_players_per_team": 9,
+          "minimum_possession_seconds": 5.0
+        },
+        "path": "config/query-plans/possession_corridor_availability.experimental.v1.json",
+        "plan_id": "possession_corridor_availability_experimental_v1",
+        "plan_version": "0.1.0",
+        "promotion_status": "EXPERIMENTAL_PRESET",
+        "recipe_id": "possession_corridor_availability_v1",
+        "recipe_version": "0.1.0",
+        "referenced_parameters": [
+          "corridor_close_after_frames",
+          "corridor_max_window_seconds",
+          "corridor_maximum_segment_length_m",
+          "corridor_minimum_clearance_m",
+          "corridor_minimum_duration_seconds",
+          "corridor_minimum_progression_m",
+          "corridor_minimum_segment_length_m",
+          "corridor_open_after_frames"
+        ],
+        "source_artifact_sha256": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
+        "source_kind": "typed_plan",
+        "valid_typed_plan": true
+      },
+      "profiles": [
+        "profile.progressive_corridor_default.v1"
+      ],
+      "subject_ref": "recipe:possession_corridor_availability_v1:0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "claim_contract_ref": "claim.opposite_corridor_after_shift.v1",
+      "concept_ref": "concept.opposite_corridor_after_shift",
+      "dependencies": [
+        "possession_segment",
+        "ball_lateral_fraction",
+        "gt",
+        "persists_for",
+        "defensive_outfield_centroid",
+        "signed_lateral_shift",
+        "gte",
+        "outcome_classification",
+        "neq",
+        "geometric_progressive_corridor",
+        "exists",
+        "relation_destination_entry_classification"
+      ],
+      "dependency_bindings_verified": true,
+      "evidence_contract_ref": "evidence.opposite_corridor_after_shift.v1",
+      "exact_typed_plan_ref": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json",
+      "id": "opposite_corridor_after_shift_v1",
+      "mapping_id": "recipe.opposite_corridor_after_shift.v1",
+      "plan_artifact_exists": true,
+      "plan_artifact_id": "plan.opposite_corridor_after_shift.v1",
+      "plan_integrity": {
+        "artifact_id": "plan.opposite_corridor_after_shift.v1",
+        "capability_dependencies": [
+          {
+            "kind": "primitive",
+            "name": "possession_segment",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "ball_lateral_fraction",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "defensive_outfield_centroid",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "signed_lateral_shift",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "outcome_classification",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "relation",
+            "name": "geometric_progressive_corridor",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "relation_destination_entry_classification",
+            "version": "0.1.0"
+          }
+        ],
+        "dependency_refs": [
+          "possession_segment",
+          "ball_lateral_fraction",
+          "defensive_outfield_centroid",
+          "signed_lateral_shift",
+          "outcome_classification",
+          "geometric_progressive_corridor",
+          "relation_destination_entry_classification",
+          "gt",
+          "persists_for",
+          "gte",
+          "neq",
+          "exists"
+        ],
+        "draft_status": "experimental",
+        "exists": true,
+        "normalized_plan_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
+        "normalized_selected_document_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
+        "operator_dependencies": [
+          {
+            "name": "gt",
+            "version": "1.0.0"
+          },
+          {
+            "name": "persists_for",
+            "version": "1.0.0"
+          },
+          {
+            "name": "gte",
+            "version": "1.0.0"
+          },
+          {
+            "name": "neq",
+            "version": "1.0.0"
+          },
+          {
+            "name": "exists",
+            "version": "1.0.0"
+          }
+        ],
+        "origin": "MANUAL_PRESET",
+        "parameter_defaults": {
+          "analysis_rate_hz": 5,
+          "baseline_window_seconds": 0.8,
+          "corridor_close_after_frames": 2,
+          "corridor_max_window_seconds": 4.0,
+          "corridor_maximum_segment_length_m": 45.0,
+          "corridor_minimum_clearance_m": 5.0,
+          "corridor_minimum_duration_seconds": 0.8,
+          "corridor_minimum_progression_m": 8.0,
+          "corridor_minimum_segment_length_m": 8.0,
+          "corridor_open_after_frames": 2,
+          "dedupe_window_seconds": 8.0,
+          "destination_entry_horizon_seconds": 6.0,
+          "maximum_analysis_gap_ms": 250,
+          "minimum_outfield_players_per_team": 9,
+          "minimum_possession_seconds": 8.0,
+          "minimum_shift_metres": 5.0,
+          "minimum_shift_persistence_seconds": 0.6,
+          "minimum_wide_dwell_seconds": 1.2,
+          "opposite_side_fraction": 0.35,
+          "outcome_horizon_seconds": 6.0,
+          "prior_central_fraction": 0.45,
+          "result_id_seed_hash": "opposite_corridor_after_shift_experimental_v1",
+          "retained_after_switch_seconds": 1.0,
+          "shift_search_window_seconds": 4.0,
+          "wide_entry_fraction": 0.6
+        },
+        "path": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json",
+        "plan_id": "opposite_corridor_after_shift_experimental_v1",
+        "plan_version": "0.1.0",
+        "promotion_status": "EXPERIMENTAL_PRESET",
+        "recipe_id": "opposite_corridor_after_shift_v1",
+        "recipe_version": "0.1.0",
+        "referenced_parameters": [
+          "corridor_close_after_frames",
+          "corridor_max_window_seconds",
+          "corridor_maximum_segment_length_m",
+          "corridor_minimum_clearance_m",
+          "corridor_minimum_duration_seconds",
+          "corridor_minimum_progression_m",
+          "corridor_minimum_segment_length_m",
+          "corridor_open_after_frames",
+          "destination_entry_horizon_seconds",
+          "minimum_shift_metres",
+          "minimum_shift_persistence_seconds",
+          "minimum_wide_dwell_seconds",
+          "outcome_horizon_seconds",
+          "result_id_seed_hash",
+          "wide_entry_fraction"
+        ],
+        "source_artifact_sha256": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
+        "source_kind": "typed_plan",
+        "valid_typed_plan": true
+      },
+      "profiles": [
+        "profile.ball_side_block_shift_reviewed.v1",
+        "profile.progressive_corridor_default.v1",
+        "profile.destination_entry_default.v1"
+      ],
+      "subject_ref": "recipe:opposite_corridor_after_shift_v1:0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "claim_contract_ref": "claim.high_bypass_completed_pass.v1",
+      "concept_ref": "concept.high_bypass_completed_pass",
+      "dependencies": [
+        "controlled_pass_episode",
+        "opponents_bypassed_by_action",
+        "gte"
+      ],
+      "dependency_bindings_verified": true,
+      "evidence_contract_ref": "evidence.high_bypass_completed_pass.v1",
+      "exact_typed_plan_ref": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
+      "id": "high_bypass_completed_pass_v1",
+      "mapping_id": "recipe.high_bypass_completed_pass.v1",
+      "plan_artifact_exists": true,
+      "plan_artifact_id": "plan.high_bypass_completed_pass.v1",
+      "plan_integrity": {
+        "artifact_id": "plan.high_bypass_completed_pass.v1",
+        "capability_dependencies": [
+          {
+            "kind": "primitive",
+            "name": "controlled_pass_episode",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "relation",
+            "name": "opponents_bypassed_by_action",
+            "version": "0.1.0"
+          }
+        ],
+        "dependency_refs": [
+          "controlled_pass_episode",
+          "opponents_bypassed_by_action",
+          "gte"
+        ],
+        "draft_status": "experimental",
+        "exists": true,
+        "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+        "normalized_selected_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+        "operator_dependencies": [
+          {
+            "name": "gte",
+            "version": "1.0.0"
+          }
+        ],
+        "origin": "MANUAL_PRESET",
+        "parameter_defaults": {
+          "bypassed_buffer_m": 1.0,
+          "goal_side_buffer_m": 1.0,
+          "minimum_bypassed_opponents": 5,
+          "minimum_forward_progression_m": 8.0
+        },
+        "path": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
+        "plan_id": "m2a_high_bypass_completed_pass",
+        "plan_version": "0.1.0",
+        "promotion_status": "EXPERIMENTAL_PRESET",
+        "recipe_id": "high_bypass_completed_pass_v1",
+        "recipe_version": "0.1.0",
+        "referenced_parameters": [
+          "bypassed_buffer_m",
+          "goal_side_buffer_m",
+          "minimum_bypassed_opponents",
+          "minimum_forward_progression_m"
+        ],
+        "source_artifact_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
+        "source_kind": "typed_plan",
+        "valid_typed_plan": true
+      },
+      "profiles": [
+        "profile.high_bypass_default.v1"
+      ],
+      "subject_ref": "recipe:high_bypass_completed_pass_v1:0.1.0",
+      "version": "0.1.0"
+    }
+  ],
+  "registry_lock": {
+    "ai_projection_policy": "projection.ai.v1",
+    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+    "evidence_schema_version": "1.0",
+    "generator_version": "scp0.generator.v1",
+    "lock_hash": "89c255d43538f68d0d7dae04ae5b9bda5aacefa68fd65f79104439b9e422000f",
+    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+    "product_projection_policy": "projection.product.v1",
+    "recipe_projection_policy": "projection.recipe_library.v1",
+    "registry_revision": "eb5079e64409f6bc0055bb0be35ffc3f5ae148e6e835d85205179edf4e939df9",
+    "research_atlas_projection_policy": "projection.research_atlas.v1",
+    "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+    "schema_version": "1.0",
+    "typed_plan_schema_version": "1.0",
+    "unsupported_projection_policy": "projection.unsupported.v1"
+  },
+  "schema_version": "1.0",
+  "validated_compositions": [
+    {
+      "claim_contract_ref": "claim.ai_corridor_destination_composition.v1",
+      "concept_ref": "concept.progressive_connection_followed_by_destination_entry",
+      "dependency_bindings_verified": true,
+      "evidence_contract_ref": "evidence.ai_corridor_destination_composition.v1",
+      "id": "composition.ai_corridor_destination.2026_06_23",
+      "origin": "AI_AUTHORED",
+      "plan_artifact_exists": true,
+      "plan_artifact_ref": "plan.ai_corridor_destination.2026_06_23",
+      "plan_integrity": {
+        "artifact_id": "plan.ai_corridor_destination.2026_06_23",
+        "capability_dependencies": [
+          {
+            "kind": "primitive",
+            "name": "possession_segment",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "relation",
+            "name": "geometric_progressive_corridor_from_anchor_set",
+            "version": "0.1.0"
+          },
+          {
+            "kind": "primitive",
+            "name": "relation_destination_entry",
+            "version": "0.1.0"
+          }
+        ],
+        "dependency_refs": [
+          "possession_segment",
+          "geometric_progressive_corridor_from_anchor_set",
+          "relation_destination_entry",
+          "exists",
+          "eq"
+        ],
+        "draft_status": "experimental",
+        "exists": true,
+        "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+        "normalized_selected_document_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+        "operator_dependencies": [
+          {
+            "name": "exists",
+            "version": "1.0.0"
+          },
+          {
+            "name": "eq",
+            "version": "1.0.0"
+          }
+        ],
+        "origin": "AI_AUTHORED",
+        "parameter_defaults": {
+          "corridor_close_after_frames": 2,
+          "corridor_max_window_seconds": 4.0,
+          "corridor_maximum_segment_length_m": 45.0,
+          "corridor_minimum_clearance_m": 4.0,
+          "corridor_minimum_duration_seconds": 0.8,
+          "corridor_minimum_progression_m": 5.0,
+          "corridor_minimum_segment_length_m": 6.0,
+          "corridor_open_after_frames": 2,
+          "destination_entry_horizon_seconds": 5.0
+        },
+        "path": "delivery/n1d/n1f-origin-bundle.json",
+        "plan_id": "possession_corridor_destination_entry_plan",
+        "plan_version": "0.1.0",
+        "promotion_status": "VALIDATED_COMPOSITION",
+        "recipe_id": "possession_corridor_destination_entry_v1",
+        "recipe_version": "0.1.0",
+        "referenced_parameters": [
+          "corridor_close_after_frames",
+          "corridor_max_window_seconds",
+          "corridor_maximum_segment_length_m",
+          "corridor_minimum_clearance_m",
+          "corridor_minimum_duration_seconds",
+          "corridor_minimum_progression_m",
+          "corridor_minimum_segment_length_m",
+          "corridor_open_after_frames",
+          "destination_entry_horizon_seconds"
+        ],
+        "source_artifact_sha256": "707b5cd6d2d8f981401a9ec8bd31af4c91435118a94883cb68b621137365fba4",
+        "source_kind": "n1f_origin_bundle.host_augmented_document",
+        "valid_typed_plan": true
+      },
+      "promotion_status": "VALIDATED_COMPOSITION",
+      "subject_ref": "composition:composition.ai_corridor_destination.2026_06_23"
+    }
+  ]
+}

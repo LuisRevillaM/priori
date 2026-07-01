@@ -1,0 +1,194 @@
+{
+  "atlas": {
+    "reason": "PROPOSED_ATLAS entries are not product-supported or AI-authorable.",
+    "total": 741
+  },
+  "items": [
+    {
+      "agent_safety_maturity": "APPROVED",
+      "ai_exposure": "REVIEWED_PLAN_ONLY",
+      "binding_id": "binding.primitive.outcome_classification.0_1_0",
+      "conformance": "LEGACY_APPROXIMATION",
+      "id": "outcome_classification",
+      "implements": [
+        "op.reviewed_block_shift_outcome.v1"
+      ],
+      "kind": "primitive",
+      "reason": "AI_PROJECTION_POLICY_DENIED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": false,
+        "evidence_fields": [
+          "classification",
+          "outcome_frame_id"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "team",
+            "name": "accepted_shift_episodes",
+            "payload_type": "boolean",
+            "required": true,
+            "temporal_type": "episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Does not infer intent, optimality, or missed opportunity."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "outcome_classification",
+        "outputs": [
+          {
+            "cardinality": "single",
+            "entity_scope": "possession",
+            "evidence_fields": [
+              "classification",
+              "outcome_frame_id"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "classification",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "description": "Outcome lookahead horizon in seconds.",
+            "maximum": 30.0,
+            "minimum": 0.2,
+            "name": "horizon",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          }
+        ],
+        "purpose": "Classify the post-anchor outcome under the frozen M1 predicates.",
+        "runtime_id": "primitive:outcome_classification:0.1.0",
+        "version": "0.1.0"
+      },
+      "validation_maturity": "VERIFIED",
+      "version": "0.1.0"
+    },
+    {
+      "agent_safety_maturity": "APPROVED",
+      "ai_exposure": "REVIEWED_PLAN_ONLY",
+      "binding_id": "binding.primitive.relation_destination_entry_classification.0_1_0",
+      "conformance": "LEGACY_APPROXIMATION",
+      "id": "relation_destination_entry_classification",
+      "implements": [
+        "op.reviewed_relation_destination_entry_classification.v1"
+      ],
+      "kind": "primitive",
+      "reason": "AI_PROJECTION_POLICY_DENIED",
+      "runtime_contract": {
+        "ai_authorable_by_runtime_context": false,
+        "evidence_fields": [
+          "classification",
+          "base_result_id",
+          "relation_id",
+          "destination_entry_frame_id",
+          "destination_region",
+          "destination_region_type",
+          "destination_region_bounds",
+          "destination_side",
+          "destination_lane"
+        ],
+        "executable": true,
+        "inputs": [
+          {
+            "cardinality": "collection",
+            "entity_scope": "relation",
+            "name": "relation_episodes",
+            "payload_type": "relation_ref",
+            "required": true,
+            "temporal_type": "relation_episode_set",
+            "unit": "none"
+          }
+        ],
+        "kind": "primitive",
+        "limitations": [
+          "Trusted recipe wrapper; agent-authored plans should use relation_destination_entry.",
+          "Requires an upstream relation episode set.",
+          "No pass probability, optimality, decision-quality, intent, or missed-opportunity claim."
+        ],
+        "missing_data_semantics": "unknown",
+        "name": "relation_destination_entry_classification",
+        "outputs": [
+          {
+            "cardinality": "single",
+            "entity_scope": "relation",
+            "evidence_fields": [
+              "classification",
+              "base_result_id",
+              "relation_id",
+              "destination_entry_frame_id",
+              "destination_region",
+              "destination_region_type",
+              "destination_region_bounds",
+              "destination_side",
+              "destination_lane"
+            ],
+            "missing_data_semantics": "unknown",
+            "name": "classification",
+            "payload_type": "enum",
+            "temporal_type": "frame_signal",
+            "unit": "none"
+          }
+        ],
+        "parameters": [
+          {
+            "description": "Lookahead horizon for destination lane entry.",
+            "maximum": 30.0,
+            "minimum": 0.2,
+            "name": "destination_entry_horizon_seconds",
+            "payload_type": "number",
+            "required": true,
+            "unit": "second"
+          },
+          {
+            "description": "Seed used to derive deterministic experimental result IDs.",
+            "name": "result_id_seed",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          },
+          {
+            "allowed_values": [
+              "first_by_duration_clearance"
+            ],
+            "description": "Deterministic selection strategy when an anchor has multiple relation episodes.",
+            "name": "episode_selection",
+            "payload_type": "enum",
+            "required": true,
+            "unit": "none"
+          }
+        ],
+        "purpose": "Classify whether the ball later enters the destination region of a previously evaluated relation episode.",
+        "runtime_id": "primitive:relation_destination_entry_classification:0.1.0",
+        "version": "0.1.0"
+      },
+      "validation_maturity": "VERIFIED",
+      "version": "0.1.0"
+    }
+  ],
+  "registry_lock": {
+    "ai_projection_policy": "projection.ai.v1",
+    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+    "evidence_schema_version": "1.0",
+    "generator_version": "scp0.generator.v1",
+    "lock_hash": "89c255d43538f68d0d7dae04ae5b9bda5aacefa68fd65f79104439b9e422000f",
+    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+    "product_projection_policy": "projection.product.v1",
+    "recipe_projection_policy": "projection.recipe_library.v1",
+    "registry_revision": "eb5079e64409f6bc0055bb0be35ffc3f5ae148e6e835d85205179edf4e939df9",
+    "research_atlas_projection_policy": "projection.research_atlas.v1",
+    "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+    "schema_version": "1.0",
+    "typed_plan_schema_version": "1.0",
+    "unsupported_projection_policy": "projection.unsupported.v1"
+  },
+  "schema_version": "1.0"
+}

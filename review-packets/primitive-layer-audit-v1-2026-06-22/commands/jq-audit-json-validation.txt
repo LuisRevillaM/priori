@@ -1,0 +1,4 @@
+PASS jq empty generated/audits/primitive-inventory.json
+PASS jq empty generated/audits/primitive-dependency-graph.json
+PASS jq empty generated/audits/tactical-query-coverage-matrix.json
+PASS jq empty generated/audits/next-primitive-recommendations.json

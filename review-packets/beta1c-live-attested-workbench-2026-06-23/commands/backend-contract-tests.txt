@@ -1,0 +1,6 @@
+$ .venv/bin/python -m unittest tests.test_workbench_beta0_contract
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 0.172s
+
+OK

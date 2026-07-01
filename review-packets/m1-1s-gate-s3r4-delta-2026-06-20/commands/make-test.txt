@@ -1,0 +1,6 @@
+/Users/luisrevilla/Documents/priori/.venv/bin/python -m unittest discover -s tests
+..........................
+----------------------------------------------------------------------
+Ran 26 tests in 152.326s
+
+OK

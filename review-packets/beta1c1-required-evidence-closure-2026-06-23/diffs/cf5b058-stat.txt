@@ -1,0 +1,19 @@
+cf5b058 Close Beta 1C required evidence contract
+ apps/workbench-alpha/src/App.tsx                   |  17 +-
+ apps/workbench-alpha/src/presentation.ts           |   2 +-
+ apps/workbench-alpha/src/types.ts                  |   4 +
+ apps/workbench-alpha/tests/presentation.test.ts    |   2 +-
+ artifacts/m1.2/gate-s2i-verification-report.json   |  28 ++-
+ delivery/n1d/BETA_1C_1_REQUIRED_EVIDENCE_REPORT.md |  77 ++++++
+ delivery/n1d/n1d-canonical-freeze-manifest.json    |  40 ++-
+ delivery/n1d/n1d1-attestation.json                 |   8 +-
+ delivery/n1d/n1f-origin-bundle.json                | 276 +++++++--------------
+ generated/capability-context.json                  |  23 ++
+ generated/tactical-knowledge-pack.json             |  29 ++-
+ generated/tactical-knowledge-pack.md               |   6 +-
+ src/tqe/verification/n1d.py                        | 146 ++++++++++-
+ src/tqe/verification/n1d1.py                       |  39 +++
+ src/tqe/workshop/app_service.py                    |   3 +-
+ src/tqe/workshop/m1_2.py                           |  17 ++
+ tests/test_workbench_beta0_contract.py             |  31 +++
+ 17 files changed, 528 insertions(+), 220 deletions(-)

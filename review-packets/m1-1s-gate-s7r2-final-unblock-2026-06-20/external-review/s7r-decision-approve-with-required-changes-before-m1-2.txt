@@ -1,0 +1,10 @@
+Decision summarized from user-provided external review:
+APPROVE_WITH_REQUIRED_CHANGES_BEFORE_M1_2
+
+Required S7R2 corrections:
+1. Mixed known and unknown relation states should produce UNKNOWN when missing evidence could change relation existence.
+2. Witness selection must be scoped to the requested relation source.
+3. Raw episode inputs to agent-visible exists/count_at_least must be rejected or made anchor-relative.
+4. Agent-authored complexity limits cannot exceed trusted host ceilings.
+5. Existing S6, S7, M1 parity, determinism, and non-match inspection must remain green.
+6. Commit the reviewed implementation before M1.2.

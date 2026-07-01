@@ -1,0 +1,10 @@
+8a2685a Make M1.2 target inspection retry safe
+ delivery/m1.2/SPEC.md                              |  24 +++
+ delivery/m1.2/status.yaml                          |  12 +-
+ .../2026-06-21-m1-2-s0r3-target-retry-safety.md    |  19 +++
+ .../2026-06-21-m1-2-s0r3-external-review.md        |  42 +++++
+ generated/capability-context.json                  |   2 +-
+ src/tqe/verification/m1_2_gate_s0.py               | 181 ++++++++++++++++++++-
+ src/tqe/verification/m1_2_gate_s1.py               | 132 +++++++++++++++
+ src/tqe/workshop/m1_2.py                           | 122 +++++++++++---
+ 8 files changed, 500 insertions(+), 34 deletions(-)

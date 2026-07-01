@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0",
+  "audit_id": "workbench_product_audit_v1",
+  "definition": {
+    "requirements": [
+      "no saved recipe is selected",
+      "plan hash is not equal to a registered recipe/template hash",
+      "at least two distinct agent-composable capabilities are combined",
+      "at least one temporal or relational operator is used",
+      "no production code or prompt change is made for the request",
+      "deterministic binding succeeds",
+      "first execution is a cache MISS",
+      "execution produces real results or an honest zero-result set",
+      "results have complete traces and evidence",
+      "UI labels the plan New experimental composition"
+    ]
+  },
+  "binary_acceptance_test": {
+    "status": "FAIL_TODAY",
+    "passes_only_if": [
+      "Hermes creates a schema-valid plan",
+      "the plan is structurally different from every registered recipe and template",
+      "the plan combines at least two agent-composable capabilities",
+      "the plan uses temporal or relational logic",
+      "no code change, prompt change, recipe change, or runtime change is made for the request",
+      "the resulting plan hash is new",
+      "first execution starts with cache_status=MISS",
+      "execution runs honestly over real deployed match data",
+      "results contain traces and evidence, or return an honest zero-result set",
+      "UI and trace label the source as HERMES_NOVEL_COMPOSITION"
+    ],
+    "why_it_fails_today": [
+      "Live model-mode interpretation returned HTTP 500 during audit.",
+      "The deployed compiler evidence supports approved recipe selection and corridor-template drafting, not a proven structurally new ad hoc composition.",
+      "The UI does not expose HERMES_NOVEL_COMPOSITION as a distinct source label.",
+      "No observed live run produced a new plan hash different from registered recipe/template hashes."
+    ]
+  },
+  "required_provenance_sources": [
+    "REVIEWED_RECIPE",
+    "MANUAL_PRESET",
+    "HERMES_RECIPE_SELECTION",
+    "HERMES_NOVEL_COMPOSITION",
+    "DETERMINISTIC_REPAIR",
+    "CAPABILITY_GAP"
+  ],
+  "provenance_rule": "A plan must never appear AI-authored when it was loaded from a reviewed recipe, selected manually as a preset, or produced by deterministic host repair/fallback.",
+  "current_result": "FAIL",
+  "summary": "The deployed Workbench proves approved recipe execution and experimental corridor-template execution, but it does not currently prove ad hoc Hermes-authored novel composition in the product journey.",
+  "evidence": {
+    "compiler_supported_actions": [
+      "select_recipe",
+      "draft_corridor",
+      "clarify",
+      "capability_gap"
+    ],
+    "source_files": [
+      "src/tqe/workshop/app_service.py",
+      "src/tqe/workshop/hermes_s2.py",
+      "generated/tactical-knowledge-pack.json",
+      "config/query-plans/opposite_corridor_after_shift.experimental.v1.json"
+    ],
+    "live_model_interpretation": "HTTP 500 observed for supported, ambiguous, unsupported, and novel candidate prompts on 2026-06-22",
+    "registered_experimental_templates": [
+      "possession_corridor_availability_v1",
+      "opposite_corridor_after_shift_v1"
+    ],
+    "ui_labeling": "Interpreted panel shows recipe state/status but not New experimental composition."
+  },
+  "candidate_requests": [
+    {
+      "natural_language_request": "Find possessions where the ball-side block shifts, then an opposite-side forward lane opens within five seconds.",
+      "why_no_saved_recipe_matches": "There is a registered experimental opposite-corridor plan in the repo, but it is not exposed as a deployed Hermes-authored ad hoc composition.",
+      "capabilities_used_expected": [
+        "possession_segment",
+        "ball_lateral_fraction",
+        "defensive_outfield_centroid",
+        "signed_lateral_shift",
+        "geometric_progressive_corridor",
+        "persists_for",
+        "exists"
+      ],
+      "plan_structure": "wide-entry and block-shift predicates gate an opposite-side corridor relation and destination-entry classification",
+      "bound_plan_hash": null,
+      "validation_outcome": "not proven through deployed Hermes",
+      "first_run_cache_state": null,
+      "result_count": null,
+      "evidence_completeness": "repo plan requests relation id, destination region, duration, and destination entry fields; overlay geometry remains incomplete",
+      "replay_inspectability": "not proven through UI",
+      "recommendation": "Use as hero composition only after Hermes authors it live and UI labels it as a new composition."
+    },
+    {
+      "natural_language_request": "Show possessions where a progressive corridor opens after the defending block has moved toward the ball side.",
+      "why_no_saved_recipe_matches": "This combines the approved block-shift spine and corridor availability; current UI tends to map to one selected preset rather than composing both live.",
+      "capabilities_used_expected": [
+        "signed_lateral_shift",
+        "persists_for",
+        "geometric_progressive_corridor",
+        "exists"
+      ],
+      "plan_structure": "temporal block-shift episode followed by corridor episode within a configured window",
+      "bound_plan_hash": null,
+      "validation_outcome": "not proven through deployed Hermes",
+      "first_run_cache_state": null,
+      "result_count": null,
+      "evidence_completeness": "would need open/close corridor frames and block-shift centroid evidence",
+      "replay_inspectability": "not proven"
+    },
+    {
+      "natural_language_request": "Find possessions where the defence shifts to the ball side but the retained possession still has a clear forward connection.",
+      "why_no_saved_recipe_matches": "It requires combining retained-no-switch block-shift outcome with a corridor relation.",
+      "capabilities_used_expected": [
+        "outcome_classification",
+        "signed_lateral_shift",
+        "geometric_progressive_corridor_from_anchor_set",
+        "exists"
+      ],
+      "plan_structure": "approved block-shift outcome plus anchor-relative corridor availability",
+      "bound_plan_hash": null,
+      "validation_outcome": "not proven through deployed Hermes",
+      "first_run_cache_state": null,
+      "result_count": null,
+      "evidence_completeness": "not proven",
+      "replay_inspectability": "not proven"
+    }
+  ],
+  "recommended_hero_composition": "Find possessions where the ball-side block shifts, then an opposite-side forward lane opens within five seconds.",
+  "acceptance_needed": [
+    "Hermes proposes the plan from natural language without selecting an existing recipe.",
+    "Bound plan hash differs from registered template hashes.",
+    "Validation succeeds through host binder.",
+    "First execution is a MISS and subsequent execution is a HIT.",
+    "Replay shows exact evidence, with corridor open/close interval and block-shift evidence available or explicitly hidden.",
+    "UI badge says New experimental composition."
+  ]
+}

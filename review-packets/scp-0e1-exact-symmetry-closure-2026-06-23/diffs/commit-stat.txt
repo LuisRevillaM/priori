@@ -1,0 +1,19 @@
+bb3195b Close SCP-0E.1 exact symmetry gate
+ artifacts/scp-0/verification-report.json           |  4 +-
+ delivery/ledger.jsonl                              |  1 +
+ delivery/scp-0/SPEC.md                             | 27 +++++++
+ delivery/scp-0/progress.md                         |  3 +-
+ delivery/scp-0/status.yaml                         | 28 +++++---
+ .../2026-06-23-scp-0-semantic-registry.md          | 29 ++++++++
+ generated/semantic-registry/ai-projection.json     |  4 +-
+ .../semantic-registry/product-projection.json      |  4 +-
+ .../recipe-library-projection.json                 |  4 +-
+ .../research-atlas-projection.json                 |  4 +-
+ .../semantic-registry/semantic-parity-report.json  |  4 +-
+ .../unsupported-capability-projection.json         |  4 +-
+ semantic-registry/registry.lock.json               |  4 +-
+ semantic-registry/registry.yaml                    |  2 +-
+ src/tqe/semantic_registry/generate.py              | 84 ++++++++++++++--------
+ src/tqe/semantic_registry/runtime_manifest.py      |  3 +-
+ tests/test_scp0_semantic_registry.py               | 73 ++++++++++++++++++-
+ 17 files changed, 223 insertions(+), 59 deletions(-)

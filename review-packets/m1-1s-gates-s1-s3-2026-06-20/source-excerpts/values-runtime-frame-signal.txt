@@ -1,0 +1,130 @@
+     1	"""Runtime value wrappers and catalog conformance checks."""
+     2	
+     3	from __future__ import annotations
+     4	
+     5	from dataclasses import dataclass, field
+     6	from typing import Any
+     7	
+     8	import numpy as np
+     9	import pandas as pd
+    10	
+    11	from tqe.runtime.ir import Cardinality, CatalogOutput, EntityScope, PayloadType, TemporalContainer, Unit
+    12	
+    13	
+    14	@dataclass(frozen=True)
+    15	class FrameSignal:
+    16	    frame_ids: list[int]
+    17	    values: list[Any]
+    18	    unknown_mask: list[bool]
+    19	    unit: Unit
+    20	    entity_scope: EntityScope
+    21	
+    22	    def __post_init__(self) -> None:
+    23	        if not (len(self.frame_ids) == len(self.values) == len(self.unknown_mask)):
+    24	            raise RuntimeError("frame signal frame_ids, values, and unknown_mask lengths must match")
+    25	
+    26	
+    27	@dataclass(frozen=True)
+    28	class RuntimeValue:
+    29	    output: CatalogOutput
+    30	    value: Any
+    31	    provenance: dict[str, Any] = field(default_factory=dict)
+    32	
+    33	    @property
+    34	    def temporal_type(self) -> TemporalContainer:
+    35	        return self.output.temporal_type
+    36	
+    37	    @property
+    38	    def payload_type(self) -> PayloadType:
+    39	        return self.output.payload_type
+    40	
+    41	    @property
+    42	    def cardinality(self) -> Cardinality:
+    43	        return self.output.cardinality
+    44	
+    45	    @property
+    46	    def frame_values(self) -> list[Any]:
+    47	        if not isinstance(self.value, FrameSignal):
+    48	            raise RuntimeError(f"{self.output.name} is not a frame signal")
+    49	        return self.value.values
+    50	
+    51	
+    52	def runtime_value_from_raw(
+    53	    *,
+    54	    node_id: str,
+    55	    output: CatalogOutput,
+    56	    raw_value: Any,
+    57	    frame_ids: list[int] | None = None,
+    58	    records: list[dict[str, Any]] | None = None,
+    59	) -> RuntimeValue:
+    60	    value = normalize_value(
+    61	        node_id=node_id,
+    62	        output=output,
+    63	        raw_value=raw_value,
+    64	        frame_ids=frame_ids,
+    65	    )
+    66	    assert_value_conforms(node_id=node_id, output=output, value=value)
+    67	    return RuntimeValue(
+    68	        output=output,
+    69	        value=value,
+    70	        provenance={
+    71	            "node_id": node_id,
+    72	            "output_name": output.name,
+    73	            "temporal_type": output.temporal_type.value,
+    74	            "payload_type": output.payload_type.value,
+    75	            "unit": output.unit.value,
+    76	            "entity_scope": output.entity_scope.value,
+    77	            "records": records,
+    78	        },
+    79	    )
+    80	
+    81	
+    82	def normalize_value(
+    83	    *,
+    84	    node_id: str,
+    85	    output: CatalogOutput,
+    86	    raw_value: Any,
+    87	    frame_ids: list[int] | None = None,
+    88	) -> Any:
+    89	    if output.temporal_type == TemporalContainer.FRAME_SIGNAL:
+    90	        return normalize_frame_signal(
+    91	            node_id=node_id,
+    92	            output=output,
+    93	            raw_value=raw_value,
+    94	            frame_ids=frame_ids,
+    95	        )
+    96	    if isinstance(raw_value, np.ndarray):
+    97	        return raw_value.tolist()
+    98	    return raw_value
+    99	
+   100	
+   101	def normalize_frame_signal(
+   102	    *,
+   103	    node_id: str,
+   104	    output: CatalogOutput,
+   105	    raw_value: Any,
+   106	    frame_ids: list[int] | None = None,
+   107	) -> FrameSignal:
+   108	    if isinstance(raw_value, FrameSignal):
+   109	        return raw_value
+   110	    if isinstance(raw_value, pd.Series):
+   111	        if frame_ids is None:
+   112	            ordered = raw_value.sort_index()
+   113	            signal_frame_ids = [int(item) for item in ordered.index.tolist()]
+   114	            values = [_normalize_missing(item) for item in ordered.tolist()]
+   115	        else:
+   116	            signal_frame_ids = [int(item) for item in frame_ids]
+   117	            ordered = raw_value.reindex(signal_frame_ids)
+   118	            values = [_normalize_missing(item) for item in ordered.tolist()]
+   119	        return frame_signal_from_values(output=output, frame_ids=signal_frame_ids, values=values)
+   120	    if isinstance(raw_value, np.ndarray):
+   121	        raw_value = raw_value.tolist()
+   122	    if isinstance(raw_value, bool | int | float | str) or raw_value is None:
+   123	        signal_frame_ids = [int(frame_ids[0])] if frame_ids else [0]
+   124	        return frame_signal_from_values(output=output, frame_ids=signal_frame_ids, values=[raw_value])
+   125	    if isinstance(raw_value, list):
+   126	        if any(isinstance(item, dict | list | tuple) for item in raw_value):
+   127	            raise RuntimeError(
+   128	                f"{node_id}.{output.name} frame signal must contain scalar payload values, not structured records"
+   129	            )
+   130	        if frame_ids is not None and len(frame_ids) == len(raw_value):

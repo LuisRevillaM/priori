@@ -1,0 +1,21 @@
+3caa4b6 Expose attested Hermes novel composition
+ apps/workbench-alpha/src/App.tsx                   |  32 ++++-
+ .../workbench-alpha/src/generated/api-schemas.json |   1 +
+ apps/workbench-alpha/src/generated/api-types.ts    |   1 +
+ apps/workbench-alpha/src/presentation.ts           |   9 +-
+ apps/workbench-alpha/src/styles.css                |  11 ++
+ apps/workbench-alpha/src/types.ts                  |   1 +
+ apps/workbench-alpha/src/workbenchState.ts         |  24 +++-
+ apps/workbench-alpha/tests/presentation.test.ts    |  12 +-
+ apps/workbench-alpha/tests/workbench-alpha.spec.ts |  16 +--
+ apps/workbench-alpha/tests/workbenchState.test.ts  |  21 ++-
+ delivery/n1d/n1d-canonical-freeze-manifest.json    |  36 ++++--
+ delivery/n1d/n1d1-attestation.json                 |   3 +-
+ generated/tactical-knowledge-pack.json             |   4 +-
+ generated/tactical-knowledge-pack.md               |   4 +-
+ src/tqe/runtime/executor.py                        |   6 +
+ src/tqe/verification/n1d.py                        |  14 +-
+ src/tqe/verification/n1d1.py                       |   2 +
+ src/tqe/workshop/app_service.py                    | 142 ++++++++++++++++++++-
+ tests/test_workbench_beta0_contract.py             |  42 ++++++
+ 19 files changed, 328 insertions(+), 53 deletions(-)

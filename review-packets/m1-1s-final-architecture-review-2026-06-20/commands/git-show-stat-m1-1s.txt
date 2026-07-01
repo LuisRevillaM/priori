@@ -1,0 +1,69 @@
+8d68e3d Add final M1.1S architecture proof
+ Makefile                                           |   5 +-
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/reviews/gate-s7-controller-review.md |  28 ++
+ delivery/m1.1/status.yaml                          |  12 +-
+ .../2026-06-20-m1-1s-gate-s7-final-proof.md        |  10 +
+ src/tqe/verification/m1_1_gate_s7.py               | 314 +++++++++++++++++++++
+ 6 files changed, 363 insertions(+), 7 deletions(-)
+c44055b Verify alias-based evidence projection
+ Makefile                                           |   5 +-
+ ...osite_corridor_after_shift.experimental.v1.json |   3 +-
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/reviews/gate-s5-controller-review.md |  28 ++
+ delivery/m1.1/status.yaml                          |  10 +-
+ .../2026-06-20-m1-1s-gate-s5-evidence-aliases.md   |  10 +
+ generated/tactical-query-plan.schema.json          |   2 +-
+ generated/tactical-query-plan.types.ts             |   2 +-
+ src/tqe/runtime/executor.py                        |  35 +++
+ src/tqe/runtime/ir.py                              |   1 +
+ src/tqe/verification/m1_1_gate_s4.py               |   1 +
+ src/tqe/verification/m1_1_gate_s5.py               | 320 +++++++++++++++++++++
+ 12 files changed, 409 insertions(+), 9 deletions(-)
+f7b64ba Add second generic corridor plan
+ Makefile                                           |   5 +-
+ ...sion_corridor_availability.experimental.v1.json | 339 +++++++++++++++++++++
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/reviews/gate-s6-controller-review.md |  32 ++
+ delivery/m1.1/status.yaml                          |  10 +-
+ .../2026-06-20-m1-1s-gate-s6-second-pattern.md     |  10 +
+ generated/capability-catalog.json                  |   2 +-
+ src/tqe/runtime/catalog.py                         | 151 +++++++++
+ src/tqe/runtime/executor.py                        |  47 ++-
+ src/tqe/verification/m1_1_gate_s6.py               | 335 ++++++++++++++++++++
+ 10 files changed, 915 insertions(+), 17 deletions(-)
+d6f82f4 Implement S4 review corrections
+ ...osite_corridor_after_shift.experimental.v1.json |  15 +-
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md        |  10 +-
+ .../m1.1/reviews/gate-s4r-controller-review.md     |  29 +++
+ delivery/m1.1/status.yaml                          |  10 +-
+ .../2026-06-20-m1-1s-gate-s4r-review-correction.md |  10 +
+ .../2026-06-20-m1-1s-gate-s4-external-review.md    |  21 ++
+ generated/tactical-query-plan.schema.json          |   2 +-
+ generated/tactical-query-plan.types.ts             |   2 +-
+ src/tqe/runtime/executor.py                        | 161 ++++++++++---
+ src/tqe/runtime/ir.py                              |   1 +
+ src/tqe/verification/m1_1_gate_s4.py               | 256 +++++++++++++++++----
+ 12 files changed, 433 insertions(+), 85 deletions(-)
+e5f6618 Implement M1.1S S4 rule-driven emission
+ Makefile                                           |   5 +-
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md        |  17 +
+ delivery/m1.1/reviews/gate-s4-controller-review.md |  22 ++
+ delivery/m1.1/status.yaml                          |   8 +-
+ .../2026-06-20-m1-1s-gate-s4-rule-emission.md      |  14 +
+ src/tqe/runtime/executor.py                        | 375 +++++++++++++++++++--
+ src/tqe/verification/m1_1_gate_s4.py               | 359 ++++++++++++++++++++
+ tests/test_m1_1_runtime.py                         |   9 +
+ 9 files changed, 786 insertions(+), 24 deletions(-)
+108f107 Unblock S4 with generic plan helper
+ delivery/ledger.jsonl                              |  1 +
+ delivery/m1.1/status.yaml                          | 12 +++++----
+ docs/learnings/2026-06-20-m1-1s-s4-helper-split.md | 10 ++++++++
+ .../2026-06-20-m1-1s-gate-s3r4-external-review.md  | 30 ++++++++++++++++++++++
+ src/tqe/inspector/m1_1.py                          |  4 +--
+ src/tqe/runtime/executor.py                        | 17 ++++++++++++
+ src/tqe/verification/m1_1_gate_e.py                |  4 +--
+ tests/test_m1_1_runtime.py                         | 10 +++++++-
+ 8 files changed, 78 insertions(+), 10 deletions(-)

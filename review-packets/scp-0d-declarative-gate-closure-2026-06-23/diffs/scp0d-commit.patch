@@ -1,0 +1,3600 @@
+commit 6ae85300e80909dc8060c078e58441eccdf1c0bc
+Author:     luisrevillam <luisrevillameza@gmail.com>
+AuthorDate: Tue Jun 23 16:47:01 2026 -0700
+Commit:     luisrevillam <luisrevillameza@gmail.com>
+CommitDate: Tue Jun 23 16:47:01 2026 -0700
+
+    Close SCP-0 declarative gates
+
+diff --git a/artifacts/scp-0/verification-report.json b/artifacts/scp-0/verification-report.json
+new file mode 100644
+index 0000000..e0d228b
+--- /dev/null
++++ b/artifacts/scp-0/verification-report.json
+@@ -0,0 +1,803 @@
++{
++  "atlas_leakage": {
++    "ai": 0,
++    "product": 0
++  },
++  "findings": [],
++  "operators": {
++    "missing_definitions": 0,
++    "runtime_total": 8,
++    "semantically_defined": 8
++  },
++  "pilots": {
++    "ball_side_block_shift": {
++      "capability_paths": [
++        {
++          "binding_found": true,
++          "binding_id": "binding.primitive.possession_segment.0_1_0",
++          "capability": {
++            "kind": "primitive",
++            "name": "possession_segment",
++            "version": "0.1.0"
++          },
++          "claim_contracts": [
++            "claim.possession_context.v1"
++          ],
++          "concepts": [
++            "concept.possession_context"
++          ],
++          "conformance": "EXACT",
++          "effective_claims": {
++            "claim.possession_context.v1": [
++              "possession_anchor_identified",
++              "team_active_ball_possession_interval_identified"
++            ]
++          },
++          "effective_evidence": {
++            "evidence.possession_context.v1": [
++              "anchor_frame_id",
++              "anchor_id",
++              "match_id",
++              "period",
++              "possession_end_frame_id",
++              "possession_start_frame_id"
++            ]
++          },
++          "evidence_contracts": [
++            "evidence.possession_context.v1"
++          ],
++          "implementation_id": "impl.possession_segment.python.v1",
++          "in_ai_projection": true,
++          "in_product_projection": true,
++          "operationalizations": [
++            "op.possession_segment_intervals.v1"
++          ],
++          "subject_ref": "runtime:primitive:possession_segment:0.1.0"
++        },
++        {
++          "binding_found": true,
++          "binding_id": "binding.primitive.ball_lateral_fraction.0_1_0",
++          "capability": {
++            "kind": "primitive",
++            "name": "ball_lateral_fraction",
++            "version": "0.1.0"
++          },
++          "claim_contracts": [
++            "claim.wide_ball_entry.v1"
++          ],
++          "concepts": [
++            "concept.normalized_ball_lateral_position"
++          ],
++          "conformance": "EXACT",
++          "effective_claims": {
++            "claim.wide_ball_entry.v1": [
++              "ball_lateral_position_measured",
++              "configured_wide_area_entry_measured"
++            ]
++          },
++          "effective_evidence": {
++            "evidence.wide_ball_entry.v1": [
++              "anchor_frame_id",
++              "ball_side",
++              "wide_entry_y_m"
++            ]
++          },
++          "evidence_contracts": [
++            "evidence.wide_ball_entry.v1"
++          ],
++          "implementation_id": "impl.ball_lateral_fraction.python.v1",
++          "in_ai_projection": true,
++          "in_product_projection": true,
++          "operationalizations": [
++            "op.ball_lateral_fraction.v1"
++          ],
++          "subject_ref": "runtime:primitive:ball_lateral_fraction:0.1.0"
++        },
++        {
++          "binding_found": true,
++          "binding_id": "binding.primitive.defensive_outfield_centroid.0_1_0",
++          "capability": {
++            "kind": "primitive",
++            "name": "defensive_outfield_centroid",
++            "version": "0.1.0"
++          },
++          "claim_contracts": [
++            "claim.defensive_outfield_centroid.v1"
++          ],
++          "concepts": [
++            "concept.defensive_outfield_centroid"
++          ],
++          "conformance": "PARTIAL",
++          "effective_claims": {
++            "claim.defensive_outfield_centroid.v1": [
++              "defending_outfield_centroid_measured"
++            ]
++          },
++          "effective_evidence": {
++            "evidence.defensive_outfield_centroid.v1": [
++              "baseline_defensive_centroid_y_m",
++              "defending_outfield_player_ids"
++            ]
++          },
++          "evidence_contracts": [
++            "evidence.defensive_outfield_centroid.v1"
++          ],
++          "implementation_id": "impl.defensive_outfield_centroid.python.v1",
++          "in_ai_projection": true,
++          "in_product_projection": true,
++          "operationalizations": [
++            "op.defensive_outfield_centroid.v1"
++          ],
++          "subject_ref": "runtime:primitive:defensive_outfield_centroid:0.1.0"
++        },
++        {
++          "binding_found": true,
++          "binding_id": "binding.primitive.signed_lateral_shift.0_1_0",
++          "capability": {
++            "kind": "primitive",
++            "name": "signed_lateral_shift",
++            "version": "0.1.0"
++          },
++          "claim_contracts": [
++            "claim.defensive_block_lateral_shift.v1"
++          ],
++          "concepts": [
++            "concept.defensive_block_lateral_shift"
++          ],
++          "conformance": "EXACT",
++          "effective_claims": {
++            "claim.defensive_block_lateral_shift.v1": [
++              "defending_outfield_centroid_measured",
++              "defensive_centroid_shift_measured_toward_ball_side"
++            ]
++          },
++          "effective_evidence": {
++            "evidence.defensive_block_lateral_shift.v1": [
++              "baseline_defensive_centroid_y_m",
++              "defending_outfield_player_ids",
++              "shift_frame_id",
++              "signed_shift_metres"
++            ]
++          },
++          "evidence_contracts": [
++            "evidence.defensive_block_lateral_shift.v1"
++          ],
++          "implementation_id": "impl.signed_lateral_shift.python.v1",
++          "in_ai_projection": true,
++          "in_product_projection": true,
++          "operationalizations": [
++            "op.baseline_relative_defensive_shift.v1"
++          ],
++          "subject_ref": "runtime:primitive:signed_lateral_shift:0.1.0"
++        },
++        {
++          "binding_found": true,
++          "binding_id": "binding.primitive.outcome_classification.0_1_0",
++          "capability": {
++            "kind": "primitive",
++            "name": "outcome_classification",
++            "version": "0.1.0"
++          },
++          "claim_contracts": [
++            "claim.reviewed_outcome_classification.v1"
++          ],
++          "concepts": [
++            "concept.reviewed_outcome_classification"
++          ],
++          "conformance": "LEGACY_APPROXIMATION",
++          "effective_claims": {
++            "claim.reviewed_outcome_classification.v1": [
++              "reviewed_recipe_outcome_label_assigned"
++            ]
++          },
++          "effective_evidence": {
++            "evidence.reviewed_outcome_classification.v1": [
++              "classification",
++              "outcome_window_end_frame_id",
++              "outcome_window_start_frame_id"
++            ]
++          },
++          "evidence_contracts": [
++            "evidence.reviewed_outcome_classification.v1"
++          ],
++          "implementation_id": "impl.outcome_classification.python.v1",
++          "in_ai_projection": false,
++          "in_product_projection": true,
++          "operationalizations": [
++            "op.reviewed_block_shift_outcome.v1"
++          ],
++          "subject_ref": "runtime:primitive:outcome_classification:0.1.0"
++        }
++      ],
++      "claim_contract": "claim.ball_side_block_shift.v1",
++      "evidence_contract": "evidence.ball_side_block_shift.v1",
++      "mapping_id": "recipe.ball_side_block_shift.v1",
++      "operator_paths": [
++        {
++          "definition_found": true,
++          "operator": {
++            "name": "gt",
++            "version": "1.0.0"
++          }
++        },
++        {
++          "definition_found": true,
++          "operator": {
++            "name": "persists_for",
++            "version": "1.0.0"
++          }
++        },
++        {
++          "definition_found": true,
++          "operator": {
++            "name": "gte",
++            "version": "1.0.0"
++          }
++        },
++        {
++          "definition_found": true,
++          "operator": {
++            "name": "neq",
++            "version": "1.0.0"
++          }
++        }
++      ],
++      "plan_artifact_id": "plan.ball_side_block_shift.v1",
++      "plan_integrity": {
++        "artifact_id": "plan.ball_side_block_shift.v1",
++        "capability_dependencies": [
++          {
++            "kind": "primitive",
++            "name": "possession_segment",
++            "version": "0.1.0"
++          },
++          {
++            "kind": "primitive",
++            "name": "ball_lateral_fraction",
++            "version": "0.1.0"
++          },
++          {
++            "kind": "primitive",
++            "name": "defensive_outfield_centroid",
++            "version": "0.1.0"
++          },
++          {
++            "kind": "primitive",
++            "name": "signed_lateral_shift",
++            "version": "0.1.0"
++          },
++          {
++            "kind": "primitive",
++            "name": "outcome_classification",
++            "version": "0.1.0"
++          }
++        ],
++        "dependency_refs": [
++          "possession_segment",
++          "ball_lateral_fraction",
++          "defensive_outfield_centroid",
++          "signed_lateral_shift",
++          "outcome_classification",
++          "gt",
++          "persists_for",
++          "gte",
++          "neq"
++        ],
++        "draft_status": "approved",
++        "exists": true,
++        "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
++        "normalized_selected_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
++        "operator_dependencies": [
++          {
++            "name": "gt",
++            "version": "1.0.0"
++          },
++          {
++            "name": "persists_for",
++            "version": "1.0.0"
++          },
++          {
++            "name": "gte",
++            "version": "1.0.0"
++          },
++          {
++            "name": "neq",
++            "version": "1.0.0"
++          }
++        ],
++        "origin": "REVIEWED_RECIPE",
++        "parameter_defaults": {
++          "accepted_per_match_limit": 5,
++          "accepted_result_limit": 16,
++          "analysis_rate_hz": 5,
++          "baseline_window_seconds": 0.8,
++          "dedupe_window_seconds": 8.0,
++          "maximum_analysis_gap_ms": 250,
++          "minimum_outfield_players_per_team": 9,
++          "minimum_possession_seconds": 8.0,
++          "minimum_shift_metres": 5.0,
++          "minimum_shift_persistence_seconds": 0.6,
++          "minimum_wide_dwell_seconds": 1.2,
++          "near_miss_limit": 8,
++          "opposite_side_fraction": 0.35,
++          "outcome_horizon_seconds": 6.0,
++          "prior_central_fraction": 0.45,
++          "result_id_seed_hash": "af42853e6a3c8449e023dd98751ababbc7d34640f8751fbffa1c2bbbd0eab523",
++          "retained_after_switch_seconds": 1.0,
++          "shift_search_window_seconds": 4.0,
++          "wide_entry_fraction": 0.6
++        },
++        "path": "config/query-plans/ball_side_block_shift.ir.v1.json",
++        "plan_id": "ball_side_block_shift_ir_v1",
++        "plan_version": "1.0.0",
++        "promotion_status": "REVIEWED_RECIPE",
++        "recipe_id": "ball_side_block_shift_v1",
++        "recipe_version": "1.0.0",
++        "referenced_parameters": [
++          "minimum_shift_metres",
++          "minimum_shift_persistence_seconds",
++          "minimum_wide_dwell_seconds",
++          "outcome_horizon_seconds",
++          "wide_entry_fraction"
++        ],
++        "source_artifact_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
++        "source_kind": "typed_plan",
++        "valid_typed_plan": true
++      },
++      "profiles": [
++        "profile.ball_side_block_shift_reviewed.v1"
++      ],
++      "recipe_id": "ball_side_block_shift_v1",
++      "recipe_mapped": true,
++      "recipe_version": "1.0.0"
++    },
++    "high_bypass_completed_pass": {
++      "capability_paths": [
++        {
++          "binding_found": true,
++          "binding_id": "binding.primitive.controlled_pass_episode.0_1_0",
++          "capability": {
++            "kind": "primitive",
++            "name": "controlled_pass_episode",
++            "version": "0.1.0"
++          },
++          "claim_contracts": [
++            "claim.controlled_ball_transfer.v1"
++          ],
++          "concepts": [
++            "concept.controlled_ball_transfer"
++          ],
++          "conformance": "PARTIAL",
++          "effective_claims": {
++            "claim.controlled_ball_transfer.v1": [
++              "event_candidate_pass_identified",
++              "tracking_confirmed_controlled_reception",
++              "tracking_confirmed_physical_release"
++            ]
++          },
++          "effective_evidence": {
++            "evidence.controlled_ball_transfer.v1": [
++              "controlled_reception_frame_id",
++              "event_anchor_frame_id",
++              "forward_progression_m",
++              "passer_id",
++              "physical_release_frame_id",
++              "receiver_id",
++              "reception_ball_point",
++              "release_ball_point"
++            ]
++          },
++          "evidence_contracts": [
++            "evidence.controlled_ball_transfer.v1"
++          ],
++          "implementation_id": "impl.controlled_pass_episode.python.v1",
++          "in_ai_projection": true,
++          "in_product_projection": true,
++          "operationalizations": [
++            "op.event_seeded_tracking_confirmed_pass.v1"
++          ],
++          "subject_ref": "runtime:primitive:controlled_pass_episode:0.1.0"
++        },
++        {
++          "binding_found": true,
++          "binding_id": "binding.relation.opponents_bypassed_by_action.0_1_0",
++          "capability": {
++            "kind": "relation",
++            "name": "opponents_bypassed_by_action",
++            "version": "0.1.0"
++          },
++          "claim_contracts": [
++            "claim.opponent_ball_side_transition_count.v1"
++          ],
++          "concepts": [
++            "concept.opponent_ball_side_transition_count"
++          ],
++          "conformance": "PARTIAL",
++          "effective_claims": {
++            "claim.opponent_ball_side_transition_count.v1": [
++              "listed_opponents_changed_from_goal_side_to_behind_ball_between_release_and_reception"
++            ]
++          },
++          "effective_evidence": {
++            "evidence.opponent_ball_side_transition_count.v1": [
++              "active_opponent_denominator",
++              "bypassed_player_ids",
++              "forward_progression_m",
++              "opponents_bypassed_count",
++              "reception_frame_id",
++              "release_frame_id"
++            ]
++          },
++          "evidence_contracts": [
++            "evidence.opponent_ball_side_transition_count.v1"
++          ],
++          "implementation_id": "impl.opponents_bypassed_by_action.python.v1",
++          "in_ai_projection": true,
++          "in_product_projection": true,
++          "operationalizations": [
++            "op.release_reception_opponent_transition_count.v1"
++          ],
++          "subject_ref": "runtime:relation:opponents_bypassed_by_action:0.1.0"
++        }
++      ],
++      "claim_contract": "claim.high_bypass_completed_pass.v1",
++      "evidence_contract": "evidence.high_bypass_completed_pass.v1",
++      "mapping_id": "recipe.high_bypass_completed_pass.v1",
++      "operator_paths": [
++        {
++          "definition_found": true,
++          "operator": {
++            "name": "gte",
++            "version": "1.0.0"
++          }
++        }
++      ],
++      "plan_artifact_id": "plan.high_bypass_completed_pass.v1",
++      "plan_integrity": {
++        "artifact_id": "plan.high_bypass_completed_pass.v1",
++        "capability_dependencies": [
++          {
++            "kind": "primitive",
++            "name": "controlled_pass_episode",
++            "version": "0.1.0"
++          },
++          {
++            "kind": "relation",
++            "name": "opponents_bypassed_by_action",
++            "version": "0.1.0"
++          }
++        ],
++        "dependency_refs": [
++          "controlled_pass_episode",
++          "opponents_bypassed_by_action",
++          "gte"
++        ],
++        "draft_status": "experimental",
++        "exists": true,
++        "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
++        "normalized_selected_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
++        "operator_dependencies": [
++          {
++            "name": "gte",
++            "version": "1.0.0"
++          }
++        ],
++        "origin": "MANUAL_PRESET",
++        "parameter_defaults": {
++          "bypassed_buffer_m": 1.0,
++          "goal_side_buffer_m": 1.0,
++          "minimum_bypassed_opponents": 5,
++          "minimum_forward_progression_m": 8.0
++        },
++        "path": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
++        "plan_id": "m2a_high_bypass_completed_pass",
++        "plan_version": "0.1.0",
++        "promotion_status": "EXPERIMENTAL_PRESET",
++        "recipe_id": "high_bypass_completed_pass_v1",
++        "recipe_version": "0.1.0",
++        "referenced_parameters": [
++          "bypassed_buffer_m",
++          "goal_side_buffer_m",
++          "minimum_bypassed_opponents",
++          "minimum_forward_progression_m"
++        ],
++        "source_artifact_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
++        "source_kind": "typed_plan",
++        "valid_typed_plan": true
++      },
++      "profiles": [
++        "profile.high_bypass_default.v1"
++      ],
++      "recipe_id": "high_bypass_completed_pass_v1",
++      "recipe_mapped": true,
++      "recipe_version": "0.1.0"
++    },
++    "validated_ai_composition": {
++      "capability_paths": [
++        {
++          "binding_found": true,
++          "binding_id": "binding.primitive.possession_segment.0_1_0",
++          "capability": {
++            "kind": "primitive",
++            "name": "possession_segment",
++            "version": "0.1.0"
++          },
++          "claim_contracts": [
++            "claim.possession_context.v1"
++          ],
++          "concepts": [
++            "concept.possession_context"
++          ],
++          "conformance": "EXACT",
++          "effective_claims": {
++            "claim.possession_context.v1": [
++              "possession_anchor_identified",
++              "team_active_ball_possession_interval_identified"
++            ]
++          },
++          "effective_evidence": {
++            "evidence.possession_context.v1": [
++              "anchor_frame_id",
++              "anchor_id",
++              "match_id",
++              "period",
++              "possession_end_frame_id",
++              "possession_start_frame_id"
++            ]
++          },
++          "evidence_contracts": [
++            "evidence.possession_context.v1"
++          ],
++          "implementation_id": "impl.possession_segment.python.v1",
++          "in_ai_projection": true,
++          "in_product_projection": true,
++          "operationalizations": [
++            "op.possession_segment_intervals.v1"
++          ],
++          "subject_ref": "runtime:primitive:possession_segment:0.1.0"
++        },
++        {
++          "binding_found": true,
++          "binding_id": "binding.relation.geometric_progressive_corridor_from_anchor_set.0_1_0",
++          "capability": {
++            "kind": "relation",
++            "name": "geometric_progressive_corridor_from_anchor_set",
++            "version": "0.1.0"
++          },
++          "claim_contracts": [
++            "claim.progressive_connection_availability.v1"
++          ],
++          "concepts": [
++            "concept.progressive_connection_availability"
++          ],
++          "conformance": "EXACT",
++          "effective_claims": {
++            "claim.progressive_connection_availability.v1": [
++              "geometric_forward_connection_available_under_declared_thresholds"
++            ]
++          },
++          "effective_evidence": {
++            "evidence.progressive_connection_availability.v1": [
++              "anchor_id",
++              "destination_region",
++              "minimum_clearance_m",
++              "open_frame_id",
++              "relation_id",
++              "target_player_id"
++            ]
++          },
++          "evidence_contracts": [
++            "evidence.progressive_connection_availability.v1"
++          ],
++          "implementation_id": "impl.geometric_progressive_corridor_anchor_set.python.v1",
++          "in_ai_projection": true,
++          "in_product_projection": true,
++          "operationalizations": [
++            "op.geometric_progressive_corridor_anchor_set.v1"
++          ],
++          "subject_ref": "runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0"
++        },
++        {
++          "binding_found": true,
++          "binding_id": "binding.primitive.relation_destination_entry.0_1_0",
++          "capability": {
++            "kind": "primitive",
++            "name": "relation_destination_entry",
++            "version": "0.1.0"
++          },
++          "claim_contracts": [
++            "claim.relation_destination_entry.v1"
++          ],
++          "concepts": [
++            "concept.relation_destination_entry"
++          ],
++          "conformance": "EXACT",
++          "effective_claims": {
++            "claim.relation_destination_entry.v1": [
++              "ball_did_not_enter_relation_destination_region_when_window_complete",
++              "ball_entered_relation_destination_region"
++            ]
++          },
++          "effective_evidence": {
++            "evidence.relation_destination_entry.v1": [
++              "anchor_id",
++              "destination_region",
++              "entry_mode",
++              "entry_status",
++              "relation_id",
++              "witness_frame_id"
++            ]
++          },
++          "evidence_contracts": [
++            "evidence.relation_destination_entry.v1"
++          ],
++          "implementation_id": "impl.relation_destination_entry.python.v1",
++          "in_ai_projection": true,
++          "in_product_projection": true,
++          "operationalizations": [
++            "op.relation_destination_entry.v1"
++          ],
++          "subject_ref": "runtime:primitive:relation_destination_entry:0.1.0"
++        }
++      ],
++      "claim_contract": "claim.ai_corridor_destination_composition.v1",
++      "composition_mapped": true,
++      "evidence_contract": "evidence.ai_corridor_destination_composition.v1",
++      "id": "composition.ai_corridor_destination.2026_06_23",
++      "is_recipe": false,
++      "origin": "AI_AUTHORED",
++      "plan_artifact_id": "plan.ai_corridor_destination.2026_06_23",
++      "plan_integrity": {
++        "artifact_id": "plan.ai_corridor_destination.2026_06_23",
++        "capability_dependencies": [
++          {
++            "kind": "primitive",
++            "name": "possession_segment",
++            "version": "0.1.0"
++          },
++          {
++            "kind": "relation",
++            "name": "geometric_progressive_corridor_from_anchor_set",
++            "version": "0.1.0"
++          },
++          {
++            "kind": "primitive",
++            "name": "relation_destination_entry",
++            "version": "0.1.0"
++          }
++        ],
++        "dependency_refs": [
++          "possession_segment",
++          "geometric_progressive_corridor_from_anchor_set",
++          "relation_destination_entry",
++          "exists",
++          "eq"
++        ],
++        "draft_status": "experimental",
++        "exists": true,
++        "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
++        "normalized_selected_document_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
++        "operator_dependencies": [
++          {
++            "name": "exists",
++            "version": "1.0.0"
++          },
++          {
++            "name": "eq",
++            "version": "1.0.0"
++          }
++        ],
++        "origin": "AI_AUTHORED",
++        "parameter_defaults": {
++          "corridor_close_after_frames": 2,
++          "corridor_max_window_seconds": 4.0,
++          "corridor_maximum_segment_length_m": 45.0,
++          "corridor_minimum_clearance_m": 4.0,
++          "corridor_minimum_duration_seconds": 0.8,
++          "corridor_minimum_progression_m": 5.0,
++          "corridor_minimum_segment_length_m": 6.0,
++          "corridor_open_after_frames": 2,
++          "destination_entry_horizon_seconds": 5.0
++        },
++        "path": "delivery/n1d/n1f-origin-bundle.json",
++        "plan_id": "possession_corridor_destination_entry_plan",
++        "plan_version": "0.1.0",
++        "promotion_status": "VALIDATED_COMPOSITION",
++        "recipe_id": "possession_corridor_destination_entry_v1",
++        "recipe_version": "0.1.0",
++        "referenced_parameters": [
++          "corridor_close_after_frames",
++          "corridor_max_window_seconds",
++          "corridor_maximum_segment_length_m",
++          "corridor_minimum_clearance_m",
++          "corridor_minimum_duration_seconds",
++          "corridor_minimum_progression_m",
++          "corridor_minimum_segment_length_m",
++          "corridor_open_after_frames",
++          "destination_entry_horizon_seconds"
++        ],
++        "source_artifact_sha256": "707b5cd6d2d8f981401a9ec8bd31af4c91435118a94883cb68b621137365fba4",
++        "source_kind": "n1f_origin_bundle.host_augmented_document",
++        "valid_typed_plan": true
++      },
++      "promotion_status": "VALIDATED_COMPOSITION"
++    }
++  },
++  "projection_differences": {
++    "ai": {
++      "added": [
++        "composition:composition.ai_corridor_destination.2026_06_23"
++      ],
++      "baseline_count": 21,
++      "contract_changed": [
++        "recipe:ball_side_block_shift_v1:1.0.0",
++        "recipe:high_bypass_completed_pass_v1:0.1.0",
++        "recipe:opposite_corridor_after_shift_v1:0.1.0",
++        "recipe:possession_corridor_availability_v1:0.1.0"
++      ],
++      "projection_count": 22,
++      "removed": [],
++      "shared_count": 21
++    },
++    "baseline_sources": {
++      "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
++      "capability_catalog": {
++        "exists": true,
++        "path": "generated/capability-catalog.json",
++        "source_artifact_sha256": "b051dcb7c72aae3e99c75d11b0b95f423dccd29ba4b4b8098bc44a0d8ab6eddd"
++      },
++      "tactical_knowledge_pack": {
++        "exists": true,
++        "path": "generated/tactical-knowledge-pack.json",
++        "source_artifact_sha256": "1f19535aebebe8cc43615f288853e03b0c14018c696d07a84321091287917201"
++      }
++    },
++    "product": {
++      "added": [
++        "composition:composition.ai_corridor_destination.2026_06_23"
++      ],
++      "baseline_count": 15,
++      "contract_changed": [],
++      "projection_count": 16,
++      "removed": [],
++      "shared_count": 15
++    }
++  },
++  "recipes": {
++    "mapped": 4,
++    "missing_plan_artifacts": 0,
++    "parsed_plan_artifacts": 5,
++    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
++    "registered": 4
++  },
++  "registry_lock": {
++    "ai_projection_policy": "projection.ai.v1",
++    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
++    "evidence_schema_version": "1.0",
++    "generator_version": "scp0.generator.v1",
++    "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
++    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
++    "product_projection_policy": "projection.product.v1",
++    "recipe_projection_policy": "projection.recipe_library.v1",
++    "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
++    "research_atlas_projection_policy": "projection.research_atlas.v1",
++    "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
++    "schema_version": "1.0",
++    "typed_plan_schema_version": "1.0",
++    "unsupported_projection_policy": "projection.unsupported.v1"
++  },
++  "runtime_capabilities": {
++    "bound": 11,
++    "duplicate_bindings": 0,
++    "including_operators_total": 19,
++    "orphaned": 0,
++    "runtime_total": 11,
++    "unresolved_bindings": 0
++  },
++  "schema_version": "1.0",
++  "status": "PASS",
++  "validated_compositions": {
++    "mapped": 1,
++    "total": 1
++  }
++}
+diff --git a/delivery/ledger.jsonl b/delivery/ledger.jsonl
+index 2896da6..61f1dbc 100644
+--- a/delivery/ledger.jsonl
++++ b/delivery/ledger.jsonl
+@@ -78,3 +78,4 @@
+ {"timestamp":"2026-06-23T15:20:04-07:00","milestone":"SCP-0","slice":"SCP-0A_SCP-0B_verification_closeout","from":"IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW","to":"IMPLEMENTED_FULL_REGRESSION_GREEN_PACKET_NEXT","actor":"controller","evidence":["generated/capability-catalog.json","delivery/scp-0/status.yaml","delivery/scp-0/progress.md","docs/learnings/2026-06-23-scp-0-semantic-registry.md","artifacts/scp-0/verification-report.json"],"notes":"Closed verification after refreshing the existing M1.1 generated capability catalog through make m1-1-build. make scp-0-verify passes with SCP-0 parity report PASS and 10 adversarial semantic registry tests OK. make test passes 92 tests. SCP-0 remains shadow-only pending external review packet."}
+ {"timestamp":"2026-06-23T15:22:00-07:00","milestone":"SCP-0","slice":"external_review_packet","from":"IMPLEMENTED_FULL_REGRESSION_GREEN_PACKET_NEXT","to":"IMPLEMENTED_VERIFIED_PACKET_READY_FOR_EXTERNAL_REVIEW","actor":"controller","evidence":["review-packets/scp-0-semantic-registry-foundation-2026-06-23.zip","review-packets/scp-0-semantic-registry-foundation-2026-06-23.zip.sha256","review-packets/scp-0-semantic-registry-foundation-2026-06-23/README.md","review-packets/scp-0-semantic-registry-foundation-2026-06-23/MANIFEST.md"],"notes":"Generated SCP-0 inspection packet for external review. The adjacent .zip.sha256 file is the authoritative packet checksum. The review question asks whether SCP-0A/SCP-0B should be accepted as a shadow semantic parity/projection foundation, with no runtime/Hermes/UI behavior changes and no product/AI exposure for atlas-only entries."}
+ {"timestamp":"2026-06-23T15:53:51-07:00","milestone":"SCP-0","slice":"SCP-0C_projection_parity_integrity_hardening","from":"APPROVE_WITH_REQUIRED_CHANGES_BEFORE_SCP_1","to":"SCP_0C_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW","actor":"controller","evidence":["src/tqe/semantic_registry/generate.py","src/tqe/semantic_registry/runtime_manifest.py","src/tqe/semantic_registry/models.py","semantic-registry/registry.yaml","generated/semantic-registry/plan-artifact-index.json","generated/semantic-registry/semantic-parity-report.json","semantic-registry/registry.lock.json","tests/test_scp0_semantic_registry.py","delivery/scp-0/status.yaml"],"notes":"Implemented external-review required hardening before SCP-1. Projection policies now execute against exposure/maturity gates for capabilities, recipes, and composition instances. Current product/AI baselines are compared instead of hard-coded empty diffs. Every plan artifact, including the N1F origin bundle, is parsed and hashed into the registry lock. Recipe dependency/profile mismatches and arbitrary composition files fail validation. Pilot reports are generated through semantic graph traversal. Runtime/operator signatures, transitive claim/evidence inheritance, duplicate policy targets, and concept/implementation references are validated. make scp-0-verify passes with 22 adversarial tests; make test passes 104 tests."}
++{"timestamp":"2026-06-23T16:42:00-07:00","milestone":"SCP-0","slice":"SCP-0D_declarative_gate_closure","from":"CHANGES_REQUIRED_BEFORE_SCP_1_NARROW_SCP_0D","to":"SCP_0D_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW","actor":"controller","evidence":["src/tqe/semantic_registry/generate.py","src/tqe/semantic_registry/models.py","semantic-registry/registry.yaml","semantic-registry/registry.lock.json","generated/semantic-registry/plan-artifact-index.json","generated/semantic-registry/semantic-parity-report.json","artifacts/scp-0/verification-report.json","tests/test_scp0_semantic_registry.py","delivery/scp-0/status.yaml"],"notes":"Implemented SCP-0D closure after external review. ProjectionPolicy.requires values now execute declaratively across product, AI, recipe-library, and research-atlas projections. Baseline source hashes are pinned in the lock and canonical parity reports membership drift separately from contract drift with explicit accepted differences. Recipe and composition records now require top-level concepts and inherited concept/profile claim and evidence contracts. Full AI origin bundle bytes are hashed separately from normalized selected typed plan documents. Composition plans are checked for unbound capabilities and undefined operators. Exact bindings require port/parameter compatibility; partial/legacy bindings require explicit mappings and uncovered fields. Failed generation no longer overwrites existing projection artifacts. make scp-0-verify passes with 32 focused adversarial tests; make test passes 114 repository tests with attestation VERIFIED; SCP-1 remains blocked pending external SCP-0D review."}
+diff --git a/delivery/scp-0/SPEC.md b/delivery/scp-0/SPEC.md
+index caa7003..f8c3347 100644
+--- a/delivery/scp-0/SPEC.md
++++ b/delivery/scp-0/SPEC.md
+@@ -14,7 +14,7 @@ mode.
+ 
+ ## Scope
+ 
+-SCP-0 covers three implementation slices:
++SCP-0 covers four implementation slices:
+ 
+ ### SCP-0A - Registry Schemas, Runtime Manifest, and Parity Skeleton
+ 
+@@ -58,6 +58,25 @@ SCP-0 covers three implementation slices:
+ - Require explicit exposure and maturity records for runtime capabilities,
+   recipes, and validated composition instances.
+ 
++### SCP-0D - Declarative Gate Closure
++
++- Evaluate `ProjectionPolicy.requires` values declaratively for product, AI,
++  recipe-library, and research-atlas projections.
++- Pin baseline source artifact hashes in the registry lock.
++- Compare canonical support contracts rather than projection wrapper JSON.
++- Report membership drift and contract drift separately.
++- Fail projection parity on missing baselines or unapproved additions,
++  removals, or contract changes.
++- Add top-level concept references for recipes and composition instances.
++- Require recipe and composition claim/evidence contracts to inherit their
++  concept and profile/dependency contract minima.
++- Pin both full AI origin bundle bytes and normalized selected typed-plan
++  document hashes.
++- Validate composition plans for unbound capabilities and undefined operators.
++- Enforce exact binding port/parameter compatibility and require explicit
++  field mappings/uncovered fields for partial or legacy bindings.
++- Publish generated projections atomically only after validation passes.
++
+ ## Non-Goals
+ 
+ SCP-0 must not add:
+@@ -213,6 +232,22 @@ SCP-0 passes only if:
+ 23. Pilot paths are discovered from parsed plan artifacts rather than asserted.
+ 24. Runtime and operator signature disagreements fail generation unless
+     explicitly marked and explained as non-exact conformance.
++25. Changing a `ProjectionPolicy.requires` value changes the generated
++    projection.
++26. Missing baseline artifacts fail parity instead of producing all-added
++    reports.
++27. Canonical shared product support contracts compare equal when current
++    support is unchanged.
++28. Unapproved baseline additions, removals, or contract drift fail parity.
++29. Recipes and composition instances resolve to a top-level concept.
++30. Recipe and composition contracts preserve inherited concept/profile claim
++    prohibitions and evidence minima.
++31. AI-origin bundle byte changes alter source artifact hashes even when the
++    selected normalized plan is unchanged.
++32. Composition plans with unbound capabilities or undefined operators fail
++    validation.
++33. Exact bindings fail on missing runtime/semantic ports or parameter mappings.
++34. Failed generation leaves the last valid projection artifacts untouched.
+ 
+ ## Side Effects
+ 
+diff --git a/delivery/scp-0/progress.md b/delivery/scp-0/progress.md
+index 6d0b28b..949a71c 100644
+--- a/delivery/scp-0/progress.md
++++ b/delivery/scp-0/progress.md
+@@ -5,5 +5,6 @@
+ | SCP-0A | DONE | `src/tqe/semantic_registry/models.py`, `src/tqe/semantic_registry/runtime_manifest.py`, `src/tqe/semantic_registry/generate.py`, `semantic-registry/schemas/semantic-registry.schema.json`, `generated/semantic-registry/runtime-manifest.json`, `tests/test_scp0_semantic_registry.py` | Schemas, runtime introspection, registry lock generation, and fail-closed validation rails implemented. |
+ | SCP-0B | DONE | `semantic-registry/registry.yaml`, `semantic-registry/atlas/raw/five_year_capability_manifest.yaml`, `generated/semantic-registry/*.json`, `artifacts/scp-0/verification-report.json` | Current runtime capabilities, operators, recipes, validated AI composition, raw atlas import, projections, and two-pilot parity report implemented. |
+ | SCP-0C | DONE | `generated/semantic-registry/plan-artifact-index.json`, `generated/semantic-registry/semantic-parity-report.json`, `semantic-registry/registry.lock.json`, `tests/test_scp0_semantic_registry.py` | External required changes implemented: projection policies execute, real baseline differences are reported, plan content is hashed into the lock, registry/plan disagreements fail, pilot reports traverse discovered graph paths, and signatures/contracts are checked more deeply. |
+-| Verification | DONE | `make scp-0-verify`, `make test` | Parity report PASS; 22 adversarial SCP-0 tests pass; full repository unittest discovery passes 104 tests. Existing generated `generated/capability-catalog.json` was stale and was refreshed through `make m1-1-build` before the first full run. |
++| SCP-0D | DONE | `semantic-registry/registry.yaml`, `semantic-registry/registry.lock.json`, `generated/semantic-registry/semantic-parity-report.json`, `generated/semantic-registry/plan-artifact-index.json`, `src/tqe/semantic_registry/generate.py`, `tests/test_scp0_semantic_registry.py` | Narrow closure slice implemented after external review: `ProjectionPolicy.requires` is executable, baseline hashes are pinned, canonical parity separates membership and contract drift, recipe/composition concept and contract lineage is enforced, full AI origin bundle byte hashes are recorded, exact/non-exact binding conformance is stricter, and failed generation does not overwrite valid projections. |
++| Verification | DONE | `make scp-0-verify`, `make test` | Parity report PASS; 32 adversarial SCP-0 tests pass; full repository unittest discovery passes 114 tests with attestation VERIFIED. SCP-1 remains blocked until external review accepts SCP-0D. |
+ | External review packet | DONE | `review-packets/scp-0-semantic-registry-foundation-2026-06-23.zip` | Inspection packet generated with internal `SHA256SUMS`; adjacent `.zip.sha256` file is the authoritative packet checksum. |
+diff --git a/delivery/scp-0/status.yaml b/delivery/scp-0/status.yaml
+index 2220fe3..c7b1e17 100644
+--- a/delivery/scp-0/status.yaml
++++ b/delivery/scp-0/status.yaml
+@@ -1,6 +1,6 @@
+ milestone: SCP-0
+ name: Semantic Registry Foundation
+-state: SCP_0C_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW
++state: SCP_0D_IMPLEMENTED_VERIFIED_PENDING_EXTERNAL_REVIEW
+ last_updated: "2026-06-23"
+ outcome: >
+   Create a versioned semantic parity and projection layer over the current
+@@ -40,36 +40,49 @@ slices:
+       - src/tqe/semantic_registry/generate.py
+       - src/tqe/semantic_registry/runtime_manifest.py
+       - tests/test_scp0_semantic_registry.py
++  SCP-0D:
++    name: Declarative Gate Closure
++    state: DONE
++    evidence:
++      - semantic-registry/registry.yaml
++      - semantic-registry/registry.lock.json
++      - generated/semantic-registry/semantic-parity-report.json
++      - generated/semantic-registry/plan-artifact-index.json
++      - src/tqe/semantic_registry/generate.py
++      - src/tqe/semantic_registry/models.py
++      - tests/test_scp0_semantic_registry.py
+ claims:
+   registry_coverage: VERIFIED
+   runtime_binding_coverage: VERIFIED
+   atlas_isolation: VERIFIED
+-  semantic_parity: PARTIAL_BASELINE_COMPARISON_REPORTED
++  semantic_parity: VERIFIED_WITH_EXPLICIT_ACCEPTED_DIFFERENCES
+   projection_policy_enforcement: VERIFIED
+   plan_content_integrity: VERIFIED
++  full_origin_provenance_integrity: VERIFIED
++  recipe_contract_lineage: VERIFIED
+   pilot_graph_traversal: VERIFIED
+   runtime_authority: CURRENT_RUNTIME
+   projection_authority: SHADOW_ONLY
++  scp_1_gate: BLOCKED_PENDING_EXTERNAL_SCP_0D_REVIEW
+ verification:
+   required:
+     - make scp-0-verify
+     - make test
+   latest_result:
+     status: PASS
+-    timestamp: "2026-06-23T15:59:57-07:00"
++    timestamp: "2026-06-23T16:42:00-07:00"
+     commands:
+       - "make scp-0-verify"
+       - "make test"
+     summary:
+       - "SCP-0 verifier PASS: 11 runtime capabilities bound, 8 operators defined, 4 recipes mapped, 1 validated composition mapped, 741 atlas entries isolated, zero product/AI atlas leakage."
+-      - "SCP-0C hardening active: projection policies filter, plan artifacts are hashed into the lock, pilots traverse discovered graph paths, and baseline projection differences are reported."
+-      - "Focused SCP-0 adversarial unit suite: 22 tests OK."
+-      - "Repository unittest discovery: 104 tests OK."
+-      - "Regenerated the existing M1.1 capability catalog artifact with the project generator before the full run."
++      - "SCP-0D closure active: ProjectionPolicy.requires values execute declaratively; baseline source hashes are pinned in the lock; canonical parity reports membership and contract drift separately; recipe/composition contract lineage is enforced; AI origin bundle byte hashes are recorded; generated projections publish only after PASS."
++      - "Focused SCP-0 adversarial unit suite: 32 tests OK."
++      - "Repository unittest discovery: 114 tests OK; attestation VERIFIED."
+ review:
+-  external_packet: review-packets/scp-0-semantic-registry-foundation-2026-06-23.zip
++  external_packet: review-packets/scp-0c-projection-parity-integrity-2026-06-23.zip
+   accepted: false
+-  last_external_decision: APPROVE_WITH_REQUIRED_CHANGES_BEFORE_SCP_1
++  last_external_decision: CHANGES_REQUIRED_BEFORE_SCP_1_NARROW_SCP_0D
+ non_goals:
+   - runtime behavior changes
+   - new tactical capabilities
+diff --git a/docs/learnings/2026-06-23-scp-0-semantic-registry.md b/docs/learnings/2026-06-23-scp-0-semantic-registry.md
+index 38f8d42..9800748 100644
+--- a/docs/learnings/2026-06-23-scp-0-semantic-registry.md
++++ b/docs/learnings/2026-06-23-scp-0-semantic-registry.md
+@@ -78,3 +78,33 @@ change projections, lock hashes, validation status, or generated evidence.
+ 
+ **Follow-up:** Produce an SCP-0C delta review packet. SCP-1 should wait until
+ the reviewer accepts this hardening or provides a focused correction.
++
++## 2026-06-23 - SCP-0D Declarative Closure
++
++**Fact:** External review of SCP-0C found that some policy and parity surfaces
++were still too decorative: `ProjectionPolicy.requires` values were validated
++but not executed, baseline parity compared incompatible wrapper shapes, recipe
++contracts did not preserve all profile lineage, and generated projections could
++be overwritten before a failed report exited.
++
++**Decision:** Add SCP-0D as a narrow closure slice before SCP-1. Projection
++requirements are now evaluated from the declared values, baseline source hashes
++are pinned in the registry lock, parity compares canonical support contracts,
++recipe and composition contracts inherit concept/profile evidence minima and
++claim restrictions, full AI origin bundle bytes are hashed separately from the
++selected normalized typed plan, and generated artifacts publish only after a
++PASS report.
++
++**Learning:** A semantic control plane is only trustworthy when every governance
++declaration has a behavioral consequence. Policy values must alter projections,
++source bytes must alter provenance hashes, missing baselines must fail, and
++failed generation must not disturb the last valid artifacts.
++
++**Evidence:** `make scp-0-verify` with 32 focused adversarial tests OK;
++`make test` with 114 repository tests OK and attestation VERIFIED;
++`generated/semantic-registry/semantic-parity-report.json`;
++`generated/semantic-registry/plan-artifact-index.json`;
++`semantic-registry/registry.lock.json`.
++
++**Follow-up:** Generate an SCP-0D review packet. SCP-1 executable-algebra work
++should remain blocked until external review accepts this closure.
+diff --git a/generated/semantic-registry/ai-projection.json b/generated/semantic-registry/ai-projection.json
+index cf73b98..c1c7bda 100644
+--- a/generated/semantic-registry/ai-projection.json
++++ b/generated/semantic-registry/ai-projection.json
+@@ -1198,6 +1198,7 @@
+   "recipes": [
+     {
+       "claim_contract_ref": "claim.ball_side_block_shift.v1",
++      "concept_ref": "concept.ball_side_block_shift",
+       "dependencies": [
+         "possession_segment",
+         "ball_lateral_fraction",
+@@ -1209,10 +1210,12 @@
+         "outcome_classification",
+         "neq"
+       ],
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.ball_side_block_shift.v1",
+       "exact_typed_plan_ref": "config/query-plans/ball_side_block_shift.ir.v1.json",
+       "id": "ball_side_block_shift_v1",
+       "mapping_id": "recipe.ball_side_block_shift.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.ball_side_block_shift.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.ball_side_block_shift.v1",
+@@ -1257,6 +1260,7 @@
+         "draft_status": "approved",
+         "exists": true,
+         "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
++        "normalized_selected_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+         "operator_dependencies": [
+           {
+             "name": "gt",
+@@ -1310,6 +1314,7 @@
+           "outcome_horizon_seconds",
+           "wide_entry_fraction"
+         ],
++        "source_artifact_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -1321,15 +1326,18 @@
+     },
+     {
+       "claim_contract_ref": "claim.progressive_connection_availability.v1",
++      "concept_ref": "concept.progressive_connection_availability",
+       "dependencies": [
+         "possession_segment",
+         "geometric_progressive_corridor_from_anchor_set",
+         "exists"
+       ],
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.progressive_connection_availability.v1",
+       "exact_typed_plan_ref": "config/query-plans/possession_corridor_availability.experimental.v1.json",
+       "id": "possession_corridor_availability_v1",
+       "mapping_id": "recipe.possession_corridor_availability.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.possession_corridor_availability.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.possession_corridor_availability.v1",
+@@ -1353,6 +1361,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
++        "normalized_selected_document_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+         "operator_dependencies": [
+           {
+             "name": "exists",
+@@ -1390,6 +1399,7 @@
+           "corridor_minimum_segment_length_m",
+           "corridor_open_after_frames"
+         ],
++        "source_artifact_sha256": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -1400,7 +1410,8 @@
+       "version": "0.1.0"
+     },
+     {
+-      "claim_contract_ref": "claim.ai_corridor_destination_composition.v1",
++      "claim_contract_ref": "claim.opposite_corridor_after_shift.v1",
++      "concept_ref": "concept.opposite_corridor_after_shift",
+       "dependencies": [
+         "possession_segment",
+         "ball_lateral_fraction",
+@@ -1415,10 +1426,12 @@
+         "exists",
+         "relation_destination_entry_classification"
+       ],
+-      "evidence_contract_ref": "evidence.ai_corridor_destination_composition.v1",
++      "dependency_bindings_verified": true,
++      "evidence_contract_ref": "evidence.opposite_corridor_after_shift.v1",
+       "exact_typed_plan_ref": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json",
+       "id": "opposite_corridor_after_shift_v1",
+       "mapping_id": "recipe.opposite_corridor_after_shift.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.opposite_corridor_after_shift.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.opposite_corridor_after_shift.v1",
+@@ -1476,6 +1489,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
++        "normalized_selected_document_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
+         "operator_dependencies": [
+           {
+             "name": "gt",
+@@ -1549,6 +1563,7 @@
+           "result_id_seed_hash",
+           "wide_entry_fraction"
+         ],
++        "source_artifact_sha256": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -1562,15 +1577,18 @@
+     },
+     {
+       "claim_contract_ref": "claim.high_bypass_completed_pass.v1",
++      "concept_ref": "concept.high_bypass_completed_pass",
+       "dependencies": [
+         "controlled_pass_episode",
+         "opponents_bypassed_by_action",
+         "gte"
+       ],
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.high_bypass_completed_pass.v1",
+       "exact_typed_plan_ref": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
+       "id": "high_bypass_completed_pass_v1",
+       "mapping_id": "recipe.high_bypass_completed_pass.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.high_bypass_completed_pass.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.high_bypass_completed_pass.v1",
+@@ -1594,6 +1612,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
++        "normalized_selected_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+         "operator_dependencies": [
+           {
+             "name": "gte",
+@@ -1619,6 +1638,7 @@
+           "minimum_bypassed_opponents",
+           "minimum_forward_progression_m"
+         ],
++        "source_artifact_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -1631,13 +1651,14 @@
+   ],
+   "registry_lock": {
+     "ai_projection_policy": "projection.ai.v1",
++    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "d3c1f3c0cafd5b4bb6b500f7b258a6217c210be1169814947beab5837a85c390",
+-    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
++    "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
++    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "80afeb152caa7413782c88799c7a6025be9f63b73068cdd946cbf627ce11b9c7",
++    "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+     "schema_version": "1.0",
+@@ -1648,9 +1669,12 @@
+   "validated_compositions": [
+     {
+       "claim_contract_ref": "claim.ai_corridor_destination_composition.v1",
++      "concept_ref": "concept.progressive_connection_followed_by_destination_entry",
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.ai_corridor_destination_composition.v1",
+       "id": "composition.ai_corridor_destination.2026_06_23",
+       "origin": "AI_AUTHORED",
++      "plan_artifact_exists": true,
+       "plan_artifact_ref": "plan.ai_corridor_destination.2026_06_23",
+       "plan_integrity": {
+         "artifact_id": "plan.ai_corridor_destination.2026_06_23",
+@@ -1681,6 +1705,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
++        "normalized_selected_document_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+         "operator_dependencies": [
+           {
+             "name": "exists",
+@@ -1720,6 +1745,7 @@
+           "corridor_open_after_frames",
+           "destination_entry_horizon_seconds"
+         ],
++        "source_artifact_sha256": "707b5cd6d2d8f981401a9ec8bd31af4c91435118a94883cb68b621137365fba4",
+         "source_kind": "n1f_origin_bundle.host_augmented_document",
+         "valid_typed_plan": true
+       },
+diff --git a/generated/semantic-registry/plan-artifact-index.json b/generated/semantic-registry/plan-artifact-index.json
+index 1f50b7b..f3e1ec5 100644
+--- a/generated/semantic-registry/plan-artifact-index.json
++++ b/generated/semantic-registry/plan-artifact-index.json
+@@ -29,6 +29,7 @@
+       "draft_status": "experimental",
+       "exists": true,
+       "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
++      "normalized_selected_document_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+       "operator_dependencies": [
+         {
+           "name": "exists",
+@@ -68,6 +69,7 @@
+         "corridor_open_after_frames",
+         "destination_entry_horizon_seconds"
+       ],
++      "source_artifact_sha256": "707b5cd6d2d8f981401a9ec8bd31af4c91435118a94883cb68b621137365fba4",
+       "source_kind": "n1f_origin_bundle.host_augmented_document",
+       "valid_typed_plan": true
+     },
+@@ -114,6 +116,7 @@
+       "draft_status": "approved",
+       "exists": true,
+       "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
++      "normalized_selected_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+       "operator_dependencies": [
+         {
+           "name": "gt",
+@@ -167,6 +170,7 @@
+         "outcome_horizon_seconds",
+         "wide_entry_fraction"
+       ],
++      "source_artifact_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+       "source_kind": "typed_plan",
+       "valid_typed_plan": true
+     },
+@@ -192,6 +196,7 @@
+       "draft_status": "experimental",
+       "exists": true,
+       "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
++      "normalized_selected_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+       "operator_dependencies": [
+         {
+           "name": "gte",
+@@ -217,6 +222,7 @@
+         "minimum_bypassed_opponents",
+         "minimum_forward_progression_m"
+       ],
++      "source_artifact_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
+       "source_kind": "typed_plan",
+       "valid_typed_plan": true
+     },
+@@ -276,6 +282,7 @@
+       "draft_status": "experimental",
+       "exists": true,
+       "normalized_plan_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
++      "normalized_selected_document_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
+       "operator_dependencies": [
+         {
+           "name": "gt",
+@@ -349,6 +356,7 @@
+         "result_id_seed_hash",
+         "wide_entry_fraction"
+       ],
++      "source_artifact_sha256": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
+       "source_kind": "typed_plan",
+       "valid_typed_plan": true
+     },
+@@ -374,6 +382,7 @@
+       "draft_status": "experimental",
+       "exists": true,
+       "normalized_plan_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
++      "normalized_selected_document_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+       "operator_dependencies": [
+         {
+           "name": "exists",
+@@ -411,10 +420,11 @@
+         "corridor_minimum_segment_length_m",
+         "corridor_open_after_frames"
+       ],
++      "source_artifact_sha256": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
+       "source_kind": "typed_plan",
+       "valid_typed_plan": true
+     }
+   },
+-  "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
++  "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+   "schema_version": "1.0"
+ }
+diff --git a/generated/semantic-registry/product-projection.json b/generated/semantic-registry/product-projection.json
+index 0cc916e..04e06db 100644
+--- a/generated/semantic-registry/product-projection.json
++++ b/generated/semantic-registry/product-projection.json
+@@ -1317,6 +1317,7 @@
+   "recipes": [
+     {
+       "claim_contract_ref": "claim.ball_side_block_shift.v1",
++      "concept_ref": "concept.ball_side_block_shift",
+       "dependencies": [
+         "possession_segment",
+         "ball_lateral_fraction",
+@@ -1328,10 +1329,12 @@
+         "outcome_classification",
+         "neq"
+       ],
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.ball_side_block_shift.v1",
+       "exact_typed_plan_ref": "config/query-plans/ball_side_block_shift.ir.v1.json",
+       "id": "ball_side_block_shift_v1",
+       "mapping_id": "recipe.ball_side_block_shift.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.ball_side_block_shift.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.ball_side_block_shift.v1",
+@@ -1376,6 +1379,7 @@
+         "draft_status": "approved",
+         "exists": true,
+         "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
++        "normalized_selected_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+         "operator_dependencies": [
+           {
+             "name": "gt",
+@@ -1429,6 +1433,7 @@
+           "outcome_horizon_seconds",
+           "wide_entry_fraction"
+         ],
++        "source_artifact_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -1440,15 +1445,18 @@
+     },
+     {
+       "claim_contract_ref": "claim.progressive_connection_availability.v1",
++      "concept_ref": "concept.progressive_connection_availability",
+       "dependencies": [
+         "possession_segment",
+         "geometric_progressive_corridor_from_anchor_set",
+         "exists"
+       ],
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.progressive_connection_availability.v1",
+       "exact_typed_plan_ref": "config/query-plans/possession_corridor_availability.experimental.v1.json",
+       "id": "possession_corridor_availability_v1",
+       "mapping_id": "recipe.possession_corridor_availability.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.possession_corridor_availability.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.possession_corridor_availability.v1",
+@@ -1472,6 +1480,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
++        "normalized_selected_document_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+         "operator_dependencies": [
+           {
+             "name": "exists",
+@@ -1509,6 +1518,7 @@
+           "corridor_minimum_segment_length_m",
+           "corridor_open_after_frames"
+         ],
++        "source_artifact_sha256": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -1519,7 +1529,8 @@
+       "version": "0.1.0"
+     },
+     {
+-      "claim_contract_ref": "claim.ai_corridor_destination_composition.v1",
++      "claim_contract_ref": "claim.opposite_corridor_after_shift.v1",
++      "concept_ref": "concept.opposite_corridor_after_shift",
+       "dependencies": [
+         "possession_segment",
+         "ball_lateral_fraction",
+@@ -1534,10 +1545,12 @@
+         "exists",
+         "relation_destination_entry_classification"
+       ],
+-      "evidence_contract_ref": "evidence.ai_corridor_destination_composition.v1",
++      "dependency_bindings_verified": true,
++      "evidence_contract_ref": "evidence.opposite_corridor_after_shift.v1",
+       "exact_typed_plan_ref": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json",
+       "id": "opposite_corridor_after_shift_v1",
+       "mapping_id": "recipe.opposite_corridor_after_shift.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.opposite_corridor_after_shift.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.opposite_corridor_after_shift.v1",
+@@ -1595,6 +1608,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
++        "normalized_selected_document_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
+         "operator_dependencies": [
+           {
+             "name": "gt",
+@@ -1668,6 +1682,7 @@
+           "result_id_seed_hash",
+           "wide_entry_fraction"
+         ],
++        "source_artifact_sha256": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -1681,15 +1696,18 @@
+     },
+     {
+       "claim_contract_ref": "claim.high_bypass_completed_pass.v1",
++      "concept_ref": "concept.high_bypass_completed_pass",
+       "dependencies": [
+         "controlled_pass_episode",
+         "opponents_bypassed_by_action",
+         "gte"
+       ],
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.high_bypass_completed_pass.v1",
+       "exact_typed_plan_ref": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
+       "id": "high_bypass_completed_pass_v1",
+       "mapping_id": "recipe.high_bypass_completed_pass.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.high_bypass_completed_pass.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.high_bypass_completed_pass.v1",
+@@ -1713,6 +1731,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
++        "normalized_selected_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+         "operator_dependencies": [
+           {
+             "name": "gte",
+@@ -1738,6 +1757,7 @@
+           "minimum_bypassed_opponents",
+           "minimum_forward_progression_m"
+         ],
++        "source_artifact_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -1750,13 +1770,14 @@
+   ],
+   "registry_lock": {
+     "ai_projection_policy": "projection.ai.v1",
++    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "d3c1f3c0cafd5b4bb6b500f7b258a6217c210be1169814947beab5837a85c390",
+-    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
++    "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
++    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "80afeb152caa7413782c88799c7a6025be9f63b73068cdd946cbf627ce11b9c7",
++    "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+     "schema_version": "1.0",
+@@ -1767,9 +1788,12 @@
+   "validated_compositions": [
+     {
+       "claim_contract_ref": "claim.ai_corridor_destination_composition.v1",
++      "concept_ref": "concept.progressive_connection_followed_by_destination_entry",
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.ai_corridor_destination_composition.v1",
+       "id": "composition.ai_corridor_destination.2026_06_23",
+       "origin": "AI_AUTHORED",
++      "plan_artifact_exists": true,
+       "plan_artifact_ref": "plan.ai_corridor_destination.2026_06_23",
+       "plan_integrity": {
+         "artifact_id": "plan.ai_corridor_destination.2026_06_23",
+@@ -1800,6 +1824,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
++        "normalized_selected_document_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+         "operator_dependencies": [
+           {
+             "name": "exists",
+@@ -1839,6 +1864,7 @@
+           "corridor_open_after_frames",
+           "destination_entry_horizon_seconds"
+         ],
++        "source_artifact_sha256": "707b5cd6d2d8f981401a9ec8bd31af4c91435118a94883cb68b621137365fba4",
+         "source_kind": "n1f_origin_bundle.host_augmented_document",
+         "valid_typed_plan": true
+       },
+diff --git a/generated/semantic-registry/recipe-library-projection.json b/generated/semantic-registry/recipe-library-projection.json
+index 6772b9f..828af9a 100644
+--- a/generated/semantic-registry/recipe-library-projection.json
++++ b/generated/semantic-registry/recipe-library-projection.json
+@@ -2,6 +2,7 @@
+   "recipes": [
+     {
+       "claim_contract_ref": "claim.ball_side_block_shift.v1",
++      "concept_ref": "concept.ball_side_block_shift",
+       "dependencies": [
+         "possession_segment",
+         "ball_lateral_fraction",
+@@ -13,10 +14,12 @@
+         "outcome_classification",
+         "neq"
+       ],
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.ball_side_block_shift.v1",
+       "exact_typed_plan_ref": "config/query-plans/ball_side_block_shift.ir.v1.json",
+       "id": "ball_side_block_shift_v1",
+       "mapping_id": "recipe.ball_side_block_shift.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.ball_side_block_shift.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.ball_side_block_shift.v1",
+@@ -61,6 +64,7 @@
+         "draft_status": "approved",
+         "exists": true,
+         "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
++        "normalized_selected_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+         "operator_dependencies": [
+           {
+             "name": "gt",
+@@ -114,6 +118,7 @@
+           "outcome_horizon_seconds",
+           "wide_entry_fraction"
+         ],
++        "source_artifact_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -125,15 +130,18 @@
+     },
+     {
+       "claim_contract_ref": "claim.progressive_connection_availability.v1",
++      "concept_ref": "concept.progressive_connection_availability",
+       "dependencies": [
+         "possession_segment",
+         "geometric_progressive_corridor_from_anchor_set",
+         "exists"
+       ],
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.progressive_connection_availability.v1",
+       "exact_typed_plan_ref": "config/query-plans/possession_corridor_availability.experimental.v1.json",
+       "id": "possession_corridor_availability_v1",
+       "mapping_id": "recipe.possession_corridor_availability.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.possession_corridor_availability.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.possession_corridor_availability.v1",
+@@ -157,6 +165,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
++        "normalized_selected_document_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+         "operator_dependencies": [
+           {
+             "name": "exists",
+@@ -194,6 +203,7 @@
+           "corridor_minimum_segment_length_m",
+           "corridor_open_after_frames"
+         ],
++        "source_artifact_sha256": "81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -204,7 +214,8 @@
+       "version": "0.1.0"
+     },
+     {
+-      "claim_contract_ref": "claim.ai_corridor_destination_composition.v1",
++      "claim_contract_ref": "claim.opposite_corridor_after_shift.v1",
++      "concept_ref": "concept.opposite_corridor_after_shift",
+       "dependencies": [
+         "possession_segment",
+         "ball_lateral_fraction",
+@@ -219,10 +230,12 @@
+         "exists",
+         "relation_destination_entry_classification"
+       ],
+-      "evidence_contract_ref": "evidence.ai_corridor_destination_composition.v1",
++      "dependency_bindings_verified": true,
++      "evidence_contract_ref": "evidence.opposite_corridor_after_shift.v1",
+       "exact_typed_plan_ref": "config/query-plans/opposite_corridor_after_shift.experimental.v1.json",
+       "id": "opposite_corridor_after_shift_v1",
+       "mapping_id": "recipe.opposite_corridor_after_shift.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.opposite_corridor_after_shift.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.opposite_corridor_after_shift.v1",
+@@ -280,6 +293,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
++        "normalized_selected_document_hash": "7e2cfeb1436acb77c05d8d0a69e7fd93df993fbba6f83f6c1527debfedfa3b47",
+         "operator_dependencies": [
+           {
+             "name": "gt",
+@@ -353,6 +367,7 @@
+           "result_id_seed_hash",
+           "wide_entry_fraction"
+         ],
++        "source_artifact_sha256": "9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -366,15 +381,18 @@
+     },
+     {
+       "claim_contract_ref": "claim.high_bypass_completed_pass.v1",
++      "concept_ref": "concept.high_bypass_completed_pass",
+       "dependencies": [
+         "controlled_pass_episode",
+         "opponents_bypassed_by_action",
+         "gte"
+       ],
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.high_bypass_completed_pass.v1",
+       "exact_typed_plan_ref": "config/query-plans/high_bypass_completed_pass.experimental.v1.json",
+       "id": "high_bypass_completed_pass_v1",
+       "mapping_id": "recipe.high_bypass_completed_pass.v1",
++      "plan_artifact_exists": true,
+       "plan_artifact_id": "plan.high_bypass_completed_pass.v1",
+       "plan_integrity": {
+         "artifact_id": "plan.high_bypass_completed_pass.v1",
+@@ -398,6 +416,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
++        "normalized_selected_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+         "operator_dependencies": [
+           {
+             "name": "gte",
+@@ -423,6 +442,7 @@
+           "minimum_bypassed_opponents",
+           "minimum_forward_progression_m"
+         ],
++        "source_artifact_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -436,13 +456,14 @@
+   "registered_recipe_count": 4,
+   "registry_lock": {
+     "ai_projection_policy": "projection.ai.v1",
++    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "d3c1f3c0cafd5b4bb6b500f7b258a6217c210be1169814947beab5837a85c390",
+-    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
++    "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
++    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "80afeb152caa7413782c88799c7a6025be9f63b73068cdd946cbf627ce11b9c7",
++    "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+     "schema_version": "1.0",
+@@ -454,9 +475,12 @@
+   "validated_compositions": [
+     {
+       "claim_contract_ref": "claim.ai_corridor_destination_composition.v1",
++      "concept_ref": "concept.progressive_connection_followed_by_destination_entry",
++      "dependency_bindings_verified": true,
+       "evidence_contract_ref": "evidence.ai_corridor_destination_composition.v1",
+       "id": "composition.ai_corridor_destination.2026_06_23",
+       "origin": "AI_AUTHORED",
++      "plan_artifact_exists": true,
+       "plan_artifact_ref": "plan.ai_corridor_destination.2026_06_23",
+       "plan_integrity": {
+         "artifact_id": "plan.ai_corridor_destination.2026_06_23",
+@@ -487,6 +511,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
++        "normalized_selected_document_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+         "operator_dependencies": [
+           {
+             "name": "exists",
+@@ -526,6 +551,7 @@
+           "corridor_open_after_frames",
+           "destination_entry_horizon_seconds"
+         ],
++        "source_artifact_sha256": "707b5cd6d2d8f981401a9ec8bd31af4c91435118a94883cb68b621137365fba4",
+         "source_kind": "n1f_origin_bundle.host_augmented_document",
+         "valid_typed_plan": true
+       },
+diff --git a/generated/semantic-registry/research-atlas-projection.json b/generated/semantic-registry/research-atlas-projection.json
+index 5585391..5de1072 100644
+--- a/generated/semantic-registry/research-atlas-projection.json
++++ b/generated/semantic-registry/research-atlas-projection.json
+@@ -5221,13 +5221,14 @@
+   },
+   "registry_lock": {
+     "ai_projection_policy": "projection.ai.v1",
++    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "d3c1f3c0cafd5b4bb6b500f7b258a6217c210be1169814947beab5837a85c390",
+-    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
++    "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
++    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "80afeb152caa7413782c88799c7a6025be9f63b73068cdd946cbf627ce11b9c7",
++    "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+     "schema_version": "1.0",
+diff --git a/generated/semantic-registry/semantic-parity-report.json b/generated/semantic-registry/semantic-parity-report.json
+index 83cfde8..e0d228b 100644
+--- a/generated/semantic-registry/semantic-parity-report.json
++++ b/generated/semantic-registry/semantic-parity-report.json
+@@ -286,6 +286,7 @@
+         "draft_status": "approved",
+         "exists": true,
+         "normalized_plan_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
++        "normalized_selected_document_hash": "afbb42ec0e5f7de31f65486e141f57e35c5e98e6e4a1e2a0d1004cd624deb057",
+         "operator_dependencies": [
+           {
+             "name": "gt",
+@@ -339,6 +340,7 @@
+           "outcome_horizon_seconds",
+           "wide_entry_fraction"
+         ],
++        "source_artifact_sha256": "877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -473,6 +475,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
++        "normalized_selected_document_hash": "ee43658ba32738a2432fded9d78644c9aed1899e8d646c775b3eae46ae7ce522",
+         "operator_dependencies": [
+           {
+             "name": "gte",
+@@ -498,6 +501,7 @@
+           "minimum_bypassed_opponents",
+           "minimum_forward_progression_m"
+         ],
++        "source_artifact_sha256": "38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83",
+         "source_kind": "typed_plan",
+         "valid_typed_plan": true
+       },
+@@ -672,6 +676,7 @@
+         "draft_status": "experimental",
+         "exists": true,
+         "normalized_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
++        "normalized_selected_document_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+         "operator_dependencies": [
+           {
+             "name": "exists",
+@@ -711,6 +716,7 @@
+           "corridor_open_after_frames",
+           "destination_entry_horizon_seconds"
+         ],
++        "source_artifact_sha256": "707b5cd6d2d8f981401a9ec8bd31af4c91435118a94883cb68b621137365fba4",
+         "source_kind": "n1f_origin_bundle.host_augmented_document",
+         "valid_typed_plan": true
+       },
+@@ -723,74 +729,57 @@
+         "composition:composition.ai_corridor_destination.2026_06_23"
+       ],
+       "baseline_count": 21,
+-      "changed": [
+-        "operator:count_at_least:1.0.0",
+-        "operator:eq:1.0.0",
+-        "operator:exists:1.0.0",
+-        "operator:gt:1.0.0",
+-        "operator:gte:1.0.0",
+-        "operator:lte:1.0.0",
+-        "operator:neq:1.0.0",
+-        "operator:persists_for:1.0.0",
++      "contract_changed": [
+         "recipe:ball_side_block_shift_v1:1.0.0",
+         "recipe:high_bypass_completed_pass_v1:0.1.0",
+         "recipe:opposite_corridor_after_shift_v1:0.1.0",
+-        "recipe:possession_corridor_availability_v1:0.1.0",
+-        "runtime:primitive:ball_lateral_fraction:0.1.0",
+-        "runtime:primitive:controlled_pass_episode:0.1.0",
+-        "runtime:primitive:defensive_outfield_centroid:0.1.0",
+-        "runtime:primitive:possession_segment:0.1.0",
+-        "runtime:primitive:relation_destination_entry:0.1.0",
+-        "runtime:primitive:signed_lateral_shift:0.1.0",
+-        "runtime:relation:geometric_progressive_corridor:0.1.0",
+-        "runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0",
+-        "runtime:relation:opponents_bypassed_by_action:0.1.0"
++        "recipe:possession_corridor_availability_v1:0.1.0"
+       ],
+       "projection_count": 22,
+-      "removed": []
++      "removed": [],
++      "shared_count": 21
++    },
++    "baseline_sources": {
++      "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
++      "capability_catalog": {
++        "exists": true,
++        "path": "generated/capability-catalog.json",
++        "source_artifact_sha256": "b051dcb7c72aae3e99c75d11b0b95f423dccd29ba4b4b8098bc44a0d8ab6eddd"
++      },
++      "tactical_knowledge_pack": {
++        "exists": true,
++        "path": "generated/tactical-knowledge-pack.json",
++        "source_artifact_sha256": "1f19535aebebe8cc43615f288853e03b0c14018c696d07a84321091287917201"
++      }
+     },
+     "product": {
+       "added": [
+         "composition:composition.ai_corridor_destination.2026_06_23"
+       ],
+       "baseline_count": 15,
+-      "changed": [
+-        "recipe:ball_side_block_shift_v1:1.0.0",
+-        "recipe:high_bypass_completed_pass_v1:0.1.0",
+-        "recipe:opposite_corridor_after_shift_v1:0.1.0",
+-        "recipe:possession_corridor_availability_v1:0.1.0",
+-        "runtime:primitive:ball_lateral_fraction:0.1.0",
+-        "runtime:primitive:controlled_pass_episode:0.1.0",
+-        "runtime:primitive:defensive_outfield_centroid:0.1.0",
+-        "runtime:primitive:outcome_classification:0.1.0",
+-        "runtime:primitive:possession_segment:0.1.0",
+-        "runtime:primitive:relation_destination_entry:0.1.0",
+-        "runtime:primitive:relation_destination_entry_classification:0.1.0",
+-        "runtime:primitive:signed_lateral_shift:0.1.0",
+-        "runtime:relation:geometric_progressive_corridor:0.1.0",
+-        "runtime:relation:geometric_progressive_corridor_from_anchor_set:0.1.0",
+-        "runtime:relation:opponents_bypassed_by_action:0.1.0"
+-      ],
++      "contract_changed": [],
+       "projection_count": 16,
+-      "removed": []
++      "removed": [],
++      "shared_count": 15
+     }
+   },
+   "recipes": {
+     "mapped": 4,
+     "missing_plan_artifacts": 0,
+     "parsed_plan_artifacts": 5,
+-    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
++    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "registered": 4
+   },
+   "registry_lock": {
+     "ai_projection_policy": "projection.ai.v1",
++    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "d3c1f3c0cafd5b4bb6b500f7b258a6217c210be1169814947beab5837a85c390",
+-    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
++    "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
++    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "80afeb152caa7413782c88799c7a6025be9f63b73068cdd946cbf627ce11b9c7",
++    "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+     "schema_version": "1.0",
+diff --git a/generated/semantic-registry/unsupported-capability-projection.json b/generated/semantic-registry/unsupported-capability-projection.json
+index 4d2106d..de41663 100644
+--- a/generated/semantic-registry/unsupported-capability-projection.json
++++ b/generated/semantic-registry/unsupported-capability-projection.json
+@@ -176,13 +176,14 @@
+   ],
+   "registry_lock": {
+     "ai_projection_policy": "projection.ai.v1",
++    "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+     "evidence_schema_version": "1.0",
+     "generator_version": "scp0.generator.v1",
+-    "lock_hash": "d3c1f3c0cafd5b4bb6b500f7b258a6217c210be1169814947beab5837a85c390",
+-    "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
++    "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
++    "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+     "product_projection_policy": "projection.product.v1",
+     "recipe_projection_policy": "projection.recipe_library.v1",
+-    "registry_revision": "80afeb152caa7413782c88799c7a6025be9f63b73068cdd946cbf627ce11b9c7",
++    "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
+     "research_atlas_projection_policy": "projection.research_atlas.v1",
+     "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+     "schema_version": "1.0",
+diff --git a/semantic-registry/registry.lock.json b/semantic-registry/registry.lock.json
+index c1390c5..4c7b6c0 100644
+--- a/semantic-registry/registry.lock.json
++++ b/semantic-registry/registry.lock.json
+@@ -1,12 +1,13 @@
+ {
+   "ai_projection_policy": "projection.ai.v1",
++  "baseline_artifact_revision": "9e5862c0d58c8b1a6e2a9af6504c1638bedd57a9f33dc5e0371d08bb01829786",
+   "evidence_schema_version": "1.0",
+   "generator_version": "scp0.generator.v1",
+-  "lock_hash": "d3c1f3c0cafd5b4bb6b500f7b258a6217c210be1169814947beab5837a85c390",
+-  "plan_artifact_revision": "df50aeb34ed4349e017805d5e7c84dd4e8851d8e3ae68cb71d5de373377b795f",
++  "lock_hash": "45c0e5d12effd16e18e44601a9b591e27866165b55a70707508814422173090f",
++  "plan_artifact_revision": "93b306dfe9cadf241418824af082140a7dd23823155600f1f42722c94e7ff1d0",
+   "product_projection_policy": "projection.product.v1",
+   "recipe_projection_policy": "projection.recipe_library.v1",
+-  "registry_revision": "80afeb152caa7413782c88799c7a6025be9f63b73068cdd946cbf627ce11b9c7",
++  "registry_revision": "69899a20dfcc37d57edfc45aa5d9e98dc88bad903b9b8a97378a87ac036592db",
+   "research_atlas_projection_policy": "projection.research_atlas.v1",
+   "runtime_manifest_revision": "66dc530c074320c283b602399468d1522fe26d00dcabe45176ab95435b703865",
+   "schema_version": "1.0",
+diff --git a/semantic-registry/registry.yaml b/semantic-registry/registry.yaml
+index 0fc49de..65cfc61 100644
+--- a/semantic-registry/registry.yaml
++++ b/semantic-registry/registry.yaml
+@@ -83,6 +83,14 @@ concepts:
+     evidence_contract_ref: evidence.high_bypass_completed_pass.v1
+     tags: [bypass, pass, recipe]
+ 
++  - id: concept.ball_side_block_shift
++    kind: Concept
++    display_name: Ball-Side Block Shift
++    description: A reviewed ball-side entry and defensive block-shift pattern with saved-plan outcome classification.
++    claim_contract_ref: claim.ball_side_block_shift.v1
++    evidence_contract_ref: evidence.ball_side_block_shift.v1
++    tags: [block_shift, recipe, reviewed]
++
+   - id: concept.progressive_connection_followed_by_destination_entry
+     kind: Concept
+     display_name: Progressive Connection Followed By Destination Entry
+@@ -90,6 +98,13 @@ concepts:
+     claim_contract_ref: claim.ai_corridor_destination_composition.v1
+     evidence_contract_ref: evidence.ai_corridor_destination_composition.v1
+     tags: [corridor, destination_entry, composition]
++  - id: concept.opposite_corridor_after_shift
++    kind: Concept
++    display_name: Opposite Corridor After Shift
++    description: A ball-side block-shift context followed by a progressive corridor and destination-entry evaluation on the opposite-side relation.
++    claim_contract_ref: claim.opposite_corridor_after_shift.v1
++    evidence_contract_ref: evidence.opposite_corridor_after_shift.v1
++    tags: [corridor, block_shift, destination_entry, recipe]
+ 
+ operationalizations:
+   - id: op.possession_segment_intervals.v1
+@@ -444,6 +459,9 @@ runtime_bindings:
+     implements: [op.event_seeded_tracking_confirmed_pass.v1]
+     conformance_status: PARTIAL
+     known_deviations: [Control candidates are currently collapsed into final status rather than retained as a candidate distribution.]
++    field_mapping: {controlled_pass_status: controlled_pass_status, forward_progression_m: forward_progression_m, anchors: anchors}
++    uncovered_runtime_fields: [episodes]
++    uncovered_semantic_fields: []
+   - id: binding.primitive.ball_lateral_fraction.0_1_0
+     kind: RuntimeBinding
+     display_name: ball_lateral_fraction runtime binding
+@@ -461,6 +479,9 @@ runtime_bindings:
+     implements: [op.defensive_outfield_centroid.v1]
+     conformance_status: PARTIAL
+     known_deviations: [Active-player membership is derived from current implementation behavior rather than a standalone authoritative active-player timeline.]
++    field_mapping: {centroid_y: centroid_y}
++    uncovered_runtime_fields: []
++    uncovered_semantic_fields: [defending_outfield_positions]
+   - id: binding.primitive.signed_lateral_shift.0_1_0
+     kind: RuntimeBinding
+     display_name: signed_lateral_shift runtime binding
+@@ -478,6 +499,9 @@ runtime_bindings:
+     implements: [op.reviewed_block_shift_outcome.v1]
+     conformance_status: LEGACY_APPROXIMATION
+     known_deviations: [Reviewed-plan-specific classifier is intentionally not a general-purpose authorable primitive.]
++    field_mapping: {accepted_shift_episodes: accepted_shift_episodes, classification: classification}
++    uncovered_runtime_fields: [horizon]
++    uncovered_semantic_fields: []
+   - id: binding.primitive.relation_destination_entry.0_1_0
+     kind: RuntimeBinding
+     display_name: relation_destination_entry runtime binding
+@@ -486,6 +510,10 @@ runtime_bindings:
+     implementation_ref: impl.relation_destination_entry.python.v1
+     implements: [op.relation_destination_entry.v1]
+     conformance_status: EXACT
++    parameter_mapping:
++      destination_entry_horizon_seconds: destination_entry_horizon_seconds
++      result_id_seed: result_id_seed
++      episode_selection: episode_selection
+   - id: binding.primitive.relation_destination_entry_classification.0_1_0
+     kind: RuntimeBinding
+     display_name: relation_destination_entry_classification runtime binding
+@@ -495,6 +523,9 @@ runtime_bindings:
+     implements: [op.reviewed_relation_destination_entry_classification.v1]
+     conformance_status: LEGACY_APPROXIMATION
+     known_deviations: [Reviewed-plan-specific wrapper; AI-authored plans should use relation_destination_entry.]
++    field_mapping: {relation_episodes: relation_episodes, classification: classification}
++    uncovered_runtime_fields: [destination_entry_horizon_seconds, result_id_seed, episode_selection]
++    uncovered_semantic_fields: []
+   - id: binding.relation.geometric_progressive_corridor.0_1_0
+     kind: RuntimeBinding
+     display_name: geometric_progressive_corridor runtime binding
+@@ -503,6 +534,16 @@ runtime_bindings:
+     implementation_ref: impl.geometric_progressive_corridor.python.v1
+     implements: [op.geometric_progressive_corridor.v1]
+     conformance_status: EXACT
++    parameter_mapping:
++      max_window_seconds: max_window_seconds
++      minimum_progression_m: minimum_progression_m
++      minimum_segment_length_m: minimum_segment_length_m
++      maximum_segment_length_m: maximum_segment_length_m
++      minimum_clearance_m: minimum_clearance_m
++      open_after_frames: open_after_frames
++      close_after_frames: close_after_frames
++      minimum_duration_seconds: minimum_duration_seconds
++      side_filter: side_filter
+   - id: binding.relation.geometric_progressive_corridor_from_anchor_set.0_1_0
+     kind: RuntimeBinding
+     display_name: geometric_progressive_corridor_from_anchor_set runtime binding
+@@ -511,6 +552,16 @@ runtime_bindings:
+     implementation_ref: impl.geometric_progressive_corridor_anchor_set.python.v1
+     implements: [op.geometric_progressive_corridor_anchor_set.v1]
+     conformance_status: EXACT
++    parameter_mapping:
++      max_window_seconds: max_window_seconds
++      minimum_progression_m: minimum_progression_m
++      minimum_segment_length_m: minimum_segment_length_m
++      maximum_segment_length_m: maximum_segment_length_m
++      minimum_clearance_m: minimum_clearance_m
++      open_after_frames: open_after_frames
++      close_after_frames: close_after_frames
++      minimum_duration_seconds: minimum_duration_seconds
++      side_filter: side_filter
+   - id: binding.relation.opponents_bypassed_by_action.0_1_0
+     kind: RuntimeBinding
+     display_name: opponents_bypassed_by_action runtime binding
+@@ -520,6 +571,9 @@ runtime_bindings:
+     implements: [op.release_reception_opponent_transition_count.v1]
+     conformance_status: PARTIAL
+     known_deviations: [Active-opponent denominator is implemented for current data shape but not yet backed by a standalone authoritative active-player timeline.]
++    field_mapping: {controlled_pass_episodes: controlled_pass_episodes, controlled_pass_anchors: controlled_pass_anchors, opponents_bypassed_count: opponents_bypassed_count, evaluation_status: evaluation_status}
++    uncovered_runtime_fields: [anchor_evaluations, forward_progression_m, goal_side_buffer_m, bypassed_buffer_m]
++    uncovered_semantic_fields: []
+ 
+ operator_definitions:
+   - id: operator.gt.1_0_0
+@@ -702,6 +756,14 @@ claim_contracts:
+     permitted: [possession_anchor_had_progressive_corridor, ball_entry_into_corridor_destination_region_evaluated]
+     prohibited: [proves_pass_should_be_played, proves_optimality, proves_player_intent]
+     unknown_conditions: [corridor_relation_missing, destination_entry_coverage_incomplete]
++  - id: claim.opposite_corridor_after_shift.v1
++    kind: ClaimContract
++    display_name: Opposite Corridor After Shift Claims
++    description: Claims permitted for the opposite-corridor-after-shift experimental recipe.
++    inherits: [claim.ball_side_block_shift.v1, claim.progressive_connection_availability.v1, claim.relation_destination_entry.v1]
++    permitted: [ball_side_shift_context_identified, opposite_side_progressive_corridor_identified, destination_entry_evaluated_after_shift]
++    prohibited: [proves_switch_was_available, proves_not_switching_was_mistake, proves_pass_should_be_played, proves_optimality, proves_player_intent]
++    unknown_conditions: [shift_context_unresolved, corridor_relation_missing, destination_entry_coverage_incomplete]
+ 
+ evidence_contracts:
+   - id: evidence.possession_context.v1
+@@ -780,6 +842,13 @@ evidence_contracts:
+     inherits: [evidence.possession_context.v1, evidence.progressive_connection_availability.v1, evidence.relation_destination_entry.v1]
+     required: [match_id, period, anchor_id, anchor_frame_id, possession_start_frame_id, possession_end_frame_id, relation_id, open_frame_id, target_player_id, destination_region, minimum_clearance_m, entry_status, entry_mode, witness_frame_id]
+     replay_projection: [possession_window, corridor_geometry, destination_region, ball_path]
++  - id: evidence.opposite_corridor_after_shift.v1
++    kind: EvidenceContract
++    display_name: Opposite Corridor After Shift Evidence
++    description: Evidence required for the opposite-corridor-after-shift experimental recipe.
++    inherits: [evidence.ball_side_block_shift.v1, evidence.progressive_connection_availability.v1, evidence.relation_destination_entry.v1]
++    required: [match_id, period, anchor_id, anchor_frame_id, ball_side, wide_entry_y_m, baseline_defensive_centroid_y_m, defending_outfield_player_ids, signed_shift_metres, shift_frame_id, classification, outcome_window_start_frame_id, outcome_window_end_frame_id, relation_id, open_frame_id, target_player_id, destination_region, minimum_clearance_m, entry_status, entry_mode, witness_frame_id]
++    replay_projection: [ball_position, centroid_shift, corridor_geometry, destination_region, ball_path]
+ 
+ exposure_policies:
+   - id: exposure.runtime.possession_segment.0_1_0
+@@ -910,6 +979,10 @@ projection_policies:
+     target: product
+     requires: {runtime_binding: VERIFIED, product_exposure: ALLOWED, product_maturity: EXPOSED, validation: VERIFIED}
+     excludes: [PROPOSED_ATLAS, DEPRECATED]
++    accepted_differences:
++      added: [composition:composition.ai_corridor_destination.2026_06_23]
++      removed: []
++      contract_changed: []
+   - id: projection.ai.v1
+     kind: ProjectionPolicy
+     display_name: AI Projection Policy
+@@ -917,6 +990,10 @@ projection_policies:
+     target: ai
+     requires: {runtime_binding: VERIFIED, agent_safety: APPROVED, ai_compiler: ALLOWED, validation: VERIFIED}
+     excludes: [PROPOSED_ATLAS, REVIEWED_PLAN_ONLY, DEPRECATED]
++    accepted_differences:
++      added: [composition:composition.ai_corridor_destination.2026_06_23]
++      removed: []
++      contract_changed: [recipe:ball_side_block_shift_v1:1.0.0, recipe:high_bypass_completed_pass_v1:0.1.0, recipe:opposite_corridor_after_shift_v1:0.1.0, recipe:possession_corridor_availability_v1:0.1.0]
+   - id: projection.recipe_library.v1
+     kind: ProjectionPolicy
+     display_name: Recipe Library Projection Policy
+@@ -1149,6 +1226,7 @@ recipe_definitions:
+     description: Semantic mapping for the reviewed ball-side block-shift recipe.
+     recipe_id: ball_side_block_shift_v1
+     recipe_version: 1.0.0
++    concept_ref: concept.ball_side_block_shift
+     plan_artifact_ref: plan.ball_side_block_shift.v1
+     dependency_refs: [possession_segment, ball_lateral_fraction, gt, persists_for, defensive_outfield_centroid, signed_lateral_shift, gte, outcome_classification, neq]
+     profile_refs: [profile.ball_side_block_shift_reviewed.v1]
+@@ -1160,6 +1238,7 @@ recipe_definitions:
+     description: Semantic mapping for the possession corridor availability experimental recipe.
+     recipe_id: possession_corridor_availability_v1
+     recipe_version: 0.1.0
++    concept_ref: concept.progressive_connection_availability
+     plan_artifact_ref: plan.possession_corridor_availability.v1
+     dependency_refs: [possession_segment, geometric_progressive_corridor_from_anchor_set, exists]
+     profile_refs: [profile.progressive_corridor_default.v1]
+@@ -1171,17 +1250,19 @@ recipe_definitions:
+     description: Semantic mapping for the opposite corridor after shift experimental recipe.
+     recipe_id: opposite_corridor_after_shift_v1
+     recipe_version: 0.1.0
++    concept_ref: concept.opposite_corridor_after_shift
+     plan_artifact_ref: plan.opposite_corridor_after_shift.v1
+     dependency_refs: [possession_segment, ball_lateral_fraction, gt, persists_for, defensive_outfield_centroid, signed_lateral_shift, gte, outcome_classification, neq, geometric_progressive_corridor, exists, relation_destination_entry_classification]
+     profile_refs: [profile.ball_side_block_shift_reviewed.v1, profile.progressive_corridor_default.v1, profile.destination_entry_default.v1]
+-    claim_contract_ref: claim.ai_corridor_destination_composition.v1
+-    evidence_contract_ref: evidence.ai_corridor_destination_composition.v1
++    claim_contract_ref: claim.opposite_corridor_after_shift.v1
++    evidence_contract_ref: evidence.opposite_corridor_after_shift.v1
+   - id: recipe.high_bypass_completed_pass.v1
+     kind: RecipeDefinition
+     display_name: High-Bypass Completed Pass Recipe Mapping
+     description: Semantic mapping for the high-bypass completed pass experimental recipe.
+     recipe_id: high_bypass_completed_pass_v1
+     recipe_version: 0.1.0
++    concept_ref: concept.high_bypass_completed_pass
+     plan_artifact_ref: plan.high_bypass_completed_pass.v1
+     dependency_refs: [controlled_pass_episode, opponents_bypassed_by_action, gte]
+     profile_refs: [profile.high_bypass_default.v1]
+@@ -1194,6 +1275,7 @@ composition_instances:
+     display_name: AI Corridor Destination Composition
+     description: Validated AI-authored corridor destination composition. It remains a composition instance, not a registered recipe.
+     plan_artifact_ref: plan.ai_corridor_destination.2026_06_23
++    concept_ref: concept.progressive_connection_followed_by_destination_entry
+     origin: AI_AUTHORED
+     promotion_status: VALIDATED_COMPOSITION
+     claim_contract_ref: claim.ai_corridor_destination_composition.v1
+diff --git a/semantic-registry/schemas/semantic-registry.schema.json b/semantic-registry/schemas/semantic-registry.schema.json
+index 9fd0b65..782c3cd 100644
+--- a/semantic-registry/schemas/semantic-registry.schema.json
++++ b/semantic-registry/schemas/semantic-registry.schema.json
+@@ -264,6 +264,10 @@
+           "title": "Claim Contract Ref",
+           "type": "string"
+         },
++        "concept_ref": {
++          "title": "Concept Ref",
++          "type": "string"
++        },
+         "created_from": {
+           "items": {
+             "type": "string"
+@@ -369,6 +373,7 @@
+         "display_name",
+         "description",
+         "plan_artifact_ref",
++        "concept_ref",
+         "origin",
+         "promotion_status",
+         "claim_contract_ref",
+@@ -1674,6 +1679,16 @@
+     "ProjectionPolicy": {
+       "additionalProperties": false,
+       "properties": {
++        "accepted_differences": {
++          "additionalProperties": {
++            "items": {
++              "type": "string"
++            },
++            "type": "array"
++          },
++          "title": "Accepted Differences",
++          "type": "object"
++        },
+         "aliases": {
+           "items": {
+             "type": "string"
+@@ -1806,6 +1821,10 @@
+           "title": "Claim Contract Ref",
+           "type": "string"
+         },
++        "concept_ref": {
++          "title": "Concept Ref",
++          "type": "string"
++        },
+         "created_from": {
+           "items": {
+             "type": "string"
+@@ -1918,6 +1937,7 @@
+         "description",
+         "recipe_id",
+         "recipe_version",
++        "concept_ref",
+         "plan_artifact_ref",
+         "claim_contract_ref",
+         "evidence_contract_ref"
+@@ -1965,6 +1985,13 @@
+           "title": "Display Name",
+           "type": "string"
+         },
++        "field_mapping": {
++          "additionalProperties": {
++            "type": "string"
++          },
++          "title": "Field Mapping",
++          "type": "object"
++        },
+         "id": {
+           "pattern": "^[a-zA-Z0-9_.:-]+$",
+           "title": "Id",
+@@ -2002,6 +2029,13 @@
+           "title": "Owners",
+           "type": "array"
+         },
++        "parameter_mapping": {
++          "additionalProperties": {
++            "type": "string"
++          },
++          "title": "Parameter Mapping",
++          "type": "object"
++        },
+         "reviewers": {
+           "items": {
+             "type": "string"
+@@ -2030,6 +2064,20 @@
+           "title": "Tags",
+           "type": "array"
+         },
++        "uncovered_runtime_fields": {
++          "items": {
++            "type": "string"
++          },
++          "title": "Uncovered Runtime Fields",
++          "type": "array"
++        },
++        "uncovered_semantic_fields": {
++          "items": {
++            "type": "string"
++          },
++          "title": "Uncovered Semantic Fields",
++          "type": "array"
++        },
+         "version": {
+           "default": "1.0.0",
+           "title": "Version",
+diff --git a/src/tqe/semantic_registry/generate.py b/src/tqe/semantic_registry/generate.py
+index 13c600f..ac965cb 100644
+--- a/src/tqe/semantic_registry/generate.py
++++ b/src/tqe/semantic_registry/generate.py
+@@ -4,6 +4,9 @@ from __future__ import annotations
+ 
+ import json
+ import re
++import shutil
++import tempfile
++from hashlib import sha256
+ from copy import deepcopy
+ from pathlib import Path
+ from typing import Any
+@@ -42,6 +45,10 @@ SCHEMA_PATH = Path("semantic-registry/schemas/semantic-registry.schema.json")
+ LOCK_PATH = Path("semantic-registry/registry.lock.json")
+ CAPABILITY_CATALOG_BASELINE_PATH = Path("generated/capability-catalog.json")
+ KNOWLEDGE_PACK_BASELINE_PATH = Path("generated/tactical-knowledge-pack.json")
++BASELINE_PATHS = {
++    "capability_catalog": CAPABILITY_CATALOG_BASELINE_PATH,
++    "tactical_knowledge_pack": KNOWLEDGE_PACK_BASELINE_PATH,
++}
+ 
+ 
+ def _write_json(path: Path, payload: Any) -> None:
+@@ -52,6 +59,26 @@ def _write_json(path: Path, payload: Any) -> None:
+     )
+ 
+ 
++def _sha256_bytes(path: Path) -> str:
++    digest = sha256()
++    with path.open("rb") as handle:
++        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
++            digest.update(chunk)
++    return digest.hexdigest()
++
++
++def baseline_artifact_manifest() -> dict[str, Any]:
++    manifest: dict[str, Any] = {}
++    for name, path in BASELINE_PATHS.items():
++        manifest[name] = {
++            "path": str(path),
++            "exists": path.exists(),
++            "source_artifact_sha256": _sha256_bytes(path) if path.exists() else None,
++        }
++    manifest["baseline_artifact_revision"] = stable_hash(manifest)
++    return manifest
++
++
+ def _slug(value: str) -> str:
+     slug = re.sub(r"[^a-zA-Z0-9_.:-]+", "_", value.strip()).strip("_").lower()
+     return slug or "unnamed"
+@@ -110,6 +137,9 @@ def make_registry_lock(registry: SemanticRegistry, runtime_manifest: dict[str, A
+         "registry_revision": registry_revision,
+         "runtime_manifest_revision": runtime_revision,
+         "plan_artifact_revision": plan_index["plan_artifact_revision"],
++        "baseline_artifact_revision": baseline_artifact_manifest()[
++            "baseline_artifact_revision"
++        ],
+         "generator_version": GENERATOR_VERSION,
+         "product_projection_policy": policies.get("product", ""),
+         "ai_projection_policy": policies.get("ai", ""),
+@@ -185,6 +215,7 @@ def extract_plan_artifact_details(artifact: PlanArtifact) -> dict[str, Any]:
+             "valid_typed_plan": False,
+             "error": "path_missing",
+         }
++    source_artifact_sha256 = _sha256_bytes(path)
+     try:
+         document_payload, source_kind = _document_from_plan_artifact(artifact)
+         document = TacticalQueryDocument.model_validate(document_payload)
+@@ -233,10 +264,12 @@ def extract_plan_artifact_details(artifact: PlanArtifact) -> dict[str, Any]:
+         "path": str(path),
+         "exists": True,
+         "valid_typed_plan": True,
++        "source_artifact_sha256": source_artifact_sha256,
+         "source_kind": source_kind,
+         "origin": artifact.origin,
+         "promotion_status": artifact.promotion_status,
+         "normalized_plan_hash": stable_hash(normalized_document),
++        "normalized_selected_document_hash": stable_hash(normalized_document),
+         "plan_id": document.draft_plan.plan_id,
+         "plan_version": document.draft_plan.plan_version,
+         "recipe_id": document.recipe.recipe_id,
+@@ -420,6 +453,21 @@ def _signature_mismatch(
+     return mismatches
+ 
+ 
++def _contract_inherits_or_is(
++    child_ref: str, required_ref: str, contracts: dict[str, Any], *, kind: str
++) -> tuple[bool, list[ValidationFinding]]:
++    if child_ref not in contracts or required_ref not in contracts:
++        return False, []
++    if child_ref == required_ref:
++        return True, []
++    closure, findings = (
++        _effective_claim_contract(child_ref, contracts)
++        if kind == "claim"
++        else _effective_evidence_contract(child_ref, contracts)
++    )
++    return required_ref in closure["ancestors"], findings
++
++
+ def validate_runtime_signature_compatibility(
+     binding: Any,
+     runtime_entry: dict[str, Any],
+@@ -436,13 +484,18 @@ def validate_runtime_signature_compatibility(
+         semantic_inputs.update(_field_map(op.inputs))
+         semantic_outputs.update(_field_map(op.outputs))
+ 
++    runtime_inputs = {item["name"]: item for item in runtime_entry.get("inputs", [])}
++    runtime_outputs = {item["name"]: item for item in runtime_entry.get("outputs", [])}
++    runtime_parameters = {item["name"]: item for item in runtime_entry.get("parameters", [])}
++
+     for runtime_input in runtime_entry.get("inputs", []):
+-        semantic_field = semantic_inputs.get(runtime_input["name"])
++        semantic_name = binding.field_mapping.get(runtime_input["name"], runtime_input["name"])
++        semantic_field = semantic_inputs.get(semantic_name)
+         if semantic_field is None:
+             findings.append(
+                 _finding(
+                     "runtime_signature_mismatch",
+-                    f"{binding.id} runtime input {runtime_input['name']} is not declared by semantic operationalization.",
++                    f"{binding.id} runtime input {runtime_input['name']} maps to undeclared semantic input {semantic_name}.",
+                     f"{path}.inputs",
+                 )
+             )
+@@ -458,12 +511,13 @@ def validate_runtime_signature_compatibility(
+             )
+ 
+     for runtime_output in runtime_entry.get("outputs", []):
+-        semantic_field = semantic_outputs.get(runtime_output["name"])
++        semantic_name = binding.field_mapping.get(runtime_output["name"], runtime_output["name"])
++        semantic_field = semantic_outputs.get(semantic_name)
+         if semantic_field is None:
+             findings.append(
+                 _finding(
+                     "runtime_signature_mismatch",
+-                    f"{binding.id} runtime output {runtime_output['name']} is not declared by semantic operationalization.",
++                    f"{binding.id} runtime output {runtime_output['name']} maps to undeclared semantic output {semantic_name}.",
+                     f"{path}.outputs",
+                 )
+             )
+@@ -477,6 +531,39 @@ def validate_runtime_signature_compatibility(
+                     f"{path}.outputs.{runtime_output['name']}",
+                 )
+             )
++    runtime_output_semantic_names = {
++        binding.field_mapping.get(name, name) for name in runtime_outputs
++    }
++    for semantic_name, semantic_field in semantic_outputs.items():
++        if getattr(semantic_field, "required", True) and semantic_name not in runtime_output_semantic_names:
++            findings.append(
++                _finding(
++                    "runtime_signature_mismatch",
++                    f"{binding.id} semantic output {semantic_name} is required but no runtime output maps to it.",
++                    f"{path}.outputs.{semantic_name}",
++                )
++            )
++
++    if runtime_parameters:
++        mapped_runtime_parameters = set(binding.parameter_mapping)
++        missing_parameter_mappings = sorted(set(runtime_parameters) - mapped_runtime_parameters)
++        extra_parameter_mappings = sorted(mapped_runtime_parameters - set(runtime_parameters))
++        if missing_parameter_mappings:
++            findings.append(
++                _finding(
++                    "runtime_parameter_signature_mismatch",
++                    f"{binding.id} runtime parameters lack semantic mapping: {missing_parameter_mappings}.",
++                    f"{path}.parameter_mapping",
++                )
++            )
++        if extra_parameter_mappings:
++            findings.append(
++                _finding(
++                    "runtime_parameter_signature_mismatch",
++                    f"{binding.id} maps unknown runtime parameters: {extra_parameter_mappings}.",
++                    f"{path}.parameter_mapping",
++                )
++            )
+     return findings
+ 
+ 
+@@ -650,14 +737,31 @@ def validate_registry(
+         if binding.conformance_status in {
+             ConformanceStatus.PARTIAL,
+             ConformanceStatus.LEGACY_APPROXIMATION,
+-        } and not binding.known_deviations:
+-            findings.append(
+-                _finding(
+-                    "non_exact_binding_missing_deviation",
+-                    f"{binding.id} is {binding.conformance_status.value} but declares no known_deviations.",
+-                    f"runtime_bindings[{index}].known_deviations",
++        }:
++            if not binding.known_deviations:
++                findings.append(
++                    _finding(
++                        "non_exact_binding_missing_deviation",
++                        f"{binding.id} is {binding.conformance_status.value} but declares no known_deviations.",
++                        f"runtime_bindings[{index}].known_deviations",
++                    )
++                )
++            if not binding.field_mapping:
++                findings.append(
++                    _finding(
++                        "non_exact_binding_missing_field_mapping",
++                        f"{binding.id} is {binding.conformance_status.value} but declares no field_mapping.",
++                        f"runtime_bindings[{index}].field_mapping",
++                    )
++                )
++            if not binding.uncovered_runtime_fields and not binding.uncovered_semantic_fields:
++                findings.append(
++                    _finding(
++                        "non_exact_binding_missing_uncovered_fields",
++                        f"{binding.id} is {binding.conformance_status.value} but declares no uncovered fields.",
++                        f"runtime_bindings[{index}].uncovered_runtime_fields",
++                    )
+                 )
+-            )
+         if binding.conformance_status == ConformanceStatus.EXACT:
+             runtime_entry = runtime_by_key.get(key)
+             if runtime_entry is not None:
+@@ -955,6 +1059,17 @@ def validate_registry(
+         )
+ 
+     for recipe in registry.recipe_definitions:
++        if recipe.concept_ref not in concepts:
++            findings.append(
++                _finding(
++                    "recipe_missing_concept",
++                    f"{recipe.id} references missing concept {recipe.concept_ref}.",
++                    f"recipe_definitions.{recipe.id}.concept_ref",
++                )
++            )
++            recipe_concept = None
++        else:
++            recipe_concept = concepts[recipe.concept_ref]
+         artifact = plan_artifacts.get(recipe.plan_artifact_ref)
+         if artifact is None:
+             findings.append(
+@@ -1050,6 +1165,47 @@ def validate_registry(
+                     f"recipe_definitions.{recipe.id}.evidence_contract_ref",
+                 )
+             )
++        if (
++            recipe_concept is not None
++            and recipe.claim_contract_ref in claim_contracts
++            and recipe_concept.claim_contract_ref in claim_contracts
++        ):
++            inherits, closure_findings = _contract_inherits_or_is(
++                recipe.claim_contract_ref,
++                recipe_concept.claim_contract_ref,
++                claim_contracts,
++                kind="claim",
++            )
++            findings.extend(closure_findings)
++            if not inherits:
++                findings.append(
++                    _finding(
++                        "recipe_claim_not_derived_from_concept",
++                        f"{recipe.id} claim contract {recipe.claim_contract_ref} does not inherit concept claim {recipe_concept.claim_contract_ref}.",
++                        f"recipe_definitions.{recipe.id}.claim_contract_ref",
++                    )
++                )
++        if (
++            recipe_concept is not None
++            and recipe.evidence_contract_ref in evidence_contracts
++            and recipe_concept.evidence_contract_ref
++            and recipe_concept.evidence_contract_ref in evidence_contracts
++        ):
++            inherits, closure_findings = _contract_inherits_or_is(
++                recipe.evidence_contract_ref,
++                recipe_concept.evidence_contract_ref,
++                evidence_contracts,
++                kind="evidence",
++            )
++            findings.extend(closure_findings)
++            if not inherits:
++                findings.append(
++                    _finding(
++                        "recipe_evidence_not_derived_from_concept",
++                        f"{recipe.id} evidence contract {recipe.evidence_contract_ref} does not inherit concept evidence {recipe_concept.evidence_contract_ref}.",
++                        f"recipe_definitions.{recipe.id}.evidence_contract_ref",
++                    )
++                )
+         for profile_ref in recipe.profile_refs:
+             if profile_ref not in profiles:
+                 findings.append(
+@@ -1061,6 +1217,44 @@ def validate_registry(
+                 )
+                 continue
+             profile = profiles[profile_ref]
++            if (
++                recipe.claim_contract_ref in claim_contracts
++                and profile.claim_contract_ref in claim_contracts
++            ):
++                inherits, closure_findings = _contract_inherits_or_is(
++                    recipe.claim_contract_ref,
++                    profile.claim_contract_ref,
++                    claim_contracts,
++                    kind="claim",
++                )
++                findings.extend(closure_findings)
++                if not inherits:
++                    findings.append(
++                        _finding(
++                            "recipe_claim_omits_profile_contract",
++                            f"{recipe.id} claim contract {recipe.claim_contract_ref} does not inherit profile claim {profile.claim_contract_ref}.",
++                            f"recipe_definitions.{recipe.id}.claim_contract_ref",
++                        )
++                    )
++            if (
++                recipe.evidence_contract_ref in evidence_contracts
++                and profile.evidence_contract_ref in evidence_contracts
++            ):
++                inherits, closure_findings = _contract_inherits_or_is(
++                    recipe.evidence_contract_ref,
++                    profile.evidence_contract_ref,
++                    evidence_contracts,
++                    kind="evidence",
++                )
++                findings.extend(closure_findings)
++                if not inherits:
++                    findings.append(
++                        _finding(
++                            "recipe_evidence_omits_profile_contract",
++                            f"{recipe.id} evidence contract {recipe.evidence_contract_ref} does not inherit profile evidence {profile.evidence_contract_ref}.",
++                            f"recipe_definitions.{recipe.id}.evidence_contract_ref",
++                        )
++                    )
+             defaults = plan_details.get("parameter_defaults", {})
+             for name, value in profile.bindings.items():
+                 if name in defaults and defaults[name] != value:
+@@ -1073,6 +1267,17 @@ def validate_registry(
+                     )
+ 
+     for composition in registry.composition_instances:
++        if composition.concept_ref not in concepts:
++            findings.append(
++                _finding(
++                    "composition_missing_concept",
++                    f"{composition.id} references missing concept {composition.concept_ref}.",
++                    f"composition_instances.{composition.id}.concept_ref",
++                )
++            )
++            composition_concept = None
++        else:
++            composition_concept = concepts[composition.concept_ref]
+         artifact = plan_artifacts.get(composition.plan_artifact_ref)
+         if artifact is None:
+             findings.append(
+@@ -1108,6 +1313,26 @@ def validate_registry(
+                     f"composition_instances.{composition.id}.plan_artifact_ref",
+                 )
+             )
++        for dep in plan_details.get("capability_dependencies", []):
++            runtime_key = (dep["kind"], dep["name"], dep["version"])
++            if runtime_key not in set(binding_keys):
++                findings.append(
++                    _finding(
++                        "composition_references_unbound_runtime_capability",
++                        f"{artifact.id} references unbound runtime capability {runtime_key}.",
++                        f"plan_artifacts.{artifact.id}.draft_plan.nodes",
++                    )
++                )
++        for dep in plan_details.get("operator_dependencies", []):
++            key = (dep["name"], dep["version"])
++            if key not in operator_definition_keys:
++                findings.append(
++                    _finding(
++                        "composition_references_unregistered_operator",
++                        f"{artifact.id} references operator {key} without OperatorDefinition.",
++                        f"plan_artifacts.{artifact.id}.draft_plan.nodes",
++                    )
++                )
+         if artifact.origin == "AI_AUTHORED" and not str(plan_details.get("source_kind", "")).startswith(
+             "n1f_origin_bundle"
+         ):
+@@ -1134,6 +1359,47 @@ def validate_registry(
+                     f"composition_instances.{composition.id}.evidence_contract_ref",
+                 )
+             )
++        if (
++            composition_concept is not None
++            and composition.claim_contract_ref in claim_contracts
++            and composition_concept.claim_contract_ref in claim_contracts
++        ):
++            inherits, closure_findings = _contract_inherits_or_is(
++                composition.claim_contract_ref,
++                composition_concept.claim_contract_ref,
++                claim_contracts,
++                kind="claim",
++            )
++            findings.extend(closure_findings)
++            if not inherits:
++                findings.append(
++                    _finding(
++                        "composition_claim_not_derived_from_concept",
++                        f"{composition.id} claim contract {composition.claim_contract_ref} does not inherit concept claim {composition_concept.claim_contract_ref}.",
++                        f"composition_instances.{composition.id}.claim_contract_ref",
++                    )
++                )
++        if (
++            composition_concept is not None
++            and composition.evidence_contract_ref in evidence_contracts
++            and composition_concept.evidence_contract_ref
++            and composition_concept.evidence_contract_ref in evidence_contracts
++        ):
++            inherits, closure_findings = _contract_inherits_or_is(
++                composition.evidence_contract_ref,
++                composition_concept.evidence_contract_ref,
++                evidence_contracts,
++                kind="evidence",
++            )
++            findings.extend(closure_findings)
++            if not inherits:
++                findings.append(
++                    _finding(
++                        "composition_evidence_not_derived_from_concept",
++                        f"{composition.id} evidence contract {composition.evidence_contract_ref} does not inherit concept evidence {composition_concept.evidence_contract_ref}.",
++                        f"composition_instances.{composition.id}.evidence_contract_ref",
++                    )
++                )
+ 
+     for atlas in registry.atlas_entries:
+         if atlas.status != Status.PROPOSED_ATLAS:
+@@ -1218,55 +1484,93 @@ def _is_excluded(policy: Any | None, *, subject: str, status: str = "CURRENT") -
+     return subject in excludes or status in excludes
+ 
+ 
+-def _capability_allowed_for_product(policy: Any, maturity: Any, projection_policy: Any) -> bool:
++def _projection_requirement_context(
++    *,
++    policy: Any | None,
++    maturity: Any | None,
++    runtime_binding_verified: bool = False,
++    plan_artifact_exists: bool | None = None,
++    status: str = "CURRENT",
++) -> dict[str, str]:
++    context = {
++        "runtime_binding": "VERIFIED" if runtime_binding_verified else "MISSING",
++        "product_exposure": policy.product.value if policy else "MISSING",
++        "product_maturity": maturity.product.value if maturity else "MISSING",
++        "ai_compiler": policy.ai_compiler.value if policy else "MISSING",
++        "agent_safety": maturity.agent_safety.value if maturity else "MISSING",
++        "validation": maturity.validation.value if maturity else "MISSING",
++        "status": status,
++    }
++    if plan_artifact_exists is not None:
++        context["plan_artifact"] = "EXISTS" if plan_artifact_exists else "MISSING"
++    return context
++
++
++def _projection_requirements_met(projection_policy: Any | None, context: dict[str, str]) -> bool:
++    if projection_policy is None:
++        return False
++    for key, expected in projection_policy.requires.items():
++        actual = context.get(key, "MISSING")
++        if isinstance(expected, list):
++            if actual not in {str(item) for item in expected}:
++                return False
++        elif actual != str(expected):
++            return False
++    return True
++
++
++def _projection_allowed(
++    projection_policy: Any | None,
++    *,
++    subject: str,
++    context: dict[str, str],
++    status: str = "CURRENT",
++) -> bool:
+     return (
+-        policy is not None
+-        and maturity is not None
+-        and not _is_excluded(projection_policy, subject=policy.subject_ref)
+-        and policy.product == AuthoringExposure.ALLOWED
+-        and maturity.validation == MaturityLevel.VERIFIED
+-        and maturity.product == MaturityLevel.EXPOSED
++        not _is_excluded(projection_policy, subject=subject, status=status)
++        and _projection_requirements_met(projection_policy, context)
+     )
+ 
+ 
+-def _capability_allowed_for_ai(policy: Any, maturity: Any, projection_policy: Any) -> bool:
+-    return (
+-        policy is not None
+-        and maturity is not None
+-        and not _is_excluded(projection_policy, subject=policy.subject_ref)
+-        and policy.ai_compiler == AuthoringExposure.ALLOWED
+-        and maturity.validation == MaturityLevel.VERIFIED
+-        and maturity.agent_safety == MaturityLevel.APPROVED
++def _capability_allowed_for_product(
++    subject: str, policy: Any, maturity: Any, projection_policy: Any
++) -> bool:
++    context = _projection_requirement_context(
++        policy=policy, maturity=maturity, runtime_binding_verified=True
++    )
++    return policy is not None and maturity is not None and _projection_allowed(
++        projection_policy, subject=subject, context=context
+     )
+ 
+ 
+-def _plan_subject_allowed_for_product(
+-    subject: str, policies: dict[str, Any], maturities: dict[str, Any], projection_policy: Any
+-) -> bool:
+-    policy = policies.get(subject)
+-    maturity = maturities.get(subject)
+-    return (
+-        policy is not None
+-        and maturity is not None
+-        and not _is_excluded(projection_policy, subject=subject)
+-        and policy.product == AuthoringExposure.ALLOWED
+-        and maturity.validation == MaturityLevel.VERIFIED
+-        and maturity.product == MaturityLevel.EXPOSED
++def _capability_allowed_for_ai(subject: str, policy: Any, maturity: Any, projection_policy: Any) -> bool:
++    context = _projection_requirement_context(
++        policy=policy, maturity=maturity, runtime_binding_verified=True
++    )
++    return policy is not None and maturity is not None and _projection_allowed(
++        projection_policy, subject=subject, context=context
+     )
+ 
+ 
+-def _plan_subject_allowed_for_ai(
+-    subject: str, policies: dict[str, Any], maturities: dict[str, Any], projection_policy: Any
++def _plan_subject_allowed(
++    subject: str,
++    policies: dict[str, Any],
++    maturities: dict[str, Any],
++    projection_policy: Any,
++    *,
++    plan_artifact_exists: bool,
++    dependency_bindings_verified: bool,
+ ) -> bool:
+     policy = policies.get(subject)
+     maturity = maturities.get(subject)
+-    return (
+-        policy is not None
+-        and maturity is not None
+-        and not _is_excluded(projection_policy, subject=subject)
+-        and policy.ai_compiler == AuthoringExposure.ALLOWED
+-        and maturity.validation == MaturityLevel.VERIFIED
+-        and maturity.agent_safety == MaturityLevel.APPROVED
++    context = _projection_requirement_context(
++        policy=policy,
++        maturity=maturity,
++        runtime_binding_verified=dependency_bindings_verified,
++        plan_artifact_exists=plan_artifact_exists,
++    )
++    return policy is not None and maturity is not None and _projection_allowed(
++        projection_policy, subject=subject, context=context
+     )
+ 
+ 
+@@ -1297,6 +1601,14 @@ def build_projections(
+     product_capabilities: list[dict[str, Any]] = []
+     ai_capabilities: list[dict[str, Any]] = []
+     unsupported: list[dict[str, Any]] = []
++    bound_runtime_keys = {
++        (
++            item.runtime_capability.kind,
++            item.runtime_capability.id,
++            item.runtime_capability.version,
++        )
++        for item in registry.runtime_bindings
++    }
+ 
+     for binding in sorted(registry.runtime_bindings, key=lambda item: item.runtime_capability.id):
+         subject = (
+@@ -1314,7 +1626,7 @@ def build_projections(
+             "implements": binding.implements,
+             "runtime_contract": _runtime_contract_for_binding(runtime_manifest, binding),
+         }
+-        if policy and maturity and _capability_allowed_for_product(policy, maturity, product_policy):
++        if _capability_allowed_for_product(subject, policy, maturity, product_policy):
+             product_capabilities.append(
+                 base
+                 | {
+@@ -1333,7 +1645,7 @@ def build_projections(
+                     "validation_maturity": maturity.validation.value if maturity else "MISSING",
+                 }
+             )
+-        if policy and maturity and _capability_allowed_for_ai(policy, maturity, ai_policy):
++        if _capability_allowed_for_ai(subject, policy, maturity, ai_policy):
+             ai_capabilities.append(
+                 base
+                 | {
+@@ -1366,6 +1678,11 @@ def build_projections(
+     recipe_items: list[dict[str, Any]] = []
+     for recipe in registry.recipe_definitions:
+         artifact = next(item for item in registry.plan_artifacts if item.id == recipe.plan_artifact_ref)
++        plan_integrity = plan_index["artifacts"].get(artifact.id, {})
++        dependency_bindings_verified = all(
++            (item["kind"], item["name"], item["version"]) in bound_runtime_keys
++            for item in plan_integrity.get("capability_dependencies", [])
++        )
+         subject = f"recipe:{recipe.recipe_id}:{recipe.recipe_version}"
+         recipe_items.append(
+             {
+@@ -1373,9 +1690,12 @@ def build_projections(
+                 "version": recipe.recipe_version,
+                 "subject_ref": subject,
+                 "mapping_id": recipe.id,
++                "concept_ref": recipe.concept_ref,
+                 "plan_artifact_id": artifact.id,
+                 "exact_typed_plan_ref": artifact.exact_typed_plan_ref,
+-                "plan_integrity": plan_index["artifacts"].get(artifact.id),
++                "plan_integrity": plan_integrity,
++                "plan_artifact_exists": bool(plan_integrity.get("exists")),
++                "dependency_bindings_verified": dependency_bindings_verified,
+                 "dependencies": recipe.dependency_refs,
+                 "profiles": recipe.profile_refs,
+                 "claim_contract_ref": recipe.claim_contract_ref,
+@@ -1386,30 +1706,61 @@ def build_projections(
+     product_recipes = [
+         item
+         for item in recipe_items
+-        if _plan_subject_allowed_for_product(item["subject_ref"], policies, maturities, product_policy)
++        if _plan_subject_allowed(
++            item["subject_ref"],
++            policies,
++            maturities,
++            product_policy,
++            plan_artifact_exists=item["plan_artifact_exists"],
++            dependency_bindings_verified=item["dependency_bindings_verified"],
++        )
+     ]
+     ai_recipes = [
+         item
+         for item in recipe_items
+-        if _plan_subject_allowed_for_ai(item["subject_ref"], policies, maturities, ai_policy)
++        if _plan_subject_allowed(
++            item["subject_ref"],
++            policies,
++            maturities,
++            ai_policy,
++            plan_artifact_exists=item["plan_artifact_exists"],
++            dependency_bindings_verified=item["dependency_bindings_verified"],
++        )
+     ]
+     recipe_library_items = [
+         item
+         for item in recipe_items
+-        if not _is_excluded(recipe_policy, subject=item["subject_ref"])
++        if _projection_allowed(
++            recipe_policy,
++            subject=item["subject_ref"],
++            context=_projection_requirement_context(
++                policy=policies.get(item["subject_ref"]),
++                maturity=maturities.get(item["subject_ref"]),
++                plan_artifact_exists=item["plan_artifact_exists"],
++                runtime_binding_verified=item["dependency_bindings_verified"],
++            ),
++        )
+     ]
+ 
+     composition_items = []
+     for item in registry.composition_instances:
+         subject = f"composition:{item.id}"
++        plan_integrity = plan_index["artifacts"].get(item.plan_artifact_ref, {})
++        dependency_bindings_verified = all(
++            (dep["kind"], dep["name"], dep["version"]) in bound_runtime_keys
++            for dep in plan_integrity.get("capability_dependencies", [])
++        )
+         composition_items.append(
+             {
+                 "id": item.id,
+                 "subject_ref": subject,
++                "concept_ref": item.concept_ref,
+                 "plan_artifact_ref": item.plan_artifact_ref,
+                 "origin": item.origin,
+                 "promotion_status": item.promotion_status,
+-                "plan_integrity": plan_index["artifacts"].get(item.plan_artifact_ref),
++                "plan_integrity": plan_integrity,
++                "plan_artifact_exists": bool(plan_integrity.get("exists")),
++                "dependency_bindings_verified": dependency_bindings_verified,
+                 "claim_contract_ref": item.claim_contract_ref,
+                 "evidence_contract_ref": item.evidence_contract_ref,
+             }
+@@ -1418,17 +1769,40 @@ def build_projections(
+     product_compositions = [
+         item
+         for item in composition_items
+-        if _plan_subject_allowed_for_product(item["subject_ref"], policies, maturities, product_policy)
++        if _plan_subject_allowed(
++            item["subject_ref"],
++            policies,
++            maturities,
++            product_policy,
++            plan_artifact_exists=item["plan_artifact_exists"],
++            dependency_bindings_verified=item["dependency_bindings_verified"],
++        )
+     ]
+     ai_compositions = [
+         item
+         for item in composition_items
+-        if _plan_subject_allowed_for_ai(item["subject_ref"], policies, maturities, ai_policy)
++        if _plan_subject_allowed(
++            item["subject_ref"],
++            policies,
++            maturities,
++            ai_policy,
++            plan_artifact_exists=item["plan_artifact_exists"],
++            dependency_bindings_verified=item["dependency_bindings_verified"],
++        )
+     ]
+     recipe_library_compositions = [
+         item
+         for item in composition_items
+-        if not _is_excluded(recipe_policy, subject=item["subject_ref"])
++        if _projection_allowed(
++            recipe_policy,
++            subject=item["subject_ref"],
++            context=_projection_requirement_context(
++                policy=policies.get(item["subject_ref"]),
++                maturity=maturities.get(item["subject_ref"]),
++                plan_artifact_exists=item["plan_artifact_exists"],
++                runtime_binding_verified=item["dependency_bindings_verified"],
++            ),
++        )
+     ]
+ 
+     atlas_summary = {
+@@ -1443,7 +1817,16 @@ def build_projections(
+                 "exposure_default": item.exposure_default.value,
+             }
+             for item in registry.atlas_entries
+-            if not _is_excluded(research_policy, subject=item.id, status=item.status.value)
++            if _projection_allowed(
++                research_policy,
++                subject=item.id,
++                status=item.status.value,
++                context=_projection_requirement_context(
++                    policy=None,
++                    maturity=None,
++                    status=item.status.value,
++                ),
++            )
+         ],
+     }
+ 
+@@ -1515,36 +1898,146 @@ def validate_projection_identities(
+     return findings
+ 
+ 
+-def _projection_identities(projection: dict[str, Any], *, include_operators: bool = False) -> dict[str, str]:
++def _canonical_fields(fields: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    return sorted(
++        [
++            {
++                "name": item.get("name"),
++                "payload_type": item.get("payload_type"),
++                "temporal_type": item.get("temporal_type"),
++                "unit": item.get("unit", "none"),
++                "cardinality": item.get("cardinality"),
++                "entity_scope": item.get("entity_scope"),
++                "required": item.get("required", False),
++                "missing_data_semantics": item.get("missing_data_semantics"),
++                "evidence_fields": sorted(item.get("evidence_fields", [])),
++                "allowed_values": item.get("allowed_values"),
++            }
++            for item in fields
++        ],
++        key=lambda item: str(item.get("name")),
++    )
++
++
++def _canonical_capability_contract(item: dict[str, Any]) -> dict[str, Any]:
++    contract = item.get("runtime_contract") if isinstance(item.get("runtime_contract"), dict) else item
++    return {
++        "kind": contract.get("kind") or item.get("kind"),
++        "name": contract.get("name") or item.get("id") or item.get("name"),
++        "version": contract.get("version") or item.get("version"),
++        "inputs": _canonical_fields(contract.get("inputs", [])),
++        "outputs": _canonical_fields(contract.get("outputs", [])),
++        "parameters": _canonical_fields(contract.get("parameters", [])),
++        "evidence_fields": sorted(contract.get("evidence_fields", [])),
++        "missing_data_semantics": contract.get("missing_data_semantics") or "unknown",
++        "limitations": sorted(contract.get("limitations", [])),
++        "purpose": contract.get("purpose"),
++    }
++
++
++def _canonical_operator_contract(item: dict[str, Any], runtime_operator: dict[str, Any] | None = None) -> dict[str, Any]:
++    source = runtime_operator or item
++    return {
++        "name": source.get("name") or item.get("id"),
++        "version": source.get("version") or item.get("version"),
++        "input_payload_types": sorted(source.get("input_payload_types", [])),
++        "input_temporal_types": sorted(source.get("input_temporal_types", [])),
++        "compare_payload_types": sorted(source.get("compare_payload_types", [])),
++        "compare_required": bool(source.get("compare_required", False)),
++        "compare_unit_must_match": bool(source.get("compare_unit_must_match", False)),
++        "duration_required": bool(source.get("duration_required", False)),
++        "output_payload_type": source.get("output_payload_type"),
++        "output_temporal_type": source.get("output_temporal_type"),
++        "output_unit": source.get("output_unit", "none"),
++    }
++
++
++def _canonical_recipe_contract(item: dict[str, Any]) -> dict[str, Any]:
++    integrity = item.get("plan_integrity", item)
++    authoring_contract = item.get("authoring_contract", {})
++    authorable_nodes = authoring_contract.get("authorable_nodes", [])
++    capability_dependencies = integrity.get("capability_dependencies")
++    if capability_dependencies is None:
++        capability_dependencies = [
++            {
++                "kind": node.get("kind"),
++                "name": node.get("catalog_ref"),
++                "version": node.get("version"),
++            }
++            for node in authorable_nodes
++        ]
++    operator_dependencies = integrity.get("operator_dependencies", [])
++    if not operator_dependencies:
++        operator_dependencies = [
++            {"name": ref, "version": "1.0.0"}
++            for ref in item.get("operator_refs", [])
++        ]
++    parameter_defaults = integrity.get("parameter_defaults", {})
++    if not parameter_defaults:
++        parameter_defaults = {
++            parameter.get("name"): _typed_value_payload(parameter.get("default"))
++            for parameter in item.get("parameters", [])
++            if isinstance(parameter, dict) and "name" in parameter
++        }
++    return {
++        "recipe_id": item.get("id") or item.get("recipe_id"),
++        "recipe_version": item.get("version") or item.get("recipe_version"),
++        "capability_dependencies": sorted(
++            capability_dependencies,
++            key=lambda dep: (str(dep.get("kind")), str(dep.get("name")), str(dep.get("version"))),
++        ),
++        "operator_dependencies": sorted(
++            operator_dependencies,
++            key=lambda dep: (str(dep.get("name")), str(dep.get("version"))),
++        ),
++        "parameter_defaults": parameter_defaults,
++        "normalized_plan_hash": integrity.get("normalized_plan_hash")
++        or item.get("normalized_plan_hash")
++        or item.get("source_sha256"),
++    }
++
++
++def _projection_identities(
++    projection: dict[str, Any],
++    *,
++    include_operators: bool = False,
++    runtime_manifest: dict[str, Any] | None = None,
++) -> dict[str, str]:
+     identities: dict[str, str] = {}
++    runtime_operators = _operator_by_key(runtime_manifest or {})
+     for item in projection.get("capabilities", []):
+         subject = f"runtime:{item['kind']}:{item['id']}:{item['version']}"
+-        identities[subject] = stable_hash(item)
++        identities[subject] = stable_hash(_canonical_capability_contract(item))
+     for item in projection.get("recipes", []):
+         subject = f"recipe:{item['id']}:{item['version']}"
+-        identities[subject] = stable_hash(item)
++        identities[subject] = stable_hash(_canonical_recipe_contract(item))
+     for item in projection.get("validated_compositions", []):
+         subject = f"composition:{item['id']}"
+-        identities[subject] = stable_hash(item)
++        identities[subject] = stable_hash(_canonical_recipe_contract(item))
+     if include_operators:
+         for item in projection.get("operators", []):
+             subject = f"operator:{item['id']}:{item['version']}"
+-            identities[subject] = stable_hash(item)
++            identities[subject] = stable_hash(
++                _canonical_operator_contract(
++                    item, runtime_operators.get((item["id"], item["version"]))
++                )
++            )
+     return identities
+ 
+ 
+-def _baseline_identities(runtime_manifest: dict[str, Any]) -> dict[str, dict[str, str]]:
++def _baseline_identities(runtime_manifest: dict[str, Any]) -> dict[str, Any]:
+     product: dict[str, str] = {}
+     ai: dict[str, str] = {}
++    sources = baseline_artifact_manifest()
+     capability_catalog = _load_json_if_exists(CAPABILITY_CATALOG_BASELINE_PATH)
+     if isinstance(capability_catalog, dict):
+         for key in ("primitives", "relations"):
+             for item in capability_catalog.get(key, []):
+                 subject = f"runtime:{item['kind']}:{item['name']}:{item['version']}"
+-                product[subject] = stable_hash(item)
++                product[subject] = stable_hash(_canonical_capability_contract(item))
+         for item in runtime_manifest.get("recipes", []):
+             subject = f"recipe:{item['recipe_id']}:{item['recipe_version']}"
+-            product[subject] = stable_hash(item)
++            product[subject] = stable_hash(_canonical_recipe_contract(item))
+ 
+     knowledge_pack = _load_json_if_exists(KNOWLEDGE_PACK_BASELINE_PATH)
+     if isinstance(knowledge_pack, dict):
+@@ -1552,15 +2045,15 @@ def _baseline_identities(runtime_manifest: dict[str, Any]) -> dict[str, dict[str
+             for item in knowledge_pack.get(key, []):
+                 if item.get("agent_authorable") is True:
+                     subject = f"runtime:{item['kind']}:{item['name']}:{item['version']}"
+-                    ai[subject] = stable_hash(item)
++                    ai[subject] = stable_hash(_canonical_capability_contract(item))
+         for item in knowledge_pack.get("operators", []):
+             subject = f"operator:{item['name']}:{item['version']}"
+-            ai[subject] = stable_hash(item)
++            ai[subject] = stable_hash(_canonical_operator_contract(item))
+         for item in knowledge_pack.get("recipes", []):
+             subject = f"recipe:{item['recipe_id']}:{item['recipe_version']}"
+-            ai[subject] = stable_hash(item)
++            ai[subject] = stable_hash(_canonical_recipe_contract(item))
+ 
+-    return {"product": product, "ai": ai}
++    return {"product": product, "ai": ai, "sources": sources}
+ 
+ 
+ def _identity_diff(baseline: dict[str, str], projection: dict[str, str]) -> dict[str, Any]:
+@@ -1570,9 +2063,10 @@ def _identity_diff(baseline: dict[str, str], projection: dict[str, str]) -> dict
+     return {
+         "added": sorted(projection_keys - baseline_keys),
+         "removed": sorted(baseline_keys - projection_keys),
+-        "changed": sorted(key for key in common if baseline[key] != projection[key]),
++        "contract_changed": sorted(key for key in common if baseline[key] != projection[key]),
+         "baseline_count": len(baseline_keys),
+         "projection_count": len(projection_keys),
++        "shared_count": len(common),
+     }
+ 
+ 
+@@ -1581,15 +2075,60 @@ def build_projection_differences(
+ ) -> dict[str, Any]:
+     baselines = _baseline_identities(runtime_manifest)
+     return {
++        "baseline_sources": baselines["sources"],
+         "product": _identity_diff(
+-            baselines["product"], _projection_identities(projections["product"])
++            baselines["product"],
++            _projection_identities(projections["product"], runtime_manifest=runtime_manifest),
+         ),
+         "ai": _identity_diff(
+-            baselines["ai"], _projection_identities(projections["ai"], include_operators=True)
++            baselines["ai"],
++            _projection_identities(
++                projections["ai"], include_operators=True, runtime_manifest=runtime_manifest
++            ),
+         ),
+     }
+ 
+ 
++def validate_projection_parity(
++    registry: SemanticRegistry,
++    runtime_manifest: dict[str, Any],
++    projections: dict[str, dict[str, Any]],
++) -> list[ValidationFinding]:
++    findings: list[ValidationFinding] = []
++    baseline_sources = baseline_artifact_manifest()
++    for source_name, source in baseline_sources.items():
++        if source_name == "baseline_artifact_revision":
++            continue
++        if not source.get("exists"):
++            findings.append(
++                _finding(
++                    "projection_baseline_missing",
++                    f"Required parity baseline {source_name} is missing at {source.get('path')}.",
++                    f"baselines.{source_name}",
++                )
++            )
++    if findings:
++        return findings
++
++    policy_by_target = {policy.target.value: policy for policy in registry.projection_policies}
++    differences = build_projection_differences(runtime_manifest, projections)
++    for target in ("product", "ai"):
++        diff = differences[target]
++        accepted = policy_by_target.get(target).accepted_differences if policy_by_target.get(target) else {}
++        for key in ("added", "removed", "contract_changed"):
++            allowed = set(accepted.get(key, []))
++            unexpected = sorted(set(diff.get(key, [])) - allowed)
++            if unexpected:
++                findings.append(
++                    _finding(
++                        "projection_parity_unapproved_difference",
++                        f"{target} projection has unapproved {key}: {unexpected}.",
++                        f"projection_policies.{target}.accepted_differences.{key}",
++                    )
++                )
++    return findings
++
++
+ def _binding_path_for_capability(
+     registry: SemanticRegistry,
+     capability: dict[str, str],
+@@ -1849,19 +2388,33 @@ def generate_scp0_artifacts(
+     findings = validate_registry(registry, runtime_manifest, lock)
+     projections = build_projections(registry, runtime_manifest, lock)
+     findings.extend(validate_projection_identities(projections, lock))
++    findings.extend(validate_projection_parity(registry, runtime_manifest, projections))
+     report = build_parity_report(registry, runtime_manifest, lock, findings, projections)
+ 
+     if write:
+-        _write_json(SCHEMA_PATH, SemanticRegistry.model_json_schema())
+-        _write_json(output_root / "runtime-manifest.json", runtime_manifest)
+-        _write_json(output_root / "plan-artifact-index.json", plan_index)
+-        _write_json(LOCK_PATH, lock.model_dump(mode="json"))
+-        _write_json(output_root / "product-projection.json", projections["product"])
+-        _write_json(output_root / "ai-projection.json", projections["ai"])
+-        _write_json(output_root / "recipe-library-projection.json", projections["recipe_library"])
+-        _write_json(output_root / "unsupported-capability-projection.json", projections["unsupported"])
+-        _write_json(output_root / "research-atlas-projection.json", projections["research_atlas"])
+-        _write_json(output_root / "semantic-parity-report.json", report.model_dump(mode="json"))
++        if report.status == "PASS":
++            write_targets = {
++                SCHEMA_PATH: SemanticRegistry.model_json_schema(),
++                output_root / "runtime-manifest.json": runtime_manifest,
++                output_root / "plan-artifact-index.json": plan_index,
++                LOCK_PATH: lock.model_dump(mode="json"),
++                output_root / "product-projection.json": projections["product"],
++                output_root / "ai-projection.json": projections["ai"],
++                output_root / "recipe-library-projection.json": projections["recipe_library"],
++                output_root / "unsupported-capability-projection.json": projections["unsupported"],
++                output_root / "research-atlas-projection.json": projections["research_atlas"],
++                output_root / "semantic-parity-report.json": report.model_dump(mode="json"),
++            }
++            with tempfile.TemporaryDirectory(prefix="scp0-generate-") as tmp_name:
++                tmp_root = Path(tmp_name)
++                staged: list[tuple[Path, Path]] = []
++                for target, payload in write_targets.items():
++                    staged_path = tmp_root / target
++                    _write_json(staged_path, payload)
++                    staged.append((staged_path, target))
++                for staged_path, target in staged:
++                    target.parent.mkdir(parents=True, exist_ok=True)
++                    shutil.move(str(staged_path), str(target))
+     return registry, runtime_manifest, lock, report
+ 
+ 
+diff --git a/src/tqe/semantic_registry/models.py b/src/tqe/semantic_registry/models.py
+index 143e01c..3b1fe0f 100644
+--- a/src/tqe/semantic_registry/models.py
++++ b/src/tqe/semantic_registry/models.py
+@@ -165,6 +165,10 @@ class RuntimeBinding(CommonEnvelope):
+     implements: list[str] = Field(min_length=1)
+     conformance_status: ConformanceStatus
+     known_deviations: list[str] = Field(default_factory=list)
++    field_mapping: dict[str, str] = Field(default_factory=dict)
++    parameter_mapping: dict[str, str] = Field(default_factory=dict)
++    uncovered_runtime_fields: list[str] = Field(default_factory=list)
++    uncovered_semantic_fields: list[str] = Field(default_factory=list)
+ 
+ 
+ class OperatorParameter(StrictModel):
+@@ -217,6 +221,7 @@ class ProjectionPolicy(CommonEnvelope):
+     target: ProjectionTarget
+     requires: dict[str, Any] = Field(default_factory=dict)
+     excludes: list[str] = Field(default_factory=list)
++    accepted_differences: dict[str, list[str]] = Field(default_factory=dict)
+ 
+ 
+ class MaturityAssessment(CommonEnvelope):
+@@ -233,6 +238,7 @@ class RecipeDefinitionMapping(CommonEnvelope):
+     kind: Literal[ObjectKind.RECIPE_DEFINITION] = ObjectKind.RECIPE_DEFINITION
+     recipe_id: str
+     recipe_version: str
++    concept_ref: str
+     plan_artifact_ref: str
+     dependency_refs: list[str] = Field(default_factory=list)
+     profile_refs: list[str] = Field(default_factory=list)
+@@ -256,6 +262,7 @@ class PlanArtifact(CommonEnvelope):
+ class CompositionInstance(CommonEnvelope):
+     kind: Literal[ObjectKind.COMPOSITION_INSTANCE] = ObjectKind.COMPOSITION_INSTANCE
+     plan_artifact_ref: str
++    concept_ref: str
+     origin: Literal["AI_AUTHORED", "MANUAL_PRESET"]
+     promotion_status: Literal["VALIDATED_COMPOSITION", "EXPERIMENTAL"]
+     claim_contract_ref: str
+@@ -356,6 +363,7 @@ class RegistryLock(StrictModel):
+     registry_revision: str
+     runtime_manifest_revision: str
+     plan_artifact_revision: str
++    baseline_artifact_revision: str
+     generator_version: str
+     product_projection_policy: str
+     ai_projection_policy: str
+diff --git a/tests/test_scp0_semantic_registry.py b/tests/test_scp0_semantic_registry.py
+index ee5205d..8d6aad5 100644
+--- a/tests/test_scp0_semantic_registry.py
++++ b/tests/test_scp0_semantic_registry.py
+@@ -6,6 +6,7 @@ import tempfile
+ import unittest
+ from pathlib import Path
+ 
++from tqe.semantic_registry import generate as scpgen
+ from tqe.semantic_registry.generate import (
+     build_plan_artifact_index,
+     build_projections,
+@@ -13,6 +14,7 @@ from tqe.semantic_registry.generate import (
+     generate_runtime_manifest,
+     load_registry,
+     make_registry_lock,
++    validate_projection_parity,
+     validate_projection_identities,
+     validate_registry,
+ )
+@@ -181,6 +183,106 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
+ 
+         self.assertNotIn("controlled_pass_episode", product_ids)
+ 
++    def test_projection_policy_requires_value_changes_projection(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        for policy in registry.projection_policies:
++            if policy.target.value == "product":
++                policy.requires["product_maturity"] = "NOT_EXPOSED"
++        lock = make_registry_lock(registry, runtime_manifest)
++
++        projections = build_projections(registry, runtime_manifest, lock)
++
++        self.assertEqual([], projections["product"]["capabilities"])
++        self.assertEqual([], projections["product"]["recipes"])
++        self.assertEqual([], projections["product"]["validated_compositions"])
++
++    def test_missing_baseline_file_fails_projection_parity(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        lock = make_registry_lock(registry, runtime_manifest)
++        projections = build_projections(registry, runtime_manifest, lock)
++        original_paths = scpgen.BASELINE_PATHS
++        original_capability_path = scpgen.CAPABILITY_CATALOG_BASELINE_PATH
++        try:
++            scpgen.CAPABILITY_CATALOG_BASELINE_PATH = Path("generated/missing-baseline.json")
++            scpgen.BASELINE_PATHS = {
++                **original_paths,
++                "capability_catalog": scpgen.CAPABILITY_CATALOG_BASELINE_PATH,
++            }
++
++            codes = finding_codes(
++                validate_projection_parity(registry, runtime_manifest, projections)
++            )
++        finally:
++            scpgen.CAPABILITY_CATALOG_BASELINE_PATH = original_capability_path
++            scpgen.BASELINE_PATHS = original_paths
++
++        self.assertIn("projection_baseline_missing", codes)
++
++    def test_canonical_product_shared_records_have_no_contract_drift(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        lock = make_registry_lock(registry, runtime_manifest)
++        projections = build_projections(registry, runtime_manifest, lock)
++
++        differences = scpgen.build_projection_differences(runtime_manifest, projections)
++
++        self.assertEqual([], differences["product"]["contract_changed"])
++        self.assertEqual(15, differences["product"]["shared_count"])
++
++    def test_unapproved_baseline_add_remove_or_contract_change_fails(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        lock = make_registry_lock(registry, runtime_manifest)
++        projections = build_projections(registry, runtime_manifest, lock)
++
++        added_projection = copy.deepcopy(projections)
++        added_projection["product"]["capabilities"].append(
++            {
++                "id": "fake_capability",
++                "version": "0.1.0",
++                "kind": "primitive",
++                "runtime_contract": {
++                    "kind": "primitive",
++                    "name": "fake_capability",
++                    "version": "0.1.0",
++                    "inputs": [],
++                    "outputs": [],
++                    "parameters": [],
++                    "evidence_fields": [],
++                    "missing_data_semantics": "unknown",
++                    "limitations": [],
++                    "purpose": "fake",
++                },
++            }
++        )
++        removed_projection = copy.deepcopy(projections)
++        removed_projection["product"]["capabilities"] = removed_projection["product"][
++            "capabilities"
++        ][1:]
++        changed_projection = copy.deepcopy(projections)
++        changed_projection["product"]["capabilities"][0]["runtime_contract"][
++            "purpose"
++        ] = "mutated purpose"
++
++        self.assertIn(
++            "projection_parity_unapproved_difference",
++            finding_codes(validate_projection_parity(registry, runtime_manifest, added_projection)),
++        )
++        self.assertIn(
++            "projection_parity_unapproved_difference",
++            finding_codes(
++                validate_projection_parity(registry, runtime_manifest, removed_projection)
++            ),
++        )
++        self.assertIn(
++            "projection_parity_unapproved_difference",
++            finding_codes(
++                validate_projection_parity(registry, runtime_manifest, changed_projection)
++            ),
++        )
++
+     def test_recipe_dependency_disagreement_fails(self) -> None:
+         registry = load_registry()
+         runtime_manifest = generate_runtime_manifest()
+@@ -194,6 +296,35 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
+ 
+         self.assertIn("recipe_dependency_mismatch", codes)
+ 
++    def test_recipe_omitting_profile_claim_or_evidence_fails(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        recipe = next(
++            item
++            for item in registry.recipe_definitions
++            if item.id == "recipe.opposite_corridor_after_shift.v1"
++        )
++        recipe.claim_contract_ref = "claim.ai_corridor_destination_composition.v1"
++        recipe.evidence_contract_ref = "evidence.ai_corridor_destination_composition.v1"
++        lock = make_registry_lock(registry, runtime_manifest)
++
++        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
++
++        self.assertIn("recipe_claim_omits_profile_contract", codes)
++        self.assertIn("recipe_evidence_omits_profile_contract", codes)
++
++    def test_every_recipe_and_composition_requires_top_level_concept(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        registry.recipe_definitions[0].concept_ref = "concept.missing"
++        registry.composition_instances[0].concept_ref = "concept.missing"
++        lock = make_registry_lock(registry, runtime_manifest)
++
++        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
++
++        self.assertIn("recipe_missing_concept", codes)
++        self.assertIn("composition_missing_concept", codes)
++
+     def test_plan_threshold_change_without_profile_update_changes_lock_and_fails(self) -> None:
+         registry = load_registry()
+         runtime_manifest = generate_runtime_manifest()
+@@ -219,6 +350,33 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
+ 
+         self.assertIn("profile_binding_plan_parameter_mismatch", codes)
+ 
++    def test_origin_bundle_byte_change_changes_source_artifact_hash(self) -> None:
++        registry = load_registry()
++        artifact = next(
++            item
++            for item in registry.plan_artifacts
++            if item.id == "plan.ai_corridor_destination.2026_06_23"
++        )
++        baseline = build_plan_artifact_index(registry)["artifacts"][artifact.id]
++
++        with tempfile.TemporaryDirectory() as tmp:
++            path = Path(tmp) / "n1f-origin-bundle.json"
++            path.write_text(
++                Path(artifact.exact_typed_plan_ref).read_text(encoding="utf-8") + "\n",
++                encoding="utf-8",
++            )
++            artifact.exact_typed_plan_ref = str(path)
++            changed = build_plan_artifact_index(registry)["artifacts"][artifact.id]
++
++        self.assertNotEqual(
++            baseline["source_artifact_sha256"],
++            changed["source_artifact_sha256"],
++        )
++        self.assertEqual(
++            baseline["normalized_selected_document_hash"],
++            changed["normalized_selected_document_hash"],
++        )
++
+     def test_composition_cannot_point_to_arbitrary_valid_plan_file(self) -> None:
+         registry = load_registry()
+         runtime_manifest = generate_runtime_manifest()
+@@ -232,6 +390,29 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
+ 
+         self.assertIn("composition_artifact_not_origin_bundle", codes)
+ 
++    def test_composition_with_unbound_capability_or_undefined_operator_fails(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        artifact = next(
++            item
++            for item in registry.plan_artifacts
++            if item.id == "plan.ai_corridor_destination.2026_06_23"
++        )
++        payload = json.loads(Path(artifact.exact_typed_plan_ref).read_text(encoding="utf-8"))
++        document = payload["host_augmentation"]["augmented_document"]
++        document["draft_plan"]["nodes"][0]["catalog_ref"] = "missing_capability"
++        document["draft_plan"]["nodes"][-1]["operator"]["name"] = "missing_operator"
++
++        with tempfile.TemporaryDirectory() as tmp:
++            path = Path(tmp) / "n1f-origin-bundle-mutated.json"
++            path.write_text(json.dumps(payload), encoding="utf-8")
++            artifact.exact_typed_plan_ref = str(path)
++            lock = make_registry_lock(registry, runtime_manifest)
++            codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
++
++        self.assertIn("composition_references_unbound_runtime_capability", codes)
++        self.assertIn("composition_references_unregistered_operator", codes)
++
+     def test_concept_missing_claim_contract_fails(self) -> None:
+         registry = load_registry()
+         runtime_manifest = generate_runtime_manifest()
+@@ -291,6 +472,48 @@ class SCP0SemanticRegistryTests(unittest.TestCase):
+ 
+         self.assertIn("operator_signature_mismatch", codes)
+ 
++    def test_exact_binding_missing_runtime_or_semantic_port_or_parameter_fails(self) -> None:
++        registry = load_registry()
++        runtime_manifest = generate_runtime_manifest()
++        op = next(
++            item
++            for item in registry.operationalizations
++            if item.id == "op.relation_destination_entry.v1"
++        )
++        op.outputs[0].name = "missing_runtime_output"
++        binding = next(
++            item
++            for item in registry.runtime_bindings
++            if item.id == "binding.primitive.relation_destination_entry.0_1_0"
++        )
++        del binding.parameter_mapping["episode_selection"]
++        lock = make_registry_lock(registry, runtime_manifest)
++
++        codes = finding_codes(validate_registry(registry, runtime_manifest, lock))
++
++        self.assertIn("runtime_signature_mismatch", codes)
++        self.assertIn("runtime_parameter_signature_mismatch", codes)
++
++    def test_failed_generation_leaves_last_valid_projection_untouched(self) -> None:
++        registry = load_registry()
++        registry.runtime_bindings = registry.runtime_bindings[:-1]
++        with tempfile.TemporaryDirectory() as tmp:
++            registry_path = Path(tmp) / "registry.yaml"
++            output_root = Path(tmp) / "generated"
++            output_root.mkdir()
++            product_projection = output_root / "product-projection.json"
++            product_projection.write_text('{"sentinel": true}\n', encoding="utf-8")
++            payload = registry.model_dump(mode="json", exclude_none=True)
++            payload["atlas_entries"] = []
++            registry_path.write_text(json.dumps(payload), encoding="utf-8")
++
++            _, _, _, report = generate_scp0_artifacts(
++                registry_path=registry_path, output_root=output_root, write=True
++            )
++
++            self.assertEqual("FAIL", report.status)
++            self.assertEqual('{"sentinel": true}\n', product_projection.read_text(encoding="utf-8"))
++
+     def test_pilot_paths_are_discovered_from_plan_artifacts(self) -> None:
+         registry, _, _, report = generate_scp0_artifacts(write=False)
+ 

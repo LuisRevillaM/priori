@@ -1,0 +1,136 @@
+  1710	    limit = params.integer("accepted_result_limit")
+  1711	    per_match_limit = params.integer("accepted_per_match_limit")
+  1712	
+  1713	    def try_add(candidate: dict[str, Any]) -> None:
+  1714	        if len(selected) >= limit:
+  1715	            return
+  1716	        match_id = candidate["match_id"]
+  1717	        if per_match.get(match_id, 0) >= per_match_limit:
+  1718	            return
+  1719	        if any(item["result_id"] == candidate["result_id"] for item in selected):
+  1720	            return
+  1721	        selected.append({**candidate, "proof_selected": True})
+  1722	        per_match[match_id] = per_match.get(match_id, 0) + 1
+  1723	
+  1724	    switched = [item for item in candidates if item["classification"] == "SWITCHED"]
+  1725	    non_switched = [
+  1726	        item
+  1727	        for item in candidates
+  1728	        if item["classification"] in {"RETAINED_NO_SWITCH", "LOST_BEFORE_SWITCH"}
+  1729	    ]
+  1730	    for bucket in (switched[:2], non_switched[:2], candidates):
+  1731	        for candidate in bucket:
+  1732	            try_add(candidate)
+  1733	            if len(selected) >= limit:
+  1734	                break
+  1735	    selected.sort(key=lambda item: (item["match_id"], item["period"], item["wide_entry_frame_id"]))
+  1736	    return selected
+  1737	
+  1738	
+  1739	def accepted_predicate_traces(state: PeriodState) -> list[PredicateTrace]:
+  1740	    if state.predicate_traces:
+  1741	        return state.predicate_traces
+  1742	    traces: list[PredicateTrace] = []
+  1743	    for result in state.accepted:
+  1744	        anchor = runtime_anchor_from_record(
+  1745	            state=state,
+  1746	            node_id="accepted_results",
+  1747	            output_name="result",
+  1748	            index=len(traces),
+  1749	            record=result,
+  1750	        )
+  1751	        if anchor is not None:
+  1752	            traces.extend(predicate_traces_for_anchor(state, anchor, result))
+  1753	    return traces
+  1754	
+  1755	
+  1756	def predicate_traces_from_status_records(
+  1757	    *,
+  1758	    state: PeriodState,
+  1759	    anchor: RuntimeAnchor,
+  1760	    result: dict[str, Any],
+  1761	) -> list[PredicateTrace]:
+  1762	    anchor_record = anchor.attributes
+  1763	    records = anchor_record.get("_predicate_status") or result.get("_predicate_status") or {}
+  1764	    if not isinstance(records, dict) or not records:
+  1765	        return []
+  1766	    result_id = str(result.get("result_id") or anchor.anchor_id)
+  1767	    common = {
+  1768	        "result_id": result_id,
+  1769	        "candidate_key": anchor.anchor_id,
+  1770	        "anchor_id": anchor.anchor_id,
+  1771	        "match_id": anchor.match_id,
+  1772	        "period": anchor.period,
+  1773	        "wide_entry_frame_id": int(anchor_record["wide_entry_frame_id"]),
+  1774	        "anchor_frame_id": anchor.anchor_frame_id,
+  1775	    }
+  1776	    traces: list[PredicateTrace] = []
+  1777	    for predicate_id, record in records.items():
+  1778	        if not isinstance(record, dict):
+  1779	            continue
+  1780	        source_evidence = {
+  1781	            **common,
+  1782	            **{
+  1783	                key: value
+  1784	                for key, value in dict(record.get("source_evidence") or {}).items()
+  1785	                if value is not None
+  1786	            },
+  1787	        }
+  1788	        traces.append(
+  1789	            PredicateTrace(
+  1790	                predicate_id=str(predicate_id),
+  1791	                status=record["status"],
+  1792	                value=TypedValue.model_validate(record["value"])
+  1793	                if record.get("value") is not None
+  1794	                else None,
+  1795	                threshold=TypedValue.model_validate(record["threshold"])
+  1796	                if record.get("threshold") is not None
+  1797	                else None,
+  1798	                unit=Unit(record.get("unit", Unit.NONE.value)),
+  1799	                frame_id=record.get("frame_id"),
+  1800	                window=record.get("window"),
+  1801	                source_evidence=source_evidence,
+  1802	            )
+  1803	        )
+  1804	    return traces
+  1805	
+  1806	
+  1807	def predicate_traces_for_anchor(
+  1808	    state: PeriodState,
+  1809	    anchor: RuntimeAnchor,
+  1810	    result: dict[str, Any],
+  1811	) -> list[PredicateTrace]:
+  1812	    return predicate_traces_from_status_records(
+  1813	        state=state,
+  1814	        anchor=anchor,
+  1815	        result=result,
+  1816	    )
+  1817	
+  1818	
+  1819	def missing_target_predicate_traces(
+  1820	    *,
+  1821	    bound_plan: BoundQueryPlan,
+  1822	    state: PeriodState,
+  1823	    anchor: RuntimeAnchor,
+  1824	    result: dict[str, Any],
+  1825	    existing_predicate_ids: set[str],
+  1826	) -> list[PredicateTrace]:
+  1827	    traces: list[PredicateTrace] = []
+  1828	    anchor_record = anchor.attributes
+  1829	    for node in bound_plan.nodes:
+  1830	        if not isinstance(node, BoundPredicateNode) or node.node_id in existing_predicate_ids:
+  1831	            continue
+  1832	        traces.append(
+  1833	            PredicateTrace(
+  1834	                predicate_id=node.node_id,
+  1835	                status="UNKNOWN",
+  1836	                value=None,
+  1837	                threshold=node.compare if isinstance(node.compare, TypedValue) else None,
+  1838	                unit=node.output.unit,
+  1839	                frame_id=anchor.anchor_frame_id,
+  1840	                source_evidence={
+  1841	                    "reason": "source_output_unavailable_for_target_candidate",
+  1842	                    "result_id": str(result.get("result_id") or anchor.anchor_id),
+  1843	                    "candidate_key": anchor.anchor_id,
+  1844	                    "anchor_id": anchor.anchor_id,
+  1845	                    "match_id": anchor.match_id,

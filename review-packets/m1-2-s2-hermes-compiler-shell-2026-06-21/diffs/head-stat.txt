@@ -1,0 +1,12 @@
+da731d7 Add M1.2 Hermes compiler shell
+ Makefile                                           |   5 +-
+ delivery/m1.2/SPEC.md                              |  39 +++
+ delivery/m1.2/status.yaml                          |  19 +-
+ .../learnings/2026-06-21-m1-2-s2-compiler-shell.md |  19 ++
+ .../2026-06-21-m1-2-s2-unblock-external-review.md  |  36 +++
+ generated/capability-context.json                  |   2 +-
+ src/tqe/verification/m1_2.py                       |   8 +-
+ src/tqe/verification/m1_2_gate_s2.py               | 323 ++++++++++++++++++
+ src/tqe/workshop/hermes_s2.py                      | 360 +++++++++++++++++++++
+ src/tqe/workshop/m1_2.py                           |  22 +-
+ 10 files changed, 818 insertions(+), 15 deletions(-)

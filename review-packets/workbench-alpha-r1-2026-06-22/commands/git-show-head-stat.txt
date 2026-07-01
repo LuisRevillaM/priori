@@ -1,0 +1,18 @@
+87b2441 Harden Workbench Alpha R1 acceptance
+ apps/workbench-alpha/package-lock.json             |  590 ++++++++++
+ apps/workbench-alpha/package.json                  |   12 +-
+ apps/workbench-alpha/src/App.tsx                   |  106 +-
+ apps/workbench-alpha/src/PitchCanvas.tsx           |   28 +-
+ apps/workbench-alpha/src/api.ts                    |   44 +-
+ .../workbench-alpha/src/generated/api-schemas.json | 1146 +++++++++++++++++++
+ apps/workbench-alpha/src/generated/api-types.ts    | 1160 ++++++++++++++++++++
+ apps/workbench-alpha/src/pitchGeometry.ts          |   50 +
+ apps/workbench-alpha/src/playback.ts               |   31 +
+ apps/workbench-alpha/src/styles.css                |   25 +-
+ apps/workbench-alpha/src/types.ts                  |    1 -
+ apps/workbench-alpha/tests/geometry.test.ts        |   44 +
+ apps/workbench-alpha/tests/playback.test.ts        |   38 +
+ apps/workbench-alpha/tests/workbench-alpha.spec.ts |   60 +-
+ scripts/workbench_alpha/generate_contracts.py      |   47 +
+ src/tqe/workshop/app_service.py                    |  214 +++-
+ 16 files changed, 3532 insertions(+), 64 deletions(-)

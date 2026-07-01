@@ -1,0 +1,12 @@
+8d68e3d (HEAD -> codex/m1-1-s1-ir-binder) Add final M1.1S architecture proof
+c44055b Verify alias-based evidence projection
+f7b64ba Add second generic corridor plan
+d6f82f4 Implement S4 review corrections
+e5f6618 Implement M1.1S S4 rule-driven emission
+108f107 Unblock S4 with generic plan helper
+4a351fb Implement M1.1S S3R4 temporal correctness
+d4e34d3 Implement M1.1S S3R3 generic temporal profile
+0ae27e1 Strengthen M1.1S S3R after external rejection
+9febb97 (origin/main, origin/codex/m1-1-s1-ir-binder, origin/HEAD, main) Implement M1.1S Gate S3R anchor contract
+e2ccab6 Implement M1.1S Gate S3 anchor trace core
+8acefee Implement M1.1S Gate S2 node execution contract

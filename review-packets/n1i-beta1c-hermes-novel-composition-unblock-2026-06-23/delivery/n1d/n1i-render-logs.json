@@ -1,0 +1,328 @@
+{
+  "ok": true,
+  "command": "logs",
+  "config_path": "/Users/luisrevilla/Documents/priori/.codex/render-target.json",
+  "config_found": true,
+  "env_bootstrap_loaded": true,
+  "env_bootstrap_path": "/Users/luisrevilla/.swapgraph-render.env",
+  "owner_id": "tea-d0igqcidbo4c73eckab0",
+  "resource": "srv-d8skfoe7r5hc73fkn9d0",
+  "logs_count": 30,
+  "has_more": false,
+  "next_start_time": "2026-06-23T05:39:12.204Z",
+  "next_end_time": "2026-06-23T05:55:48.145241027Z",
+  "logs": [
+    {
+      "id": "d8t21c4m0tmc73bq11mg",
+      "timestamp": "2026-06-23T05:55:48.145241027Z",
+      "message": "\u001b[0;34m\u001b[1m==> \u001b[0m\u001b[1mDeploying...\u001b[0m",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "type": "app"
+      }
+    },
+    {
+      "id": "d8t21c4m0tmc73bq11m0",
+      "timestamp": "2026-06-23T05:55:48.203877101Z",
+      "message": "\u001b[0;34m\u001b[1m==> \u001b[0m\u001b[1mSetting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance\u001b[0m",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "type": "app"
+      }
+    },
+    {
+      "id": "0d50ebdd-d128-4250-ad04-43748a20b351",
+      "timestamp": "2026-06-23T05:56:27.243785052Z",
+      "message": "Demo data already satisfies manifest.",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "71eb30dc-4269-4680-bb8d-69d67ff19339",
+      "timestamp": "2026-06-23T05:56:27.299022956Z",
+      "message": "hermes_codex_auth_status=present",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "988f73cf-3187-4e87-83b3-12b862e41902",
+      "timestamp": "2026-06-23T05:56:27.303116059Z",
+      "message": "hermes_binary_status=present",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "77c228c8-cef6-44a5-aa3b-ea5819804403",
+      "timestamp": "2026-06-23T05:56:28.200921136Z",
+      "message": "hermes_version=Hermes Agent v0.17.0 (2026.6.19) · upstream 5937b951",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "4181e498-3a97-458e-b695-d27fad9a7e2a",
+      "timestamp": "2026-06-23T05:56:28.200947118Z",
+      "message": "hermes_version=Project: /opt/hermes-agent",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "4687c455-02b8-461e-b17f-3f383da98e53",
+      "timestamp": "2026-06-23T05:56:28.200951099Z",
+      "message": "hermes_version=Python: 3.12.13",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "959a2975-03bf-447c-921f-ea9b17cc930e",
+      "timestamp": "2026-06-23T05:56:28.200953879Z",
+      "message": "hermes_version=OpenAI SDK: 2.24.0",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "e8205ebb-4e93-4e5d-b31d-ba5a461377a4",
+      "timestamp": "2026-06-23T05:56:28.200956729Z",
+      "message": "hermes_version=Update available: 49 commits behind — run 'hermes update'",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "fd3a56fa-b9e8-43e6-9a24-7eb740b5ebc2",
+      "timestamp": "2026-06-23T05:56:28.201057458Z",
+      "message": "codex_auth_status=present",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "dfab0625-cd3c-4e0f-b67c-ce37b400d653",
+      "timestamp": "2026-06-23T05:56:28.201068579Z",
+      "message": "hermes_auth_status=present",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "86304db4-4eb1-4712-a685-e2cbc13b24a4",
+      "timestamp": "2026-06-23T05:56:29.206682667Z",
+      "message": "Prewarming execution cache for ball_side_block_shift_v1...",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "30e7d0de-cf29-41dc-8530-72038d41ce9d",
+      "timestamp": "2026-06-23T05:56:29.32116821Z",
+      "message": "Prewarmed execution cache for ball_side_block_shift_v1: cache_status=HIT results=180 elapsed_ms=114",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "d0f1190c-710b-4711-b7aa-6ddb38c02bb1",
+      "timestamp": "2026-06-23T05:56:29.321195483Z",
+      "message": "Prewarming execution cache for possession_corridor_availability_v1...",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "7235091f-38bb-402c-b081-53db410a9230",
+      "timestamp": "2026-06-23T05:56:29.343300291Z",
+      "message": "Prewarmed execution cache for possession_corridor_availability_v1: cache_status=HIT results=64 elapsed_ms=22",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "e2382aa7-3f71-4ee4-a9ad-dfc9573afea8",
+      "timestamp": "2026-06-23T05:56:29.34501614Z",
+      "message": "Workbench Alpha host service: http://0.0.0.0:10000",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "1261bb2f-51a5-405f-bf75-0b5658c6a6b7",
+      "timestamp": "2026-06-23T05:56:29.345029351Z",
+      "message": "Static root: /app/apps/workbench-alpha/dist",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "112a3d88-899a-45b2-a550-0df161519189",
+      "timestamp": "2026-06-23T05:56:29.345033312Z",
+      "message": "Output root: /var/data/runtime",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "d8t21c4m0tmc73bq11lg",
+      "timestamp": "2026-06-23T05:56:32.513453575Z",
+      "message": "\u001b[0;32m\u001b[1m==> \u001b[0m\u001b[1mYour service is live 🎉\u001b[0m",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "type": "app"
+      }
+    },
+    {
+      "id": "d8t21c4m0tmc73bq11l0",
+      "timestamp": "2026-06-23T05:56:32.638603347Z",
+      "message": "\u001b[0;32m\u001b[1m==> \u001b[0m\u001b[1m\u001b[0m",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "type": "app"
+      }
+    },
+    {
+      "id": "d8t21c4m0tmc73bq11kg",
+      "timestamp": "2026-06-23T05:56:32.641325637Z",
+      "message": "\u001b[0;32m\u001b[1m==> \u001b[0m\u001b[1m///////////////////////////////////////////////////////////\u001b[0m",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "type": "app"
+      }
+    },
+    {
+      "id": "d8t21c4m0tmc73bq11k0",
+      "timestamp": "2026-06-23T05:56:32.643547579Z",
+      "message": "\u001b[0;32m\u001b[1m==> \u001b[0m\u001b[1m\u001b[0m",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "type": "app"
+      }
+    },
+    {
+      "id": "d8t21c4m0tmc73bq11jg",
+      "timestamp": "2026-06-23T05:56:32.645576347Z",
+      "message": "\u001b[0;32m\u001b[1m==> \u001b[0m\u001b[1mAvailable at your primary URL https://priori-integrated-alpha.onrender.com\u001b[0m",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "type": "app"
+      }
+    },
+    {
+      "id": "d8t21c4m0tmc73bq11j0",
+      "timestamp": "2026-06-23T05:56:32.647292588Z",
+      "message": "\u001b[0;32m\u001b[1m==> \u001b[0m\u001b[1m\u001b[0m",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "type": "app"
+      }
+    },
+    {
+      "id": "d8t21c4m0tmc73bq11ig",
+      "timestamp": "2026-06-23T05:56:32.649364927Z",
+      "message": "\u001b[0;32m\u001b[1m==> \u001b[0m\u001b[1m///////////////////////////////////////////////////////////\u001b[0m",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "type": "app"
+      }
+    },
+    {
+      "id": "6d6d03cf-d687-45e6-943f-62be6ec37a86",
+      "timestamp": "2026-06-23T05:56:46.974088016Z",
+      "message": "hermes_diagnostic={\"details\": {\"cwd\": {\"executable\": true, \"exists\": true, \"is_symlink\": false, \"path\": \"/app\"}, \"hermes\": {\"executable\": true, \"exists\": true, \"is_symlink\": true, \"path\": \"/usr/local/bin/hermes\"}, \"python\": {\"executable\": true, \"exists\": true, \"is_symlink\": true, \"path\": \"/opt/hermes-agent/venv/bin/python\"}, \"pythonpath_entries\": 3, \"subcommand\": \"probe\", \"workshop_output_root\": \"/var/data/runtime\"}, \"event\": \"subprocess_start\"}",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "d323cebd-c94b-4a5b-9714-4f5f8dc2ef33",
+      "timestamp": "2026-06-23T05:56:51.304596868Z",
+      "message": "hermes_diagnostic={\"details\": {\"returncode\": 0, \"stderr_prefix\": \"\", \"stdout_prefix\": \"{\\\"discovered_tool_names\\\": [\\\"mcp_priori_tactical_describe_capability\\\", \\\"mcp_priori_tactical_inspect_non_match\\\", \\\"mcp_priori_tactical_inspect_result\\\", \\\"mcp_priori_tactical_list_capabilities\\\", \\\"mcp_priori_tactical_retrieve_replay_window\\\", \\\"mcp\", \"subcommand\": \"probe\"}, \"event\": \"subprocess_complete\"}",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "9b4495db-6a0d-4b0e-920b-2af0149e7b07",
+      "timestamp": "2026-06-23T05:56:51.312455197Z",
+      "message": "hermes_diagnostic={\"details\": {\"cwd\": {\"executable\": true, \"exists\": true, \"is_symlink\": false, \"path\": \"/app\"}, \"hermes\": {\"executable\": true, \"exists\": true, \"is_symlink\": true, \"path\": \"/usr/local/bin/hermes\"}, \"python\": {\"executable\": true, \"exists\": true, \"is_symlink\": true, \"path\": \"/opt/hermes-agent/venv/bin/python\"}, \"pythonpath_entries\": 3, \"subcommand\": \"interpret\", \"workshop_output_root\": \"/var/data/runtime\"}, \"event\": \"subprocess_start\"}",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    },
+    {
+      "id": "34882e91-4147-444a-8b40-ccd53e8c1eec",
+      "timestamp": "2026-06-23T05:58:22.75361239Z",
+      "message": "hermes_diagnostic={\"details\": {\"returncode\": 0, \"stderr_prefix\": \"\", \"stdout_prefix\": \"{\\\"exit_code\\\": 0, \\\"ok\\\": true, \\\"stderr\\\": \\\"\\\", \\\"stdout\\\": \\\"{\\\\\\\"outcome\\\\\\\":\\\\\\\"draft\\\\\\\",\\\\\\\"recipe_id\\\\\\\":\\\\\\\"possession_corridor_destination_entry_v1\\\\\\\",\\\\\\\"draft_plan_id\\\\\\\":\\\\\\\"draft_9210ff1719cb4304\\\\\\\",\\\\\\\"bound_plan_id\\\\\\\":\\\\\\\"bound_298ccca819a46bdf\\\\\\\",\\\\\\\"bound_plan_h\", \"subcommand\": \"interpret\"}, \"event\": \"subprocess_complete\"}",
+      "labels": {
+        "resource": "srv-d8skfoe7r5hc73fkn9d0",
+        "instance": "srv-d8skfoe7r5hc73fkn9d0-bd665",
+        "level": "info",
+        "type": "app"
+      }
+    }
+  ]
+}

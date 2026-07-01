@@ -1,0 +1,21 @@
+6c6a5d8 Harden SCP-0 projection parity integrity
+ delivery/ledger.jsonl                              |    1 +
+ delivery/scp-0/SPEC.md                             |   30 +-
+ delivery/scp-0/progress.md                         |    3 +-
+ delivery/scp-0/status.yaml                         |   30 +-
+ .../2026-06-23-scp-0-semantic-registry.md          |   23 +
+ generated/semantic-registry/ai-projection.json     | 1457 +++++++++++++++++-
+ .../semantic-registry/plan-artifact-index.json     |  420 +++++
+ .../semantic-registry/product-projection.json      | 1598 +++++++++++++++++++-
+ .../recipe-library-projection.json                 |  428 +++++-
+ .../research-atlas-projection.json                 |    7 +-
+ generated/semantic-registry/runtime-manifest.json  |  260 +++-
+ .../semantic-registry/semantic-parity-report.json  |  780 +++++++++-
+ .../unsupported-capability-projection.json         |  158 +-
+ semantic-registry/registry.lock.json               |    7 +-
+ semantic-registry/registry.yaml                    |  128 +-
+ src/tqe/semantic_registry/generate.py              | 1315 ++++++++++++++--
+ src/tqe/semantic_registry/models.py                |    1 +
+ src/tqe/semantic_registry/runtime_manifest.py      |  103 +-
+ tests/test_scp0_semantic_registry.py               |  171 ++-
+ 19 files changed, 6651 insertions(+), 269 deletions(-)

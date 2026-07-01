@@ -1,0 +1,321 @@
+{
+  "artifacts": {
+    "data_js": "artifacts/m1.2/workshop/manual-workshop-data.js",
+    "data_json": "artifacts/m1.2/workshop/manual-workshop-data.json",
+    "feedback_records": "artifacts/m1.2/workshop/feedback-records.jsonl",
+    "html": "artifacts/m1.2/workshop/index.html",
+    "saved_recipe": "artifacts/m1.2/workshop/recipes/recipe_92769e17bb25b809.json"
+  },
+  "checks": [
+    {
+      "details": {
+        "approved_total": 180,
+        "experimental_total": 64
+      },
+      "id": "s1.approved_and_experimental_runs",
+      "message": "Manual workshop executes one approved recipe and one experimental recipe.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "returned_result_count": 10
+      },
+      "id": "s1.every_returned_result_has_replay",
+      "message": "Every returned manual-workshop result opens in a real coordinate replay artifact.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "trace_counts": {
+          "3647a5fb42d1e723": 5,
+          "4b1aa3f32bd1cdd2": 5,
+          "5939b707e9471cf4": 1,
+          "6e61a62eac02bf0b": 1,
+          "7cd5a46f6988a065": 5,
+          "9d7c768b86f9d0b4": 5,
+          "ab36a887429b808a": 5,
+          "bad516537e0c3eec": 1,
+          "e8a8835dd30e3dee": 1,
+          "ebf449a1637da7ec": 1
+        }
+      },
+      "id": "s1.why_matched_traces_present",
+      "message": "Why-matched inspection exposes predicate traces for returned results.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "inspection": {
+          "candidate_count": 0,
+          "closest_candidate": null,
+          "failed_predicates": [],
+          "predicate_traces": [],
+          "resolved_target": {
+            "absolute_frame_time_ms": 400000,
+            "canonical_frame_id": 10000,
+            "match_id": "J03WOY",
+            "original_target": {
+              "approximate_time_ms": 0,
+              "match_id": "J03WOY",
+              "period": "firstHalf",
+              "schema_version": "1.0",
+              "search_radius_ms": 250,
+              "target_id": "known_non_match_probe"
+            },
+            "period": "firstHalf",
+            "resolution_distance_frames": 0,
+            "resolution_distance_ms": 0,
+            "resolved_match_time_ms": 0
+          },
+          "search_radius_frames": 6,
+          "status": "NO_COMPATIBLE_ANCHOR",
+          "target": {
+            "approximate_time_ms": 400000,
+            "match_id": "J03WOY",
+            "period": "firstHalf",
+            "schema_version": "1.0",
+            "search_radius_ms": 250,
+            "target_id": "known_non_match_probe"
+          },
+          "target_frame_id": 10000
+        },
+        "replay": {
+          "anchor_frame_id": 10000,
+          "end_frame_id": 10050,
+          "entity_observation_count": 1173,
+          "execution_id": "exec_0886be05a88ee36c",
+          "frame_count": 51,
+          "match_id": "J03WOY",
+          "ok": true,
+          "period": "firstHalf",
+          "replay_window_id": "replay_650bc502e1cea25e",
+          "source_kind": "target",
+          "start_frame_id": 10000
+        },
+        "target": {
+          "approximate_time_ms": 0,
+          "match_id": "J03WOY",
+          "period": "firstHalf",
+          "schema_version": "1.0",
+          "search_radius_ms": 250,
+          "target_id": "known_non_match_probe"
+        }
+      },
+      "id": "s1.why_not_timestamp_works",
+      "message": "Known timestamp inspection returns a deterministic non-match explanation.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "inspection_frame": 10000,
+        "replay_frame": 10000
+      },
+      "id": "s1.non_match_inspection_replay_same_resolved_frame",
+      "message": "Known timestamp inspection and coordinate replay resolve to the same canonical frame.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "diagnostic_execution": {
+          "bound_plan_hash": "cfd840f0c18ba4e7f1b3d26459f54352ed30dfbe7025c82a2fb1d1b51de40b05",
+          "bound_plan_id": "bound_cfd840f0c18ba4e7",
+          "compatibility_profile": "generic",
+          "draft_plan_hash": "9076c51915d8c63cbb00f4da8eccba00ee7fc136bdfc0ae0b6dfa756c05736f8",
+          "execution_id": "exec_21c7dceac33988cb",
+          "ok": true,
+          "plan_id": "s1_strict_corridor_failure_probe",
+          "plan_status": "experimental",
+          "results": [],
+          "returned_result_count": 0,
+          "total_result_count": 0,
+          "trace_count": 0
+        },
+        "inspection": {
+          "candidate_count": 1,
+          "closest_candidate": {
+            "accepted": false,
+            "anchor_frame_id": 11365,
+            "anchor_id": "211de48d59c35b99",
+            "candidate_key": "211de48d59c35b99",
+            "classification": null,
+            "frame_distance": 0,
+            "rejection_reason": null
+          },
+          "failed_predicates": [
+            {
+              "frame_id": 11365,
+              "predicate_id": "has_progressive_corridor",
+              "source_evidence": {
+                "anchor_frame_id": 11365,
+                "anchor_id": "211de48d59c35b99",
+                "candidate_key": "211de48d59c35b99",
+                "evaluation_status": "PASS",
+                "match_id": "J03WOY",
+                "period": "firstHalf",
+                "relation_count": 7,
+                "result_id": "211de48d59c35b99",
+                "source_node_id": "progressive_corridor",
+                "source_output_name": "anchor_evaluations",
+                "trace_source": "has_progressive_corridor.predicate",
+                "witness_relation_id": "2ac327e0124d6dd5"
+              },
+              "status": "FAIL",
+              "threshold": {
+                "payload_type": "number",
+                "unit": "count",
+                "value": 999
+              },
+              "unit": "count",
+              "value": {
+                "payload_type": "number",
+                "unit": "count",
+                "value": 7.0
+              }
+            }
+          ],
+          "predicate_traces": [
+            {
+              "frame_id": 11365,
+              "predicate_id": "has_progressive_corridor",
+              "source_evidence": {
+                "anchor_frame_id": 11365,
+                "anchor_id": "211de48d59c35b99",
+                "candidate_key": "211de48d59c35b99",
+                "evaluation_status": "PASS",
+                "match_id": "J03WOY",
+                "period": "firstHalf",
+                "relation_count": 7,
+                "result_id": "211de48d59c35b99",
+                "source_node_id": "progressive_corridor",
+                "source_output_name": "anchor_evaluations",
+                "trace_source": "has_progressive_corridor.predicate",
+                "witness_relation_id": "2ac327e0124d6dd5"
+              },
+              "status": "FAIL",
+              "threshold": {
+                "payload_type": "number",
+                "unit": "count",
+                "value": 999
+              },
+              "unit": "count",
+              "value": {
+                "payload_type": "number",
+                "unit": "count",
+                "value": 7.0
+              }
+            }
+          ],
+          "resolved_target": {
+            "absolute_frame_time_ms": 454600,
+            "canonical_frame_id": 11365,
+            "match_id": "J03WOY",
+            "original_target": {
+              "approximate_time_ms": 54600,
+              "match_id": "J03WOY",
+              "period": "firstHalf",
+              "schema_version": "1.0",
+              "search_radius_ms": 500,
+              "target_id": "predicate_fail_0"
+            },
+            "period": "firstHalf",
+            "resolution_distance_frames": 0,
+            "resolution_distance_ms": 0,
+            "resolved_match_time_ms": 54600
+          },
+          "search_radius_frames": 12,
+          "status": "NON_MATCH",
+          "target": {
+            "approximate_time_ms": 454600,
+            "match_id": "J03WOY",
+            "period": "firstHalf",
+            "schema_version": "1.0",
+            "search_radius_ms": 500,
+            "target_id": "predicate_fail_0"
+          },
+          "target_frame_id": 11365
+        },
+        "replay": {
+          "anchor_frame_id": 11365,
+          "end_frame_id": 11415,
+          "entity_observation_count": 2323,
+          "execution_id": "exec_21c7dceac33988cb",
+          "frame_count": 101,
+          "match_id": "J03WOY",
+          "ok": true,
+          "period": "firstHalf",
+          "replay_window_id": "replay_21dac56dea636cc8",
+          "source_kind": "target",
+          "start_frame_id": 11315
+        },
+        "target": {
+          "approximate_time_ms": 54600,
+          "match_id": "J03WOY",
+          "period": "firstHalf",
+          "schema_version": "1.0",
+          "search_radius_ms": 500,
+          "target_id": "predicate_fail_0"
+        }
+      },
+      "id": "s1.compatible_anchor_predicate_failure_explained",
+      "message": "Known timestamp inspection distinguishes compatible-anchor predicate failure from no compatible anchor.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "feedback_count": 5
+      },
+      "id": "s1.feedback_labels_recorded",
+      "message": "All required feedback labels are schema-valid and append-only.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "ok": true,
+        "path": "artifacts/m1.2/workshop/recipes/recipe_92769e17bb25b809.json",
+        "query_hash": "92769e17bb25b809c67cbc18dcfd0628bd7d3e5292af46366a5b6d2248b66ba7",
+        "recipe_version_id": "recipe_92769e17bb25b809"
+      },
+      "id": "s1.experimental_recipe_saved_immutably",
+      "message": "Experimental recipe saves as a content-addressed immutable version.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "data_js": "artifacts/m1.2/workshop/manual-workshop-data.js",
+        "data_json": "artifacts/m1.2/workshop/manual-workshop-data.json",
+        "html": "artifacts/m1.2/workshop/index.html"
+      },
+      "id": "s1.manual_reference_client_written",
+      "message": "Thin manual workshop reference client was generated without Hermes.",
+      "status": "pass"
+    },
+    {
+      "details": {
+        "result_ids": [
+          "7cd5a46f6988a065",
+          "9d7c768b86f9d0b4",
+          "3647a5fb42d1e723",
+          "4b1aa3f32bd1cdd2",
+          "ab36a887429b808a",
+          "6e61a62eac02bf0b",
+          "5939b707e9471cf4",
+          "e8a8835dd30e3dee",
+          "bad516537e0c3eec",
+          "ebf449a1637da7ec"
+        ]
+      },
+      "id": "s1.no_hardcoded_result_moments",
+      "message": "Replay artifacts are keyed from executed result IDs, not canned moments.",
+      "status": "pass"
+    }
+  ],
+  "gate": "S1_manual_reference_workshop",
+  "generated_at": "2026-06-21T17:27:08+00:00",
+  "milestone": "M1.2",
+  "schema_version": "1.0",
+  "status": "pass",
+  "summary": {
+    "fail": 0,
+    "pass": 10
+  }
+}

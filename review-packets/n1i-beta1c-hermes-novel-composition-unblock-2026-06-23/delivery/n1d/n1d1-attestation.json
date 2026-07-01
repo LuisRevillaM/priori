@@ -1,0 +1,192 @@
+{
+  "beta_1c_unlock_contract": {
+    "fail_closed_on": [
+      "browser payload",
+      "model payload",
+      "stale attestation",
+      "mismatched plan hash"
+    ],
+    "required_freeze_manifest_id": "must equal the current N1D manifest id",
+    "required_plan_hash": "must equal the current bound plan hash",
+    "required_provenance_source": "HERMES_NOVEL_COMPOSITION",
+    "required_status": "VERIFIED"
+  },
+  "blocking_reasons": [],
+  "commit_at_manifest_generation": "7b7bf8424f9f2d440315aa8a6cdbcf44b923f95d",
+  "freeze_manifest_id": "n1f-14c6104cec50703c",
+  "hermes_origin": {
+    "allowed_augmentation_diff": {
+      "added_aliases": [],
+      "added_equals_allowed": false,
+      "added_within_allowed": true,
+      "diff_allowed": true,
+      "removed_aliases": [],
+      "required_aliases_authored_by_hermes": [
+        "destination_entry_mode",
+        "destination_time_to_entry_seconds"
+      ],
+      "required_aliases_present": true,
+      "structure_identical_after_strip": true
+    },
+    "compile_tool_trace": {
+      "contains_submit_and_validate": true,
+      "tool_names": [
+        "mcp_priori_tactical_search_recipes",
+        "mcp_priori_tactical_list_capabilities",
+        "mcp_priori_tactical_search_recipes",
+        "mcp_priori_tactical_search_recipes",
+        "mcp_priori_tactical_describe_capability",
+        "mcp_priori_tactical_describe_capability",
+        "mcp_priori_tactical_describe_capability",
+        "mcp_priori_tactical_describe_capability",
+        "mcp_priori_tactical_describe_capability",
+        "mcp_priori_tactical_describe_capability",
+        "mcp_priori_tactical_describe_capability",
+        "mcp_priori_tactical_describe_capability",
+        "mcp_priori_tactical_submit_query_plan",
+        "mcp_priori_tactical_validate_query_plan"
+      ]
+    },
+    "hermes_submitted_draft_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+    "n1d_host_augmented_plan_hash": "cca93c8cac63ef66eb62a0479ca340cc4a926b2222d64fedbc5ef857d115663c",
+    "notes": [],
+    "ordered_tool_call_trace_sha256": "b6073d4a98ac5200549b34b8088f00dad05690cf6ee8150ccc6cebf89d995d3d",
+    "origin_artifacts_present": true,
+    "origin_bundle_path": "delivery/n1d/n1f-origin-bundle.json",
+    "origin_bundle_sha256": "14c6104cec50703ca8f161925b1ef8fce047647d43dbebd5c42fa86e3ca55060",
+    "original_question_sha256": "4c0341c50842ea253a19959ca656a36b97ef4fa3bfb181db60f8a8bd68031fcf",
+    "raw_hermes_decision_sha256": "c2b0c61fbad6c0f34d2a04cd051d6a229122436ec64b075f93adbc400e0699f3",
+    "session_id": "20260623_061107_59df89",
+    "trace_persisted": true
+  },
+  "plan_hash": "68e7d1a7cd29d7bd0490765694d8f4700c882046510e78a2579b8845358f1bb0",
+  "schema_version": "n1d1.attestation.v1",
+  "status": "VERIFIED",
+  "structural_novelty": {
+    "existing_recipe_selected": false,
+    "fingerprint_hash": "734d4b31f8d19727bf6bc4b6f7ac590e96e9f208ef564a22faf59f5f0fd7738a",
+    "normalized_structural_fingerprint": {
+      "anchor_source": {
+        "output": "anchors",
+        "source": "n00"
+      },
+      "classification_rules": [
+        {
+          "label": "DESTINATION_ENTERED",
+          "predicates": [
+            "n02",
+            "n04"
+          ]
+        }
+      ],
+      "evidence_sources": [
+        "n00.episodes:possession_start_frame_id",
+        "n01.episodes:destination_region",
+        "n01.episodes:duration_seconds",
+        "n01.episodes:open_frame_id",
+        "n01.episodes:relation_id",
+        "n01.episodes:target_player_id",
+        "n03.entry_status:entry_mode",
+        "n03.entry_status:entry_status",
+        "n03.entry_status:time_to_entry_seconds"
+      ],
+      "fingerprint_hash": "734d4b31f8d19727bf6bc4b6f7ac590e96e9f208ef564a22faf59f5f0fd7738a",
+      "nodes": [
+        {
+          "catalog_ref": "possession_segment",
+          "id": "n00",
+          "inputs": {},
+          "kind": "primitive",
+          "parameter_names": []
+        },
+        {
+          "catalog_ref": "geometric_progressive_corridor_from_anchor_set",
+          "id": "n01",
+          "inputs": {
+            "anchors": {
+              "output": "anchors",
+              "source": "n00"
+            }
+          },
+          "kind": "relation",
+          "parameter_names": [
+            "close_after_frames",
+            "max_window_seconds",
+            "maximum_segment_length_m",
+            "minimum_clearance_m",
+            "minimum_duration_seconds",
+            "minimum_progression_m",
+            "minimum_segment_length_m",
+            "open_after_frames",
+            "side_filter"
+          ]
+        },
+        {
+          "catalog_ref": null,
+          "compare_shape": null,
+          "duration_shape": null,
+          "id": "n02",
+          "input": {
+            "output": "anchor_evaluations",
+            "source": "n01"
+          },
+          "kind": "predicate",
+          "operator": "exists"
+        },
+        {
+          "catalog_ref": "relation_destination_entry",
+          "id": "n03",
+          "inputs": {
+            "relation_episodes": {
+              "output": "episodes",
+              "source": "n01"
+            }
+          },
+          "kind": "primitive",
+          "parameter_names": [
+            "destination_entry_horizon_seconds",
+            "episode_selection",
+            "result_id_seed"
+          ]
+        },
+        {
+          "catalog_ref": null,
+          "compare_shape": {
+            "kind": "literal",
+            "payload_type": "enum",
+            "unit": "none",
+            "value": "<literal>"
+          },
+          "duration_shape": null,
+          "id": "n04",
+          "input": {
+            "output": "entry_status",
+            "source": "n03"
+          },
+          "kind": "predicate",
+          "operator": "eq"
+        }
+      ],
+      "schema_version": "n1.structural_fingerprint.v1"
+    },
+    "per_template_comparison": [
+      {
+        "fingerprint_hash": "327300f055b23a865532cfc645c033f35992538a5894097b3b4577dc7799b368",
+        "matches_n1d": false,
+        "recipe_id": "ball_side_block_shift_v1"
+      },
+      {
+        "fingerprint_hash": "577392987e6dc0e2fb6af1618d4342ff6e3fa342295c185b426591cecda3e62e",
+        "matches_n1d": false,
+        "recipe_id": "opposite_corridor_after_shift_v1"
+      },
+      {
+        "fingerprint_hash": "033a909cbc977f93a2c87f22d4a2bf130e53f77d64c40875ec79dd5d6ae5c1c7",
+        "matches_n1d": false,
+        "recipe_id": "possession_corridor_availability_v1"
+      }
+    ],
+    "registered_fingerprint_set_hash": "03fe42d9ee3e1ba68d36d4e97cae5a69325473ad963682aa3294141fd81dad16",
+    "structurally_novel": true
+  }
+}

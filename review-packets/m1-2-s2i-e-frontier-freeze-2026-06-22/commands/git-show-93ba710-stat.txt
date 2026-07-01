@@ -1,0 +1,17 @@
+93ba710 Freeze frontier Hermes configuration
+ CURRENT_STATE.md                                   |  45 +-
+ Makefile                                           |   5 +-
+ artifacts/m1.2/gate-s2i-verification-report.json   |   8 +-
+ artifacts/m1.2/s2i-d-unseeded-hermes-report.json   | 116 ++---
+ artifacts/m1.2/s2i-e-frontier-freeze-report.json   | 499 +++++++++++++++++++++
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.2/frontier-runtime-freeze.json         | 419 +++++++++++++++++
+ delivery/m1.2/status.yaml                          |  63 ++-
+ .../2026-06-22-m1-2-s2i-e-frontier-freeze.md       |  11 +
+ .../2026-06-22-m1-2-s2i-e-frontier-freeze.md       |  56 +++
+ generated/capability-context.json                  |   2 +-
+ generated/tactical-knowledge-pack.json             |   6 +-
+ generated/tactical-knowledge-pack.md               |   6 +-
+ src/tqe/verification/m1_2_gate_s2id.py             |  85 +++-
+ src/tqe/verification/m1_2_gate_s2ie.py             | 223 +++++++++
+ 15 files changed, 1431 insertions(+), 114 deletions(-)

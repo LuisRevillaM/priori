@@ -1,0 +1,10 @@
+ CURRENT_STATE.md                                 |  63 +++++++++-----
+ Makefile                                         |   5 +-
+ artifacts/m1.2/gate-s2i-verification-report.json |   8 +-
+ delivery/ledger.jsonl                            |   1 +
+ delivery/m1.2/status.yaml                        |  61 ++++++++++++--
+ generated/capability-context.json                |   2 +-
+ generated/tactical-knowledge-pack.json           |   8 +-
+ generated/tactical-knowledge-pack.md             |   8 +-
+ src/tqe/workshop/m1_2.py                         | 101 +++++++++++++++++++----
+ 9 files changed, 201 insertions(+), 56 deletions(-)

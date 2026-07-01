@@ -1,0 +1,11 @@
+e5f6618 Implement M1.1S S4 rule-driven emission
+ Makefile                                           |   5 +-
+ delivery/ledger.jsonl                              |   1 +
+ delivery/m1.1/STRUCTURAL_CORRECTIVE_SPEC.md        |  17 +
+ delivery/m1.1/reviews/gate-s4-controller-review.md |  22 ++
+ delivery/m1.1/status.yaml                          |   8 +-
+ .../2026-06-20-m1-1s-gate-s4-rule-emission.md      |  14 +
+ src/tqe/runtime/executor.py                        | 375 +++++++++++++++++++--
+ src/tqe/verification/m1_1_gate_s4.py               | 359 ++++++++++++++++++++
+ tests/test_m1_1_runtime.py                         |   9 +
+ 9 files changed, 786 insertions(+), 24 deletions(-)

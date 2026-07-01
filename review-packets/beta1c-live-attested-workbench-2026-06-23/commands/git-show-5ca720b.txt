@@ -1,0 +1,4 @@
+5ca720b Expose verified attested Hermes hero plan
+ src/tqe/workshop/app_service.py        | 44 ++++++++++++++++++++++++++++++++++
+ tests/test_workbench_beta0_contract.py | 15 ++++++++++++
+ 2 files changed, 59 insertions(+)
