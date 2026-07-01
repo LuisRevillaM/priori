@@ -296,7 +296,8 @@ Runtime data is provisioned separately to Render storage.
 Recommended path for a new reader:
 
 1. Read this README.
-2. Open the live case study at `/case-study`.
+2. Read the case study — canonical text at [docs/CASE_STUDY.md](docs/CASE_STUDY.md),
+   live interactive version at `/case-study`.
 3. Read [docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md](docs/TACTICAL_QUERY_ARCHITECTURE_AND_STANDARD_LIBRARY.md).
 4. Read [docs/data/idsse.md](docs/data/idsse.md).
 5. Inspect `src/tqe/runtime/` for the executable primitive/runtime layer.
