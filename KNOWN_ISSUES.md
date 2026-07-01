@@ -1,27 +1,68 @@
 # Known Issues
 
-## Open
+Updated: 2026-07-01. Ordered by severity. See `CURRENT_STATE.md` for the
+overall snapshot and `docs/audits/` for full audit reports. (The previous
+version of this file was the day-0 planning checklist and had never been
+updated; it described a project with "no implementation," which has been false
+since June 19.)
 
-- No implementation exists yet. Current state is planning only.
-- IDSSE raw files have not been provisioned or source-locked.
-- Official source checksums and exact per-match frame/event counts still need to be captured in a manifest.
-- Team IDs, player IDs, and exact source schema mappings are not yet known locally.
-- Floodlight has not yet been installed, benchmarked, or validated against `J03WOH`.
-- Query thresholds are initial planning values only and still need calibration on `J03WOH` after Gate B.
-- No verifier, replay app, or proof pack exists yet.
-- Independent reviewer identity and process tooling are not assigned.
+## Correctness (from the 2026-07-01 foundation audit)
 
-## Non-Issues For M1
+- Tri-state fail-open paths exist in the executor and several kernels:
+  specific code paths where missing evidence can surface as FAIL (or PASS)
+  instead of UNKNOWN — e.g. reception windows truncated by period end,
+  sparse-tracking release checks, corridor episodes silently bridging missing
+  frames, `exists`/`count_at_least` fallbacks on empty episode sets. Full
+  list with file:line and reproductions in the foundation audit report.
+- Two incompatible lane geometries coexist (`lane_occupancy` five-lane model
+  vs `relations.destination_lane` fractional model); composed queries mixing
+  them will disagree with themselves.
+- `executor.py` is an ~11k-line accretion module; capability-specific names
+  have leaked into shared trace/evidence code paths. Remediation plan in the
+  audit report; structural extraction should precede the next vocabulary
+  expansion wave.
+- Controlled-reception "control" is proximity-based and opponent-blind; the
+  case study's clean-control gate fences this at the product layer, but the
+  substrate field names still say more than they measure.
 
-- No Hermes integration.
-- No natural-language query interface.
-- No production API or deployment.
-- No licensed match video.
-- No polished analyst dashboard.
-- No Go implementation in M1.
+## Process / gates
 
-## Clarified
+- Several verifiers (`n1d`, `n1i`) regenerate pinned report files in place
+  when run locally, which can overwrite historical acceptance evidence with a
+  weaker local-run record. Check `git status` after running gates; do not
+  commit regenerated evidence without a decision.
+- `make n1d-verify` fails 2/15 checks by design since the AFL expansion moved
+  executor/binder/catalog past the N1D freeze-manifest pins. Expected drift;
+  re-pinning requires a fresh live rerun.
 
-- The public IDSSE/DFL dataset has no match video. Current replay means coordinate-based pitch replay, not footage.
-- This project ends at an independent pre-meeting demo. Priori SDK/API/private-data access is not part of the plan.
-- Provider adapter readiness, production integration, and video/timecode integration are out of scope for this project.
+## Standing blockers (external authority)
+
+- S2I-F final independent sealed evaluation has no externally-authored sealed
+  set yet.
+- SCP-0E.1 semantic registry external review not yet performed.
+- AFL protected promotion authority (protected CI identity, hidden-suite
+  hash, signing key) does not exist yet; promotion gates correctly report
+  BLOCKED.
+
+## Scope / data
+
+- The public corpus is 7 matches; any player-level or rate statistic is a
+  methodology demonstration, not a stable rating (see
+  `docs/CAR_NORTH_STAR.md` honesty constraints).
+- Most primitive verification scopes are single-match (J03WOY); all-corpus
+  verification is pending per capability.
+
+## Repository
+
+- `origin/main` is behind the canonical frontier
+  (`codex/afl08-passport-loop`) and holds a rebased duplicate of the SCP/AFL
+  history; needs a fast-forward/reset decision at the next release point.
+- Four pre-policy review-packet zips remain tracked (grandfathered by
+  `docs/EVIDENCE_RETENTION_POLICY.md`).
+
+## Standing scope clarifications (unchanged)
+
+- The public IDSSE/DFL dataset has no match video; replay means
+  coordinate-based pitch replay, not footage.
+- This project ends at an independent pre-meeting demo. Priori
+  SDK/API/private-data access is not part of the plan.

@@ -3,9 +3,9 @@ state: IN_PROGRESS
 source_of_truth:
   charter: PROJECT_CHARTER.md
   roadmap: MILESTONES.md
-  current_milestone_spec: delivery/m1.2/SPEC.md
+  current_milestone_spec: delivery/autonomous/afl_milestone_contract.yaml
   current_state_snapshot: CURRENT_STATE.md
-last_updated: "2026-06-22"
+last_updated: "2026-07-01"
 scope:
   dataset: IDSSE_DFL_PUBLIC
   integration: none

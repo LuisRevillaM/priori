@@ -1,5 +1,16 @@
 # Milestones
 
+> **Historical document (2026-07-01 note).** This is the original M1–M6
+> product roadmap. M1, M1.1 (via the M1.1S correction arc), and the M1.2
+> S0–S2I slices were completed; per-milestone truth lives in
+> `delivery/*/status.yaml` and `delivery/ledger.jsonl`, and some headers below
+> reflect mid-flight states that were later superseded (e.g. M1.1's rejection
+> was resolved by M1.1S; M2's family pivoted from Wide-Channel Support
+> Collapse to High-Bypass Completed Pass). **Ongoing work is governed by the
+> protected AFL milestone contract**
+> (`delivery/autonomous/afl_milestone_contract.yaml`); do not extend this
+> ladder. See `CURRENT_STATE.md` for the document hierarchy.
+
 This roadmap ends at a completely independent, meeting-ready demo built from the public IDSSE/DFL dataset. It does not include Priori SDK/API integration, provider adapter readiness, private data, production deployment, or match-video ingestion.
 
 ## Dependency Graph
