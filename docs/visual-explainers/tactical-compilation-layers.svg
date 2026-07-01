@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="980" viewBox="0 0 1440 980" role="img" aria-labelledby="title desc">
+  <title id="title">Tactical Query Compilation Layers</title>
+  <desc id="desc">A deterministic diagram showing how football language compiles into typed plans, primitives, relations, predicates, results, evidence, and replay.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f4f5f1; }
+      .title { fill: #1e2320; font: 700 38px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0; }
+      .subtitle { fill: #59625a; font: 400 20px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .section-label { fill: #59625a; font: 700 13px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+      .box-title { fill: #1e2320; font: 700 21px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .box-text { fill: #4f5850; font: 400 15px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .mono { fill: #253029; font: 600 14px "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+      .mono-small { fill: #253029; font: 600 12px "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+      .small { fill: #59625a; font: 500 13px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chip { fill: #edf4ee; stroke: #8fac9a; stroke-width: 1.4; }
+      .chip-text { fill: #2f5c43; font: 700 13px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .layer { fill: #ffffff; stroke: #d7d8d1; stroke-width: 1.6; }
+      .layer-green { fill: #eef6f0; stroke: #8fac9a; stroke-width: 1.6; }
+      .layer-amber { fill: #fbf5e8; stroke: #d5bc83; stroke-width: 1.6; }
+      .node { fill: #fbfcf8; stroke: #d7d8d1; stroke-width: 1.4; }
+      .node-green { fill: #eef6f0; stroke: #8fac9a; stroke-width: 1.4; }
+      .node-dark { fill: #44745a; stroke: #2f5c43; stroke-width: 1.4; }
+      .node-dark-text { fill: #ffffff; font: 700 16px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .arrow { fill: none; stroke: #8b948c; stroke-width: 2; marker-end: url(#arrowhead); }
+      .arrow-strong { fill: none; stroke: #44745a; stroke-width: 3; marker-end: url(#arrowhead-strong); }
+      .timeline { stroke: #d5bc83; stroke-width: 3; stroke-linecap: round; }
+      .pitch-line { fill: none; stroke: #dbe5db; stroke-width: 2; }
+      .player-a { fill: #315c8b; stroke: #f4f5f1; stroke-width: 2; }
+      .player-b { fill: #b85449; stroke: #f4f5f1; stroke-width: 2; }
+      .ball { fill: #f4f5f1; stroke: #1e2320; stroke-width: 1.8; }
+      .corridor { fill: rgba(213, 188, 131, .24); stroke: #d5bc83; stroke-width: 2.2; stroke-dasharray: 8 6; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b948c" />
+    </marker>
+    <marker id="arrowhead-strong" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#44745a" />
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1e2320" flood-opacity=".08" />
+    </filter>
+  </defs>
+
+  <rect class="bg" width="1440" height="980" />
+  <text class="title" x="72" y="78">From tactical question to replay evidence</text>
+  <text class="subtitle" x="72" y="114">Hermes authors a typed plan; the host measures space and time; replay shows the evidence.</text>
+
+  <rect class="layer" x="72" y="154" width="1296" height="122" rx="18" filter="url(#shadow)" />
+  <text class="section-label" x="104" y="192">User intent</text>
+  <text class="box-title" x="104" y="226">Natural-language football question</text>
+  <text class="box-text" x="104" y="253">“Show possessions where a progressive corridor opens, persists, and the ball enters its destination region.”</text>
+  <rect class="chip" x="1028" y="190" width="292" height="42" rx="21" />
+  <text class="chip-text" x="1052" y="216">Human confirms before execution</text>
+
+  <path class="arrow-strong" d="M720 276 V326" />
+
+  <rect class="layer-green" x="72" y="326" width="1296" height="178" rx="18" filter="url(#shadow)" />
+  <text class="section-label" x="104" y="365">Compilation</text>
+  <text class="box-title" x="104" y="399">Hermes compiles to a typed tactical plan graph</text>
+  <text class="box-text" x="104" y="426">No Python, SQL, filesystem, raw match dump, or direct execution. Only safe catalog nodes and parameters.</text>
+
+  <rect class="node" x="104" y="452" width="180" height="36" rx="10" />
+  <text class="mono" x="122" y="475">plan nodes</text>
+  <rect class="node" x="302" y="452" width="180" height="36" rx="10" />
+  <text class="mono" x="320" y="475">predicates</text>
+  <rect class="node" x="500" y="452" width="188" height="36" rx="10" />
+  <text class="mono" x="518" y="475">classification</text>
+  <rect class="node" x="706" y="452" width="196" height="36" rx="10" />
+  <text class="mono" x="724" y="475">evidence aliases</text>
+  <rect class="node" x="920" y="452" width="176" height="36" rx="10" />
+  <text class="mono" x="938" y="475">scope limits</text>
+  <rect class="node-dark" x="1114" y="452" width="176" height="36" rx="10" />
+  <text class="node-dark-text" x="1132" y="475">plan hash</text>
+
+  <path class="arrow-strong" d="M720 504 V554" />
+
+  <rect class="layer" x="72" y="554" width="620" height="306" rx="18" filter="url(#shadow)" />
+  <text class="section-label" x="104" y="593">Current authorable building blocks</text>
+  <text class="box-title" x="104" y="627">What the plan compiles down to</text>
+
+  <rect class="node-green" x="104" y="652" width="320" height="42" rx="12" />
+  <text class="mono" x="124" y="678">possession_segment</text>
+  <text class="small" x="458" y="678">anchors + episodes</text>
+
+  <rect class="node-green" x="104" y="704" width="320" height="42" rx="12" />
+  <text class="mono-small" x="124" y="730">geometric_progressive_corridor</text>
+  <text class="small" x="458" y="730">relation episodes</text>
+
+  <rect class="node-green" x="104" y="756" width="320" height="42" rx="12" />
+  <text class="mono-small" x="124" y="782">relation_destination_entry</text>
+  <text class="small" x="458" y="782">PASS / FAIL / UNKNOWN</text>
+
+  <rect class="node" x="104" y="808" width="320" height="42" rx="12" />
+  <text class="mono" x="124" y="834">defensive_centroid + shift</text>
+  <text class="small" x="458" y="834">block movement</text>
+
+  <rect class="layer" x="748" y="554" width="620" height="306" rx="18" filter="url(#shadow)" />
+  <text class="section-label" x="780" y="593">Spatial + temporal model</text>
+  <text class="box-title" x="780" y="627">The engine evaluates every candidate anchor</text>
+
+  <rect x="780" y="656" width="252" height="162" rx="14" fill="#44745a" />
+  <path class="pitch-line" d="M806 682 H1006 V792 H806 Z" />
+  <path class="pitch-line" d="M906 682 V792" />
+  <circle class="pitch-line" cx="906" cy="737" r="26" />
+  <circle class="player-a" cx="858" cy="746" r="8" />
+  <circle class="player-a" cx="900" cy="706" r="8" />
+  <circle class="player-a" cx="956" cy="720" r="8" />
+  <circle class="player-b" cx="872" cy="704" r="8" />
+  <circle class="player-b" cx="926" cy="760" r="8" />
+  <circle class="ball" cx="846" cy="778" r="5" />
+  <path class="corridor" d="M846 778 L956 720 L984 748 L872 804 Z" />
+  <circle cx="846" cy="778" r="16" fill="none" stroke="#d5bc83" stroke-width="3" />
+
+  <text class="mono" x="1058" y="682">anchor</text>
+  <text class="small" x="1058" y="704">reference frame or interval</text>
+  <line class="timeline" x1="1058" y1="728" x2="1296" y2="728" />
+  <circle cx="1098" cy="728" r="7" fill="#d5bc83" />
+  <circle cx="1192" cy="728" r="7" fill="#d5bc83" />
+  <circle cx="1262" cy="728" r="7" fill="#d5bc83" />
+  <text class="small" x="1076" y="760">opens</text>
+  <text class="small" x="1170" y="760">persists</text>
+  <text class="small" x="1236" y="760">enters</text>
+  <text class="box-text" x="1058" y="806">Missing or invalid evidence stays UNKNOWN, not false.</text>
+
+  <path class="arrow-strong" d="M720 860 V904" />
+
+  <rect class="layer-amber" x="72" y="904" width="1296" height="54" rx="18" />
+  <text class="box-title" x="104" y="939">Result = label + predicate trace + requested evidence + coordinate replay</text>
+  <text class="box-text" x="968" y="939">Shown in the Workbench.</text>
+</svg>
