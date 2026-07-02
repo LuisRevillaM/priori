@@ -1,7 +1,7 @@
 {
   "expectation_id": "afl09a.time_to_arrival_q4.0_1_0",
   "expected": {
-    "bound_plan_hash": "9e35f843bfff6ab6bce2ea74e72abf8da968e60775d6195b86db4d55d3362801",
+    "bound_plan_hash": "66c2a62574baff490dea4c38c14954a4a14eba84eec4c4f5c0d9b923582bef98",
     "compatibility_profile": "generic",
     "document_hash": "223543e10f796eaf04af1e66f1494c39cd912b323a1c6acf863d06a54a9e27d0",
     "execution_status": "pass",
@@ -10,15 +10,15 @@
     "requested_evidence_failure_count": 0,
     "result_count": 1,
     "result_ids": [
-      "a9a80cc6dc43ae72"
+      "de50263230c6ae4f"
     ],
-    "result_signature_hash": "eac518286ed1d78f6ef03569cf301f6d7059050c3940774b55d3f60c5dbb4d63"
+    "result_signature_hash": "3ad00e67ed8663d3dba224cfbbeb7ed4fb8d53a762c471a31cc4cf3424c2a679"
   },
   "freeze_provenance": {
     "freeze_mechanism": "explicit_AFL09A_FREEZE_EXPECTATIONS=1",
     "review": "controller_self_verified_original_real_data_verifier",
     "runtime_semantics_dirty": false,
-    "source_commit": "dd0b3ca0934bac423122e65de2e868cb99df7c2d",
+    "source_commit": "6634c2e09f26df1bbf615dda7a2230c791e5583e",
     "source_verifier": "tqe.verification.afl_time_to_arrival",
     "source_verifier_status": "PASS",
     "threshold_version": "time_to_arrival_q4.v0.1.0:max_arrival=2.0:max_speed=7.0",

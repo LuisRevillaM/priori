@@ -285,6 +285,18 @@ def line_break_support_response_document() -> dict[str, Any]:
                     "node_id": "controlled_pass",
                     "catalog_ref": "controlled_pass_episode",
                     "version": "0.1.0",
+                    # The capstone's verified example is seeded by a set-piece
+                    # pass. F1-B changed the capability default to Play_Pass
+                    # (open play only); this capstone deliberately declares the
+                    # widened scope so the positive line-break example remains
+                    # pinned with its inclusion explicit rather than accidental.
+                    "parameters": {
+                        "event_type_filter": {
+                            "payload_type": "enum",
+                            "value": "any",
+                            "unit": "none",
+                        },
+                    },
                 },
                 {
                     "kind": "primitive",
