@@ -71,17 +71,16 @@ since June 19.)
 
 ## Standing blockers (external authority)
 
-- S2I-F final independent sealed evaluation has no externally-authored sealed
-  set yet.
+- S2I-F final independent sealed evaluation: the owner has authored and
+  hash-pinned a private sealed set (`afl-hidden-suite-v1`), deliberately
+  reserved for the General Compiler v1 evaluation (a sealed run burns the
+  questions, so it is spent once, when it counts).
 - SCP-0E.1 semantic registry external review not yet performed.
-- AFL protected promotion authority (protected CI identity, hidden-suite
-  hash, signing key) does not exist yet; promotion gates correctly report
-  BLOCKED. The CI-side scaffolding is committed
-  (`.github/workflows/afl-protected-gate.yml` — runs the gate only when the
-  `afl-protected-gate` environment carries the identity, skips otherwise);
-  the remaining user-side steps (create the environment, generate the
-  signing key outside the repo, pin the hidden-suite hash) are the numbered
-  checklist in `docs/CI.md`.
+- RESOLVED (2026-07-02): AFL protected promotion authority now exists. The
+  `afl-protected-gate` GitHub environment carries the owner-held signing key
+  and pinned hidden-suite id/hash; run 28563273941 produced the first signed
+  certificate — SCP-0E.1 `PROMOTED, SIGNED_HMAC_SHA256`. Local gate runs
+  remain honestly BLOCKED (self-verified mode).
 
 ## Scope / data
 

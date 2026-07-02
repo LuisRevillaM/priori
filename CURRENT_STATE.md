@@ -71,9 +71,11 @@ a superseded branch.
    Hermes/GPT-5.5 path (harness ready; fails closed without an
    externally-authored sealed set).
 2. **SCP-0E.1** — semantic registry external review.
-3. **AFL protected promotion** — no protected CI identity, hidden-suite hash,
-   or signing key exists yet; `afl-g0-gate` correctly emits BLOCKED rather
-   than PROMOTED (builder may not judge).
+3. ~~**AFL protected promotion**~~ — RESOLVED 2026-07-02: protected CI
+   identity established (owner-held signing key + pinned hidden-suite hash in
+   the `afl-protected-gate` GitHub environment); first signed certificate
+   issued (SCP-0E.1 `PROMOTED, SIGNED_HMAC_SHA256`, run 28563273941). Local
+   gate runs remain honestly BLOCKED (self-verified mode).
 
 ## Branch Topology (2026-07-01 reconciliation)
 
