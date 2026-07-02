@@ -29,6 +29,7 @@ from tqe.runtime.controlled_pass import (
     ball_at,
     detect_physical_release,
     euclidean,
+    event_type_allowed,
     pass_id,
     period_analysis_rate,
     player_at,
@@ -61,6 +62,8 @@ EVENT_COLUMNS = [
 
 @dataclass(frozen=True)
 class OneTouchRelayConfig:
+    event_type_filter: tuple[str, ...] = ("Play_Pass",)
+    max_release_alignment_ms: float = 250.0
     relay_max_event_gap_seconds: float = 3.0
     relay_touch_search_before_seconds: float = 0.8
     relay_touch_search_after_seconds: float = 0.4
@@ -136,6 +139,8 @@ def evaluate_one_touch_relays(
                 positions=positions,
                 attack_x_sign_by_role=attack_x_signs(orientation, match_id, period),
                 config=ControlledPassConfig(
+                    event_type_filter=config.event_type_filter,
+                    max_release_alignment_ms=config.max_release_alignment_ms,
                     control_distance_m=config.control_distance_m,
                     nearest_teammate_margin_m=config.nearest_teammate_margin_m,
                 ),
@@ -198,7 +203,10 @@ def adjacent_event_linked_passes(
 ) -> list[tuple[dict[str, Any], dict[str, Any]]]:
     """Return adjacent pass-pass pairs linked by recipient -> next passer."""
 
-    parsed = [parse_successful_pass_event(row) for _, row in events.iterrows()]
+    parsed = [
+        parse_successful_pass_event(row, event_type_filter=config.event_type_filter)
+        for _, row in events.iterrows()
+    ]
     pairs: list[tuple[dict[str, Any], dict[str, Any]]] = []
     for first, second in zip(parsed, parsed[1:], strict=False):
         if first is None or second is None:
@@ -217,9 +225,13 @@ def adjacent_event_linked_passes(
     return pairs
 
 
-def parse_successful_pass_event(row: pd.Series) -> dict[str, Any] | None:
+def parse_successful_pass_event(
+    row: pd.Series,
+    *,
+    event_type_filter: tuple[str, ...] | list[str] | set[str] | None = ("Play_Pass",),
+) -> dict[str, Any] | None:
     event_type = str(row.get("event_type") or "")
-    if "Pass" not in event_type:
+    if not event_type_allowed(event_type, event_type_filter):
         return None
     qualifier = safe_json(row.get("qualifier_json"))
     if qualifier.get("Evaluation") != "successfullyCompleted":
@@ -253,10 +265,26 @@ def evaluate_one_touch_candidate(
     context: PeriodControlContext,
     config: OneTouchRelayConfig,
 ) -> dict[str, Any]:
-    input_anchor_frame_id, input_event_offset_ms = align_event_to_frame(input_event, context.frames)
-    relay_anchor_frame_id, relay_event_offset_ms = align_event_to_frame(relay_event, context.frames)
-    input_event = {**input_event, "event_anchor_frame_id": input_anchor_frame_id}
-    relay_event = {**relay_event, "event_anchor_frame_id": relay_anchor_frame_id}
+    input_anchor_frame_id, input_event_offset_ms = align_event_to_frame(
+        input_event,
+        context.frames,
+        max_alignment_ms=context.config.max_release_alignment_ms,
+    )
+    relay_anchor_frame_id, relay_event_offset_ms = align_event_to_frame(
+        relay_event,
+        context.frames,
+        max_alignment_ms=context.config.max_release_alignment_ms,
+    )
+    input_event = {
+        **input_event,
+        "event_anchor_frame_id": input_anchor_frame_id,
+        "event_frame_offset_ms": input_event_offset_ms,
+    }
+    relay_event = {
+        **relay_event,
+        "event_anchor_frame_id": relay_anchor_frame_id,
+        "event_frame_offset_ms": relay_event_offset_ms,
+    }
     input_release = detect_physical_release(input_event, context)
     relay_release = detect_physical_release(relay_event, context)
     relay_touch = detect_relay_touch(

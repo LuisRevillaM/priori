@@ -26,9 +26,9 @@ class M2APassBypassRuntimeTest(unittest.TestCase):
 
     def test_bypass_measurements_match_controlled_pass_anchors(self) -> None:
         summary = self.output.summary
-        self.assertEqual(639, summary["controlled_anchor_evaluation_count"])
-        self.assertEqual(453, summary["evaluation_status_counts"].get("PASS", 0))
-        self.assertEqual(186, summary["evaluation_status_counts"].get("UNKNOWN", 0))
+        self.assertEqual(563, summary["controlled_anchor_evaluation_count"])
+        self.assertEqual(408, summary["evaluation_status_counts"].get("PASS", 0))
+        self.assertEqual(155, summary["evaluation_status_counts"].get("UNKNOWN", 0))
         self.assertEqual(
             summary["controlled_anchor_evaluation_count"],
             summary["bypass_anchor_evaluation_count"],
