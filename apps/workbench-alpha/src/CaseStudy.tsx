@@ -18,6 +18,7 @@ const REPLAY_PACKET_PATH = "/case-study-high-bypass-replays.json";
 const TEAM_PRESS_PACKET_PATH = "/case-study-team-press-replays.json";
 const COVER_SHADOW_PACKET_PATH = "/case-study-cover-shadow-replays.json";
 const CARRY_PACKET_PATH = "/case-study-carry-replays.json";
+const PART_TWO_PACKET_PATH = "/case-study-part-two-replays.json";
 
 type ReplayPacket = {
   replays: Array<{
@@ -122,11 +123,134 @@ type CarryPayload = {
   visual_contract: Record<string, unknown>;
 };
 
+type Point = { x_m: number; y_m: number };
+
+type PartTwoPacket = {
+  exhibits: {
+    controlled_unknown: ControlledUnknownPayload;
+    corridor_duration: CorridorDurationPayload;
+    twelfth_hero: TwelfthHeroPayload;
+    lane_partition: LanePartitionPayload;
+  };
+  genealogy: Array<{ count: number; label: string; cause: string }>;
+};
+
+type ControlledUnknownPayload = {
+  schema_version: "case_study_part_two.controlled_unknown.v0";
+  moment: {
+    match_id: string;
+    period: string;
+    team_role?: string | null;
+    event_type: string;
+    event_row_index: number;
+    pass_episode_id: string;
+    passer_id: string;
+    receiver_id: string;
+    anchor_frame_id: number;
+    gameclock_seconds: number;
+    status: string;
+    release_detection_status: string;
+    release_detection_reason: string;
+    controlled_reception_status: string;
+    old_semantics: string;
+    search_window: {
+      start_frame_id: number;
+      end_frame_id: number;
+      release_search_before_seconds: number;
+      release_search_after_seconds: number;
+    };
+  };
+  replay: ReplayPayload;
+};
+
+type CorridorDurationPayload = {
+  schema_version: "case_study_part_two.corridor_duration.v0";
+  moment: {
+    match_id: string;
+    period: string;
+    perspective_team_role?: string | null;
+    relation_id: string;
+    open_frame_id: number;
+    close_frame_id: number;
+    open_confirm_frame_id: number | null;
+    duration_seconds: number;
+    pass_frame_count: number;
+    old_counted_duration_seconds: number;
+    honest_elapsed_duration_seconds: number;
+    old_threshold_seconds: number;
+    target_player_id: string;
+    source_open_point: Point;
+    target_open_point: Point;
+    source_close_point: Point;
+    target_close_point: Point;
+    destination_region: string;
+    destination_region_bounds: { min_y_m: number; max_y_m: number };
+    close_reason: string;
+  };
+  replay: ReplayPayload;
+};
+
+type TwelfthHeroPayload = {
+  schema_version: "case_study_part_two.twelfth_hero.v0";
+  moment: {
+    match_id: string;
+    period: string;
+    perspective_team_role?: string | null;
+    defending_team_role?: string | null;
+    final_result_id: string;
+    relation_id: string;
+    relation_open_frame_id: number;
+    relation_close_frame_id: number;
+    relation_duration_seconds: number;
+    relation_target_player_id: string;
+    destination_region: string;
+    destination_region_bounds: { min_y_m: number; max_y_m: number };
+    destination_entry_frame_id: number;
+    destination_entry_point: Point;
+    destination_entry_horizon_seconds: number;
+    entry_mode: string;
+    live_result_count: number;
+    hero_genealogy: string;
+    relation_episode: {
+      source_open_point: Point;
+      target_open_point: Point;
+      source_close_point: Point;
+      target_close_point: Point;
+    };
+  };
+  replay: ReplayPayload;
+};
+
+type LanePartitionPayload = {
+  schema_version: "case_study_part_two.lane_partition.v0";
+  moment: {
+    marker_y_m: number;
+    old_fractional_model: string;
+    old_occupancy_model: string;
+    current_model: string;
+  };
+  partition: {
+    lane_width_m: number;
+    bands: Array<{
+      lane_id: string;
+      min_y_m: number;
+      max_y_m: number;
+      includes_min_y: boolean;
+      includes_max_y: boolean;
+    }>;
+  };
+  replay: { pitch: ReplayPayload["pitch"]; frames: [] };
+};
+
+type PartTwoReplayPayload = ControlledUnknownPayload | CorridorDurationPayload | TwelfthHeroPayload;
+type PartTwoOverlayKind = "controlled_unknown" | "corridor_duration" | "twelfth_hero";
+
 export function CaseStudy() {
   const [replays, setReplays] = React.useState<Record<number, CoachMomentPayload>>({});
   const [teamPressReplays, setTeamPressReplays] = React.useState<Record<number, TeamPressPayload>>({});
   const [coverShadowReplays, setCoverShadowReplays] = React.useState<Record<number, CoverShadowPayload>>({});
   const [carryReplays, setCarryReplays] = React.useState<Record<number, CarryPayload>>({});
+  const [partTwoPacket, setPartTwoPacket] = React.useState<PartTwoPacket | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -206,6 +330,24 @@ export function CaseStudy() {
       })
       .catch(() => {
         if (!cancelled) setCarryReplays({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch(PART_TWO_PACKET_PATH)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Part-two replay packet unavailable: ${response.status}`);
+        return response.json() as Promise<PartTwoPacket>;
+      })
+      .then((packet) => {
+        if (!cancelled) setPartTwoPacket(packet);
+      })
+      .catch(() => {
+        if (!cancelled) setPartTwoPacket(null);
       });
     return () => {
       cancelled = true;
@@ -493,6 +635,142 @@ export function CaseStudy() {
           top.
         </p>
 
+        <hr className="cs-break" />
+        <p className="cs-eyebrow">Part two · 2026-07-02</p>
+        <h2 id="part-two">Auditing the compiler with its own doctrine</h2>
+        <p>
+          Part one ended with a rule: a claim is allowed only when the composition beneath it proves
+          that exact claim. Part two applied that rule downward, to the measurement code, the gates
+          that verify it, and the project’s own flagship numbers.
+        </p>
+        <p>
+          The question was simple: where can missing evidence still become a definite answer? The
+          answers forced three kinds of correction — gates that could not silently reuse stale success,
+          measurements that had to return UNKNOWN instead of false certainty, and public numbers that
+          had to move when the engine stopped rounding in its own favor.
+        </p>
+
+        <h3 className="cs-example-title">Exhibit one: an honest UNKNOWN</h3>
+        <div className="cs-example-context" aria-label="Controlled-pass UNKNOWN exhibit context">
+          <div>
+            <span>Look for</span>
+            <strong>The pass event and the release-search window around it.</strong>
+          </div>
+          <div>
+            <span>Proves</span>
+            <strong>The release was not confirmed by the tracking evidence.</strong>
+          </div>
+          <div>
+            <span>Does not claim</span>
+            <strong>That the pass failed, or that the receiver never controlled it.</strong>
+          </div>
+        </div>
+        <PartTwoMiniReplay
+          payload={partTwoPacket?.exhibits.controlled_unknown}
+          overlay="controlled_unknown"
+          verdict="Controlled-pass candidate UNKNOWN"
+          facts={(payload) => <ControlledUnknownFacts payload={payload} />}
+          caption="This J03WOY Play_Pass candidate used to sit inside the old failure bucket. The current engine keeps it separate: release not confirmed is insufficient evidence, not a contradiction."
+        />
+
+        <h3 className="cs-example-title">Exhibit two: a corridor that was never 0.8 seconds</h3>
+        <div className="cs-example-context" aria-label="Corridor-duration exhibit context">
+          <div>
+            <span>Look for</span>
+            <strong>The corridor between ball and target across its open and close frames.</strong>
+          </div>
+          <div>
+            <span>Proves</span>
+            <strong>Four PASS states at 5 Hz are 0.6 seconds of elapsed span, not 0.8.</strong>
+          </div>
+          <div>
+            <span>Does not claim</span>
+            <strong>That the corridor met the 0.8-second hero threshold.</strong>
+          </div>
+        </div>
+        <PartTwoMiniReplay
+          payload={partTwoPacket?.exhibits.corridor_duration}
+          overlay="corridor_duration"
+          verdict="Old counting 0.8s · elapsed span 0.6s"
+          facts={(payload) => <CorridorDurationFacts payload={payload} />}
+          caption="The old math counted states. The fixed relation measures the actual elapsed frame span, so this episode no longer crosses the 0.8-second threshold."
+        />
+
+        <h3 className="cs-example-title">Exhibit three: the twelfth hero moment</h3>
+        <div className="cs-example-context" aria-label="Twelfth hero exhibit context">
+          <div>
+            <span>Look for</span>
+            <strong>The corridor target and destination point inside the declared half-space band.</strong>
+          </div>
+          <div>
+            <span>Proves</span>
+            <strong>The live hero query now finds twelve moments under one shared lane model.</strong>
+          </div>
+          <div>
+            <span>Does not claim</span>
+            <strong>That the historical fourteen-row attestation was false; it was true to the old engine.</strong>
+          </div>
+        </div>
+        <PartTwoMiniReplay
+          payload={partTwoPacket?.exhibits.twelfth_hero}
+          overlay="twelfth_hero"
+          verdict="Live hero result admitted by unified lane geometry"
+          facts={(payload) => <TwelfthHeroFacts payload={payload} />}
+          caption="The destination point sits in the five-equal-lanes half-space band. Once corridor destination logic and lane occupancy used the same model, this possession qualified."
+        />
+
+        <h3 className="cs-example-title">Exhibit four: one pitch, one partition</h3>
+        <div className="cs-example-context" aria-label="Lane-partition exhibit context">
+          <div>
+            <span>Look for</span>
+            <strong>Five equal lateral lanes across the same 68-metre pitch width.</strong>
+          </div>
+          <div>
+            <span>Proves</span>
+            <strong>Every lane consumer now uses the same declared partition.</strong>
+          </div>
+          <div>
+            <span>Does not claim</span>
+            <strong>That lane labels are tactical roles, intent, or quality.</strong>
+          </div>
+        </div>
+        {partTwoPacket ? (
+          <LanePartitionFigure payload={partTwoPacket.exhibits.lane_partition} />
+        ) : (
+          <figure className="cs-replay">
+            <div className="cs-replay-frame">
+              <div className="cs-replay-loading">Loading partition</div>
+            </div>
+          </figure>
+        )}
+
+        <div className="cs-genealogy" aria-label="Hero result count genealogy">
+          {(partTwoPacket?.genealogy ?? [
+            { count: 14, label: "June attestation", cause: "Corridor duration still used pass-frame count." },
+            { count: 11, label: "Elapsed duration", cause: "Three apparent 0.8s corridors were honestly 0.6s." },
+            { count: 12, label: "Unified lanes", cause: "One possession qualifies under the declared partition." }
+          ]).map((item, index, items) => (
+            <React.Fragment key={item.label}>
+              <div className="cs-genealogy-step">
+                <strong>{item.count}</strong>
+                <span>{item.label}</span>
+                <p>{item.cause}</p>
+              </div>
+              {index < items.length - 1 && <div className="cs-genealogy-arrow">→</div>}
+            </React.Fragment>
+          ))}
+        </div>
+
+        <p>
+          The number moved from fourteen to eleven, then to twelve. That is the point. A system whose
+          flagship number cannot change is advertising. A system whose flagship number changes exactly
+          when its measurements improve, and can show why, is an instrument.
+        </p>
+        <p>
+          Nothing in part two added a new football concept. Every change made an existing claim
+          smaller, truer, or better declared: gates became read-only, missing evidence became UNKNOWN,
+          corridor duration became elapsed time, and the pitch got one partition instead of two.
+        </p>
       </article>
     </main>
   );
@@ -516,6 +794,200 @@ function MiniReplay({
         <span>{verdict}</span>
         {payload ? <ReplayFacts payload={payload} /> : null}
         {caption}
+      </figcaption>
+    </figure>
+  );
+}
+
+function PartTwoMiniReplay<T extends PartTwoReplayPayload>({
+  payload,
+  overlay,
+  verdict,
+  facts,
+  caption
+}: {
+  payload: T | undefined;
+  overlay: PartTwoOverlayKind;
+  verdict: string;
+  facts: (payload: T) => React.ReactNode;
+  caption: string;
+}) {
+  return (
+    <figure className="cs-replay">
+      <div className="cs-replay-frame">
+        {payload ? (
+          <PartTwoPitch payload={payload} overlay={overlay} />
+        ) : (
+          <div className="cs-replay-loading">Loading replay</div>
+        )}
+      </div>
+      <figcaption>
+        <span>{verdict}</span>
+        {payload ? facts(payload) : null}
+        {caption}
+      </figcaption>
+    </figure>
+  );
+}
+
+function PartTwoPitch({
+  payload,
+  overlay
+}: {
+  payload: PartTwoReplayPayload;
+  overlay: PartTwoOverlayKind;
+}) {
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const shellRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    const shell = shellRef.current;
+    if (!canvas || !shell) return;
+
+    let animationFrame = 0;
+    let startedAt: number | null = null;
+    const draw = (timestamp: number) => {
+      if (startedAt === null) startedAt = timestamp;
+      const progress = ((timestamp - startedAt) % 7600) / 7600;
+      renderPartTwo(canvas, shell, payload, overlay, progress);
+      animationFrame = window.requestAnimationFrame(draw);
+    };
+    animationFrame = window.requestAnimationFrame(draw);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [payload, overlay]);
+
+  return (
+    <div className="momentCanvasShell" ref={shellRef}>
+      <canvas ref={canvasRef} aria-label="Case study part-two evidence replay" />
+    </div>
+  );
+}
+
+function ControlledUnknownFacts({ payload }: { payload: ControlledUnknownPayload }) {
+  const moment = payload.moment;
+  return (
+    <dl className="cs-replay-facts" aria-label="Controlled-pass UNKNOWN facts">
+      <div>
+        <dt>Match</dt>
+        <dd>{moment.match_id}</dd>
+      </div>
+      <div>
+        <dt>Half</dt>
+        <dd>{periodLabel(moment.period)}</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>{moment.status}</dd>
+      </div>
+      <div>
+        <dt>Reason</dt>
+        <dd>{moment.release_detection_reason.replaceAll("_", " ")}</dd>
+      </div>
+      <div>
+        <dt>Window</dt>
+        <dd>{moment.search_window.release_search_before_seconds.toFixed(0)}s before / {moment.search_window.release_search_after_seconds.toFixed(0)}s after</dd>
+      </div>
+    </dl>
+  );
+}
+
+function CorridorDurationFacts({ payload }: { payload: CorridorDurationPayload }) {
+  const moment = payload.moment;
+  return (
+    <dl className="cs-replay-facts" aria-label="Corridor duration facts">
+      <div>
+        <dt>Match</dt>
+        <dd>{moment.match_id}</dd>
+      </div>
+      <div>
+        <dt>Old</dt>
+        <dd>{moment.old_counted_duration_seconds.toFixed(1)}s</dd>
+      </div>
+      <div>
+        <dt>Elapsed</dt>
+        <dd>{moment.honest_elapsed_duration_seconds.toFixed(1)}s</dd>
+      </div>
+      <div>
+        <dt>Frames</dt>
+        <dd>{moment.pass_frame_count} PASS states</dd>
+      </div>
+      <div>
+        <dt>Threshold</dt>
+        <dd>{moment.old_threshold_seconds.toFixed(1)}s</dd>
+      </div>
+      <div>
+        <dt>Close</dt>
+        <dd>{moment.close_reason.replaceAll("_", " ")}</dd>
+      </div>
+    </dl>
+  );
+}
+
+function TwelfthHeroFacts({ payload }: { payload: TwelfthHeroPayload }) {
+  const moment = payload.moment;
+  return (
+    <dl className="cs-replay-facts" aria-label="Twelfth hero moment facts">
+      <div>
+        <dt>Match</dt>
+        <dd>{moment.match_id}</dd>
+      </div>
+      <div>
+        <dt>Live count</dt>
+        <dd>{moment.live_result_count}</dd>
+      </div>
+      <div>
+        <dt>Region</dt>
+        <dd>{moment.destination_region.replaceAll("_", " ")}</dd>
+      </div>
+      <div>
+        <dt>Point y</dt>
+        <dd>{moment.destination_entry_point.y_m.toFixed(2)}m</dd>
+      </div>
+      <div>
+        <dt>Band</dt>
+        <dd>{moment.destination_region_bounds.min_y_m.toFixed(1)} to {moment.destination_region_bounds.max_y_m.toFixed(1)}m</dd>
+      </div>
+      <div>
+        <dt>Duration</dt>
+        <dd>{moment.relation_duration_seconds.toFixed(1)}s</dd>
+      </div>
+    </dl>
+  );
+}
+
+function LanePartitionFigure({ payload }: { payload: LanePartitionPayload }) {
+  const marker = payload.moment.marker_y_m;
+  const width = payload.replay.pitch.width_m;
+  const leftPercent = ((marker + width / 2) / width) * 100;
+  return (
+    <figure className="cs-replay cs-partition-figure">
+      <div className="cs-replay-frame">
+        <div className="cs-partition">
+          {payload.partition.bands.map((band) => {
+            const start = ((band.min_y_m + width / 2) / width) * 100;
+            const span = ((band.max_y_m - band.min_y_m) / width) * 100;
+            return (
+              <div
+                key={band.lane_id}
+                className="cs-partition-band"
+                style={{ left: `${start}%`, width: `${span}%` }}
+              >
+                <span>{band.lane_id.toLowerCase().replaceAll("_", " ")}</span>
+              </div>
+            );
+          })}
+          <div className="cs-partition-marker" style={{ left: `${leftPercent}%` }}>
+            <strong>y = {marker.toFixed(1)}m</strong>
+          </div>
+        </div>
+      </div>
+      <figcaption>
+        <span>Declared lane model · five equal bands</span>
+        The old system let destination regions and lane occupancy disagree. The live runtime uses the
+        same mirror-symmetric five-lane partition everywhere.
       </figcaption>
     </figure>
   );
@@ -703,6 +1175,222 @@ function CarryFacts({ payload }: { payload: CarryPayload }) {
       </div>
     </dl>
   );
+}
+
+function renderPartTwo(
+  canvas: HTMLCanvasElement,
+  shell: HTMLDivElement,
+  payload: PartTwoReplayPayload,
+  overlay: PartTwoOverlayKind,
+  progress: number
+) {
+  const replay = payload.replay;
+  const layout = layoutPitch(replay.pitch, Math.max(360, shell.clientWidth));
+  const width = layout.canvasWidth;
+  const height = layout.canvasHeight;
+  const ratio = window.devicePixelRatio || 1;
+  const physicalWidth = Math.round(width * ratio);
+  const physicalHeight = Math.round(height * ratio);
+  if (canvas.width !== physicalWidth || canvas.height !== physicalHeight) {
+    canvas.width = physicalWidth;
+    canvas.height = physicalHeight;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+
+  const frame = partTwoFrameForProgress(replay, partTwoAnchorFrame(payload), progress);
+  if (!frame) return;
+  const anchorFrame = replay.frames.find((item) => item.frame_id === partTwoAnchorFrame(payload)) ?? frame;
+  const evidenceAlpha = primitiveEvidenceAlpha(progress);
+  const focusTeam = partTwoFocusTeam(payload);
+  drawCaseStudyPitch(ctx, layout);
+  drawPrimitiveContextPlayers(ctx, replay, frame, focusTeam, layout);
+
+  if (overlay === "controlled_unknown") {
+    drawControlledUnknownGeometry(ctx, replay, payload as ControlledUnknownPayload, frame, anchorFrame, layout, evidenceAlpha);
+  } else if (overlay === "corridor_duration") {
+    drawCorridorDurationGeometry(ctx, replay, payload as CorridorDurationPayload, frame, layout, evidenceAlpha);
+  } else {
+    drawTwelfthHeroGeometry(ctx, replay, payload as TwelfthHeroPayload, frame, layout, evidenceAlpha);
+  }
+  drawCaseStudyBall(ctx, replay, frame, layout);
+}
+
+function drawControlledUnknownGeometry(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  payload: ControlledUnknownPayload,
+  frame: ReplayPayload["frames"][number],
+  anchorFrame: ReplayPayload["frames"][number],
+  layout: ReturnType<typeof layoutPitch>,
+  evidenceAlpha: number
+) {
+  const moment = payload.moment;
+  const passer = anchorFrame.entities.find((entity) => entity.entity_id === moment.passer_id);
+  const receiver = anchorFrame.entities.find((entity) => entity.entity_id === moment.receiver_id);
+  const ball = frame.entities.find((entity) => entity.entity_type === "ball");
+  if (passer && receiver) {
+    const passerPoint = pitchPointToPixel(Number(passer.x_m), Number(passer.y_m), replay.pitch, layout);
+    const receiverPoint = pitchPointToPixel(Number(receiver.x_m), Number(receiver.y_m), replay.pitch, layout);
+    ctx.save();
+    ctx.globalAlpha = 0.18 + 0.42 * evidenceAlpha;
+    ctx.strokeStyle = "rgba(255,241,189,.86)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 7]);
+    ctx.beginPath();
+    ctx.moveTo(passerPoint.x, passerPoint.y);
+    ctx.lineTo(receiverPoint.x, receiverPoint.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    drawEvidencePoint(ctx, passerPoint, "#fff1bd", evidenceAlpha, 7);
+    drawEvidencePoint(ctx, receiverPoint, "#f1a38d", evidenceAlpha, 7);
+    ctx.restore();
+  }
+  if (ball) {
+    const point = pitchPointToPixel(Number(ball.x_m), Number(ball.y_m), replay.pitch, layout);
+    ctx.save();
+    ctx.globalAlpha = 0.28 + 0.40 * evidenceAlpha;
+    ctx.strokeStyle = "rgba(255,241,189,.62)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 11, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawCorridorDurationGeometry(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  payload: CorridorDurationPayload,
+  frame: ReplayPayload["frames"][number],
+  layout: ReturnType<typeof layoutPitch>,
+  evidenceAlpha: number
+) {
+  const moment = payload.moment;
+  drawLaneBand(ctx, replay, layout, moment.destination_region_bounds, "rgba(255,241,189,.10)", evidenceAlpha);
+  drawCorridorLine(ctx, replay, layout, moment.source_open_point, moment.target_open_point, "rgba(255,241,189,.90)", evidenceAlpha);
+  drawCorridorLine(ctx, replay, layout, moment.source_close_point, moment.target_close_point, "rgba(241,163,141,.88)", evidenceAlpha * 0.88);
+  const target = frame.entities.find((entity) => entity.entity_id === moment.target_player_id);
+  if (target) {
+    const point = pitchPointToPixel(Number(target.x_m), Number(target.y_m), replay.pitch, layout);
+    drawEvidencePoint(ctx, point, "#fff1bd", evidenceAlpha, 7);
+  }
+}
+
+function drawTwelfthHeroGeometry(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  payload: TwelfthHeroPayload,
+  frame: ReplayPayload["frames"][number],
+  layout: ReturnType<typeof layoutPitch>,
+  evidenceAlpha: number
+) {
+  const moment = payload.moment;
+  const episode = moment.relation_episode;
+  drawLaneBand(ctx, replay, layout, moment.destination_region_bounds, "rgba(255,241,189,.12)", evidenceAlpha);
+  drawCorridorLine(ctx, replay, layout, episode.source_open_point, episode.target_open_point, "rgba(255,241,189,.92)", evidenceAlpha);
+  const target = frame.entities.find((entity) => entity.entity_id === moment.relation_target_player_id);
+  if (target) {
+    const point = pitchPointToPixel(Number(target.x_m), Number(target.y_m), replay.pitch, layout);
+    drawEvidencePoint(ctx, point, "#fff1bd", evidenceAlpha, 7);
+  }
+  const entryPoint = pitchPointToPixel(moment.destination_entry_point.x_m, moment.destination_entry_point.y_m, replay.pitch, layout);
+  drawEvidencePoint(ctx, entryPoint, "#f2cf73", evidenceAlpha, 8);
+  ctx.save();
+  ctx.globalAlpha = 0.22 + 0.48 * evidenceAlpha;
+  ctx.strokeStyle = "rgba(242,207,115,.72)";
+  ctx.lineWidth = 1.8;
+  ctx.setLineDash([4, 6]);
+  ctx.beginPath();
+  ctx.moveTo(layout.marginX, entryPoint.y);
+  ctx.lineTo(layout.marginX + layout.fieldWidth, entryPoint.y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawLaneBand(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  layout: ReturnType<typeof layoutPitch>,
+  bounds: { min_y_m: number; max_y_m: number },
+  fillStyle: string,
+  evidenceAlpha: number
+) {
+  const top = pitchPointToPixel(0, bounds.max_y_m, replay.pitch, layout).y;
+  const bottom = pitchPointToPixel(0, bounds.min_y_m, replay.pitch, layout).y;
+  ctx.save();
+  ctx.globalAlpha = 0.35 + 0.45 * evidenceAlpha;
+  ctx.fillStyle = fillStyle;
+  ctx.fillRect(layout.marginX, Math.min(top, bottom), layout.fieldWidth, Math.abs(bottom - top));
+  ctx.strokeStyle = "rgba(255,241,189,.30)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(layout.marginX, Math.min(top, bottom), layout.fieldWidth, Math.abs(bottom - top));
+  ctx.restore();
+}
+
+function drawCorridorLine(
+  ctx: CanvasRenderingContext2D,
+  replay: ReplayPayload,
+  layout: ReturnType<typeof layoutPitch>,
+  source: Point,
+  target: Point,
+  strokeStyle: string,
+  evidenceAlpha: number
+) {
+  const sourcePoint = pitchPointToPixel(source.x_m, source.y_m, replay.pitch, layout);
+  const targetPoint = pitchPointToPixel(target.x_m, target.y_m, replay.pitch, layout);
+  ctx.save();
+  ctx.globalAlpha = Math.max(0.12, evidenceAlpha);
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(sourcePoint.x, sourcePoint.y);
+  ctx.lineTo(targetPoint.x, targetPoint.y);
+  ctx.stroke();
+  drawEvidencePoint(ctx, sourcePoint, "#f2cf73", evidenceAlpha, 4.8);
+  drawEvidencePoint(ctx, targetPoint, "#fff1bd", evidenceAlpha, 5.6);
+  ctx.restore();
+}
+
+function drawEvidencePoint(
+  ctx: CanvasRenderingContext2D,
+  point: { x: number; y: number },
+  fillStyle: string,
+  evidenceAlpha: number,
+  radius: number
+) {
+  ctx.save();
+  ctx.globalAlpha = Math.max(0.22, evidenceAlpha);
+  ctx.fillStyle = fillStyle;
+  ctx.strokeStyle = "rgba(20,27,19,.74)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function partTwoAnchorFrame(payload: PartTwoReplayPayload) {
+  if (payload.schema_version === "case_study_part_two.controlled_unknown.v0") return payload.moment.anchor_frame_id;
+  if (payload.schema_version === "case_study_part_two.corridor_duration.v0") return payload.moment.open_frame_id;
+  return payload.moment.relation_open_frame_id;
+}
+
+function partTwoFocusTeam(payload: PartTwoReplayPayload) {
+  if (payload.schema_version === "case_study_part_two.controlled_unknown.v0") return payload.moment.team_role ?? null;
+  return payload.moment.perspective_team_role ?? null;
+}
+
+function partTwoFrameForProgress(replay: ReplayPayload, anchorFrameId: number, progress: number) {
+  return primitiveFrameForProgress(replay, anchorFrameId, progress);
 }
 
 function ReplayFacts({ payload }: { payload: CoachMomentPayload }) {
@@ -1192,6 +1880,7 @@ const CSS = `
 .cs code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:#edefe8;padding:2px 6px;border-radius:5px;color:#28332b}
 .cs pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.5;background:#f1f3ec;border:1px solid #e0e4da;border-radius:8px;padding:16px 18px;overflow-x:auto;margin:0 0 22px;color:#28332b}
 .cs blockquote{margin:0 0 22px;padding:4px 0 4px 18px;border-left:3px solid #8fac9a;color:#303831;font-size:18px}
+.cs-break{border:0;border-top:1px solid #dfe4da;margin:64px 0 38px}
 .cs-pull{font-size:22px;line-height:1.4;font-weight:600;color:#1f2923;margin:30px 0;letter-spacing:-.01em}
 .cs-invariant-q{font-size:20px;font-weight:600;border-left-color:#c9a24a;color:#1f2923}
 .cs-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 22px}
@@ -1213,6 +1902,20 @@ const CSS = `
 .cs-replay-facts div{min-width:0;border:1px solid #dfe4da;border-radius:6px;background:#f4f5ef;padding:6px 7px}
 .cs-replay-facts dt{margin:0 0 2px;color:#6b756d;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
 .cs-replay-facts dd{margin:0;color:#28332b;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs-genealogy{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:stretch;margin:32px 0 28px}
+.cs-genealogy-step{border:1px solid #dfe4da;background:#f4f5ef;border-radius:8px;padding:14px 14px 12px}
+.cs-genealogy-step strong{display:block;color:#1f2923;font-size:30px;line-height:1;margin:0 0 8px;letter-spacing:-.02em}
+.cs-genealogy-step span{display:block;color:#2f6b4f;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 7px}
+.cs-genealogy-step p{font-size:12px;line-height:1.4;margin:0;color:#4f5b52}
+.cs-genealogy-arrow{align-self:center;color:#8fac9a;font-size:19px}
+.cs-partition{position:relative;height:250px;background:#102a20;overflow:hidden}
+.cs-partition::before{content:"";position:absolute;inset:22px 18px;border:1px solid rgba(240,239,225,.22);border-radius:4px}
+.cs-partition-band{position:absolute;top:22px;bottom:22px;border-left:1px solid rgba(255,241,189,.18);background:rgba(255,241,189,.055)}
+.cs-partition-band:nth-child(odd){background:rgba(143,172,154,.08)}
+.cs-partition-band span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-90deg);white-space:nowrap;color:rgba(250,249,245,.72);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.cs-partition-marker{position:absolute;top:16px;bottom:16px;width:0;border-left:2px solid #f2cf73;filter:drop-shadow(0 0 10px rgba(242,207,115,.35))}
+.cs-partition-marker strong{position:absolute;left:8px;top:8px;white-space:nowrap;background:rgba(16,42,32,.84);color:#fff1bd;border:1px solid rgba(255,241,189,.32);border-radius:6px;padding:4px 6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
 @media(max-width:720px){.cs-replay-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.cs-genealogy{grid-template-columns:1fr}.cs-genealogy-arrow{display:none}}
 @media(max-width:560px){.cs-replay{width:calc(100vw - 28px);margin-top:22px;margin-bottom:24px}}
 `;
