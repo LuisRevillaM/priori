@@ -14,6 +14,7 @@ from tqe.semantic_registry.generate import (
     generate_scp0_artifacts,
     validate_capability_passport_projection,
 )
+from tqe.write_mode import write_mode
 
 
 REPORT_PATH = Path("artifacts/autonomous/afl-capability-passport-verification-report.json")
@@ -45,7 +46,7 @@ def _passport_index(passport_projection: dict[str, Any]) -> dict[str, dict[str, 
 
 
 def verify_capability_passports() -> dict[str, Any]:
-    registry, runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=True)
+    registry, runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=write_mode())
     projections = build_projections(registry, runtime_manifest, lock)
     generated_projection = build_capability_passport_projection(
         registry, runtime_manifest, lock, projections

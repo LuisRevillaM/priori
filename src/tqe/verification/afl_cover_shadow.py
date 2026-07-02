@@ -26,6 +26,7 @@ from tqe.runtime.executor import (
 )
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
 from tqe.semantic_registry.generate import generate_scp0_artifacts
+from tqe.write_mode import output_path, write_mode
 
 
 REPORT_PATH = Path("artifacts/autonomous/afl-cover-shadow-verification-report.json")
@@ -223,7 +224,7 @@ def verify_search_flip() -> tuple[list[dict[str, Any]], dict[str, Any]]:
 
 
 def verify_cover_shadow() -> dict[str, Any]:
-    _registry, _runtime_manifest, registry_lock, parity_report = generate_scp0_artifacts(write=True)
+    _registry, _runtime_manifest, registry_lock, parity_report = generate_scp0_artifacts(write=write_mode())
     executor = TacticalQueryExecutor(
         canonical_root=Path(os.environ.get("TQE_DATA_ROOT", str(DEFAULT_CANONICAL_ROOT))),
         raw_root=Path(os.environ.get("TQE_RAW_ROOT", str(DEFAULT_RAW_ROOT))),
@@ -345,8 +346,9 @@ def verify_cover_shadow() -> dict[str, Any]:
 
 def main() -> int:
     report = verify_cover_shadow()
-    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    REPORT_PATH.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    report_path = output_path(REPORT_PATH)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(
         json.dumps(
             {

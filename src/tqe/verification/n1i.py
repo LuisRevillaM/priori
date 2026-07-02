@@ -25,10 +25,13 @@ from tqe.verification.n1g import n1g_manual_document
 from tqe.workshop.knowledge_pack import (
     PACK_JSON_PATH,
     PACK_MD_PATH,
+    build_tactical_knowledge_pack,
     file_sha256,
     verify_tactical_knowledge_pack,
     write_tactical_knowledge_pack,
 )
+from tqe.workshop.knowledge_pack import render_markdown as render_knowledge_pack_markdown
+from tqe.write_mode import diff_against_checked_in, serialize_json_artifact, write_mode
 from tqe.workshop.m1_2 import (
     CAPABILITY_CONTEXT_PATH,
     CallerProfile,
@@ -258,12 +261,34 @@ def document_refs_and_operators(document: dict[str, Any]) -> dict[str, list[str]
 
 def build_report() -> dict[str, Any]:
     N1I_ROOT.mkdir(parents=True, exist_ok=True)
-    write_capability_context()
-    pack = write_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
-    pack_checks = verify_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
+    write = write_mode()
+    drift: list[dict[str, Any]] = []
     failure = n1h_failure_analysis()
+    if write:
+        # Explicit TQE_WRITE=1 opt-in: regenerate the tracked projections in place.
+        write_capability_context()
+        pack = write_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
+        write_json(DELIVERY_FAILURE_ANALYSIS_PATH, failure)
+    else:
+        # Read-only check: regenerate in memory and diff against the checked-in files.
+        context = list_capabilities(CallerProfile.HERMES_S2).model_dump(mode="json")
+        pack = build_tactical_knowledge_pack()
+        drift.extend(
+            item
+            for item in (
+                diff_against_checked_in(
+                    CAPABILITY_CONTEXT_PATH, serialize_json_artifact(context)
+                ),
+                diff_against_checked_in(PACK_JSON_PATH, serialize_json_artifact(pack)),
+                diff_against_checked_in(PACK_MD_PATH, render_knowledge_pack_markdown(pack)),
+                diff_against_checked_in(
+                    DELIVERY_FAILURE_ANALYSIS_PATH, serialize_json_artifact(failure)
+                ),
+            )
+            if item is not None
+        )
+    pack_checks = verify_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
     write_json(FAILURE_ANALYSIS_PATH, failure)
-    write_json(DELIVERY_FAILURE_ANALYSIS_PATH, failure)
 
     context = list_capabilities(CallerProfile.HERMES_S2I_MCP).model_dump(mode="json")
     typed_contract = describe_capability("typed_query_plan", CallerProfile.HERMES_S2I_MCP)
@@ -363,6 +388,14 @@ def build_report() -> dict[str, Any]:
             "The regenerated tactical knowledge pack passes its safety and consistency checks.",
             {"failed_checks": [item for item in pack_checks if not item["ok"]]},
         ),
+        check(
+            "n1i.tracked_projections_match_regeneration",
+            not drift,
+            "Checked-in knowledge pack / capability context / failure analysis match a fresh "
+            "in-memory regeneration (check mode never rewrites tracked files; run "
+            "`make n1i-write` to regenerate deliberately).",
+            {"mode": "write" if write else "check", "drift": drift},
+        ),
     ]
     summary = {"pass": sum(item["status"] == "pass" for item in checks), "fail": sum(item["status"] != "pass" for item in checks)}
     report = {
@@ -391,8 +424,10 @@ def build_report() -> dict[str, Any]:
         "checks": checks,
     }
     write_json(REPORT_PATH, report)
-    DELIVERY_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    DELIVERY_REPORT_PATH.write_text(render_markdown(report), encoding="utf-8")
+    if write:
+        # Pinned delivery evidence is only rewritten under the explicit opt-in.
+        DELIVERY_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        DELIVERY_REPORT_PATH.write_text(render_markdown(report), encoding="utf-8")
     return report
 
 

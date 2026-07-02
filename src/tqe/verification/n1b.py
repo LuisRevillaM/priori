@@ -20,6 +20,7 @@ from tqe.runtime.executor import (
 )
 from tqe.runtime.ir import BoundCatalogNode, TacticalQueryDocument
 from tqe.runtime.values import RuntimeValue
+from tqe.write_mode import output_path
 from tqe.workshop.m1_2 import (
     CallerProfile,
     ExecuteQueryPlanRequest,
@@ -112,7 +113,7 @@ def submit_validate_execute_corrected() -> dict[str, Any]:
     if N1B_WORKSHOP_ROOT.exists():
         shutil.rmtree(N1B_WORKSHOP_ROOT)
     document = corrected_document()
-    write_json(CORRECTED_PLAN_PATH, document)
+    write_json(output_path(CORRECTED_PLAN_PATH), document)
     submitted = dispatch_model_visible(
         ToolDispatchRequest(
             tool_name="submit_query_plan",
@@ -432,7 +433,7 @@ def build_report() -> dict[str, Any]:
         "runtime_parameter_contract": parameter_contract,
         "checks": checks,
     }
-    write_json(REPORT_PATH, report)
+    write_json(output_path(REPORT_PATH), report)
     return report
 
 

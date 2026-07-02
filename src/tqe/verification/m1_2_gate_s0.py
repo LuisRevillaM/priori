@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
@@ -29,6 +30,7 @@ from tqe.workshop.m1_2 import (
     validate_query_plan,
     write_capability_context,
 )
+from tqe.write_mode import diff_against_checked_in, serialize_json_artifact, write_mode
 
 REPORT_PATH = Path("artifacts/m1.2/gate-s0-verification-report.json")
 APPROVED_PLAN_PATH = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
@@ -53,10 +55,32 @@ def check(check_id: str, passed: bool, message: str, details: dict[str, Any] | N
 
 
 def build_report() -> dict[str, Any]:
-    clean_handles()
-    context = write_capability_context(CAPABILITY_CONTEXT_PATH)
+    drift: list[dict[str, Any]] = []
+    if write_mode():
+        # Explicit TQE_WRITE=1 opt-in: reset handles and rewrite the tracked context.
+        clean_handles()
+        context = write_capability_context(CAPABILITY_CONTEXT_PATH)
+    else:
+        # Read-only check: never delete or rewrite tracked files; regenerate the
+        # capability context in memory and diff it against the checked-in file.
+        context = list_capabilities(CallerProfile.HERMES_S2)
+        drift_item = diff_against_checked_in(
+            CAPABILITY_CONTEXT_PATH,
+            serialize_json_artifact(context.model_dump(mode="json")),
+        )
+        if drift_item is not None:
+            drift.append(drift_item)
     manual_context = list_capabilities(CallerProfile.HOST_MANUAL)
     checks: list[dict[str, Any]] = []
+    checks.append(
+        check(
+            "s0.capability_context.tracked_file_matches_regeneration",
+            not drift,
+            "generated/capability-context.json matches a fresh regeneration (run "
+            "`make m1-2-gate-s0-write` to regenerate deliberately).",
+            {"drift": drift},
+        )
+    )
     tool_names = [tool.name for tool in context.tools]
     checks.append(check("s0.hermes_tool_surface.exact", tool_names == HERMES_S2_TOOL_NAMES, "Hermes sees only the S2 tool surface.", {"tools": tool_names}))
     checks.append(check("s0.manual_tool_surface.full", [tool.name for tool in manual_context.tools] == APPROVED_TOOL_NAMES, "Host/manual sees the full staged tool surface.", {"tools": [tool.name for tool in manual_context.tools]}))
@@ -443,9 +467,18 @@ def non_authorable_outcome_plan() -> dict[str, Any]:
 
 
 def clean_handles() -> None:
+    """Reset local workshop handles, but never delete tracked (pinned) handle files."""
     handle_root = Path("artifacts/m1.2/workshop/handles")
-    if handle_root.exists():
-        shutil.rmtree(handle_root)
+    if not handle_root.exists():
+        return
+    tracked = set(
+        subprocess.check_output(["git", "ls-files", str(handle_root)], text=True).splitlines()
+    )
+    for path in sorted(handle_root.rglob("*"), key=lambda item: len(item.parts), reverse=True):
+        if path.is_file() and path.as_posix() not in tracked:
+            path.unlink()
+        elif path.is_dir() and not any(path.iterdir()):
+            path.rmdir()
 
 
 def main() -> None:

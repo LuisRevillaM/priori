@@ -307,19 +307,41 @@ afl-substrate-q2-verify:
 test:
 	$(PYTHON) -m unittest discover -s tests
 
-.PHONY: coverage-map
+# --- F0-2 write-mode contract -------------------------------------------------
+# Every *-verify target is a READ-ONLY CHECK: it never creates or modifies
+# tracked files (run reports go to gitignored artifacts/check-runs/), and it
+# fails with an explicit drift message where a checked-in generated artifact no
+# longer matches a fresh regeneration. Regenerating tracked evidence/projection
+# files requires the explicit TQE_WRITE=1 opt-in, exposed as `make <gate>-write`
+# (e.g. `make scp-0-write`, `make n1i-write`). In write mode a FAIL still writes
+# the FAIL report — a failing run never preserves a stale PASS artifact.
+# (`make n1d-freeze` remains the explicit N1D pin regenerator.)
+%-write:
+	TQE_WRITE=1 $(MAKE) $*-verify
+
+.PHONY: coverage-map coverage-map-write
 coverage-map:
 	$(PYTHON) scripts/coverage_map/aggregate.py
 
+coverage-map-write:
+	TQE_WRITE=1 $(PYTHON) scripts/coverage_map/aggregate.py
+
+# Regenerate the tracked Hermes knowledge projections (capability context first,
+# because the knowledge pack hashes it) without rewriting any pinned gate evidence.
+.PHONY: knowledge-pack-write
+knowledge-pack-write:
+	TQE_WRITE=1 $(PYTHON) -c "from tqe.workshop.m1_2 import write_capability_context; from tqe.workshop.knowledge_pack import write_tactical_knowledge_pack; write_capability_context(); write_tactical_knowledge_pack()"
+
+# These two targets are explicit ledger regenerators (write-mode pipelines).
 .PHONY: compiler-reachability
 compiler-reachability:
 	$(PYTHON) scripts/coverage_map/compiler_reachability.py
-	$(PYTHON) scripts/coverage_map/aggregate.py
+	TQE_WRITE=1 $(PYTHON) scripts/coverage_map/aggregate.py
 
 .PHONY: compiler-search-reachability
 compiler-search-reachability:
 	$(PYTHON) scripts/coverage_map/compiler_search_reachability.py
-	$(PYTHON) scripts/coverage_map/aggregate.py
+	TQE_WRITE=1 $(PYTHON) scripts/coverage_map/aggregate.py
 
 .PHONY: compiler-search-contract-projection
 compiler-search-contract-projection:

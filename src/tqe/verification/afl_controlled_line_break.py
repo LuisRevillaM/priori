@@ -10,6 +10,7 @@ from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
 from tqe.semantic_registry.generate import OUTPUT_ROOT, generate_scp0_artifacts
+from tqe.write_mode import write_mode
 
 
 REPORT_PATH = Path("artifacts/autonomous/afl-controlled-line-break-verification-report.json")
@@ -262,7 +263,7 @@ def _observed_statuses(rows: list[dict[str, Any]]) -> list[str]:
 
 
 def verify_controlled_line_break_capability() -> dict[str, Any]:
-    _registry, _runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=True)
+    _registry, _runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=write_mode())
     document_payload = controlled_line_break_probe_document()
     document = TacticalQueryDocument.model_validate(document_payload)
     bound_plan = bind_document(document)

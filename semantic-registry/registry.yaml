@@ -5051,53 +5051,60 @@ projection_policies:
         permitted_fields: []
         rationale: Verified Hermes-authored composition is intentionally new relative to the model-visible knowledge-pack baseline.
         review_condition: Remove or update this waiver when the AI baseline intentionally includes the composition.
-      - subject_ref: runtime:primitive:time_to_arrival:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: 779ce10e289191634f45051d6c90f9bd37c41e0d5e1d3a2811e5cc20ad85423a
+      - subject_ref: runtime:primitive:acceleration:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 8044338ee752d7de324f50f6913f20afe30a5dd313d277d712733cd8bb11d49f
         permitted_fields: []
-        rationale: Time-to-arrival is intentionally added as a model-visible reachability substrate primitive with explicit point-mass limitations.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:carry_episode:0.1.0
-        difference_kind: ADDED
-        projection_contract_hash: fac40aee740663083b4f48ee0fee9d5326ecbc12e9000a033a7c2d8e2ff239d7
+        rationale: Acceleration is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:primitive:cover_shadow:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 7ae43012a6725d814b7484c7c92de81096359754b7911cb77c3663ab0449c453
         permitted_fields: []
-        rationale: Carry episode is intentionally added as a model-visible conservative movement-under-control substrate primitive.
-        review_condition: Remove or update this waiver when the AI baseline intentionally includes the capability.
-      - subject_ref: runtime:primitive:change_across_anchor:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: 6bec7322861b28c7e42649cf1d8c55bec1909cbd0b30c63da9cb9242cefa26cd
-        projection_contract_hash: e4e82178972ffc81085f75c1d30a2767e9e20f0d82ad11a1755004e9390dcdd1
-        permitted_fields: [parameters]
-        rationale: Change-across-anchor gained bounded pressure-evidence field options in its declared parameters.
-        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
-      - subject_ref: runtime:primitive:controlled_pass_episode:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: 0ae83df9a078907612759f473b3ab3b0b640ae2e021eb2d7571f3c8995f20652
-        projection_contract_hash: 54e6cc870e85493e222c5337a72d053d18c2fadee0d9a9c28566e9a6651e2cd7
-        permitted_fields: [outputs]
-        rationale: Controlled-pass episode output evidence-field declarations were extended relative to the pinned AI baseline.
-        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
-      - subject_ref: runtime:primitive:pairwise_distance:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: cd5eb8ef82b23a544d7bc3ee9b989ed3a3fe61a42e9f21bded34a097a05b104a
-        projection_contract_hash: fa20644e8359a9a5a3fdf5dc4b0f58a0d2f71825958a3eeb78310f51a6065b5c
-        permitted_fields: [parameters]
-        rationale: Pairwise distance gained bounded carry/terminal anchor-field options in its declared parameters.
-        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
-      - subject_ref: runtime:primitive:pass_chain_episode:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: 7e944b4c55d731b4dd2b6ec65011c38d21ebf1d2606f154df865a293cb5ca0c0
-        projection_contract_hash: 0e4f6477acda06af186d95b77371e8f5d17999f0e21cb5e14a83c25cda27f6cb
-        permitted_fields: [evidence_fields, outputs]
-        rationale: Pass-chain episode evidence-field declarations were extended relative to the pinned AI baseline.
-        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
-      - subject_ref: runtime:relation:pressure_on_carrier:0.1.0
-        difference_kind: CONTRACT_CHANGED
-        baseline_contract_hash: 12bcebc22867494d5e6063c375767e726fbbfeb824c71bf03dd0ac0928fd7bc2
-        projection_contract_hash: cb4922d3cf51b6f11a3f1e67f8ed3a38492fc92b3ca9664d9b1d1f85f19e4977
-        permitted_fields: [parameters]
-        rationale: Pressure-on-carrier gained bounded carry/terminal anchor-field options in its declared parameters.
-        review_condition: Re-review if the baseline hash, projection hash, or changed field set changes.
+        rationale: Cover shadow is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:primitive:join_episode_sets:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 2f6bdc456dd304ea076428c34091df75e8080f09fd3f59ced8438a733cbc55ae
+        permitted_fields: []
+        rationale: Join-episode-sets is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:primitive:marking:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: cd562049b2d56bc8e66313150e2e44514c85807660affce1c437516c322aca72
+        permitted_fields: []
+        rationale: Marking is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:primitive:off_ball_run:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 33613344dd6da60fd75f0b57726c5e5e6d8ed90667694bd88b22db0a723bb856
+        permitted_fields: []
+        rationale: Off-ball run is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:primitive:off_ball_run_type:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: aecfbc7602290037495eafcfe044e75810d0d7ab7d76cb1b28f30a8e69f0fa2d
+        permitted_fields: []
+        rationale: Off-ball run type is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:primitive:set_piece_structure:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 3ee4719126044663905d42988d43d4afff0eca0577df593e9d36d0317523ba61
+        permitted_fields: []
+        rationale: Set-piece structure is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:primitive:space_region_generation:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 3ae62e6ad6caceb2e14343362d5578780d25891e9fb9e8a4014e5a7a835a578a
+        permitted_fields: []
+        rationale: Space-region generation is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
+      - subject_ref: runtime:relation:team_press:0.1.0
+        difference_kind: REMOVED
+        baseline_contract_hash: 4cf1558ccf3ed95deb1fea53b10166cb7144b63af1b1b8fa8b45b623425a6708
+        permitted_fields: []
+        rationale: Team press is Hermes-authorable substrate (agent exposure is still blocklist-gated, audit finding V5) but is intentionally denied from the AI projection pending exposure review.
+        review_condition: Remove this waiver when the capability passes exposure review and enters the AI projection, or when Hermes exposure becomes registry-driven.
       - subject_ref: recipe:line_break_support_response_v1:0.1.0
         difference_kind: CONTRACT_CHANGED
         baseline_contract_hash: a0a83061005860a3212d895055edce154c0b82c035b637c185d330d34f07424e

@@ -17,6 +17,7 @@ from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows, runtime_parameters
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
 from tqe.semantic_registry.generate import generate_scp0_artifacts
+from tqe.write_mode import emit_tracked_artifact, write_mode
 from tqe.verification.afl_substrate_q4 import _eq_predicate, _evidence, _number_param, _status_counts
 from tqe.verification.afl_validation_factory import (
     ValidationFactorySpec,
@@ -222,10 +223,12 @@ def carry_episode_document() -> dict[str, Any]:
 
 
 def verify_carry_episode() -> dict[str, Any]:
-    _registry, _runtime_manifest, registry_lock, parity_report = generate_scp0_artifacts(write=True)
+    _registry, _runtime_manifest, registry_lock, parity_report = generate_scp0_artifacts(write=write_mode())
     document_payload = carry_episode_document()
-    PLAN_ARTIFACT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    PLAN_ARTIFACT_PATH.write_text(json.dumps(document_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    plan_artifact_drift = emit_tracked_artifact(
+        PLAN_ARTIFACT_PATH,
+        json.dumps(document_payload, indent=2, sort_keys=True) + "\n",
+    )
     document = TacticalQueryDocument.model_validate(document_payload)
     bound_plan = bind_document(document)
     executor = TacticalQueryExecutor()
@@ -242,6 +245,14 @@ def verify_carry_episode() -> dict[str, Any]:
     )
 
     findings: list[dict[str, str]] = []
+    if plan_artifact_drift is not None:
+        findings.append(
+            {
+                "code": "plan_artifact_drift",
+                "message": plan_artifact_drift["message"],
+                "path": str(PLAN_ARTIFACT_PATH),
+            }
+        )
     if parity_report.status != "PASS":
         findings.append(
             {

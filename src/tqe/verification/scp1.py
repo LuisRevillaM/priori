@@ -17,6 +17,7 @@ from tqe.semantic_compiler import (
     load_expression_from_path,
 )
 from tqe.semantic_compiler.lowering import result_public_payload
+from tqe.write_mode import output_path
 
 
 PROGRAM_DIR = Path("delivery/scp-1/semantic-programs")
@@ -35,8 +36,9 @@ GAP_PROGRAMS = {
 
 def main() -> None:
     report = run_verification()
-    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    REPORT_PATH.write_text(
+    report_path = output_path(REPORT_PATH)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(
         json.dumps(report, indent=2, sort_keys=True, ensure_ascii=True) + "\n",
         encoding="utf-8",
     )

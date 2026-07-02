@@ -27,10 +27,18 @@ since June 19.)
 
 ## Process / gates
 
-- Several verifiers (`n1d`, `n1i`) regenerate pinned report files in place
-  when run locally, which can overwrite historical acceptance evidence with a
-  weaker local-run record. Check `git status` after running gates; do not
-  commit regenerated evidence without a decision.
+- FIXED (F0-2, 2026-07-01): verifiers no longer mutate tracked files when
+  run. Every `make <gate>-verify` target is a read-only check (run reports go
+  to gitignored `artifacts/check-runs/`; tracked generated artifacts are
+  regenerated in memory and diffed, failing on drift). Regenerating tracked
+  evidence/projection files requires the explicit `TQE_WRITE=1` opt-in via
+  `make <gate>-write`, and a FAIL in write mode still writes the FAIL report
+  (no stale-green). Historical note kept for the record: before this fix,
+  running `make n1i-verify`/`n1d-verify` locally regenerated
+  `delivery/n1d/N1I_REPORT.md` and the knowledge packs in place — this once
+  overwrote the historical VERIFIED N1I report with a weaker "not run" record
+  on a superseded branch — and parity/passport artifacts were written on PASS
+  only, so a FAIL could leave stale PASS evidence checked in.
 - `make n1d-verify` fails 2/15 checks by design since the AFL expansion moved
   executor/binder/catalog past the N1D freeze-manifest pins. Expected drift;
   re-pinning requires a fresh live rerun.

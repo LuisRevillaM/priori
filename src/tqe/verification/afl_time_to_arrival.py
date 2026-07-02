@@ -32,6 +32,7 @@ from tqe.verification.afl_validation_factory import (
     attach_validation_factory,
     validate_proof_carrying_records,
 )
+from tqe.write_mode import emit_tracked_artifact
 
 
 REPORT_PATH = Path("artifacts/autonomous/afl-time-to-arrival-verification-report.json")
@@ -197,8 +198,10 @@ def time_to_arrival_document() -> dict[str, Any]:
 
 def verify_time_to_arrival() -> dict[str, Any]:
     document_payload = time_to_arrival_document()
-    PLAN_ARTIFACT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    PLAN_ARTIFACT_PATH.write_text(json.dumps(document_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    plan_artifact_drift = emit_tracked_artifact(
+        PLAN_ARTIFACT_PATH,
+        json.dumps(document_payload, indent=2, sort_keys=True) + "\n",
+    )
     document = TacticalQueryDocument.model_validate(document_payload)
     bound_plan = bind_document(document)
     executor = TacticalQueryExecutor()
@@ -214,6 +217,14 @@ def verify_time_to_arrival() -> dict[str, Any]:
         and evidence_failure_count == 0
     )
     findings: list[dict[str, str]] = []
+    if plan_artifact_drift is not None:
+        findings.append(
+            {
+                "code": "plan_artifact_drift",
+                "message": plan_artifact_drift["message"],
+                "path": str(PLAN_ARTIFACT_PATH),
+            }
+        )
     if execution.status != ExecutionStatus.PASS:
         findings.append({"code": "execution_not_pass", "message": f"Execution status was {execution.status}.", "path": "execution.status"})
     if evidence_failure_count:

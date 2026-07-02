@@ -27,6 +27,7 @@ from tqe.verification.n1c import (
     read_json,
     stable_json_sha256,
 )
+from tqe.write_mode import diff_against_checked_in, serialize_json_artifact, write_mode
 
 # Committed source-of-truth (pinned N1D plan + manifest).
 PINNED_ROOT = Path("delivery/n1d")
@@ -386,20 +387,33 @@ def main() -> None:
         },
     }
     write_json(ATTESTATION_PATH, attestation)
+    drift: list[dict[str, Any]] = []
     if status == "VERIFIED":
-        write_json(VERIFIED_ATTESTATION_PATH, attestation)
+        if write_mode():
+            # Explicit TQE_WRITE=1 opt-in: promote the attestation into delivery/.
+            write_json(VERIFIED_ATTESTATION_PATH, attestation)
+        else:
+            # Read-only check: the committed attestation must match a fresh
+            # regeneration; drift fails the gate instead of being rewritten.
+            drift_item = diff_against_checked_in(
+                VERIFIED_ATTESTATION_PATH, serialize_json_artifact(attestation)
+            )
+            if drift_item is not None:
+                drift.append(drift_item)
+                blocking_reasons.append("n1d1.committed_attestation_drift")
 
     report = {
         "schema_version": "n1d1.verification.v1",
-        "status": "pass" if status == "VERIFIED" else "fail",
+        "status": "pass" if status == "VERIFIED" and not drift else "fail",
         "attestation_status": status,
         "attestation_path": str(ATTESTATION_PATH),
+        "committed_attestation_drift": drift,
         "blocking_reasons": blocking_reasons,
         "checks": checks,
     }
     write_json(REPORT_PATH, report)
     print(json.dumps({"attestation_status": status, "blocking_reasons": blocking_reasons}, sort_keys=True))
-    if status != "VERIFIED":
+    if status != "VERIFIED" or drift:
         raise SystemExit(1)
 
 

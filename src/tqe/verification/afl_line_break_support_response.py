@@ -18,6 +18,7 @@ from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
 from tqe.semantic_registry.generate import OUTPUT_ROOT, generate_scp0_artifacts
+from tqe.write_mode import write_mode
 from tqe.verification.afl_validation_factory import (
     ValidationFactorySpec,
     attach_validation_factory,
@@ -639,7 +640,7 @@ def _result_status_summary(rows: list[dict[str, Any]]) -> dict[str, list[str]]:
 
 
 def verify_line_break_support_response() -> dict[str, Any]:
-    _registry, _runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=True)
+    _registry, _runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=write_mode())
     document_payload = line_break_support_response_document()
     document = TacticalQueryDocument.model_validate(document_payload)
     bound_plan = bind_document(document)

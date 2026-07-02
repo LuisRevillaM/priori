@@ -16,6 +16,8 @@ from typing import Any
 
 import yaml
 
+from tqe.write_mode import output_path
+
 
 CONTRACT_PATH = Path("delivery/autonomous/afl_milestone_contract.yaml")
 SCHEMA_PATHS = [
@@ -432,8 +434,9 @@ def run(write: bool = True) -> dict[str, Any]:
     findings = validate_contract(copy.deepcopy(contract))
     report = build_report(contract, findings)
     if write:
-        REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-        REPORT_PATH.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        report_path = output_path(REPORT_PATH)
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return report
 
 

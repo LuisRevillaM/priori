@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
-"""Regenerate the coverage-map report + CSV from the classification ledger.
+"""Regenerate or check the coverage-map report + CSV from the classification ledger.
 
 The ledger (generated/coverage-map.json) is the judgment layer — 741 rows, each a
 proof-carrying classification of an atlas concept against the current catalog. This
 script is the DETERMINISTIC layer: it recomputes coverage %, the two backlogs
 (missing primitives, composition constraints), family coverage, and a calibration
-spot-check. Re-run after editing the ledger as new capabilities land:
+spot-check.
 
-    make coverage-map      # or: python scripts/coverage_map/aggregate.py
+Default mode is a READ-ONLY CHECK (F0-2): it validates the ledger (failing if
+normalization would change it) and diffs the regenerated report/CSV against the
+checked-in files without touching them. Regeneration in place requires the
+explicit ``TQE_WRITE=1`` opt-in:
+
+    make coverage-map          # read-only check
+    make coverage-map-write    # TQE_WRITE=1 regeneration after ledger edits
 
 It changes no runtime semantics and reads only the ledger.
 """
@@ -15,13 +21,21 @@ from __future__ import annotations
 
 import collections
 import csv
+import io
 import json
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 LEDGER = ROOT / "generated" / "coverage-map.json"
 CSV_OUT = ROOT / "generated" / "coverage-map.csv"
 REPORT = ROOT / "artifacts" / "autonomous" / "coverage-map-report.json"
+CHECK_RUN_ROOT = ROOT / "artifacts" / "check-runs" / "coverage-map"
+
+
+def write_mode() -> bool:
+    """Explicit opt-in for mutating tracked files (same TQE_WRITE=1 mechanism repo-wide)."""
+    return os.environ.get("TQE_WRITE", "").strip() == "1"
 
 CLAIM_STATUS = "internal_steering_only_v0_estimated_not_external_claim"
 AUDIT_NOTE = (
@@ -93,9 +107,18 @@ def normalize_composition_maturity(rows: list[dict]) -> bool:
     return changed
 
 def main() -> None:
+    write = write_mode()
     rows = json.loads(LEDGER.read_text())
-    if normalize_composition_maturity(rows):
-        LEDGER.write_text(json.dumps(rows, indent=1) + "\n")
+    ledger_normalized = normalize_composition_maturity(rows)
+    drift: list[str] = []
+    if ledger_normalized:
+        if write:
+            LEDGER.write_text(json.dumps(rows, indent=1) + "\n")
+        else:
+            drift.append(
+                f"{LEDGER.relative_to(ROOT)}: rows need composition-maturity normalization "
+                "(validation-on-check; run `make coverage-map-write` to normalize in place)."
+            )
     total = len(rows)
     cls = collections.Counter(r["classification"] for r in rows)
     maturity = collections.Counter(r.get("composition_maturity", "handwired") for r in rows)
@@ -154,17 +177,36 @@ def main() -> None:
             "current_reachable_now_or_one_gap_pct_after_q2_redistribution": pct(cls.get("supported", 0) + cls.get("partial_with_typed_gap", 0)),
         },
     }
-    REPORT.write_text(json.dumps(report, indent=1) + "\n")
+    report_content = json.dumps(report, indent=1) + "\n"
 
     keys = ["concept", "family", "classification", "justification", "required_missing_capability",
             "closest_supported_substitute", "composition_constraint_needed", "composition_constraint_note",
             "composition_maturity", "composition_maturity_applicable",
             "compiler_reachability_status", "priority_unlock"]
-    with CSV_OUT.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=keys, extrasaction="ignore", lineterminator="\n")
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: r.get(k, "") for k in keys})
+    csv_buffer = io.StringIO()
+    w = csv.DictWriter(csv_buffer, fieldnames=keys, extrasaction="ignore", lineterminator="\n")
+    w.writeheader()
+    for r in rows:
+        w.writerow({k: r.get(k, "") for k in keys})
+    csv_content = csv_buffer.getvalue()
+
+    if write:
+        REPORT.write_text(report_content)
+        CSV_OUT.write_text(csv_content)
+    else:
+        # Read-only check: regenerate in memory, diff against tracked outputs, and
+        # mirror the fresh copies to an untracked check-run directory.
+        for path, content in ((REPORT, report_content), (CSV_OUT, csv_content)):
+            if not path.exists():
+                drift.append(f"{path.relative_to(ROOT)}: missing (run `make coverage-map-write`).")
+            elif path.read_text() != content:
+                drift.append(
+                    f"{path.relative_to(ROOT)}: does not match regeneration from the ledger "
+                    "(run `make coverage-map-write` to regenerate deliberately)."
+                )
+        CHECK_RUN_ROOT.mkdir(parents=True, exist_ok=True)
+        (CHECK_RUN_ROOT / REPORT.name).write_text(report_content)
+        (CHECK_RUN_ROOT / CSV_OUT.name).write_text(csv_content)
 
     print(f"coverage-map v0 | {total} concepts")
     for k, v in cls.most_common():
@@ -175,6 +217,11 @@ def main() -> None:
     print("composition constraints needed:", len(ccn))
     for c in calibration:
         print(f"  calib {c['in_expected_class']}/{c['matched']}  {c['check']}")
+    if drift:
+        print("COVERAGE-MAP DRIFT (check mode is read-only):")
+        for item in drift:
+            print(f"  - {item}")
+        raise SystemExit(1)
 
 if __name__ == "__main__":
     main()

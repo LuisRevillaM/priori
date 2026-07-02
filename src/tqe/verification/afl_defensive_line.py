@@ -19,6 +19,7 @@ from tqe.runtime.binder import bind_document
 from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
 from tqe.semantic_registry.generate import OUTPUT_ROOT, generate_scp0_artifacts
+from tqe.write_mode import write_mode
 
 
 REPORT_PATH = Path("artifacts/autonomous/afl-defensive-line-verification-report.json")
@@ -187,7 +188,7 @@ def _passport_prohibited_claims(passport: dict[str, Any] | None) -> set[str]:
 
 def verify_defensive_line_capability() -> dict[str, Any]:
     # Refresh registry artifacts so the passport projection reflects the runtime catalog in this tree.
-    _registry, _runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=True)
+    _registry, _runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=write_mode())
     document_payload = defensive_line_probe_document()
     document = TacticalQueryDocument.model_validate(document_payload)
     bound_plan = bind_document(document)

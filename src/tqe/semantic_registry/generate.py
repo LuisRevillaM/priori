@@ -3273,11 +3273,12 @@ def build_parity_report(
     return report
 
 
-def generate_scp0_artifacts(
-    registry_path: Path = REGISTRY_PATH,
-    output_root: Path = OUTPUT_ROOT,
-    write: bool = True,
-) -> tuple[SemanticRegistry, dict[str, Any], RegistryLock, SemanticParityReport]:
+def _generate_scp0(
+    registry_path: Path,
+    output_root: Path,
+) -> tuple[
+    SemanticRegistry, dict[str, Any], RegistryLock, SemanticParityReport, dict[Path, Any]
+]:
     registry = load_registry(registry_path)
     runtime_manifest = generate_runtime_manifest()
     lock = make_registry_lock(registry, runtime_manifest)
@@ -3295,39 +3296,113 @@ def generate_scp0_artifacts(
     )
     findings.extend(validate_projection_parity(registry, runtime_manifest, projections))
     report = build_parity_report(registry, runtime_manifest, lock, findings, projections)
+    targets: dict[Path, Any] = {
+        SCHEMA_PATH: SemanticRegistry.model_json_schema(),
+        output_root / "runtime-manifest.json": runtime_manifest,
+        output_root / "plan-artifact-index.json": plan_index,
+        LOCK_PATH: lock.model_dump(mode="json"),
+        output_root / "product-projection.json": projections["product"],
+        output_root / "ai-projection.json": projections["ai"],
+        output_root / "recipe-library-projection.json": projections["recipe_library"],
+        output_root / "unsupported-capability-projection.json": projections["unsupported"],
+        output_root / "research-atlas-projection.json": projections["research_atlas"],
+        output_root / "capability-passport-projection.json": passport_projection,
+        output_root / "semantic-parity-report.json": report.model_dump(mode="json"),
+    }
+    return registry, runtime_manifest, lock, report, targets
 
+
+def _write_targets_atomically(write_targets: dict[Path, Any]) -> None:
+    with tempfile.TemporaryDirectory(prefix="scp0-generate-") as tmp_name:
+        tmp_root = Path(tmp_name)
+        staged: list[tuple[Path, Path]] = []
+        for target, payload in write_targets.items():
+            staged_path = tmp_root / target
+            _write_json(staged_path, payload)
+            staged.append((staged_path, target))
+        for staged_path, target in staged:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(staged_path), str(target))
+
+
+def scp0_artifact_drift(targets: dict[Path, Any]) -> list[dict[str, Any]]:
+    """Check-mode drift diff: fresh in-memory artifacts vs the checked-in files."""
+    drift: list[dict[str, Any]] = []
+    for path in sorted(targets, key=str):
+        fresh = (
+            json.dumps(targets[path], indent=2, sort_keys=True, ensure_ascii=True) + "\n"
+        )
+        if not path.exists():
+            drift.append(
+                {
+                    "path": str(path),
+                    "kind": "missing",
+                    "message": f"{path} is missing; run `make scp-0-write` to regenerate it.",
+                }
+            )
+        elif path.read_text(encoding="utf-8") != fresh:
+            drift.append(
+                {
+                    "path": str(path),
+                    "kind": "content_drift",
+                    "message": (
+                        f"{path} does not match a fresh regeneration. Inspect the drift and "
+                        "run `make scp-0-write` (TQE_WRITE=1) to regenerate deliberately."
+                    ),
+                }
+            )
+    return drift
+
+
+def generate_scp0_artifacts(
+    registry_path: Path = REGISTRY_PATH,
+    output_root: Path = OUTPUT_ROOT,
+    write: bool = False,
+) -> tuple[SemanticRegistry, dict[str, Any], RegistryLock, SemanticParityReport]:
+    """Generate SCP-0 artifacts. Read-only by default (F0-2).
+
+    With ``write=True`` (explicit opt-in): on PASS every artifact is rewritten;
+    on FAIL the parity report is still rewritten so a failing run can never
+    leave a stale PASS report in place, while the last valid projections and
+    lock are preserved.
+    """
+    registry, runtime_manifest, lock, report, targets = _generate_scp0(
+        registry_path, output_root
+    )
     if write:
+        report_path = output_root / "semantic-parity-report.json"
         if report.status == "PASS":
-            write_targets = {
-                SCHEMA_PATH: SemanticRegistry.model_json_schema(),
-                output_root / "runtime-manifest.json": runtime_manifest,
-                output_root / "plan-artifact-index.json": plan_index,
-                LOCK_PATH: lock.model_dump(mode="json"),
-                output_root / "product-projection.json": projections["product"],
-                output_root / "ai-projection.json": projections["ai"],
-                output_root / "recipe-library-projection.json": projections["recipe_library"],
-                output_root / "unsupported-capability-projection.json": projections["unsupported"],
-                output_root / "research-atlas-projection.json": projections["research_atlas"],
-                output_root / "capability-passport-projection.json": passport_projection,
-                output_root / "semantic-parity-report.json": report.model_dump(mode="json"),
-            }
-            with tempfile.TemporaryDirectory(prefix="scp0-generate-") as tmp_name:
-                tmp_root = Path(tmp_name)
-                staged: list[tuple[Path, Path]] = []
-                for target, payload in write_targets.items():
-                    staged_path = tmp_root / target
-                    _write_json(staged_path, payload)
-                    staged.append((staged_path, target))
-                for staged_path, target in staged:
-                    target.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.move(str(staged_path), str(target))
+            write_targets = targets
+        else:
+            # Never preserve a stale PASS parity report; keep last-valid projections.
+            write_targets = {report_path: targets[report_path]}
+        _write_targets_atomically(write_targets)
     return registry, runtime_manifest, lock, report
 
 
+def check_scp0_artifacts(
+    registry_path: Path = REGISTRY_PATH,
+    output_root: Path = OUTPUT_ROOT,
+) -> tuple[SemanticRegistry, dict[str, Any], RegistryLock, SemanticParityReport, list[dict[str, Any]]]:
+    """Read-only check: regenerate in memory and diff against checked-in artifacts."""
+    registry, runtime_manifest, lock, report, targets = _generate_scp0(
+        registry_path, output_root
+    )
+    return registry, runtime_manifest, lock, report, scp0_artifact_drift(targets)
+
+
 def main() -> None:
-    _, _, _, report = generate_scp0_artifacts(write=True)
+    from tqe.write_mode import write_mode
+
+    if write_mode():
+        _, _, _, report = generate_scp0_artifacts(write=True)
+        drift: list[dict[str, Any]] = []
+    else:
+        _, _, _, report, drift = check_scp0_artifacts()
     print(json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True))
-    if report.status != "PASS":
+    if drift:
+        print(json.dumps({"projection_drift": drift}, indent=2, sort_keys=True))
+    if report.status != "PASS" or drift:
         raise SystemExit(1)
 
 

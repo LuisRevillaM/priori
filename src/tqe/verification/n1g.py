@@ -26,9 +26,12 @@ from tqe.verification.n1d import ENTRY_MODE_EVIDENCE
 from tqe.workshop.knowledge_pack import (
     PACK_JSON_PATH,
     PACK_MD_PATH,
+    build_tactical_knowledge_pack,
     verify_tactical_knowledge_pack,
     write_tactical_knowledge_pack,
 )
+from tqe.workshop.knowledge_pack import render_markdown as render_knowledge_pack_markdown
+from tqe.write_mode import diff_against_checked_in, serialize_json_artifact, write_mode
 from tqe.workshop.m1_2 import (
     CallerProfile,
     CapabilityGap,
@@ -242,8 +245,30 @@ def original_n1f_failure_summary() -> dict[str, Any]:
 def build_report() -> dict[str, Any]:
     N1G_ROOT.mkdir(parents=True, exist_ok=True)
     WORKSHOP_ROOT.mkdir(parents=True, exist_ok=True)
-    write_capability_context()
-    write_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
+    write = write_mode()
+    drift: list[dict[str, Any]] = []
+    if write:
+        # Explicit TQE_WRITE=1 opt-in: regenerate the tracked projections in place.
+        write_capability_context()
+        write_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
+    else:
+        # Read-only check: regenerate in memory and diff against the checked-in files.
+        context = list_capabilities(CallerProfile.HERMES_S2).model_dump(mode="json")
+        fresh_pack = build_tactical_knowledge_pack()
+        drift.extend(
+            item
+            for item in (
+                diff_against_checked_in(
+                    Path("generated/capability-context.json"),
+                    serialize_json_artifact(context),
+                ),
+                diff_against_checked_in(PACK_JSON_PATH, serialize_json_artifact(fresh_pack)),
+                diff_against_checked_in(
+                    PACK_MD_PATH, render_knowledge_pack_markdown(fresh_pack)
+                ),
+            )
+            if item is not None
+        )
 
     document = n1g_manual_document()
     write_json(MANUAL_PLAN_PATH, document)
@@ -326,6 +351,14 @@ def build_report() -> dict[str, Any]:
             "Generated tactical knowledge pack exposes the safe generic path and omits the trusted wrapper from authorable recipe summaries.",
             {"failed_checks": [item for item in knowledge_checks if not item["ok"]]},
         ),
+        check(
+            "n1g.tracked_projections_match_regeneration",
+            not drift,
+            "Checked-in knowledge pack / capability context match a fresh in-memory "
+            "regeneration (check mode never rewrites tracked files; run `make n1g-write` "
+            "to regenerate deliberately).",
+            {"mode": "write" if write else "check", "drift": drift},
+        ),
     ]
     summary = {"pass": sum(item["status"] == "pass" for item in checks), "fail": sum(item["status"] != "pass" for item in checks)}
     report = {
@@ -345,8 +378,10 @@ def build_report() -> dict[str, Any]:
         "checks": checks,
     }
     write_json(REPORT_PATH, report)
-    DELIVERY_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    DELIVERY_REPORT_PATH.write_text(render_markdown(report), encoding="utf-8")
+    if write:
+        # Pinned delivery evidence is only rewritten under the explicit opt-in.
+        DELIVERY_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        DELIVERY_REPORT_PATH.write_text(render_markdown(report), encoding="utf-8")
     return report
 
 

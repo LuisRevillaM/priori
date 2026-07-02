@@ -27,6 +27,7 @@ from tqe.runtime.ir import (
     canonical_json,
 )
 from tqe.runtime.values import FrameSignal, runtime_value_from_raw
+from tqe.write_mode import output_path
 from tqe.verification.n1b import (
     corrected_document,
     runtime_parameter_access_contract,
@@ -58,16 +59,18 @@ N1_INSPECTION_REPORT_PATH = Path("artifacts/n1b/n1-post-n1b-hero-inspection-repo
 
 
 def main() -> None:
-    N1C_ROOT.mkdir(parents=True, exist_ok=True)
+    manifest_path = output_path(MANIFEST_PATH)
+    report_path = output_path(REPORT_PATH)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest = build_manifest()
-    write_json(MANIFEST_PATH, manifest)
+    write_json(manifest_path, manifest)
     tri_state = relation_destination_entry_tri_state_fixture()
     enum_contract = declared_enum_output_contract()
     context_contract = runtime_parameter_access_contract()
     checks = [
         check(
             "n1c.manifest_written",
-            MANIFEST_PATH.exists() and required_manifest_fields_present(manifest),
+            manifest_path.exists() and required_manifest_fields_present(manifest),
             "Canonical N1C freeze manifest exists and contains required identity fields.",
             {"manifest_path": str(MANIFEST_PATH), "manifest_sha256": file_sha256(MANIFEST_PATH)},
         ),
@@ -135,14 +138,14 @@ def main() -> None:
         "generated_at": N1C_PROOF_RECORDED_AT,
         "status": "pass" if summary["fail"] == 0 else "fail",
         "summary": summary,
-        "manifest_path": str(MANIFEST_PATH),
-        "manifest_sha256": file_sha256(MANIFEST_PATH),
+        "manifest_path": str(manifest_path),
+        "manifest_sha256": file_sha256(manifest_path),
         "tri_state_fixture": tri_state,
         "runtime_context_contract": context_contract,
         "declared_enum_output_contract": enum_contract,
         "checks": checks,
     }
-    write_json(REPORT_PATH, report)
+    write_json(report_path, report)
     print(json.dumps({"status": report["status"], "summary": summary}, sort_keys=True))
     if report["status"] != "pass":
         raise SystemExit(1)

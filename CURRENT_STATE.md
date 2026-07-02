@@ -51,13 +51,19 @@ gate enforces this).
 - Primitive/capability gates: see `make`-targets in `Makefile`
   (`afl-*-verify`, `scl0-verify`, `scl1-verify`, `scl-nl0-verify`).
 
-Warning for operators: several verifiers (e.g. `n1d`, `n1i`) regenerate their
-report files and knowledge packs **in place** when run locally. Running a gate
-without a live evidence source can overwrite a pinned historical report with a
-weaker local one — this exact mechanism produced a misleading "not run" edit of
-`N1I_REPORT.md` on a superseded branch. Until the gates are fixed to write
-fresh runs to `artifacts/` only, check `git status` after running gates and do
-not commit regenerated evidence files without a decision.
+Note for operators (fixed in F0-2, 2026-07-01): every `make <gate>-verify`
+target is now a READ-ONLY CHECK — it writes run reports only to gitignored
+`artifacts/check-runs/` and never creates or modifies tracked files. Where a
+gate used to regenerate a tracked file in place, it now regenerates in memory
+and diffs against the checked-in version, failing with an explicit drift
+message. Regenerating tracked evidence/projection files requires the explicit
+`TQE_WRITE=1` opt-in via `make <gate>-write` (e.g. `make scp-0-write`,
+`make n1i-write`; `make n1d-freeze` remains the N1D pin regenerator), and in
+write mode a FAIL still writes the FAIL report so stale PASS evidence cannot
+survive a failing run. Historical context: before this fix, running `n1d`/`n1i`
+locally regenerated pinned reports and knowledge packs in place, which once
+overwrote the historical `N1I_REPORT.md` with a misleading "not run" record on
+a superseded branch.
 
 ## Standing Blockers (external authority required)
 

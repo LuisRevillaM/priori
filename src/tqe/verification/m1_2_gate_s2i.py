@@ -7,9 +7,17 @@ from pathlib import Path
 from tqe.workshop.knowledge_pack import (
     PACK_JSON_PATH,
     PACK_MD_PATH,
+    build_tactical_knowledge_pack,
     verify_tactical_knowledge_pack,
     write_json,
     write_tactical_knowledge_pack,
+)
+from tqe.workshop.knowledge_pack import render_markdown as render_knowledge_pack_markdown
+from tqe.write_mode import (
+    diff_against_checked_in,
+    output_path,
+    serialize_json_artifact,
+    write_mode,
 )
 from tqe.runtime.binder import bind_document
 from tqe.runtime.ir import TacticalQueryDocument
@@ -27,9 +35,30 @@ REPORT_PATH = Path("artifacts/m1.2/gate-s2i-verification-report.json")
 
 
 def main() -> None:
-    pack = write_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
+    if write_mode():
+        # Explicit TQE_WRITE=1 opt-in: regenerate the tracked knowledge pack in place.
+        pack = write_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
+        drift = []
+    else:
+        # Read-only check: regenerate in memory and diff against the checked-in pack.
+        pack = build_tactical_knowledge_pack()
+        drift = [
+            item
+            for item in (
+                diff_against_checked_in(PACK_JSON_PATH, serialize_json_artifact(pack)),
+                diff_against_checked_in(PACK_MD_PATH, render_knowledge_pack_markdown(pack)),
+            )
+            if item is not None
+        ]
     checks = verify_tactical_knowledge_pack(PACK_JSON_PATH, PACK_MD_PATH)
     checks.extend(executable_plan_contract_checks())
+    checks.append(
+        {
+            "name": "knowledge_pack.tracked_files_match_regeneration",
+            "ok": not drift,
+            "details": {"drift": drift},
+        }
+    )
     report = {
         "schema_version": "1.0",
         "gate": "S2I_A_tactical_knowledge_pack",
@@ -40,11 +69,12 @@ def main() -> None:
         "checks": checks,
         "passed": all(item["ok"] for item in checks),
     }
-    write_json(REPORT_PATH, report)
+    report_path = output_path(REPORT_PATH)
+    write_json(report_path, report)
     passed = sum(1 for item in checks if item["ok"])
     failed = len(checks) - passed
     print(f"S2I-A verification: {passed} passed, {failed} failed")
-    print(f"Report: {REPORT_PATH}")
+    print(f"Report: {report_path}")
     if not report["passed"]:
         raise SystemExit(1)
 

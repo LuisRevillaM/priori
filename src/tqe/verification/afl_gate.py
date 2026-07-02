@@ -31,6 +31,7 @@ from tqe.verification.afl_g0 import (
     stable_hash,
     validate_contract,
 )
+from tqe.write_mode import WRITE_ENV_VAR, output_path
 
 
 PROGRAM_ID = "priori-autonomous-football-language"
@@ -136,7 +137,10 @@ def bytes_sha256(payload: bytes) -> str:
 
 
 def run_cmd(args: list[str]) -> dict[str, Any]:
-    completed = subprocess.run(args, cwd=Path.cwd(), text=True, capture_output=True, check=False)
+    env = {key: value for key, value in os.environ.items() if key != WRITE_ENV_VAR}
+    completed = subprocess.run(
+        args, cwd=Path.cwd(), text=True, capture_output=True, check=False, env=env
+    )
     return {
         "command": args,
         "returncode": completed.returncode,
@@ -480,7 +484,7 @@ def run_canaries(write: bool = True) -> dict[str, Any]:
         "canaries": canaries,
     }
     if write:
-        write_json(CANARY_REPORT_PATH, result)
+        write_json(output_path(CANARY_REPORT_PATH), result)
     return result
 
 
@@ -607,40 +611,47 @@ def build_promotion_certificate(gate_result: dict[str, Any]) -> dict[str, Any]:
 
 
 def write_packet_zip(root: Path = CANDIDATE_DIR, packet_dir: Path = PACKET_DIR) -> str:
+    packet_zip = Path(f"{packet_dir}.zip")
+    packet_sha_path = Path(f"{packet_zip}.sha256")
     if packet_dir.exists():
         shutil.rmtree(packet_dir)
-    if PACKET_ZIP.exists():
-        PACKET_ZIP.unlink()
-    if PACKET_SHA_PATH.exists():
-        PACKET_SHA_PATH.unlink()
+    if packet_zip.exists():
+        packet_zip.unlink()
+    if packet_sha_path.exists():
+        packet_sha_path.unlink()
+    packet_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(root, packet_dir)
-    with zipfile.ZipFile(PACKET_ZIP, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+    with zipfile.ZipFile(packet_zip, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(item for item in packet_dir.rglob("*") if item.is_file()):
             archive.write(path, path.relative_to(packet_dir.parent).as_posix())
-    digest = file_sha256(PACKET_ZIP)
-    PACKET_SHA_PATH.write_text(f"{digest}  {PACKET_ZIP.name}\n", encoding="utf-8")
+    digest = file_sha256(packet_zip)
+    packet_sha_path.write_text(f"{digest}  {packet_zip.name}\n", encoding="utf-8")
     return digest
 
 
 def run_gate(write_packet: bool = True) -> dict[str, Any]:
-    manifest = build_candidate_packet(CANDIDATE_DIR)
+    # Check mode (default) mirrors every tracked candidate/packet artifact into
+    # artifacts/check-runs/; only TQE_WRITE=1 touches the canonical tracked paths.
+    candidate_dir = output_path(CANDIDATE_DIR)
+    packet_dir = output_path(PACKET_DIR)
+    manifest = build_candidate_packet(candidate_dir)
     public_report = run_public_verification()
-    write_json(CANDIDATE_DIR / "public-test-report.json", make_report(public_report["status"], "public_tests", public_report))
+    write_json(candidate_dir / "public-test-report.json", make_report(public_report["status"], "public_tests", public_report))
     canary_report = run_canaries()
-    gate_result = build_gate_result(CANDIDATE_DIR, public_report, canary_report)
-    write_json(GATE_RESULT_PATH, gate_result)
-    write_json(CANDIDATE_DIR / "gate-result.json", gate_result)
+    gate_result = build_gate_result(candidate_dir, public_report, canary_report)
+    write_json(output_path(GATE_RESULT_PATH), gate_result)
+    write_json(candidate_dir / "gate-result.json", gate_result)
     certificate = build_promotion_certificate(gate_result)
-    write_json(PROMOTION_CERT_PATH, certificate)
-    write_json(CANDIDATE_DIR / "promotion-certificate.json", certificate)
+    write_json(output_path(PROMOTION_CERT_PATH), certificate)
+    write_json(candidate_dir / "promotion-certificate.json", certificate)
 
-    write_artifacts_sha(CANDIDATE_DIR)
-    manifest["packet_hash"] = stable_hash(artifact_hashes(CANDIDATE_DIR))
-    manifest["required_artifacts"] = artifact_hashes(CANDIDATE_DIR)
-    write_json(CANDIDATE_DIR / "review-packet-manifest.json", manifest)
-    write_artifacts_sha(CANDIDATE_DIR)
+    write_artifacts_sha(candidate_dir)
+    manifest["packet_hash"] = stable_hash(artifact_hashes(candidate_dir))
+    manifest["required_artifacts"] = artifact_hashes(candidate_dir)
+    write_json(candidate_dir / "review-packet-manifest.json", manifest)
+    write_artifacts_sha(candidate_dir)
 
-    packet_sha = write_packet_zip(CANDIDATE_DIR, PACKET_DIR) if write_packet else None
+    packet_sha = write_packet_zip(candidate_dir, packet_dir) if write_packet else None
     report = {
         "schema_version": "1.0",
         "program": PROGRAM_ID,
@@ -649,7 +660,7 @@ def run_gate(write_packet: bool = True) -> dict[str, Any]:
         "candidate_manifest": manifest,
         "gate_result": gate_result,
         "promotion_certificate": certificate,
-        "packet_zip": str(PACKET_ZIP) if write_packet else None,
+        "packet_zip": f"{packet_dir}.zip" if write_packet else None,
         "packet_sha256": packet_sha,
     }
     return report

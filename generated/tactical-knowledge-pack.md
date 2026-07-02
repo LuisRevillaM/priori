@@ -1,7 +1,7 @@
 # Tactical Knowledge Pack
 
 Version: `m1.2-s2i-a.0`
-SHA-256: `c152e0d09df79f02805851f67c1f0a752e072c42492ae7d0fa61572b4a192192`
+SHA-256: `2fff87263bda76d9a69659ebba171b70d5d81d43a109db179fcb59322067239c`
 Generated: `reproducible_from_source_hashes`
 
 ## Architecture
@@ -186,22 +186,22 @@ Disallowed claims:
 
 ## Source Hashes
 
-- `Makefile`: `b1a90bd11e5048f9aa37ab1a3668a850ab99374c059cdff94d98340c478bcb1e`
+- `Makefile`: `a08e41b19293f6537664c317a85b019e42d170d9a73fa0f36c4bee62c82c0ccf`
 - `config/query-plans/ball_side_block_shift.ir.v1.json`: `877c185594e30442a745fe10e9b15fa3f5184ce28b1f8e5f2ca96d4a7439d945`
 - `config/query-plans/first_time_relay_after_receiver_line_transition.experimental.v1.json`: `af52f539c8ef40c08f7300bf4af895e1d087be4c0c138c229be36e1780e5620d`
 - `config/query-plans/high_bypass_completed_pass.experimental.v1.json`: `38cf4c31bd388df98284d80384cfba600ec6aa90312ff530427d03a19d8e6c83`
 - `config/query-plans/line_break_support_response.experimental.v1.json`: `8f9d6da096c55c5bea3461750eeca77d19f08d6b363920021f07fcb7a02510a5`
 - `config/query-plans/opposite_corridor_after_shift.experimental.v1.json`: `9244603037c2db474bd766688a87ed7b72d5d8695953ec225a4a71f1b0206b74`
 - `config/query-plans/possession_corridor_availability.experimental.v1.json`: `81ff93059b8b6bf5e0b5958610b2dc48a5814f0b7001f4bb4efc6956b2e94fde`
-- `generated/capability-context.json`: `5020ae139fb1f92c237c4be167410a7486395ea580622f747fedb9f9a90f40de`
+- `generated/capability-context.json`: `33eaaa616bb3fc45d4d3a41756a5dfe0d95f6b1cb27a053dac77ab9ae235f0eb`
 - `generated/tactical-query-plan.schema.json`: `0e45cff180c3738629e9c49b15a7191faa12c1517ae987a91d2f80424df68b0f`
 - `generated/tactical-query-plan.types.ts`: `838bc7a1db332eb24f6fd80faa1530c6cc441aba7eb91eb3e806fa8d23d0bffc`
 - `src/tqe/runtime/binder.py`: `1fef904ec403cda0ad9c01cad3e743f2ad2284c7334c606831c4cece3a8da210`
-- `src/tqe/runtime/catalog.py`: `0a9b31e196990e605f0bcd9ca3ae1f5c936d0890e04f36604ee92c77f476d526`
-- `src/tqe/runtime/executor.py`: `c28418f068dc8b34d110edd79a17a1a1a77b5bb4ab9e8d85ed8a650328f055d7`
+- `src/tqe/runtime/catalog.py`: `438fb509580c4b2b9a4c8f5717b2d917543f67a61a5efbc05cc8efb69f4af7cc`
+- `src/tqe/runtime/executor.py`: `f30b99a2cbaeb42341221e8525ac6b38d720251be449a0f27d74ed362112660f`
 - `src/tqe/runtime/ir.py`: `28e5fa2d221bc8f9ec66620d7a8f47a346a002dda9f2e264873492862c39dd3a`
 - `src/tqe/runtime/relations.py`: `6408e3bb596ff3429091a0ab549bec8a73a1e999f6cfcc2aebd83cce26f862ee`
-- `src/tqe/verification/m1_2_gate_s2i.py`: `00cf3e665ef2096c44a4d28ba37284bb9207ca5412e2e6c564ef0d8d3042c99f`
+- `src/tqe/verification/m1_2_gate_s2i.py`: `9397f1a8a6b11e28d1f0bb48105a44dfae9a2c49ca61ff44413108f1d85ce125`
 - `src/tqe/workshop/hermes_s2.py`: `ae2bb93b3444749d8fd131075e29404141e517820faf103fb58de2ebafcb1591`
 - `src/tqe/workshop/knowledge_pack.py`: `2878869bc4ea757f3704740e3212c7556bffa84c95a72797c3e5a581956ef6aa`
 - `src/tqe/workshop/m1_2.py`: `67d2654a63d719a19f398f608a3723a30ee2b3c9a97b0c6a0d545ed768637ccf`

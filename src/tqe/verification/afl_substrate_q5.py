@@ -26,6 +26,7 @@ from tqe.verification.afl_validation_factory import (
     attach_validation_factory,
     validate_proof_carrying_records,
 )
+from tqe.write_mode import emit_tracked_artifact
 
 
 REPORT_PATH = Path("artifacts/autonomous/afl-substrate-q5-verification-report.json")
@@ -244,8 +245,10 @@ def requested_evidence() -> list[dict[str, Any]]:
 
 def verify_substrate_q5() -> dict[str, Any]:
     document_payload = q5_document()
-    PLAN_ARTIFACT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    PLAN_ARTIFACT_PATH.write_text(json.dumps(document_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    plan_artifact_drift = emit_tracked_artifact(
+        PLAN_ARTIFACT_PATH,
+        json.dumps(document_payload, indent=2, sort_keys=True) + "\n",
+    )
     document = TacticalQueryDocument.model_validate(document_payload)
     bound_plan = bind_document(document)
     executor = TacticalQueryExecutor()
@@ -261,6 +264,14 @@ def verify_substrate_q5() -> dict[str, Any]:
     )
     proof_carrying = validate_proof_carrying_records(proof_carrying_records(probe))
     findings: list[dict[str, str]] = []
+    if plan_artifact_drift is not None:
+        findings.append(
+            {
+                "code": "plan_artifact_drift",
+                "message": plan_artifact_drift["message"],
+                "path": str(PLAN_ARTIFACT_PATH),
+            }
+        )
     if execution.status != ExecutionStatus.PASS:
         findings.append({"code": "execution_not_pass", "message": f"Execution status was {execution.status}.", "path": "execution.status"})
     if evidence_failure_count:

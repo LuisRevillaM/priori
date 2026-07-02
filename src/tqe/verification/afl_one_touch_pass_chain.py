@@ -24,6 +24,7 @@ from tqe.runtime.executor import TacticalQueryExecutor, execution_result_rows
 from tqe.runtime.ir import ExecutionStatus, TacticalQueryDocument, stable_hash
 from tqe.runtime.one_touch import evaluate_one_touch_relays
 from tqe.semantic_registry.generate import OUTPUT_ROOT, generate_scp0_artifacts
+from tqe.write_mode import emit_tracked_artifact, write_mode
 from tqe.verification.afl_validation_factory import (
     ValidationFactorySpec,
     attach_validation_factory,
@@ -303,12 +304,11 @@ def requested_evidence() -> list[dict[str, Any]]:
 
 
 def verify_one_touch_pass_chain() -> dict[str, Any]:
-    _registry, _runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=True)
+    _registry, _runtime_manifest, lock, parity_report = generate_scp0_artifacts(write=write_mode())
     document_payload = one_touch_pass_chain_document()
-    PLAN_ARTIFACT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    PLAN_ARTIFACT_PATH.write_text(
+    plan_artifact_drift = emit_tracked_artifact(
+        PLAN_ARTIFACT_PATH,
         json.dumps(document_payload, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
     )
     document = TacticalQueryDocument.model_validate(document_payload)
     bound_plan = bind_document(document)
@@ -332,6 +332,14 @@ def verify_one_touch_pass_chain() -> dict[str, Any]:
     )
 
     findings: list[dict[str, str]] = []
+    if plan_artifact_drift is not None:
+        findings.append(
+            {
+                "code": "plan_artifact_drift",
+                "message": plan_artifact_drift["message"],
+                "path": str(PLAN_ARTIFACT_PATH),
+            }
+        )
     if parity_report.status != "PASS":
         findings.append({"code": "scp0_parity_failed", "message": "SCP-0 artifact generation did not pass.", "path": "semantic-registry"})
     if execution.status != ExecutionStatus.PASS:
