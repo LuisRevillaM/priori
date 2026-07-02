@@ -308,6 +308,59 @@ class CorridorEpisodeHonestyTest(unittest.TestCase):
         self.assertEqual(2, len(episodes))
         self.assertEqual("closed_on_missing_evidence", episodes[0]["close_reason"])
 
+    def test_missing_target_inside_available_frame_does_not_bridge_continuity(self) -> None:
+        positions = fixture_positions([100, 105, 110, 115, 120], missing_target_frames={110})
+
+        episodes, _negatives, counts = evaluate_result_window(
+            result=fixture_result(outcome_frame_id=120),
+            positions=positions,
+            attack_x_sign=1,
+            attacking_outfield={"target"},
+            defending_outfield={"defender"},
+            config=CorridorConfig(open_after_frames=2, close_after_frames=2, analysis_rate_hz=5),
+        )
+
+        self.assertEqual(1, counts["UNKNOWN"])
+        self.assertEqual(2, len(episodes))
+        self.assertEqual((100, 105), (episodes[0]["open_frame_id"], episodes[0]["close_frame_id"]))
+        self.assertEqual("closed_on_missing_evidence", episodes[0]["close_reason"])
+        self.assertEqual((115, 120), (episodes[1]["open_frame_id"], episodes[1]["close_frame_id"]))
+        self.assertEqual(0.2, episodes[0]["duration_seconds"])
+        self.assertEqual(0.2, episodes[1]["duration_seconds"])
+
+    def test_missing_ball_inside_available_frame_does_not_bridge_continuity(self) -> None:
+        positions = fixture_positions([100, 105, 110, 115, 120], missing_ball_frames={110})
+
+        episodes, _negatives, counts = evaluate_result_window(
+            result=fixture_result(outcome_frame_id=120),
+            positions=positions,
+            attack_x_sign=1,
+            attacking_outfield={"target"},
+            defending_outfield={"defender"},
+            config=CorridorConfig(open_after_frames=2, close_after_frames=2, analysis_rate_hz=5),
+        )
+
+        self.assertEqual(1, counts["UNKNOWN"])
+        self.assertEqual(2, len(episodes))
+        self.assertEqual("closed_on_missing_evidence", episodes[0]["close_reason"])
+
+    def test_missing_target_at_window_boundaries_does_not_count_as_pass(self) -> None:
+        positions = fixture_positions([100, 105, 110, 115], missing_target_frames={100, 115})
+
+        episodes, _negatives, counts = evaluate_result_window(
+            result=fixture_result(outcome_frame_id=115),
+            positions=positions,
+            attack_x_sign=1,
+            attacking_outfield={"target"},
+            defending_outfield={"defender"},
+            config=CorridorConfig(open_after_frames=2, close_after_frames=2, analysis_rate_hz=5),
+        )
+
+        self.assertEqual(2, counts["UNKNOWN"])
+        self.assertEqual(1, len(episodes))
+        self.assertEqual((105, 110), (episodes[0]["open_frame_id"], episodes[0]["close_frame_id"]))
+        self.assertEqual("closed_on_missing_evidence", episodes[0]["close_reason"])
+
     def test_executor_relation_node_preserves_missing_evidence_close_reason(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -395,16 +448,21 @@ def unknown_state(frame_id: int) -> dict[str, object]:
     }
 
 
-def fixture_positions(frames: list[int]) -> pd.DataFrame:
+def fixture_positions(
+    frames: list[int],
+    *,
+    missing_ball_frames: set[int] | None = None,
+    missing_target_frames: set[int] | None = None,
+) -> pd.DataFrame:
+    missing_ball_frames = missing_ball_frames or set()
+    missing_target_frames = missing_target_frames or set()
     rows: list[dict[str, object]] = []
     for frame_id in frames:
-        rows.extend(
-            [
-                position_row(frame_id, None, "DFL-OBJ-0000XT", "ball", 0.0, 0.0),
-                position_row(frame_id, "home", "target", "player", 12.0, 0.0),
-                position_row(frame_id, "away", "defender", "player", 6.0, 10.0),
-            ]
-        )
+        if frame_id not in missing_ball_frames:
+            rows.append(position_row(frame_id, None, "DFL-OBJ-0000XT", "ball", 0.0, 0.0))
+        if frame_id not in missing_target_frames:
+            rows.append(position_row(frame_id, "home", "target", "player", 12.0, 0.0))
+        rows.append(position_row(frame_id, "away", "defender", "player", 6.0, 10.0))
     return pd.DataFrame(rows)
 
 

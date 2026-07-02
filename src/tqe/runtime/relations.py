@@ -1,4 +1,12 @@
-"""Runtime relation implementations for M1.1."""
+"""Runtime relation implementations for M1.1.
+
+Progressive-corridor hysteresis only bridges observed PASS/FAIL states. Missing
+tracking evidence for the ball, target, or evaluated frame is emitted as
+UNKNOWN, closes any open episode as ``closed_on_missing_evidence``, and a new
+episode may reopen only after the configured consecutive PASS frames are seen
+again. Observed FAIL states close only after ``close_after_frames`` failures,
+so tracking gaps never masquerade as geometric failures.
+"""
 
 from __future__ import annotations
 
@@ -157,6 +165,12 @@ def evaluate_result_window(
     frame_ids = list(range(int(result["anchor_frame_id"]), min(outcome_end, max_end) + 1, step))
     scoped = positions[positions.frame_id.isin(frame_ids)]
     by_frame = {int(frame_id): frame.copy() for frame_id, frame in scoped.groupby("frame_id")}
+    target_mask = (
+        (scoped.entity_type == "player")
+        & (scoped.team_role == result["perspective_team_role"])
+        & (scoped.entity_id.astype(str).isin(attacking_outfield))
+    )
+    window_target_ids = set(scoped.loc[target_mask, "entity_id"].astype(str))
     states_by_target: dict[str, list[dict[str, Any]]] = defaultdict(list)
     state_counts: Counter[str] = Counter()
     negative_examples: list[dict[str, Any]] = []
@@ -164,7 +178,7 @@ def evaluate_result_window(
     for frame_id in frame_ids:
         frame = by_frame.get(frame_id)
         if frame is None:
-            for target_player_id in sorted(attacking_outfield):
+            for target_player_id in sorted(window_target_ids):
                 states_by_target[str(target_player_id)].append(
                     unknown_corridor_state(
                         result=result,
@@ -181,22 +195,27 @@ def evaluate_result_window(
             & (frame.team_role == result["perspective_team_role"])
             & (frame.entity_id.astype(str).isin(attacking_outfield))
         ]
+        attackers_by_id = {
+            str(attacker.entity_id): attacker._asdict()
+            for attacker in attackers.itertuples(index=False)
+        }
         defenders = frame[
             (frame.entity_type == "player")
             & (frame.team_role == result["defending_team_role"])
             & (frame.entity_id.astype(str).isin(defending_outfield))
         ]
-        for attacker in attackers.itertuples(index=False):
+        for target_player_id in sorted(window_target_ids):
             state = corridor_state(
                 result=result,
                 frame_id=frame_id,
                 ball=ball,
-                target=attacker._asdict(),
+                target=attackers_by_id.get(target_player_id),
+                target_player_id=target_player_id,
                 defenders=defenders,
                 attack_x_sign=attack_x_sign,
                 config=config,
             )
-            states_by_target[str(attacker.entity_id)].append(state)
+            states_by_target[target_player_id].append(state)
             state_counts[state["status"]] += 1
             if state["status"] == "FAIL" and state.get("failure_reason") == "clearance_below_threshold":
                 negative_examples.append(state)
@@ -286,13 +305,14 @@ def corridor_state(
     defenders: pd.DataFrame | None,
     attack_x_sign: int,
     config: CorridorConfig,
+    target_player_id: str | None = None,
 ) -> dict[str, Any]:
     common = {
         "result_id": str(result["result_id"]),
         "match_id": str(result["match_id"]),
         "period": str(result["period"]),
         "frame_id": int(frame_id),
-        "target_player_id": str(target["entity_id"]) if target else None,
+        "target_player_id": str(target["entity_id"]) if target else target_player_id,
     }
     if ball is None or ball.empty:
         return {**common, "status": "UNKNOWN", "reason": "source_ball_unavailable"}
@@ -302,6 +322,10 @@ def corridor_state(
         return {**common, "status": "UNKNOWN", "reason": "defenders_unavailable"}
 
     ball_row = ball.iloc[0]
+    if not math.isfinite(float(ball_row.x_m)) or not math.isfinite(float(ball_row.y_m)):
+        return {**common, "status": "UNKNOWN", "reason": "source_ball_unavailable"}
+    if not math.isfinite(float(target["x_m"])) or not math.isfinite(float(target["y_m"])):
+        return {**common, "status": "UNKNOWN", "reason": "target_player_unavailable"}
     source = point_payload(float(ball_row.x_m), float(ball_row.y_m))
     destination = point_payload(float(target["x_m"]), float(target["y_m"]))
     dx = destination["x_m"] - source["x_m"]
@@ -449,6 +473,7 @@ def episodes_from_states(
                 "evidence_fields": [
                     "open_frame_id",
                     "close_frame_id",
+                    "close_reason",
                     "duration_seconds",
                     "pass_frame_count",
                     "minimum_clearance_m",
