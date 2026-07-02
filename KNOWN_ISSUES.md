@@ -55,7 +55,12 @@ since June 19.)
 - SCP-0E.1 semantic registry external review not yet performed.
 - AFL protected promotion authority (protected CI identity, hidden-suite
   hash, signing key) does not exist yet; promotion gates correctly report
-  BLOCKED.
+  BLOCKED. The CI-side scaffolding is committed
+  (`.github/workflows/afl-protected-gate.yml` — runs the gate only when the
+  `afl-protected-gate` environment carries the identity, skips otherwise);
+  the remaining user-side steps (create the environment, generate the
+  signing key outside the repo, pin the hidden-suite hash) are the numbered
+  checklist in `docs/CI.md`.
 
 ## Scope / data
 

@@ -7,7 +7,10 @@ from tqe.runtime.controlled_pass import (
     evaluate_controlled_passes,
 )
 
+from tests.support.canonical_data import requires_canonical_data
 
+
+@requires_canonical_data
 class M2AControlledPassRuntimeTest(unittest.TestCase):
     def test_j03woy_runtime_emits_explicit_anchor_and_physical_release(self) -> None:
         output = evaluate_controlled_passes(

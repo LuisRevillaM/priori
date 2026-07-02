@@ -1,0 +1,129 @@
+# Continuous verification (F0-3, foundation audit finding V2).
+#
+# The test suite and the parity/drift gates run on every push and PR, so
+# stale-green is structurally impossible: nobody has to remember to re-run a
+# gate against the moving tree — the tree cannot move without the gates.
+#
+# Data constraint: the 2.6 GB canonical corpus (data/canonical/v1, gitignored)
+# is NOT available in CI. Tests that execute against real match data declare
+# @requires_canonical_data (tests/support/canonical_data.py) and skip here;
+# the skip count is reported loudly below and in the job summary. Everything
+# else — the SCP-0 stale-green guard tests, the F0-2 write-mode policy tests,
+# binder/IR/catalog conformance, and all synthetic-geometry kernel tests —
+# runs for real. See docs/CI.md for the full split.
+#
+# Gates wired in (each verified locally to pass data-free, read-only,
+# leaving `git status --porcelain` empty — the F0-2 invariant is enforced
+# as a hard step below):
+#   scp-0-verify         registry <-> runtime <-> projection parity, fresh
+#                        regeneration diffed in memory against checked-in
+#                        artifacts (fails on drift) + registry guard tests
+#   afl-passport-verify  capability-passport projections vs registry
+#   afl-g0-verify        AFL-G0 operational contract + schema validation
+#   scp-1-verify         SCP-1 semantic compiler kernel conformance
+#   afl-g0-gate          gate runner + public canaries; without the protected
+#                        identity the result is BLOCKED (the honest
+#                        fail-closed state) and the runner still exits 0 —
+#                        promotion only happens in afl-protected-gate.yml
+#
+# Gates deliberately EXCLUDED:
+#   afl-time-to-arrival-verify  fails on frozen-expectation drift
+#                               (KNOWN_ISSUES.md); wire it in after a
+#                               deliberate re-freeze decision
+#   n1d-verify                  fails 2/15 checks by design since the AFL
+#                               expansion moved past the N1D freeze pins
+#   all corpus-dependent verifiers (m2a-s1a/b/c, afl-defensive-line,
+#   afl-lane-occupancy, afl-substrate-q*, ...): require data/canonical/v1
+#   workbench test:acceptance   needs the built app + corpus-backed service
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python-suite:
+    name: Python suite + drift gates (data-free)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install package
+        run: python -m pip install -e .
+
+      - name: Run test suite (data-free subset)
+        run: |
+          set -o pipefail
+          make test PYTHON=python 2>&1 | tee "$RUNNER_TEMP/test-output.log"
+
+      - name: Report skipped data-dependent tests (loudly)
+        run: |
+          SKIPS=$(grep -Eo 'skipped=[0-9]+' "$RUNNER_TEMP/test-output.log" | tail -1 | cut -d= -f2)
+          SKIPS=${SKIPS:-0}
+          RAN=$(grep -Eo 'Ran [0-9]+ tests' "$RUNNER_TEMP/test-output.log" | tail -1 | grep -Eo '[0-9]+')
+          MSG="CI ran ${RAN:-?} tests; ${SKIPS} data-dependent tests were SKIPPED because the canonical corpus (data/canonical/v1) is not available in CI. They are only verified by local full-suite runs (make test with data provisioned)."
+          echo "::notice title=Data-dependent tests skipped in CI::${MSG}"
+          {
+            echo "## Test suite (data-free subset)"
+            echo ""
+            echo "- Tests run: **${RAN:-?}**"
+            echo "- Data-dependent tests skipped (no canonical corpus in CI): **${SKIPS}**"
+            echo ""
+            echo "The skipped tests execute against the gitignored 2.6 GB corpus and"
+            echo "are covered only by local \`make test\` runs with data provisioned."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: SCP-0 parity gate (registry/runtime/projection drift)
+        run: make scp-0-verify PYTHON=python
+
+      - name: AFL passport gate
+        run: make afl-passport-verify PYTHON=python
+
+      - name: AFL-G0 contract gate
+        run: make afl-g0-verify PYTHON=python
+
+      - name: SCP-1 semantic compiler gate
+        run: make scp-1-verify PYTHON=python
+
+      - name: AFL-G0 gate runner + public canaries (BLOCKED without protected identity)
+        run: make afl-g0-gate PYTHON=python
+
+      - name: Verify gates left the tree clean (F0-2 read-only invariant)
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error title=F0-2 invariant violated::A gate or test modified tracked files or created untracked files. Verifiers must be read-only checks (writes belong behind TQE_WRITE=1)."
+            git status --porcelain
+            git diff
+            exit 1
+          fi
+          echo "Tree clean after all gates — F0-2 read-only invariant holds."
+
+  workbench-unit:
+    name: Workbench alpha unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/workbench-alpha
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/workbench-alpha/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm run test:unit

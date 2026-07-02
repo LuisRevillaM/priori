@@ -1,0 +1,101 @@
+# AFL protected-gate scaffolding (delivery/autonomous/PROTECTED_GATE_SETUP.md,
+# delivery/autonomous/AFL-G0_SPEC.md).
+#
+# This workflow is the PROTECTED_CI promotion boundary. It is committed with
+# NO keys and NO secrets: until the `afl-protected-gate` GitHub environment
+# exists and carries the protected identity —
+#
+#   secret   AFL_GATE_SIGNING_KEY      signing key generated outside the repo
+#   variable AFL_PROTECTED_SUITE_ID    stable hidden-suite id
+#   variable AFL_PROTECTED_SUITE_HASH  pinned hash of hidden suite + denominators
+#
+# — every run detects the missing identity, reports it, and skips the gate
+# steps entirely. It cannot mint a promotion. `make afl-g0-gate` itself is
+# fail-closed on the same four env vars (AFL_GATE_PROTECTION_LEVEL +
+# the three above): absent identity => result BLOCKED, never PROMOTED.
+#
+# The authority boundary comes from GitHub, not from this file: the
+# environment's secrets/variables are only readable by jobs that reference
+# the environment, environment protection rules control who can approve a
+# run, and branch protection keeps candidate builders from editing this
+# workflow on the promotion branch. User-side setup checklist: docs/CI.md.
+#
+# Note: promotion requires the gate result to be produced by THIS runner, on
+# a clean checkout, from the protected environment — a locally produced
+# BLOCKED result is useful evidence but is not promotion (PROTECTED_GATE_SETUP.md).
+name: afl-protected-gate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  protected-gate:
+    name: AFL-G0 protected gate (PROTECTED_CI)
+    runs-on: ubuntu-latest
+    environment: afl-protected-gate
+    env:
+      AFL_GATE_PROTECTION_LEVEL: PROTECTED_CI
+      AFL_PROTECTED_SUITE_ID: ${{ vars.AFL_PROTECTED_SUITE_ID }}
+      AFL_PROTECTED_SUITE_HASH: ${{ vars.AFL_PROTECTED_SUITE_HASH }}
+      AFL_GATE_SIGNING_KEY: ${{ secrets.AFL_GATE_SIGNING_KEY }}
+    steps:
+      - name: Check protected identity
+        id: identity
+        run: |
+          if [ -n "$AFL_GATE_SIGNING_KEY" ] && [ -n "$AFL_PROTECTED_SUITE_ID" ] && [ -n "$AFL_PROTECTED_SUITE_HASH" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "Protected identity present (suite id: $AFL_PROTECTED_SUITE_ID)."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=AFL protected identity not configured::The afl-protected-gate environment is missing AFL_GATE_SIGNING_KEY (secret) and/or AFL_PROTECTED_SUITE_ID / AFL_PROTECTED_SUITE_HASH (variables). Gate steps are skipped; no promotion is possible. Setup checklist: docs/CI.md."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.identity.outputs.configured == 'true'
+
+      - uses: actions/setup-python@v5
+        if: steps.identity.outputs.configured == 'true'
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install package
+        if: steps.identity.outputs.configured == 'true'
+        run: python -m pip install -e .
+
+      - name: SCP-0 parity gate
+        if: steps.identity.outputs.configured == 'true'
+        run: make scp-0-verify PYTHON=python
+
+      - name: AFL-G0 contract gate
+        if: steps.identity.outputs.configured == 'true'
+        run: make afl-g0-verify PYTHON=python
+
+      - name: AFL-G0 gate runner (protected)
+        if: steps.identity.outputs.configured == 'true'
+        run: make afl-g0-gate PYTHON=python
+
+      - name: Verify gates left the tree clean (F0-2 read-only invariant)
+        if: steps.identity.outputs.configured == 'true'
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error title=F0-2 invariant violated::The protected gate modified tracked files."
+            git status --porcelain
+            exit 1
+          fi
+
+      - name: Archive gate results and review packet
+        if: steps.identity.outputs.configured == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: afl-g0-protected-gate-run
+          # Read-only check mode routes all run outputs under the gitignored
+          # artifacts/check-runs/ mirror (F0-2).
+          path: |
+            artifacts/check-runs/autonomous/afl-g0-*.json
+            artifacts/check-runs/review-packets/**
+          if-no-files-found: error

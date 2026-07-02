@@ -25,7 +25,10 @@ from tqe.runtime.executor import (
 from tqe.runtime.ir import EvaluationTarget, ExecutionMode, ExecutionStatus, PlanStatus, TacticalQueryDocument
 from tqe.runtime.relations import evaluate_geometric_progressive_corridors
 
+from tests.support.canonical_data import requires_canonical_data
 
+
+@requires_canonical_data
 class M11RuntimeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

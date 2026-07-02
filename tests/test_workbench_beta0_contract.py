@@ -36,6 +36,8 @@ from tqe.workshop.m1_2 import (
     write_handle,
 )
 
+from tests.support.canonical_data import requires_canonical_data
+
 
 APPROVED_PLAN = Path("config/query-plans/ball_side_block_shift.ir.v1.json")
 N1I_ORIGIN_BUNDLE = Path("delivery/n1d/n1f-origin-bundle.json")
@@ -106,6 +108,7 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
         self.assertEqual(canonical["recipe"]["description"], host_owned["recipe"]["description"])
         self.assertEqual(canonical_model["draft_plan"], host_owned["draft_plan"])
 
+    @requires_canonical_data
     def test_match_library_is_limited_to_deployed_manifest_with_canonical_metadata(self) -> None:
         manifest = json.loads(
             Path("config/deploy/demo-data-manifest.json").read_text(encoding="utf-8")
@@ -237,6 +240,7 @@ class WorkbenchBeta0ContractTests(unittest.TestCase):
             response["fallback_reason"],
         )
 
+    @requires_canonical_data
     def test_attested_hero_execution_resolves_every_required_evidence_alias(self) -> None:
         document = n1i_attested_document()
         required_aliases = [

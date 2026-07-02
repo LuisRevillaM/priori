@@ -11,7 +11,10 @@ from tqe.runtime.pass_bypass import (
     evaluate_pass_bypass_measurements,
 )
 
+from tests.support.canonical_data import requires_canonical_data
 
+
+@requires_canonical_data
 class M2APassBypassRuntimeTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

@@ -11,6 +11,8 @@ from tqe.runtime.high_bypass_pass import (
 )
 from tqe.runtime.pass_bypass import evaluate_pass_bypass_measurements
 
+from tests.support.canonical_data import requires_canonical_data
+
 
 EXPECTED_PASS_EPISODE_IDS = [
     "J03WOY:firstHalf:home:188:DFL-OBJ-002G5J:DFL-OBJ-002FXT",
@@ -23,6 +25,7 @@ EXPECTED_PASS_EPISODE_IDS = [
 ]
 
 
+@requires_canonical_data
 class M2AHighBypassPassRuntimeTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
