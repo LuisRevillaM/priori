@@ -18,6 +18,9 @@ pins, or case-study files were regenerated on this worker branch.
   `tie_epsilon_m=1e-9`.
 - Updated `src/tqe/runtime/lane_occupancy.py` to use the shared geometry and
   expose `boundary_policy` and `tie_epsilon_m` in evidence.
+- Round-2 fix: occupancy assignment now routes default lane IDs through the
+  shared `classify_lane_y(...)` path, so the declared `tie_epsilon_m` is
+  applied by the classifier itself rather than only appearing in evidence.
 - Updated `src/tqe/runtime/relations.py` so `destination_side`,
   `destination_lane`, and `destination_region_bounds` use the same shared lane
   model. The central destination is now a declared central band, not only
@@ -58,6 +61,8 @@ pins, or case-study files were regenerated on this worker branch.
 
 - Shared lane equivalence between lane occupancy and corridor destination
   classification, including all edges and both signs.
+- Edge plus/minus epsilon equivalence between actual lane-occupancy
+  assignments and relation destination-lane classification.
 - Mirror-symmetry checks for the lane model.
 - Tie-to-center checks at lane boundaries.
 - G2 reproduction: one player over two frames no longer satisfies a two-player
@@ -99,29 +104,30 @@ Total changed corridor classifications: 34.
 
 | Command | Status | Notes |
 | --- | --- | --- |
-| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_lane_occupancy` | PASS | 16 tests. |
-| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_m2a_bypass tests.test_corridor_episode_honesty tests.test_lane_occupancy` | PASS | 36 tests. |
-| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_controlled_pass_honesty tests.test_lane_occupancy tests.test_corridor_episode_honesty tests.test_m2a_bypass` | PASS | 55 tests in 58.277s. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_lane_occupancy` | PASS | 17 tests. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_m2a_bypass tests.test_corridor_episode_honesty tests.test_lane_occupancy` | PASS | 37 tests. |
+| `PYTHONPATH=src .venv/bin/python -m unittest tests.test_controlled_pass_honesty tests.test_lane_occupancy tests.test_corridor_episode_honesty tests.test_m2a_bypass` | PASS | 56 tests in 39.181s. |
 | `make afl-lane-occupancy-verify` | FAIL | Runtime execution passed with 20 results and zero requested-evidence failures; fails only on `scp0_parity_failed` because semantic-registry/generated artifacts were not regenerated. |
+| `make afl-line-break-support-response-verify` | FAIL | Generic execution passed with 1 result and zero requested-evidence failures; fails on expected SCP0 parity plus frozen expectation drift in `delivery/autonomous/afl09a/frozen-expectations/line_break_support_response.json` (`bound_plan_hash`, `result_ids`, `result_signature_hash`, and report status). |
+| `make afl-passport-verify` | FAIL | Fails on expected capability-passport projection/lock drift for the current registry lock; lane_occupancy passport projection is among the changed subjects. |
 | `make m1-1-verify` | FAIL / not_ready | Summary `482 pass / 7 fail / 0 not_ready`; root failure is stale `generated/capability-catalog.json`, with downstream gate precondition cascade. |
 | `make n1c-verify` | FAIL | Check-run report fails `n1c.live_artifacts_referenced` because expected live handle files are absent in this checkout; N1 remains fenced. |
 | `make n1d1-verify` | PASS | `attestation_status=VERIFIED`, no blocking reasons. |
 | `make n1d-verify` | FAIL | Expected N1 pinned artifact/runtime drift after runtime/catalog changes; no N1 pins regenerated. |
 | `make n1i-verify` | FAIL | Expected checked-in generated knowledge-pack/capability-context drift; no generated files regenerated. |
-| `PYTHONPATH=src .venv/bin/python -m unittest discover -s tests` | FAIL | 336 tests run in 374.085s; 7 failures enumerated below. |
+| `PYTHONPATH=src .venv/bin/python -m unittest discover -s tests` | FAIL | 337 tests run in 363.708s on committed runtime tree; 6 failures enumerated below. |
 | `git diff --check` | PASS | No whitespace errors. |
 
 ### Full Suite Failure Table
 
 | Test | Failure | Attribution |
 | --- | --- | --- |
-| `test_afl_validation_factory.ValidationFactoryTests.test_freeze_then_read_compare_and_fail_on_drift` | Validation factory status is `FAIL` instead of expected `PASS`. | Expected dirty-runtime guard from uncommitted runtime edits. |
 | `test_m1_1_binder.M11BinderTests.test_generated_artifacts_are_current` | `generated/capability-catalog.json` differs from fresh generation. | Expected generated artifact drift from new catalog lane metadata. |
 | `test_scp0_semantic_registry.SCP0SemanticRegistryTests.test_canonical_product_shared_records_have_no_contract_drift` | Contract changes detected for lane occupancy, destination-entry classifications, and both corridor relations. | Expected SCP0 semantic-registry drift from declared lane semantics. |
 | `test_scp0_semantic_registry.SCP0SemanticRegistryTests.test_checked_in_lock_and_parity_report_match_fresh_regeneration` | Checked-in lock hash `789a...5654` differs from fresh `b7a4...2870`. | Expected SCP0 lock drift; not regenerated in this packet. |
 | `test_scp0_semantic_registry.SCP0SemanticRegistryTests.test_scp0_generation_passes_and_excludes_atlas_from_product_and_ai` | SCP0 generation status `FAIL`. | Expected semantic-registry/generated drift after catalog declarations. |
 | `test_verifier_write_mode.CheckModeIsReadOnlyTests.test_scp0_verifier_check_mode_leaves_tracked_files_untouched` | `scp0.main()` exits `1` in check mode. | Expected because SCP0 check-mode detects drift without rewriting tracked files. |
-| `test_workbench_beta0_contract.WorkbenchBeta0ContractTests.test_attested_hero_execution_resolves_every_required_evidence_alias` | Live hero rows are `12`, pinned expectation is `11`. | Expected N1 truth ripple from unified lane semantics; N1 remains fenced and requires director re-pin/disclosure. |
+| `test_workbench_beta0_contract.WorkbenchBeta0ContractTests.test_attested_hero_execution_resolves_every_required_evidence_alias` | Live hero rows are `12`, pinned expectation is `11`. | Real N1 truth ripple from unified destination-region bounds; one additional possession now genuinely qualifies. N1 remains fenced and requires director re-pin/disclosure. |
 
 ## Changed Pins Or Frozen Artifacts
 
@@ -133,6 +139,8 @@ for director acceptance and re-freeze:
 - `generated/tactical-knowledge-pack.json`
 - `generated/tactical-knowledge-pack.md`
 - SCP0 semantic-registry lock/report artifacts
+- `generated/semantic-registry/capability-passport-projection.json`
+- `delivery/autonomous/afl09a/frozen-expectations/line_break_support_response.json`
 - N1 delivery pins and workbench attestation expectations
 
 ## Missed Or Deferred
