@@ -42,9 +42,11 @@ ACCEPTED_PERIODS = DEFAULT_PERIODS
 
 @dataclass(frozen=True)
 class ControlledPassConfig:
+    event_type_filter: tuple[str, ...] = ("Play_Pass",)
+    max_release_alignment_ms: float = 250.0
     release_search_before_seconds: float = 1.0
     release_search_after_seconds: float = 3.0
-    reception_search_seconds: float = 6.0
+    reception_search_seconds: float = 4.0
     control_distance_m: float = 2.5
     nearest_teammate_margin_m: float = 1.0
     minimum_receiver_dwell_seconds: float = 0.24
@@ -122,7 +124,7 @@ def evaluate_controlled_passes(
 
     for match_id in requested_match_ids:
         events = read_table(canonical_root / "events" / f"match_id={match_id}.parquet", columns=EVENT_COLUMNS)
-        candidates = candidate_pass_events(events)
+        candidates = candidate_pass_events(events, event_type_filter=config.event_type_filter)
         for period in requested_periods:
             period_candidates = [item for item in candidates if item["period"] == period]
             if not period_candidates:
@@ -230,8 +232,13 @@ def evaluate_candidate(
     event: dict[str, Any],
     context: PeriodControlContext,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
-    event_anchor_frame_id, event_offset_ms = align_event_to_frame(event, context.frames)
+    event_anchor_frame_id, event_offset_ms = align_event_to_frame(
+        event,
+        context.frames,
+        max_alignment_ms=context.config.max_release_alignment_ms,
+    )
     event["event_anchor_frame_id"] = event_anchor_frame_id
+    event["event_frame_offset_ms"] = event_offset_ms
     release = detect_physical_release(event, context)
     reception = detect_controlled_reception(event, context, release)
     forward_progression_m = forward_progression(event, context, release, reception)
@@ -292,9 +299,14 @@ def evaluate_candidate(
 def detect_physical_release(event: dict[str, Any], context: PeriodControlContext) -> ReleaseDetection:
     event_anchor_frame_id = event.get("event_anchor_frame_id")
     if event_anchor_frame_id is None:
+        reason = (
+            "release_frame_alignment_failed"
+            if event.get("event_frame_offset_ms") is not None
+            else "missing_tracking"
+        )
         return ReleaseDetection(
             status="UNKNOWN",
-            reason="missing_tracking",
+            reason=reason,
             event_anchor_frame_id=None,
             physical_release_frame_id=None,
             event_to_release_offset_ms=None,
@@ -349,12 +361,24 @@ def detect_physical_release(event: dict[str, Any], context: PeriodControlContext
             continue
         transitions.append(state)
     if not transitions:
+        missing_count = sum(1 for state in states if state.missing)
+        if states and (missing_count / len(states)) > context.config.max_missing_frame_ratio:
+            return ReleaseDetection(
+                status="UNKNOWN",
+                reason="missing_tracking",
+                event_anchor_frame_id=int(event_anchor_frame_id),
+                physical_release_frame_id=None,
+                event_to_release_offset_ms=None,
+                release_ball_xy=None,
+                release_player_xy=None,
+                release_ball_distance_m=None,
+            )
         if any(state.controls for state in states):
             reason = "unique_release_transition_not_found"
             status = "UNKNOWN"
         else:
             reason = "release_not_confirmed"
-            status = "FAIL"
+            status = "UNKNOWN"
         return ReleaseDetection(
             status=status,
             reason=reason,
@@ -407,10 +431,9 @@ def detect_controlled_reception(
             receiver_xy=None,
             reception_ball_distance_m=None,
         )
-    end = min(
-        len(context.frame_ids) - 1,
-        release_index + math.ceil(context.config.reception_search_seconds * context.analysis_rate_hz),
-    )
+    requested_end = release_index + math.ceil(context.config.reception_search_seconds * context.analysis_rate_hz)
+    end = min(len(context.frame_ids) - 1, requested_end)
+    window_truncated = requested_end > len(context.frame_ids) - 1
     dwell_frames = max(1, math.ceil(context.config.minimum_receiver_dwell_seconds * context.analysis_rate_hz))
     receiver_run: list[FrameControlState] = []
     other_run_count = 0
@@ -464,6 +487,16 @@ def detect_controlled_reception(
         return ReceptionDetection(
             status="UNKNOWN",
             reason="missing_tracking",
+            controlled_reception_frame_id=None,
+            release_to_reception_seconds=None,
+            reception_ball_xy=None,
+            receiver_xy=None,
+            reception_ball_distance_m=None,
+        )
+    if window_truncated:
+        return ReceptionDetection(
+            status="UNKNOWN",
+            reason="reception_window_truncated",
             controlled_reception_frame_id=None,
             release_to_reception_seconds=None,
             reception_ball_xy=None,
@@ -582,14 +615,19 @@ def possession_continuity_status(event: dict[str, Any], reception: ReceptionDete
     return "UNKNOWN"
 
 
-def align_event_to_frame(event: dict[str, Any], frames: pd.DataFrame) -> tuple[int | None, float | None]:
+def align_event_to_frame(
+    event: dict[str, Any],
+    frames: pd.DataFrame,
+    *,
+    max_alignment_ms: float = 250.0,
+) -> tuple[int | None, float | None]:
     event_ts = pd.to_datetime(event["event_timestamp"], utc=True, errors="coerce")
     if pd.isna(event_ts):
         return None, None
     idx = (frames["_frame_ts_utc"] - event_ts).abs().idxmin()
     frame = frames.loc[idx]
     offset_ms = float((frame["_frame_ts_utc"] - event_ts).total_seconds() * 1000.0)
-    if abs(offset_ms) > 100.0:
+    if abs(offset_ms) > float(max_alignment_ms):
         return None, offset_ms
     return int(frame["frame_id"]), offset_ms
 
@@ -629,11 +667,15 @@ def period_analysis_rate(frames: pd.DataFrame) -> float:
     return 1.0 / median if median > 0 else 25.0
 
 
-def candidate_pass_events(events: pd.DataFrame) -> list[dict[str, Any]]:
+def candidate_pass_events(
+    events: pd.DataFrame,
+    *,
+    event_type_filter: tuple[str, ...] | list[str] | set[str] | None = ("Play_Pass",),
+) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for _, event in events.iterrows():
         event_type = str(event.get("event_type") or "")
-        if "Pass" not in event_type:
+        if not event_type_allowed(event_type, event_type_filter):
             continue
         qualifier = safe_json(event.get("qualifier_json"))
         if qualifier.get("Evaluation") != "successfullyCompleted":
@@ -656,6 +698,18 @@ def candidate_pass_events(events: pd.DataFrame) -> list[dict[str, Any]]:
             }
         )
     return rows
+
+
+def event_type_allowed(
+    event_type: str,
+    event_type_filter: tuple[str, ...] | list[str] | set[str] | None,
+) -> bool:
+    if event_type_filter is None:
+        return "Pass" in event_type
+    allowed = {str(item) for item in event_type_filter}
+    if not allowed or "any" in allowed:
+        return "Pass" in event_type
+    return event_type in allowed
 
 
 def pass_id(event: dict[str, Any]) -> str:

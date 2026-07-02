@@ -2997,8 +2997,11 @@ def primitive_action_event_anchor(state: PeriodState, node: BoundCatalogNode) ->
     frames["_frame_ts_utc"] = pd.to_datetime(frames["timestamp_utc"], utc=True, errors="coerce")
     records: list[dict[str, Any]] = []
     for _, row in events.iterrows():
-        parsed = parse_successful_pass_event(row) if action_type in {"successful_pass", "throw_in_successful_pass"} else None
-        if parsed is not None and action_type == "throw_in_successful_pass" and parsed.get("event_type") != "ThrowIn_Play_Pass":
+        if action_type == "throw_in_successful_pass":
+            parsed = parse_successful_pass_event(row, event_type_filter=("ThrowIn_Play_Pass",))
+        elif action_type == "successful_pass":
+            parsed = parse_successful_pass_event(row)
+        else:
             parsed = None
         if parsed is None:
             continue
@@ -4208,11 +4211,13 @@ def primitive_time_to_arrival(state: PeriodState, node: BoundCatalogNode) -> Non
 
 
 def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode) -> None:
-    event_type_filter = node_parameter_text(node, "event_type_filter", "any")
+    event_type_filter = node_parameter_event_type_filter(node)
     config = ControlledPassConfig(
+        event_type_filter=event_type_filter,
+        max_release_alignment_ms=node_parameter_number(node, "max_release_alignment_ms", 250.0),
         release_search_before_seconds=node_parameter_number(node, "release_search_before_seconds", 1.0),
         release_search_after_seconds=node_parameter_number(node, "release_search_after_seconds", 3.0),
-        reception_search_seconds=node_parameter_number(node, "reception_search_seconds", 6.0),
+        reception_search_seconds=node_parameter_number(node, "reception_search_seconds", 4.0),
         control_distance_m=node_parameter_number(node, "control_distance_m", 2.5),
         nearest_teammate_margin_m=node_parameter_number(node, "nearest_teammate_margin_m", 1.0),
         minimum_receiver_dwell_seconds=node_parameter_number(node, "minimum_receiver_dwell_seconds", 0.24),
@@ -4223,25 +4228,6 @@ def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode
         periods=(state.period,),
         config=config,
     )
-    if event_type_filter != "any":
-        output = ControlledPassOutput(
-            schema_version=output.schema_version,
-            capability=output.capability,
-            capability_version=output.capability_version,
-            status=output.status,
-            accepted_scope={**output.accepted_scope, "event_type_filter": event_type_filter},
-            config=output.config,
-            summary={**output.summary, "event_type_filter": event_type_filter},
-            episodes=[
-                record for record in output.episodes if str(record.get("event_type")) == event_type_filter
-            ],
-            anchor_evaluations=[
-                record for record in output.anchor_evaluations if str(record.get("event_type")) == event_type_filter
-            ],
-            non_match_examples=[
-                record for record in output.non_match_examples if str(record.get("event_type")) == event_type_filter
-            ][:50],
-        )
     anchors = [
         record
         for record in (
@@ -4258,6 +4244,7 @@ def primitive_controlled_pass_episode(state: PeriodState, node: BoundCatalogNode
     ]
     frame_ids = [int(record["anchor_frame_id"]) for record in anchors]
     state.signals[node.node_id] = {
+        "candidate_evaluations_records": output.anchor_evaluations,
         "episodes": episodes,
         "episodes_records": episodes,
         "anchors": anchors,
@@ -6368,6 +6355,8 @@ def point_distance(a: dict[str, float] | None, b: dict[str, float] | None) -> fl
 
 def primitive_one_touch_relay_episode(state: PeriodState, node: BoundCatalogNode) -> None:
     config = OneTouchRelayConfig(
+        event_type_filter=node_parameter_event_type_filter(node),
+        max_release_alignment_ms=node_parameter_number(node, "max_release_alignment_ms", 250.0),
         relay_max_event_gap_seconds=node_parameter_number(node, "relay_max_event_gap_seconds", 3.0),
         relay_touch_distance_m=node_parameter_number(node, "relay_touch_distance_m", 2.75),
         maximum_relay_dwell_seconds=node_parameter_number(node, "maximum_relay_dwell_seconds", 0.56),
@@ -10565,6 +10554,10 @@ def node_parameter_text(node: BoundCatalogNode, name: str, default: str) -> str:
     if value.payload_type not in {PayloadType.ENUM, PayloadType.RELATION_REF}:
         raise RuntimeError(f"{node.node_id}.{name} must be textual")
     return str(value.value)
+
+
+def node_parameter_event_type_filter(node: BoundCatalogNode) -> tuple[str, ...]:
+    return (node_parameter_text(node, "event_type_filter", "Play_Pass"),)
 
 
 def relation_side_matches(

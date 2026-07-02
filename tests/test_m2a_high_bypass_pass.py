@@ -15,11 +15,9 @@ from tests.support.canonical_data import requires_canonical_data
 
 
 EXPECTED_PASS_EPISODE_IDS = [
-    "J03WOY:firstHalf:home:188:DFL-OBJ-002G5J:DFL-OBJ-002FXT",
     "J03WOY:firstHalf:away:227:DFL-OBJ-00286X:DFL-OBJ-00019R",
     "J03WOY:firstHalf:home:331:DFL-OBJ-0028FW:DFL-OBJ-002FXT",
     "J03WOY:secondHalf:home:102:DFL-OBJ-002GM9:DFL-OBJ-002FXT",
-    "J03WOY:secondHalf:away:172:DFL-OBJ-002FZB:DFL-OBJ-0028IJ",
     "J03WOY:secondHalf:home:356:DFL-OBJ-002GMO:DFL-OBJ-0026RH",
     "J03WOY:secondHalf:away:385:DFL-OBJ-0025BB:DFL-OBJ-0001IG",
 ]
@@ -50,7 +48,7 @@ class M2AHighBypassPassRuntimeTest(unittest.TestCase):
 
     def test_emits_real_high_bypass_results(self) -> None:
         self.assertEqual("m2a.high_bypass_completed_pass.v1", self.output.schema_version)
-        self.assertEqual(7, len(self.output.results))
+        self.assertEqual(5, len(self.output.results))
         self.assertEqual(len(self.output.results), self.output.summary["result_count"])
         self.assertEqual({CLASSIFICATION}, {item["classification"] for item in self.output.results})
         self.assertEqual(EXPECTED_PASS_EPISODE_IDS, [item["pass_episode_id"] for item in self.output.results])
