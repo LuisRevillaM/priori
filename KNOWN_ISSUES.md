@@ -56,18 +56,16 @@ since June 19.)
 - `make n1d-verify` fails 2/15 checks by design since the AFL expansion moved
   executor/binder/catalog past the N1D freeze-manifest pins. Expected drift;
   re-pinning requires a fresh live rerun.
-- `make afl-time-to-arrival-verify` fails on frozen-expectation drift
-  (`bound_plan_hash`/result signature vs
-  `delivery/autonomous/afl09a/frozen-expectations/time_to_arrival_q4.json`) —
-  same expected-drift class as n1d; pre-existing before F0-2, now fails
-  read-only. Needs a deliberate re-freeze decision.
-- Same expected-drift class (verified during F1-A, 2026-07-01, byte-identical
-  with and without the F1-A fixes applied, so unrelated to them):
-  `make afl-relative-position-verify`, `make afl-substrate-q4-verify`, and
-  `make afl-line-break-support-response-verify` fail read-only on
-  `bound_plan_hash`/`result_ids`/result-signature drift against their
-  afl09a frozen expectations. Needs the same deliberate re-freeze decision;
-  not re-frozen under F1-A because the drift predates it.
+- RESOLVED (2026-07-02): the four drifted AFL-09A frozen expectations
+  (time-to-arrival, relative-position, substrate-q4,
+  line-break-support-response) were re-frozen after a byte-level attribution
+  investigation traced all four to one mechanism — commit 8cbb1f4's
+  unannounced widening of the controlled_pass_episode catalog contract —
+  with zero behavioral change proven. The duplicated evidence field that
+  commit introduced was fixed first so the pins moved exactly once. All five
+  gates (incl. afl-09a) pass in check mode. Lesson recorded: catalog
+  contract changes must be announced in their commit and trigger expectation
+  review.
 
 ## Standing blockers (external authority)
 
