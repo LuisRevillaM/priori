@@ -42,6 +42,11 @@ since June 19.)
 - `make n1d-verify` fails 2/15 checks by design since the AFL expansion moved
   executor/binder/catalog past the N1D freeze-manifest pins. Expected drift;
   re-pinning requires a fresh live rerun.
+- `make afl-time-to-arrival-verify` fails on frozen-expectation drift
+  (`bound_plan_hash`/result signature vs
+  `delivery/autonomous/afl09a/frozen-expectations/time_to_arrival_q4.json`) —
+  same expected-drift class as n1d; pre-existing before F0-2, now fails
+  read-only. Needs a deliberate re-freeze decision.
 
 ## Standing blockers (external authority)
 
